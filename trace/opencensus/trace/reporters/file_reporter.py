@@ -18,10 +18,20 @@ import json
 
 
 class FileReporter(object):
+    """
+    :type file_name: str
+    :param file_name: The name of the output file.
+    """
+
     def __init__(self, file_name):
         self.file_name = file_name
 
     def report(self, traces):
+        """Report the traces by printing it out.
+
+        :type traces: dict
+        :param traces: Traces collected.
+        """
         with open(self.file_name, 'w+') as file:
             traces_str = json.dumps(traces)
             file.write(traces_str)
