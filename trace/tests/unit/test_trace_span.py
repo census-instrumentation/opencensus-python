@@ -31,7 +31,7 @@ class TestTraceSpan(unittest.TestCase):
         return self._get_target_class()(*args, **kw)
 
     def test_constructor_defaults(self):
-        from opencensus.trace.enums import TraceSpan as Enum
+        from opencensus.trace.enums import Enum
 
         span_id = 'test_span_id'
         span_name = 'test_span_name'
@@ -53,7 +53,7 @@ class TestTraceSpan(unittest.TestCase):
         self.assertEqual(span.children, [])
 
     def test_constructor_explicit(self):
-        from opencensus.trace.enums import TraceSpan as Enum
+        from opencensus.trace.enums import Enum
 
         from datetime import datetime
 
@@ -87,7 +87,7 @@ class TestTraceSpan(unittest.TestCase):
         self.assertEqual(span.children, [])
 
     def test_span(self):
-        from opencensus.trace.enums import TraceSpan as Enum
+        from opencensus.trace.enums import Enum
 
         span_id = 'test_span_id'
         root_span_name = 'root_span'

@@ -12,13 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""TraceSpan for sending traces to the Stackdriver Trace API."""
-
-from datetime import datetime
-from opencensus.trace.enums import TraceSpan as Enum
+import random
 
 from itertools import chain
-import random
+
+from datetime import datetime
+from opencensus.trace.enums import Enum
 
 
 class TraceSpan(object):
@@ -107,10 +106,10 @@ class TraceSpan(object):
 
     def add_label(self, label_key, label_value):
         """Add label to span.
-        
+
         :type label_key: str
         :param label_key: Label key.
-        
+
         :type label_value:str
         :param label_value: Label value.
         """

@@ -14,13 +14,14 @@
 
 """Export the trace spans by printing them out."""
 
+
 class PrintReporter(object):
     def report(self, traces):
         """Report the traces by printing it out.
-        
+
         :type traces: dict
         :param traces: Traces collected.
-        
+
         :rtype: dict
         :returns: Traces printed.
         """

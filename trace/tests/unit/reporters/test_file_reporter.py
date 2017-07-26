@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 import unittest
 
 
@@ -40,3 +41,4 @@ class TestFileReporter(unittest.TestCase):
 
         reporter.report(traces)
         assert os.path.exists(file_name) == 1
+        os.remove(file_name)

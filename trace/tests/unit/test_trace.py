@@ -62,7 +62,7 @@ class TestTrace(unittest.TestCase):
         self.assertEqual(trace.spans, [])
 
     def test_finish_with_valid_span(self):
-        from opencensus.trace.enums import TraceSpan as Enum
+        from opencensus.trace.enums import Enum
         from opencensus.trace.trace_span import TraceSpan
 
         reporter = mock.Mock()
@@ -123,7 +123,7 @@ class TestTrace(unittest.TestCase):
         self.assertEqual(trace.spans, [])
 
     def test_send_with_spans(self):
-        from opencensus.trace.enums import TraceSpan as Enum
+        from opencensus.trace.enums import Enum
         from opencensus.trace.trace_span import TraceSpan
 
         trace_id = 'test_trace_id'

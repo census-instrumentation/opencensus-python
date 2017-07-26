@@ -12,13 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Trace for interacting with the Stackdriver Trace API."""
-
-from opencensus.trace.reporters import file_reporter
-from opencensus.trace.trace_span import TraceSpan
-from opencensus.trace.trace_span import format_span_json
+"""This module is for generating Trace object which contains spans."""
 
 import uuid
+
+from opencensus.trace.reporters import file_reporter
+from opencensus.trace import trace_span
 
 
 class Trace(object):
@@ -35,7 +34,7 @@ class Trace(object):
     :param project_id: (Optional) The project_id for the trace.
 
     :type trace_id: str
-    :param trace_id: (Optional) Trace_id is a 32 digits uuid for the trace.
+    :param trace_id: (Optional) Trace_id is a 32 hex-digits uuid for the trace.
                      If not given, will generate one automatically.
     """
     def __init__(self, project_id=None, trace_id=None, reporter=None):
@@ -76,7 +75,7 @@ class Trace(object):
         :rtype: :class:`~google.cloud.trace.trace_span.TraceSpan`
         :returns: A TraceSpan to be added to the current Trace.
         """
-        span = TraceSpan(name)
+        span = trace_span.TraceSpan(name)
         self.spans.append(span)
         return span
 
@@ -90,7 +89,8 @@ class Trace(object):
         spans_list = []
         for root_span in self.spans:
             span_tree = list(iter(root_span))
-            span_tree_json = [format_span_json(span) for span in span_tree]
+            span_tree_json = [trace_span.format_span_json(span)
+                              for span in span_tree]
             spans_list.extend(span_tree_json)
 
         if len(spans_list) == 0:

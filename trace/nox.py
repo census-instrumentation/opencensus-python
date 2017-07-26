@@ -50,7 +50,7 @@ def lint(session):
     serious code quality issues.
     """
     session.interpreter = 'python3.6'
-    session.install('flake8', *LOCAL_DEPS)
+    session.install('flake8')
     session.install('.')
     session.run('flake8', 'opencensus/trace')
 

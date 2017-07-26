@@ -14,10 +14,11 @@
 
 """SpanContext encapsulates the current context within the request's trace."""
 
-from opencensus.trace.trace import generate_trace_id
-
 import logging
 import re
+import sys
+
+from opencensus.trace import trace
 
 _INVALID_TRACE_ID = '0' * 32
 _INVALID_SPAN_ID = 0
@@ -28,7 +29,7 @@ _TRACE_ID_FORMAT = '[0-9a-f]{32}?'
 class SpanContext(object):
     """SpanContext includes 3 fields: traceId, spanId, and an enabled flag
     which indicates whether or not the request is being traced. It contains the
-    current context to be propagate to the child spans.
+    current context to be propagated to the child spans.
 
     :type trace_id: str
     :param trace_id: (Optional) Trace_id is a 32 digits uuid for the trace.
@@ -51,7 +52,7 @@ class SpanContext(object):
             enabled=True,
             from_header=False):
         if trace_id is None:
-            trace_id = generate_trace_id()
+            trace_id = trace.generate_trace_id()
 
         self.trace_id = self.check_trace_id(trace_id)
         self.span_id = self.check_span_id(span_id)
@@ -72,15 +73,14 @@ class SpanContext(object):
             int(self.enabled))
         return header
 
-
     def check_span_id(self, span_id):
         """Check the type of span_id to ensure it is int. If it is not int,
         first try to convert it to int, if failed to convert, then log a
         warning message and set the span_id to None.
-        
+
         :type span_id: int
         :param span_id: Identifier for the span, unique within a trace.
-        
+
         :rtype: int
         :returns: Span_id for the current span.
         """
@@ -105,14 +105,13 @@ class SpanContext(object):
 
         return span_id
 
-
     def check_trace_id(self, trace_id):
         """Check the format of the trace_id to ensure it is 32-character hex
         value representing a 128-bit number. Also the trace_id cannot be zero.
-        
+
         :type trace_id: str
         :param trace_id:
-        
+
         :rtype: str
         :returns: Trace_id for the current context.
         """
@@ -121,7 +120,7 @@ class SpanContext(object):
                 'Trace_id {} is invalid (cannot be all zero), '
                 'generate a new one.'.format(trace_id))
             self.from_header = False
-            return generate_trace_id()
+            return trace.generate_trace_id()
 
         trace_id_pattern = re.compile(_TRACE_ID_FORMAT)
 
@@ -135,11 +134,10 @@ class SpanContext(object):
                     'Trace_id {} does not the match the required format,'
                     'generate a new one instead.'.format(trace_id))
                 self.from_header = False
-                return generate_trace_id()
+                return trace.generate_trace_id()
 
         except TypeError:
-            logging.warning(
-                'Trace_id should be str, got {}. Generate a new one.'.format(
+            logging.error(
+                'Trace_id should be str, got {}. Exit...'.format(
                     trace_id.__class__.__name__))
-            self.from_header = False
-            return generate_trace_id()
+            sys.exit(1)
