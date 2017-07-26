@@ -94,16 +94,6 @@ class TestSpanContext(unittest.TestCase):
         self.assertFalse(span_context.from_header)
         self.assertNotEqual(trace_id_checked, trace_id_test)
 
-    def test_check_trace_id_type_error(self):
-        trace_id_test = 123
-
-        span_context = self._make_one(from_header=True)
-
-        with self.assertRaises(SystemExit) as sys_exit:
-            span_context.check_trace_id(trace_id_test)
-
-        self.assertEqual(sys_exit.exception.code, 1)
-
     def test_check_trace_id_match(self):
         trace_id = '6e0c63257de34c92bf9efcd03927272e'
 

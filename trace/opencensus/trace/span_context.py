@@ -115,6 +115,8 @@ class SpanContext(object):
         :rtype: str
         :returns: Trace_id for the current context.
         """
+        assert isinstance(trace_id, str)
+
         if trace_id is _INVALID_TRACE_ID:
             logging.warning(
                 'Trace_id {} is invalid (cannot be all zero), '
@@ -124,20 +126,13 @@ class SpanContext(object):
 
         trace_id_pattern = re.compile(_TRACE_ID_FORMAT)
 
-        try:
-            match = trace_id_pattern.match(trace_id)
+        match = trace_id_pattern.match(trace_id)
 
-            if match:
-                return trace_id
-            else:
-                logging.warning(
-                    'Trace_id {} does not the match the required format,'
-                    'generate a new one instead.'.format(trace_id))
-                self.from_header = False
-                return trace.generate_trace_id()
-
-        except TypeError:
-            logging.error(
-                'Trace_id should be str, got {}. Exit...'.format(
-                    trace_id.__class__.__name__))
-            sys.exit(1)
+        if match:
+            return trace_id
+        else:
+            logging.warning(
+                'Trace_id {} does not the match the required format,'
+                'generate a new one instead.'.format(trace_id))
+            self.from_header = False
+            return trace.generate_trace_id()
