@@ -22,11 +22,13 @@ class TestContextTracer(unittest.TestCase):
     def test_constructor_defaults(self):
         from opencensus.trace import span_context
         from opencensus.trace import trace
+        from opencensus.trace.reporters import print_reporter
         from opencensus.trace.samplers import always_on
         from opencensus.trace.tracer import context_tracer
 
         tracer = context_tracer.ContextTracer()
 
+        assert isinstance(tracer.reporter, print_reporter.PrintReporter)
         assert isinstance(tracer.span_context, span_context.SpanContext)
         assert isinstance(tracer.sampler, always_on.AlwaysOnSampler)
         assert isinstance(tracer.cur_trace, trace.Trace)
@@ -36,15 +38,19 @@ class TestContextTracer(unittest.TestCase):
 
     def test_constructor_explicit(self):
         from opencensus.trace import span_context
+        from opencensus.trace.reporters import print_reporter
         from opencensus.trace.samplers import fixed_rate
         from opencensus.trace.tracer import context_tracer
 
+        reporter = print_reporter.PrintReporter()
         span_context = span_context.SpanContext()
         sampler = fixed_rate.FixedRateSampler(rate=0)
         tracer = context_tracer.ContextTracer(
+            reporter=reporter,
             span_context=span_context,
             sampler=sampler)
 
+        self.assertIs(tracer.reporter, reporter)
         self.assertIs(tracer.span_context, span_context)
         self.assertIs(tracer.sampler, sampler)
         self.assertEqual(tracer.trace_id, span_context.trace_id)

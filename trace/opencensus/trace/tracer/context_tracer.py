@@ -14,10 +14,11 @@
 
 import logging
 
-from opencensus.trace.trace import Trace
-from opencensus.trace.span_context import SpanContext
-from opencensus.trace.trace_span import TraceSpan
+from opencensus.trace.reporters import print_reporter
 from opencensus.trace.samplers.always_on import AlwaysOnSampler
+from opencensus.trace.span_context import SpanContext
+from opencensus.trace.trace import Trace
+from opencensus.trace.trace_span import TraceSpan
 
 
 class ContextTracer(object):
@@ -33,19 +34,29 @@ class ContextTracer(object):
                     :meth:`.Sampler.should_sample`. Defaults to
                     :class:`.AlwaysOnSampler`. The rest options are
                     :class:`.AlwaysOffSampler`, :class:`.FixedRateSampler`.
+
+    :type reporter: :class:`type`
+    :param reporter: Class for creating new Reporter objects. Default to
+                     :class:`.PrintReporter`. The rest option is
+                     :class:`.FileReporter`.
     """
     def __init__(
             self,
             span_context=None,
-            sampler=None):
+            sampler=None,
+            reporter=None):
         if span_context is None:
             span_context = SpanContext()
 
         if sampler is None:
             sampler = AlwaysOnSampler()
 
+        if reporter is None:
+            reporter = print_reporter.PrintReporter()
+
         self.span_context = span_context
         self.sampler = sampler
+        self.reporter = reporter
         self.trace_id = span_context.trace_id
         self.enabled = self.set_enabled()
         self.cur_trace = self.trace()
@@ -74,7 +85,7 @@ class ContextTracer(object):
         :returns: The Trace object.
         """
         if self.enabled is True:
-            return Trace(trace_id=self.trace_id)
+            return Trace(trace_id=self.trace_id, reporter=self.reporter)
         else:
             return NullObject()
 
@@ -102,23 +113,34 @@ class ContextTracer(object):
         :rtype: :class:`~opencensus.trace.trace_span.TraceSpan`
         :returns: The TraceSpan object.
         """
+        if self.enabled is False:
+            return NullObject()
+
+        span = self.start_span(name=name)
+        return span
+
+    def start_span(self, name='span'):
+        """Start a span.
+
+        :type name: str
+        :param name: The name of the span.
+
+        :rtype: :class:`~opencensus.trace.trace_span.TraceSpan`
+        :returns: The TraceSpan object.
+        """
         if self.enabled is True:
             parent_span_id = self.span_context.span_id
-            span = TraceSpan(name, parent_span_id=parent_span_id)
+            span = TraceSpan(
+                name,
+                parent_span_id=parent_span_id,
+                context_tracer=self)
             self.cur_trace.spans.append(span)
             self._span_stack.append(span)
             self.span_context.span_id = span.span_id
+            span.start()
             return span
         else:
             return NullObject()
-
-    def start_span(self, name='span'):
-        """Start a span."""
-        if self.enabled is False:
-            return
-
-        span = self.span(name=name)
-        span.start()
 
     def end_span(self):
         """End a span. Remove the span from the span stack, and update the
