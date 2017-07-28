@@ -14,33 +14,28 @@
 
 import unittest
 
+from opencensus.trace.samplers import fixed_rate
+
+
 class TestFixedRateSampler(unittest.TestCase):
 
     def test_constructor_invalid(self):
-        from opencensus.trace.samplers import fixed_rate
-
         with self.assertRaises(ValueError):
             fixed_rate.FixedRateSampler(rate=2)
 
     def test_constructor_valid(self):
-        from opencensus.trace.samplers import fixed_rate
-
         rate = 0.5
         sampler = fixed_rate.FixedRateSampler(rate=rate)
 
         self.assertEqual(sampler.rate, rate)
 
     def test_should_sample_smaller(self):
-        from opencensus.trace.samplers import fixed_rate
-
         sampler = fixed_rate.FixedRateSampler(rate=1)
         should_sample = sampler.should_sample
 
         self.assertTrue(should_sample)
 
     def test_should_sample_greater(self):
-        from opencensus.trace.samplers import fixed_rate
-
         sampler = fixed_rate.FixedRateSampler(rate=0)
         should_sample = sampler.should_sample
 
