@@ -16,7 +16,6 @@
 
 import logging
 import re
-import sys
 
 from opencensus.trace import trace
 
