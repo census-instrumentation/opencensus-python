@@ -16,6 +16,8 @@ import unittest
 
 import mock
 
+from opencensus.trace.tracer import context_tracer
+
 
 class TestContextTracer(unittest.TestCase):
 
@@ -24,7 +26,6 @@ class TestContextTracer(unittest.TestCase):
         from opencensus.trace import trace
         from opencensus.trace.reporters import print_reporter
         from opencensus.trace.samplers import always_on
-        from opencensus.trace.tracer import context_tracer
 
         tracer = context_tracer.ContextTracer()
 
@@ -40,7 +41,6 @@ class TestContextTracer(unittest.TestCase):
         from opencensus.trace import span_context
         from opencensus.trace.reporters import print_reporter
         from opencensus.trace.samplers import fixed_rate
-        from opencensus.trace.tracer import context_tracer
 
         reporter = print_reporter.PrintReporter()
         span_context = span_context.SpanContext()
@@ -60,39 +60,34 @@ class TestContextTracer(unittest.TestCase):
         assert isinstance(tracer.cur_trace, context_tracer.NullObject)
 
     def test_set_enabled_force_not_trace(self):
-        from opencensus.trace.tracer import context_tracer
         from opencensus.trace import span_context
 
         span_context = span_context.SpanContext(enabled=False)
-        context_tracer = context_tracer.ContextTracer(
+        tracer = context_tracer.ContextTracer(
             span_context=span_context)
-        enabled = context_tracer.set_enabled()
+        enabled = tracer.set_enabled()
 
         self.assertFalse(enabled)
 
     def test_set_enabled_should_sample(self):
-        from opencensus.trace.tracer import context_tracer
         from opencensus.trace.samplers import always_on
 
         sampler = always_on.AlwaysOnSampler()
-        context_tracer = context_tracer.ContextTracer(sampler=sampler)
-        enabled = context_tracer.set_enabled()
+        tracer = context_tracer.ContextTracer(sampler=sampler)
+        enabled = tracer.set_enabled()
 
         self.assertTrue(enabled)
 
     def test_set_enabled_should_not_sample(self):
-        from opencensus.trace.tracer import context_tracer
         from opencensus.trace.samplers import always_off
 
         sampler = always_off.AlwaysOffSampler()
-        context_tracer = context_tracer.ContextTracer(sampler=sampler)
-        enabled = context_tracer.set_enabled()
+        tracer = context_tracer.ContextTracer(sampler=sampler)
+        enabled = tracer.set_enabled()
 
         self.assertFalse(enabled)
 
     def test_trace_not_enabled(self):
-        from opencensus.trace.tracer import context_tracer
-
         tracer = context_tracer.ContextTracer()
         tracer.enabled = False
         cur_trace = tracer.trace()
@@ -101,7 +96,6 @@ class TestContextTracer(unittest.TestCase):
 
     def test_trace_enabled(self):
         from opencensus.trace import trace
-        from opencensus.trace.tracer import context_tracer
 
         tracer = context_tracer.ContextTracer()
         cur_trace = tracer.trace()
@@ -110,8 +104,6 @@ class TestContextTracer(unittest.TestCase):
         assert isinstance(cur_trace, trace.Trace)
 
     def test_start_trace_not_enabled(self):
-        from opencensus.trace.tracer import context_tracer
-
         tracer = context_tracer.ContextTracer()
         cur_trace = mock.Mock()
         tracer.enabled = False
@@ -121,8 +113,6 @@ class TestContextTracer(unittest.TestCase):
         self.assertFalse(cur_trace.start.called)
 
     def test_start_trace_enabled(self):
-        from opencensus.trace.tracer import context_tracer
-
         tracer = context_tracer.ContextTracer()
         cur_trace = mock.Mock()
         tracer.cur_trace = cur_trace
@@ -131,8 +121,6 @@ class TestContextTracer(unittest.TestCase):
         self.assertTrue(cur_trace.start.called)
 
     def test_end_trace_not_enabled(self):
-        from opencensus.trace.tracer import context_tracer
-
         tracer = context_tracer.ContextTracer()
         cur_trace = mock.Mock()
         tracer.enabled = False
@@ -142,8 +130,6 @@ class TestContextTracer(unittest.TestCase):
         self.assertFalse(cur_trace.finish.called)
 
     def test_end_trace_enabled(self):
-        from opencensus.trace.tracer import context_tracer
-
         tracer = context_tracer.ContextTracer()
         cur_trace = mock.Mock()
         tracer.cur_trace = cur_trace
@@ -152,8 +138,6 @@ class TestContextTracer(unittest.TestCase):
         self.assertTrue(cur_trace.finish.called)
 
     def test_span_not_enabled(self):
-        from opencensus.trace.tracer import context_tracer
-
         tracer = context_tracer.ContextTracer()
         tracer.enabled = False
 
@@ -162,7 +146,6 @@ class TestContextTracer(unittest.TestCase):
 
     def test_span_enabled(self):
         from opencensus.trace import span_context
-        from opencensus.trace.tracer import context_tracer
 
         span_id = 1234
         span_name = 'test_span'
@@ -178,8 +161,6 @@ class TestContextTracer(unittest.TestCase):
         self.assertEqual(span_context.span_id, span.span_id)
 
     def test_start_span_not_enabled(self):
-        from opencensus.trace.tracer import context_tracer
-
         tracer = context_tracer.ContextTracer()
         tracer.enabled = False
 
@@ -189,8 +170,6 @@ class TestContextTracer(unittest.TestCase):
         self.assertEqual(len(tracer.cur_trace.spans), 0)
 
     def test_start_span_enabled(self):
-        from opencensus.trace.tracer import context_tracer
-
         tracer = context_tracer.ContextTracer()
         tracer.start_span()
 
@@ -198,8 +177,6 @@ class TestContextTracer(unittest.TestCase):
         self.assertEqual(len(tracer.cur_trace.spans), 1)
 
     def test_end_span_not_enabled(self):
-        from opencensus.trace.tracer import context_tracer
-
         tracer = context_tracer.ContextTracer()
         tracer.enabled = False
         span = mock.Mock()
@@ -209,16 +186,12 @@ class TestContextTracer(unittest.TestCase):
         self.assertFalse(span.finish.called)
 
     def test_end_span_enabled_index_error(self):
-        from opencensus.trace.tracer import context_tracer
-
         tracer = context_tracer.ContextTracer()
 
         with self.assertRaises(IndexError):
             tracer.end_span()
 
     def test_end_span_enabled_empty_span_stack(self):
-        from opencensus.trace.tracer import context_tracer
-
         tracer = context_tracer.ContextTracer()
         span = mock.Mock()
         tracer._span_stack.append(span)
@@ -228,8 +201,6 @@ class TestContextTracer(unittest.TestCase):
         self.assertTrue(span.finish.called)
 
     def test_end_span_enabled_span_stack_not_empty(self):
-        from opencensus.trace.tracer import context_tracer
-
         tracer = context_tracer.ContextTracer()
         span1 = mock.Mock()
         span2 = mock.Mock()
@@ -244,8 +215,6 @@ class TestContextTracer(unittest.TestCase):
         self.assertTrue(span2.finish.called)
 
     def test_list_collected_spans(self):
-        from opencensus.trace.tracer import context_tracer
-
         tracer = context_tracer.ContextTracer()
         span1 = mock.Mock()
         span2 = mock.Mock()
