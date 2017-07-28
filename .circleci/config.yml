@@ -17,5 +17,3 @@ jobs:
           name: Run tests - opencensus.trace
           command: |
             nox -f trace/nox.py
-
-          
