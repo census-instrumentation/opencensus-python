@@ -1,0 +1,21 @@
+# Python CircleCI 2.0 configuration file
+#
+# Check https://circleci.com/docs/2.0/language-python/ for more details
+#
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/python:3.6.1
+
+    working_directory: ~/repo
+
+    steps:
+      - checkout
+
+      - run:
+          name: Run tests - opencensus.trace
+          command: |
+            nox -f trace/nox.py
+
+          
