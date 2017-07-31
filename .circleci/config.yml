@@ -3,10 +3,11 @@
 # Check https://circleci.com/docs/2.0/language-python/ for more details
 #
 version: 2
+
 jobs:
   build:
     docker:
-      - image: circleci/python:3.6.1
+      - image: googleapis/nox:0.17.0
 
     working_directory: ~/repo
 
