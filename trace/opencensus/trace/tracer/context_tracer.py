@@ -78,6 +78,21 @@ class ContextTracer(object):
         else:
             return False
 
+    def trace_decorator(self):
+        """Decorator to trace a function."""
+
+        def decorator(func):
+
+            def wrapper(*args, **kwargs):
+                self.start_span(name=func.__name__)
+                return_value = func(*args, **kwargs)
+                self.end_span()
+                return return_value
+
+            return wrapper
+
+        return decorator
+
     def trace(self):
         """Create a trace using the context information.
 
