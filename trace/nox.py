@@ -27,7 +27,8 @@ def unit_tests(session, python_version):
 
     # Install all test dependencies, then install this package in-place.
     session.install('mock', 'pytest', 'pytest-cov', 'google-cloud-core',
-                    'flask')
+                    'django', 'flask')
+
     session.install('-e', '.')
 
     # Run py.test against the unit tests.
