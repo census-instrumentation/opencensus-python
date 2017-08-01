@@ -23,7 +23,7 @@ _DJANGO_TRACE_HEADER = 'HTTP_X_CLOUD_TRACE_CONTEXT'
 
 class DjangoTracer(ContextTracer):
     """The django implementation of the ContextTracer Interface.
-    
+
     :type span_context: :class:`~opencensus.trace.span_context.SpanContext`
     :param span_context: The current span context.
 
