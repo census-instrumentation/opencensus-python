@@ -23,21 +23,21 @@ class LoggingReporter(object):
 
     :type handler: :class:`logging.handler`
     :param handler: the handler to attach to the global handler
-    
+
     Example:
-    
+
     .. code-block:: python
 
         import google.cloud.logging
         from google.cloud.logging.handlers import CloudLoggingHandler
         from opencensus.trace.reporters import logging_reporter
-        
+
         client = google.cloud.logging.Client()
         cloud_handler = CloudLoggingHandler(client)
         reporter = logging_reporter.LoggingReporter(handler=cloud_handler)
-        
+
         reporter.report(your_spans_list)
-    
+
     Or initialize a context tracer with the logging reporter, then the traces
     will be reported to logging when finished.
     """
