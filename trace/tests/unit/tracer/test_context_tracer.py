@@ -87,6 +87,21 @@ class TestContextTracer(unittest.TestCase):
 
         self.assertFalse(enabled)
 
+    def test_trace_decorator(self):
+        tracer = context_tracer.ContextTracer()
+
+        return_value = "test"
+
+        @tracer.trace_decorator()
+        def test_decorator():
+            return return_value
+
+        returned = test_decorator()
+
+        self.assertEqual(len(tracer.cur_trace.spans), 1)
+        self.assertEqual(tracer.cur_trace.spans[0].name, 'test_decorator')
+        self.assertEqual(returned, return_value)
+
     def test_trace_not_enabled(self):
         tracer = context_tracer.ContextTracer()
         tracer.enabled = False
