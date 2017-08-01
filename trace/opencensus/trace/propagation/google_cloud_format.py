@@ -23,7 +23,9 @@ import re
 
 from opencensus.trace.span_context import SpanContext
 
+_ENABLED_BITMASK = 1
 _TRACE_CONTEXT_HEADER_FORMAT = '([0-9a-f]{32})(\/(\d+))?(;o=(\d+))?'
+_TRACE_CONTEXT_HEADER_RE = re.compile(_TRACE_CONTEXT_HEADER_FORMAT)
 _TRACE_ID_DELIMETER = '/'
 _SPAN_ID_DELIMETER = ';'
 
@@ -39,10 +41,8 @@ def from_header(header):
     :rtype: :class:`~opencensus.trace.span_context.SpanContext`
     :returns: SpanContext generated from the trace context header.
     """
-    pattern = re.compile(_TRACE_CONTEXT_HEADER_FORMAT)
-
     try:
-        match = re.search(pattern, header)
+        match = re.search(_TRACE_CONTEXT_HEADER_RE, header)
     except TypeError:
         logging.warning(
             'Header should be str, got {}. Cannot parse the header.'.format(
@@ -52,15 +52,17 @@ def from_header(header):
     if match:
         trace_id = match.group(1)
         span_id = match.group(3)
-        enabled = match.group(5)
+        options = match.group(5)
 
-        if enabled is None:
-            enabled = True
+        if options is None:
+            options = 1
+
+        enabled = bool(int(options) | _ENABLED_BITMASK)
 
         span_context = SpanContext(
             trace_id=trace_id,
             span_id=span_id,
-            enabled=bool(enabled),
+            enabled=enabled,
             from_header=True)
         return span_context
     else:
