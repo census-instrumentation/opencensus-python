@@ -31,7 +31,7 @@ _WEBAPP2_TRACE_KEY = 'X-CLOUD-TRACE-CONTEXT'
 
 class WebApp2Tracer(ContextTracer):
     """The WebApp2 implementation of the ContextTracer Interface.
-    
+
     :type span_context: :class:`~opencensus.trace.span_context.SpanContext`
     :param span_context: The current span context.
 
@@ -64,7 +64,7 @@ def get_webapp2_header():
     :rtype: str
     :returns: Trace context header in HTTP request headers.
     """
-    if webapp2 is None:
+    if webapp2 is None:  # pragma: NO COVER
         return None
 
     try:
