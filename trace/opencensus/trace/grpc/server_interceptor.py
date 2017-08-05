@@ -27,12 +27,11 @@ from opencensus.trace.enums import Enum
 class OpenCensusServerInterceptor(grpc_ext.UnaryServerInterceptor):
 
     def __init__(self, sampler=None, reporter=None):
-        logging.warn('testtest')
         self.sampler = sampler
         self.reporter = reporter
 
     def _start_server_span(self, tracer, servicer_context, method):
-        logging.warn('test here')
+        logging.warn('test server span')
 
         span = tracer.start_span(name=str(method))
         span.add_label(label_key='component', label_value='grpc')
