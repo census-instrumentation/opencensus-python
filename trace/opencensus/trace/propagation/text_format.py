@@ -61,7 +61,7 @@ def to_carrier(span_context, carrier):
     :type span_context:
         :class:`~opencensus.trace.span_context.SpanContext`
     :param span_context: SpanContext object.
-    
+
     :type carrier: dict
     :param carrier: The carrier which holds the trace_id, span_id, options
                     information from a SpanContext.
