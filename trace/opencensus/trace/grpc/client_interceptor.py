@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import logging
 import six
 import sys
 
@@ -22,18 +21,40 @@ from opencensus.trace.propagation import text_format
 from opencensus.trace.enums import Enum
 
 class OpenCensusClientInterceptor(grpc_ext.UnaryClientInterceptor):
+    """
+    :type tracer: :class: `type`
+    :param tracer: Class for creating new Tracer object. Should be one of the
+                   Opencensus tracer implementation.
+    """
 
     def __init__(self, tracer):
         self._tracer = tracer
 
     def _start_client_span(self, method):
-        logging.warn('test client span')
         span = self._tracer.start_span(name=str(method))
         span.add_label(label_key='component', label_value='grpc')
         span.kind = Enum.SpanKind.RPC_CLIENT
         return span
 
     def intercept_unary(self, method, request, metadata, invoker):
+        """
+        :type method: str
+        :param method: A string of the full RPC method.
+                       i.e. /package.service/method
+
+        :type request:
+        :param request: The request of the RPC.
+
+        :type metadata: tuple
+        :param metadata: (Optional) Metadata to be transmitted to the
+                         server-side of the RPC.
+
+        :type invoker:
+        :param invoker: The handler to complete the RPC on the client side.
+
+        :rtype:
+        :return: The result of calling the invoker.
+        """
         span_context = self._tracer.span_context
 
         headers = {}
@@ -51,9 +72,8 @@ class OpenCensusClientInterceptor(grpc_ext.UnaryClientInterceptor):
 
             try:
                 result = invoker(request, metadata)
-            except:
-                e = sys.exc_info()[0]
-                span.add_label('error', str(e))
+            except Exception as e:
+                span.add_label('error message', str(e))
                 raise
 
             return result

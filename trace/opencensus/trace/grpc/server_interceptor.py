@@ -25,20 +25,50 @@ from opencensus.trace.enums import Enum
 
 
 class OpenCensusServerInterceptor(grpc_ext.UnaryServerInterceptor):
+    """
+    :type sampler: :class:`type`
+    :param sampler: Class for creating new Sampler objects. It should extend
+                    from the base :class:`.Sampler` type and implement
+                    :meth:`.Sampler.should_sample`. Defaults to
+                    :class:`.AlwaysOnSampler`. The rest options are
+                    :class:`.AlwaysOffSampler`, :class:`.FixedRateSampler`.
+
+    :type reporter: :class:`type`
+    :param reporter: Class for creating new Reporter objects. Default to
+                     :class:`.PrintReporter`. The rest option is
+                     :class:`.FileReporter`.
+    """
 
     def __init__(self, sampler=None, reporter=None):
         self.sampler = sampler
         self.reporter = reporter
 
     def _start_server_span(self, tracer, servicer_context, method):
-        logging.warn('test server span')
-
         span = tracer.start_span(name=str(method))
         span.add_label(label_key='component', label_value='grpc')
         span.kind = Enum.SpanKind.RPC_SERVER
         return span
 
     def intercept_unary(self, request, servicer_context, server_info, handler):
+        """Intercepts unary-unary RPCs on the server-side.
+
+        :type request:
+        :param request: The request of the RPC call.
+
+        :type servicer_context: :class: `~grpc.ServicerContext`
+        :param servicer_context: A context object passed to method
+                                 implementations.
+
+        :type server_info:
+        :param server_info: A UnaryServerInfo containing various information
+                            about the RPC.
+
+        :type handler:
+        :param handler: The handler to complete the RPC on the server.
+
+        :rtype:
+        :return: Response of the request.
+        """
         metadata = servicer_context.invocation_metadata()
         span_context = None
 
@@ -57,8 +87,8 @@ class OpenCensusServerInterceptor(grpc_ext.UnaryServerInterceptor):
             span.add_label(label_key='metadata', label_value=str(metadata))
             try:
                 response = handler(request)
-            except:
-                e = sys.exc_info()[0]
+            except Exception as e:
+                span.add_label('error message', str(e))
                 logging.error(e)
                 raise
 
