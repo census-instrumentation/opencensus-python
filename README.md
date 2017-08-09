@@ -99,6 +99,66 @@ reporter = file_reporter.FileReporter(file_name='traces')
 tracer = context_tracer.ContextTracer(reporter=reporter)
 ```
 
+## Framework Integration
+
+Opencensus supports integration with popular web frameworks including Django,
+Flask and Webapp2. When the application receives a HTTP request, the tracer
+will automatically generate a span context using the trace information
+extracted from the request headers, and propagated to the child spans.
+Below is the sample code snippets:
+
+### Flask
+
+```python
+from opencensus.trace.tracer import flask_tracer
+
+tracer = flask_tracer.FlaskTracer()
+tracer.start_trace()
+
+with tracer.span(name='span1'):
+    do_something_to_trace()
+
+tracer.end_trace()
+```
+
+### Django
+
+For tracing Django requests, you will need to add the following line to the
+`MIDDLEWARE_CLASSES` section in the Django `settings.py` file.
+
+```
+opencensus.trace.tracer.middleware.request.RequestMiddleware
+```
+
+Then the trace information will be automatically extracted from the incoming
+request headers.
+
+```python
+from opencensus.trace.tracer import django_tracer
+
+tracer = django_tracer.DjangoTracer()
+tracer.start_trace()
+
+with tracer.span(name='span1'):
+    do_something_to_trace()
+
+tracer.end_trace()
+```
+
+### Webapp2
+
+```python
+from opencensus.trace.tracer import webapp2_tracer
+
+tracer = webapp2_tracer.WebApp2Tracer()
+tracer.start_trace()
+
+with tracer.span(name='span1'):
+    do_something_to_trace()
+
+tracer.end_trace()
+```
+
 ## Status
 
 Currently under active development.
