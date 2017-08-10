@@ -99,6 +99,17 @@ reporter = file_reporter.FileReporter(file_name='traces')
 tracer = context_tracer.ContextTracer(reporter=reporter)
 ```
 
+Report to Stackdriver Trace:
+
+```python
+from opencensus.trace.reporters import google_cloud_reporter
+from opencensus.trace.tracer import context_tracer
+
+reporter = google_cloud_reporter.GoogleCloudReporter(
+    project_id='your_cloud_project')
+tracer = context_tracer.ContextTracer(reporter=reporter)
+```
+
 ## Framework Integration
 
 Opencensus supports integration with popular web frameworks including Django,
