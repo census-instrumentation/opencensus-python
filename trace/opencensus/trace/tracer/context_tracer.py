@@ -181,6 +181,18 @@ class ContextTracer(object):
     def list_collected_spans(self):
         return self.cur_trace.spans
 
+    def add_label_to_spans(self, label_key, label_value):
+        """Add label to the spans in current trace.
+
+        :type label_key: str
+        :param label_key: Label key.
+
+        :type label_value:str
+        :param label_value: Label value.
+        """
+        for span in self.cur_trace.spans:
+            span.add_label(label_key, label_value)
+
 
 class NullObject(object):
     """Empty object as a helper for faking Trace and TraceSpan when tracing is
