@@ -23,7 +23,7 @@ class GoogleCloudReporter(object):
     def __init__(self, client=None, project_id=None):
         # The client will handler the case when project_id is None
         if client is None:
-            client = Client(project_id=project_id)
+            client = Client(project=project_id)
 
         self.client = client
         self.project_id = self.client.project
@@ -33,4 +33,9 @@ class GoogleCloudReporter(object):
         :type traces: dict
         :param traces: Traces collected.
         """
+        self.set_project_id(traces)
         self.client.patch_traces(traces)
+
+    def set_project_id(self, traces):
+        for trace in traces['traces']:
+            trace['projectId'] = self.project_id

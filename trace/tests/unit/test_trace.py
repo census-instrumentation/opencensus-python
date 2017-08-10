@@ -19,8 +19,6 @@ import mock
 
 class TestTrace(unittest.TestCase):
 
-    project = 'PROJECT'
-
     @staticmethod
     def _get_target_class():
         from opencensus.trace.trace import Trace
@@ -46,14 +44,12 @@ class TestTrace(unittest.TestCase):
         trace_id = 'test_trace_id'
 
         trace = self._make_one(
-            project_id=self.project,
             trace_id=trace_id)
 
-        self.assertEqual(trace.project_id, self.project)
         self.assertEqual(trace.trace_id, trace_id)
 
     def test_start(self):
-        trace = self._make_one(project_id=self.project)
+        trace = self._make_one()
         trace.start()
 
         self.assertEqual(trace.spans, [])
@@ -92,7 +88,7 @@ class TestTrace(unittest.TestCase):
 
         span_name = 'test_span_name'
 
-        trace = self._make_one(project_id=self.project)
+        trace = self._make_one()
         trace.spans = []
 
         trace.span(name=span_name)

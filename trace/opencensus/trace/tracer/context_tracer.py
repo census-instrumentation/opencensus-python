@@ -216,7 +216,6 @@ class ContextTracer(object):
             return
 
         trace = {
-            'projectId': self.cur_trace.project_id,
             'traceId': self.cur_trace.trace_id,
             'spans': spans_list,
         }

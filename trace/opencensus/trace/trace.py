@@ -36,11 +36,10 @@ class Trace(object):
     :param trace_id: (Optional) Trace_id is a 32 hex-digits uuid for the trace.
                      If not given, will generate one automatically.
     """
-    def __init__(self, project_id=None, trace_id=None):
+    def __init__(self, trace_id=None):
         if trace_id is None:
             trace_id = generate_trace_id()
 
-        self.project_id = project_id
         self.trace_id = trace_id
         self.spans = []
 
