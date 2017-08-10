@@ -18,7 +18,7 @@ from opencensus.trace.reporters import print_reporter
 from opencensus.trace.samplers.always_on import AlwaysOnSampler
 from opencensus.trace.span_context import SpanContext
 from opencensus.trace.trace import Trace
-from opencensus.trace.trace_span import TraceSpan
+from opencensus.trace import trace_span
 
 
 class ContextTracer(object):
@@ -100,7 +100,7 @@ class ContextTracer(object):
         :returns: The Trace object.
         """
         if self.enabled is True:
-            return Trace(trace_id=self.trace_id, reporter=self.reporter)
+            return Trace(trace_id=self.trace_id)
         else:
             return NullObject()
 
@@ -117,6 +117,11 @@ class ContextTracer(object):
             return
 
         # Send the traces when finish
+        traces = self.get_traces_json()
+
+        if traces is not None:
+            self.reporter.report(traces)
+
         self.cur_trace.finish()
 
     def span(self, name='span'):
@@ -145,7 +150,7 @@ class ContextTracer(object):
         """
         if self.enabled is True:
             parent_span_id = self.span_context.span_id
-            span = TraceSpan(
+            span = trace_span.TraceSpan(
                 name,
                 parent_span_id=parent_span_id,
                 context_tracer=self)
@@ -192,6 +197,30 @@ class ContextTracer(object):
         """
         for span in self.cur_trace.spans:
             span.add_label(label_key, label_value)
+
+    def get_traces_json(self):
+        """Get the JSON format traces."""
+        spans_list = []
+        for root_span in self.cur_trace.spans:
+            span_tree = list(iter(root_span))
+            span_tree_json = [trace_span.format_span_json(span)
+                              for span in span_tree]
+            spans_list.extend(span_tree_json)
+
+        if len(spans_list) == 0:
+            return
+
+        trace = {
+            'projectId': self.cur_trace.project_id,
+            'traceId': self.cur_trace.trace_id,
+            'spans': spans_list,
+        }
+
+        traces = {
+            'traces': [trace],
+        }
+
+        return traces
 
 
 class NullObject(object):

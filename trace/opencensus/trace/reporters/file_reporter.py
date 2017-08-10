@@ -27,8 +27,7 @@ class FileReporter(object):
         self.file_name = file_name
 
     def report(self, traces):
-        """Report the traces by printing it out.
-
+        """
         :type traces: dict
         :param traces: Traces collected.
         """
