@@ -18,6 +18,7 @@ from opencensus.trace.reporters import print_reporter
 from opencensus.trace.samplers.always_on import AlwaysOnSampler
 from opencensus.trace.span_context import SpanContext
 from opencensus.trace.trace import Trace
+from opencensus.trace import labels_helper
 from opencensus.trace import trace_span
 
 
@@ -115,6 +116,10 @@ class ContextTracer(object):
         """End a trace."""
         if self.enabled is False:
             return
+
+        # Insert the common labels to spans
+        helper = labels_helper.LabelsHelper(self)
+        helper.set_labels()
 
         # Send the traces when finish
         traces = self.get_traces_json()

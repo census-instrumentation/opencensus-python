@@ -67,7 +67,7 @@ class TestLabelsHelper(unittest.TestCase):
         self.assertEqual(tracer.cur_trace.spans[0].labels, expected_labels)
 
     def test_set_labels_stackdriver(self):
-        # TODO; Add assertions when implement set_stackdriver_labels()
+        # TODO: Add assertions when implement set_stackdriver_labels()
         from opencensus.trace.reporters import google_cloud_reporter
 
         reporter = mock.Mock(spec=google_cloud_reporter.GoogleCloudReporter)
