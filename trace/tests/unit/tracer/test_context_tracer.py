@@ -144,12 +144,99 @@ class TestContextTracer(unittest.TestCase):
         tracer.end_trace()
         self.assertFalse(cur_trace.finish.called)
 
-    def test_end_trace_enabled(self):
-        tracer = context_tracer.ContextTracer()
+    def test_end_trace_without_spans(self):
+        reporter = mock.Mock()
         cur_trace = mock.Mock()
+        tracer = context_tracer.ContextTracer(reporter=reporter)
         tracer.cur_trace = cur_trace
+        tracer.cur_trace.spans = []
 
         tracer.end_trace()
+
+        self.assertFalse(reporter.called)
+
+    def test_end_trace_with_spans(self):
+        from opencensus.trace.enums import Enum
+        from opencensus.trace.trace_span import TraceSpan
+
+        reporter = mock.Mock()
+        cur_trace = mock.Mock()
+        tracer = context_tracer.ContextTracer(reporter=reporter)
+        tracer.cur_trace = cur_trace
+        project_id = 'PROJECT'
+        trace_id = '6e0c63257de34c92bf9efcd03927272e'
+        cur_trace.project_id = project_id
+        cur_trace.trace_id = trace_id
+        child_span_name = 'child_span'
+        root_span_name = 'root_span'
+        child_span_id = 123
+        root_span_id = 456
+        kind = Enum.SpanKind.SPAN_KIND_UNSPECIFIED
+        start_time = '2017-06-25'
+        end_time = '2017-06-26'
+        labels = {
+            '/http/status_code': '200',
+            '/component': 'HTTP load balancer',
+        }
+
+        child_span = mock.Mock(spec=TraceSpan)
+        child_span.name = child_span_name
+        child_span.kind = kind
+        child_span.parent_span_id = root_span_id
+        child_span.span_id = child_span_id
+        child_span.start_time = start_time
+        child_span.end_time = end_time
+        child_span.labels = labels
+        child_span.children = []
+        child_span.__iter__ = mock.Mock(return_value=iter([child_span]))
+
+        root_span = mock.Mock(spec=TraceSpan)
+        root_span.name = root_span_name
+        root_span.kind = kind
+        root_span.parent_span_id = None
+        root_span.span_id = root_span_id
+        root_span.start_time = start_time
+        root_span.end_time = end_time
+        root_span.labels = None
+        root_span.children = []
+        root_span.__iter__ = mock.Mock(
+            return_value=iter([root_span, child_span]))
+
+        child_span_json = {
+            'name': child_span.name,
+            'kind': kind,
+            'parentSpanId': root_span_id,
+            'spanId': child_span_id,
+            'startTime': start_time,
+            'endTime': end_time,
+            'labels': labels,
+        }
+
+        root_span_json = {
+            'name': root_span.name,
+            'kind': kind,
+            'spanId': root_span_id,
+            'startTime': start_time,
+            'endTime': end_time,
+        }
+
+        tracer.cur_trace.spans = [root_span]
+        traces = {
+            'traces': [
+                {
+                    'projectId': project_id,
+                    'traceId': trace_id,
+                    'spans': [
+                        root_span_json,
+                        child_span_json
+                    ]
+                }
+            ]
+        }
+
+        tracer.end_trace()
+
+        reporter.report.assert_called_with(traces)
         self.assertTrue(cur_trace.finish.called)
 
     def test_span_not_enabled(self):
@@ -239,3 +326,22 @@ class TestContextTracer(unittest.TestCase):
         spans = tracer.list_collected_spans()
 
         self.assertEqual(spans, [span1, span2])
+
+    def test_add_label_to_spans(self):
+        from opencensus.trace.trace_span import TraceSpan
+
+        tracer = context_tracer.ContextTracer()
+        cur_trace = mock.Mock()
+        span1 = TraceSpan(name='span1')
+        span2 = TraceSpan(name='span2')
+        cur_trace.spans = [span1, span2]
+        tracer.cur_trace = cur_trace
+
+        label_key = 'key'
+        label_value = 'value'
+        expected_labels = {label_key: label_value}
+
+        tracer.add_label_to_spans(label_key, label_value)
+
+        self.assertEqual(span1.labels, expected_labels)
+        self.assertEqual(span2.labels, expected_labels)

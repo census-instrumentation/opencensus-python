@@ -16,7 +16,6 @@
 
 import uuid
 
-from opencensus.trace.reporters import file_reporter
 from opencensus.trace import trace_span
 
 
@@ -37,17 +36,12 @@ class Trace(object):
     :param trace_id: (Optional) Trace_id is a 32 hex-digits uuid for the trace.
                      If not given, will generate one automatically.
     """
-    def __init__(self, project_id=None, trace_id=None, reporter=None):
+    def __init__(self, project_id=None, trace_id=None):
         if trace_id is None:
             trace_id = generate_trace_id()
 
-        if reporter is None:
-            file_name = '{}_{}'.format(project_id, trace_id)
-            reporter = file_reporter.FileReporter(file_name=file_name)
-
         self.project_id = project_id
         self.trace_id = trace_id
-        self.reporter = reporter
         self.spans = []
 
     def __enter__(self):
@@ -62,8 +56,7 @@ class Trace(object):
         self.spans = []
 
     def finish(self):
-        """Send the trace to Stackdriver Trace API and clear the spans."""
-        self.send()
+        """Clear the spans."""
         self.spans = []
 
     def span(self, name='span'):
@@ -78,35 +71,6 @@ class Trace(object):
         span = trace_span.TraceSpan(name)
         self.spans.append(span)
         return span
-
-    def send(self):
-        """API call: Patch trace to Stackdriver Trace.
-
-        See
-        https://cloud.google.com/trace/docs/reference/v1/rpc/google.devtools.
-        cloudtrace.v1#google.devtools.cloudtrace.v1.TraceService.PatchTraces
-        """
-        spans_list = []
-        for root_span in self.spans:
-            span_tree = list(iter(root_span))
-            span_tree_json = [trace_span.format_span_json(span)
-                              for span in span_tree]
-            spans_list.extend(span_tree_json)
-
-        if len(spans_list) == 0:
-            return
-
-        trace = {
-            'projectId': self.project_id,
-            'traceId': self.trace_id,
-            'spans': spans_list,
-        }
-
-        traces = {
-            'traces': [trace],
-        }
-
-        self.reporter.report(traces)
 
 
 def generate_trace_id():
