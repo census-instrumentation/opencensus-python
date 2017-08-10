@@ -26,7 +26,7 @@ class GoogleCloudReporter(object):
             client = Client(project=project_id)
 
         self.client = client
-        self.project_id = self.client.project
+        self.project_id = client.project
 
     def report(self, traces):
         """
