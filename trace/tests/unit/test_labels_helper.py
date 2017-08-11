@@ -33,10 +33,7 @@ class TestLabelsHelper(unittest.TestCase):
     def test_set_labels_gae(self):
         from opencensus.trace.labels_helper import _APPENGINE_FLEXIBLE_ENV_VM
         from opencensus.trace.labels_helper import _APPENGINE_FLEXIBLE_ENV_FLEX
-        from opencensus.trace.labels_helper import _GAE_PROJECT_ENV
-        from opencensus.trace.labels_helper import _GAE_SERVICE_ENV
-        from opencensus.trace.labels_helper import _GAE_VERSION_ENV
-        from opencensus.trace.labels_helper import GAELabels
+        from opencensus.trace.labels_helper import GAE_LABELS
 
         import os
 
@@ -49,18 +46,18 @@ class TestLabelsHelper(unittest.TestCase):
         labels_helper = LabelsHelper(tracer)
 
         expected_labels = {
-            GAELabels.GAE_PROJECT: 'project',
-            GAELabels.GAE_SERVICE: 'service',
-            GAELabels.GAE_VERSION: 'version',
+            GAE_LABELS['GAE_FLEX_PROJECT']: 'project',
+            GAE_LABELS['GAE_FLEX_SERVICE']: 'service',
+            GAE_LABELS['GAE_FLEX_VERSION']: 'version',
         }
 
         with mock.patch.dict(
                 os.environ,
                 {_APPENGINE_FLEXIBLE_ENV_VM: 'vm',
                  _APPENGINE_FLEXIBLE_ENV_FLEX: 'flex',
-                 _GAE_PROJECT_ENV: 'project',
-                 _GAE_SERVICE_ENV: 'service',
-                 _GAE_VERSION_ENV: 'version'}):
+                 'GAE_FLEX_PROJECT': 'project',
+                 'GAE_FLEX_SERVICE': 'service',
+                 'GAE_FLEX_VERSION': 'version'}):
             labels_helper.set_labels()
             print(tracer.cur_trace.spans[0].labels)
 

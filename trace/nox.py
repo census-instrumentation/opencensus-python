@@ -27,7 +27,7 @@ def unit_tests(session, python_version):
 
     # Install all test dependencies, then install this package in-place.
     session.install('mock', 'pytest', 'pytest-cov', 'google-cloud-core',
-                    'django', 'flask', 'webapp2', 'webob')
+                    'django', 'flask', 'webapp2', 'webob', 'google_cloud_trace-0.15.4-py3-none-any.whl')
 
     session.install('-e', '.')
 
