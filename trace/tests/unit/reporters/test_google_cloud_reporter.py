@@ -19,11 +19,21 @@ import mock
 from opencensus.trace.reporters import google_cloud_reporter
 
 
+def _make_credentials():
+    import google.auth.credentials
+
+    return mock.Mock(spec=google.auth.credentials.Credentials)
+
+
 class TestGoogleCloudReporter(unittest.TestCase):
 
+    @mock.patch('google.cloud.credentials.get_credentials')
     @mock.patch('google.cloud.client._determine_default_project')
-    def test_constructor_default(self, default_mock):
+    def test_constructor_default(self, default_mock, credentials_mock):
         default_mock.return_value = 'foo'
+        credentials = _make_credentials()
+        credentials_mock.return_value = credentials
+
         reporter = google_cloud_reporter.GoogleCloudReporter()
 
         self.assertEqual(reporter.project_id, reporter.client.project)
