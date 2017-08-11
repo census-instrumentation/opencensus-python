@@ -21,12 +21,11 @@ from opencensus.trace.reporters import google_cloud_reporter
 
 class TestGoogleCloudReporter(unittest.TestCase):
 
-    def test_constructor_default(self):
-        from google.cloud.trace.client import Client
-
+    @mock.patch('google.cloud.client._determine_default_project')
+    def test_constructor_default(self, default_mock):
+        default_mock.return_value = 'foo'
         reporter = google_cloud_reporter.GoogleCloudReporter()
 
-        assert isinstance(reporter.client, Client)
         self.assertEqual(reporter.project_id, reporter.client.project)
 
     def test_constructor_explicit(self):
@@ -57,3 +56,8 @@ class TestGoogleCloudReporter(unittest.TestCase):
 
         self.assertEqual(traces['traces'][0]['projectId'], project_id)
         self.assertTrue(client.patch_traces.called)
+
+
+class Client(object):
+    def __init__(self):
+        self.project = 'PROJECT'
