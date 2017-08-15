@@ -18,7 +18,7 @@ import datetime
 import json
 import logging
 import requests
-import time
+import calendar
 
 DEFAULT_ENDPOINT = '/api/v2/spans'
 DEFAULT_HOST_NAME = 'localhost'
@@ -122,12 +122,14 @@ class ZipkinReporter(object):
             start_datetime = datetime.datetime.strptime(
                 span.get('startTime'),
                 ISO_DATETIME_REGEX)
-            start_timestamp = time.mktime(start_datetime.timetuple()) * 1000
+            start_timestamp = calendar.timegm(
+                start_datetime.timetuple()) * 1000
 
             end_datetime = datetime.datetime.strptime(
                 span.get('endTime'),
                 ISO_DATETIME_REGEX)
-            end_timestamp = time.mktime(end_datetime.timetuple()) * 1000
+            end_timestamp = calendar.timegm(
+                end_datetime.timetuple()) * 1000
 
             duration = end_timestamp - start_timestamp
 

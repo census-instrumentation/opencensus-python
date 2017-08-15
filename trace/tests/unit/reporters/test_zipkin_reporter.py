@@ -111,7 +111,7 @@ class TestZipkinReporter(unittest.TestCase):
                 'id': '1234567890',
                 'parentId': '1111111111',
                 'name': 'child_span',
-                'timestamp': 1502845346000,
+                'timestamp': 1502820146000,
                 'duration': 10000,
                 'localEndpoint': local_endpoint,
                 'tags': {
@@ -132,6 +132,7 @@ class TestZipkinReporter(unittest.TestCase):
     def test_translate_to_zipkin_span_kind_none(self):
         span = {
             'name': 'child_span',
+            'kind': 0,
             'parentSpanId': 1111111111,
             'spanId': 1234567890,
             'startTime': '2017-08-15T18:02:26.071158Z',
@@ -157,7 +158,7 @@ class TestZipkinReporter(unittest.TestCase):
                 'id': '1234567890',
                 'parentId': '1111111111',
                 'name': 'child_span',
-                'timestamp': 1502845346000,
+                'timestamp': 1502820146000,
                 'duration': 10000,
                 'localEndpoint': local_endpoint,
                 'tags': {
