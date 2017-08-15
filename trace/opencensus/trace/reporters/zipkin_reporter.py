@@ -19,7 +19,7 @@ import json
 import logging
 import requests
 
-DEFAULT_ENDPOINT = '/api/v1/spans'
+DEFAULT_ENDPOINT = '/api/v2/spans'
 DEFAULT_HOST_NAME = 'localhost'
 DEFAULT_PORT = 9411
 ZIPKIN_HEADERS = {'Content-Type': 'application/json'}
@@ -131,7 +131,7 @@ class ZipkinReporter(object):
             if span_kind is not None:
                 kind = SPAN_KIND_MAP.get(span_kind)
                 # Zipkin API for span kind only accept
-                # enum(CLIENT|SERVER|Absent)
+                # enum(CLIENT|SERVER|PRODUCER|CONSUMER|Absent)
                 if kind is not None:
                     zipkin_span['kind'] = kind
 
