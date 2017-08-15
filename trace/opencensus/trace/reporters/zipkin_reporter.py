@@ -82,21 +82,19 @@ class ZipkinReporter(object):
         trace_id = trace.get('traceId')
         spans = trace.get('spans')
 
-        # try:
-        zipkin_spans = self.translate_to_zipkin(trace_id, spans)
-        print(zipkin_spans)
-        result = requests.post(
-            url=self.url,
-            data=json.dumps(zipkin_spans),
-            headers=ZIPKIN_HEADERS)
-        print(result)
+        try:
+            zipkin_spans = self.translate_to_zipkin(trace_id, spans)
+            result = requests.post(
+                url=self.url,
+                data=json.dumps(zipkin_spans),
+                headers=ZIPKIN_HEADERS)
 
-        if result.status_code not in SUCCESS_STATUS_CODE:
-            logging.error(
-                "Failed to send spans to Zipkin server! Spans are {}"
-                    .format(zipkin_spans))
-        # except Exception as e:
-        #     logging.error(e.message)
+            if result.status_code not in SUCCESS_STATUS_CODE:
+                logging.error(
+                    "Failed to send spans to Zipkin server! Spans are {}"
+                        .format(zipkin_spans))
+        except Exception as e:
+            logging.error(e.message)
 
     def translate_to_zipkin(self, trace_id, spans):
         """Translate the opencensus spans to zipkin spans.
