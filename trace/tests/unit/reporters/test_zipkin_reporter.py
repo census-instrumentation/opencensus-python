@@ -82,8 +82,33 @@ class TestZipkinReporter(unittest.TestCase):
             data=json.dumps(trace),
             headers=zipkin_reporter.ZIPKIN_HEADERS)
 
-    def test_translate_to_zipkin(self):
-        span = {
+    def test_translate_to_zipkin_span_kind_none(self):
+        span1 = {
+            'name': 'child_span',
+            'parentSpanId': 1111111111,
+            'spanId': 1234567890,
+            'startTime': '2017-08-15T18:02:26.071158Z',
+            'endTime': '2017-08-15T18:02:36.071158Z',
+            'labels': {
+                'key': 'test_key',
+                'value': 'test_value',
+            },
+        }
+
+        span2 = {
+            'name': 'child_span',
+            'kind': 0,
+            'parentSpanId': 1111111111,
+            'spanId': 1234567890,
+            'startTime': '2017-08-15T18:02:26.071158Z',
+            'endTime': '2017-08-15T18:02:36.071158Z',
+            'labels': {
+                'key': 'test_key',
+                'value': 'test_value',
+            },
+        }
+
+        span3 = {
             'name': 'child_span',
             'kind': 1,
             'parentSpanId': 1111111111,
@@ -97,7 +122,7 @@ class TestZipkinReporter(unittest.TestCase):
         }
 
         trace_id = '6e0c63257de34c92bf9efcd03927272e'
-        spans = [span]
+        spans = [span1, span2, span3]
 
         local_endpoint = {
             'serviceName': 'my_service',
@@ -106,6 +131,32 @@ class TestZipkinReporter(unittest.TestCase):
         }
 
         expected_zipkin_spans = [
+            {
+                'traceId': '6e0c63257de34c92bf9efcd03927272e',
+                'id': '1234567890',
+                'parentId': '1111111111',
+                'name': 'child_span',
+                'timestamp': 1502820146000,
+                'duration': 10000,
+                'localEndpoint': local_endpoint,
+                'tags': {
+                    'key': 'test_key',
+                    'value': 'test_value',
+                },
+            },
+            {
+                'traceId': '6e0c63257de34c92bf9efcd03927272e',
+                'id': '1234567890',
+                'parentId': '1111111111',
+                'name': 'child_span',
+                'timestamp': 1502820146000,
+                'duration': 10000,
+                'localEndpoint': local_endpoint,
+                'tags': {
+                    'key': 'test_key',
+                    'value': 'test_value',
+                },
+            },
             {
                 'traceId': '6e0c63257de34c92bf9efcd03927272e',
                 'id': '1234567890',
@@ -119,52 +170,6 @@ class TestZipkinReporter(unittest.TestCase):
                     'value': 'test_value',
                 },
                 'kind': 'SERVER',
-            }
-        ]
-
-        reporter = zipkin_reporter.ZipkinReporter(service_name='my_service')
-        zipkin_spans = reporter.translate_to_zipkin(
-            trace_id=trace_id,
-            spans=spans)
-
-        self.assertEqual(zipkin_spans, expected_zipkin_spans)
-
-    def test_translate_to_zipkin_span_kind_none(self):
-        span = {
-            'name': 'child_span',
-            'kind': 0,
-            'parentSpanId': 1111111111,
-            'spanId': 1234567890,
-            'startTime': '2017-08-15T18:02:26.071158Z',
-            'endTime': '2017-08-15T18:02:36.071158Z',
-            'labels': {
-                'key': 'test_key',
-                'value': 'test_value',
-            },
-        }
-
-        trace_id = '6e0c63257de34c92bf9efcd03927272e'
-        spans = [span]
-
-        local_endpoint = {
-            'serviceName': 'my_service',
-            'ipv4': 'localhost',
-            'port': 9411,
-        }
-
-        expected_zipkin_spans = [
-            {
-                'traceId': '6e0c63257de34c92bf9efcd03927272e',
-                'id': '1234567890',
-                'parentId': '1111111111',
-                'name': 'child_span',
-                'timestamp': 1502820146000,
-                'duration': 10000,
-                'localEndpoint': local_endpoint,
-                'tags': {
-                    'key': 'test_key',
-                    'value': 'test_value',
-                },
             }
         ]
 
