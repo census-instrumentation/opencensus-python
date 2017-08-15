@@ -221,22 +221,18 @@ class TestContextTracer(unittest.TestCase):
         }
 
         tracer.cur_trace.spans = [root_span]
-        traces = {
-            'traces': [
-                {
-                    'projectId': project_id,
-                    'traceId': trace_id,
-                    'spans': [
-                        root_span_json,
-                        child_span_json
-                    ]
-                }
+        trace = {
+            'projectId': project_id,
+            'traceId': trace_id,
+            'spans': [
+                root_span_json,
+                child_span_json
             ]
         }
 
         tracer.end_trace()
 
-        reporter.report.assert_called_with(traces)
+        reporter.report.assert_called_with(trace)
         self.assertTrue(cur_trace.finish.called)
 
     def test_span_not_enabled(self):
