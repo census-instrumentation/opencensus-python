@@ -117,6 +117,7 @@ class ZipkinReporter(object):
         zipkin_spans = []
 
         for span in spans:
+            # Timestamp in zipkin spans is int of microseconds.
             start_timestamp = datetime.datetime.strptime(
                 span.get('startTime'),
                 ISO_DATETIME_REGEX).timestamp() * 1000
