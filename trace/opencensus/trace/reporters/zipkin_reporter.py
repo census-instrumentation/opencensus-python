@@ -18,6 +18,7 @@ import datetime
 import json
 import logging
 import requests
+import time
 
 DEFAULT_ENDPOINT = '/api/v2/spans'
 DEFAULT_HOST_NAME = 'localhost'
@@ -38,7 +39,7 @@ SUCCESS_STATUS_CODE = (200, 202)
 class ZipkinReporter(object):
     """Report the spans to Zipkin.
 
-    See: http://zipkin.io/zipkin-api
+    See: http://zipkin.io/zipkin-api/#
 
     :type service_name: str
     :param service_name: Service that logged an annotation in a trace.
@@ -92,8 +93,8 @@ class ZipkinReporter(object):
             if result.status_code not in SUCCESS_STATUS_CODE:
                 logging.error(
                     "Failed to send spans to Zipkin server! Spans are {}"
-                        .format(zipkin_spans))
-        except Exception as e:
+                    .format(zipkin_spans))
+        except Exception as e:  # pragma: NO COVER
             logging.error(e.message)
 
     def translate_to_zipkin(self, trace_id, spans):
@@ -118,13 +119,28 @@ class ZipkinReporter(object):
 
         for span in spans:
             # Timestamp in zipkin spans is int of microseconds.
-            start_timestamp = datetime.datetime.strptime(
+            start_datetime = datetime.datetime.strptime(
                 span.get('startTime'),
-                ISO_DATETIME_REGEX).timestamp() * 1000
-            end_timestamp = datetime.datetime.strptime(
+                ISO_DATETIME_REGEX)
+            start_timestamp = time.mktime(start_datetime.timetuple()) * 1000
+
+            end_datetime = datetime.datetime.strptime(
                 span.get('endTime'),
-                ISO_DATETIME_REGEX).timestamp() * 1000
+                ISO_DATETIME_REGEX)
+            end_timestamp = time.mktime(end_datetime.timetuple()) * 1000
+
             duration = end_timestamp - start_timestamp
+
+            zipkin_span = {
+                'traceId': trace_id,
+                'id': str(span.get('spanId')),
+                'parentId': str(span.get('parentSpanId')),
+                'name': span.get('name'),
+                'timestamp': int(round(start_timestamp)),
+                'duration': int(round(duration)),
+                'localEndpoint': local_endpoint,
+                'tags': span.get('labels'),
+            }
 
             span_kind = span.get('kind')
 
@@ -134,17 +150,6 @@ class ZipkinReporter(object):
                 # enum(CLIENT|SERVER|PRODUCER|CONSUMER|Absent)
                 if kind is not None:
                     zipkin_span['kind'] = kind
-
-            zipkin_span = {
-                'traceId': trace_id,
-                'id': str(span.get('spanId')),
-                'parentId': span.get('parentSpanId'),
-                'name': span.get('name'),
-                'timestamp': int(round(start_timestamp)),
-                'duration': int(round(duration)),
-                'localEndpoint': local_endpoint,
-                'tags': span.get('labels'),
-            }
 
             zipkin_spans.append(zipkin_span)
 
