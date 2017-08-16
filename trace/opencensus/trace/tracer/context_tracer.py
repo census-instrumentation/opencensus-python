@@ -117,10 +117,10 @@ class ContextTracer(object):
             return
 
         # Send the traces when finish
-        traces = self.get_traces_json()
+        trace = self.get_trace_json()
 
-        if traces is not None:
-            self.reporter.report(traces)
+        if trace is not None:
+            self.reporter.report(trace)
 
         self.cur_trace.finish()
 
@@ -198,8 +198,8 @@ class ContextTracer(object):
         for span in self.cur_trace.spans:
             span.add_label(label_key, label_value)
 
-    def get_traces_json(self):
-        """Get the JSON format traces."""
+    def get_trace_json(self):
+        """Get the JSON format trace."""
         spans_list = []
         for root_span in self.cur_trace.spans:
             span_tree = list(iter(root_span))
@@ -216,11 +216,7 @@ class ContextTracer(object):
             'spans': spans_list,
         }
 
-        traces = {
-            'traces': [trace],
-        }
-
-        return traces
+        return trace
 
 
 class NullObject(object):
