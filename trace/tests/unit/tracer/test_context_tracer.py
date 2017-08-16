@@ -163,9 +163,7 @@ class TestContextTracer(unittest.TestCase):
         cur_trace = mock.Mock()
         tracer = context_tracer.ContextTracer(reporter=reporter)
         tracer.cur_trace = cur_trace
-        project_id = 'PROJECT'
         trace_id = '6e0c63257de34c92bf9efcd03927272e'
-        cur_trace.project_id = project_id
         cur_trace.trace_id = trace_id
         child_span_name = 'child_span'
         root_span_name = 'root_span'
@@ -222,7 +220,6 @@ class TestContextTracer(unittest.TestCase):
 
         tracer.cur_trace.spans = [root_span]
         trace = {
-            'projectId': project_id,
             'traceId': trace_id,
             'spans': [
                 root_span_json,

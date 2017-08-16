@@ -29,18 +29,14 @@ class Trace(object):
     https://cloud.google.com/trace/docs/reference/v1/rpc/google.devtools.
     cloudtrace.v1#google.devtools.cloudtrace.v1.Trace
 
-    :type project_id: str
-    :param project_id: (Optional) The project_id for the trace.
-
     :type trace_id: str
     :param trace_id: (Optional) Trace_id is a 32 hex-digits uuid for the trace.
                      If not given, will generate one automatically.
     """
-    def __init__(self, project_id=None, trace_id=None):
+    def __init__(self, trace_id=None):
         if trace_id is None:
             trace_id = generate_trace_id()
 
-        self.project_id = project_id
         self.trace_id = trace_id
         self.spans = []
 

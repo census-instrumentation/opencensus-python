@@ -45,15 +45,12 @@ class TestTrace(unittest.TestCase):
     def test_constructor_explicit(self):
         trace_id = 'test_trace_id'
 
-        trace = self._make_one(
-            project_id=self.project,
-            trace_id=trace_id)
+        trace = self._make_one(trace_id=trace_id)
 
-        self.assertEqual(trace.project_id, self.project)
         self.assertEqual(trace.trace_id, trace_id)
 
     def test_start(self):
-        trace = self._make_one(project_id=self.project)
+        trace = self._make_one()
         trace.start()
 
         self.assertEqual(trace.spans, [])
@@ -92,7 +89,7 @@ class TestTrace(unittest.TestCase):
 
         span_name = 'test_span_name'
 
-        trace = self._make_one(project_id=self.project)
+        trace = self._make_one()
         trace.spans = []
 
         trace.span(name=span_name)
