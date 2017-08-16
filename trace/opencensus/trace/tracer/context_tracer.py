@@ -18,7 +18,8 @@ from opencensus.trace.reporters import print_reporter
 from opencensus.trace.samplers.always_on import AlwaysOnSampler
 from opencensus.trace.span_context import SpanContext
 from opencensus.trace.trace import Trace
-from opencensus.trace.trace_span import TraceSpan
+from opencensus.trace import labels_helper
+from opencensus.trace import trace_span
 
 
 class ContextTracer(object):
@@ -100,7 +101,7 @@ class ContextTracer(object):
         :returns: The Trace object.
         """
         if self.enabled is True:
-            return Trace(trace_id=self.trace_id, reporter=self.reporter)
+            return Trace(trace_id=self.trace_id)
         else:
             return NullObject()
 
@@ -116,7 +117,16 @@ class ContextTracer(object):
         if self.enabled is False:
             return
 
+        # Insert the common labels to spans
+        helper = labels_helper.LabelsHelper(self)
+        helper.set_labels()
+
         # Send the traces when finish
+        trace = self.get_trace_json()
+
+        if trace is not None:
+            self.reporter.report(trace)
+
         self.cur_trace.finish()
 
     def span(self, name='span'):
@@ -145,7 +155,7 @@ class ContextTracer(object):
         """
         if self.enabled is True:
             parent_span_id = self.span_context.span_id
-            span = TraceSpan(
+            span = trace_span.TraceSpan(
                 name,
                 parent_span_id=parent_span_id,
                 context_tracer=self)
@@ -180,6 +190,37 @@ class ContextTracer(object):
 
     def list_collected_spans(self):
         return self.cur_trace.spans
+
+    def add_label_to_spans(self, label_key, label_value):
+        """Add label to the spans in current trace.
+
+        :type label_key: str
+        :param label_key: Label key.
+
+        :type label_value:str
+        :param label_value: Label value.
+        """
+        for span in self.cur_trace.spans:
+            span.add_label(label_key, label_value)
+
+    def get_trace_json(self):
+        """Get the JSON format trace."""
+        spans_list = []
+        for root_span in self.cur_trace.spans:
+            span_tree = list(iter(root_span))
+            span_tree_json = [trace_span.format_span_json(span)
+                              for span in span_tree]
+            spans_list.extend(span_tree_json)
+
+        if len(spans_list) == 0:
+            return
+
+        trace = {
+            'traceId': self.cur_trace.trace_id,
+            'spans': spans_list,
+        }
+
+        return trace
 
 
 class NullObject(object):

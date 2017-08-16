@@ -26,12 +26,11 @@ class FileReporter(object):
     def __init__(self, file_name='traces'):
         self.file_name = file_name
 
-    def report(self, traces):
-        """Report the traces by printing it out.
-
-        :type traces: dict
-        :param traces: Traces collected.
+    def report(self, trace):
+        """
+        :type trace: dict
+        :param trace: Trace collected.
         """
         with open(self.file_name, 'w+') as file:
-            traces_str = json.dumps(traces)
-            file.write(traces_str)
+            trace_str = json.dumps(trace)
+            file.write(trace_str)
