@@ -122,24 +122,24 @@ class ZipkinReporter(object):
             start_datetime = datetime.datetime.strptime(
                 span.get('startTime'),
                 ISO_DATETIME_REGEX)
-            start_timestamp = calendar.timegm(
+            start_timestamp_ms = calendar.timegm(
                 start_datetime.timetuple()) * 1000
 
             end_datetime = datetime.datetime.strptime(
                 span.get('endTime'),
                 ISO_DATETIME_REGEX)
-            end_timestamp = calendar.timegm(
+            end_timestamp_ms = calendar.timegm(
                 end_datetime.timetuple()) * 1000
 
-            duration = end_timestamp - start_timestamp
+            duration_ms = end_timestamp_ms - start_timestamp_ms
 
             zipkin_span = {
                 'traceId': trace_id,
                 'id': str(span.get('spanId')),
                 'parentId': str(span.get('parentSpanId')),
                 'name': span.get('name'),
-                'timestamp': int(round(start_timestamp)),
-                'duration': int(round(duration)),
+                'timestamp': int(round(start_timestamp_ms)),
+                'duration': int(round(duration_ms)),
                 'localEndpoint': local_endpoint,
                 'tags': span.get('labels'),
             }
