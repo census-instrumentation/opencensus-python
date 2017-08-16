@@ -233,7 +233,7 @@ class TestContextTracer(unittest.TestCase):
 
         tracer.end_trace()
 
-        reporter.report.assert_called_with(traces)
+        reporter.report.assert_called_with(trace)
         self.assertTrue(cur_trace.finish.called)
 
     def test_span_not_enabled(self):

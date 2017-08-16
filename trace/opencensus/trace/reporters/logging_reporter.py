@@ -52,9 +52,9 @@ class LoggingReporter(object):
         self.logger.addHandler(handler)
         self.logger.setLevel(logging.INFO)
 
-    def report(self, traces):
+    def report(self, trace):
         """
         :type traces: dict
-        :param traces: Traces collected.
+        :param traces: Trace collected.
         """
-        self.logger.info(traces)
+        self.logger.info(trace)

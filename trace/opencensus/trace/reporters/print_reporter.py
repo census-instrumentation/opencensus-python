@@ -16,14 +16,14 @@
 
 
 class PrintReporter(object):
-    def report(self, traces):
+    def report(self, trace):
         """Report the traces by printing it out.
 
-        :type traces: dict
-        :param traces: Traces collected.
+        :type trace: dict
+        :param trace: Trace collected.
 
         :rtype: dict
-        :returns: Traces printed.
+        :returns: Trace printed.
         """
-        print(traces)
-        return traces
+        print(trace)
+        return trace
