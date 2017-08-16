@@ -23,7 +23,7 @@ class FixedRateSampler(Sampler):
     :type rate: float
     :param rate: The rate of sampling.
     """
-    def __init__(self, rate):
+    def __init__(self, rate=0.5):
         if rate > 1 or rate < 0:
             raise ValueError('Rate must between 0 and 1.')
 

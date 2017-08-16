@@ -23,7 +23,7 @@ class FileReporter(object):
     :param file_name: The name of the output file.
     """
 
-    def __init__(self, file_name):
+    def __init__(self, file_name='traces'):
         self.file_name = file_name
 
     def report(self, traces):
