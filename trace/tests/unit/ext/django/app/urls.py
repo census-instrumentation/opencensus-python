@@ -38,5 +38,5 @@ urlpatterns = [
     url(r'^$', app.views.home),
     url(r'^greetings$', app.views.greetings),
     url(r'^_ah/health$', app.views.health_check),
-    url(r'^request$', app.views.get_request),
+    url(r'^request$', app.views.get_request_header),
 ]

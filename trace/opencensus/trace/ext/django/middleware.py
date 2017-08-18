@@ -55,7 +55,12 @@ def _set_django_labels(span, request):
     if django_user is None:
         return
 
+    user_id = django_user.pk
     user_name = django_user.get_username()
+
+    # User id is the django autofield for User model as the primary key
+    if user_id is not None:
+        span.add_label('/django/user/id', user_id)
 
     if user_name is not None:
         span.add_label('/django/user/name', user_name)
@@ -93,19 +98,19 @@ class OpencensusMiddleware(object):
         # Add the request to thread local
         _thread_locals.request = request
 
-        # Start tracing this request
-        header = get_django_header()
-        span_context = google_cloud_format.from_header(header)
-
-        # Reload the tracer with the new span context
-        tracer = self._tracer(
-            span_context=span_context,
-            sampler=self._sampler(),
-            reporter=self._reporter())
-        setattr(_thread_locals, TRACER_THREAD_LOCAL_KEY, tracer)
-        tracer.start_trace()
-
         try:
+            # Start tracing this request
+            header = get_django_header()
+            span_context = google_cloud_format.from_header(header)
+
+            # Reload the tracer with the new span context
+            tracer = self._tracer(
+                span_context=span_context,
+                sampler=self._sampler(),
+                reporter=self._reporter())
+            setattr(_thread_locals, TRACER_THREAD_LOCAL_KEY, tracer)
+            tracer.start_trace()
+
             # Span name is being set at process_view
             span = tracer.start_span()
             span.add_label(label_key=HTTP_METHOD, label_value=request.method)
@@ -136,7 +141,7 @@ class OpencensusMiddleware(object):
                 header = google_cloud_format.to_header(
                     tracer.span_context)
                 response[_DJANGO_TRACE_HEADER] = header
-                # _set_django_labels(span, request)
+                _set_django_labels(span, request)
                 tracer.end_span()
                 tracer.end_trace()
         except Exception:
