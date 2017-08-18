@@ -26,7 +26,7 @@ PATH_DELIMITER = '.'
 
 
 class DjangoTraceSettings(object):
-    """Set the params for a django tracer, including the tracer,sampler and
+    """Set the params for a django tracer, including the tracer, sampler and
     reporter. If the user did not define the settings in django settings file.
     then use the dafaults.
     """
@@ -43,7 +43,7 @@ class DjangoTraceSettings(object):
     def __getattr__(self, attr):
         # If not in defaults, it is something we cannot parse.
         if attr not in DEFAULT_DJANGO_TRACER_CONFIG:
-            raise AttributeError('Attribute {} not exists.'.format(attr))
+            raise AttributeError('Attribute {} does not exist.'.format(attr))
 
         path = self.settings[attr]
 

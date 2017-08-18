@@ -57,7 +57,7 @@ class ZipkinReporter(object):
 
     def __init__(
             self,
-            service_name,
+            service_name='my_service',
             host_name=DEFAULT_HOST_NAME,
             port=DEFAULT_PORT,
             endpoint=DEFAULT_ENDPOINT):
@@ -123,20 +123,19 @@ class ZipkinReporter(object):
                 span.get('startTime'),
                 ISO_DATETIME_REGEX)
             start_timestamp_ms = calendar.timegm(
-                start_datetime.timetuple()) * 1000
+                start_datetime.timetuple()) * 1000 * 1000
 
             end_datetime = datetime.datetime.strptime(
                 span.get('endTime'),
                 ISO_DATETIME_REGEX)
             end_timestamp_ms = calendar.timegm(
-                end_datetime.timetuple()) * 1000
+                end_datetime.timetuple()) * 1000 * 1000
 
             duration_ms = end_timestamp_ms - start_timestamp_ms
 
             zipkin_span = {
                 'traceId': trace_id,
                 'id': str(span.get('spanId')),
-                'parentId': str(span.get('parentSpanId')),
                 'name': span.get('name'),
                 'timestamp': int(round(start_timestamp_ms)),
                 'duration': int(round(duration_ms)),
@@ -145,6 +144,7 @@ class ZipkinReporter(object):
             }
 
             span_kind = span.get('kind')
+            parent_span_id = span.get('parentSpanId')
 
             if span_kind is not None:
                 kind = SPAN_KIND_MAP.get(span_kind)
@@ -152,6 +152,9 @@ class ZipkinReporter(object):
                 # enum(CLIENT|SERVER|PRODUCER|CONSUMER|Absent)
                 if kind is not None:
                     zipkin_span['kind'] = kind
+
+            if parent_span_id is not None:
+                zipkin_span['parentId'] = parent_span_id
 
             zipkin_spans.append(zipkin_span)
 

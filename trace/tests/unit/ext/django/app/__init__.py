@@ -11,14 +11,3 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-
-def get_func_name(func):
-    """Return a name which includes the module name and function name."""
-    func_name = getattr(func, '__name__', func.__class__.__name__)
-
-    if hasattr(func, '__module__'):
-        module_name = func.__module__
-        return '{}.{}'.format(module_name, func_name)
-
-    return func_name

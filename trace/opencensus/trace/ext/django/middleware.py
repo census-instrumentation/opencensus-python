@@ -18,7 +18,7 @@ import threading
 
 from opencensus.trace.ext import utils
 from opencensus.trace.ext.django.config import settings
-from opencensus.trace.propagation.google_cloud_format import from_header
+from opencensus.trace.propagation import google_cloud_format
 
 _thread_locals = threading.local()
 
@@ -42,9 +42,11 @@ def _get_django_request():
     """
     return getattr(_thread_locals, 'request', None)
 
+
 def _get_current_request_tracer():
     """Get the current request tracer."""
     return getattr(_thread_locals, TRACER_THREAD_LOCAL_KEY, None)
+
 
 def _set_django_labels(span, request):
     """Set the django related labels."""
@@ -53,15 +55,11 @@ def _set_django_labels(span, request):
     if django_user is None:
         return
 
-    user_id = django_user.getattr(django_user, 'pk', None)
-
-    if user_id is not None:
-        span.add_label('/django/user/id', user_id)
-
-    user_name = django_user.getattr(django_user, 'username', None)
+    user_name = django_user.get_username()
 
     if user_name is not None:
         span.add_label('/django/user/name', user_name)
+
 
 def get_django_header():
     """Get trace context header from django request headers.
@@ -75,8 +73,16 @@ def get_django_header():
 
     return header
 
+
 class OpencensusMiddleware(object):
     """Saves the request in thread local"""
+
+    def __init__(self, get_response=None):
+        # One-time configuration and initialization.
+        self.get_response = get_response
+        self._tracer = settings.TRACER
+        self._sampler = settings.SAMPLER
+        self._reporter = settings.REPORTER
 
     def process_request(self, request):
         """Called on each request, before Django decides which view to execute.
@@ -88,16 +94,15 @@ class OpencensusMiddleware(object):
         _thread_locals.request = request
 
         # Start tracing this request
-        tracer = settings.TRACER
-        sampler = settings.SAMPLER
-        reporter = settings.REPORTER
-
         header = get_django_header()
-        span_context = from_header(header)
-        tracer = tracer(
+        span_context = google_cloud_format.from_header(header)
+
+        # Reload the tracer with the new span context
+        tracer = self._tracer(
             span_context=span_context,
-            sampler=sampler(),
-            reporter=reporter())
+            sampler=self._sampler(),
+            reporter=self._reporter())
+        setattr(_thread_locals, TRACER_THREAD_LOCAL_KEY, tracer)
         tracer.start_trace()
 
         try:
@@ -105,9 +110,6 @@ class OpencensusMiddleware(object):
             span = tracer.start_span()
             span.add_label(label_key=HTTP_METHOD, label_value=request.method)
             span.add_label(label_key=HTTP_URL, label_value=request.path)
-
-            # Add current span to thread local
-            setattr(_thread_locals, TRACER_THREAD_LOCAL_KEY, tracer)
         except Exception:
             log.error('Failed to trace request', exc_info=True)
 
@@ -115,9 +117,8 @@ class OpencensusMiddleware(object):
         """Process view is executed before the view function, here we get the
         function name add set it as the span name.
         """
-        tracer = _get_current_request_tracer()
-
         # Get the current span
+        tracer = _get_current_request_tracer()
         span = tracer._span_stack[-1]
 
         if span is not None:
@@ -132,8 +133,10 @@ class OpencensusMiddleware(object):
                 span.add_label(
                     label_key=HTTP_STATUS_CODE,
                     label_value=response.status_code)
-
-                _set_django_labels(span, request)
+                header = google_cloud_format.to_header(
+                    tracer.span_context)
+                response[_DJANGO_TRACE_HEADER] = header
+                # _set_django_labels(span, request)
                 tracer.end_span()
                 tracer.end_trace()
         except Exception:
