@@ -325,16 +325,18 @@ class TestContextTracer(unittest.TestCase):
 
         tracer = context_tracer.ContextTracer()
         cur_trace = mock.Mock()
-        span1 = TraceSpan(name='span1')
-        span2 = TraceSpan(name='span2')
+        span1 = mock.Mock(spec=TraceSpan)
+        span2 = mock.Mock(spec=TraceSpan)
+
+        span1.labels = {}
+        span2.labels = {}
         cur_trace.spans = [span1, span2]
         tracer.cur_trace = cur_trace
 
         label_key = 'key'
         label_value = 'value'
-        expected_labels = {label_key: label_value}
 
         tracer.add_label_to_spans(label_key, label_value)
 
-        self.assertEqual(span1.labels, expected_labels)
-        self.assertEqual(span2.labels, expected_labels)
+        span1.add_label.assert_called_once_with(label_key, label_value)
+        span2.add_label.assert_called_once_with(label_key, label_value)

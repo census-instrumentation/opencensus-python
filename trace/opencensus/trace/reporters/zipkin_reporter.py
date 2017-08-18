@@ -154,7 +154,7 @@ class ZipkinReporter(object):
                     zipkin_span['kind'] = kind
 
             if parent_span_id is not None:
-                zipkin_span['parentId'] = parent_span_id
+                zipkin_span['parentId'] = str(parent_span_id)
 
             zipkin_spans.append(zipkin_span)
 

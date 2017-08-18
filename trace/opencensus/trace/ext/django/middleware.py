@@ -115,7 +115,7 @@ class OpencensusMiddleware(object):
             span = tracer.start_span()
             span.add_label(label_key=HTTP_METHOD, label_value=request.method)
             span.add_label(label_key=HTTP_URL, label_value=request.path)
-        except Exception:
+        except Exception:  # pragma: NO COVER
             log.error('Failed to trace request', exc_info=True)
 
     def process_view(self, request, view_func, *args, **kwargs):
