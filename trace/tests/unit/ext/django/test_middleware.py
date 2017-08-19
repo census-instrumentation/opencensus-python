@@ -44,7 +44,7 @@ class TestOpencensusMiddleware(unittest.TestCase):
         self.assertIs(middleware._sampler, always_on.AlwaysOnSampler)
         self.assertIs(middleware._reporter, print_reporter.PrintReporter)
 
-    def test_trace_request(self):
+    def test_process_request(self):
         from django.test import RequestFactory
 
         from opencensus.trace.ext.django import middleware
@@ -75,3 +75,50 @@ class TestOpencensusMiddleware(unittest.TestCase):
 
         span_context = tracer.span_context
         self.assertEqual(span_context.trace_id, trace_id)
+
+        # test process_view
+        view_func = mock.Mock()
+        middleware_obj.process_view(django_request, view_func)
+
+        self.assertEqual(span.name, 'mock.mock.Mock')
+
+    def test_process_response(self):
+        from django.test import RequestFactory
+
+        from opencensus.trace.ext.django import middleware
+
+        trace_id = '2dd43a1d6b2549c6bc2a1a54c2fc0b05'
+        span_id = 123
+        django_trace_id = '{}/{}'.format(trace_id, span_id)
+
+        django_request = RequestFactory().get('/', **{
+            middleware._DJANGO_TRACE_HEADER: django_trace_id})
+
+        middleware_obj = middleware.OpencensusMiddleware()
+
+        middleware_obj.process_request(django_request)
+        tracer = middleware._get_current_request_tracer()
+        span = tracer._span_stack[-1]
+        reporter_mock = mock.Mock()
+        tracer.reporter = reporter_mock
+
+        django_response = mock.Mock()
+        django_response.status_code = 200
+
+        expected_labels = {
+            '/http/url': u'/',
+            '/http/method': 'GET',
+            '/http/status_code': 200,
+            '/django/user/id': 123,
+            '/django/user/name': 'test_name',
+        }
+
+        mock_user = mock.Mock()
+        mock_user.pk = 123
+        mock_user.get_username.return_value = 'test_name'
+        django_request.user = mock_user
+
+        middleware_obj.process_response(django_request, django_response)
+
+        self.assertEqual(span.labels, expected_labels)
+        self.assertTrue(reporter_mock.report.called)

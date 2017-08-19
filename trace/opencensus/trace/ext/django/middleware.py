@@ -138,13 +138,10 @@ class OpencensusMiddleware(object):
                 span.add_label(
                     label_key=HTTP_STATUS_CODE,
                     label_value=response.status_code)
-                header = google_cloud_format.to_header(
-                    tracer.span_context)
-                response[_DJANGO_TRACE_HEADER] = header
                 _set_django_labels(span, request)
                 tracer.end_span()
                 tracer.end_trace()
-        except Exception:
+        except Exception:  # pragma: NO COVER
             log.error('Failed to trace request', exc_info=True)
         finally:
             return response
