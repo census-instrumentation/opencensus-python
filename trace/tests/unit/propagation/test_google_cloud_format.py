@@ -17,6 +17,14 @@ import unittest
 
 class Test_from_header(unittest.TestCase):
 
+    def test_no_header(self):
+        from opencensus.trace.propagation import google_cloud_format
+        from opencensus.trace.span_context import SpanContext
+
+        span_context = google_cloud_format.from_header(None)
+
+        assert isinstance(span_context, SpanContext)
+
     def test_header_type_error(self):
         from opencensus.trace.propagation import google_cloud_format
 
