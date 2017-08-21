@@ -31,14 +31,12 @@ class DjangoTraceSettings(object):
     then use the dafaults.
     """
 
-    def __init__(self, settings=DEFAULT_DJANGO_TRACER_CONFIG):
+    def __init__(self):
         # Try to read the user settings from django settings file
-        user_settings = getattr(django_settings, 'OPENCENSUS_TRACE', None)
-
-        if user_settings is not None:
-            settings = user_settings
-
-        self.settings = settings
+        self.settings = getattr(
+            django_settings,
+            'OPENCENSUS_TRACE',
+            DEFAULT_DJANGO_TRACER_CONFIG)
 
     def __getattr__(self, attr):
         # If not in defaults, it is something we cannot parse.
@@ -63,4 +61,4 @@ def convert_to_import(path):
     return getattr(module, class_name)
 
 
-settings = DjangoTraceSettings(settings=DEFAULT_DJANGO_TRACER_CONFIG)
+settings = DjangoTraceSettings()

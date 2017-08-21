@@ -30,7 +30,7 @@ class TestDjangoTraceSettings(unittest.TestCase):
 
         teardown_test_environment()
 
-    def test_constructor_default(self):
+    def test_constructor(self):
         from opencensus.trace.ext.django import config
 
         django_trace_settings = config.DjangoTraceSettings()
@@ -38,18 +38,6 @@ class TestDjangoTraceSettings(unittest.TestCase):
         self.assertEqual(
             django_trace_settings.settings,
             config.DEFAULT_DJANGO_TRACER_CONFIG)
-
-    def test_constructor_explicit(self):
-        from django.conf import settings as django_settings
-        from opencensus.trace.ext.django import config
-
-        fake_settings = {}
-        django_settings.OPENCENSUS_TRACE = fake_settings
-        django_trace_settings = config.DjangoTraceSettings()
-
-        self.assertEqual(
-            django_trace_settings.settings,
-            fake_settings)
 
     def test__getattr___invalid(self):
         from opencensus.trace.ext.django import config
