@@ -16,6 +16,8 @@ import random
 
 from opencensus.trace.samplers.base import Sampler
 
+DEFAULT_SAMPLING_RATE = 0.5
+
 
 class FixedRateSampler(Sampler):
     """Sample a request at a fixed rate.
@@ -23,7 +25,7 @@ class FixedRateSampler(Sampler):
     :type rate: float
     :param rate: The rate of sampling.
     """
-    def __init__(self, rate):
+    def __init__(self, rate=DEFAULT_SAMPLING_RATE):
         if rate > 1 or rate < 0:
             raise ValueError('Rate must between 0 and 1.')
 

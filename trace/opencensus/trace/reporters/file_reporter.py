@@ -16,6 +16,8 @@
 
 import json
 
+DEFAULT_FILENAME = 'opencensus-traces.json'
+
 
 class FileReporter(object):
     """
@@ -23,7 +25,7 @@ class FileReporter(object):
     :param file_name: The name of the output file.
     """
 
-    def __init__(self, file_name):
+    def __init__(self, file_name=DEFAULT_FILENAME):
         self.file_name = file_name
 
     def report(self, trace):

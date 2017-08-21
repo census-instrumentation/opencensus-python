@@ -41,6 +41,9 @@ def from_header(header):
     :rtype: :class:`~opencensus.trace.span_context.SpanContext`
     :returns: SpanContext generated from the trace context header.
     """
+    if header is None:
+        return SpanContext()
+
     try:
         match = re.search(_TRACE_CONTEXT_HEADER_RE, header)
     except TypeError:

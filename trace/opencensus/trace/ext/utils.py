@@ -12,6 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from opencensus.trace.tracer.middleware.request import RequestMiddleware
 
-__all__ = ['RequestMiddleware']
+def get_func_name(func):
+    """Return a name which includes the module name and function name."""
+    func_name = getattr(func, '__name__', func.__class__.__name__)
+    module_name = func.__module__
+
+    if module_name is not None:
+        module_name = func.__module__
+        return '{}.{}'.format(module_name, func_name)
+
+    return func_name
