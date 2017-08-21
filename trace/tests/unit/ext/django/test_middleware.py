@@ -29,8 +29,10 @@ class TestOpencensusMiddleware(unittest.TestCase):
 
     def tearDown(self):
         from django.test.utils import teardown_test_environment
+        from opencensus.trace.ext.django import middleware
 
         teardown_test_environment()
+        middleware._thread_locals.__dict__.clear()
 
     def test_constructor(self):
         from opencensus.trace.ext.django import middleware
@@ -99,6 +101,7 @@ class TestOpencensusMiddleware(unittest.TestCase):
         middleware_obj.process_request(django_request)
         tracer = middleware._get_current_request_tracer()
         span = tracer._span_stack[-1]
+
         reporter_mock = mock.Mock()
         tracer.reporter = reporter_mock
 
@@ -109,14 +112,12 @@ class TestOpencensusMiddleware(unittest.TestCase):
             '/http/url': u'/',
             '/http/method': 'GET',
             '/http/status_code': 200,
-            '/django/user/id': 123,
-            '/django/user/name': 'test_name',
         }
 
-        mock_user = mock.Mock()
-        mock_user.pk = 123
-        mock_user.get_username.return_value = 'test_name'
-        django_request.user = mock_user
+        mock_user_no_info = mock.Mock()
+        mock_user_no_info.pk = None
+        mock_user_no_info.get_username.return_value = None
+        django_request.user = mock_user_no_info
 
         middleware_obj.process_response(django_request, django_response)
 

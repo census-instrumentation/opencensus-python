@@ -122,25 +122,26 @@ class OpencensusMiddleware(object):
         """Process view is executed before the view function, here we get the
         function name add set it as the span name.
         """
-        # Get the current span
-        tracer = _get_current_request_tracer()
-        span = tracer._span_stack[-1]
+        try:
+            # Get the current span
+            tracer = _get_current_request_tracer()
+            span = tracer._span_stack[-1]
 
-        if span is not None:
             span.name = utils.get_func_name(view_func)
+        except Exception:  # pragma: NO COVER
+            log.error('Failed to trace request', exc_info=True)
 
     def process_response(self, request, response):
         try:
             tracer = _get_current_request_tracer()
             span = tracer._span_stack[-1]
 
-            if span is not None:
-                span.add_label(
-                    label_key=HTTP_STATUS_CODE,
-                    label_value=response.status_code)
-                _set_django_labels(span, request)
-                tracer.end_span()
-                tracer.end_trace()
+            span.add_label(
+                label_key=HTTP_STATUS_CODE,
+                label_value=response.status_code)
+            _set_django_labels(span, request)
+            tracer.end_span()
+            tracer.end_trace()
         except Exception:  # pragma: NO COVER
             log.error('Failed to trace request', exc_info=True)
         finally:
