@@ -69,7 +69,9 @@ class FlaskMiddleware(object):
             span = tracer.start_span()
 
             # Set the span name as the name of the current module name
-            span.name = flask.request.module
+            span.name = '[{}]{}'.format(
+                flask.request.method,
+                flask.request.url)
             span.add_label(HTTP_METHOD, flask.request.method)
             span.add_label(HTTP_URL, flask.request.url)
 
