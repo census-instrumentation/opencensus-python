@@ -78,7 +78,6 @@ class FlaskMiddleware(object):
         except Exception:  # pragma: NO COVER
             log.error('Failed to trace request', exc_info=True)
 
-
     def _after_request(self, response):
         """A function to be run after each request.
 
