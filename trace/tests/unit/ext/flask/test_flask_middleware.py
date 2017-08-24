@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 # Copyright 2017, OpenCensus Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -94,6 +97,44 @@ class TestFlaskMiddleware(unittest.TestCase):
 
             span_context = tracer.span_context
             self.assertEqual(span_context.trace_id, trace_id)
+
+    def test_header_encoding(self):
+        # The test is for detecting the encoding compatibility issue in
+        # Python2 and Python3 and what flask does for encoding the headers.
+        # This test case is expected to fail at the check_trace_id method
+        # in SpanContext because it cannot match the pattern for trace_id,
+        # And a new trace_id will generate for the context.
+        import flask
+
+        flask_trace_header = 'X_CLOUD_TRACE_CONTEXT'
+        trace_id = "你好"
+        span_id = 1234
+        flask_trace_id = '{}/{}'.format(trace_id, span_id)
+
+        app = self.create_app()
+        flask_middleware.FlaskMiddleware(app=app)
+        context = app.test_request_context(
+            path='/',
+            headers={flask_trace_header: flask_trace_id})
+
+        with context:
+            app.preprocess_request()
+            tracer = flask.g.get('tracer')
+            self.assertIsNotNone(tracer)
+            self.assertEqual(len(tracer._span_stack), 1)
+
+            span = tracer._span_stack[-1]
+
+            expected_labels = {
+                '/http/url': u'http://localhost/',
+                '/http/method': 'GET',
+            }
+
+            self.assertEqual(span.labels, expected_labels)
+            self.assertIsNone(span.parent_span_id)
+
+            span_context = tracer.span_context
+            self.assertNotEqual(span_context.trace_id, trace_id)
 
     def test__after_request(self):
         flask_trace_header = 'X_CLOUD_TRACE_CONTEXT'
