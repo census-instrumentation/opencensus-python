@@ -18,13 +18,14 @@ import threading
 
 from opencensus.trace.ext import utils
 from opencensus.trace.ext.django.config import settings
+from opencensus.trace import labels_helper
 from opencensus.trace.propagation import google_cloud_format
 
 _thread_locals = threading.local()
 
-HTTP_METHOD = '/http/method'
-HTTP_URL = '/http/url'
-HTTP_STATUS_CODE = '/http/status_code'
+HTTP_METHOD = labels_helper.STACKDRIVER_LABELS['HTTP_METHOD']
+HTTP_URL = labels_helper.STACKDRIVER_LABELS['HTTP_URL']
+HTTP_STATUS_CODE = labels_helper.STACKDRIVER_LABELS['HTTP_STATUS_CODE']
 
 REQUEST_SPAN_NAME = 'django_request_span'
 TRACER_THREAD_LOCAL_KEY = '_opencensus_django_request_tracer'
