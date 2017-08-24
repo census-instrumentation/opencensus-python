@@ -27,14 +27,30 @@ HTTP_METHOD = labels_helper.STACKDRIVER_LABELS['HTTP_METHOD']
 HTTP_URL = labels_helper.STACKDRIVER_LABELS['HTTP_URL']
 HTTP_STATUS_CODE = labels_helper.STACKDRIVER_LABELS['HTTP_STATUS_CODE']
 
+# Key for the tracer object stored in flask global variable.
 TRACER_KEY = 'tracer'
 
 log = logging.getLogger(__name__)
 
 
 class FlaskMiddleware(object):
-    """Flask middleware to automatically trace requests."""
+    """Flask middleware to automatically trace requests.
 
+    :type app: :class: `~flask.Flask`
+    :param app: A flask application.
+
+    :type sampler: :class: `type`
+    :param sampler: Class for creating new Sampler objects. It should extend
+                    from the base :class:`.Sampler` type and implement
+                    :meth:`.Sampler.should_sample`. Defaults to
+                    :class:`.AlwaysOnSampler`. The rest options are
+                    :class:`.AlwaysOffSampler`, :class:`.FixedRateSampler`.
+
+    :type reporter: :class: `type`
+    :param reporter: Class for creating new Reporter objects. Default to
+                     :class:`.PrintReporter`. The rest option is
+                     :class:`.FileReporter`.
+    """
     def __init__(self, app, sampler=None, reporter=None):
         if sampler is None:
             sampler = always_on.AlwaysOnSampler()
