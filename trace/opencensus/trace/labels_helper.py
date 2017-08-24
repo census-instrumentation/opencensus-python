@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc.
+# Copyright 2017, OpenCensus Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -96,7 +96,3 @@ class LabelsHelper(object):
         if (_APPENGINE_FLEXIBLE_ENV_VM in os.environ or
                 _APPENGINE_FLEXIBLE_ENV_FLEX in os.environ):
             return True
-
-    def set_stackdriver_labels(self):
-        # TODO: Find out where to get the stackdriver common labels.
-        pass

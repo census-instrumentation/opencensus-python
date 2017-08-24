@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc. All Rights Reserved.
+# Copyright 2017, OpenCensus Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,6 +16,14 @@ import unittest
 
 
 class Test_from_header(unittest.TestCase):
+
+    def test_no_header(self):
+        from opencensus.trace.propagation import google_cloud_format
+        from opencensus.trace.span_context import SpanContext
+
+        span_context = google_cloud_format.from_header(None)
+
+        assert isinstance(span_context, SpanContext)
 
     def test_header_type_error(self):
         from opencensus.trace.propagation import google_cloud_format

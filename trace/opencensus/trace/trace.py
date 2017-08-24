@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc.
+# Copyright 2017, OpenCensus Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -28,9 +28,6 @@ class Trace(object):
     See
     https://cloud.google.com/trace/docs/reference/v1/rpc/google.devtools.
     cloudtrace.v1#google.devtools.cloudtrace.v1.Trace
-
-    :type project_id: str
-    :param project_id: (Optional) The project_id for the trace.
 
     :type trace_id: str
     :param trace_id: (Optional) Trace_id is a 32 hex-digits uuid for the trace.

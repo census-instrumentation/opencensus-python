@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc.
+# Copyright 2017, OpenCensus Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -62,18 +62,6 @@ class TestLabelsHelper(unittest.TestCase):
             print(tracer.cur_trace.spans[0].labels)
 
         self.assertEqual(tracer.cur_trace.spans[0].labels, expected_labels)
-
-    def test_set_labels_stackdriver(self):
-        # TODO: Add assertions when implement set_stackdriver_labels()
-        from opencensus.trace.reporters import google_cloud_reporter
-
-        reporter = mock.Mock(spec=google_cloud_reporter.GoogleCloudReporter)
-        tracer = mock.Mock()
-        tracer.reporter = reporter
-
-        labels_helper = LabelsHelper(tracer)
-
-        labels_helper.set_labels()
 
 
 class Tracer(object):
