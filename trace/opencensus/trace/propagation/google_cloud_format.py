@@ -63,7 +63,7 @@ def from_header(header):
         enabled = bool(int(options) | _ENABLED_BITMASK)
 
         span_context = SpanContext(
-            trace_id=str(trace_id),
+            trace_id=trace_id,
             span_id=span_id,
             enabled=enabled,
             from_header=True)

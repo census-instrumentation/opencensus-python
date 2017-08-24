@@ -122,4 +122,5 @@ def get_flask_header():
     """
     header = flask.request.headers.get(_FLASK_TRACE_HEADER)
 
-    return header
+    # In case the header is unicode, convert it to string.
+    return str(header)
