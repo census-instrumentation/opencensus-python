@@ -24,11 +24,15 @@ class TestContextTracer(unittest.TestCase):
     def test_constructor_defaults(self):
         from opencensus.trace import span_context
         from opencensus.trace import trace
+        from opencensus.trace.propagation import google_cloud_format
         from opencensus.trace.reporters import print_reporter
         from opencensus.trace.samplers import always_on
 
         tracer = context_tracer.ContextTracer()
 
+        assert isinstance(
+            tracer.propagator,
+            google_cloud_format.GoogleCloudFormatPropagator)
         assert isinstance(tracer.reporter, print_reporter.PrintReporter)
         assert isinstance(tracer.span_context, span_context.SpanContext)
         assert isinstance(tracer.sampler, always_on.AlwaysOnSampler)
@@ -39,13 +43,16 @@ class TestContextTracer(unittest.TestCase):
 
     def test_constructor_explicit(self):
         from opencensus.trace import span_context
+        from opencensus.trace.propagation import google_cloud_format
         from opencensus.trace.reporters import print_reporter
         from opencensus.trace.samplers import fixed_rate
 
+        propagator = google_cloud_format.GoogleCloudFormatPropagator()
         reporter = print_reporter.PrintReporter()
         span_context = span_context.SpanContext()
         sampler = fixed_rate.FixedRateSampler(rate=0)
         tracer = context_tracer.ContextTracer(
+            propagator=propagator,
             reporter=reporter,
             span_context=span_context,
             sampler=sampler)

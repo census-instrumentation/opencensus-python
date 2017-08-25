@@ -23,7 +23,7 @@ try:
 except (ImportError, SyntaxError):  # pragma: NO COVER
     webapp2 = None
 
-from opencensus.trace.propagation.google_cloud_format import from_header
+from opencensus.trace.propagation import google_cloud_format
 from opencensus.trace.tracer.context_tracer import ContextTracer
 
 _WEBAPP2_TRACE_KEY = 'X-CLOUD-TRACE-CONTEXT'
@@ -47,15 +47,24 @@ class WebApp2Tracer(ContextTracer):
                      :class:`.PrintReporter`. The rest option is
                      :class:`.FileReporter`.
     """
-    def __init__(self, span_context=None, sampler=None, reporter=None):
+    def __init__(
+            self,
+            span_context=None,
+            sampler=None,
+            reporter=None,
+            propagator=None):
+        if propagator is None:
+            propagator = google_cloud_format.GoogleCloudFormatPropagator()
+
         if span_context is None:
             header = get_webapp2_header()
-            span_context = from_header(header)
+            span_context = propagator.from_header(header)
 
         super(WebApp2Tracer, self).__init__(
             span_context=span_context,
             sampler=sampler,
-            reporter=reporter)
+            reporter=reporter,
+            propagator=propagator)
 
 
 def get_webapp2_header():

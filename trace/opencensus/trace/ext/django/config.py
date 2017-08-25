@@ -19,7 +19,9 @@ from django.conf import settings as django_settings
 DEFAULT_DJANGO_TRACER_CONFIG = {
     'TRACER': 'opencensus.trace.tracer.context_tracer.ContextTracer',
     'SAMPLER': 'opencensus.trace.samplers.always_on.AlwaysOnSampler',
-    'REPORTER': 'opencensus.trace.reporters.print_reporter.PrintReporter'
+    'REPORTER': 'opencensus.trace.reporters.print_reporter.PrintReporter',
+    'PROPAGATOR': 'opencensus.trace.propagation.google_cloud_format.'
+                  'GoogleCloudFormatPropagator',
 }
 
 PATH_DELIMITER = '.'
