@@ -39,6 +39,7 @@ class TestFlaskMiddleware(unittest.TestCase):
     def test_constructor_default(self):
         from opencensus.trace.reporters import print_reporter
         from opencensus.trace.samplers import always_on
+        from opencensus.trace.propagation import google_cloud_format
 
         app = mock.Mock()
         middleware = flask_middleware.FlaskMiddleware(app=app)
@@ -48,20 +49,26 @@ class TestFlaskMiddleware(unittest.TestCase):
         self.assertTrue(app.after_request.called)
         assert isinstance(middleware.sampler, always_on.AlwaysOnSampler)
         assert isinstance(middleware.reporter, print_reporter.PrintReporter)
+        assert isinstance(
+            middleware.propagator,
+            google_cloud_format.GoogleCloudFormatPropagator)
 
     def test_constructor_explicit(self):
         app = mock.Mock()
         sampler = mock.Mock()
         reporter = mock.Mock()
+        propagator = mock.Mock()
 
         middleware = flask_middleware.FlaskMiddleware(
             app=app,
             sampler=sampler,
-            reporter=reporter)
+            reporter=reporter,
+            propagator=propagator)
 
         self.assertIs(middleware.app, app)
         self.assertIs(middleware.sampler, sampler)
         self.assertIs(middleware.reporter, reporter)
+        self.assertIs(middleware.propagator, propagator)
         self.assertTrue(app.before_request.called)
         self.assertTrue(app.after_request.called)
 

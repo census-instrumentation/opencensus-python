@@ -30,67 +30,69 @@ _TRACE_ID_DELIMETER = '/'
 _SPAN_ID_DELIMETER = ';'
 
 
-def from_header(header):
-    """Generate a SpanContext object using the trace context header.
-    The value of enabled parsed from header is int. Need to convert to bool.
+class GoogleCloudFormatPropagator(object):
 
-    :type header: str
-    :param header: Trace context header which was extracted from the HTTP
-                   request headers.
+    def from_header(self, header):
+        """Generate a SpanContext object using the trace context header.
+        The value of enabled parsed from header is int. Need to convert to
+        bool.
 
-    :rtype: :class:`~opencensus.trace.span_context.SpanContext`
-    :returns: SpanContext generated from the trace context header.
-    """
-    if header is None:
-        return SpanContext()
+        :type header: str
+        :param header: Trace context header which was extracted from the HTTP
+                       request headers.
 
-    try:
-        match = re.search(_TRACE_CONTEXT_HEADER_RE, header)
-    except TypeError:
-        logging.warning(
-            'Header should be str, got {}. Cannot parse the header.'.format(
-                header.__class__.__name__))
-        raise
+        :rtype: :class:`~opencensus.trace.span_context.SpanContext`
+        :returns: SpanContext generated from the trace context header.
+        """
+        if header is None:
+            return SpanContext()
 
-    if match:
-        trace_id = match.group(1)
-        span_id = match.group(3)
-        options = match.group(5)
+        try:
+            match = re.search(_TRACE_CONTEXT_HEADER_RE, header)
+        except TypeError:
+            logging.warning(
+                'Header should be str, got {}. Cannot parse the header.'
+                .format(header.__class__.__name__))
+            raise
 
-        if options is None:
-            options = 1
+        if match:
+            trace_id = match.group(1)
+            span_id = match.group(3)
+            options = match.group(5)
 
-        enabled = bool(int(options) | _ENABLED_BITMASK)
+            if options is None:
+                options = 1
 
-        span_context = SpanContext(
-            trace_id=trace_id,
-            span_id=span_id,
-            enabled=enabled,
-            from_header=True)
-        return span_context
-    else:
-        logging.warning(
-            'Cannot parse the header {}, generate a new context instead.'
-            .format(header))
-        return SpanContext()
+            enabled = bool(int(options) | _ENABLED_BITMASK)
 
+            span_context = SpanContext(
+                trace_id=trace_id,
+                span_id=span_id,
+                enabled=enabled,
+                from_header=True)
+            return span_context
+        else:
+            logging.warning(
+                'Cannot parse the header {}, generate a new context instead.'
+                .format(header))
+            return SpanContext()
 
-def to_header(span_context):
-    """Convert a SpanContext object to header string.
+    def to_header(self, span_context):
+        """Convert a SpanContext object to header string.
 
-    :type span_context:
-        :class:`~opencensus.trace.span_context.SpanContext`
-    :param span_context: SpanContext object.
+        :type span_context:
+            :class:`~opencensus.trace.span_context.SpanContext`
+        :param span_context: SpanContext object.
 
-    :rtype: str
-    :returns: A trace context header string in google cloud format.
-    """
-    trace_id = span_context.trace_id
-    span_id = span_context.span_id
-    enabled = span_context.enabled
+        :rtype: str
+        :returns: A trace context header string in google cloud format.
+        """
+        trace_id = span_context.trace_id
+        span_id = span_context.span_id
+        enabled = span_context.enabled
 
-    header = '{}/{};o={}'.format(
-        trace_id,
-        span_id,
-        int(enabled))
-    return header
+        header = '{}/{};o={}'.format(
+            trace_id,
+            span_id,
+            int(enabled))
+        return header

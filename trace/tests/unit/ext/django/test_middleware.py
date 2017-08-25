@@ -39,12 +39,16 @@ class TestOpencensusMiddleware(unittest.TestCase):
         from opencensus.trace.samplers import always_on
         from opencensus.trace.tracer import context_tracer
         from opencensus.trace.reporters import print_reporter
+        from opencensus.trace.propagation import google_cloud_format
 
         middleware = middleware.OpencensusMiddleware()
 
         self.assertIs(middleware._tracer, context_tracer.ContextTracer)
         self.assertIs(middleware._sampler, always_on.AlwaysOnSampler)
         self.assertIs(middleware._reporter, print_reporter.PrintReporter)
+        self.assertIs(
+            middleware._propagator,
+            google_cloud_format.GoogleCloudFormatPropagator)
 
     def test_process_request(self):
         from django.test import RequestFactory

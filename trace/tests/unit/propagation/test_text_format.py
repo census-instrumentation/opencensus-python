@@ -16,11 +16,11 @@ import unittest
 
 import mock
 
+from opencensus.trace.propagation import text_format
+
 class Test_from_carrier(unittest.TestCase):
 
     def test_from_carrier_keys_exist(self):
-        from opencensus.trace.propagation import text_format
-
         test_trace_id = '6e0c63257de34c92bf9efcd03927272e'
         test_span_id = 1234
         test_options = 1
@@ -31,18 +31,19 @@ class Test_from_carrier(unittest.TestCase):
             text_format._ENABLED_TRACE_KEY: test_options,
         }
 
-        span_context = text_format.from_carrier(carrier)
+        propagator = text_format.TextFormatPropagator()
+
+        span_context = propagator.from_carrier(carrier)
 
         self.assertEqual(span_context.trace_id, test_trace_id)
         self.assertEqual(span_context.span_id, test_span_id)
         self.assertEqual(span_context.enabled, bool(test_options))
 
     def test_from_carrier_keys_not_exist(self):
-        from opencensus.trace.propagation import text_format
-
         carrier = {}
 
-        span_context = text_format.from_carrier(carrier)
+        propagator = text_format.TextFormatPropagator()
+        span_context = propagator.from_carrier(carrier)
 
         self.assertIsNotNone(span_context.trace_id)
         # Span_id should be None here which indicates no parent span_id for
@@ -51,8 +52,6 @@ class Test_from_carrier(unittest.TestCase):
         self.assertTrue(span_context.enabled)
 
     def test_to_carrier_has_span_id(self):
-        from opencensus.trace.propagation import text_format
-
         test_trace_id = '6e0c63257de34c92bf9efcd03927272e'
         test_span_id = 1234
         test_options = 1
@@ -63,7 +62,8 @@ class Test_from_carrier(unittest.TestCase):
         span_context.enabled = bool(test_options)
 
         carrier = {}
-        carrier = text_format.to_carrier(span_context, carrier)
+        propagator = text_format.TextFormatPropagator()
+        carrier = propagator.to_carrier(span_context, carrier)
 
         self.assertEqual(
             carrier[text_format._TRACE_ID_KEY],
@@ -76,8 +76,6 @@ class Test_from_carrier(unittest.TestCase):
             str(bool(test_options)))
 
     def test_to_carrier_no_span_id(self):
-        from opencensus.trace.propagation import text_format
-
         test_trace_id = '6e0c63257de34c92bf9efcd03927272e'
         test_options = 1
 
@@ -87,7 +85,8 @@ class Test_from_carrier(unittest.TestCase):
         span_context.enabled = bool(test_options)
 
         carrier = {}
-        carrier = text_format.to_carrier(span_context, carrier)
+        propagator = text_format.TextFormatPropagator()
+        carrier = propagator.to_carrier(span_context, carrier)
 
         self.assertEqual(
             carrier[text_format._TRACE_ID_KEY],

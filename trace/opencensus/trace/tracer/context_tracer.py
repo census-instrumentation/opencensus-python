@@ -14,6 +14,7 @@
 
 import logging
 
+from opencensus.trace.propagation import google_cloud_format
 from opencensus.trace.reporters import print_reporter
 from opencensus.trace.samplers.always_on import AlwaysOnSampler
 from opencensus.trace.span_context import SpanContext
@@ -45,7 +46,8 @@ class ContextTracer(object):
             self,
             span_context=None,
             sampler=None,
-            reporter=None):
+            reporter=None,
+            propagator=None):
         if span_context is None:
             span_context = SpanContext()
 
@@ -55,9 +57,13 @@ class ContextTracer(object):
         if reporter is None:
             reporter = print_reporter.PrintReporter()
 
+        if propagator is None:
+            propagator = google_cloud_format.GoogleCloudFormatPropagator()
+
         self.span_context = span_context
         self.sampler = sampler
         self.reporter = reporter
+        self.propagator = propagator
         self.trace_id = span_context.trace_id
         self.enabled = self.set_enabled()
         self.cur_trace = self.trace()

@@ -19,7 +19,6 @@ import threading
 from opencensus.trace.ext import utils
 from opencensus.trace.ext.django.config import settings
 from opencensus.trace import labels_helper
-from opencensus.trace.propagation import google_cloud_format
 
 _thread_locals = threading.local()
 
@@ -89,6 +88,7 @@ class OpencensusMiddleware(object):
         self._tracer = settings.TRACER
         self._sampler = settings.SAMPLER
         self._reporter = settings.REPORTER
+        self._propagator = settings.PROPAGATOR
 
     def process_request(self, request):
         """Called on each request, before Django decides which view to execute.
@@ -102,13 +102,15 @@ class OpencensusMiddleware(object):
         try:
             # Start tracing this request
             header = get_django_header()
-            span_context = google_cloud_format.from_header(header)
+            propagator = self._propagator()
+            span_context = propagator.from_header(header)
 
             # Reload the tracer with the new span context
             tracer = self._tracer(
                 span_context=span_context,
                 sampler=self._sampler(),
-                reporter=self._reporter())
+                reporter=self._reporter(),
+                propagator=propagator)
             setattr(_thread_locals, TRACER_THREAD_LOCAL_KEY, tracer)
             tracer.start_trace()
 
