@@ -99,6 +99,24 @@ reporter = file_reporter.FileReporter(file_name='traces')
 tracer = context_tracer.ContextTracer(reporter=reporter)
 ```
 
+### Propagators
+
+You can specify the propagator type for serialize and deserialize the
+SpanContext and headers. Currently support `GoogleCloudFormatPropagator`,
+`TextFormatPropagator`.
+
+```python
+from opencensus.trace.propagation import google_cloud_format
+
+propagator = google_cloud_format.GoogleCloudFormatPropagator()
+
+# Deserialize
+span_context = propagator.from_header(header)
+
+# Serialize
+header = propagator.to_header(span_context)
+```
+
 ## Framework Integration
 
 Opencensus supports integration with popular web frameworks including Django,
@@ -109,16 +127,18 @@ Below is the sample code snippets:
 
 ### Flask
 
+In your application, use the middleware to wrap your app and the requests will
+be automatically traced.
+
 ```python
-from opencensus.trace.tracer import flask_tracer
+from opencensus.trace.ext.flask.flask_middleware import FlaskMiddleware
 
-tracer = flask_tracer.FlaskTracer()
-tracer.start_trace()
+app = flask.Flask(__name__)
 
-with tracer.span(name='span1'):
-    do_something_to_trace()
-
-tracer.end_trace()
+# You can also specify the sampler, reporter, propagator in the middleware,
+# default is using `AlwaysOnSampler` as sampler, `PrintReporter` as reporter,
+# `GoogleCloudFormatPropagator` as propagator.
+middleware = FlaskMiddleware(app)
 ```
 
 ### Django
@@ -127,23 +147,26 @@ For tracing Django requests, you will need to add the following line to the
 `MIDDLEWARE_CLASSES` section in the Django `settings.py` file.
 
 ```
-opencensus.trace.tracer.middleware.request.RequestMiddleware
+'opencensus.trace.ext.django.middleware.OpencensusMiddleware',
 ```
 
-Then the trace information will be automatically extracted from the incoming
-request headers.
+Add this line to the `INSTALLED_APPS` section:
 
-```python
-from opencensus.trace.tracer import django_tracer
-
-tracer = django_tracer.DjangoTracer()
-tracer.start_trace()
-
-with tracer.span(name='span1'):
-    do_something_to_trace()
-
-tracer.end_trace()
 ```
+'opencensus.trace.ext.django',
+```
+
+Customize the sampler, reporter, propagator in the `settings.py` file:
+
+```
+OPENCENSUS_TRACE = {
+    'TRACER': 'opencensus.trace.tracer.context_tracer.ContextTracer',
+    'SAMPLER': 'opencensus.trace.samplers.always_on.AlwaysOnSampler',
+    'REPORTER': 'opencensus.trace.reporters.print_reporter.PrintReporter'
+}
+```
+
+Then the requests will be automatically traced.
 
 ### Webapp2
 
