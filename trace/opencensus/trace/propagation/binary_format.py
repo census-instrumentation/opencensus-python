@@ -119,10 +119,10 @@ class BinaryFormatPropagator(object):
 
         return struct.pack(
             BINARY_FORMAT,
-            0,
-            0,
+            VERSION_ID,
+            TRACE_ID_FIELD_ID,
             bytes(trace_id, UTF8),
-            1,
+            SPAN_ID_FIELD_ID,
             bytes(span_id_str, UTF8),
-            2,
+            TRACE_OPTION_FIELD_ID,
             bytes(enabled_str, UTF8))
