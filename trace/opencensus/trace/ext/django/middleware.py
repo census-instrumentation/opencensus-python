@@ -112,6 +112,10 @@ class OpencensusMiddleware(object):
                 reporter=self._reporter(),
                 propagator=propagator)
             setattr(_thread_locals, TRACER_THREAD_LOCAL_KEY, tracer)
+
+            if not tracer.enabled:
+                return
+
             tracer.start_trace()
 
             # Span name is being set at process_view
@@ -128,6 +132,10 @@ class OpencensusMiddleware(object):
         try:
             # Get the current span
             tracer = _get_current_request_tracer()
+
+            if not tracer.enabled:
+                return
+
             span = tracer._span_stack[-1]
 
             span.name = utils.get_func_name(view_func)
@@ -137,6 +145,10 @@ class OpencensusMiddleware(object):
     def process_response(self, request, response):
         try:
             tracer = _get_current_request_tracer()
+
+            if not tracer.enabled:
+                return response
+
             span = tracer._span_stack[-1]
 
             span.add_label(

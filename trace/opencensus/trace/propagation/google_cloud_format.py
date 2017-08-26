@@ -63,7 +63,7 @@ class GoogleCloudFormatPropagator(object):
             if options is None:
                 options = 1
 
-            enabled = bool(int(options) | _ENABLED_BITMASK)
+            enabled = bool(int(options) & _ENABLED_BITMASK)
 
             span_context = SpanContext(
                 trace_id=trace_id,
