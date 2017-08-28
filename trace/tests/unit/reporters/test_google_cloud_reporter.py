@@ -33,6 +33,7 @@ class TestGoogleCloudReporter(unittest.TestCase):
         patch = mock.patch(
             'opencensus.trace.reporters.google_cloud_reporter.Client',
             new=_Client)
+
         with patch:
             reporter = google_cloud_reporter.GoogleCloudReporter()
 
@@ -72,11 +73,7 @@ class TestGoogleCloudReporter(unittest.TestCase):
 
     def test_translate_to_stackdriver(self):
         project_id = 'PROJECT'
-        trace = {
-            'spans': [],
-            'traceId': '6e0c63257de34c92bf9efcd03927272e',
-            'projectId': project_id}
-        expected_traces = {'traces': [trace]}
+        trace = {'spans': [], 'traceId': '6e0c63257de34c92bf9efcd03927272e'}
 
         client = mock.Mock()
         client.project = project_id
@@ -84,6 +81,10 @@ class TestGoogleCloudReporter(unittest.TestCase):
             client=client,
             project_id=project_id)
 
+
         traces = reporter.translate_to_stackdriver(trace)
+
+        trace['projectId'] = project_id
+        expected_traces = {'traces': [trace]}
 
         self.assertEqual(traces, expected_traces)

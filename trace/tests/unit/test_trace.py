@@ -43,8 +43,7 @@ class TestTrace(unittest.TestCase):
     def test_constructor_explicit(self):
         trace_id = 'test_trace_id'
 
-        trace = self._make_one(
-            trace_id=trace_id)
+        trace = self._make_one(trace_id=trace_id)
 
         self.assertEqual(trace.trace_id, trace_id)
 
