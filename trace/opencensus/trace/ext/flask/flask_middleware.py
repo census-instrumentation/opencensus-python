@@ -51,16 +51,20 @@ class FlaskMiddleware(object):
                      :class:`.PrintReporter`. The rest option is
                      :class:`.FileReporter`.
     """
-    def __init__(self, app, sampler=None, reporter=None):
+    def __init__(self, app, sampler=None, reporter=None, propagator=None):
         if sampler is None:
             sampler = always_on.AlwaysOnSampler()
 
         if reporter is None:
             reporter = print_reporter.PrintReporter()
 
+        if propagator is None:
+            propagator = google_cloud_format.GoogleCloudFormatPropagator()
+
         self.app = app
         self.sampler = sampler
         self.reporter = reporter
+        self.propagator = propagator
         self.setup_trace()
 
     def setup_trace(self):
@@ -74,12 +78,13 @@ class FlaskMiddleware(object):
         """
         try:
             header = get_flask_header()
-            span_context = google_cloud_format.from_header(header)
+            span_context = self.propagator.from_header(header)
 
             tracer = context_tracer.ContextTracer(
                 span_context=span_context,
                 sampler=self.sampler,
-                reporter=self.reporter)
+                reporter=self.reporter,
+                propagator=self.propagator)
             tracer.start_trace()
 
             span = tracer.start_span()

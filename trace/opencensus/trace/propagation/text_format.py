@@ -25,55 +25,56 @@ _SPAN_ID_KEY = '{}-spanid'.format(_OPENCENSUS_TRACE_PREFIX)
 _ENABLED_TRACE_KEY = '{}-enabled'.format(_OPENCENSUS_TRACE_PREFIX)
 
 
-def from_carrier(carrier):
-    """Generate a SpanContext object using the information in the carrier.
+class TextFormatPropagator(object):
 
-    :type carrier: dict
-    :param carrier: The carrier which has the trace_id, span_id, options
-                    information for creating a SpanContext.
+    def from_carrier(self, carrier):
+        """Generate a SpanContext object using the information in the carrier.
 
-    :rtype: :class:`~opencensus.trace.span_context.SpanContext`
-    :returns: SpanContext generated from the carrier.
-    """
-    trace_id = None
-    span_id = None
-    enabled = 1
+        :type carrier: dict
+        :param carrier: The carrier which has the trace_id, span_id, options
+                        information for creating a SpanContext.
 
-    for key in carrier:
-        key = key.lower()
-        if key == _TRACE_ID_KEY:
-            trace_id = carrier[key]
-        if key == _SPAN_ID_KEY:
-            span_id = carrier[key]
-        if key == _ENABLED_TRACE_KEY:
-            enabled = bool(carrier[key])
+        :rtype: :class:`~opencensus.trace.span_context.SpanContext`
+        :returns: SpanContext generated from the carrier.
+        """
+        trace_id = None
+        span_id = None
+        enabled = 1
 
-    return SpanContext(
-        trace_id=trace_id,
-        span_id=span_id,
-        enabled=enabled,
-        from_header=True)
+        for key in carrier:
+            key = key.lower()
+            if key == _TRACE_ID_KEY:
+                trace_id = carrier[key]
+            if key == _SPAN_ID_KEY:
+                span_id = carrier[key]
+            if key == _ENABLED_TRACE_KEY:
+                enabled = bool(carrier[key])
 
+        return SpanContext(
+            trace_id=trace_id,
+            span_id=span_id,
+            enabled=enabled,
+            from_header=True)
 
-def to_carrier(span_context, carrier):
-    """Inject the SpanContext fields to carrier dict.
+    def to_carrier(self, span_context, carrier):
+        """Inject the SpanContext fields to carrier dict.
 
-    :type span_context:
-        :class:`~opencensus.trace.span_context.SpanContext`
-    :param span_context: SpanContext object.
+        :type span_context:
+            :class:`~opencensus.trace.span_context.SpanContext`
+        :param span_context: SpanContext object.
 
-    :type carrier: dict
-    :param carrier: The carrier which holds the trace_id, span_id, options
-                    information from a SpanContext.
+        :type carrier: dict
+        :param carrier: The carrier which holds the trace_id, span_id, options
+                        information from a SpanContext.
 
-    :rtype: dict
-    :returns: The carrier which holds the span context information.
-    """
-    carrier[_TRACE_ID_KEY] = str(span_context.trace_id)
+        :rtype: dict
+        :returns: The carrier which holds the span context information.
+        """
+        carrier[_TRACE_ID_KEY] = str(span_context.trace_id)
 
-    if span_context.span_id is not None:
-        carrier[_SPAN_ID_KEY] = str(span_context.span_id)
+        if span_context.span_id is not None:
+            carrier[_SPAN_ID_KEY] = str(span_context.span_id)
 
-    carrier[_ENABLED_TRACE_KEY] = str(span_context.enabled)
+        carrier[_ENABLED_TRACE_KEY] = str(span_context.enabled)
 
-    return carrier
+        return carrier

@@ -68,7 +68,9 @@ TEMPLATES = [
 OPENCENSUS_TRACE = {
     'TRACER': 'opencensus.trace.tracer.context_tracer.ContextTracer',
     'SAMPLER': 'opencensus.trace.samplers.always_on.AlwaysOnSampler',
-    'REPORTER': 'opencensus.trace.reporters.print_reporter.PrintReporter'
+    'REPORTER': 'opencensus.trace.reporters.print_reporter.PrintReporter',
+    'PROPAGATOR': 'opencensus.trace.propagation.google_cloud_format.'
+                  'GoogleCloudFormatPropagator',
 }
 
 # Internationalization
