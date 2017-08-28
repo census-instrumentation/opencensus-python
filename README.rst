@@ -2,230 +2,251 @@ OpenCensus - A stats collection and distributed tracing framework
 =================================================================
 
 This is the open-source release of Census for Python. Census provides a
-framework to measure a server's resource usage and collect performance stats.
-This repository contains python related utilities and supporting software
-needed by Census.
+framework to measure a server's resource usage and collect performance
+stats. This repository contains python related utilities and supporting
+software needed by Census.
 
-## Installation
+Installation
+------------
 
 1. Install the opencensus-trace package using pip
 
-```
-pip install opencensus-trace
-```
+::
+
+    pip install opencensus-trace
 
 2. Initialize a tracer to enable trace in your application
 
-```python
-from opencensus.trace.tracer import context_tracer
+.. code:: python
 
-tracer = context_tracer.ContextTracer()
-tracer.start_trace()
-```
+    from opencensus.trace.tracer import context_tracer
 
-## Usage
+    tracer = context_tracer.ContextTracer()
+    tracer.start_trace()
 
-There are two ways to trace your code blocks. One is using a `with` statement
-to wrap your code, and the trace span will end when exit the `with` statement.
-Another is explicitly start and finish the trace span before and after your
-code block. Sample code for the two usages as below:
+Usage
+-----
 
-### Usage 1: `with` statement (Recommended)
+There are two ways to trace your code blocks. One is using a ``with``
+statement to wrap your code, and the trace span will end when exit the
+``with`` statement. Another is explicitly start and finish the trace
+span before and after your code block. Sample code for the two usages as
+below:
 
-```python
-from opencensus.trace.tracer import context_tracer
+Usage 1: ``with`` statement (Recommended)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-# Initialize a tracer, by default using the `PrintReporter`
-tracer = context_tracer.ContextTracer()
-tracer.start_trace()
+.. code:: python
 
-# Example for creating nested spans
-with tracer.span(name='span1') as span1:
-    do_something_to_trace()
-    with span1.span(name='span1_child1') as span1_child1:
+    from opencensus.trace.tracer import context_tracer
+
+    # Initialize a tracer, by default using the `PrintReporter`
+    tracer = context_tracer.ContextTracer()
+    tracer.start_trace()
+
+    # Example for creating nested spans
+    with tracer.span(name='span1') as span1:
         do_something_to_trace()
-    with span1.span(name='span1_child2') as span1_child2:
+        with span1.span(name='span1_child1') as span1_child1:
+            do_something_to_trace()
+        with span1.span(name='span1_child2') as span1_child2:
+            do_something_to_trace()
+    with tracer.span(name='span2') as span2:
         do_something_to_trace()
-with tracer.span(name='span2') as span2:
+
+    # The trace spans will be sent to the reporter when you call `end_trace()`
+    tracer.end_trace()
+
+Usage 2: Explicitly start and end spans
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code:: python
+
+    from opencensus.trace.tracer import context_tracer
+
+    # Initialize a tracer, by default using the `PrintReporter`
+    tracer = context_tracer.ContextTracer()
+    tracer.start_trace()
+
+    tracer.start_span(name='span1')
     do_something_to_trace()
+    tracer.end_span()
 
-# The trace spans will be sent to the reporter when you call `end_trace()`
-tracer.end_trace()
-```
+Customization
+-------------
 
-### Usage 2: Explicitly start and end spans
+Samplers
+~~~~~~~~
 
-```python
-from opencensus.trace.tracer import context_tracer
+You can specify different samplers when initializing a tracer, default
+is using ``AlwaysOnSampler``, the other options are ``AlwaysOffSampler``
+and ``FixedRateSampler``
 
-# Initialize a tracer, by default using the `PrintReporter`
-tracer = context_tracer.ContextTracer()
-tracer.start_trace()
+.. code:: python
 
-tracer.start_span(name='span1')
-do_something_to_trace()
-tracer.end_span()
-```
+    from opencensus.trace.samplers import fixed_rate
+    from opencensus.trace.tracer import context_tracer
 
-## Customization
+    # Sampling the requests at the rate equals 0.5
+    sampler = fixed_rate.FixedRateSampler(rate=0.5)
+    tracer = context_tracer.ContextTracer(sampler=sampler)
 
-### Samplers
+Reporters
+~~~~~~~~~
 
-You can specify different samplers when initializing a tracer, default is using
-`AlwaysOnSampler`, the other options are `AlwaysOffSampler` and
-`FixedRateSampler`
+You can choose different reporters to send the traces to. Default is
+printing the traces in JSON format. The rest options are sending to
+logging, or write to a file. Will add reporters to report to different
+trace backend later.
 
-```python
-from opencensus.trace.samplers import fixed_rate
-from opencensus.trace.tracer import context_tracer
+.. code:: python
 
-# Sampling the requests at the rate equals 0.5
-sampler = fixed_rate.FixedRateSampler(rate=0.5)
-tracer = context_tracer.ContextTracer(sampler=sampler)
-```
+    from opencensus.trace.reporters import file_reporter
+    from opencensus.trace.tracer import context_tracer
 
-### Reporters
+    # Export the traces to a local file
+    reporter = file_reporter.FileReporter(file_name='traces')
+    tracer = context_tracer.ContextTracer(reporter=reporter)
 
-You can choose different reporters to send the traces to. Default is printing
-the traces in JSON format. The rest options are sending to logging, or write
-to a file. Will add reporters to report to different trace backend later.
-
-```python
-from opencensus.trace.reporters import file_reporter
-from opencensus.trace.tracer import context_tracer
-
-# Export the traces to a local file
-reporter = file_reporter.FileReporter(file_name='traces')
-tracer = context_tracer.ContextTracer(reporter=reporter)
-```
-
-### Propagators
+Propagators
+~~~~~~~~~~~
 
 You can specify the propagator type for serialize and deserialize the
-SpanContext and headers. Currently support `GoogleCloudFormatPropagator`,
-`TextFormatPropagator`.
+SpanContext and headers. Currently support
+``GoogleCloudFormatPropagator``, ``TextFormatPropagator``.
 
-```python
-from opencensus.trace.propagation import google_cloud_format
+.. code:: python
 
-propagator = google_cloud_format.GoogleCloudFormatPropagator()
+    from opencensus.trace.propagation import google_cloud_format
 
-# Deserialize
-span_context = propagator.from_header(header)
+    propagator = google_cloud_format.GoogleCloudFormatPropagator()
 
-# Serialize
-header = propagator.to_header(span_context)
-```
+    # Deserialize
+    span_context = propagator.from_header(header)
 
-## Framework Integration
+    # Serialize
+    header = propagator.to_header(span_context)
 
-Opencensus supports integration with popular web frameworks including Django,
-Flask and Webapp2. When the application receives a HTTP request, the tracer
-will automatically generate a span context using the trace information
-extracted from the request headers, and propagated to the child spans.
-Below is the sample code snippets:
+Framework Integration
+---------------------
 
-### Flask
+Opencensus supports integration with popular web frameworks including
+Django, Flask and Webapp2. When the application receives a HTTP request,
+the tracer will automatically generate a span context using the trace
+information extracted from the request headers, and propagated to the
+child spans. Below is the sample code snippets:
 
-In your application, use the middleware to wrap your app and the requests will
-be automatically traced.
+Flask
+~~~~~
 
-```python
-from opencensus.trace.ext.flask.flask_middleware import FlaskMiddleware
+In your application, use the middleware to wrap your app and the
+requests will be automatically traced.
 
-app = flask.Flask(__name__)
+.. code:: python
 
-# You can also specify the sampler, reporter, propagator in the middleware,
-# default is using `AlwaysOnSampler` as sampler, `PrintReporter` as reporter,
-# `GoogleCloudFormatPropagator` as propagator.
-middleware = FlaskMiddleware(app)
-```
+    from opencensus.trace.ext.flask.flask_middleware import FlaskMiddleware
 
-### Django
+    app = flask.Flask(__name__)
 
-For tracing Django requests, you will need to add the following line to the
-`MIDDLEWARE_CLASSES` section in the Django `settings.py` file.
+    # You can also specify the sampler, reporter, propagator in the middleware,
+    # default is using `AlwaysOnSampler` as sampler, `PrintReporter` as reporter,
+    # `GoogleCloudFormatPropagator` as propagator.
+    middleware = FlaskMiddleware(app)
 
-```
-'opencensus.trace.ext.django.middleware.OpencensusMiddleware',
-```
+Django
+~~~~~~
 
-Add this line to the `INSTALLED_APPS` section:
+For tracing Django requests, you will need to add the following line to
+the ``MIDDLEWARE_CLASSES`` section in the Django ``settings.py`` file.
 
-```
-'opencensus.trace.ext.django',
-```
+::
 
-Customize the sampler, reporter, propagator in the `settings.py` file:
+    'opencensus.trace.ext.django.middleware.OpencensusMiddleware',
 
-```
-OPENCENSUS_TRACE = {
-    'TRACER': 'opencensus.trace.tracer.context_tracer.ContextTracer',
-    'SAMPLER': 'opencensus.trace.samplers.always_on.AlwaysOnSampler',
-    'REPORTER': 'opencensus.trace.reporters.print_reporter.PrintReporter'
-}
-```
+Add this line to the ``INSTALLED_APPS`` section:
+
+::
+
+    'opencensus.trace.ext.django',
+
+Customize the sampler, reporter, propagator in the ``settings.py`` file:
+
+::
+
+    OPENCENSUS_TRACE = {
+        'TRACER': 'opencensus.trace.tracer.context_tracer.ContextTracer',
+        'SAMPLER': 'opencensus.trace.samplers.always_on.AlwaysOnSampler',
+        'REPORTER': 'opencensus.trace.reporters.print_reporter.PrintReporter'
+    }
 
 Then the requests will be automatically traced.
 
-### Webapp2
+Webapp2
+~~~~~~~
 
-```python
-from opencensus.trace.tracer import webapp2_tracer
+.. code:: python
 
-tracer = webapp2_tracer.WebApp2Tracer()
-tracer.start_trace()
+    from opencensus.trace.tracer import webapp2_tracer
 
-with tracer.span(name='span1'):
-    do_something_to_trace()
+    tracer = webapp2_tracer.WebApp2Tracer()
+    tracer.start_trace()
 
-tracer.end_trace()
-```
+    with tracer.span(name='span1'):
+        do_something_to_trace()
 
-## Status
+    tracer.end_trace()
+
+Status
+------
 
 Currently under active development.
 
-## Development
+Development
+-----------
 
-### Tests
+Tests
+~~~~~
 
-```
-cd trace
-tox -e py34
-source .tox/py34/bin/activate
+::
 
-# Run the unit test
-pip install nox-automation
+    cd trace
+    tox -e py34
+    source .tox/py34/bin/activate
 
-# See what's available in the nox suite
-nox -l
+    # Run the unit test
+    pip install nox-automation
 
-# Run a single nox command
-nox -s "unit_tests(python_version='2.7')"
+    # See what's available in the nox suite
+    nox -l
 
-# Run all the nox commands
-nox
+    # Run a single nox command
+    nox -s "unit_tests(python_version='2.7')"
 
-# Integration test
-# We don't have script for integration test yet, but can test as below.
-python setup.py bdist_wheel
-cd dist
-pip install opencensus-0.0.1-py2.py3-none-any.whl
+    # Run all the nox commands
+    nox
 
-# Then just run the tracers normally as you want to test.
-```
+    # Integration test
+    # We don't have script for integration test yet, but can test as below.
+    python setup.py bdist_wheel
+    cd dist
+    pip install opencensus-0.0.1-py2.py3-none-any.whl
 
-## Contributing
+    # Then just run the tracers normally as you want to test.
+
+Contributing
+------------
 
 Contributions to this library are always welcome and highly encouraged.
 
-See [CONTRIBUTING](CONTRIBUTING.md) for more information on how to get started.
+See `CONTRIBUTING <CONTRIBUTING.md>`__ for more information on how to
+get started.
 
-## License
+License
+-------
 
-Apache 2.0 - See [LICENSE](LICENSE) for more information.
+Apache 2.0 - See `LICENSE <LICENSE>`__ for more information.
 
-## Disclaimer
+Disclaimer
+----------
 
 This is not an official Google product.
