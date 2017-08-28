@@ -19,9 +19,26 @@ import mock
 from opencensus.trace.reporters import google_cloud_reporter
 
 
-class TestGoogleCloudReporter(unittest.TestCase):
+class _Client(object):
+    def __init__(self, project=None):
+        if project is None:
+            project = 'PROJECT'
 
-    def test_constructor(self):
+        self.project = project
+
+
+class TestGoogleCloudReporter(unittest.TestCase):
+    def test_constructor_default(self):
+        patch = mock.patch(
+            'opencensus.trace.reporters.google_cloud_reporter.Client',
+            new=_Client)
+        with patch:
+            reporter = google_cloud_reporter.GoogleCloudReporter()
+
+        project_id = 'PROJECT'
+        self.assertEqual(reporter.project_id, project_id)
+
+    def test_constructor_explicit(self):
         client = mock.Mock()
         project_id = 'PROJECT'
         client.project = project_id
@@ -35,7 +52,6 @@ class TestGoogleCloudReporter(unittest.TestCase):
 
     def test_report(self):
         trace = {'spans': [], 'traceId': '6e0c63257de34c92bf9efcd03927272e'}
-        traces = {'traces': [trace]}
 
         client = mock.Mock()
         project_id = 'PROJECT'
@@ -45,7 +61,30 @@ class TestGoogleCloudReporter(unittest.TestCase):
             client=client,
             project_id=project_id)
 
-        reporter.report(traces)
+        reporter.report(trace)
 
-        self.assertEqual(traces['traces'][0]['projectId'], project_id)
+        trace['projectId'] = project_id
+        traces = {'traces': [trace]}
+
+        client.patch_traces.assert_called_with(traces)
         self.assertTrue(client.patch_traces.called)
+
+    def test_translate_to_stackdriver(self):
+        project_id = 'PROJECT'
+        trace = {
+            'spans': [],
+            'traceId': '6e0c63257de34c92bf9efcd03927272e',
+            'projectId': project_id}
+        expected_traces = {'traces': [trace]}
+
+        client = mock.Mock()
+        client.project = project_id
+        reporter = google_cloud_reporter.GoogleCloudReporter(
+            client=client,
+            project_id=project_id)
+
+        traces = reporter.translate_to_stackdriver(trace)
+
+        self.assertEqual(traces, expected_traces)
+
+

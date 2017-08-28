@@ -219,15 +219,11 @@ class TestContextTracer(unittest.TestCase):
         }
 
         tracer.cur_trace.spans = [root_span]
-        traces = {
-            'traces': [
-                {
-                    'traceId': trace_id,
-                    'spans': [
-                        root_span_json,
-                        child_span_json
-                    ]
-                }
+        trace = {
+            'traceId': trace_id,
+            'spans': [
+                root_span_json,
+                child_span_json
             ]
         }
 

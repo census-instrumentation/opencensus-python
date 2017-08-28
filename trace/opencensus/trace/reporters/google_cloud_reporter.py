@@ -28,14 +28,22 @@ class GoogleCloudReporter(object):
         self.client = client
         self.project_id = client.project
 
-    def report(self, traces):
+    def report(self, trace):
         """
-        :type traces: dict
-        :param traces: Traces collected.
+        :type trace: dict
+        :param trace: Trace collected.
         """
-        self.set_project_id(traces)
-        self.client.patch_traces(traces)
+        stackdriver_traces = self.translate_to_stackdriver(trace)
+        self.client.patch_traces(stackdriver_traces)
 
-    def set_project_id(self, traces):
-        for trace in traces['traces']:
-            trace['projectId'] = self.project_id
+    def translate_to_stackdriver(self, trace):
+        """
+        :type trace: dict
+        :param trace: Trace collected.
+
+        :rtype: dict
+        :returns: Traces in Google Cloud StackDriver Trace format.
+        """
+        trace['projectId'] = self.project_id
+        traces = {'traces': [trace]}
+        return traces

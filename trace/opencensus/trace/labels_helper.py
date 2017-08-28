@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from opencensus.trace.reporters import google_cloud_reporter
-
 import os
 
 # Environment variable set in App Engine when vm:true is set.
@@ -77,11 +75,6 @@ class LabelsHelper(object):
         """Automatically set labels for each environment."""
         if self.is_gae_environment():
             self.set_gae_labels()
-
-        if isinstance(
-                self.reporter,
-                google_cloud_reporter.GoogleCloudReporter):
-            self.set_stackdriver_labels()
 
     def set_gae_labels(self):
         """Set the GAE environment common labels."""
