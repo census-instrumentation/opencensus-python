@@ -43,7 +43,7 @@ setup(
     ],
     description='A stats collection and distributed tracing framework',
     include_package_data=True,
-    long_description=open('README.md').read(),
+    long_description=open('README.rst').read(),
     install_requires=install_requires,
     license='Apache-2.0',
     packages=find_packages(),
