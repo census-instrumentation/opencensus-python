@@ -28,6 +28,7 @@ class _Client(object):
 
 
 class TestGoogleCloudReporter(unittest.TestCase):
+
     def test_constructor_default(self):
         patch = mock.patch(
             'opencensus.trace.reporters.google_cloud_reporter.Client',
@@ -86,5 +87,3 @@ class TestGoogleCloudReporter(unittest.TestCase):
         traces = reporter.translate_to_stackdriver(trace)
 
         self.assertEqual(traces, expected_traces)
-
-

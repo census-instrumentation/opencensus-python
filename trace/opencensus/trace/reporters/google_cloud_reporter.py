@@ -19,7 +19,6 @@ class GoogleCloudReporter(object):
     """A reporter that send traces and trace spans to Google Cloud Stackdriver
     Trace.
     """
-
     def __init__(self, client=None, project_id=None):
         # The client will handler the case when project_id is None
         if client is None:

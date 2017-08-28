@@ -14,7 +14,6 @@
 
 """A setup module for Open Source Census Instrumentation Library"""
 
-import io
 from setuptools import setup, find_packages
 
 install_requires = [
