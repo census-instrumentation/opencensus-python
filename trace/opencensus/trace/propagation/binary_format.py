@@ -50,14 +50,13 @@ BINARY_FORMAT = '{big_endian}{version_id}' \
     '{trace_option_field_id}{trace_option}'\
         .format(
             big_endian=BIG_ENDIAN,
-            version_id='{}'.format(UNSIGNED_CHAR),
-            trace_id_field_id='{}'.format(UNSIGNED_CHAR),
+            version_id=UNSIGNED_CHAR,
+            trace_id_field_id=UNSIGNED_CHAR,
             trace_id='{}{}'.format(TRACE_ID_SIZE, CHAR_ARRAY_FORMAT),
-            span_id_field_id='{}'.format(UNSIGNED_CHAR),
-            span_id='{}'.format(UNSIGNED_LONG_LONG),
-            trace_option_field_id='{}'.format(UNSIGNED_CHAR),
-            trace_option='{}'.format(UNSIGNED_CHAR)
-        )
+            span_id_field_id=UNSIGNED_CHAR,
+            span_id=UNSIGNED_LONG_LONG,
+            trace_option_field_id=UNSIGNED_CHAR,
+            trace_option=UNSIGNED_CHAR)
 
 Header = collections.namedtuple(
     'Header',
