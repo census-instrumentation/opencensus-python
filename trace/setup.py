@@ -20,7 +20,6 @@ from setuptools import setup, find_packages
 install_requires = [
     'google-gax>=0.15.7, <0.16dev',
     'googleapis-common-protos[grpc]>=1.5.2, <2.0dev',
-    'google-cloud-core >= 0.24.0, < 0.25dev',
 ]
 
 setup(

@@ -19,8 +19,6 @@ import mock
 
 class TestTrace(unittest.TestCase):
 
-    project = 'PROJECT'
-
     @staticmethod
     def _get_target_class():
         from opencensus.trace.trace import Trace
