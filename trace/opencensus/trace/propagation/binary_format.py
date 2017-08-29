@@ -21,9 +21,7 @@ from opencensus.trace.span_context import SpanContext
 
 _ENABLED_BITMASK = 1
 
-BIG_ENDIAN = '>'
-
-# Used for decode hex bytes to hex string.
+# Used for decoding hex bytes to hex string.
 UTF8 = 'utf-8'
 
 VERSION_ID = 0
@@ -40,6 +38,7 @@ TRACE_OPTION_SIZE = 1
 FORMAT_LENGTH = 4 * ID_SIZE + TRACE_ID_SIZE + SPAN_ID_SIZE + TRACE_OPTION_SIZE
 
 # See: https://docs.python.org/3/library/struct.html#format-characters
+BIG_ENDIAN = '>'
 CHAR_ARRAY_FORMAT = 's'
 UNSIGNED_CHAR = 'B'
 UNSIGNED_LONG_LONG = 'Q'
@@ -120,9 +119,9 @@ class BinaryFormatPropagator(object):
                          'wrong format.'.format(binary))
             return SpanContext(from_header=False)
 
-        # data.trace_id is in bytes with length 16, heclify it to hex bytes
+        # data.trace_id is in bytes with length 16, hexlify it to hex bytes
         # with length 32, then decode it to hex string using utf-8.
-        trace_id = binascii.hexlify(data.trace_id).decode(UTF8)
+        trace_id = str(binascii.hexlify(data.trace_id).decode(UTF8))
         span_id = data.span_id
         trace_option = data.trace_option
 
