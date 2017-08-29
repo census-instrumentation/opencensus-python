@@ -86,9 +86,6 @@ class FlaskMiddleware(object):
                 reporter=self.reporter,
                 propagator=self.propagator)
 
-            # Add tracer to flask application globals
-            setattr(flask.g, TRACER_KEY, tracer)
-
             tracer.start_trace()
 
             span = tracer.start_span()
@@ -99,6 +96,9 @@ class FlaskMiddleware(object):
                 flask.request.url)
             span.add_label(HTTP_METHOD, flask.request.method)
             span.add_label(HTTP_URL, flask.request.url)
+
+            # Add tracer to flask application globals
+            setattr(flask.g, TRACER_KEY, tracer)
         except Exception:  # pragma: NO COVER
             log.error('Failed to trace request', exc_info=True)
 
@@ -109,7 +109,6 @@ class FlaskMiddleware(object):
         """
         try:
             tracer = flask.g.get(TRACER_KEY, None)
-
             span = tracer._span_stack[-1]
             span.add_label(HTTP_STATUS_CODE, response.status_code)
 
