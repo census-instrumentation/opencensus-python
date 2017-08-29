@@ -17,6 +17,7 @@ import collections
 import logging
 import struct
 
+from opencensus.trace.propagation import _helpers
 from opencensus.trace.span_context import SpanContext
 
 _ENABLED_BITMASK = 1
@@ -121,7 +122,7 @@ class BinaryFormatPropagator(object):
         span_id = data.span_id
         trace_option = data.trace_option
 
-        enabled = bool(trace_option & _ENABLED_BITMASK)
+        enabled = _helpers._get_enabled_trace_option(trace_option)
 
         span_context = SpanContext(
                 trace_id=trace_id,

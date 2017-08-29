@@ -22,7 +22,7 @@ def _get_enabled_trace_option(trace_options):
     :param trace_options: 1 byte field which indicates 8 trace options,
                           currently only have the enabled option. 1 means
                           enabled, 0 means not enabled.
-    
+
     :rtype: bool
     :returns: Enabled tracing or not.
     """
