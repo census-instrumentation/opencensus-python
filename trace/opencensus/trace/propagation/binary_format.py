@@ -23,6 +23,7 @@ _ENABLED_BITMASK = 1
 
 BIG_ENDIAN = '>'
 
+# Used for decode hex bytes to hex string.
 UTF8 = 'utf-8'
 
 VERSION_ID = 0
@@ -30,6 +31,7 @@ TRACE_ID_FIELD_ID = 0
 SPAN_ID_FIELD_ID = 1
 TRACE_OPTION_FIELD_ID = 2
 
+# Sizes are number of bytes.
 ID_SIZE = 1
 TRACE_ID_SIZE = 16
 SPAN_ID_SIZE = 8
@@ -75,6 +77,22 @@ class BinaryFormatPropagator(object):
     
     See: https://github.com/census-instrumentation/opencensus-specs/blob/
          master/encodings/BinaryEncoding.md
+
+    Example:
+        [SpanContext]
+            trace_id: hex string with length 32.
+                e.g. 'a0b72ca15c1a4bd18962d0ac59dc90b9'
+            span_id: 64 bits integer.
+                e.g. 7433567179112518326
+            enabled (trace option): bool.
+                e.g. True
+        [Binary Format]
+            trace_id: Bytes with length 16.
+                e.g. b'\xa0\xb7,\xa1\\\x1aK\xd1\x89b\xd0\xacY\xdc\x90\xb9'
+            span_id: Bytes with length 8.
+                e.g. b'\xb6\x12\x01\xf5\xf6U)g'
+            trace_option: Byte with length 1.
+                e.g. b'\x01'
     """
     def from_header(self, binary):
         """Generate a SpanContext object using the trace context header.
