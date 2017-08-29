@@ -21,6 +21,7 @@ binary format and zipkin, opencensus format.
 import logging
 import re
 
+from opencensus.trace.propagation import _helpers
 from opencensus.trace.span_context import SpanContext
 
 _ENABLED_BITMASK = 1
@@ -63,7 +64,7 @@ class GoogleCloudFormatPropagator(object):
             if options is None:
                 options = 1
 
-            enabled = bool(int(options) & _ENABLED_BITMASK)
+            enabled = _helpers._get_enabled_trace_option(options)
 
             span_context = SpanContext(
                 trace_id=trace_id,
