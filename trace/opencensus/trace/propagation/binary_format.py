@@ -49,15 +49,15 @@ BINARY_FORMAT = '{big_endian}{version_id}' \
     '{trace_id_field_id}{trace_id}' \
     '{span_id_field_id}{span_id}' \
     '{trace_option_field_id}{trace_option}'\
-        .format(
-            big_endian=BIG_ENDIAN,
-            version_id=UNSIGNED_CHAR,
-            trace_id_field_id=UNSIGNED_CHAR,
-            trace_id='{}{}'.format(TRACE_ID_SIZE, CHAR_ARRAY_FORMAT),
-            span_id_field_id=UNSIGNED_CHAR,
-            span_id=UNSIGNED_LONG_LONG,
-            trace_option_field_id=UNSIGNED_CHAR,
-            trace_option=UNSIGNED_CHAR)
+    .format(
+        big_endian=BIG_ENDIAN,
+        version_id=UNSIGNED_CHAR,
+        trace_id_field_id=UNSIGNED_CHAR,
+        trace_id='{}{}'.format(TRACE_ID_SIZE, CHAR_ARRAY_FORMAT),
+        span_id_field_id=UNSIGNED_CHAR,
+        span_id=UNSIGNED_LONG_LONG,
+        trace_option_field_id=UNSIGNED_CHAR,
+        trace_option=UNSIGNED_CHAR)
 
 Header = collections.namedtuple(
     'Header',
@@ -73,7 +73,7 @@ Header = collections.namedtuple(
 class BinaryFormatPropagator(object):
     """This propagator contains the method for serializing and deserializing
     SpanContext using a binary format.
-    
+
     See: https://github.com/census-instrumentation/opencensus-specs/blob/
          master/encodings/BinaryEncoding.md
 
@@ -105,18 +105,14 @@ class BinaryFormatPropagator(object):
         :rtype: :class:`~opencensus.trace.span_context.SpanContext`
         :returns: SpanContext generated from the trace context header.
         """
-        # First check the length of the binary, if cannot parse, return a new
-        # SpanContext and discard the context from binary.
-        if len(binary) != FORMAT_LENGTH:
-            logging.warn('Cannot parse the incoming binary data {}, '
-                         'wrong format.'.format(binary))
-            return SpanContext(from_header=False)
-
+        # If cannot parse, return a new SpanContext and ignore the context
+        # from binary.
         try:
             data = Header._make(struct.unpack(BINARY_FORMAT, binary))
         except struct.error:
             logging.warn('Cannot parse the incoming binary data {}, '
-                         'wrong format.'.format(binary))
+                         'wrong format. Total bytes length should be {}.'
+                         .format(binary, FORMAT_LENGTH))
             return SpanContext(from_header=False)
 
         # data.trace_id is in bytes with length 16, hexlify it to hex bytes
@@ -137,11 +133,11 @@ class BinaryFormatPropagator(object):
 
     def to_header(self, span_context):
         """Convert a SpanContext object to header in binary format.
-        
+
         :type span_context:
             :class:`~opencensus.trace.span_context.SpanContext`
         :param span_context: SpanContext object.
-        
+
         :rtype: bytes
         :returns: A trace context header in binary format.
         """
@@ -152,7 +148,7 @@ class BinaryFormatPropagator(object):
         # If there is no span_id in this context, set it to 0, which is
         # considered invalid and won't be set as the downstream parent span_id.
         if span_id is None:
-            span_id = '0'
+            span_id = 0
 
         enabled_int = int(enabled)
 

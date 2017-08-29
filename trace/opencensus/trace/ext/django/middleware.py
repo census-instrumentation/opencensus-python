@@ -146,9 +146,6 @@ class OpencensusMiddleware(object):
         try:
             tracer = _get_current_request_tracer()
 
-            if not tracer.enabled:
-                return response
-
             span = tracer._span_stack[-1]
 
             span.add_label(

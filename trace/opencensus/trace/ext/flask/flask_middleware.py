@@ -89,9 +89,6 @@ class FlaskMiddleware(object):
             # Add tracer to flask application globals
             setattr(flask.g, TRACER_KEY, tracer)
 
-            if not tracer.enabled:
-                return
-
             tracer.start_trace()
 
             span = tracer.start_span()
@@ -112,9 +109,6 @@ class FlaskMiddleware(object):
         """
         try:
             tracer = flask.g.get(TRACER_KEY, None)
-
-            if not tracer.enabled:
-                return response
 
             span = tracer._span_stack[-1]
             span.add_label(HTTP_STATUS_CODE, response.status_code)
