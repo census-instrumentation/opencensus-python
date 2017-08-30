@@ -36,6 +36,19 @@ class TestGoogleCloudFormatPropagator(unittest.TestCase):
             propagator.from_header(header)
 
     def test_header_match(self):
+        # Trace option is not enabled.
+        header = '6e0c63257de34c92bf9efcd03927272e/1234;o=0'
+        expected_trace_id = '6e0c63257de34c92bf9efcd03927272e'
+        expected_span_id = 1234
+
+        propagator = google_cloud_format.GoogleCloudFormatPropagator()
+        span_context = propagator.from_header(header)
+
+        self.assertEqual(span_context.trace_id, expected_trace_id)
+        self.assertEqual(span_context.span_id, expected_span_id)
+        self.assertFalse(span_context.enabled)
+
+        # Trace option is enabled.
         header = '6e0c63257de34c92bf9efcd03927272e/1234;o=1'
         expected_trace_id = '6e0c63257de34c92bf9efcd03927272e'
         expected_span_id = 1234

@@ -85,6 +85,7 @@ class FlaskMiddleware(object):
                 sampler=self.sampler,
                 reporter=self.reporter,
                 propagator=self.propagator)
+
             tracer.start_trace()
 
             span = tracer.start_span()
