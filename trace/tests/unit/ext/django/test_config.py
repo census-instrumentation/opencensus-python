@@ -49,10 +49,10 @@ class TestDjangoTraceSettings(unittest.TestCase):
 
     def test__getattr___valid(self):
         from opencensus.trace.ext.django import config
-        from opencensus.trace.tracer.context_tracer import ContextTracer
+        from opencensus.trace.samplers.always_on import AlwaysOnSampler
 
         django_trace_settings = config.DjangoTraceSettings()
 
-        tracer_class = getattr(django_trace_settings, 'TRACER')
+        sampler_class = getattr(django_trace_settings, 'SAMPLER')
 
-        assert isinstance(tracer_class(), ContextTracer)
+        assert isinstance(sampler_class(), AlwaysOnSampler)

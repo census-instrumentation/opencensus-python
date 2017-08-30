@@ -19,7 +19,7 @@ from opencensus.trace import labels_helper
 from opencensus.trace.propagation import google_cloud_format
 from opencensus.trace.reporters import print_reporter
 from opencensus.trace.samplers import always_on
-from opencensus.trace.tracer import context_tracer
+from opencensus.trace import request_tracer
 
 _FLASK_TRACE_HEADER = 'X_CLOUD_TRACE_CONTEXT'
 
@@ -80,7 +80,7 @@ class FlaskMiddleware(object):
             header = get_flask_header()
             span_context = self.propagator.from_header(header)
 
-            tracer = context_tracer.ContextTracer(
+            tracer = request_tracer.RequestTracer(
                 span_context=span_context,
                 sampler=self.sampler,
                 reporter=self.reporter,
@@ -94,8 +94,8 @@ class FlaskMiddleware(object):
             span.name = '[{}]{}'.format(
                 flask.request.method,
                 flask.request.url)
-            span.add_label(HTTP_METHOD, flask.request.method)
-            span.add_label(HTTP_URL, flask.request.url)
+            tracer.add_label_to_spans(HTTP_METHOD, flask.request.method)
+            tracer.add_label_to_spans(HTTP_URL, flask.request.url)
 
             # Add tracer to flask application globals
             setattr(flask.g, TRACER_KEY, tracer)
@@ -109,8 +109,7 @@ class FlaskMiddleware(object):
         """
         try:
             tracer = flask.g.get(TRACER_KEY, None)
-            span = tracer._span_stack[-1]
-            span.add_label(HTTP_STATUS_CODE, response.status_code)
+            tracer.add_label_to_spans(HTTP_STATUS_CODE, response.status_code)
 
             tracer.end_span()
             tracer.end_trace()

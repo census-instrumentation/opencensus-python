@@ -23,13 +23,13 @@ try:
 except (ImportError, SyntaxError):  # pragma: NO COVER
     webapp2 = None
 
+from opencensus.trace.request_tracer import RequestTracer
 from opencensus.trace.propagation import google_cloud_format
-from opencensus.trace.tracer.context_tracer import ContextTracer
 
 _WEBAPP2_TRACE_KEY = 'X-CLOUD-TRACE-CONTEXT'
 
 
-class WebApp2Tracer(ContextTracer):
+class WebApp2Tracer(RequestTracer):
     """The WebApp2 implementation of the ContextTracer Interface.
 
     :type span_context: :class:`~opencensus.trace.span_context.SpanContext`

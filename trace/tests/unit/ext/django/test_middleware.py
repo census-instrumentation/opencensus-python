@@ -37,13 +37,11 @@ class TestOpencensusMiddleware(unittest.TestCase):
     def test_constructor(self):
         from opencensus.trace.ext.django import middleware
         from opencensus.trace.samplers import always_on
-        from opencensus.trace.tracer import context_tracer
         from opencensus.trace.reporters import print_reporter
         from opencensus.trace.propagation import google_cloud_format
 
         middleware = middleware.OpencensusMiddleware()
 
-        self.assertIs(middleware._tracer, context_tracer.ContextTracer)
         self.assertIs(middleware._sampler, always_on.AlwaysOnSampler)
         self.assertIs(middleware._reporter, print_reporter.PrintReporter)
         self.assertIs(
@@ -68,9 +66,8 @@ class TestOpencensusMiddleware(unittest.TestCase):
         middleware_obj.process_request(django_request)
 
         tracer = middleware._get_current_request_tracer()
-        self.assertEqual(len(tracer._span_stack), 1)
 
-        span = tracer._span_stack[-1]
+        span = tracer.current_span()
 
         expected_labels = {
             '/http/url': u'/',
@@ -104,7 +101,7 @@ class TestOpencensusMiddleware(unittest.TestCase):
 
         middleware_obj.process_request(django_request)
         tracer = middleware._get_current_request_tracer()
-        span = tracer._span_stack[-1]
+        span = tracer.current_span()
 
         reporter_mock = mock.Mock()
         tracer.reporter = reporter_mock
@@ -133,31 +130,31 @@ class TestOpencensusMiddleware(unittest.TestCase):
 
 class Test__set_django_labels(unittest.TestCase):
 
-    class Span(object):
+    class Tracer(object):
         def __init__(self):
             self.labels = {}
 
-        def add_label(self, key, value):
+        def add_label_to_spans(self, key, value):
             self.labels[key] = value
 
     def test__set_django_labels_no_user(self):
         from opencensus.trace.ext.django.middleware import _set_django_labels
 
-        span = self.Span()
+        tracer = self.Tracer()
         request = mock.Mock()
 
         request.user = None
 
-        _set_django_labels(span, request)
+        _set_django_labels(tracer, request)
 
         expected_labels = {}
 
-        self.assertEqual(span.labels, expected_labels)
+        self.assertEqual(tracer.labels, expected_labels)
 
     def test__set_django_labels_no_user_info(self):
         from opencensus.trace.ext.django.middleware import _set_django_labels
 
-        span = self.Span()
+        tracer = self.Tracer()
         request = mock.Mock()
         django_user = mock.Mock()
 
@@ -165,16 +162,16 @@ class Test__set_django_labels(unittest.TestCase):
         django_user.pk = None
         django_user.get_username.return_value = None
 
-        _set_django_labels(span, request)
+        _set_django_labels(tracer, request)
 
         expected_labels = {}
 
-        self.assertEqual(span.labels, expected_labels)
+        self.assertEqual(tracer.labels, expected_labels)
 
     def test__set_django_labels_with_user_info(self):
         from opencensus.trace.ext.django.middleware import _set_django_labels
 
-        span = self.Span()
+        tracer = self.Tracer()
         request = mock.Mock()
         django_user = mock.Mock()
 
@@ -184,10 +181,10 @@ class Test__set_django_labels(unittest.TestCase):
         django_user.pk = test_id
         django_user.get_username.return_value = test_name
 
-        _set_django_labels(span, request)
+        _set_django_labels(tracer, request)
 
         expected_labels = {
             '/django/user/id': 123,
             '/django/user/name': test_name}
 
-        self.assertEqual(span.labels, expected_labels)
+        self.assertEqual(tracer.labels, expected_labels)

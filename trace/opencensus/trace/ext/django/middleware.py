@@ -19,6 +19,7 @@ import threading
 from opencensus.trace.ext import utils
 from opencensus.trace.ext.django.config import settings
 from opencensus.trace import labels_helper
+from opencensus.trace import request_tracer
 
 _thread_locals = threading.local()
 
@@ -26,7 +27,6 @@ HTTP_METHOD = labels_helper.STACKDRIVER_LABELS['HTTP_METHOD']
 HTTP_URL = labels_helper.STACKDRIVER_LABELS['HTTP_URL']
 HTTP_STATUS_CODE = labels_helper.STACKDRIVER_LABELS['HTTP_STATUS_CODE']
 
-REQUEST_SPAN_NAME = 'django_request_span'
 TRACER_THREAD_LOCAL_KEY = '_opencensus_django_request_tracer'
 
 _DJANGO_TRACE_HEADER = 'HTTP_X_CLOUD_TRACE_CONTEXT'
@@ -48,7 +48,7 @@ def _get_current_request_tracer():
     return getattr(_thread_locals, TRACER_THREAD_LOCAL_KEY, None)
 
 
-def _set_django_labels(span, request):
+def _set_django_labels(tracer, request):
     """Set the django related labels."""
     django_user = getattr(request, 'user', None)
 
@@ -60,10 +60,10 @@ def _set_django_labels(span, request):
 
     # User id is the django autofield for User model as the primary key
     if user_id is not None:
-        span.add_label('/django/user/id', user_id)
+        tracer.add_label_to_spans('/django/user/id', user_id)
 
     if user_name is not None:
-        span.add_label('/django/user/name', user_name)
+        tracer.add_label_to_spans('/django/user/name', user_name)
 
 
 def get_django_header():
@@ -85,7 +85,6 @@ class OpencensusMiddleware(object):
     def __init__(self, get_response=None):
         # One-time configuration and initialization.
         self.get_response = get_response
-        self._tracer = settings.TRACER
         self._sampler = settings.SAMPLER
         self._reporter = settings.REPORTER
         self._propagator = settings.PROPAGATOR
@@ -106,19 +105,23 @@ class OpencensusMiddleware(object):
             span_context = propagator.from_header(header)
 
             # Reload the tracer with the new span context
-            tracer = self._tracer(
+            tracer = request_tracer.RequestTracer(
                 span_context=span_context,
                 sampler=self._sampler(),
                 reporter=self._reporter(),
                 propagator=propagator)
-            setattr(_thread_locals, TRACER_THREAD_LOCAL_KEY, tracer)
 
+            setattr(_thread_locals, TRACER_THREAD_LOCAL_KEY, tracer)
             tracer.start_trace()
 
             # Span name is being set at process_view
-            span = tracer.start_span()
-            span.add_label(label_key=HTTP_METHOD, label_value=request.method)
-            span.add_label(label_key=HTTP_URL, label_value=request.path)
+            tracer.start_span()
+            tracer.add_label_to_spans(
+                label_key=HTTP_METHOD,
+                label_value=request.method)
+            tracer.add_label_to_spans(
+                label_key=HTTP_URL,
+                label_value=request.path)
         except Exception:  # pragma: NO COVER
             log.error('Failed to trace request', exc_info=True)
 
@@ -127,11 +130,10 @@ class OpencensusMiddleware(object):
         function name add set it as the span name.
         """
         try:
-            # Get the current span
+            # Get the current span and set the span name to the current
+            # function name of the request.
             tracer = _get_current_request_tracer()
-
-            span = tracer._span_stack[-1]
-
+            span = tracer.current_span()
             span.name = utils.get_func_name(view_func)
         except Exception:  # pragma: NO COVER
             log.error('Failed to trace request', exc_info=True)
@@ -139,12 +141,12 @@ class OpencensusMiddleware(object):
     def process_response(self, request, response):
         try:
             tracer = _get_current_request_tracer()
-            span = tracer._span_stack[-1]
-
-            span.add_label(
+            tracer.add_label_to_spans(
                 label_key=HTTP_STATUS_CODE,
                 label_value=response.status_code)
-            _set_django_labels(span, request)
+
+            _set_django_labels(tracer, request)
+
             tracer.end_span()
             tracer.end_trace()
         except Exception:  # pragma: NO COVER

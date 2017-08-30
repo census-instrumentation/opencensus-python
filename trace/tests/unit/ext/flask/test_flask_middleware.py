@@ -90,9 +90,8 @@ class TestFlaskMiddleware(unittest.TestCase):
             app.preprocess_request()
             tracer = flask.g.get('tracer')
             self.assertIsNotNone(tracer)
-            self.assertEqual(len(tracer._span_stack), 1)
 
-            span = tracer._span_stack[-1]
+            span = tracer.current_span()
 
             expected_labels = {
                 '/http/url': u'http://localhost/',
@@ -128,9 +127,8 @@ class TestFlaskMiddleware(unittest.TestCase):
             app.preprocess_request()
             tracer = flask.g.get('tracer')
             self.assertIsNotNone(tracer)
-            self.assertEqual(len(tracer._span_stack), 1)
 
-            span = tracer._span_stack[-1]
+            span = tracer.current_span()
 
             expected_labels = {
                 '/http/url': u'http://localhost/',
