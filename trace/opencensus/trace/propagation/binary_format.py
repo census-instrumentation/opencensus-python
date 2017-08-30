@@ -20,8 +20,6 @@ import struct
 from opencensus.trace.propagation import _helpers
 from opencensus.trace.span_context import SpanContext
 
-_ENABLED_BITMASK = 1
-
 # Used for decoding hex bytes to hex string.
 UTF8 = 'utf-8'
 
@@ -44,7 +42,7 @@ CHAR_ARRAY_FORMAT = 's'
 UNSIGNED_CHAR = 'B'
 UNSIGNED_LONG_LONG = 'Q'
 
-# Adding big endian indicator add the beginning to avoid auto padding. This is
+# Adding big endian indicator at the beginning to avoid auto padding. This is
 # for ensuring the length of binary is not changed when propagating.
 BINARY_FORMAT = '{big_endian}{version_id}' \
     '{trace_id_field_id}{trace_id}' \
