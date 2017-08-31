@@ -84,3 +84,4 @@ class Tracer(object):
 
     def list_collected_spans(self):
         """List collected spans."""
+        raise NotImplementedError

@@ -27,17 +27,17 @@ class RequestTracer(object):
     :param span_context: SpanContext encapsulates the current context within
                          the request's trace.
 
-    :type sampler: :class:`type`
-    :param sampler: Class for creating new Sampler objects. It should extend
-                    from the base :class:`.Sampler` type and implement
-                    :meth:`.Sampler.should_sample`. Defaults to
+    :type sampler: :class:`~opencensus.trace.samplers.base.Sampler`
+    :param sampler: Instances of Sampler objects. Defaults to
                     :class:`.AlwaysOnSampler`. The rest options are
                     :class:`.AlwaysOffSampler`, :class:`.FixedRateSampler`.
 
-    :type reporter: :class:`type`
-    :param reporter: Class for creating new Reporter objects. Default to
-                     :class:`.PrintReporter`. The rest option is
-                     :class:`.FileReporter`.
+    :type reporter: :class:`~opencensus.trace.reporters.base.Reporter`
+    :param reporter: Instances of Reporter objects. Default to
+                     :class:`.PrintReporter`. The rest options are
+                     :class:`.FileReporter`, :class:`.PrintReporter`,
+                     :class:`.LoggingReporter`, :class:`.ZipkinReporter`,
+                     :class:`.GoogleCloudReporter`
     """
     def __init__(
             self,
@@ -63,7 +63,7 @@ class RequestTracer(object):
         self.propagator = propagator
         self.tracer = self.get_tracer()
 
-    def get_enabled(self):
+    def should_sample(self):
         """Determine whether to sample this request or not.
         If the context forces not tracing, just set enabled to False.
         Else follow the sampler.
@@ -71,18 +71,13 @@ class RequestTracer(object):
         :rtype: bool
         :returns: Whether to trace the request or not.
         """
-        if self.span_context.enabled is False:
-            return False
-        elif self.sampler.should_sample is True:
-            return True
-        else:
-            return False
+        return self.span_context.enabled and self.sampler.should_sample
 
     def get_tracer(self):
         """Return a tracer according to the sampling decision."""
-        enabled = self.get_enabled()
+        sampled = self.should_sample()
 
-        if enabled:
+        if sampled:
             return context_tracer.ContextTracer(self.span_context)
         else:
             return noop_tracer.NoopTracer()

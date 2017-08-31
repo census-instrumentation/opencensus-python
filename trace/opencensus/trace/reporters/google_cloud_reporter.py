@@ -12,10 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from opencensus.trace.reporters import base
+
 from google.cloud.trace.client import Client
 
 
-class GoogleCloudReporter(object):
+class GoogleCloudReporter(base.Reporter):
     """A reporter that send traces and trace spans to Google Cloud Stackdriver
     Trace.
     """

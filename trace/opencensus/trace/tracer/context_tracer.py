@@ -102,12 +102,9 @@ class ContextTracer(base.Tracer):
         span_id in TraceContext as the current span_id which is the peek
         element in the span stack.
         """
-        try:
-            cur_span = self._span_stack.pop()
-        except IndexError:
-            logging.error('No span is active, cannot end any span.')
-            raise
+        cur_span = self.current_span()
 
+        self._span_stack.pop()
         cur_span.finish()
 
         if not self._span_stack:
@@ -117,7 +114,13 @@ class ContextTracer(base.Tracer):
 
     def current_span(self):
         """Return the current span."""
-        return self._span_stack[-1]
+        try:
+            cur_span = self._span_stack[-1]
+        except IndexError:
+            logging.error('No span in the span stack.')
+            raise
+
+        return cur_span
 
     def list_collected_spans(self):
         return self.cur_trace.spans
