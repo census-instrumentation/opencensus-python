@@ -14,7 +14,7 @@
 
 from opencensus.trace.propagation import google_cloud_format
 from opencensus.trace.reporters import print_reporter
-from opencensus.trace.samplers.always_on import AlwaysOnSampler
+from opencensus.trace.samplers import always_on
 from opencensus.trace.span_context import SpanContext
 from opencensus.trace.tracer import context_tracer
 from opencensus.trace.tracer import noop_tracer
@@ -49,7 +49,7 @@ class RequestTracer(object):
             span_context = SpanContext()
 
         if sampler is None:
-            sampler = AlwaysOnSampler()
+            sampler = always_on.AlwaysOnSampler()
 
         if reporter is None:
             reporter = print_reporter.PrintReporter()

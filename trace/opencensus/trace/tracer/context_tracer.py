@@ -60,7 +60,7 @@ class ContextTracer(base.Tracer):
         helper = labels_helper.LabelsHelper(self)
         helper.set_labels()
 
-        trace = self.get_trace_json()
+        trace = self._get_trace_json()
         self.cur_trace.finish()
 
         return trace
@@ -137,7 +137,7 @@ class ContextTracer(base.Tracer):
         for span in self.cur_trace.spans:
             span.add_label(label_key, label_value)
 
-    def get_trace_json(self):
+    def _get_trace_json(self):
         """Get the JSON format trace."""
         spans_list = []
         for root_span in self.cur_trace.spans:

@@ -1,4 +1,4 @@
-# Copyright 2016-17, OpenCensus Authors
+# Copyright 2017, OpenCensus Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,15 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module containing base class for reporters."""
+import unittest
+
+from opencensus.trace.tracer import noop_tracer
 
 
-class Reporter(object):
-    """Base class for opencensus trace request reporters.
+class TestNoopTracer(unittest.TestCase):
 
-    Subclasses of :class:`Reporter` must override :meth:`report`.
-    """
+    def test_trace(self):
+        tracer = noop_tracer.NoopTracer()
+        trace = tracer.trace()
 
-    def report(self, trace):
-        """Export the trace."""
-        raise NotImplementedError
+        assert isinstance(trace, noop_tracer.NullObject)
+
+    def test_list_collected_spans(self):
+        tracer = noop_tracer.NoopTracer()
+
+        spans = tracer.list_collected_spans()
+
+        self.assertIsNone(spans)

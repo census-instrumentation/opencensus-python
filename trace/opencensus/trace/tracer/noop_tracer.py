@@ -79,10 +79,6 @@ class NoopTracer(base.Tracer):
         """
         return
 
-    def get_trace_json(self):
-        """Get the JSON format trace."""
-        return None
-
     def list_collected_spans(self):
         """List collected spans."""
         return None

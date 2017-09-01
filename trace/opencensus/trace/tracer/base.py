@@ -78,10 +78,6 @@ class Tracer(object):
         """
         raise NotImplementedError
 
-    def get_trace_json(self):
-        """Get the JSON format trace."""
-        raise NotImplementedError
-
     def list_collected_spans(self):
         """List collected spans."""
         raise NotImplementedError
