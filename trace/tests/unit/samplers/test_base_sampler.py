@@ -12,20 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Export the trace spans by printing them out."""
+import unittest
 
-from opencensus.trace.reporters import base
+class TestBaseSampler(unittest.TestCase):
 
+    def test_should_sample_abstract(self):
+        from opencensus.trace.samplers import base
 
-class PrintReporter(base.Reporter):
-    def report(self, trace):
-        """Report the traces by printing it out.
+        sampler = base.Sampler()
 
-        :type trace: dict
-        :param trace: Trace collected.
-
-        :rtype: dict
-        :returns: Trace printed.
-        """
-        print(trace)
-        return trace
+        with self.assertRaises(NotImplementedError):
+            sampler.should_sample()

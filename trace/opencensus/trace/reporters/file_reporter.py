@@ -16,10 +16,12 @@
 
 import json
 
+from opencensus.trace.reporters import base
+
 DEFAULT_FILENAME = 'opencensus-traces.json'
 
 
-class FileReporter(object):
+class FileReporter(base.Reporter):
     """
     :type file_name: str
     :param file_name: The name of the output file.

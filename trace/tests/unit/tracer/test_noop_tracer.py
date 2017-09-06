@@ -12,20 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Export the trace spans by printing them out."""
+import unittest
 
-from opencensus.trace.reporters import base
+from opencensus.trace.tracer import noop_tracer
 
 
-class PrintReporter(base.Reporter):
-    def report(self, trace):
-        """Report the traces by printing it out.
+class TestNoopTracer(unittest.TestCase):
 
-        :type trace: dict
-        :param trace: Trace collected.
+    def test_trace(self):
+        tracer = noop_tracer.NoopTracer()
+        trace = tracer.trace()
 
-        :rtype: dict
-        :returns: Trace printed.
-        """
-        print(trace)
-        return trace
+        assert isinstance(trace, noop_tracer.NullObject)
+
+    def test_list_collected_spans(self):
+        tracer = noop_tracer.NoopTracer()
+
+        spans = tracer.list_collected_spans()
+
+        self.assertIsNone(spans)

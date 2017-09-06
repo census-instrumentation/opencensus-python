@@ -69,7 +69,6 @@ class LabelsHelper(object):
 
     def __init__(self, tracer):
         self.tracer = tracer
-        self.reporter = tracer.reporter
 
     def set_labels(self):
         """Automatically set labels for each environment."""

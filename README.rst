@@ -19,9 +19,9 @@ Installation
 
 .. code:: python
 
-    from opencensus.trace.tracer import context_tracer
+    from opencensus.trace import request_tracer
 
-    tracer = context_tracer.ContextTracer()
+    tracer = request_tracer.RequestTracer()
     tracer.start_trace()
 
 Usage
@@ -38,10 +38,10 @@ Usage 1: ``with`` statement (Recommended)
 
 .. code:: python
 
-    from opencensus.trace.tracer import context_tracer
+    from opencensus.trace import request_tracer
 
     # Initialize a tracer, by default using the `PrintReporter`
-    tracer = context_tracer.ContextTracer()
+    tracer = request_tracer.RequestTracer()
     tracer.start_trace()
 
     # Example for creating nested spans
@@ -62,10 +62,10 @@ Usage 2: Explicitly start and end spans
 
 .. code:: python
 
-    from opencensus.trace.tracer import context_tracer
+    from opencensus.trace import request_tracer
 
     # Initialize a tracer, by default using the `PrintReporter`
-    tracer = context_tracer.ContextTracer()
+    tracer = request_tracer.RequestTracer()
     tracer.start_trace()
 
     tracer.start_span(name='span1')
@@ -85,11 +85,11 @@ and ``FixedRateSampler``
 .. code:: python
 
     from opencensus.trace.samplers import fixed_rate
-    from opencensus.trace.tracer import context_tracer
+    from opencensus.trace import request_tracer
 
     # Sampling the requests at the rate equals 0.5
     sampler = fixed_rate.FixedRateSampler(rate=0.5)
-    tracer = context_tracer.ContextTracer(sampler=sampler)
+    tracer = request_tracer.RequestTracer(sampler=sampler)
 
 Reporters
 ~~~~~~~~~
@@ -113,11 +113,11 @@ Report to Stackdriver Trace:
 .. code:: python
 
     from opencensus.trace.reporters import google_cloud_reporter
-    from opencensus.trace.tracer import context_tracer
+    from opencensus.trace import request_tracer
 
     reporter = google_cloud_reporter.GoogleCloudReporter(
         project_id='your_cloud_project')
-    tracer = context_tracer.ContextTracer(reporter=reporter)
+    tracer = request_tracer.RequestTracer(reporter=reporter)
 
 Propagators
 ~~~~~~~~~~~
@@ -185,9 +185,10 @@ Customize the sampler, reporter, propagator in the ``settings.py`` file:
 ::
 
     OPENCENSUS_TRACE = {
-        'TRACER': 'opencensus.trace.tracer.context_tracer.ContextTracer',
-        'SAMPLER': 'opencensus.trace.samplers.always_on.AlwaysOnSampler',
-        'REPORTER': 'opencensus.trace.reporters.print_reporter.PrintReporter'
+        'SAMPLER': 'opencensus.trace.samplers.fixed_rate.FixedRateSampler',
+        'REPORTER': 'opencensus.trace.reporters.print_reporter.PrintReporter',
+        'PROPAGATOR': 'opencensus.trace.propagation.google_cloud_format.'
+                      'GoogleCloudFormatPropagator',
     }
 
 Then the requests will be automatically traced.

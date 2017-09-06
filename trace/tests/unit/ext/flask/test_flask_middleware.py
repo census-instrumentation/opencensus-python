@@ -90,9 +90,8 @@ class TestFlaskMiddleware(unittest.TestCase):
             app.preprocess_request()
             tracer = flask.g.get('tracer')
             self.assertIsNotNone(tracer)
-            self.assertEqual(len(tracer._span_stack), 1)
 
-            span = tracer._span_stack[-1]
+            span = tracer.current_span()
 
             expected_labels = {
                 '/http/url': u'http://localhost/',
@@ -128,9 +127,8 @@ class TestFlaskMiddleware(unittest.TestCase):
             app.preprocess_request()
             tracer = flask.g.get('tracer')
             self.assertIsNotNone(tracer)
-            self.assertEqual(len(tracer._span_stack), 1)
 
-            span = tracer._span_stack[-1]
+            span = tracer.current_span()
 
             expected_labels = {
                 '/http/url': u'http://localhost/',
@@ -143,7 +141,25 @@ class TestFlaskMiddleware(unittest.TestCase):
             span_context = tracer.span_context
             self.assertNotEqual(span_context.trace_id, trace_id)
 
-    def test__after_request(self):
+    def test__after_request_not_sampled(self):
+        from opencensus.trace.samplers import always_off
+
+        flask_trace_header = 'X_CLOUD_TRACE_CONTEXT'
+        trace_id = '2dd43a1d6b2549c6bc2a1a54c2fc0b05'
+        span_id = 1234
+        flask_trace_id = '{}/{}'.format(trace_id, span_id)
+        sampler = always_off.AlwaysOffSampler()
+
+        app = self.create_app()
+        flask_middleware.FlaskMiddleware(app=app, sampler=sampler)
+
+        response = app.test_client().get(
+            '/',
+            headers={flask_trace_header: flask_trace_id})
+
+        self.assertEqual(response.status_code, 200)
+
+    def test__after_request_sampled(self):
         flask_trace_header = 'X_CLOUD_TRACE_CONTEXT'
         trace_id = '2dd43a1d6b2549c6bc2a1a54c2fc0b05'
         span_id = 1234

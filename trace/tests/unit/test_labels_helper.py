@@ -22,13 +22,10 @@ class TestLabelsHelper(unittest.TestCase):
 
     def test_constructor(self):
         tracer = mock.Mock()
-        reporter = mock.Mock()
-        tracer.reporter = reporter
 
         labels_helper = LabelsHelper(tracer=tracer)
 
         self.assertEqual(labels_helper.tracer, tracer)
-        self.assertEqual(labels_helper.reporter, reporter)
 
     def test_set_labels_gae(self):
         from opencensus.trace.labels_helper import _APPENGINE_FLEXIBLE_ENV_VM

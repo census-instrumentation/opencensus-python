@@ -16,8 +16,10 @@
 
 import logging
 
+from opencensus.trace.reporters import base
 
-class LoggingReporter(object):
+
+class LoggingReporter(base.Reporter):
     """A reporter to export the spans data to python logging. Also can use
     handlers like CloudLoggingHandler to log to Stackdriver Logging API.
 

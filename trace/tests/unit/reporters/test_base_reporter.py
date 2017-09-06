@@ -14,12 +14,13 @@
 
 import unittest
 
-class TestBaseSampler(unittest.TestCase):
+class TestBaseReporter(unittest.TestCase):
 
-    def test_should_sampler_id_abstract(self):
-        from opencensus.trace.samplers import base
+    def test_report_abstract(self):
+        from opencensus.trace.reporters import base
 
-        sampler = base.Sampler()
+        reporter = base.Reporter()
+        trace = {}
 
         with self.assertRaises(NotImplementedError):
-            sampler.should_sample()
+            reporter.report(trace)

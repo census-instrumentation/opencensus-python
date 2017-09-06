@@ -1,4 +1,4 @@
-# Copyright 2017, OpenCensus Authors
+# Copyright 2016-17, OpenCensus Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,20 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Export the trace spans by printing them out."""
-
-from opencensus.trace.reporters import base
+"""Module containing base class for reporters."""
 
 
-class PrintReporter(base.Reporter):
+class Reporter(object):
+    """Base class for opencensus trace request reporters.
+
+    Subclasses of :class:`Reporter` must override :meth:`report`.
+    """
+
     def report(self, trace):
-        """Report the traces by printing it out.
-
-        :type trace: dict
-        :param trace: Trace collected.
-
-        :rtype: dict
-        :returns: Trace printed.
-        """
-        print(trace)
-        return trace
+        """Export the trace."""
+        raise NotImplementedError

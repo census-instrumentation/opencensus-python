@@ -20,6 +20,8 @@ import logging
 import requests
 import calendar
 
+from opencensus.trace.reporters import base
+
 DEFAULT_ENDPOINT = '/api/v2/spans'
 DEFAULT_HOST_NAME = 'localhost'
 DEFAULT_PORT = 9411
@@ -36,7 +38,7 @@ SPAN_KIND_MAP = {
 SUCCESS_STATUS_CODE = (200, 202)
 
 
-class ZipkinReporter(object):
+class ZipkinReporter(base.Reporter):
     """Report the spans to Zipkin.
 
     See: http://zipkin.io/zipkin-api/#
