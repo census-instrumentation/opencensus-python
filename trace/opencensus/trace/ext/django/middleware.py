@@ -14,20 +14,18 @@
 
 """Django middleware helper to capture and trace a request."""
 import logging
-import threading
 
 from opencensus.trace.ext import utils
 from opencensus.trace.ext.django.config import settings
 from opencensus.trace import labels_helper
 from opencensus.trace import request_tracer
-
-_thread_locals = threading.local()
+from opencensus.trace import thread_local
 
 HTTP_METHOD = labels_helper.STACKDRIVER_LABELS['HTTP_METHOD']
 HTTP_URL = labels_helper.STACKDRIVER_LABELS['HTTP_URL']
 HTTP_STATUS_CODE = labels_helper.STACKDRIVER_LABELS['HTTP_STATUS_CODE']
 
-TRACER_THREAD_LOCAL_KEY = '_opencensus_django_request_tracer'
+REQUEST_THREAD_LOCAL_KEY = 'django_request'
 
 _DJANGO_TRACE_HEADER = 'HTTP_X_CLOUD_TRACE_CONTEXT'
 
@@ -40,12 +38,13 @@ def _get_django_request():
     :rtype: str
     :returns: Django request.
     """
-    return getattr(_thread_locals, 'request', None)
+    attrs = thread_local.get_opencensus_attrs()
+    return attrs.get(REQUEST_THREAD_LOCAL_KEY)
 
 
 def _get_current_request_tracer():
     """Get the current request tracer."""
-    return getattr(_thread_locals, TRACER_THREAD_LOCAL_KEY, None)
+    return thread_local.get_opencensus_tracer()
 
 
 def _set_django_labels(tracer, request):
@@ -96,7 +95,7 @@ class OpencensusMiddleware(object):
         :param request: Django http request.
         """
         # Add the request to thread local
-        _thread_locals.request = request
+        thread_local.set_opencensus_attrs(REQUEST_THREAD_LOCAL_KEY, request)
 
         try:
             # Start tracing this request
@@ -111,7 +110,7 @@ class OpencensusMiddleware(object):
                 reporter=self._reporter(),
                 propagator=propagator)
 
-            setattr(_thread_locals, TRACER_THREAD_LOCAL_KEY, tracer)
+            thread_local.set_opencensus_tracer(tracer)
             tracer.start_trace()
 
             # Span name is being set at process_view

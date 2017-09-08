@@ -13,15 +13,35 @@
 # limitations under the License.
 
 import flask
+import mysql.connector
+
 from opencensus.trace.ext.flask.flask_middleware import FlaskMiddleware
+from opencensus.trace import config_integration
 
 app = flask.Flask(__name__)
 middleware = FlaskMiddleware(app)
+config_integration.trace_integrations()
 
 
 @app.route('/')
 def hello():
     return 'hello'
+
+
+@app.route('/mysql')
+def query():
+    conn = mysql.connector.connect(user='root', password='19931228')
+    cursor = conn.cursor()
+
+    query = 'SELECT 2*3'
+    cursor.execute(query)
+
+    result = []
+
+    for item in cursor:
+        result.append(item)
+
+    return str(result)
 
 
 if __name__ == '__main__':
