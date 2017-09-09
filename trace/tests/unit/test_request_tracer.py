@@ -153,14 +153,14 @@ class TestRequestTracer(unittest.TestCase):
         self.assertTrue(cur_trace.finish.called)
 
     def test_span_not_sampled(self):
-        from opencensus.trace.tracer import noop_tracer
+        from opencensus.trace.tracer import base
 
         sampler = mock.Mock()
         sampler.should_sample = False
         tracer = request_tracer.RequestTracer(sampler=sampler)
 
         span = tracer.span()
-        assert isinstance(span, noop_tracer.NullObject)
+        assert isinstance(span, base.NullObject)
 
     def test_span_sampled(self):
         sampler = mock.Mock()
@@ -174,7 +174,7 @@ class TestRequestTracer(unittest.TestCase):
         self.assertTrue(tracer_mock.span.called)
 
     def test_start_span_not_sampled(self):
-        from opencensus.trace.tracer import noop_tracer
+        from opencensus.trace.tracer import base
 
         sampler = mock.Mock()
         sampler.should_sample = False
@@ -182,7 +182,7 @@ class TestRequestTracer(unittest.TestCase):
 
         span = tracer.start_span()
 
-        assert isinstance(span, noop_tracer.NullObject)
+        assert isinstance(span, base.NullObject)
 
     def test_start_span_sampled(self):
         from opencensus.trace import trace_span
@@ -217,7 +217,7 @@ class TestRequestTracer(unittest.TestCase):
         self.assertTrue(span.finish.called)
 
     def test_current_span_not_sampled(self):
-        from opencensus.trace.tracer import noop_tracer
+        from opencensus.trace.tracer import base
 
         sampler = mock.Mock()
         sampler.should_sample = False
@@ -225,7 +225,7 @@ class TestRequestTracer(unittest.TestCase):
 
         span = tracer.current_span()
 
-        assert isinstance(span, noop_tracer.NullObject)
+        assert isinstance(span, base.NullObject)
 
     def test_current_span_sampled(self):
         sampler = mock.Mock()

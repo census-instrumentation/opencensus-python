@@ -25,7 +25,7 @@ class NoopTracer(base.Tracer):
         :rtype: :class:`~opencensus.trace.trace.Trace`
         :returns: The Trace object.
         """
-        return NullObject()
+        return base.NullObject()
 
     def start_trace(self):
         """Start a trace."""
@@ -44,7 +44,7 @@ class NoopTracer(base.Tracer):
         :rtype: :class:`~opencensus.trace.trace_span.TraceSpan`
         :returns: The TraceSpan object.
         """
-        return NullObject()
+        return base.NullObject()
 
     def start_span(self, name='span'):
         """Start a span.
@@ -55,7 +55,7 @@ class NoopTracer(base.Tracer):
         :rtype: :class:`~opencensus.trace.trace_span.TraceSpan`
         :returns: The TraceSpan object.
         """
-        return NullObject()
+        return base.NullObject()
 
     def end_span(self):
         """End a span. Remove the span from the span stack, and update the
@@ -66,7 +66,7 @@ class NoopTracer(base.Tracer):
 
     def current_span(self):
         """Return the current span."""
-        return NullObject()
+        return base.NullObject()
 
     def add_label_to_current_span(self, label_key, label_value):
         """Add label to current span.
@@ -93,17 +93,3 @@ class NoopTracer(base.Tracer):
     def list_collected_spans(self):
         """List collected spans."""
         return None
-
-
-class NullObject(object):
-    """Empty object as a helper for faking Trace and TraceSpan when tracing is
-    disabled.
-    """
-    def __init__(self):
-        self.name = None
-
-    def __enter__(self):
-        pass  # pragma: NO COVER
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        pass  # pragma: NO COVER

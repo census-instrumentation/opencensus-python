@@ -23,15 +23,18 @@ def get_opencensus_tracer():
     """Get the opencensus tracer from thread local."""
     return getattr(_thread_local, 'tracer', noop_tracer.NoopTracer())
 
+
 def set_opencensus_tracer(tracer):
     """Add the tracer to thread local."""
     setattr(_thread_local, 'tracer', tracer)
+
 
 def set_opencensus_attrs(attr_key, attr_value):
     attrs = get_opencensus_attrs()
     attrs[attr_key] = attr_value
 
     setattr(_thread_local, 'attrs', attrs)
+
 
 def get_opencensus_attrs():
     return getattr(_thread_local, 'attrs', {})

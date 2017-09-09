@@ -118,7 +118,7 @@ class ContextTracer(base.Tracer):
             cur_span = self._span_stack[-1]
         except IndexError:
             logging.error('No span in the span stack.')
-            raise
+            cur_span = base.NullObject()
 
         return cur_span
 

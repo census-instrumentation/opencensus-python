@@ -84,3 +84,17 @@ class Tracer(object):
     def list_collected_spans(self):
         """List collected spans."""
         raise NotImplementedError
+
+
+class NullObject(object):
+    """Empty object as a helper for faking Trace and TraceSpan when tracing is
+    disabled.
+    """
+    def __init__(self):
+        self.name = None
+
+    def __enter__(self):
+        pass  # pragma: NO COVER
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        pass  # pragma: NO COVER

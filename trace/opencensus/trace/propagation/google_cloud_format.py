@@ -48,8 +48,6 @@ class GoogleCloudFormatPropagator(object):
         if header is None:
             return SpanContext()
 
-        header = str(header.encode('utf-8'))
-
         try:
             match = re.search(_TRACE_CONTEXT_HEADER_RE, header)
         except TypeError:

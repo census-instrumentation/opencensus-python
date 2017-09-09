@@ -14,22 +14,18 @@
 
 import unittest
 
-from opencensus.trace.tracer import noop_tracer
+import mock
 
 
-class TestNoopTracer(unittest.TestCase):
+class Test_mysql_trace(unittest.TestCase):
 
     def test_trace(self):
-        from opencensus.trace.tracer import base
+        pass
 
-        tracer = noop_tracer.NoopTracer()
-        trace = tracer.trace()
 
-        assert isinstance(trace, base.NullObject)
+class TestTraceConnection(unittest.TestCase):
+    pass
 
-    def test_list_collected_spans(self):
-        tracer = noop_tracer.NoopTracer()
 
-        spans = tracer.list_collected_spans()
-
-        self.assertIsNone(spans)
+class TestTraceCursor(unittest.TestCase):
+    pass
