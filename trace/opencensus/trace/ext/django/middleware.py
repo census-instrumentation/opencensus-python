@@ -19,7 +19,7 @@ from opencensus.trace.ext import utils
 from opencensus.trace.ext.django.config import settings
 from opencensus.trace import labels_helper
 from opencensus.trace import request_tracer
-from opencensus.trace import thread_local
+from opencensus.trace import execution_context
 
 HTTP_METHOD = labels_helper.STACKDRIVER_LABELS['HTTP_METHOD']
 HTTP_URL = labels_helper.STACKDRIVER_LABELS['HTTP_URL']
@@ -38,13 +38,12 @@ def _get_django_request():
     :rtype: str
     :returns: Django request.
     """
-    attrs = thread_local.get_opencensus_attrs()
-    return attrs.get(REQUEST_THREAD_LOCAL_KEY)
+    return execution_context.get_opencensus_attr(REQUEST_THREAD_LOCAL_KEY)
 
 
 def _get_current_request_tracer():
     """Get the current request tracer."""
-    return thread_local.get_opencensus_tracer()
+    return execution_context.get_opencensus_tracer()
 
 
 def _set_django_labels(tracer, request):
@@ -95,7 +94,9 @@ class OpencensusMiddleware(object):
         :param request: Django http request.
         """
         # Add the request to thread local
-        thread_local.set_opencensus_attrs(REQUEST_THREAD_LOCAL_KEY, request)
+        execution_context.set_opencensus_attr(
+            REQUEST_THREAD_LOCAL_KEY,
+            request)
 
         try:
             # Start tracing this request
@@ -110,7 +111,6 @@ class OpencensusMiddleware(object):
                 reporter=self._reporter(),
                 propagator=propagator)
 
-            thread_local.set_opencensus_tracer(tracer)
             tracer.start_trace()
 
             # Span name is being set at process_view

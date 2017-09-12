@@ -18,9 +18,11 @@ import mysql.connector
 from opencensus.trace.ext.flask.flask_middleware import FlaskMiddleware
 from opencensus.trace import config_integration
 
+INTEGRATIONS = ['mysql',]
+
 app = flask.Flask(__name__)
 middleware = FlaskMiddleware(app)
-config_integration.trace_integrations()
+config_integration.trace_integrations(INTEGRATIONS)
 
 
 @app.route('/')

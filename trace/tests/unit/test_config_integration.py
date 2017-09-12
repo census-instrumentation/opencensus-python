@@ -38,8 +38,11 @@ class Test_trace_integrations(unittest.TestCase):
             'opencensus.trace.config_integration.importlib',
             mock_importlib)
 
-        with patch:
-            integrated = config_integration.trace_integrations()
+        integration_list = ['mysql']
 
-        self.assertTrue(mock_mysql_module.trace.called)
+        with patch:
+            integrated = config_integration.trace_integrations(
+                integration_list)
+
+        self.assertTrue(mock_mysql_module.trace_integration.called)
         self.assertEqual(integrated, ['mysql'])

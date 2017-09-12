@@ -16,7 +16,7 @@ import flask
 import logging
 
 from opencensus.trace import labels_helper
-from opencensus.trace import thread_local
+from opencensus.trace import execution_context
 from opencensus.trace.propagation import google_cloud_format
 from opencensus.trace.reporters import print_reporter
 from opencensus.trace.samplers import always_on
@@ -94,9 +94,6 @@ class FlaskMiddleware(object):
                 flask.request.url)
             tracer.add_label_to_spans(HTTP_METHOD, flask.request.method)
             tracer.add_label_to_spans(HTTP_URL, flask.request.url)
-
-            # Add tracer to thread local.
-            thread_local.set_opencensus_tracer(tracer)
         except Exception:  # pragma: NO COVER
             log.error('Failed to trace request', exc_info=True)
 
@@ -106,7 +103,7 @@ class FlaskMiddleware(object):
         See: http://flask.pocoo.org/docs/0.12/api/#flask.Flask.after_request
         """
         try:
-            tracer = thread_local.get_opencensus_tracer()
+            tracer = execution_context.get_opencensus_tracer()
             tracer.add_label_to_spans(HTTP_STATUS_CODE, response.status_code)
 
             tracer.end_span()

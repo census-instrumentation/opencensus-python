@@ -18,6 +18,7 @@ from opencensus.trace.samplers import always_on
 from opencensus.trace.span_context import SpanContext
 from opencensus.trace.tracer import context_tracer
 from opencensus.trace.tracer import noop_tracer
+from opencensus.trace import execution_context
 
 
 class RequestTracer(object):
@@ -62,6 +63,7 @@ class RequestTracer(object):
         self.reporter = reporter
         self.propagator = propagator
         self.tracer = self.get_tracer()
+        self.store_tracer()
 
     def should_sample(self):
         """Determine whether to sample this request or not.
@@ -81,6 +83,10 @@ class RequestTracer(object):
             return context_tracer.ContextTracer(self.span_context)
         else:
             return noop_tracer.NoopTracer()
+
+    def store_tracer(self):
+        """Add the current tracer to thread_local"""
+        execution_context.set_opencensus_tracer(self)
 
     def start_trace(self):
         """Start a trace."""
@@ -127,8 +133,7 @@ class RequestTracer(object):
         :type label_value:str
         :param label_value: Label value.
         """
-        current_span = self.current_span()
-        current_span.add_label(label_key, label_value)
+        self.tracer.add_label_to_current_span(label_key, label_value)
 
     def add_label_to_spans(self, label_key, label_value):
         self.tracer.add_label_to_spans(label_key, label_value)

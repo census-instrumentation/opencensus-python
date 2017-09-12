@@ -29,12 +29,24 @@ def set_opencensus_tracer(tracer):
     setattr(_thread_local, 'tracer', tracer)
 
 
-def set_opencensus_attrs(attr_key, attr_value):
-    attrs = get_opencensus_attrs()
+def set_opencensus_attr(attr_key, attr_value):
+    # If there is no attrs, initialize it to empty dict.
+    attrs = getattr(_thread_local, 'attrs', {})
+
     attrs[attr_key] = attr_value
 
     setattr(_thread_local, 'attrs', attrs)
 
 
-def get_opencensus_attrs():
-    return getattr(_thread_local, 'attrs', {})
+def get_opencensus_attr(attr_key):
+    attrs = getattr(_thread_local, 'attrs', None)
+
+    if attrs is not None:
+        return attrs.get(attr_key)
+
+    return None
+
+
+def clear():
+    """Clear the thread local, used in test."""
+    _thread_local.__dict__.clear()

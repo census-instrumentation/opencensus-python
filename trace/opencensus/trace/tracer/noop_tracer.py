@@ -25,7 +25,7 @@ class NoopTracer(base.Tracer):
         :rtype: :class:`~opencensus.trace.trace.Trace`
         :returns: The Trace object.
         """
-        return base.NullObject()
+        return base.NullContextManager()
 
     def start_trace(self):
         """Start a trace."""
@@ -44,7 +44,7 @@ class NoopTracer(base.Tracer):
         :rtype: :class:`~opencensus.trace.trace_span.TraceSpan`
         :returns: The TraceSpan object.
         """
-        return base.NullObject()
+        return base.NullContextManager()
 
     def start_span(self, name='span'):
         """Start a span.
@@ -55,7 +55,7 @@ class NoopTracer(base.Tracer):
         :rtype: :class:`~opencensus.trace.trace_span.TraceSpan`
         :returns: The TraceSpan object.
         """
-        return base.NullObject()
+        return base.NullContextManager()
 
     def end_span(self):
         """End a span. Remove the span from the span stack, and update the
@@ -66,7 +66,7 @@ class NoopTracer(base.Tracer):
 
     def current_span(self):
         """Return the current span."""
-        return base.NullObject()
+        return base.NullContextManager()
 
     def add_label_to_current_span(self, label_key, label_value):
         """Add label to current span.

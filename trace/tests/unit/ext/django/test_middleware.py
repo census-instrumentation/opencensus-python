@@ -29,6 +29,9 @@ class TestOpencensusMiddleware(unittest.TestCase):
 
     def tearDown(self):
         from django.test.utils import teardown_test_environment
+        from opencensus.trace import execution_context
+
+        execution_context.clear()
 
         teardown_test_environment()
 

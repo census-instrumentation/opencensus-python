@@ -86,7 +86,7 @@ class Tracer(object):
         raise NotImplementedError
 
 
-class NullObject(object):
+class NullContextManager(object):
     """Empty object as a helper for faking Trace and TraceSpan when tracing is
     disabled.
     """
