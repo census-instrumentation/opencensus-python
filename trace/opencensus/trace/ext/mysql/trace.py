@@ -22,6 +22,9 @@ log = logging.getLogger(__name__)
 
 MODULE_NAME = 'mysql'
 
+CURSOR_WRAP_METHODS = ['execute', 'executemany']
+CONN_WRAP_METHODS = ['cursor']
+
 
 def trace_integration():
     """Wrap the mysql connector to trace it."""
@@ -36,62 +39,38 @@ def wrap_conn(conn_func):
     """Wrap the mysql conn object with TraceConnection."""
     def call(*args, **kwargs):
         conn = conn_func(*args, **kwargs)
-        wrapped = TraceConnection(conn)
-        return wrapped
+        cursor_func = conn.cursor
+        wrapped = wrap_cursor(cursor_func)
+        setattr(conn.__class__, cursor_func.__name__, wrapped)
+        print('conn')
+        return conn
     return call
 
 
-class TraceConnection(mysql.connector.connection.MySQLConnection):
-    """Trace MySQL connection."""
+def wrap_cursor(cursor_func):
+    def call(*args, **kwargs):
+        cursor = cursor_func(*args, **kwargs)
+        for func in CURSOR_WRAP_METHODS:
+            query_func  = getattr(cursor, func)
+            wrapped = trace_cursor_query(query_func)
+            setattr(cursor.__class__, query_func.__name__, wrapped)
+        print('cursor')
+        return cursor
+    return call
 
-    def __init__(self, conn, *args, **kwargs):
-        super(TraceConnection, self).__init__(*args, **kwargs)
-        self._conn = conn
 
-    def cursor(self, *args, **kwargs):
-        cursor = self._conn.cursor(*args, **kwargs)
-        return TraceCursor(cursor, *args, **kwargs)
-
-
-class TraceCursor(mysql.connector.cursor.MySQLCursor):
-    """Trace MySQL cursor methods."""
-
-    def __init__(self, cursor, *args, **kwargs):
-        super(TraceCursor, self).__init__(*args, **kwargs)
-        self._cursor = cursor
-        self._tracer = execution_context.get_opencensus_tracer()
-
-    def _trace_cursor_query(self, method, query, *args, **kwargs):
-        self._tracer.start_span()
-        self._tracer.add_label_to_current_span('mysql.query', query)
-        self._tracer.add_label_to_current_span(
+def trace_cursor_query(query_func):
+    def call(self, query, *args, **kwargs):
+        _tracer = execution_context.get_opencensus_tracer()
+        _tracer.start_span()
+        _tracer.add_label_to_current_span('mysql.query', query)
+        _tracer.add_label_to_current_span(
             'mysql.cursor.method.name',
-            method.__name__)
+            query_func.__name__)
 
-        result = method(query, *args, **kwargs)
+        result = query_func(query, *args, **kwargs)
 
-        self._tracer.end_span()
+        _tracer.end_span()
 
         return result
-
-    def execute(self, query, *args, **kwargs):
-        """
-        Note: execute() command already waits for the command to be completely
-        executed before passing to the next line of code.
-        """
-        return self._trace_cursor_query(
-            self._cursor.execute,
-            query,
-            *args,
-            **kwargs)
-
-    def executemany(self, query, *args, **kwargs):
-        """
-        Note: executemany() command already waits for the command to be
-        completely executed before passing to the next line of code.
-        """
-        return self._trace_cursor_query(
-            self._cursor.executemany,
-            query,
-            *args,
-            **kwargs)
+    return call

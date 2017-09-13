@@ -14,6 +14,7 @@
 
 import flask
 import mysql.connector
+import os
 
 from opencensus.trace.ext.flask.flask_middleware import FlaskMiddleware
 from opencensus.trace import config_integration
@@ -24,6 +25,9 @@ app = flask.Flask(__name__)
 middleware = FlaskMiddleware(app)
 config_integration.trace_integrations(INTEGRATIONS)
 
+PASSWORD = os.environ.get('MYSQL_PASSWORD')
+USER = os.environ.get('MYSQL_USER')
+
 
 @app.route('/')
 def hello():
@@ -32,18 +36,23 @@ def hello():
 
 @app.route('/mysql')
 def query():
-    conn = mysql.connector.connect(user='root', password='19931228')
-    cursor = conn.cursor()
 
-    query = 'SELECT 2*3'
-    cursor.execute(query)
+    try:
+        conn = mysql.connector.connect(user='root', password='19931228')
+        cursor = conn.cursor()
 
-    result = []
+        query = 'SELECT 2*3'
+        cursor.execute(query)
 
-    for item in cursor:
-        result.append(item)
+        result = []
 
-    return str(result)
+        for item in cursor:
+            result.append(item)
+
+        return str(result)
+
+    except Exception:
+        return "Query failed. Check your env vars for connection settings."
 
 
 if __name__ == '__main__':
