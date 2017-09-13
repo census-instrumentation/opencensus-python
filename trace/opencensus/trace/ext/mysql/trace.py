@@ -46,7 +46,7 @@ def wrap_conn(conn_func):
             setattr(conn.__class__, cursor_func.__name__, wrapped)
             return conn
         except Exception:  # pragma: NO COVER
-            log.warn('Fail to wrap conn, mysql not traced.')
+            log.warning('Fail to wrap conn, mysql not traced.')
             return conn_func(*args, **kwargs)
     return call
 
@@ -61,7 +61,7 @@ def wrap_cursor(cursor_func):
                 setattr(cursor.__class__, query_func.__name__, wrapped)
             return cursor
         except Exception:  # pragma: NO COVER
-            log.warn('Fail to wrap cursor, mysql not traced.')
+            log.warning('Fail to wrap cursor, mysql not traced.')
             return cursor_func(*args, **kwargs)
     return call
 
@@ -81,7 +81,7 @@ def trace_cursor_query(query_func):
 
             _tracer.end_span()
         except Exception:  # pragma: NO COVER
-            log.warn('Fail to wrap query, mysql not traced. '
+            log.warning('Fail to wrap query, mysql not traced. '
                      'Trying query again without trace...')
             result = query_func(query, *args, **kwargs)
 

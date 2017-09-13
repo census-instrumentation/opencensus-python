@@ -16,11 +16,24 @@ from django.http import HttpResponse
 from django.shortcuts import render
 
 from .forms import HelloForm
+
+from opencensus.trace import config_integration
+
+import mysql.connector
 import time
+import os
+
+INTEGRATIONS = ['mysql',]
+PASSWORD = os.environ.get('MYSQL_PASSWORD')
+USER = os.environ.get('MYSQL_USER')
+
+config_integration.trace_integrations(INTEGRATIONS)
+
 
 def home(request):
     time.sleep(1)
     return render(request, 'home.html')
+
 
 def greetings(request):
     time.sleep(1)
@@ -37,8 +50,30 @@ def greetings(request):
 
     return render(request, 'home.html')
 
+
+def mysql_trace(request):
+    try:
+        conn = mysql.connector.connect(user='root', password='19931228')
+        cursor = conn.cursor()
+
+        query = 'SELECT 2*3'
+        cursor.execute(query)
+
+        result = []
+
+        for item in cursor:
+            result.append(item)
+
+        return HttpResponse(str(result))
+
+    except Exception:
+        msg = "Query failed. Check your env vars for connection settings."
+        return HttpResponse(msg)
+
+
 def health_check(request):
     return HttpResponse("ok", status=200)
+
 
 def get_request_header(request):
     return HttpResponse(request.META.get('HTTP_X_CLOUD_TRACE_CONTEXT'))
