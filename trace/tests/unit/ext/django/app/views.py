@@ -53,7 +53,7 @@ def greetings(request):
 
 def mysql_trace(request):
     try:
-        conn = mysql.connector.connect(user='root', password='19931228')
+        conn = mysql.connector.connect(user=USER, password=PASSWORD)
         cursor = conn.cursor()
 
         query = 'SELECT 2*3'
