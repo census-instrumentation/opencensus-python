@@ -58,7 +58,7 @@ def _set_django_labels(tracer, request):
 
     # User id is the django autofield for User model as the primary key
     if user_id is not None:
-        tracer.add_label_to_spans('/django/user/id', user_id)
+        tracer.add_label_to_spans('/django/user/id', str(user_id))
 
     if user_name is not None:
         tracer.add_label_to_spans('/django/user/name', user_name)
@@ -142,7 +142,7 @@ class OpencensusMiddleware(object):
             tracer = _get_current_request_tracer()
             tracer.add_label_to_spans(
                 label_key=HTTP_STATUS_CODE,
-                label_value=response.status_code)
+                label_value=str(response.status_code))
 
             _set_django_labels(tracer, request)
 

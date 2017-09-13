@@ -104,7 +104,9 @@ class FlaskMiddleware(object):
         """
         try:
             tracer = execution_context.get_opencensus_tracer()
-            tracer.add_label_to_spans(HTTP_STATUS_CODE, response.status_code)
+            tracer.add_label_to_spans(
+                HTTP_STATUS_CODE,
+                str(response.status_code))
 
             tracer.end_span()
             tracer.end_trace()

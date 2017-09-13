@@ -22,14 +22,15 @@ log = logging.getLogger(__name__)
 
 MODULE_NAME = 'mysql'
 
-CURSOR_WRAP_METHODS = ['execute', 'executemany']
-CONN_WRAP_METHODS = ['cursor']
+CONN_WRAP_METHOD = 'connect'
+CURSOR_WRAP_METHOD = 'cursor'
+QUERY_WRAP_METHODS = ['execute', 'executemany']
 
 
 def trace_integration():
     """Wrap the mysql connector to trace it."""
     log.info('Integrated module: {}'.format(MODULE_NAME))
-    conn_func = mysql.connector.connect
+    conn_func = getattr(mysql.connector, CONN_WRAP_METHOD)
     conn_module = inspect.getmodule(conn_func)
     wrapped = wrap_conn(conn_func)
     setattr(conn_module, conn_func.__name__, wrapped)
@@ -38,39 +39,51 @@ def trace_integration():
 def wrap_conn(conn_func):
     """Wrap the mysql conn object with TraceConnection."""
     def call(*args, **kwargs):
-        conn = conn_func(*args, **kwargs)
-        cursor_func = conn.cursor
-        wrapped = wrap_cursor(cursor_func)
-        setattr(conn.__class__, cursor_func.__name__, wrapped)
-        print('conn')
-        return conn
+        try:
+            conn = conn_func(*args, **kwargs)
+            cursor_func = getattr(conn, CURSOR_WRAP_METHOD)
+            wrapped = wrap_cursor(cursor_func)
+            setattr(conn.__class__, cursor_func.__name__, wrapped)
+            return conn
+        except Exception:  # pragma: NO COVER
+            log.warn('Fail to wrap conn, mysql not traced.')
+            return conn_func(*args, **kwargs)
     return call
 
 
 def wrap_cursor(cursor_func):
     def call(*args, **kwargs):
-        cursor = cursor_func(*args, **kwargs)
-        for func in CURSOR_WRAP_METHODS:
-            query_func  = getattr(cursor, func)
-            wrapped = trace_cursor_query(query_func)
-            setattr(cursor.__class__, query_func.__name__, wrapped)
-        print('cursor')
-        return cursor
+        try:
+            cursor = cursor_func(*args, **kwargs)
+            for func in QUERY_WRAP_METHODS:
+                query_func  = getattr(cursor, func)
+                wrapped = trace_cursor_query(query_func)
+                setattr(cursor.__class__, query_func.__name__, wrapped)
+            return cursor
+        except Exception:  # pragma: NO COVER
+            log.warn('Fail to wrap cursor, mysql not traced.')
+            return cursor_func(*args, **kwargs)
     return call
 
 
 def trace_cursor_query(query_func):
     def call(self, query, *args, **kwargs):
-        _tracer = execution_context.get_opencensus_tracer()
-        _tracer.start_span()
-        _tracer.add_label_to_current_span('mysql.query', query)
-        _tracer.add_label_to_current_span(
-            'mysql.cursor.method.name',
-            query_func.__name__)
+        try:
+            _tracer = execution_context.get_opencensus_tracer()
+            _span = _tracer.start_span()
+            _span.name = '[mysql.query]{}'.format(query)
+            _tracer.add_label_to_current_span('mysql/query', query)
+            _tracer.add_label_to_current_span(
+                'mysql/cursor/method/name',
+                query_func.__name__)
 
-        result = query_func(query, *args, **kwargs)
+            result = query_func(query, *args, **kwargs)
 
-        _tracer.end_span()
+            _tracer.end_span()
+        except Exception:  # pragma: NO COVER
+            log.warn('Fail to wrap query, mysql not traced. '
+                     'Trying query again without trace...')
+            result = query_func(query, *args, **kwargs)
 
         return result
     return call

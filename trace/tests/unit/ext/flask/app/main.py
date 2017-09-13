@@ -18,15 +18,18 @@ import os
 
 from opencensus.trace.ext.flask.flask_middleware import FlaskMiddleware
 from opencensus.trace import config_integration
+from opencensus.trace.reporters import google_cloud_reporter
 
 INTEGRATIONS = ['mysql',]
-
-app = flask.Flask(__name__)
-middleware = FlaskMiddleware(app)
-config_integration.trace_integrations(INTEGRATIONS)
-
 PASSWORD = os.environ.get('MYSQL_PASSWORD')
 USER = os.environ.get('MYSQL_USER')
+
+app = flask.Flask(__name__)
+
+# Enbale tracing, send traces to Stackdriver Trace
+reporter = google_cloud_reporter.GoogleCloudReporter()
+middleware = FlaskMiddleware(app, reporter=reporter)
+config_integration.trace_integrations(INTEGRATIONS)
 
 
 @app.route('/')
@@ -38,7 +41,7 @@ def hello():
 def query():
 
     try:
-        conn = mysql.connector.connect(user=USER, password=PASSWORD)
+        conn = mysql.connector.connect(user='root', password='19931228')
         cursor = conn.cursor()
 
         query = 'SELECT 2*3'
