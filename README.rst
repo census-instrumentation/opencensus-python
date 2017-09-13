@@ -245,7 +245,8 @@ github link is https://github.com/mysql/mysql-connector-python.
 
 Run this command to install this package,
 
-.. code::
+.. code:: bash
+
     pip install mysql-connector
 
 Status
