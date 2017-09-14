@@ -113,8 +113,8 @@ class TestOpencensusMiddleware(unittest.TestCase):
         expected_labels = {
             '/http/url': u'/',
             '/http/method': 'GET',
-            '/http/status_code': 200,
-            '/django/user/id': 123,
+            '/http/status_code': '200',
+            '/django/user/id': '123',
             '/django/user/name': 'test_name'
         }
 
@@ -185,7 +185,7 @@ class Test__set_django_labels(unittest.TestCase):
         _set_django_labels(tracer, request)
 
         expected_labels = {
-            '/django/user/id': 123,
+            '/django/user/id': '123',
             '/django/user/name': test_name}
 
         self.assertEqual(tracer.labels, expected_labels)

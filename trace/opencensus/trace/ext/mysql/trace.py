@@ -68,22 +68,16 @@ def wrap_cursor(cursor_func):
 
 def trace_cursor_query(query_func):
     def call(self, query, *args, **kwargs):
-        try:
-            _tracer = execution_context.get_opencensus_tracer()
-            _span = _tracer.start_span()
-            _span.name = '[mysql.query]{}'.format(query)
-            _tracer.add_label_to_current_span('mysql/query', query)
-            _tracer.add_label_to_current_span(
-                'mysql/cursor/method/name',
-                query_func.__name__)
+        _tracer = execution_context.get_opencensus_tracer()
+        _span = _tracer.start_span()
+        _span.name = '[mysql.query]{}'.format(query)
+        _tracer.add_label_to_current_span('mysql/query', query)
+        _tracer.add_label_to_current_span(
+            'mysql/cursor/method/name',
+            query_func.__name__)
 
-            result = query_func(query, *args, **kwargs)
+        result = query_func(query, *args, **kwargs)
 
-            _tracer.end_span()
-        except Exception:  # pragma: NO COVER
-            log.warning('Fail to wrap query, mysql not traced. '
-                     'Trying query again without trace...')
-            result = query_func(query, *args, **kwargs)
-
+        _tracer.end_span()
         return result
     return call
