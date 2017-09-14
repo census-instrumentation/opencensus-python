@@ -36,6 +36,11 @@ class TestFlaskMiddleware(unittest.TestCase):
 
         return app
 
+    def tearDown(self):
+        from opencensus.trace import execution_context
+
+        execution_context.clear()
+
     def test_constructor_default(self):
         from opencensus.trace.reporters import print_reporter
         from opencensus.trace.samplers import always_on
@@ -73,7 +78,7 @@ class TestFlaskMiddleware(unittest.TestCase):
         self.assertTrue(app.after_request.called)
 
     def test__before_request(self):
-        import flask
+        from opencensus.trace import execution_context
 
         flask_trace_header = 'X_CLOUD_TRACE_CONTEXT'
         trace_id = '2dd43a1d6b2549c6bc2a1a54c2fc0b05'
@@ -88,7 +93,7 @@ class TestFlaskMiddleware(unittest.TestCase):
 
         with context:
             app.preprocess_request()
-            tracer = flask.g.get('tracer')
+            tracer = execution_context.get_opencensus_tracer()
             self.assertIsNotNone(tracer)
 
             span = tracer.current_span()
@@ -110,7 +115,7 @@ class TestFlaskMiddleware(unittest.TestCase):
         # This test case is expected to fail at the check_trace_id method
         # in SpanContext because it cannot match the pattern for trace_id,
         # And a new trace_id will generate for the context.
-        import flask
+        from opencensus.trace import execution_context
 
         flask_trace_header = 'X_CLOUD_TRACE_CONTEXT'
         trace_id = "你好"
@@ -125,7 +130,7 @@ class TestFlaskMiddleware(unittest.TestCase):
 
         with context:
             app.preprocess_request()
-            tracer = flask.g.get('tracer')
+            tracer = execution_context.get_opencensus_tracer()
             self.assertIsNotNone(tracer)
 
             span = tracer.current_span()
@@ -140,6 +145,29 @@ class TestFlaskMiddleware(unittest.TestCase):
 
             span_context = tracer.span_context
             self.assertNotEqual(span_context.trace_id, trace_id)
+
+    def test_header_is_none(self):
+        from opencensus.trace import execution_context
+
+        app = self.create_app()
+        flask_middleware.FlaskMiddleware(app=app)
+        context = app.test_request_context(
+            path='/')
+
+        with context:
+            app.preprocess_request()
+            tracer = execution_context.get_opencensus_tracer()
+            self.assertIsNotNone(tracer)
+
+            span = tracer.current_span()
+
+            expected_labels = {
+                '/http/url': u'http://localhost/',
+                '/http/method': 'GET',
+            }
+
+            self.assertEqual(span.labels, expected_labels)
+            self.assertIsNone(span.parent_span_id)
 
     def test__after_request_not_sampled(self):
         from opencensus.trace.samplers import always_off

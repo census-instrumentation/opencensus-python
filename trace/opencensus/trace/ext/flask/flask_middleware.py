@@ -16,6 +16,7 @@ import flask
 import logging
 
 from opencensus.trace import labels_helper
+from opencensus.trace import execution_context
 from opencensus.trace.propagation import google_cloud_format
 from opencensus.trace.reporters import print_reporter
 from opencensus.trace.samplers import always_on
@@ -26,9 +27,6 @@ _FLASK_TRACE_HEADER = 'X_CLOUD_TRACE_CONTEXT'
 HTTP_METHOD = labels_helper.STACKDRIVER_LABELS['HTTP_METHOD']
 HTTP_URL = labels_helper.STACKDRIVER_LABELS['HTTP_URL']
 HTTP_STATUS_CODE = labels_helper.STACKDRIVER_LABELS['HTTP_STATUS_CODE']
-
-# Key for the tracer object stored in flask global variable.
-TRACER_KEY = 'tracer'
 
 log = logging.getLogger(__name__)
 
@@ -96,9 +94,6 @@ class FlaskMiddleware(object):
                 flask.request.url)
             tracer.add_label_to_spans(HTTP_METHOD, flask.request.method)
             tracer.add_label_to_spans(HTTP_URL, flask.request.url)
-
-            # Add tracer to flask application globals
-            setattr(flask.g, TRACER_KEY, tracer)
         except Exception:  # pragma: NO COVER
             log.error('Failed to trace request', exc_info=True)
 
@@ -108,8 +103,10 @@ class FlaskMiddleware(object):
         See: http://flask.pocoo.org/docs/0.12/api/#flask.Flask.after_request
         """
         try:
-            tracer = flask.g.get(TRACER_KEY, None)
-            tracer.add_label_to_spans(HTTP_STATUS_CODE, response.status_code)
+            tracer = execution_context.get_opencensus_tracer()
+            tracer.add_label_to_spans(
+                HTTP_STATUS_CODE,
+                str(response.status_code))
 
             tracer.end_span()
             tracer.end_trace()
@@ -128,4 +125,7 @@ def get_flask_header():
     header = flask.request.headers.get(_FLASK_TRACE_HEADER)
 
     # In case the header is unicode, convert it to string.
-    return str(header.encode('utf-8'))
+    if header is not None:
+        header = str(header.encode('utf-8'))
+
+    return header

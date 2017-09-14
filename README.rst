@@ -208,6 +208,47 @@ Webapp2
 
     tracer.end_trace()
 
+Service Integration
+-------------------
+
+Opencensus supports integration with various popular services (working in progress).
+By default there is no integration, you need to specify which service(s) you
+want to instrument. Usage for enabling MySQL instrumentation like below:
+
+.. code:: python
+
+    from opencensus.trace import config_integration
+    from opencensus.trace import request_tracer
+
+    import mysql.connector
+
+    INTEGRATIONS = ['mysql',]
+
+    config_integration.trace_integrations(INTEGRATIONS)
+    tracer = request_tracer.RequestTracer()
+
+    tracer.start_trace()
+
+    with tracer.span(name='span1'):
+        conn = mysql.connector.connect(user='user', password='password')
+        cursor = conn.cursor()
+        query = 'SELECT 2*3'
+        cursor.execute(query)
+
+    tracer.end_trace()
+
+MySQL
+~~~~~
+
+The integration with MySQL is based on the mysql-connector-python library,
+github link is https://github.com/mysql/mysql-connector-python.
+
+Run this command to install this package,
+
+.. code:: bash
+
+    pip install mysql-connector
+
 Status
 ------
 

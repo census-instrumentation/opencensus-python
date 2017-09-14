@@ -118,12 +118,24 @@ class ContextTracer(base.Tracer):
             cur_span = self._span_stack[-1]
         except IndexError:
             logging.error('No span in the span stack.')
-            raise
+            cur_span = base.NullContextManager()
 
         return cur_span
 
     def list_collected_spans(self):
         return self.cur_trace.spans
+
+    def add_label_to_current_span(self, label_key, label_value):
+        """Add label to current span.
+
+        :type label_key: str
+        :param label_key: Label key.
+
+        :type label_value:str
+        :param label_value: Label value.
+        """
+        current_span = self.current_span()
+        current_span.add_label(label_key, label_value)
 
     def add_label_to_spans(self, label_key, label_value):
         """Add label to the spans in current trace.

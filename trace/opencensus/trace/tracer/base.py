@@ -67,6 +67,9 @@ class Tracer(object):
         """Return the current span."""
         raise NotImplementedError
 
+    def add_label_to_current_span(self, label_key, label_value):
+        raise NotImplementedError
+
     def add_label_to_spans(self, label_key, label_value):
         """Add label to the spans in current trace.
 
@@ -81,3 +84,17 @@ class Tracer(object):
     def list_collected_spans(self):
         """List collected spans."""
         raise NotImplementedError
+
+
+class NullContextManager(object):
+    """Empty object as a helper for faking Trace and TraceSpan when tracing is
+    disabled.
+    """
+    def __init__(self):
+        self.name = None
+
+    def __enter__(self):
+        pass  # pragma: NO COVER
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        pass  # pragma: NO COVER

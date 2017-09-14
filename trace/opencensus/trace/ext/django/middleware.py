@@ -14,20 +14,18 @@
 
 """Django middleware helper to capture and trace a request."""
 import logging
-import threading
 
 from opencensus.trace.ext import utils
 from opencensus.trace.ext.django.config import settings
 from opencensus.trace import labels_helper
 from opencensus.trace import request_tracer
-
-_thread_locals = threading.local()
+from opencensus.trace import execution_context
 
 HTTP_METHOD = labels_helper.STACKDRIVER_LABELS['HTTP_METHOD']
 HTTP_URL = labels_helper.STACKDRIVER_LABELS['HTTP_URL']
 HTTP_STATUS_CODE = labels_helper.STACKDRIVER_LABELS['HTTP_STATUS_CODE']
 
-TRACER_THREAD_LOCAL_KEY = '_opencensus_django_request_tracer'
+REQUEST_THREAD_LOCAL_KEY = 'django_request'
 
 _DJANGO_TRACE_HEADER = 'HTTP_X_CLOUD_TRACE_CONTEXT'
 
@@ -40,12 +38,12 @@ def _get_django_request():
     :rtype: str
     :returns: Django request.
     """
-    return getattr(_thread_locals, 'request', None)
+    return execution_context.get_opencensus_attr(REQUEST_THREAD_LOCAL_KEY)
 
 
 def _get_current_request_tracer():
     """Get the current request tracer."""
-    return getattr(_thread_locals, TRACER_THREAD_LOCAL_KEY, None)
+    return execution_context.get_opencensus_tracer()
 
 
 def _set_django_labels(tracer, request):
@@ -60,7 +58,7 @@ def _set_django_labels(tracer, request):
 
     # User id is the django autofield for User model as the primary key
     if user_id is not None:
-        tracer.add_label_to_spans('/django/user/id', user_id)
+        tracer.add_label_to_spans('/django/user/id', str(user_id))
 
     if user_name is not None:
         tracer.add_label_to_spans('/django/user/name', user_name)
@@ -96,7 +94,9 @@ class OpencensusMiddleware(object):
         :param request: Django http request.
         """
         # Add the request to thread local
-        _thread_locals.request = request
+        execution_context.set_opencensus_attr(
+            REQUEST_THREAD_LOCAL_KEY,
+            request)
 
         try:
             # Start tracing this request
@@ -111,7 +111,6 @@ class OpencensusMiddleware(object):
                 reporter=self._reporter(),
                 propagator=propagator)
 
-            setattr(_thread_locals, TRACER_THREAD_LOCAL_KEY, tracer)
             tracer.start_trace()
 
             # Span name is being set at process_view
@@ -143,7 +142,7 @@ class OpencensusMiddleware(object):
             tracer = _get_current_request_tracer()
             tracer.add_label_to_spans(
                 label_key=HTTP_STATUS_CODE,
-                label_value=response.status_code)
+                label_value=str(response.status_code))
 
             _set_django_labels(tracer, request)
 

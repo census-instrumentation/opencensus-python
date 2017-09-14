@@ -215,6 +215,22 @@ class TestContextTracer(unittest.TestCase):
 
         self.assertEqual(spans, [span1, span2])
 
+    def test_add_label_to_current_span(self):
+        from opencensus.trace.trace_span import TraceSpan
+
+        tracer = context_tracer.ContextTracer()
+        span1 = mock.Mock(spec=TraceSpan)
+
+        span1.labels = {}
+        tracer._span_stack.append(span1)
+
+        label_key = 'key'
+        label_value = 'value'
+
+        tracer.add_label_to_current_span(label_key, label_value)
+
+        span1.add_label.assert_called_once_with(label_key, label_value)
+
     def test_add_label_to_spans(self):
         from opencensus.trace.trace_span import TraceSpan
 

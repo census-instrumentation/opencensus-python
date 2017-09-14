@@ -29,10 +29,11 @@ class TestOpencensusMiddleware(unittest.TestCase):
 
     def tearDown(self):
         from django.test.utils import teardown_test_environment
-        from opencensus.trace.ext.django import middleware
+        from opencensus.trace import execution_context
+
+        execution_context.clear()
 
         teardown_test_environment()
-        middleware._thread_locals.__dict__.clear()
 
     def test_constructor(self):
         from opencensus.trace.ext.django import middleware
@@ -112,8 +113,8 @@ class TestOpencensusMiddleware(unittest.TestCase):
         expected_labels = {
             '/http/url': u'/',
             '/http/method': 'GET',
-            '/http/status_code': 200,
-            '/django/user/id': 123,
+            '/http/status_code': '200',
+            '/django/user/id': '123',
             '/django/user/name': 'test_name'
         }
 
@@ -184,7 +185,7 @@ class Test__set_django_labels(unittest.TestCase):
         _set_django_labels(tracer, request)
 
         expected_labels = {
-            '/django/user/id': 123,
+            '/django/user/id': '123',
             '/django/user/name': test_name}
 
         self.assertEqual(tracer.labels, expected_labels)

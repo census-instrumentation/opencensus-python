@@ -14,22 +14,27 @@
 
 import unittest
 
-from opencensus.trace.tracer import noop_tracer
+from opencensus.trace import execution_context
 
 
-class TestNoopTracer(unittest.TestCase):
+class Test__get_opencensus_attr(unittest.TestCase):
 
-    def test_trace(self):
-        from opencensus.trace.tracer import base
+    def tearDown(self):
+        execution_context.clear()
 
-        tracer = noop_tracer.NoopTracer()
-        trace = tracer.trace()
+    def test_no_attrs(self):
+        key = 'key'
 
-        assert isinstance(trace, base.NullContextManager)
+        result = execution_context.get_opencensus_attr(key)
 
-    def test_list_collected_spans(self):
-        tracer = noop_tracer.NoopTracer()
+        self.assertIsNone(result)
 
-        spans = tracer.list_collected_spans()
+    def test_has_attrs(self):
+        key = 'key'
+        value = 'value'
 
-        self.assertIsNone(spans)
+        execution_context.set_opencensus_attr(key, value)
+
+        result = execution_context.get_opencensus_attr(key)
+
+        self.assertEqual(result, value)

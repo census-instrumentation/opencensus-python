@@ -61,6 +61,14 @@ class TestBaseTracer(unittest.TestCase):
         with self.assertRaises(NotImplementedError):
             tracer.current_span()
 
+    def test_add_label_to_current_span(self):
+        tracer = base.Tracer()
+        label_key = 'key'
+        label_value = 'value'
+
+        with self.assertRaises(NotImplementedError):
+            tracer.add_label_to_current_span(label_key, label_value)
+
     def test_add_label_to_spans_abstract(self):
         tracer = base.Tracer()
         label_key = 'key'

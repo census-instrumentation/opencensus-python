@@ -12,24 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import unittest
+from opencensus.trace.ext.mysql import trace
 
-from opencensus.trace.tracer import noop_tracer
-
-
-class TestNoopTracer(unittest.TestCase):
-
-    def test_trace(self):
-        from opencensus.trace.tracer import base
-
-        tracer = noop_tracer.NoopTracer()
-        trace = tracer.trace()
-
-        assert isinstance(trace, base.NullContextManager)
-
-    def test_list_collected_spans(self):
-        tracer = noop_tracer.NoopTracer()
-
-        spans = tracer.list_collected_spans()
-
-        self.assertIsNone(spans)
+__all__ = ['trace']
