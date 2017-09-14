@@ -56,7 +56,7 @@ def wrap_cursor(cursor_func):
         try:
             cursor = cursor_func(*args, **kwargs)
             for func in QUERY_WRAP_METHODS:
-                query_func  = getattr(cursor, func)
+                query_func = getattr(cursor, func)
                 wrapped = trace_cursor_query(query_func)
                 setattr(cursor.__class__, query_func.__name__, wrapped)
             return cursor
