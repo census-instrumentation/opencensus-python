@@ -65,7 +65,7 @@ def postgresql_query():
         conn = psycopg2.connect(
             host='localhost',
             user='postgres',
-            password='19931228',
+            password=PASSWORD,
             dbname='test')
         cursor = conn.cursor()
 
