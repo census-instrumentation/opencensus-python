@@ -12,22 +12,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+
 import flask
 import mysql.connector
-import os
+import psycopg2
 
 from opencensus.trace.ext.flask.flask_middleware import FlaskMiddleware
 from opencensus.trace import config_integration
-from opencensus.trace.reporters import google_cloud_reporter
+from opencensus.trace.reporters import print_reporter
 
-INTEGRATIONS = ['mysql',]
+INTEGRATIONS = ['mysql', 'postgresql']
 PASSWORD = os.environ.get('MYSQL_PASSWORD')
 USER = os.environ.get('MYSQL_USER')
 
 app = flask.Flask(__name__)
 
 # Enbale tracing, send traces to Stackdriver Trace
-reporter = google_cloud_reporter.GoogleCloudReporter()
+reporter = print_reporter.PrintReporter()
 middleware = FlaskMiddleware(app, reporter=reporter)
 config_integration.trace_integrations(INTEGRATIONS)
 
@@ -38,8 +40,7 @@ def hello():
 
 
 @app.route('/mysql')
-def query():
-
+def mysql_query():
     try:
         conn = mysql.connector.connect(user=USER, password=PASSWORD)
         cursor = conn.cursor()
@@ -50,6 +51,30 @@ def query():
         result = []
 
         for item in cursor:
+            result.append(item)
+
+        return str(result)
+
+    except Exception:
+        return "Query failed. Check your env vars for connection settings."
+
+
+@app.route('/postgresql')
+def postgresql_query():
+    try:
+        conn = psycopg2.connect(
+            host='localhost',
+            user='postgres',
+            password='19931228',
+            dbname='test')
+        cursor = conn.cursor()
+
+        query = 'SELECT * FROM company'
+        cursor.execute(query)
+
+        result = []
+
+        for item in cursor.fetchall():
             result.append(item)
 
         return str(result)
