@@ -20,12 +20,15 @@ from .forms import HelloForm
 from opencensus.trace import config_integration
 
 import mysql.connector
+import psycopg2
+
 import time
 import os
 
-INTEGRATIONS = ['mysql',]
-PASSWORD = os.environ.get('MYSQL_PASSWORD')
-USER = os.environ.get('MYSQL_USER')
+
+INTEGRATIONS = ['mysql', 'postgresql']
+PASSWORD = os.environ.get('TEST_PASSWORD')
+MYSQL_USER = os.environ.get('MYSQL_USER')
 
 config_integration.trace_integrations(INTEGRATIONS)
 
@@ -69,6 +72,29 @@ def mysql_trace(request):
     except Exception:
         msg = "Query failed. Check your env vars for connection settings."
         return HttpResponse(msg)
+
+
+def postgresql_trace(request):
+    try:
+        conn = psycopg2.connect(
+            host='localhost',
+            user='postgres',
+            password=PASSWORD,
+            dbname='test')
+        cursor = conn.cursor()
+
+        query = 'SELECT * FROM company'
+        cursor.execute(query)
+
+        result = []
+
+        for item in cursor.fetchall():
+            result.append(item)
+
+        return HttpResponse(str(result))
+
+    except Exception:
+        return "Query failed. Check your env vars for connection settings."
 
 
 def health_check(request):

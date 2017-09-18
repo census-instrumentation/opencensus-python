@@ -31,18 +31,18 @@ class Test_trace_integrations(unittest.TestCase):
         self.assertEqual(integrated, [])
 
     def test_trace_integrations(self):
-        mock_mysql_module = mock.Mock()
+        mock_module = mock.Mock()
         mock_importlib = mock.Mock()
-        mock_importlib.import_module.return_value = mock_mysql_module
+        mock_importlib.import_module.return_value = mock_module
         patch = mock.patch(
             'opencensus.trace.config_integration.importlib',
             mock_importlib)
 
-        integration_list = ['mysql']
+        integration_list = ['mysql', 'postgresql']
 
         with patch:
             integrated = config_integration.trace_integrations(
                 integration_list)
 
-        self.assertTrue(mock_mysql_module.trace_integration.called)
-        self.assertEqual(integrated, ['mysql'])
+        self.assertTrue(mock_module.trace_integration.called)
+        self.assertEqual(integrated, integration_list)

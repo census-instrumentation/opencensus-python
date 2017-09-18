@@ -45,30 +45,33 @@ def connect(*args, **kwargs):
     return conn
 
 
+def trace_cursor_query(query_func):
+    def call(query, *args, **kwargs):
+        _tracer = execution_context.get_opencensus_tracer()
+        _span = _tracer.start_span()
+        _span.name = '[{}.query]{}'.format(MODULE_NAME, query)
+        _tracer.add_label_to_current_span(
+            '{}/query'.format(MODULE_NAME), query)
+        _tracer.add_label_to_current_span(
+            '{}/cursor/method/name'.format(MODULE_NAME),
+            query_func.__name__)
+
+        result = query_func(query, *args, **kwargs)
+
+        _tracer.end_span()
+        return result
+
+    return call
+
+
 class TraceCursor(pgcursor):
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs):  # pragma: NO COVER
+        # Tested via rewriting the constructor in unit test, as the parent
+        # class is built in and cannot be mocked away.
         for func in QUERY_WRAP_METHODS:
             query_func = getattr(self, func)
-            wrapped = self.trace_cursor_query(query_func)
+            wrapped = trace_cursor_query(query_func)
             setattr(self, query_func.__name__, wrapped)
 
         super(TraceCursor, self).__init__(*args, **kwargs)
-
-    def trace_cursor_query(self, query_func):
-        def call(query, *args, **kwargs):
-            _tracer = execution_context.get_opencensus_tracer()
-            _span = _tracer.start_span()
-            _span.name = '[{}.query]{}'.format(MODULE_NAME, query)
-            _tracer.add_label_to_current_span(
-                '{}/query'.format(MODULE_NAME), query)
-            _tracer.add_label_to_current_span(
-                '{}/cursor/method/name'.format(MODULE_NAME),
-                query_func.__name__)
-
-            result = query_func(query, *args, **kwargs)
-
-            _tracer.end_span()
-            return result
-
-        return call

@@ -42,7 +42,7 @@ def hello():
 @app.route('/mysql')
 def mysql_query():
     try:
-        conn = mysql.connector.connect(user=USER, password=PASSWORD)
+        conn = mysql.connector.connect(user='root', password='19931228')
         cursor = conn.cursor()
 
         query = 'SELECT 2*3'
