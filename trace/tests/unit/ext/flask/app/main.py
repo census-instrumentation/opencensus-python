@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import os
+import sys
 
 import flask
 import mysql.connector
@@ -22,9 +23,10 @@ from opencensus.trace.ext.flask.flask_middleware import FlaskMiddleware
 from opencensus.trace import config_integration
 from opencensus.trace.reporters import print_reporter
 
+sys.path.insert(0, os.path.abspath(__file__+"/../../../.."))
+from ext import config
+
 INTEGRATIONS = ['mysql', 'postgresql']
-PASSWORD = os.environ.get('MYSQL_PASSWORD')
-USER = os.environ.get('MYSQL_USER')
 
 app = flask.Flask(__name__)
 
@@ -42,7 +44,9 @@ def hello():
 @app.route('/mysql')
 def mysql_query():
     try:
-        conn = mysql.connector.connect(user='root', password='19931228')
+        conn = mysql.connector.connect(
+            user=config.MYSQL_USER,
+            password=config.MYSQL_PASSWORD)
         cursor = conn.cursor()
 
         query = 'SELECT 2*3'
@@ -56,17 +60,18 @@ def mysql_query():
         return str(result)
 
     except Exception:
-        return "Query failed. Check your env vars for connection settings."
+        msg = "Query failed. Check your env vars for connection settings."
+        return msg, 500
 
 
 @app.route('/postgresql')
 def postgresql_query():
     try:
         conn = psycopg2.connect(
-            host='localhost',
-            user='postgres',
-            password=PASSWORD,
-            dbname='test')
+            host=config.POSTGRES_HOST,
+            user=config.POSTGRES_USER,
+            password=config.POSTGRES_PASSWORD,
+            dbname=config.POSTGRES_DB)
         cursor = conn.cursor()
 
         query = 'SELECT * FROM company'
@@ -80,7 +85,8 @@ def postgresql_query():
         return str(result)
 
     except Exception:
-        return "Query failed. Check your env vars for connection settings."
+        msg = "Query failed. Check your env vars for connection settings."
+        return msg, 500
 
 
 if __name__ == '__main__':
