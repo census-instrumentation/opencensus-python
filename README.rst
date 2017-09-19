@@ -222,18 +222,17 @@ want to instrument. Usage for enabling MySQL instrumentation like below:
 
     import mysql.connector
 
-    INTEGRATIONS = ['mysql',]
+    INTEGRATIONS = ['mysql', 'postgresql']
 
     config_integration.trace_integrations(INTEGRATIONS)
-    tracer = request_tracer.RequestTracer()
 
+    tracer = request_tracer.RequestTracer()
     tracer.start_trace()
 
-    with tracer.span(name='span1'):
-        conn = mysql.connector.connect(user='user', password='password')
-        cursor = conn.cursor()
-        query = 'SELECT 2*3'
-        cursor.execute(query)
+    conn = mysql.connector.connect(user='user', password='password')
+    cursor = conn.cursor()
+    query = 'SELECT 2*3'
+    cursor.execute(query)
 
     tracer.end_trace()
 
@@ -248,6 +247,18 @@ Run this command to install this package,
 .. code:: bash
 
     pip install mysql-connector
+
+PostgreSQL
+~~~~~~~~~~
+
+The integration with PostgreSQL is based on the psycopg2 library, which is the
+most popular PostgreSQL python library based on the download data in PSF stats.
+
+Run this command to install this package,
+
+.. code:: bash
+
+    pip install psycopg2
 
 Status
 ------
