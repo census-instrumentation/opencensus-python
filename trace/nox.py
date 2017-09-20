@@ -26,7 +26,7 @@ def unit_tests(session, python_version):
     session.interpreter = 'python{}'.format(python_version)
 
     # Install all test dependencies, then install this package in-place.
-    session.install('-r', 'requirements.txt')
+    session.install('-r', 'requirements-test.txt')
 
     session.install('-e', '.')
 
