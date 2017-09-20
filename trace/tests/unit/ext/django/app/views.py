@@ -20,12 +20,17 @@ from .forms import HelloForm
 from opencensus.trace import config_integration
 
 import mysql.connector
+import psycopg2
+
 import time
 import os
+import sys
 
-INTEGRATIONS = ['mysql',]
-PASSWORD = os.environ.get('MYSQL_PASSWORD')
-USER = os.environ.get('MYSQL_USER')
+sys.path.insert(0, os.path.abspath(__file__+"/../../../.."))
+from ext import config
+
+
+INTEGRATIONS = ['mysql', 'postgresql']
 
 config_integration.trace_integrations(INTEGRATIONS)
 
@@ -53,7 +58,9 @@ def greetings(request):
 
 def mysql_trace(request):
     try:
-        conn = mysql.connector.connect(user=USER, password=PASSWORD)
+        conn = mysql.connector.connect(
+            user=config.MYSQL_USER,
+            password=config.MYSQL_PASSWORD)
         cursor = conn.cursor()
 
         query = 'SELECT 2*3'
@@ -68,7 +75,31 @@ def mysql_trace(request):
 
     except Exception:
         msg = "Query failed. Check your env vars for connection settings."
-        return HttpResponse(msg)
+        return HttpResponse(msg, status=500)
+
+
+def postgresql_trace(request):
+    try:
+        conn = psycopg2.connect(
+            host=config.POSTGRES_HOST,
+            user=config.POSTGRES_USER,
+            password=config.POSTGRES_PASSWORD,
+            dbname=config.POSTGRES_DB)
+        cursor = conn.cursor()
+
+        query = 'SELECT * FROM company'
+        cursor.execute(query)
+
+        result = []
+
+        for item in cursor.fetchall():
+            result.append(item)
+
+        return HttpResponse(str(result))
+
+    except Exception:
+        msg = "Query failed. Check your env vars for connection settings."
+        return HttpResponse(msg, status=500)
 
 
 def health_check(request):

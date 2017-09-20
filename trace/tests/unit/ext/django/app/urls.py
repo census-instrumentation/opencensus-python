@@ -40,4 +40,5 @@ urlpatterns = [
     url(r'^_ah/health$', app.views.health_check),
     url(r'^request$', app.views.get_request_header),
     url(r'^mysql$', app.views.mysql_trace),
+    url(r'^postgresql$', app.views.postgresql_trace),
 ]
