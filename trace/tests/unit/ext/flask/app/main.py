@@ -18,6 +18,7 @@ import sys
 import flask
 import mysql.connector
 import psycopg2
+import sqlalchemy
 
 from opencensus.trace.ext.flask.flask_middleware import FlaskMiddleware
 from opencensus.trace import config_integration
@@ -26,7 +27,7 @@ from opencensus.trace.reporters import print_reporter
 sys.path.insert(0, os.path.abspath(__file__+"/../../../.."))
 from ext import config
 
-INTEGRATIONS = ['mysql', 'postgresql']
+INTEGRATIONS = ['postgresql', 'sqlalchemy']
 
 app = flask.Flask(__name__)
 
@@ -87,6 +88,24 @@ def postgresql_query():
     except Exception:
         msg = "Query failed. Check your env vars for connection settings."
         return msg, 500
+
+
+@app.route('/sqlalchemy')
+def sql_alchemy_mysql_query():
+    engine = sqlalchemy.create_engine(
+        'mysql+mysqlconnector://root:19931228@localhost')
+    conn = engine.connect()
+
+    query = 'SELECT 2*3'
+
+    result_set = conn.execute(query)
+
+    result = []
+
+    for item in result_set:
+        result.append(item)
+
+    return str(result)
 
 
 if __name__ == '__main__':
