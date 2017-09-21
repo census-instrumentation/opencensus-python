@@ -44,7 +44,7 @@ def hello():
 
 @app.route('/mysql')
 def mysql_query():
-    # try:
+    try:
         conn = mysql.connector.connect(
             user=config.MYSQL_USER,
             password=config.MYSQL_PASSWORD)
@@ -62,10 +62,10 @@ def mysql_query():
         cursor.close()
 
         return str(result)
-    #
-    # except Exception:
-    #     msg = "Query failed. Check your env vars for connection settings."
-    #     return msg, 500
+
+    except Exception:
+        msg = "Query failed. Check your env vars for connection settings."
+        return msg, 500
 
 
 @app.route('/postgresql')

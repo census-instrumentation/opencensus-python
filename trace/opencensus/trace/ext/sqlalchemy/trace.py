@@ -48,6 +48,10 @@ def _before_cursor_execute(conn, cursor, statement, parameters,
     """Intercept low-level cursor execute() events before execution.
     If executemany is True, this is an executemany call, else an execute call.
     
+    Note: If enabled tracing both SQLAlchemy and the database it connected,
+          the communication between SQLAlchemy and the database will also
+          be traced. To avoid the verbose spans, you can just trace SQLAlchemy.
+
     See: http://docs.sqlalchemy.org/en/latest/core/events.html#sqlalchemy.
          events.ConnectionEvents.before_cursor_execute
     """
