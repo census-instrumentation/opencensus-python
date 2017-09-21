@@ -27,7 +27,7 @@ MODULE_NAME = 'sqlalchemy'
 
 
 def trace_integration():
-    """Integrate with SQLAlchemy to trace it using event listner.
+    """Integrate with SQLAlchemy to trace it using event listener.
     
     See: http://docs.sqlalchemy.org/en/latest/core/events.html
     """

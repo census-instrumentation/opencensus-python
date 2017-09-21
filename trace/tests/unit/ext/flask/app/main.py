@@ -22,17 +22,17 @@ import sqlalchemy
 
 from opencensus.trace.ext.flask.flask_middleware import FlaskMiddleware
 from opencensus.trace import config_integration
-from opencensus.trace.reporters import print_reporter
+from opencensus.trace.reporters import google_cloud_reporter
 
 sys.path.insert(0, os.path.abspath(__file__+"/../../../.."))
 from ext import config
 
-INTEGRATIONS = ['postgresql', 'sqlalchemy']
+INTEGRATIONS = ['mysql', 'postgresql', 'sqlalchemy']
 
 app = flask.Flask(__name__)
 
 # Enbale tracing, send traces to Stackdriver Trace
-reporter = print_reporter.PrintReporter()
+reporter = google_cloud_reporter.GoogleCloudReporter()
 middleware = FlaskMiddleware(app, reporter=reporter)
 config_integration.trace_integrations(INTEGRATIONS)
 
@@ -44,7 +44,7 @@ def hello():
 
 @app.route('/mysql')
 def mysql_query():
-    try:
+    # try:
         conn = mysql.connector.connect(
             user=config.MYSQL_USER,
             password=config.MYSQL_PASSWORD)
@@ -58,11 +58,14 @@ def mysql_query():
         for item in cursor:
             result.append(item)
 
-        return str(result)
+        conn.close()
+        cursor.close()
 
-    except Exception:
-        msg = "Query failed. Check your env vars for connection settings."
-        return msg, 500
+        return str(result)
+    #
+    # except Exception:
+    #     msg = "Query failed. Check your env vars for connection settings."
+    #     return msg, 500
 
 
 @app.route('/postgresql')
@@ -90,13 +93,34 @@ def postgresql_query():
         return msg, 500
 
 
-@app.route('/sqlalchemy')
-def sql_alchemy_mysql_query():
+@app.route('/sqlalchemy-mysql')
+def sqlalchemy_mysql_query():
     engine = sqlalchemy.create_engine(
-        'mysql+mysqlconnector://root:19931228@localhost')
+        'mysql+mysqlconnector://{}:{}'.format(
+            config.MYSQL_USER, config.MYSQL_PASSWORD))
     conn = engine.connect()
 
     query = 'SELECT 2*3'
+
+    result_set = conn.execute(query)
+
+    result = []
+
+    for item in result_set:
+        result.append(item)
+
+    return str(result)
+
+
+@app.route('/sqlalchemy-postgresql')
+def sqlalchemy_postgresql_query():
+    engine = sqlalchemy.create_engine(
+        'postgresql://{}:{}@{}/{}'.format(
+            config.POSTGRES_USER, config.POSTGRES_PASSWORD,
+            config.POSTGRES_HOST, config.POSTGRES_DB))
+    conn = engine.connect()
+
+    query = 'SELECT * FROM company'
 
     result_set = conn.execute(query)
 
