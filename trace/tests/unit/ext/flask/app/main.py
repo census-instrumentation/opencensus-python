@@ -95,41 +95,51 @@ def postgresql_query():
 
 @app.route('/sqlalchemy-mysql')
 def sqlalchemy_mysql_query():
-    engine = sqlalchemy.create_engine(
-        'mysql+mysqlconnector://{}:{}'.format(
-            config.MYSQL_USER, config.MYSQL_PASSWORD))
-    conn = engine.connect()
+    try:
+        engine = sqlalchemy.create_engine(
+            'mysql+mysqlconnector://{}:{}@localhost'.format(
+                config.MYSQL_USER, config.MYSQL_PASSWORD))
+        conn = engine.connect()
 
-    query = 'SELECT 2*3'
+        query = 'SELECT 2*3'
 
-    result_set = conn.execute(query)
+        result_set = conn.execute(query)
 
-    result = []
+        result = []
 
-    for item in result_set:
-        result.append(item)
+        for item in result_set:
+            result.append(item)
 
-    return str(result)
+        return str(result)
+
+    except Exception:
+        msg = "Query failed. Check your env vars for connection settings."
+        return msg, 500
 
 
 @app.route('/sqlalchemy-postgresql')
 def sqlalchemy_postgresql_query():
-    engine = sqlalchemy.create_engine(
-        'postgresql://{}:{}@{}/{}'.format(
-            config.POSTGRES_USER, config.POSTGRES_PASSWORD,
-            config.POSTGRES_HOST, config.POSTGRES_DB))
-    conn = engine.connect()
+    try:
+        engine = sqlalchemy.create_engine(
+            'postgresql://{}:{}@{}/{}'.format(
+                config.POSTGRES_USER, config.POSTGRES_PASSWORD,
+                config.POSTGRES_HOST, config.POSTGRES_DB))
+        conn = engine.connect()
 
-    query = 'SELECT * FROM company'
+        query = 'SELECT * FROM company'
 
-    result_set = conn.execute(query)
+        result_set = conn.execute(query)
 
-    result = []
+        result = []
 
-    for item in result_set:
-        result.append(item)
+        for item in result_set:
+            result.append(item)
 
-    return str(result)
+        return str(result)
+
+    except Exception:
+        msg = "Query failed. Check your env vars for connection settings."
+        return msg, 500
 
 
 if __name__ == '__main__':

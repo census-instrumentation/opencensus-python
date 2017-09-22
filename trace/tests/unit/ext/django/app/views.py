@@ -21,6 +21,7 @@ from opencensus.trace import config_integration
 
 import mysql.connector
 import psycopg2
+import sqlalchemy
 
 import time
 import os
@@ -93,6 +94,53 @@ def postgresql_trace(request):
         result = []
 
         for item in cursor.fetchall():
+            result.append(item)
+
+        return HttpResponse(str(result))
+
+    except Exception:
+        msg = "Query failed. Check your env vars for connection settings."
+        return HttpResponse(msg, status=500)
+
+
+def sqlalchemy_mysql_trace(request):
+    try:
+        engine = sqlalchemy.create_engine(
+            'mysql+mysqlconnector://{}:{}@localhost'.format(
+                config.MYSQL_USER, config.MYSQL_PASSWORD))
+        conn = engine.connect()
+
+        query = 'SELECT 2*3'
+
+        result_set = conn.execute(query)
+
+        result = []
+
+        for item in result_set:
+            result.append(item)
+
+        return HttpResponse(str(result))
+
+    except Exception:
+        msg = "Query failed. Check your env vars for connection settings."
+        return HttpResponse(msg, status=500)
+
+
+def sqlalchemy_postgresql_trace(request):
+    try:
+        engine = sqlalchemy.create_engine(
+            'postgresql://{}:{}@{}/{}'.format(
+                config.POSTGRES_USER, config.POSTGRES_PASSWORD,
+                config.POSTGRES_HOST, config.POSTGRES_DB))
+        conn = engine.connect()
+
+        query = 'SELECT * FROM company'
+
+        result_set = conn.execute(query)
+
+        result = []
+
+        for item in result_set:
             result.append(item)
 
         return HttpResponse(str(result))

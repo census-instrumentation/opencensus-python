@@ -41,4 +41,6 @@ urlpatterns = [
     url(r'^request$', app.views.get_request_header),
     url(r'^mysql$', app.views.mysql_trace),
     url(r'^postgresql$', app.views.postgresql_trace),
+    url(r'^sqlalchemy_mysql$', app.views.sqlalchemy_mysql_trace),
+    url(r'^sqlalchemy_postgresql$', app.views.sqlalchemy_postgresql_trace),
 ]
