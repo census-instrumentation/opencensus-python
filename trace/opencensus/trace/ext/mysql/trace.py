@@ -41,22 +41,10 @@ def wrap_conn(conn_func):
     def call(*args, **kwargs):
         try:
             conn = conn_func(*args, **kwargs)
-            conn_dict = conn.__dict__
-            TracedConn = type(
-                'TracedConn',
-                (conn.__class__,),
-                {})
-            traced_conn = TracedConn()
-
-            traced_conn.__dict__ = dict(
-                list(traced_conn.__dict__.items()) +
-                list(conn_dict.items()))
-
-            cursor_func = getattr(traced_conn, CURSOR_WRAP_METHOD)
+            cursor_func = getattr(conn, CURSOR_WRAP_METHOD)
             wrapped = wrap_cursor(cursor_func)
-            setattr(traced_conn.__class__, cursor_func.__name__, wrapped)
-
-            return traced_conn
+            setattr(conn, cursor_func.__name__, wrapped)
+            return conn
         except Exception:  # pragma: NO COVER
             log.warning('Fail to wrap conn, mysql not traced.')
             return conn_func(*args, **kwargs)
@@ -67,23 +55,11 @@ def wrap_cursor(cursor_func):
     def call(*args, **kwargs):
         try:
             cursor = cursor_func(*args, **kwargs)
-            cursor_dict = cursor.__dict__
-            TracedCursor = type(
-                'TracedCursor',
-                (cursor.__class__,),
-                {})
-            traced_cursor = TracedCursor()
-
-            traced_cursor.__dict__ = dict(
-                list(traced_cursor.__dict__.items()) +
-                list(cursor_dict.items()))
-
             for func in QUERY_WRAP_METHODS:
-                query_func = getattr(traced_cursor, func)
+                query_func = getattr(cursor, func)
                 wrapped = trace_cursor_query(query_func)
-                setattr(traced_cursor.__class__, query_func.__name__, wrapped)
-
-            return traced_cursor
+                setattr(cursor, query_func.__name__, wrapped)
+            return cursor
         except Exception:  # pragma: NO COVER
             log.warning('Fail to wrap cursor, mysql not traced.')
             return cursor_func(*args, **kwargs)
@@ -91,7 +67,7 @@ def wrap_cursor(cursor_func):
 
 
 def trace_cursor_query(query_func):
-    def call(self, query, *args, **kwargs):
+    def call(query, *args, **kwargs):
         _tracer = execution_context.get_opencensus_tracer()
         _span = _tracer.start_span()
         _span.name = '[mysql.query]{}'.format(query)
