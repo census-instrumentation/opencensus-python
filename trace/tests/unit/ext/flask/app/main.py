@@ -58,8 +58,8 @@ def mysql_query():
         for item in cursor:
             result.append(item)
 
-        conn.close()
         cursor.close()
+        conn.close()
 
         return str(result)
 
@@ -85,6 +85,9 @@ def postgresql_query():
 
         for item in cursor.fetchall():
             result.append(item)
+
+        cursor.close()
+        conn.close()
 
         return str(result)
 
