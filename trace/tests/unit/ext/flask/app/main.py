@@ -18,20 +18,21 @@ import sys
 import flask
 import mysql.connector
 import psycopg2
+import sqlalchemy
 
 from opencensus.trace.ext.flask.flask_middleware import FlaskMiddleware
 from opencensus.trace import config_integration
-from opencensus.trace.reporters import print_reporter
+from opencensus.trace.reporters import google_cloud_reporter
 
 sys.path.insert(0, os.path.abspath(__file__+"/../../../.."))
 from ext import config
 
-INTEGRATIONS = ['mysql', 'postgresql']
+INTEGRATIONS = ['mysql', 'postgresql', 'sqlalchemy']
 
 app = flask.Flask(__name__)
 
 # Enbale tracing, send traces to Stackdriver Trace
-reporter = print_reporter.PrintReporter()
+reporter = google_cloud_reporter.GoogleCloudReporter()
 middleware = FlaskMiddleware(app, reporter=reporter)
 config_integration.trace_integrations(INTEGRATIONS)
 
@@ -87,6 +88,55 @@ def postgresql_query():
 
         cursor.close()
         conn.close()
+
+        return str(result)
+
+    except Exception:
+        msg = "Query failed. Check your env vars for connection settings."
+        return msg, 500
+
+
+@app.route('/sqlalchemy-mysql')
+def sqlalchemy_mysql_query():
+    try:
+        engine = sqlalchemy.create_engine(
+            'mysql+mysqlconnector://{}:{}@localhost'.format(
+                config.MYSQL_USER, config.MYSQL_PASSWORD))
+        conn = engine.connect()
+
+        query = 'SELECT 2*3'
+
+        result_set = conn.execute(query)
+
+        result = []
+
+        for item in result_set:
+            result.append(item)
+
+        return str(result)
+
+    except Exception:
+        msg = "Query failed. Check your env vars for connection settings."
+        return msg, 500
+
+
+@app.route('/sqlalchemy-postgresql')
+def sqlalchemy_postgresql_query():
+    try:
+        engine = sqlalchemy.create_engine(
+            'postgresql://{}:{}@{}/{}'.format(
+                config.POSTGRES_USER, config.POSTGRES_PASSWORD,
+                config.POSTGRES_HOST, config.POSTGRES_DB))
+        conn = engine.connect()
+
+        query = 'SELECT * FROM company'
+
+        result_set = conn.execute(query)
+
+        result = []
+
+        for item in result_set:
+            result.append(item)
 
         return str(result)
 
