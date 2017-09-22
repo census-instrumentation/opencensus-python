@@ -68,7 +68,7 @@ class Test_mysql_trace(unittest.TestCase):
 
         self.assertEqual(wrapped.__class__.__name__, 'function')
         self.assertEqual(
-            getattr(mock_return.__class__, cursor_func_name, None),
+            getattr(mock_return, cursor_func_name, None),
             wrap_func_name)
 
     def test_wrap_cursor(self):
@@ -98,7 +98,7 @@ class Test_mysql_trace(unittest.TestCase):
 
         for func in trace.QUERY_WRAP_METHODS:
             self.assertEqual(
-                getattr(mock_return.__class__, func, None),
+                getattr(mock_return, func, None),
                 wrap_func_name + func)
 
     def test_trace_cursor_query(self):

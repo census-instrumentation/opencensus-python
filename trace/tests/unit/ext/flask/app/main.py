@@ -57,6 +57,9 @@ def mysql_query():
         for item in cursor:
             result.append(item)
 
+        cursor.close()
+        conn.close()
+
         return str(result)
 
     except Exception:
@@ -81,6 +84,9 @@ def postgresql_query():
 
         for item in cursor.fetchall():
             result.append(item)
+
+        cursor.close()
+        conn.close()
 
         return str(result)
 
