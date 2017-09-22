@@ -14,7 +14,6 @@
 
 import logging
 
-import sqlalchemy
 from sqlalchemy import engine
 from sqlalchemy import event
 
@@ -28,7 +27,7 @@ MODULE_NAME = 'sqlalchemy'
 
 def trace_integration():
     """Integrate with SQLAlchemy to trace it using event listener.
-    
+
     See: http://docs.sqlalchemy.org/en/latest/core/events.html
     """
     log.info('Integrated module: {}'.format(MODULE_NAME))
@@ -47,7 +46,7 @@ def _before_cursor_execute(conn, cursor, statement, parameters,
                            context, executemany):
     """Intercept low-level cursor execute() events before execution.
     If executemany is True, this is an executemany call, else an execute call.
-    
+
     Note: If enabled tracing both SQLAlchemy and the database it connected,
           the communication between SQLAlchemy and the database will also
           be traced. To avoid the verbose spans, you can just trace SQLAlchemy.
@@ -83,7 +82,7 @@ def _after_cursor_execute(conn, cursor, statement, parameters,
                           context, executemany):
     """Intercept low-level cursor execute() events after execution.
     If executemany is True, this is an executemany call, else an execute call.
-    
+
     See: http://docs.sqlalchemy.org/en/latest/core/events.html#sqlalchemy.
          events.ConnectionEvents.after_cursor_execute
     """
