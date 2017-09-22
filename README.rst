@@ -267,7 +267,7 @@ Note that if enabled tracing both SQLAlchemy and the database it connected,
 the communication between SQLAlchemy and the database will also be traced.
 To avoid the verbose spans, you can just trace SQLAlchemy.
 
-Run this comman to install the SQLAlchemy package,
+Run this command to install the SQLAlchemy package,
 
 .. code:: bash
 

@@ -80,7 +80,7 @@ class Test_sqlalchemy_trace(unittest.TestCase):
         self.assertEqual(mock_tracer.current_span.labels, expected_labels)
         self.assertEqual(mock_tracer.current_span.name, expected_name)
 
-    def test__before_cursor_executmany(self):
+    def test__before_cursor_executemany(self):
         mock_tracer = MockTracer()
 
         patch = mock.patch(
