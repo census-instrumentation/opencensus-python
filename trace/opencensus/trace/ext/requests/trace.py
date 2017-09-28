@@ -44,11 +44,6 @@ def wrap_requests(requests_func):
         # Add the requests url to labels
         _tracer.add_label_to_current_span('requests/url', url)
 
-        # Add the kwargs to labels
-        for key, value in kwargs.items():
-            _tracer.add_label_to_current_span(
-                'requests/{}'.format(key), value)
-
         result = requests_func(url, *args, **kwargs)
 
         # Add the status code to labels

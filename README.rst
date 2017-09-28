@@ -273,6 +273,12 @@ Run this command to install the SQLAlchemy package,
 
     pip install sqlalchemy
 
+Requests
+~~~~~~~~
+
+Supports tracing the requests methods including get, post, put, delete, head
+and options. The request url and status code will be added to the span labels.
+
 Status
 ------
 

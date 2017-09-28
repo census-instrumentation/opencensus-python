@@ -60,15 +60,13 @@ class Test_requests_trace(unittest.TestCase):
 
         wrapped = trace.wrap_requests(mock_func)
 
-        params = {'key': 'value'}
         url = 'http://localhost:8080'
 
         with patch:
-            wrapped(url, data=params)
+            wrapped(url)
 
         expected_labels = {
             'requests/url': url,
-            'requests/data': params,
             'requests/status_code': 200}
         expected_name = '[requests]get'
 
