@@ -38,8 +38,13 @@ class TestOpencensusMiddleware(unittest.TestCase):
     def test_constructor_cloud(self):
         from opencensus.trace.ext.django import middleware
         from opencensus.trace.samplers import always_on
-        from opencensus.trace.reporters import google_cloud_reporter
         from opencensus.trace.propagation import google_cloud_format
+
+        class MockCloudReporter(object):
+            def __init__(self, project_id):
+                self.project_id = project_id
+
+        MockCloudReporter.__name__ = 'GoogleCloudReporter'
 
         project_id = 'my_project'
         params = {
@@ -50,21 +55,21 @@ class TestOpencensusMiddleware(unittest.TestCase):
             'opencensus.trace.ext.django.config.settings.params', params)
         patch_reporter = mock.patch(
             'opencensus.trace.ext.django.config.settings.REPORTER',
-            google_cloud_reporter.GoogleCloudReporter)
+            MockCloudReporter)
 
         with patch_params, patch_reporter:
             middleware = middleware.OpencensusMiddleware()
 
         self.assertIs(middleware._sampler, always_on.AlwaysOnSampler)
         self.assertIs(
-            middleware._reporter, google_cloud_reporter.GoogleCloudReporter)
+            middleware._reporter, MockCloudReporter)
         self.assertIs(
             middleware._propagator,
             google_cloud_format.GoogleCloudFormatPropagator)
 
         assert isinstance(middleware.sampler, always_on.AlwaysOnSampler)
         assert isinstance(
-            middleware.reporter, google_cloud_reporter.GoogleCloudReporter)
+            middleware.reporter, MockCloudReporter)
         assert isinstance(
             middleware.propagator,
             google_cloud_format.GoogleCloudFormatPropagator)
