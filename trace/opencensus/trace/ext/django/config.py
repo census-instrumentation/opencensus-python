@@ -20,7 +20,7 @@ from django.conf import settings as django_settings
 DEFAULT_DJANGO_TRACER_CONFIG = {
     'SAMPLER': 'opencensus.trace.samplers.always_on.AlwaysOnSampler',
     'REPORTER':
-        'opencensus.trace.reporters.google_cloud_reporter.GoogleCloudReporter',
+        'opencensus.trace.reporters.print_reporter.PrintReporter',
     'PROPAGATOR': 'opencensus.trace.propagation.google_cloud_format.'
                   'GoogleCloudFormatPropagator',
 }

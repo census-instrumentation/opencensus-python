@@ -35,7 +35,7 @@ class TestOpencensusMiddleware(unittest.TestCase):
 
         teardown_test_environment()
 
-    def test_constructor_default(self):
+    def test_constructor_cloud(self):
         from opencensus.trace.ext.django import middleware
         from opencensus.trace.samplers import always_on
         from opencensus.trace.reporters import google_cloud_reporter
@@ -46,10 +46,13 @@ class TestOpencensusMiddleware(unittest.TestCase):
             'GCP_REPORTER_PROJECT': project_id,
         }
 
-        patch = mock.patch(
+        patch_params = mock.patch(
             'opencensus.trace.ext.django.config.settings.params', params)
+        patch_reporter = mock.patch(
+            'opencensus.trace.ext.django.config.settings.REPORTER',
+            google_cloud_reporter.GoogleCloudReporter)
 
-        with patch:
+        with patch_params, patch_reporter:
             middleware = middleware.OpencensusMiddleware()
 
         self.assertIs(middleware._sampler, always_on.AlwaysOnSampler)
