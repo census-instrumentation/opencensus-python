@@ -19,15 +19,18 @@ from django.conf import settings as django_settings
 
 DEFAULT_DJANGO_TRACER_CONFIG = {
     'SAMPLER': 'opencensus.trace.samplers.always_on.AlwaysOnSampler',
-    'REPORTER': 'opencensus.trace.reporters.print_reporter.PrintReporter',
+    'REPORTER':
+        'opencensus.trace.reporters.google_cloud_reporter.GoogleCloudReporter',
     'PROPAGATOR': 'opencensus.trace.propagation.google_cloud_format.'
                   'GoogleCloudFormatPropagator',
 }
 
 DEFAULT_DJANGO_TRACER_PARAMS = {
     'SAMPLING_RATE': 0.5,
-    'GCP_REPORTER_PROJECT': 'my_project',
+    'GCP_REPORTER_PROJECT': None,
     'ZIPKIN_REPORTER_SERVICE_NAME': 'my_service',
+    'ZIPKIN_REPORTER_HOST_NAME': 'localhost',
+    'ZIPKIN_REPORTER_PORT': 9411,
 }
 
 
