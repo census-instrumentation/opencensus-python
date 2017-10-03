@@ -37,7 +37,6 @@ def trace_integration():
         setattr(requests, requests_func.__name__, wrapped)
 
     # Wrap Session class
-    session_class = getattr(requests, SESSION_CLASS_NAME)
     setattr(requests, SESSION_CLASS_NAME, TraceSession)
 
 

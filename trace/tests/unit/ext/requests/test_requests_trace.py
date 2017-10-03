@@ -28,7 +28,7 @@ class Test_requests_trace(unittest.TestCase):
         wrap_result = 'wrap result'
         mock_wrap.return_value = wrap_result
 
-        for func in trace.WRAP_METHODS:
+        for func in trace.REQUESTS_WRAP_METHODS:
             mock_func = mock.Mock()
             mock_func.__name__ = func
             setattr(mock_requests, func, mock_func)
@@ -41,7 +41,7 @@ class Test_requests_trace(unittest.TestCase):
         with patch_wrap, patch_requests:
             trace.trace_integration()
 
-        for func in trace.WRAP_METHODS:
+        for func in trace.REQUESTS_WRAP_METHODS:
             self.assertEqual(getattr(mock_requests, func), wrap_result)
 
     def test_wrap_requests(self):
@@ -72,6 +72,52 @@ class Test_requests_trace(unittest.TestCase):
 
         self.assertEqual(expected_labels, mock_tracer.current_span.labels)
         self.assertEqual(expected_name, mock_tracer.current_span.name)
+
+    def test_wrap_session_request(self):
+        mock_return = mock.Mock()
+        mock_return.status_code = 200
+        return_value = mock_return
+        mock_func = mock.Mock()
+        mock_func.return_value = return_value
+        mock_tracer = MockTracer()
+
+        patch = mock.patch(
+            'opencensus.trace.ext.requests.trace.execution_context.'
+            'get_opencensus_tracer',
+            return_value=mock_tracer)
+
+        wrapped = trace.wrap_session_request(mock_func)
+
+        url = 'http://localhost:8080'
+        request_method = 'POST'
+
+        with patch:
+            wrapped(request_method, url)
+
+        expected_labels = {
+            'requests/url': url,
+            'requests/status_code': 200}
+        expected_name = '[requests]POST'
+
+        self.assertEqual(expected_labels, mock_tracer.current_span.labels)
+        self.assertEqual(expected_name, mock_tracer.current_span.name)
+
+
+class TestTraceSession(unittest.TestCase):
+
+    def test___init__(self):
+        import requests
+
+        mock_wrapped = mock.Mock()
+        patch = mock.patch(
+            'opencensus.trace.ext.requests.trace.wrap_session_request',
+            return_value=mock_wrapped)
+
+        with patch:
+            session = trace.TraceSession()
+
+        self.assertEqual(session.request, mock_wrapped)
+        assert isinstance(session, requests.Session)
 
 
 class MockTracer(object):
