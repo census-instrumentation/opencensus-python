@@ -11,3 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+UNARY_UNARY = 'unary_unary'
+UNARY_STREAM = 'unary_stream'
+STREAM_UNARY = 'stream_unary'
+STREAM_STREAM = 'stream_stream'
+
+GRPC_TRACE_KEY = 'grpc-trace-bin'
