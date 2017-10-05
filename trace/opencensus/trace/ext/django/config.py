@@ -13,17 +13,30 @@
 # limitations under the License.
 
 import importlib
+import logging
 
 from django.conf import settings as django_settings
 
 DEFAULT_DJANGO_TRACER_CONFIG = {
     'SAMPLER': 'opencensus.trace.samplers.always_on.AlwaysOnSampler',
-    'REPORTER': 'opencensus.trace.reporters.print_reporter.PrintReporter',
+    'REPORTER':
+        'opencensus.trace.reporters.print_reporter.PrintReporter',
     'PROPAGATOR': 'opencensus.trace.propagation.google_cloud_format.'
                   'GoogleCloudFormatPropagator',
 }
 
+DEFAULT_DJANGO_TRACER_PARAMS = {
+    'SAMPLING_RATE': 0.5,
+    'GCP_REPORTER_PROJECT': None,
+    'ZIPKIN_REPORTER_SERVICE_NAME': 'my_service',
+    'ZIPKIN_REPORTER_HOST_NAME': 'localhost',
+    'ZIPKIN_REPORTER_PORT': 9411,
+}
+
+
 PATH_DELIMITER = '.'
+
+log = logging.getLogger(__name__)
 
 
 class DjangoTraceSettings(object):
@@ -38,6 +51,11 @@ class DjangoTraceSettings(object):
             django_settings,
             'OPENCENSUS_TRACE',
             DEFAULT_DJANGO_TRACER_CONFIG)
+
+        self.params = getattr(
+            django_settings,
+            'OPENCENSUS_TRACE_PARAMS',
+            DEFAULT_DJANGO_TRACER_PARAMS)
 
     def __getattr__(self, attr):
         # If not in defaults, it is something we cannot parse.
@@ -57,9 +75,15 @@ def convert_to_import(path):
     class to import.
     """
     # Split the path string to module name and class name
-    module_name, class_name = path.rsplit(PATH_DELIMITER, 1)
-    module = importlib.import_module(module_name)
-    return getattr(module, class_name)
+    try:
+        module_name, class_name = path.rsplit(PATH_DELIMITER, 1)
+        module = importlib.import_module(module_name)
+        return getattr(module, class_name)
+    except (ImportError, AttributeError):
+        msg = 'Failed to import {}'.format(path)
+        log.error(msg)
+
+        raise ImportError(msg)
 
 
 settings = DjangoTraceSettings()

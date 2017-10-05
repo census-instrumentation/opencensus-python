@@ -20,6 +20,7 @@ from opencensus.trace.ext.django.config import settings
 from opencensus.trace import labels_helper
 from opencensus.trace import request_tracer
 from opencensus.trace import execution_context
+from opencensus.trace.samplers import fixed_rate
 
 HTTP_METHOD = labels_helper.STACKDRIVER_LABELS['HTTP_METHOD']
 HTTP_URL = labels_helper.STACKDRIVER_LABELS['HTTP_URL']
@@ -28,6 +29,12 @@ HTTP_STATUS_CODE = labels_helper.STACKDRIVER_LABELS['HTTP_STATUS_CODE']
 REQUEST_THREAD_LOCAL_KEY = 'django_request'
 
 _DJANGO_TRACE_HEADER = 'HTTP_X_CLOUD_TRACE_CONTEXT'
+
+GCP_REPORTER_PROJECT = 'GCP_REPORTER_PROJECT'
+SAMPLING_RATE = 'SAMPLING_RATE'
+ZIPKIN_REPORTER_SERVICE_NAME = 'ZIPKIN_REPORTER_SERVICE_NAME'
+ZIPKIN_REPORTER_HOST_NAME = 'ZIPKIN_REPORTER_HOST_NAME'
+ZIPKIN_REPORTER_PORT = 'ZIPKIN_REPORTER_PORT'
 
 log = logging.getLogger(__name__)
 
@@ -87,6 +94,35 @@ class OpencensusMiddleware(object):
         self._reporter = settings.REPORTER
         self._propagator = settings.PROPAGATOR
 
+        # Initialize the sampler
+        if self._sampler.__name__ == 'FixedRateSampler':
+            _rate = settings.params.get(
+                SAMPLING_RATE, fixed_rate.DEFAULT_SAMPLING_RATE)
+            self.sampler = self._sampler(_rate)
+        else:
+            self.sampler = self._sampler()
+
+        # Initialize the reporter
+        if self._reporter.__name__ == 'GoogleCloudReporter':
+            _project_id = settings.params.get(GCP_REPORTER_PROJECT, None)
+            self.reporter = self._reporter(project_id=_project_id)
+        elif self._reporter.__name__ == 'ZipkinReporter':
+            _zipkin_service_name = settings.params.get(
+                ZIPKIN_REPORTER_SERVICE_NAME, 'my_service')
+            _zipkin_host_name = settings.params.get(
+                ZIPKIN_REPORTER_HOST_NAME, 'localhost')
+            _zipkin_port = settings.params.get(
+                ZIPKIN_REPORTER_PORT, 9411)
+            self.reporter = self._reporter(
+                service_name=_zipkin_service_name,
+                host_name=_zipkin_host_name,
+                port=_zipkin_port)
+        else:
+            self.reporter = self._reporter()
+
+        # Initialize the propagator
+        self.propagator = self._propagator()
+
     def process_request(self, request):
         """Called on each request, before Django decides which view to execute.
 
@@ -101,15 +137,14 @@ class OpencensusMiddleware(object):
         try:
             # Start tracing this request
             header = get_django_header()
-            propagator = self._propagator()
-            span_context = propagator.from_header(header)
+            span_context = self.propagator.from_header(header)
 
             # Reload the tracer with the new span context
             tracer = request_tracer.RequestTracer(
                 span_context=span_context,
-                sampler=self._sampler(),
-                reporter=self._reporter(),
-                propagator=propagator)
+                sampler=self.sampler,
+                reporter=self.reporter,
+                propagator=self.propagator)
 
             tracer.start_trace()
 

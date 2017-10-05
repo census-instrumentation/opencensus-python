@@ -72,6 +72,10 @@ OPENCENSUS_TRACE = {
                   'GoogleCloudFormatPropagator',
 }
 
+OPENCENSUS_TRACE_PARAMS = {
+    'SAMPLING_RATE': 0.5,
+}
+
 # Internationalization
 # https://docs.djangoproject.com/en/1.8/topics/i18n/
 

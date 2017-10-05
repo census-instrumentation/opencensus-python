@@ -14,6 +14,8 @@
 
 import unittest
 
+import mock
+
 
 class TestDjangoTraceSettings(unittest.TestCase):
 
@@ -56,3 +58,38 @@ class TestDjangoTraceSettings(unittest.TestCase):
         sampler_class = getattr(django_trace_settings, 'SAMPLER')
 
         assert isinstance(sampler_class(), AlwaysOnSampler)
+
+
+class Test_convert_to_import(unittest.TestCase):
+
+    def test_convert_to_import(self):
+        from opencensus.trace.ext.django import config
+
+        module_name = 'module'
+        class_name = 'class'
+        path = '{}.{}'.format(module_name, class_name)
+        mock_importlib = mock.Mock()
+        mock_import_module = mock.Mock()
+        mock_module = mock.Mock()
+        mock_class = mock.Mock()
+        setattr(mock_module, class_name, mock_class)
+        mock_import_module.return_value = mock_module
+        mock_importlib.import_module = mock_import_module
+
+        patch = mock.patch(
+            'opencensus.trace.ext.django.config.importlib', mock_importlib)
+
+        with patch:
+            result = config.convert_to_import(path)
+
+        self.assertEqual(result, mock_class)
+
+    def test_convert_to_import_error(self):
+        from opencensus.trace.ext.django import config
+
+        module_name = 'test_module'
+        class_name = 'test_class'
+        path = '{}.{}'.format(module_name, class_name)
+
+        with self.assertRaises(ImportError):
+            result = config.convert_to_import(path)

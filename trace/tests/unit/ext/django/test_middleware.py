@@ -35,19 +35,131 @@ class TestOpencensusMiddleware(unittest.TestCase):
 
         teardown_test_environment()
 
-    def test_constructor(self):
+    def test_constructor_cloud(self):
         from opencensus.trace.ext.django import middleware
         from opencensus.trace.samplers import always_on
-        from opencensus.trace.reporters import print_reporter
         from opencensus.trace.propagation import google_cloud_format
 
-        middleware = middleware.OpencensusMiddleware()
+        class MockCloudReporter(object):
+            def __init__(self, project_id):
+                self.project_id = project_id
+
+        MockCloudReporter.__name__ = 'GoogleCloudReporter'
+
+        project_id = 'my_project'
+        params = {
+            'GCP_REPORTER_PROJECT': project_id,
+        }
+
+        patch_params = mock.patch(
+            'opencensus.trace.ext.django.config.settings.params', params)
+        patch_reporter = mock.patch(
+            'opencensus.trace.ext.django.config.settings.REPORTER',
+            MockCloudReporter)
+
+        with patch_params, patch_reporter:
+            middleware = middleware.OpencensusMiddleware()
 
         self.assertIs(middleware._sampler, always_on.AlwaysOnSampler)
-        self.assertIs(middleware._reporter, print_reporter.PrintReporter)
+        self.assertIs(
+            middleware._reporter, MockCloudReporter)
         self.assertIs(
             middleware._propagator,
             google_cloud_format.GoogleCloudFormatPropagator)
+
+        assert isinstance(middleware.sampler, always_on.AlwaysOnSampler)
+        assert isinstance(
+            middleware.reporter, MockCloudReporter)
+        assert isinstance(
+            middleware.propagator,
+            google_cloud_format.GoogleCloudFormatPropagator)
+
+        self.assertEqual(middleware.reporter.project_id, project_id)
+
+    def test_constructor_zipkin(self):
+        from opencensus.trace.ext.django import middleware
+        from opencensus.trace.samplers import always_on
+        from opencensus.trace.reporters import zipkin_reporter
+        from opencensus.trace.propagation import google_cloud_format
+
+        service_name = 'test_service'
+        host_name = 'test_hostname'
+        port = 2333
+        params = {
+            'ZIPKIN_REPORTER_SERVICE_NAME': service_name,
+            'ZIPKIN_REPORTER_HOST_NAME': host_name,
+            'ZIPKIN_REPORTER_PORT': port,
+        }
+
+        patch_zipkin = mock.patch(
+            'opencensus.trace.ext.django.config.settings.REPORTER',
+            zipkin_reporter.ZipkinReporter)
+
+        patch_params = mock.patch(
+            'opencensus.trace.ext.django.config.settings.params',
+            params)
+
+        with patch_zipkin, patch_params:
+            middleware = middleware.OpencensusMiddleware()
+
+        self.assertIs(middleware._sampler, always_on.AlwaysOnSampler)
+        self.assertIs(
+            middleware._reporter, zipkin_reporter.ZipkinReporter)
+        self.assertIs(
+            middleware._propagator,
+            google_cloud_format.GoogleCloudFormatPropagator)
+
+        assert isinstance(middleware.sampler, always_on.AlwaysOnSampler)
+        assert isinstance(
+            middleware.reporter, zipkin_reporter.ZipkinReporter)
+        assert isinstance(
+            middleware.propagator,
+            google_cloud_format.GoogleCloudFormatPropagator)
+
+        self.assertEqual(middleware.reporter.service_name, service_name)
+        self.assertEqual(middleware.reporter.host_name, host_name)
+        self.assertEqual(middleware.reporter.port, port)
+
+    def test_constructor_fixed_rate_sampler(self):
+        from opencensus.trace.ext.django import middleware
+        from opencensus.trace.samplers import fixed_rate
+        from opencensus.trace.reporters import print_reporter
+        from opencensus.trace.propagation import google_cloud_format
+
+        rate = 0.8
+        params = {
+            'SAMPLING_RATE': 0.8,
+        }
+
+        patch_sampler = mock.patch(
+            'opencensus.trace.ext.django.config.settings.SAMPLER',
+            fixed_rate.FixedRateSampler)
+        patch_reporter = mock.patch(
+            'opencensus.trace.ext.django.config.settings.REPORTER',
+            print_reporter.PrintReporter)
+
+        patch_params = mock.patch(
+            'opencensus.trace.ext.django.config.settings.params',
+            params)
+
+        with patch_sampler, patch_reporter, patch_params:
+            middleware = middleware.OpencensusMiddleware()
+
+        self.assertIs(middleware._sampler, fixed_rate.FixedRateSampler)
+        self.assertIs(
+            middleware._reporter, print_reporter.PrintReporter)
+        self.assertIs(
+            middleware._propagator,
+            google_cloud_format.GoogleCloudFormatPropagator)
+
+        assert isinstance(middleware.sampler, fixed_rate.FixedRateSampler)
+        assert isinstance(
+            middleware.reporter, print_reporter.PrintReporter)
+        assert isinstance(
+            middleware.propagator,
+            google_cloud_format.GoogleCloudFormatPropagator)
+
+        self.assertEqual(middleware.sampler.rate, rate)
 
     def test_process_request(self):
         from django.test import RequestFactory
