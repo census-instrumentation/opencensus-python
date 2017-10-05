@@ -17,7 +17,7 @@ import grpc
 import six
 import sys
 
-from opencensus.trace import grpc
+from opencensus.trace import grpc as oc_grpc
 from opencensus.trace.grpc import grpc_ext
 from opencensus.trace.propagation import binary_format
 from opencensus.trace import execution_context
@@ -47,7 +47,8 @@ class OpenCensusClientInterceptor(grpc_ext.UnaryUnaryClientInterceptor,
         return span
 
     def _trace_async_result(self, result):
-        result.add_done_callback(self._future_done_callback())
+        if isinstance(result, grpc.Future):
+            result.add_done_callback(self._future_done_callback())
 
         return result
 
@@ -70,7 +71,7 @@ class OpenCensusClientInterceptor(grpc_ext.UnaryUnaryClientInterceptor,
             span_context = self._tracer.span_context
             header = self._propagator.to_header(span_context)
             grpc_trace_metadata = {
-                grpc.GRPC_TRACE_KEY: header,
+                oc_grpc.GRPC_TRACE_KEY: header,
             }
             metadata = metadata + tuple(six.iteritems(grpc_trace_metadata))
 
@@ -93,7 +94,7 @@ class OpenCensusClientInterceptor(grpc_ext.UnaryUnaryClientInterceptor,
             span_context = self._tracer.span_context
             header = self._propagator.to_header(span_context)
             grpc_trace_metadata = {
-                grpc.GRPC_TRACE_KEY: header,
+                oc_grpc.GRPC_TRACE_KEY: header,
             }
             metadata = metadata + tuple(six.iteritems(grpc_trace_metadata))
 
@@ -110,27 +111,27 @@ class OpenCensusClientInterceptor(grpc_ext.UnaryUnaryClientInterceptor,
 
     def intercept_unary_unary_call(self, invoker, method, request, **kwargs):
         return self.intercept_call(
-            grpc.UNARY_UNARY, invoker, method, request, **kwargs)
+            oc_grpc.UNARY_UNARY, invoker, method, request, **kwargs)
 
     def intercept_unary_unary_future(self, invoker, method, request, **kwargs):
         return self.intercept_future(
-            grpc.UNARY_UNARY, invoker, method, request, **kwargs)
+            oc_grpc.UNARY_UNARY, invoker, method, request, **kwargs)
 
     def intercept_unary_stream_call(self, invoker, method, request, **kwargs):
         return self.intercept_call(
-            grpc.UNARY_STREAM, invoker, method, request, **kwargs)
+            oc_grpc.UNARY_STREAM, invoker, method, request, **kwargs)
 
     def intercept_stream_unary_call(self, invoker, method, request_iterator,
                                     **kwargs):
         return self.intercept_call(
-            grpc.STREAM_UNARY, invoker, method, request_iterator, **kwargs)
+            oc_grpc.STREAM_UNARY, invoker, method, request_iterator, **kwargs)
 
     def intercept_stream_unary_future(self, invoker, method, request_iterator,
                                       **kwargs):
         return self.intercept_future(
-            grpc.STREAM_UNARY, invoker, method, request_iterator, **kwargs)
+            oc_grpc.STREAM_UNARY, invoker, method, request_iterator, **kwargs)
 
     def intercept_stream_stream_call(self, invoker, method, request_iterator,
                                      **kwargs):
         return self.intercept_call(
-            grpc.STREAM_STREAM, invoker, method, request_iterator, **kwargs)
+            oc_grpc.STREAM_STREAM, invoker, method, request_iterator, **kwargs)
