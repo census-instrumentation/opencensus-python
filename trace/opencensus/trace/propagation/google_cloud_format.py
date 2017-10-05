@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc.
+# Copyright 2017, OpenCensus Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ binary format and zipkin, opencensus format.
 import logging
 import re
 
+from opencensus.trace.propagation import _helpers
 from opencensus.trace.span_context import SpanContext
 
 _ENABLED_BITMASK = 1
@@ -30,64 +31,69 @@ _TRACE_ID_DELIMETER = '/'
 _SPAN_ID_DELIMETER = ';'
 
 
-def from_header(header):
-    """Generate a SpanContext object using the trace context header.
-    The value of enabled parsed from header is int. Need to convert to bool.
+class GoogleCloudFormatPropagator(object):
 
-    :type header: str
-    :param header: Trace context header which was extracted from the HTTP
-                   request headers.
+    def from_header(self, header):
+        """Generate a SpanContext object using the trace context header.
+        The value of enabled parsed from header is int. Need to convert to
+        bool.
 
-    :rtype: :class:`~opencensus.trace.span_context.SpanContext`
-    :returns: SpanContext generated from the trace context header.
-    """
-    try:
-        match = re.search(_TRACE_CONTEXT_HEADER_RE, header)
-    except TypeError:
-        logging.warning(
-            'Header should be str, got {}. Cannot parse the header.'.format(
-                header.__class__.__name__))
-        raise
+        :type header: str
+        :param header: Trace context header which was extracted from the HTTP
+                       request headers.
 
-    if match:
-        trace_id = match.group(1)
-        span_id = match.group(3)
-        options = match.group(5)
+        :rtype: :class:`~opencensus.trace.span_context.SpanContext`
+        :returns: SpanContext generated from the trace context header.
+        """
+        if header is None:
+            return SpanContext()
 
-        if options is None:
-            options = 1
+        try:
+            match = re.search(_TRACE_CONTEXT_HEADER_RE, header)
+        except TypeError:
+            logging.warning(
+                'Header should be str, got {}. Cannot parse the header.'
+                .format(header.__class__.__name__))
+            raise
 
-        enabled = bool(int(options) | _ENABLED_BITMASK)
+        if match:
+            trace_id = match.group(1)
+            span_id = match.group(3)
+            options = match.group(5)
 
-        span_context = SpanContext(
-            trace_id=trace_id,
-            span_id=span_id,
-            enabled=enabled,
-            from_header=True)
-        return span_context
-    else:
-        logging.warning(
-            'Cannot parse the header {}, generate a new context instead.'
-            .format(header))
-        return SpanContext()
+            if options is None:
+                options = 1
 
+            enabled = _helpers._get_enabled_trace_option(options)
 
-def to_header(span_context):
-    """Convert a SpanContext object to header string.
+            span_context = SpanContext(
+                trace_id=trace_id,
+                span_id=span_id,
+                enabled=enabled,
+                from_header=True)
+            return span_context
+        else:
+            logging.warning(
+                'Cannot parse the header {}, generate a new context instead.'
+                .format(header))
+            return SpanContext()
 
-    :type span_context:
-        :class:`~opencensus.trace.span_context.SpanContext`
-    :param span_context: SpanContext object.
+    def to_header(self, span_context):
+        """Convert a SpanContext object to header string.
 
-    :rtype: str
-    :returns: A trace context header string in google cloud format.
-    """
-    trace_id = span_context.trace_id
-    span_id = span_context.span_id
-    enabled = span_context.enabled
+        :type span_context:
+            :class:`~opencensus.trace.span_context.SpanContext`
+        :param span_context: SpanContext object.
 
-    header = '{}/{};o={}'.format(
-        trace_id,
-        span_id,
-        int(enabled))
-    return header
+        :rtype: str
+        :returns: A trace context header string in google cloud format.
+        """
+        trace_id = span_context.trace_id
+        span_id = span_context.span_id
+        enabled = span_context.enabled
+
+        header = '{}/{};o={}'.format(
+            trace_id,
+            span_id,
+            int(enabled))
+        return header

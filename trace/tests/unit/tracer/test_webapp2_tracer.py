@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc.
+# Copyright 2017, OpenCensus Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -30,24 +30,31 @@ except SyntaxError:
 class TestWebApp2Tracer(unittest.TestCase):
 
     @mock.patch('opencensus.trace.tracer.webapp2_tracer.get_webapp2_header')
-    @mock.patch('opencensus.trace.propagation.google_cloud_format.from_header')
     def test_constructor_default(
-            self, mock_from_header, mock_get_webapp2_header):
+            self, mock_get_webapp2_header):
         from opencensus.trace import span_context
         from opencensus.trace.reporters import print_reporter
         from opencensus.trace.samplers import always_on
+        from opencensus.trace.propagation import google_cloud_format
         from opencensus.trace.tracer import webapp2_tracer
 
         trace_id = '6e0c63257de34c92bf9efcd03927272e'
         test_span_context = span_context.SpanContext(trace_id=trace_id)
 
-        mock_from_header.return_value = test_span_context
+        patch = mock.patch.object(
+            google_cloud_format.GoogleCloudFormatPropagator,
+            'from_header',
+            return_value=test_span_context)
         mock_get_webapp2_header.return_value = 'test_webapp2_header'
 
-        tracer = webapp2_tracer.WebApp2Tracer()
+        with patch:
+            tracer = webapp2_tracer.WebApp2Tracer()
 
         assert isinstance(tracer.reporter, print_reporter.PrintReporter)
         assert isinstance(tracer.sampler, always_on.AlwaysOnSampler)
+        assert isinstance(
+            tracer.propagator,
+            google_cloud_format.GoogleCloudFormatPropagator)
         assert isinstance(tracer.span_context, span_context.SpanContext)
         self.assertEqual(tracer.span_context, test_span_context)
 
@@ -55,21 +62,25 @@ class TestWebApp2Tracer(unittest.TestCase):
         from opencensus.trace import span_context
         from opencensus.trace.reporters import print_reporter
         from opencensus.trace.samplers import always_on
+        from opencensus.trace.propagation import google_cloud_format
         from opencensus.trace.tracer import webapp2_tracer
 
         trace_id = '6e0c63257de34c92bf9efcd03927272e'
         span_context = span_context.SpanContext(trace_id=trace_id)
         sampler = always_on.AlwaysOnSampler()
         reporter = print_reporter.PrintReporter()
+        propagator = google_cloud_format.GoogleCloudFormatPropagator()
 
         tracer = webapp2_tracer.WebApp2Tracer(
             span_context=span_context,
             sampler=sampler,
-            reporter=reporter)
+            reporter=reporter,
+            propagator=propagator)
 
         self.assertEqual(tracer.span_context, span_context)
         self.assertEqual(tracer.sampler, sampler)
         self.assertEqual(tracer.reporter, reporter)
+        self.assertEqual(tracer.propagator, propagator)
 
 
 class _GetTraceHeader(RequestHandler):

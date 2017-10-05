@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc.
+# Copyright 2017, OpenCensus Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,22 +16,25 @@
 
 import json
 
+from opencensus.trace.reporters import base
 
-class FileReporter(object):
+DEFAULT_FILENAME = 'opencensus-traces.json'
+
+
+class FileReporter(base.Reporter):
     """
     :type file_name: str
     :param file_name: The name of the output file.
     """
 
-    def __init__(self, file_name):
+    def __init__(self, file_name=DEFAULT_FILENAME):
         self.file_name = file_name
 
-    def report(self, traces):
-        """Report the traces by printing it out.
-
-        :type traces: dict
-        :param traces: Traces collected.
+    def report(self, trace):
+        """
+        :type trace: dict
+        :param trace: Trace collected.
         """
         with open(self.file_name, 'w+') as file:
-            traces_str = json.dumps(traces)
-            file.write(traces_str)
+            trace_str = json.dumps(trace)
+            file.write(trace_str)

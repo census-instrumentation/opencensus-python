@@ -1,0 +1,163 @@
+# Copyright 2017, OpenCensus Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"""Export the spans data to Zipkin Collector."""
+
+import datetime
+import json
+import logging
+import requests
+import calendar
+
+from opencensus.trace.reporters import base
+
+DEFAULT_ENDPOINT = '/api/v2/spans'
+DEFAULT_HOST_NAME = 'localhost'
+DEFAULT_PORT = 9411
+ZIPKIN_HEADERS = {'Content-Type': 'application/json'}
+
+ISO_DATETIME_REGEX = '%Y-%m-%dT%H:%M:%S.%fZ'
+
+SPAN_KIND_MAP = {
+    0: None,  # span kind unspecified
+    1: "SERVER",
+    2: "CLIENT",
+}
+
+SUCCESS_STATUS_CODE = (200, 202)
+
+
+class ZipkinReporter(base.Reporter):
+    """Report the spans to Zipkin.
+
+    See: http://zipkin.io/zipkin-api/#
+
+    :type service_name: str
+    :param service_name: Service that logged an annotation in a trace.
+                         Classifier when query for spans.
+
+    :type host_name: str
+    :param host_name: (Optional) The host name of the Zipkin server.
+
+    :type port: int
+    :param port: (Optional) The port of the Zipkin server.
+
+    :type end_point: str
+    :param end_point: (Optional) The path for the span reporting endpoint.
+    """
+
+    def __init__(
+            self,
+            service_name='my_service',
+            host_name=DEFAULT_HOST_NAME,
+            port=DEFAULT_PORT,
+            endpoint=DEFAULT_ENDPOINT):
+        self.service_name = service_name
+        self.host_name = host_name
+        self.port = port
+        self.endpoint = endpoint
+        self.url = self.get_url
+
+    @property
+    def get_url(self):
+        return 'http://{}:{}{}'.format(
+            self.host_name,
+            self.port,
+            self.endpoint)
+
+    def report(self, trace):
+        """Send trace to Zipkin server, default using the v1 API.
+
+        :type trace: dict
+        :param trace: Trace data in dictionary format.
+        """
+        trace_id = trace.get('traceId')
+        spans = trace.get('spans')
+
+        try:
+            zipkin_spans = self.translate_to_zipkin(trace_id, spans)
+            result = requests.post(
+                url=self.url,
+                data=json.dumps(zipkin_spans),
+                headers=ZIPKIN_HEADERS)
+
+            if result.status_code not in SUCCESS_STATUS_CODE:
+                logging.error(
+                    "Failed to send spans to Zipkin server! Spans are {}"
+                    .format(zipkin_spans))
+        except Exception as e:  # pragma: NO COVER
+            logging.error(e.message)
+
+    def translate_to_zipkin(self, trace_id, spans):
+        """Translate the opencensus spans to zipkin spans.
+
+        :type trace_id: str
+        :param trace_id: Trace ID.
+
+        :type spans: list
+        :param spans: List of spans to be reported.
+
+        :rtype: list
+        :returns: List of zipkin format spans.
+        """
+        local_endpoint = {
+            'serviceName': self.service_name,
+            'ipv4': self.host_name,
+            'port': self.port,
+        }
+
+        zipkin_spans = []
+
+        for span in spans:
+            # Timestamp in zipkin spans is int of microseconds.
+            start_datetime = datetime.datetime.strptime(
+                span.get('startTime'),
+                ISO_DATETIME_REGEX)
+            start_timestamp_ms = calendar.timegm(
+                start_datetime.timetuple()) * 1000 * 1000
+
+            end_datetime = datetime.datetime.strptime(
+                span.get('endTime'),
+                ISO_DATETIME_REGEX)
+            end_timestamp_ms = calendar.timegm(
+                end_datetime.timetuple()) * 1000 * 1000
+
+            duration_ms = end_timestamp_ms - start_timestamp_ms
+
+            zipkin_span = {
+                'traceId': trace_id,
+                'id': str(span.get('spanId')),
+                'name': span.get('name'),
+                'timestamp': int(round(start_timestamp_ms)),
+                'duration': int(round(duration_ms)),
+                'localEndpoint': local_endpoint,
+                'tags': span.get('labels'),
+            }
+
+            span_kind = span.get('kind')
+            parent_span_id = span.get('parentSpanId')
+
+            if span_kind is not None:
+                kind = SPAN_KIND_MAP.get(span_kind)
+                # Zipkin API for span kind only accept
+                # enum(CLIENT|SERVER|PRODUCER|CONSUMER|Absent)
+                if kind is not None:
+                    zipkin_span['kind'] = kind
+
+            if parent_span_id is not None:
+                zipkin_span['parentId'] = str(parent_span_id)
+
+            zipkin_spans.append(zipkin_span)
+
+        return zipkin_spans

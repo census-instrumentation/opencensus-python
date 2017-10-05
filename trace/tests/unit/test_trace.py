@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc.
+# Copyright 2017, OpenCensus Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,8 +18,6 @@ import mock
 
 
 class TestTrace(unittest.TestCase):
-
-    project = 'PROJECT'
 
     @staticmethod
     def _get_target_class():
@@ -44,29 +42,22 @@ class TestTrace(unittest.TestCase):
 
     def test_constructor_explicit(self):
         trace_id = 'test_trace_id'
-        reporter = mock.Mock()
 
-        trace = self._make_one(
-            project_id=self.project,
-            trace_id=trace_id,
-            reporter=reporter)
+        trace = self._make_one(trace_id=trace_id)
 
-        self.assertEqual(trace.project_id, self.project)
         self.assertEqual(trace.trace_id, trace_id)
-        self.assertIs(trace.reporter, reporter)
 
     def test_start(self):
-        trace = self._make_one(project_id=self.project)
+        trace = self._make_one()
         trace.start()
 
         self.assertEqual(trace.spans, [])
 
-    def test_finish_with_valid_span(self):
+    def test_finish(self):
         from opencensus.trace.enums import Enum
         from opencensus.trace.trace_span import TraceSpan
 
-        reporter = mock.Mock()
-        trace = self._make_one(reporter=reporter)
+        trace = self._make_one()
 
         span_name = 'span'
         span_id = 123
@@ -96,7 +87,7 @@ class TestTrace(unittest.TestCase):
 
         span_name = 'test_span_name'
 
-        trace = self._make_one(project_id=self.project)
+        trace = self._make_one()
         trace.spans = []
 
         trace.span(name=span_name)
@@ -105,104 +96,3 @@ class TestTrace(unittest.TestCase):
         result_span = trace.spans[0]
         self.assertIsInstance(result_span, TraceSpan)
         self.assertEqual(result_span.name, span_name)
-
-    def test_send_without_spans(self):
-        trace_id = 'test_trace_id'
-        reporter = mock.Mock()
-        trace = self._make_one(
-            project_id=self.project,
-            trace_id=trace_id,
-            reporter=reporter)
-        trace.spans = []
-
-        trace.send()
-
-        self.assertFalse(reporter.called)
-        self.assertEqual(trace.project_id, self.project)
-        self.assertEqual(trace.trace_id, trace_id)
-        self.assertEqual(trace.spans, [])
-
-    def test_send_with_spans(self):
-        from opencensus.trace.enums import Enum
-        from opencensus.trace.trace_span import TraceSpan
-
-        trace_id = 'test_trace_id'
-        reporter = mock.Mock()
-        trace = self._make_one(
-            project_id=self.project,
-            trace_id=trace_id,
-            reporter=reporter)
-        child_span_name = 'child_span'
-        root_span_name = 'root_span'
-        child_span_id = 123
-        root_span_id = 456
-        kind = Enum.SpanKind.SPAN_KIND_UNSPECIFIED
-        start_time = '2017-06-25'
-        end_time = '2017-06-26'
-        labels = {
-            '/http/status_code': '200',
-            '/component': 'HTTP load balancer',
-        }
-
-        child_span = mock.Mock(spec=TraceSpan)
-        child_span.name = child_span_name
-        child_span.kind = kind
-        child_span.parent_span_id = root_span_id
-        child_span.span_id = child_span_id
-        child_span.start_time = start_time
-        child_span.end_time = end_time
-        child_span.labels = labels
-        child_span.children = []
-        child_span.__iter__ = mock.Mock(return_value=iter([child_span]))
-
-        root_span = mock.Mock(spec=TraceSpan)
-        root_span.name = root_span_name
-        root_span.kind = kind
-        root_span.parent_span_id = None
-        root_span.span_id = root_span_id
-        root_span.start_time = start_time
-        root_span.end_time = end_time
-        root_span.labels = None
-        root_span.children = []
-        root_span.__iter__ = mock.Mock(
-            return_value=iter([root_span, child_span]))
-
-        child_span_json = {
-            'name': child_span.name,
-            'kind': kind,
-            'parentSpanId': root_span_id,
-            'spanId': child_span_id,
-            'startTime': start_time,
-            'endTime': end_time,
-            'labels': labels,
-        }
-
-        root_span_json = {
-            'name': root_span.name,
-            'kind': kind,
-            'spanId': root_span_id,
-            'startTime': start_time,
-            'endTime': end_time,
-        }
-
-        trace.spans = [root_span]
-        traces = {
-            'traces': [
-                {
-                    'projectId': self.project,
-                    'traceId': trace_id,
-                    'spans': [
-                        root_span_json,
-                        child_span_json
-                    ]
-                }
-            ]
-        }
-
-        trace.send()
-
-        reporter.report.assert_called_with(traces)
-
-        self.assertEqual(trace.project_id, self.project)
-        self.assertEqual(trace.trace_id, trace_id)
-        self.assertEqual(trace.spans, [root_span])

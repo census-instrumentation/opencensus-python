@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc.
+# Copyright 2017, OpenCensus Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,13 +14,11 @@
 
 """A setup module for Open Source Census Instrumentation Library"""
 
-import io
 from setuptools import setup, find_packages
 
 install_requires = [
     'google-gax>=0.15.7, <0.16dev',
     'googleapis-common-protos[grpc]>=1.5.2, <2.0dev',
-    'google-cloud-core >= 0.24.0, < 0.25dev',
 ]
 
 setup(
@@ -43,8 +41,8 @@ setup(
     ],
     description='A stats collection and distributed tracing framework',
     include_package_data=True,
+    long_description=open('README.rst').read(),
     install_requires=install_requires,
-    long_description=open('README.md').read(),
     license='Apache-2.0',
     packages=find_packages(),
     namespace_packages=[],

@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc.
+# Copyright 2017, OpenCensus Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -76,7 +76,7 @@ class TraceSpan(object):
             name,
             kind=Enum.SpanKind.SPAN_KIND_UNSPECIFIED,
             parent_span_id=None,
-            labels={},
+            labels=None,
             start_time=None,
             end_time=None,
             span_id=None,
@@ -84,13 +84,16 @@ class TraceSpan(object):
         self.name = name
         self.kind = kind
         self.parent_span_id = parent_span_id
-        self.labels = labels
         self.start_time = start_time
         self.end_time = end_time
 
         if span_id is None:
             span_id = generate_span_id()
 
+        if labels is None:
+            labels = {}
+
+        self.labels = labels
         self.span_id = span_id
         self._child_spans = []
         self.context_tracer = context_tracer

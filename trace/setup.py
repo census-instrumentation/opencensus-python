@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc.
+# Copyright 2017, OpenCensus Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ from setuptools import setup, find_packages
 install_requires = [
     'google-gax>=0.15.7, <0.16dev',
     'googleapis-common-protos[grpc]>=1.5.2, <2.0dev',
-    'google-cloud-core >= 0.24.0, < 0.25dev',
+    'mysql-connector>=2.1.6, <2.2dev',
 ]
 
 setup(

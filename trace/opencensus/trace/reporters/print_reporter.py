@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc.
+# Copyright 2017, OpenCensus Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,16 +14,18 @@
 
 """Export the trace spans by printing them out."""
 
+from opencensus.trace.reporters import base
 
-class PrintReporter(object):
-    def report(self, traces):
+
+class PrintReporter(base.Reporter):
+    def report(self, trace):
         """Report the traces by printing it out.
 
-        :type traces: dict
-        :param traces: Traces collected.
+        :type trace: dict
+        :param trace: Trace collected.
 
         :rtype: dict
-        :returns: Traces printed.
+        :returns: Trace printed.
         """
-        print(traces)
-        return traces
+        print(trace)
+        return trace

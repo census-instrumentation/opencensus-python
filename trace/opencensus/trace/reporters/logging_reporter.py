@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc.
+# Copyright 2017, OpenCensus Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,8 +16,10 @@
 
 import logging
 
+from opencensus.trace.reporters import base
 
-class LoggingReporter(object):
+
+class LoggingReporter(base.Reporter):
     """A reporter to export the spans data to python logging. Also can use
     handlers like CloudLoggingHandler to log to Stackdriver Logging API.
 
@@ -52,5 +54,9 @@ class LoggingReporter(object):
         self.logger.addHandler(handler)
         self.logger.setLevel(logging.INFO)
 
-    def report(self, traces):
-        self.logger.info(traces)
+    def report(self, trace):
+        """
+        :type traces: dict
+        :param traces: Trace collected.
+        """
+        self.logger.info(trace)
