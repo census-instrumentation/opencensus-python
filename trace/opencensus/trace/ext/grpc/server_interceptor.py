@@ -79,7 +79,7 @@ class OpenCensusServerInterceptor(grpc_ext.UnaryUnaryServerInterceptor,
                     labels_helper.STACKDRIVER_LABELS.get(LABEL_ERROR_MESSAGE),
                     str(e))
                 span.finish()
-                self._tracer.end_trace()
+                tracer.end_trace()
                 raise
 
         tracer.end_trace()
