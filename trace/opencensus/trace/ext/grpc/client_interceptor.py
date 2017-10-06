@@ -91,6 +91,8 @@ class OpenCensusClientInterceptor(grpc_ext.UnaryUnaryClientInterceptor,
                 span.add_label(
                     labels_helper.STACKDRIVER_LABELS.get(LABEL_ERROR_MESSAGE),
                     str(e))
+                span.finish()
+                self._tracer.end_trace()
                 raise
 
         return result
@@ -113,6 +115,8 @@ class OpenCensusClientInterceptor(grpc_ext.UnaryUnaryClientInterceptor,
                 span.add_label(
                     labels_helper.STACKDRIVER_LABELS.get(LABEL_ERROR_MESSAGE),
                     str(e))
+                span.finish()
+                self._tracer.end_trace()
                 raise
 
         return self._trace_async_result(result)
