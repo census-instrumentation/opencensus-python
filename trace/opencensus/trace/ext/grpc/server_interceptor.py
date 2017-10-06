@@ -18,11 +18,15 @@ import logging
 # Note: Currently the interceptor support for Python in grpc is not available
 # yet, this is based on the code in the pull request in the grpc repository.
 from opencensus.trace import grpc
+from opencensus.trace import labels_helper
+from opencensus.trace import request_tracer
+from opencensus.trace.enums import Enum
 from opencensus.trace.grpc import grpc_ext
 from opencensus.trace.propagation import binary_format
-from opencensus.trace import request_tracer
 
-from opencensus.trace.enums import Enum
+LABEL_COMPONENT = 'COMPONENT'
+LABEL_ERROR_NAME = 'ERROR_NAME'
+LABEL_ERROR_MESSAGE = 'ERROR_MESSAGE'
 
 
 class OpenCensusServerInterceptor(grpc_ext.UnaryUnaryServerInterceptor,
@@ -34,9 +38,12 @@ class OpenCensusServerInterceptor(grpc_ext.UnaryUnaryServerInterceptor,
         self.sampler = sampler
         self.reporter = reporter
 
-    def _start_server_span(self, tracer, servicer_context, method):
-        span = tracer.start_span(name=str(method))
-        span.add_label(label_key='component', label_value='grpc')
+    def _start_server_span(self, request_type, tracer, method):
+        span = tracer.start_span(
+            name='[gRPC_server][{}]{}'.format(request_type, str(method)))
+        span.add_label(
+            label_key=labels_helper.STACKDRIVER_LABELS.get(LABEL_COMPONENT),
+            label_value='grpc')
         span.kind = Enum.SpanKind.RPC_SERVER
         return span
 
@@ -57,14 +64,17 @@ class OpenCensusServerInterceptor(grpc_ext.UnaryUnaryServerInterceptor,
 
         tracer.start_trace()
 
-        with self._start_server_span(tracer, servicer_context, method) as span:
+        with self._start_server_span(
+                request_type, tracer, servicer_context, method) as span:
             response = None
-            span.name = '[gRPC_server][{}]{}'.format(request_type, str(method))
+
             try:
                 response = handler(request, servicer_context)
-            except:
-                e = sys.exc_info()[0]
+            except Exception as e:
                 logging.error(e)
+                span.add_label(
+                    labels_helper.STACKDRIVER_LABELS.get(LABEL_ERROR_MESSAGE),
+                    str(e))
                 raise
 
         tracer.end_trace()

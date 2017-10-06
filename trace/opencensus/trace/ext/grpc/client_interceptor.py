@@ -17,14 +17,19 @@ import grpc
 import six
 import sys
 
+
+from opencensus.trace import execution_context
 from opencensus.trace import grpc as oc_grpc
+from opencensus.trace import labels_helper
+from opencensus.trace.enums import Enum
 from opencensus.trace.grpc import grpc_ext
 from opencensus.trace.propagation import binary_format
-from opencensus.trace import execution_context
-
-from opencensus.trace.enums import Enum
 
 log = logging.getLogger(__name__)
+
+LABEL_COMPONENT = 'COMPONENT'
+LABEL_ERROR_NAME = 'ERROR_NAME'
+LABEL_ERROR_MESSAGE = 'ERROR_MESSAGE'
 
 
 class OpenCensusClientInterceptor(grpc_ext.UnaryUnaryClientInterceptor,
@@ -39,10 +44,13 @@ class OpenCensusClientInterceptor(grpc_ext.UnaryUnaryClientInterceptor,
         self._tracer = tracer
         self._propagator = binary_format.BinaryFormatPropagator()
 
-    def _start_client_span(self, method):
+    def _start_client_span(self, request_type, method):
         log.info('Start client span')
-        span = self._tracer.start_span(name='[gRPC]{}'.format(str(method)))
-        span.add_label(label_key='component', label_value='grpc')
+        span = self._tracer.start_span(
+            name='[gRPC_client][{}]{}'.format(request_type, str(method)))
+        span.add_label(
+            label_key=labels_helper.STACKDRIVER_LABELS.get(LABEL_COMPONENT),
+            label_value='grpc')
         span.kind = Enum.SpanKind.RPC_CLIENT
         return span
 
@@ -57,7 +65,9 @@ class OpenCensusClientInterceptor(grpc_ext.UnaryUnaryClientInterceptor,
             code = future_response.code()
 
             if code != grpc.StatusCode.OK:
-                span.add_label('error in response', str(code))
+                span.add_label(
+                    labels_helper.STACKDRIVER_LABELS.get(LABEL_ERROR_NAME),
+                    str(code))
 
             response = future_response.result()
             self._tracer.end_span()
@@ -67,7 +77,7 @@ class OpenCensusClientInterceptor(grpc_ext.UnaryUnaryClientInterceptor,
     def intercept_call(self, request_type, invoker, method, request, **kwargs):
         metadata = getattr(kwargs, 'metadata', ())
 
-        with self._start_client_span(method) as span:
+        with self._start_client_span(request_type, method) as span:
             span_context = self._tracer.span_context
             header = self._propagator.to_header(span_context)
             grpc_trace_metadata = {
@@ -75,13 +85,12 @@ class OpenCensusClientInterceptor(grpc_ext.UnaryUnaryClientInterceptor,
             }
             metadata = metadata + tuple(six.iteritems(grpc_trace_metadata))
 
-            span.name = '[gRPC_client][{}]{}'.format(request_type, str(method))
-
             try:
                 result = invoker(method, request, metadata=metadata, **kwargs)
-            except:
-                e = sys.exc_info()[0]
-                span.add_label('error', str(e))
+            except Exception as e:
+                span.add_label(
+                    labels_helper.STACKDRIVER_LABELS.get(LABEL_ERROR_MESSAGE),
+                    str(e))
                 raise
 
         return result
@@ -90,7 +99,7 @@ class OpenCensusClientInterceptor(grpc_ext.UnaryUnaryClientInterceptor,
             self, request_type, invoker, method, request, **kwargs):
         metadata = getattr(kwargs, 'metadata', ())
 
-        with self._start_client_span(method) as span:
+        with self._start_client_span(request_type, method) as span:
             span_context = self._tracer.span_context
             header = self._propagator.to_header(span_context)
             grpc_trace_metadata = {
@@ -98,13 +107,12 @@ class OpenCensusClientInterceptor(grpc_ext.UnaryUnaryClientInterceptor,
             }
             metadata = metadata + tuple(six.iteritems(grpc_trace_metadata))
 
-            span.name = '[gRPC_client][{}]{}'.format(request_type, str(method))
-
             try:
                 result = invoker(method, request, metadata=metadata, **kwargs)
-            except:
-                e = sys.exc_info()[0]
-                span.add_label('error', str(e))
+            except Exception as e:
+                span.add_label(
+                    labels_helper.STACKDRIVER_LABELS.get(LABEL_ERROR_MESSAGE),
+                    str(e))
                 raise
 
         return self._trace_async_result(result)
