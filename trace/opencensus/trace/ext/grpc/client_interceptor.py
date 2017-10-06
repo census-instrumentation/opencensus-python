@@ -30,6 +30,8 @@ log = logging.getLogger(__name__)
 LABEL_COMPONENT = 'COMPONENT'
 LABEL_ERROR_NAME = 'ERROR_NAME'
 LABEL_ERROR_MESSAGE = 'ERROR_MESSAGE'
+GRPC_HOST_PORT = 'GRPC_HOST_PORT'
+GRPC_METHOD = 'GRPC_METHOD'
 
 
 class OpenCensusClientInterceptor(grpc_ext.UnaryUnaryClientInterceptor,
@@ -37,20 +39,35 @@ class OpenCensusClientInterceptor(grpc_ext.UnaryUnaryClientInterceptor,
                                   grpc_ext.StreamUnaryClientInterceptor,
                                   grpc_ext.StreamStreamClientInterceptor):
 
-    def __init__(self, tracer=None):
+    def __init__(self, tracer=None, host_port=None):
         if tracer is None:
             tracer = execution_context.get_opencensus_tracer()
 
         self._tracer = tracer
+        self.host_port = host_port
         self._propagator = binary_format.BinaryFormatPropagator()
 
     def _start_client_span(self, request_type, method):
         log.info('Start client span')
         span = self._tracer.start_span(
             name='[gRPC_client][{}]{}'.format(request_type, str(method)))
+
+        # Add the component grpc to span label
         span.add_label(
             label_key=labels_helper.STACKDRIVER_LABELS.get(LABEL_COMPONENT),
             label_value='grpc')
+
+        # Add the host:port info to span label
+        if self.host_port is not None:
+            span.add_label(
+                label_key=labels_helper.GRPC_LABELS.get(GRPC_HOST_PORT),
+                label_value=self.host_port)
+
+        # Add the method to span label
+        span.add_label(
+            label_key=labels_helper.STACKDRIVER_LABELS.get(GRPC_METHOD),
+            label_value=str(method))
+
         span.kind = Enum.SpanKind.RPC_CLIENT
         return span
 

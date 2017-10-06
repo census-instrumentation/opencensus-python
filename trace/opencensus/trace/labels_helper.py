@@ -45,6 +45,11 @@ STACKDRIVER_LABELS = {
     'TID': '/tid',
 }
 
+GRPC_LABELS = {
+    'GRPC_HOST_PORT': '/grpc/host/port',
+    'GRPC_METHOD': '/grpc/method',
+}
+
 # GAE common labels
 # See: https://cloud.google.com/appengine/docs/flexible/python/runtime#
 #      environment_variables

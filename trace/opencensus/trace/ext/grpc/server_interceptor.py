@@ -44,6 +44,9 @@ class OpenCensusServerInterceptor(grpc_ext.UnaryUnaryServerInterceptor,
         span.add_label(
             label_key=labels_helper.STACKDRIVER_LABELS.get(LABEL_COMPONENT),
             label_value='grpc')
+
+
+
         span.kind = Enum.SpanKind.RPC_SERVER
         return span
 
