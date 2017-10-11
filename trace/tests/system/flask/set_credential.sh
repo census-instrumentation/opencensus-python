@@ -19,7 +19,7 @@ export GOOGLE_APPLICATION_CREDENTIALS='google_application_credentials'
 
 # Decrypt credentials
 if [ -n "$GOOGLE_APPLICATION_CREDENTIALS" ]; then
-    openssl aes-256-cbc -d -a -k "$GCLOUD_CREDENTIALS_PASSPHRASE" \
+    openssl aes-256-cbc -d -a -k "$GOOGLE_CREDENTIALS_PASSPHRASE" \
         -in credentials.json.enc \
         -out "$GOOGLE_APPLICATION_CREDENTIALS"
 else
