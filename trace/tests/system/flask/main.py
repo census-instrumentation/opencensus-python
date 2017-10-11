@@ -24,10 +24,17 @@ from opencensus.trace.ext.flask.flask_middleware import FlaskMiddleware
 from opencensus.trace import config_integration
 from opencensus.trace.reporters import google_cloud_reporter
 
-sys.path.insert(0, os.path.abspath(__file__+"/../../../.."))
-from ext import config
-
 INTEGRATIONS = ['mysql', 'postgresql', 'sqlalchemy']
+
+# MySQL settings
+MYSQL_PASSWORD = os.environ.get('MYSQL_PASSWORD')
+MYSQL_USER = os.environ.get('MYSQL_USER')
+
+# PostgreSQL settings
+POSTGRES_PASSWORD = os.environ.get('POSTGRES_PASSWORD')
+POSTGRES_USER = os.environ.get('POSTGRES_USER')
+POSTGRES_HOST = os.environ.get('POSTGRES_HOST')
+POSTGRES_DB = os.environ.get('POSTGRES_DB')
 
 app = flask.Flask(__name__)
 
@@ -46,8 +53,8 @@ def hello():
 def mysql_query():
     try:
         conn = mysql.connector.connect(
-            user=config.MYSQL_USER,
-            password=config.MYSQL_PASSWORD)
+            user=MYSQL_USER,
+            password=MYSQL_PASSWORD)
         cursor = conn.cursor()
 
         query = 'SELECT 2*3'
@@ -72,10 +79,10 @@ def mysql_query():
 def postgresql_query():
     try:
         conn = psycopg2.connect(
-            host=config.POSTGRES_HOST,
-            user=config.POSTGRES_USER,
-            password=config.POSTGRES_PASSWORD,
-            dbname=config.POSTGRES_DB)
+            host=POSTGRES_HOST,
+            user=POSTGRES_USER,
+            password=POSTGRES_PASSWORD,
+            dbname=POSTGRES_DB)
         cursor = conn.cursor()
 
         query = 'SELECT * FROM company'
@@ -101,7 +108,7 @@ def sqlalchemy_mysql_query():
     try:
         engine = sqlalchemy.create_engine(
             'mysql+mysqlconnector://{}:{}@localhost'.format(
-                config.MYSQL_USER, config.MYSQL_PASSWORD))
+                MYSQL_USER, MYSQL_PASSWORD))
         conn = engine.connect()
 
         query = 'SELECT 2*3'
@@ -125,8 +132,8 @@ def sqlalchemy_postgresql_query():
     try:
         engine = sqlalchemy.create_engine(
             'postgresql://{}:{}@{}/{}'.format(
-                config.POSTGRES_USER, config.POSTGRES_PASSWORD,
-                config.POSTGRES_HOST, config.POSTGRES_DB))
+                POSTGRES_USER, POSTGRES_PASSWORD,
+                POSTGRES_HOST, POSTGRES_DB))
         conn = engine.connect()
 
         query = 'SELECT * FROM company'
@@ -146,4 +153,4 @@ def sqlalchemy_postgresql_query():
 
 
 if __name__ == '__main__':
-    app.run(host='127.0.0.1', port=8080, debug=True)
+    app.run(host='127.0.0.1', port=8080, debug=True, use_reloader=False)
