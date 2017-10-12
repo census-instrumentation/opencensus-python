@@ -12,8 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-.dockerignore
-Dockerfile
-.git
-.hg
-.svn
+# Pull the mysql docker image
+echo "Pulling mysql container..."
+docker pull mysql
+
+# Start running the mysql server
+echo "Start running mysql container..."
+docker run --name=systest_mysql \
+    -d -e MYSQL_ROOT_PASSWORD=$SYSTEST_MYSQL_PASSWORD mysql
+
+# Wait for the mysql container running
+until nc -z -v -w30 192.168.9.2 3306
+do
+  echo "Waiting for mysql database connection..."
+  # wait for 5 seconds before check again
+  sleep 5
+done

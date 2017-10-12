@@ -27,8 +27,7 @@ from opencensus.trace.reporters import google_cloud_reporter
 INTEGRATIONS = ['mysql', 'postgresql', 'sqlalchemy']
 
 # MySQL settings
-MYSQL_PASSWORD = os.environ.get('MYSQL_PASSWORD')
-MYSQL_USER = os.environ.get('MYSQL_USER')
+MYSQL_PASSWORD = os.environ.get('SYSTEST_MYSQL_PASSWORD')
 
 # PostgreSQL settings
 POSTGRES_PASSWORD = os.environ.get('POSTGRES_PASSWORD')
@@ -53,7 +52,8 @@ def hello():
 def mysql_query():
     try:
         conn = mysql.connector.connect(
-            user=MYSQL_USER,
+            host='192.168.9.2',
+            user='root',
             password=MYSQL_PASSWORD)
         cursor = conn.cursor()
 
