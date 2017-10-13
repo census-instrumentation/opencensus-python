@@ -54,7 +54,7 @@ def run_application():
     return process
 
 
-class TestdjangoTrace(unittest.TestCase):
+class TestDjangoTrace(unittest.TestCase):
 
     def setUp(self):
         from google.cloud import trace
