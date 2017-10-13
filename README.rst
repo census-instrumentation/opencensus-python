@@ -273,6 +273,45 @@ Run this command to install the SQLAlchemy package,
 
     pip install sqlalchemy
 
+Requests
+~~~~~~~~
+
+Supports tracing the requests methods including get, post, put, delete, head
+and options. The request url and status code will be added to the span labels.
+
+As most of the Google Cloud client libraries supports HTTP as the background
+transport, to trace the client libraries requests, you can turn on the trace
+integration with requests module.
+
+.. code:: python
+
+    import requests
+    import uuid
+
+    from opencensus.trace.config_integration import trace_integrations
+    from opencensus.trace.request_tracer import RequestTracer
+
+    from google.cloud import bigquery
+
+    # Create a tracer
+    tracer = RequestTracer()
+    tracer.start_trace()
+
+    # Integrate with requests module
+    trace_integrations(['requests'])
+
+    # Run a query to trace
+    query = 'SELECT * FROM sample_table'
+    client = bigquery.Client()
+    query_job = client.run_async_query(str(uuid.uuid4()), query)
+
+    # Start the query job and wait it to complete
+    query_job.begin()
+    query_job.result()
+
+Then you will get the request trace data from the start of executing the query
+to the end.
+
 Status
 ------
 
