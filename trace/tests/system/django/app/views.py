@@ -25,11 +25,14 @@ import sqlalchemy
 
 import time
 import os
-import sys
 
-sys.path.insert(0, os.path.abspath(__file__+"/../../../.."))
-from ext import config
+DB_HOST = '192.168.9.2'
 
+# MySQL settings
+MYSQL_PASSWORD = os.environ.get('SYSTEST_MYSQL_PASSWORD')
+
+# PostgreSQL settings
+POSTGRES_PASSWORD = os.environ.get('SYSTEST_POSTGRES_PASSWORD')
 
 INTEGRATIONS = ['mysql', 'postgresql']
 
@@ -60,8 +63,9 @@ def greetings(request):
 def mysql_trace(request):
     try:
         conn = mysql.connector.connect(
-            user=config.MYSQL_USER,
-            password=config.MYSQL_PASSWORD)
+            host=DB_HOST,
+            user='root',
+            password=MYSQL_PASSWORD)
         cursor = conn.cursor()
 
         query = 'SELECT 2*3'
@@ -82,13 +86,13 @@ def mysql_trace(request):
 def postgresql_trace(request):
     try:
         conn = psycopg2.connect(
-            host=config.POSTGRES_HOST,
-            user=config.POSTGRES_USER,
-            password=config.POSTGRES_PASSWORD,
-            dbname=config.POSTGRES_DB)
+            host=DB_HOST,
+            user='postgres',
+            password=POSTGRES_PASSWORD,
+            dbname='postgres')
         cursor = conn.cursor()
 
-        query = 'SELECT * FROM company'
+        query = 'SELECT 2*3'
         cursor.execute(query)
 
         result = []
@@ -106,8 +110,8 @@ def postgresql_trace(request):
 def sqlalchemy_mysql_trace(request):
     try:
         engine = sqlalchemy.create_engine(
-            'mysql+mysqlconnector://{}:{}@localhost'.format(
-                config.MYSQL_USER, config.MYSQL_PASSWORD))
+            'mysql+mysqlconnector://{}:{}@{}'.format(
+                'root', MYSQL_PASSWORD, DB_HOST))
         conn = engine.connect()
 
         query = 'SELECT 2*3'
@@ -130,11 +134,11 @@ def sqlalchemy_postgresql_trace(request):
     try:
         engine = sqlalchemy.create_engine(
             'postgresql://{}:{}@{}/{}'.format(
-                config.POSTGRES_USER, config.POSTGRES_PASSWORD,
-                config.POSTGRES_HOST, config.POSTGRES_DB))
+                'postgres', POSTGRES_PASSWORD,
+                DB_HOST, 'postgres'))
         conn = engine.connect()
 
-        query = 'SELECT * FROM company'
+        query = 'SELECT 2*3'
 
         result_set = conn.execute(query)
 

@@ -26,6 +26,8 @@ from opencensus.trace.reporters import google_cloud_reporter
 
 INTEGRATIONS = ['mysql', 'postgresql', 'sqlalchemy']
 
+DB_HOST = '192.168.9.2'
+
 # MySQL settings
 MYSQL_PASSWORD = os.environ.get('SYSTEST_MYSQL_PASSWORD')
 
@@ -49,7 +51,7 @@ def hello():
 def mysql_query():
     try:
         conn = mysql.connector.connect(
-            host='192.168.9.2',
+            host=DB_HOST,
             user='root',
             password=MYSQL_PASSWORD)
         cursor = conn.cursor()
@@ -76,7 +78,7 @@ def mysql_query():
 def postgresql_query():
     try:
         conn = psycopg2.connect(
-            host='192.168.9.2',
+            host=DB_HOST,
             user='postgres',
             password=POSTGRES_PASSWORD,
             dbname='postgres')
@@ -105,7 +107,7 @@ def sqlalchemy_mysql_query():
     try:
         engine = sqlalchemy.create_engine(
             'mysql+mysqlconnector://{}:{}@{}'.format(
-                'root', MYSQL_PASSWORD, '192.168.9.2'))
+                'root', MYSQL_PASSWORD, DB_HOST))
         conn = engine.connect()
 
         query = 'SELECT 2*3'
@@ -130,7 +132,7 @@ def sqlalchemy_postgresql_query():
         engine = sqlalchemy.create_engine(
             'postgresql://{}:{}@{}/{}'.format(
                 'postgres', POSTGRES_PASSWORD,
-                '192.168.9.2', 'postgres'))
+                DB_HOST, 'postgres'))
         conn = engine.connect()
 
         query = 'SELECT 2*3'
