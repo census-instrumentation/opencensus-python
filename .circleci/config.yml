@@ -24,6 +24,10 @@ jobs:
               echo "No credentials. System tests will not run."
             fi
       - run:
+          name: Install netcat
+          command: |
+            apt-get install netcat-openbsd
+      - run:
           name: Run tests - opencensus.trace
           command: |
             nox -f trace/nox.py
