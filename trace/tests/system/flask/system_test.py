@@ -171,27 +171,56 @@ class TestFlaskTrace(unittest.TestCase):
 
         self.container_to_delete.append(postgresql_container_id)
 
-    def test_sqlalchemy_trace(self):
-        pass
+    def test_sqlalchemy_mysql_trace(self):
+        subprocess.call(
+            ['./tests/system/containers/mysql/setup.sh'], shell=True)
 
-    def test_requests_trace(self):
-        pass
+        requests.get(
+            'http://127.0.0.1:8080/sqlalchemy-mysql',
+            headers=self.headers_trace)
 
+        time.sleep(5)
 
-# For running test in when debugging locally
-if __name__ == '__main__':
-    try:
-        test = TestFlaskTrace()
-        # test.setUp()
-        # test.test_flask_request_trace()
-        # test.tearDown()
-        #
-        # test.setUp()
-        # test.test_mysql_trace()
-        # test.tearDown()
+        trace = self.client.get_trace(trace_id=self.trace_id)
 
-        test.setUp()
-        test.test_postgresql_trace()
-        test.tearDown()
-    except Exception as e:
-        test.tearDown()
+        self.assertEqual(trace.get('projectId'), PROJECT)
+        self.assertEqual(trace.get('traceId'), str(self.trace_id))
+        self.assertNotEqual(len(trace.get('spans')), 0)
+        self.assertEqual(
+            trace.get('spans')[0].get('parentSpanId'),
+            str(self.span_id))
+
+        # Get mysql contianer id, convert it from byte to string
+        mysql_container_id = subprocess.check_output(
+            shlex.split('docker ps -aqf name=systest_mysql')) \
+            .decode('utf-8') \
+            .strip()
+
+        self.container_to_delete.append(mysql_container_id)
+
+    def test_sqlalchemy_postgresql_trace(self):
+        subprocess.call(
+            ['./tests/system/containers/postgresql/setup.sh'], shell=True)
+
+        requests.get(
+            'http://127.0.0.1:8080/sqlalchemy-postgresql',
+            headers=self.headers_trace)
+
+        time.sleep(5)
+
+        trace = self.client.get_trace(trace_id=self.trace_id)
+
+        self.assertEqual(trace.get('projectId'), PROJECT)
+        self.assertEqual(trace.get('traceId'), str(self.trace_id))
+        self.assertNotEqual(len(trace.get('spans')), 0)
+        self.assertEqual(
+            trace.get('spans')[0].get('parentSpanId'),
+            str(self.span_id))
+
+        # Get postgresql contianer id, convert it from byte to string
+        postgresql_container_id = subprocess.check_output(
+            shlex.split('docker ps -aqf name=systest_postgresql')) \
+            .decode('utf-8') \
+            .strip()
+
+        self.container_to_delete.append(postgresql_container_id)

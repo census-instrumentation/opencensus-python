@@ -104,8 +104,8 @@ def postgresql_query():
 def sqlalchemy_mysql_query():
     try:
         engine = sqlalchemy.create_engine(
-            'mysql+mysqlconnector://{}:{}@localhost'.format(
-                'root', MYSQL_PASSWORD))
+            'mysql+mysqlconnector://{}:{}@{}'.format(
+                'root', MYSQL_PASSWORD, '192.168.9.2'))
         conn = engine.connect()
 
         query = 'SELECT 2*3'
@@ -129,11 +129,11 @@ def sqlalchemy_postgresql_query():
     try:
         engine = sqlalchemy.create_engine(
             'postgresql://{}:{}@{}/{}'.format(
-                POSTGRES_USER, POSTGRES_PASSWORD,
-                POSTGRES_HOST, POSTGRES_DB))
+                'postgres', POSTGRES_PASSWORD,
+                '192.168.9.2', 'postgres'))
         conn = engine.connect()
 
-        query = 'SELECT * FROM company'
+        query = 'SELECT 2*3'
 
         result_set = conn.execute(query)
 
