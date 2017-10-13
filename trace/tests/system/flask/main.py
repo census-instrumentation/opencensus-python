@@ -28,6 +28,8 @@ INTEGRATIONS = ['mysql', 'postgresql', 'sqlalchemy']
 
 DB_HOST = '192.168.9.2'
 
+PROJECT = os.environ.get('GCLOUD_PROJECT_PYTHON')
+
 # MySQL settings
 MYSQL_PASSWORD = os.environ.get('SYSTEST_MYSQL_PASSWORD')
 
@@ -37,7 +39,7 @@ POSTGRES_PASSWORD = os.environ.get('SYSTEST_POSTGRES_PASSWORD')
 app = flask.Flask(__name__)
 
 # Enbale tracing, send traces to Stackdriver Trace
-reporter = google_cloud_reporter.GoogleCloudReporter()
+reporter = google_cloud_reporter.GoogleCloudReporter(project_id=PROJECT)
 middleware = FlaskMiddleware(app, reporter=reporter)
 config_integration.trace_integrations(INTEGRATIONS)
 

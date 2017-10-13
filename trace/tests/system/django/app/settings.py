@@ -67,9 +67,17 @@ TEMPLATES = [
 
 OPENCENSUS_TRACE = {
     'SAMPLER': 'opencensus.trace.samplers.always_on.AlwaysOnSampler',
-    'REPORTER': 'opencensus.trace.reporters.google_cloud_reporter.GoogleCloudReporter',
+    'REPORTER': 'opencensus.trace.reporters.file_reporter.FileReporter',
     'PROPAGATOR': 'opencensus.trace.propagation.google_cloud_format.'
                   'GoogleCloudFormatPropagator',
+}
+
+DEFAULT_DJANGO_TRACER_PARAMS = {
+    'SAMPLING_RATE': 0.5,
+    'GCP_REPORTER_PROJECT': os.environ.get('GCLOUD_PROJECT_PYTHON'),
+    'ZIPKIN_REPORTER_SERVICE_NAME': 'my_service',
+    'ZIPKIN_REPORTER_HOST_NAME': 'localhost',
+    'ZIPKIN_REPORTER_PORT': 9411,
 }
 
 OPENCENSUS_TRACE_PARAMS = {
