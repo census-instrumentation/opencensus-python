@@ -30,10 +30,7 @@ INTEGRATIONS = ['mysql', 'postgresql', 'sqlalchemy']
 MYSQL_PASSWORD = os.environ.get('SYSTEST_MYSQL_PASSWORD')
 
 # PostgreSQL settings
-POSTGRES_PASSWORD = os.environ.get('POSTGRES_PASSWORD')
-POSTGRES_USER = os.environ.get('POSTGRES_USER')
-POSTGRES_HOST = os.environ.get('POSTGRES_HOST')
-POSTGRES_DB = os.environ.get('POSTGRES_DB')
+POSTGRES_PASSWORD = os.environ.get('SYSTEST_POSTGRES_PASSWORD')
 
 app = flask.Flask(__name__)
 
@@ -79,13 +76,13 @@ def mysql_query():
 def postgresql_query():
     try:
         conn = psycopg2.connect(
-            host=POSTGRES_HOST,
-            user=POSTGRES_USER,
+            host='192.168.9.2',
+            user='postgres',
             password=POSTGRES_PASSWORD,
-            dbname=POSTGRES_DB)
+            dbname='postgres')
         cursor = conn.cursor()
 
-        query = 'SELECT * FROM company'
+        query = 'SELECT 2*3'
         cursor.execute(query)
 
         result = []
@@ -108,7 +105,7 @@ def sqlalchemy_mysql_query():
     try:
         engine = sqlalchemy.create_engine(
             'mysql+mysqlconnector://{}:{}@localhost'.format(
-                MYSQL_USER, MYSQL_PASSWORD))
+                'root', MYSQL_PASSWORD))
         conn = engine.connect()
 
         query = 'SELECT 2*3'

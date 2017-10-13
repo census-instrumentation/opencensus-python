@@ -13,19 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Pull the mysql docker image
-echo "Pulling mysql container..."
-docker pull mysql
+# Pull the postgres docker image
+echo "Pulling postgres container..."
+docker pull postgres
 
-# Start running the mysql server
-echo "Start running mysql container..."
-docker run --name=systest_mysql \
-    -d -e MYSQL_ROOT_PASSWORD=$SYSTEST_MYSQL_PASSWORD mysql
+# Start running the postgres server
+echo "Start running postgres container..."
+docker run --name=systest_postgresql \
+    -d -e POSTGRES_PASSWORD=$SYSTEST_POSTGRES_PASSWORD postgres
 
-# Wait for the mysql container running
-until nc -z -v -w30 192.168.9.2 3306
+# Wait for the postgres container running
+until nc -z -v -w30 192.168.9.2 5432
 do
-  echo "Waiting for mysql database connection..."
+  echo "Waiting for postgres database connection..."
   # Wait for 5 seconds before check again
   sleep 5
 done

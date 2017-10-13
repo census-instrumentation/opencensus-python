@@ -25,21 +25,11 @@ import unittest
 
 PROJECT = os.environ.get('GCLOUD_PROJECT_PYTHON')
 
-# /tests/system/flask
-
 
 def wait_app_to_start():
-    retry = 0
-    while True:
-        try:
-            retry += 1
-            if retry > 10:
-                break
-
-            response = requests.get('http://127.0.0.1:8080')
-            break
-        except Exception:
-            time.sleep(1)
+    """Wait the application to start running."""
+    cmd = 'until nc -z -v -w30 127.0.0.1 8080; do sleep 2; done'
+    os.system(cmd)
 
 
 def generate_header():
@@ -54,6 +44,7 @@ def generate_header():
 
 
 def run_application():
+    """Start running the flask application."""
     cmd = 'python tests/system/flask/main.py'
     process = subprocess.Popen(
         cmd,
@@ -107,7 +98,7 @@ class TestFlaskTrace(unittest.TestCase):
                 shlex.split('docker rm {}'.format(container_id)))
 
     def test_flask_request_trace(self):
-        response = requests.get(
+        requests.get(
             'http://127.0.0.1:8080',
             headers=self.headers_trace)
 
@@ -126,7 +117,7 @@ class TestFlaskTrace(unittest.TestCase):
         subprocess.call(
             ['./tests/system/containers/mysql/setup.sh'], shell=True)
 
-        response = requests.get(
+        requests.get(
             'http://127.0.0.1:8080/mysql',
             headers=self.headers_trace)
 
@@ -152,7 +143,33 @@ class TestFlaskTrace(unittest.TestCase):
         self.container_to_delete.append(mysql_container_id)
 
     def test_postgresql_trace(self):
-        pass
+        subprocess.call(
+            ['./tests/system/containers/postgresql/setup.sh'], shell=True)
+
+        requests.get(
+            'http://127.0.0.1:8080/postgresql',
+            headers=self.headers_trace)
+
+        time.sleep(5)
+
+        trace = self.client.get_trace(trace_id=self.trace_id)
+
+        self.assertEqual(trace.get('projectId'), PROJECT)
+        self.assertEqual(trace.get('traceId'), str(self.trace_id))
+
+        # Should have 2 spans, one for flask request, one for postgresql query
+        self.assertEqual(len(trace.get('spans')), 2)
+        self.assertEqual(
+            trace.get('spans')[0].get('parentSpanId'),
+            str(self.span_id))
+
+        # Get postgresql contianer id, convert it from byte to string
+        postgresql_container_id = subprocess.check_output(
+            shlex.split('docker ps -aqf name=systest_postgresql')) \
+            .decode('utf-8') \
+            .strip()
+
+        self.container_to_delete.append(postgresql_container_id)
 
     def test_sqlalchemy_trace(self):
         pass
@@ -165,12 +182,16 @@ class TestFlaskTrace(unittest.TestCase):
 if __name__ == '__main__':
     try:
         test = TestFlaskTrace()
-        test.setUp()
-        test.test_flask_request_trace()
-        test.tearDown()
+        # test.setUp()
+        # test.test_flask_request_trace()
+        # test.tearDown()
+        #
+        # test.setUp()
+        # test.test_mysql_trace()
+        # test.tearDown()
 
         test.setUp()
-        test.test_mysql_trace()
+        test.test_postgresql_trace()
         test.tearDown()
     except Exception as e:
         test.tearDown()
