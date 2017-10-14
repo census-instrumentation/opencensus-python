@@ -13,6 +13,8 @@ jobs:
 
     steps:
       - checkout
+      - setup_remote_docker
+          docker_layer_caching: true
       - run:
           name: Decrypt credentials
           command: |
@@ -28,8 +30,6 @@ jobs:
           command: |
             apt-get update
             apt-get install netcat-openbsd
-            apt-get install docker-ce
-            apt-get install docker-engine
       - run:
           name: Run tests - opencensus.trace
           command: |
