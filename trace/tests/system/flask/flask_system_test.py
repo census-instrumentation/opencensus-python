@@ -81,21 +81,9 @@ class TestFlaskTrace(unittest.TestCase):
         # Initialize the stackdriver trace client
         self.client = trace.Client(project=PROJECT)
 
-        self.container_to_delete = []
-
     def tearDown(self):
         # Kill the flask application process
         os.killpg(os.getpgid(self.process.pid), signal.SIGTERM)
-
-        # Stop and remove the running containers
-        for container_id in self.container_to_delete:
-            # Stop container
-            subprocess.call(
-                shlex.split('docker stop {}'.format(container_id)))
-
-            # Remove container
-            subprocess.call(
-                shlex.split('docker rm {}'.format(container_id)))
 
     def test_flask_request_trace(self):
         requests.get(
@@ -114,9 +102,6 @@ class TestFlaskTrace(unittest.TestCase):
             str(self.span_id))
 
     def test_mysql_trace(self):
-        subprocess.call(
-            ['./tests/system/containers/mysql/setup.sh'], shell=True)
-
         requests.get(
             'http://127.0.0.1:8080/mysql',
             headers=self.headers_trace)
@@ -134,18 +119,7 @@ class TestFlaskTrace(unittest.TestCase):
             trace.get('spans')[0].get('parentSpanId'),
             str(self.span_id))
 
-        # Get mysql contianer id, convert it from byte to string
-        mysql_container_id = subprocess.check_output(
-            shlex.split('docker ps -aqf name=systest_mysql')) \
-            .decode('utf-8') \
-            .strip()
-
-        self.container_to_delete.append(mysql_container_id)
-
     def test_postgresql_trace(self):
-        subprocess.call(
-            ['./tests/system/containers/postgresql/setup.sh'], shell=True)
-
         requests.get(
             'http://127.0.0.1:8080/postgresql',
             headers=self.headers_trace)
@@ -163,18 +137,7 @@ class TestFlaskTrace(unittest.TestCase):
             trace.get('spans')[0].get('parentSpanId'),
             str(self.span_id))
 
-        # Get postgresql contianer id, convert it from byte to string
-        postgresql_container_id = subprocess.check_output(
-            shlex.split('docker ps -aqf name=systest_postgresql')) \
-            .decode('utf-8') \
-            .strip()
-
-        self.container_to_delete.append(postgresql_container_id)
-
     def test_sqlalchemy_mysql_trace(self):
-        subprocess.call(
-            ['./tests/system/containers/mysql/setup.sh'], shell=True)
-
         requests.get(
             'http://127.0.0.1:8080/sqlalchemy-mysql',
             headers=self.headers_trace)
@@ -190,18 +153,7 @@ class TestFlaskTrace(unittest.TestCase):
             trace.get('spans')[0].get('parentSpanId'),
             str(self.span_id))
 
-        # Get mysql contianer id, convert it from byte to string
-        mysql_container_id = subprocess.check_output(
-            shlex.split('docker ps -aqf name=systest_mysql')) \
-            .decode('utf-8') \
-            .strip()
-
-        self.container_to_delete.append(mysql_container_id)
-
     def test_sqlalchemy_postgresql_trace(self):
-        subprocess.call(
-            ['./tests/system/containers/postgresql/setup.sh'], shell=True)
-
         requests.get(
             'http://127.0.0.1:8080/sqlalchemy-postgresql',
             headers=self.headers_trace)
@@ -216,11 +168,3 @@ class TestFlaskTrace(unittest.TestCase):
         self.assertEqual(
             trace.get('spans')[0].get('parentSpanId'),
             str(self.span_id))
-
-        # Get postgresql contianer id, convert it from byte to string
-        postgresql_container_id = subprocess.check_output(
-            shlex.split('docker ps -aqf name=systest_postgresql')) \
-            .decode('utf-8') \
-            .strip()
-
-        self.container_to_delete.append(postgresql_container_id)

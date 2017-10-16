@@ -26,7 +26,7 @@ from opencensus.trace.reporters import google_cloud_reporter
 
 INTEGRATIONS = ['mysql', 'postgresql', 'sqlalchemy']
 
-DB_HOST = '192.168.9.2'
+DB_HOST = '127.0.0.1'
 
 PROJECT = os.environ.get('GCLOUD_PROJECT_PYTHON')
 
