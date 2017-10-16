@@ -8,15 +8,15 @@ jobs:
   build:
     docker:
       - image: googleapis/nox:0.17.0
-      - image: circleci/mysql:5.7
+      - image: mysql:5.7
         environment:
           MYSQL_ROOT_HOST: "%"
-          MYSQL_ROOT_PASSWORD: $SYSTEST_MYSQL_PASSWORD
+          MYSQL_ROOT_PASSWORD: 666666
         ports:
           - 3306:3306
       - image: circleci/postgres:9.6
         environment:
-          POSTGRES_PASSWORD: $SYSTEST_POSTGRES_PASSWORD
+          POSTGRES_PASSWORD: 666666
         ports:
           - 5432:5432
 
