@@ -158,19 +158,16 @@ class OpenCensusClientInterceptor(grpc_ext.UnaryUnaryClientInterceptor,
             oc_grpc.UNARY_STREAM, invoker, method, request, **kwargs)
 
     def intercept_stream_unary_call(self, invoker, method, request_iterator,
-                                    **kwargs):
+                                    *args, **kwargs):
         return self.intercept_call(
-            oc_grpc.STREAM_UNARY, invoker, method, request_iterator,
-            *args, **kwargs)
+            oc_grpc.STREAM_UNARY, invoker, method, request_iterator, **kwargs)
 
     def intercept_stream_unary_future(self, invoker, method, request_iterator,
-                                      **kwargs):
+                                      *args, **kwargs):
         return self.intercept_future(
-            oc_grpc.STREAM_UNARY, invoker, method, request_iterator,
-            *args, **kwargs)
+            oc_grpc.STREAM_UNARY, invoker, method, request_iterator, **kwargs)
 
     def intercept_stream_stream_call(self, invoker, method, request_iterator,
-                                     **kwargs):
+                                     *args, **kwargs):
         return self.intercept_call(
-            oc_grpc.STREAM_STREAM, invoker, method, request_iterator,
-            *args, **kwargs)
+            oc_grpc.STREAM_STREAM, invoker, method, request_iterator, **kwargs)
