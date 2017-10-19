@@ -185,14 +185,14 @@ class TestRequestTracer(unittest.TestCase):
         assert isinstance(span, base.NullContextManager)
 
     def test_start_span_sampled(self):
-        from opencensus.trace import trace_span
+        from opencensus.trace import span as trace_span
 
         sampler = mock.Mock()
         sampler.should_sample = True
         tracer = request_tracer.RequestTracer(sampler=sampler)
         span = tracer.start_span()
 
-        assert isinstance(span, trace_span.TraceSpan)
+        assert isinstance(span, trace_span.Span)
 
     def test_end_span_not_sampled(self):
         sampler = mock.Mock()

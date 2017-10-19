@@ -40,8 +40,8 @@ class Tracer(object):
         :type name: str
         :param name: The name of the span.
 
-        :rtype: :class:`~opencensus.trace.trace_span.TraceSpan`
-        :returns: The TraceSpan object.
+        :rtype: :class:`~opencensus.trace.span.Span`
+        :returns: The Span object.
         """
         raise NotImplementedError
 
@@ -51,8 +51,8 @@ class Tracer(object):
         :type name: str
         :param name: The name of the span.
 
-        :rtype: :class:`~opencensus.trace.trace_span.TraceSpan`
-        :returns: The TraceSpan object.
+        :rtype: :class:`~opencensus.trace.span.Span`
+        :returns: The Span object.
         """
         raise NotImplementedError
 
@@ -87,7 +87,7 @@ class Tracer(object):
 
 
 class NullContextManager(object):
-    """Empty object as a helper for faking Trace and TraceSpan when tracing is
+    """Empty object as a helper for faking Trace and Span when tracing is
     disabled.
     """
     def __init__(self):

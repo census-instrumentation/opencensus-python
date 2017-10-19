@@ -41,8 +41,8 @@ class NoopTracer(base.Tracer):
         :type name: str
         :param name: The name of the span.
 
-        :rtype: :class:`~opencensus.trace.trace_span.TraceSpan`
-        :returns: The TraceSpan object.
+        :rtype: :class:`~opencensus.trace.trace_span.Span`
+        :returns: The Span object.
         """
         return base.NullContextManager()
 
@@ -52,8 +52,8 @@ class NoopTracer(base.Tracer):
         :type name: str
         :param name: The name of the span.
 
-        :rtype: :class:`~opencensus.trace.trace_span.TraceSpan`
-        :returns: The TraceSpan object.
+        :rtype: :class:`~opencensus.trace.trace_span.Span`
+        :returns: The Span object.
         """
         return base.NullContextManager()
 

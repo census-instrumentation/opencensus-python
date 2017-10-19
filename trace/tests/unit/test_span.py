@@ -17,15 +17,15 @@ import unittest
 import mock
 
 
-class TestTraceSpan(unittest.TestCase):
+class TestSpan(unittest.TestCase):
 
     project = 'PROJECT'
 
     @staticmethod
     def _get_target_class():
-        from opencensus.trace.trace_span import TraceSpan
+        from opencensus.trace.span import Span
 
-        return TraceSpan
+        return Span
 
     def _make_one(self, *args, **kw):
         return self._get_target_class()(*args, **kw)
@@ -37,7 +37,7 @@ class TestTraceSpan(unittest.TestCase):
         span_name = 'test_span_name'
 
         patch = mock.patch(
-            'opencensus.trace.trace_span.generate_span_id',
+            'opencensus.trace.span.generate_span_id',
             return_value=span_id)
 
         with patch:
@@ -101,7 +101,7 @@ class TestTraceSpan(unittest.TestCase):
         kind = Enum.SpanKind.SPAN_KIND_UNSPECIFIED
 
         patch = mock.patch(
-            'opencensus.trace.trace_span.generate_span_id',
+            'opencensus.trace.span.generate_span_id',
             return_value=span_id)
 
         with patch:
