@@ -61,7 +61,7 @@ class Trace(object):
         :type name: str
         :param name: (Optional) The name of the span.
 
-        :rtype: :class:`~google.cloud.trace.span.Span`
+        :rtype: :class:`~opencensus.trace.span.Span`
         :returns: A Span to be added to the current Trace.
         """
         span = trace_span.Span(name)

@@ -106,7 +106,7 @@ class Span(object):
         :type name: str
         :param name: (Optional) The name of the child span.
 
-        :rtype: :class: `~google.cloud.trace.span.Span`
+        :rtype: :class: `~opencensus.trace.span.Span`
         :returns: A child Span to be added to the current span.
         """
         child_span = Span(name, parent_span_id=self.span_id)
@@ -166,7 +166,7 @@ def generate_span_id():
 def format_span_json(span):
     """Helper to format a Span in JSON format.
 
-    :type span: :class:`~google.cloud.trace.span.Span`
+    :type span: :class:`~opencensus.trace.span.Span`
     :param span: A Span to be transferred to JSON format.
 
     :rtype: dict
