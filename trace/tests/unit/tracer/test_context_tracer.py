@@ -77,7 +77,7 @@ class TestContextTracer(unittest.TestCase):
 
     def test_end_trace_with_spans(self):
         from opencensus.trace.enums import Enum
-        from opencensus.trace.trace_span import TraceSpan
+        from opencensus.trace.span import Span
 
         cur_trace = mock.Mock()
         tracer = context_tracer.ContextTracer()
@@ -96,7 +96,7 @@ class TestContextTracer(unittest.TestCase):
             '/component': 'HTTP load balancer',
         }
 
-        child_span = mock.Mock(spec=TraceSpan)
+        child_span = mock.Mock(spec=Span)
         child_span.name = child_span_name
         child_span.kind = kind
         child_span.parent_span_id = root_span_id
@@ -107,7 +107,7 @@ class TestContextTracer(unittest.TestCase):
         child_span.children = []
         child_span.__iter__ = mock.Mock(return_value=iter([child_span]))
 
-        root_span = mock.Mock(spec=TraceSpan)
+        root_span = mock.Mock(spec=Span)
         root_span.name = root_span_name
         root_span.kind = kind
         root_span.parent_span_id = None
@@ -216,10 +216,10 @@ class TestContextTracer(unittest.TestCase):
         self.assertEqual(spans, [span1, span2])
 
     def test_add_label_to_current_span(self):
-        from opencensus.trace.trace_span import TraceSpan
+        from opencensus.trace.span import Span
 
         tracer = context_tracer.ContextTracer()
-        span1 = mock.Mock(spec=TraceSpan)
+        span1 = mock.Mock(spec=Span)
 
         span1.labels = {}
         tracer._span_stack.append(span1)
@@ -232,12 +232,12 @@ class TestContextTracer(unittest.TestCase):
         span1.add_label.assert_called_once_with(label_key, label_value)
 
     def test_add_label_to_spans(self):
-        from opencensus.trace.trace_span import TraceSpan
+        from opencensus.trace.span import Span
 
         tracer = context_tracer.ContextTracer()
         cur_trace = mock.Mock()
-        span1 = mock.Mock(spec=TraceSpan)
-        span2 = mock.Mock(spec=TraceSpan)
+        span1 = mock.Mock(spec=Span)
+        span2 = mock.Mock(spec=Span)
 
         span1.labels = {}
         span2.labels = {}

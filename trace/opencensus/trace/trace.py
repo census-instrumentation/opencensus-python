@@ -16,7 +16,7 @@
 
 import uuid
 
-from opencensus.trace import trace_span
+from opencensus.trace import span as trace_span
 
 
 class Trace(object):
@@ -61,10 +61,10 @@ class Trace(object):
         :type name: str
         :param name: (Optional) The name of the span.
 
-        :rtype: :class:`~google.cloud.trace.trace_span.TraceSpan`
-        :returns: A TraceSpan to be added to the current Trace.
+        :rtype: :class:`~google.cloud.trace.span.Span`
+        :returns: A Span to be added to the current Trace.
         """
-        span = trace_span.TraceSpan(name)
+        span = trace_span.Span(name)
         self.spans.append(span)
         return span
 

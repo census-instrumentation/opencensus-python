@@ -55,7 +55,7 @@ class TestTrace(unittest.TestCase):
 
     def test_finish(self):
         from opencensus.trace.enums import Enum
-        from opencensus.trace.trace_span import TraceSpan
+        from opencensus.trace.span import Span
 
         trace = self._make_one()
 
@@ -65,7 +65,7 @@ class TestTrace(unittest.TestCase):
         start_time = '2017-06-25'
         end_time = '2017-06-26'
 
-        span = mock.Mock(spec=TraceSpan)
+        span = mock.Mock(spec=Span)
         span.name = span_name
         span.kind = kind
         span.parent_span_id = None
@@ -83,7 +83,7 @@ class TestTrace(unittest.TestCase):
         self.assertEqual(trace.spans, [])
 
     def test_span(self):
-        from opencensus.trace.trace_span import TraceSpan
+        from opencensus.trace.span import Span
 
         span_name = 'test_span_name'
 
@@ -94,5 +94,5 @@ class TestTrace(unittest.TestCase):
         self.assertEqual(len(trace.spans), 1)
 
         result_span = trace.spans[0]
-        self.assertIsInstance(result_span, TraceSpan)
+        self.assertIsInstance(result_span, Span)
         self.assertEqual(result_span.name, span_name)

@@ -105,8 +105,8 @@ class RequestTracer(object):
         :type name: str
         :param name: The name of the span.
 
-        :rtype: :class:`~opencensus.trace.trace_span.TraceSpan`
-        :returns: The TraceSpan object.
+        :rtype: :class:`~opencensus.trace.span.Span`
+        :returns: The Span object.
         """
         return self.tracer.span(name)
 

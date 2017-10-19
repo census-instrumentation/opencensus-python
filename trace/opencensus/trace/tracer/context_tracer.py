@@ -16,7 +16,7 @@ import logging
 
 from opencensus.trace.span_context import SpanContext
 from opencensus.trace import labels_helper
-from opencensus.trace import trace_span
+from opencensus.trace import span as trace_span
 from opencensus.trace.trace import Trace
 from opencensus.trace.tracer import base
 
@@ -71,8 +71,8 @@ class ContextTracer(base.Tracer):
         :type name: str
         :param name: The name of the span.
 
-        :rtype: :class:`~opencensus.trace.trace_span.TraceSpan`
-        :returns: The TraceSpan object.
+        :rtype: :class:`~opencensus.trace.span.Span`
+        :returns: The Span object.
         """
         span = self.start_span(name=name)
         return span
@@ -83,11 +83,11 @@ class ContextTracer(base.Tracer):
         :type name: str
         :param name: The name of the span.
 
-        :rtype: :class:`~opencensus.trace.trace_span.TraceSpan`
-        :returns: The TraceSpan object.
+        :rtype: :class:`~opencensus.trace.span.Span`
+        :returns: The Span object.
         """
         parent_span_id = self.span_context.span_id
-        span = trace_span.TraceSpan(
+        span = trace_span.Span(
             name,
             parent_span_id=parent_span_id,
             context_tracer=self)
