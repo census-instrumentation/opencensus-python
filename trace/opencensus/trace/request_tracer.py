@@ -88,13 +88,9 @@ class RequestTracer(object):
         """Add the current tracer to thread_local"""
         execution_context.set_opencensus_tracer(self)
 
-    def start_trace(self):
-        """Start a trace."""
-        self.tracer.start_trace()
-
-    def end_trace(self):
-        """End a trace and send trace using exporter."""
-        trace = self.tracer.end_trace()
+    def finish(self):
+        """End all spans and send spans using reporter."""
+        trace = self.tracer.finish()
 
         if trace is not None:
             self.exporter.export(trace)

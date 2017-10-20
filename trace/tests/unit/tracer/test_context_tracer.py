@@ -23,18 +23,16 @@ class TestContextTracer(unittest.TestCase):
 
     def test_constructor_defaults(self):
         from opencensus.trace import span_context
-        from opencensus.trace import trace
 
         tracer = context_tracer.ContextTracer()
 
         assert isinstance(tracer.span_context, span_context.SpanContext)
-        assert isinstance(tracer.cur_trace, trace.Trace)
         self.assertEqual(tracer._span_stack, [])
+        self.assertEqual(tracer._spans_list, [])
         self.assertEqual(tracer.root_span_id, tracer.span_context.span_id)
 
     def test_constructor_explicit(self):
         from opencensus.trace import span_context
-        from opencensus.trace import trace
 
         span_context = span_context.SpanContext()
         tracer = context_tracer.ContextTracer(span_context=span_context)
@@ -42,48 +40,26 @@ class TestContextTracer(unittest.TestCase):
         self.assertIs(tracer.span_context, span_context)
         self.assertEqual(tracer.trace_id, span_context.trace_id)
         self.assertEqual(tracer._span_stack, [])
+        self.assertEqual(tracer._spans_list, [])
         self.assertEqual(tracer.root_span_id, span_context.span_id)
-        assert isinstance(tracer.cur_trace, trace.Trace)
 
-    def test_trace(self):
-        from opencensus.trace import trace
-
-        tracer = context_tracer.ContextTracer()
-        cur_trace = tracer.trace()
-
-        self.assertEqual(cur_trace.trace_id, tracer.trace_id)
-        assert isinstance(cur_trace, trace.Trace)
-
-    def test_start_trace(self):
-        tracer = context_tracer.ContextTracer()
-        cur_trace = mock.Mock()
-        tracer.cur_trace = cur_trace
-
-        tracer.start_trace()
-        self.assertTrue(cur_trace.start.called)
-
-    def test_end_trace_without_spans(self):
+    def test_finish_without_spans(self):
         spans = []
         trace_id = '6e0c63257de34c92bf9efcd03927272e'
-        cur_trace = mock.Mock()
         tracer = context_tracer.ContextTracer()
-        tracer.cur_trace = cur_trace
-        tracer.cur_trace.spans = spans
         tracer.trace_id = trace_id
 
-        trace = tracer.end_trace()
+        trace = tracer.finish()
 
         self.assertIsNone(trace)
 
-    def test_end_trace_with_spans(self):
+    def test_finish_with_spans(self):
         from opencensus.trace.enums import Enum
         from opencensus.trace.span import Span
 
-        cur_trace = mock.Mock()
         tracer = context_tracer.ContextTracer()
-        tracer.cur_trace = cur_trace
         trace_id = '6e0c63257de34c92bf9efcd03927272e'
-        cur_trace.trace_id = trace_id
+        tracer.trace_id = trace_id
         child_span_name = 'child_span'
         root_span_name = 'root_span'
         child_span_id = 123
@@ -137,7 +113,7 @@ class TestContextTracer(unittest.TestCase):
             'endTime': end_time,
         }
 
-        tracer.cur_trace.spans = [root_span]
+        tracer._spans_list = [root_span]
 
         trace = {
             'traceId': trace_id,
@@ -147,10 +123,9 @@ class TestContextTracer(unittest.TestCase):
             ]
         }
 
-        trace_json = tracer.end_trace()
+        trace_json = tracer.finish()
 
         self.assertEqual(trace_json, trace)
-        self.assertTrue(cur_trace.finish.called)
 
     def test_span(self):
         from opencensus.trace import span_context
@@ -164,7 +139,7 @@ class TestContextTracer(unittest.TestCase):
 
         self.assertEqual(span.parent_span_id, span_id)
         self.assertEqual(span.name, span_name)
-        self.assertEqual(len(tracer.cur_trace.spans), 1)
+        self.assertEqual(len(tracer._spans_list), 1)
         self.assertEqual(len(tracer._span_stack), 1)
         self.assertEqual(span_context.span_id, span.span_id)
 
@@ -173,7 +148,7 @@ class TestContextTracer(unittest.TestCase):
         tracer.start_span()
 
         self.assertEqual(len(tracer._span_stack), 1)
-        self.assertEqual(len(tracer.cur_trace.spans), 1)
+        self.assertEqual(len(tracer._spans_list), 1)
 
     def test_end_span_index_error(self):
         tracer = context_tracer.ContextTracer()
@@ -208,8 +183,8 @@ class TestContextTracer(unittest.TestCase):
         tracer = context_tracer.ContextTracer()
         span1 = mock.Mock()
         span2 = mock.Mock()
-        tracer.cur_trace.spans.append(span1)
-        tracer.cur_trace.spans.append(span2)
+        tracer._spans_list.append(span1)
+        tracer._spans_list.append(span2)
 
         spans = tracer.list_collected_spans()
 
@@ -235,14 +210,12 @@ class TestContextTracer(unittest.TestCase):
         from opencensus.trace.span import Span
 
         tracer = context_tracer.ContextTracer()
-        cur_trace = mock.Mock()
         span1 = mock.Mock(spec=Span)
         span2 = mock.Mock(spec=Span)
 
         span1.labels = {}
         span2.labels = {}
-        cur_trace.spans = [span1, span2]
-        tracer.cur_trace = cur_trace
+        tracer._spans_list = [span1, span2]
 
         label_key = 'key'
         label_value = 'value'

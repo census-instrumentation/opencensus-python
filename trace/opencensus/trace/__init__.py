@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from opencensus.trace.trace import Trace
 from opencensus.trace.span import Span
 
 
-__all__ = ['Trace', 'Span']
+__all__ = ['Span']

@@ -19,20 +19,8 @@ class NoopTracer(base.Tracer):
     """No-op implementation of the :class:`Tracer` interface, all methods are
     no-ops. Should be used when tracing is not enabled or not sampled.
     """
-    def trace(self):
-        """Create a trace using the context information.
-
-        :rtype: :class:`~opencensus.trace.trace.Trace`
-        :returns: The Trace object.
-        """
-        return base.NullContextManager()
-
-    def start_trace(self):
-        """Start a trace."""
-        return
-
-    def end_trace(self):
-        """End a trace."""
+    def finish(self):
+        """End spans and send to reporter."""
         return None
 
     def span(self, name='span'):

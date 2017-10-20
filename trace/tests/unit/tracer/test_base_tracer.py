@@ -19,23 +19,11 @@ from opencensus.trace.tracer import base
 
 class TestBaseTracer(unittest.TestCase):
 
-    def test_trace_abstract(self):
+    def test_finish_abstract(self):
         tracer = base.Tracer()
 
         with self.assertRaises(NotImplementedError):
-            tracer.trace()
-
-    def test_start_trace_abstract(self):
-        tracer = base.Tracer()
-
-        with self.assertRaises(NotImplementedError):
-            tracer.start_trace()
-
-    def test_end_trace_abstract(self):
-        tracer = base.Tracer()
-
-        with self.assertRaises(NotImplementedError):
-            tracer.end_trace()
+            tracer.finish()
 
     def test_span_abstract(self):
         tracer = base.Tracer()
