@@ -84,8 +84,6 @@ class FlaskMiddleware(object):
                 exporter=self.exporter,
                 propagator=self.propagator)
 
-            tracer.start_trace()
-
             span = tracer.start_span()
 
             # Set the span name as the name of the current module name
@@ -109,7 +107,7 @@ class FlaskMiddleware(object):
                 str(response.status_code))
 
             tracer.end_span()
-            tracer.end_trace()
+            tracer.finish()
         except Exception:  # pragma: NO COVER
             log.error('Failed to trace request', exc_info=True)
         finally:

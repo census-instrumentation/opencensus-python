@@ -15,9 +15,9 @@
 """SpanContext encapsulates the current context within the request's trace."""
 
 import logging
+import random
 import re
-
-from opencensus.trace import trace
+import uuid
 
 _INVALID_TRACE_ID = '0' * 32
 _INVALID_SPAN_ID = 0
@@ -51,7 +51,7 @@ class SpanContext(object):
             enabled=True,
             from_header=False):
         if trace_id is None:
-            trace_id = trace.generate_trace_id()
+            trace_id = generate_trace_id()
 
         self.trace_id = self.check_trace_id(trace_id)
         self.span_id = self.check_span_id(span_id)
@@ -121,7 +121,7 @@ class SpanContext(object):
                 'Trace_id {} is invalid (cannot be all zero), '
                 'generate a new one.'.format(trace_id))
             self.from_header = False
-            return trace.generate_trace_id()
+            return generate_trace_id()
 
         trace_id_pattern = re.compile(_TRACE_ID_FORMAT)
 
@@ -134,4 +134,25 @@ class SpanContext(object):
                 'Trace_id {} does not the match the required format,'
                 'generate a new one instead.'.format(trace_id))
             self.from_header = False
-            return trace.generate_trace_id()
+            return generate_trace_id()
+
+
+def generate_span_id():
+    """Return the random generated span ID for a span.
+
+    :rtype: int
+    :returns: Identifier for the span. Must be a 64-bit integer other
+              than 0 and unique within a trace.
+    """
+    span_id = random.getrandbits(64)
+    return span_id
+
+
+def generate_trace_id():
+    """Generate a trace_id randomly.
+
+    :rtype: str
+    :returns: 32 digit randomly generated trace ID.
+    """
+    trace_id = uuid.uuid4().hex
+    return trace_id

@@ -146,8 +146,6 @@ class OpencensusMiddleware(object):
                 exporter=self.exporter,
                 propagator=self.propagator)
 
-            tracer.start_trace()
-
             # Span name is being set at process_view
             tracer.start_span()
             tracer.add_label_to_spans(
@@ -182,7 +180,7 @@ class OpencensusMiddleware(object):
             _set_django_labels(tracer, request)
 
             tracer.end_span()
-            tracer.end_trace()
+            tracer.finish()
         except Exception:  # pragma: NO COVER
             log.error('Failed to trace request', exc_info=True)
         finally:
