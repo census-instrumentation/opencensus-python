@@ -20,7 +20,7 @@ from datetime import datetime
 from opencensus.trace.enums import Enum
 
 
-class TraceSpan(object):
+class Span(object):
     """A span is an individual timed event which forms a node of the trace
     tree. Each span has its name, span id and parent id. The parent id
     indicates the causal relationships between the individual spans in a
@@ -29,14 +29,10 @@ class TraceSpan(object):
     trace id. Spans do not need to be continuous, there can be gaps between
     two spans.
 
-    See
-    https://cloud.google.com/trace/docs/reference/v1/rpc/google.devtools.
-    cloudtrace.v1#google.devtools.cloudtrace.v1.TraceSpan
-
     :type name: str
     :param name: The name of the span.
 
-    :type kind: :class:`~opencensus.trace.enums.TraceSpan.SpanKind`
+    :type kind: :class:`~opencensus.trace.enums.Enums.SpanKind`
     :param kind: Distinguishes between spans generated in a particular context.
                  For example, two spans with the same name may be
                  distinguished using RPC_CLIENT and RPC_SERVER to identify
@@ -110,10 +106,10 @@ class TraceSpan(object):
         :type name: str
         :param name: (Optional) The name of the child span.
 
-        :rtype: :class: `~google.cloud.trace.trace_span.TraceSpan`
-        :returns: A child TraceSpan to be added to the current span.
+        :rtype: :class: `~opencensus.trace.span.Span`
+        :returns: A child Span to be added to the current span.
         """
-        child_span = TraceSpan(name, parent_span_id=self.span_id)
+        child_span = Span(name, parent_span_id=self.span_id)
         self._child_spans.append(child_span)
         return child_span
 
@@ -168,13 +164,13 @@ def generate_span_id():
 
 
 def format_span_json(span):
-    """Helper to format a TraceSpan in JSON format.
+    """Helper to format a Span in JSON format.
 
-    :type span: :class:`~google.cloud.trace.trace_span.TraceSpan`
-    :param span: A TraceSpan to be transferred to JSON format.
+    :type span: :class:`~opencensus.trace.span.Span`
+    :param span: A Span to be transferred to JSON format.
 
     :rtype: dict
-    :returns: Formatted TraceSpan.
+    :returns: Formatted Span.
     """
     span_json = {
         'name': span.name,

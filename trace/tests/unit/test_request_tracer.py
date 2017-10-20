@@ -23,7 +23,7 @@ class TestRequestTracer(unittest.TestCase):
 
     def test_constructor_default(self):
         from opencensus.trace.propagation import google_cloud_format
-        from opencensus.trace.reporters import print_reporter
+        from opencensus.trace.exporters import print_exporter
         from opencensus.trace.samplers.always_on import AlwaysOnSampler
         from opencensus.trace.span_context import SpanContext
         from opencensus.trace.tracer import context_tracer
@@ -32,7 +32,7 @@ class TestRequestTracer(unittest.TestCase):
 
         assert isinstance(tracer.span_context, SpanContext)
         assert isinstance(tracer.sampler, AlwaysOnSampler)
-        assert isinstance(tracer.reporter, print_reporter.PrintReporter)
+        assert isinstance(tracer.exporter, print_exporter.PrintExporter)
         assert isinstance(
             tracer.propagator,
             google_cloud_format.GoogleCloudFormatPropagator)
@@ -44,19 +44,19 @@ class TestRequestTracer(unittest.TestCase):
         sampler = mock.Mock()
         sampler.should_sample = False
 
-        reporter = mock.Mock()
+        exporter = mock.Mock()
         propagator = mock.Mock()
         span_context = mock.Mock()
 
         tracer = request_tracer.RequestTracer(
             span_context=span_context,
             sampler=sampler,
-            reporter=reporter,
+            exporter=exporter,
             propagator=propagator)
 
         self.assertIs(tracer.span_context, span_context)
         self.assertIs(tracer.sampler, sampler)
-        self.assertIs(tracer.reporter, reporter)
+        self.assertIs(tracer.exporter, exporter)
         self.assertIs(tracer.propagator, propagator)
         assert isinstance(tracer.tracer, noop_tracer.NoopTracer)
 
@@ -185,14 +185,14 @@ class TestRequestTracer(unittest.TestCase):
         assert isinstance(span, base.NullContextManager)
 
     def test_start_span_sampled(self):
-        from opencensus.trace import trace_span
+        from opencensus.trace import span as trace_span
 
         sampler = mock.Mock()
         sampler.should_sample = True
         tracer = request_tracer.RequestTracer(sampler=sampler)
         span = tracer.start_span()
 
-        assert isinstance(span, trace_span.TraceSpan)
+        assert isinstance(span, trace_span.Span)
 
     def test_end_span_not_sampled(self):
         sampler = mock.Mock()

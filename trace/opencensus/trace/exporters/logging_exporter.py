@@ -16,11 +16,11 @@
 
 import logging
 
-from opencensus.trace.reporters import base
+from opencensus.trace.exporters import base
 
 
-class LoggingReporter(base.Reporter):
-    """A reporter to export the spans data to python logging. Also can use
+class LoggingExporter(base.Exporter):
+    """A exporter to export the spans data to python logging. Also can use
     handlers like CloudLoggingHandler to log to Stackdriver Logging API.
 
     :type handler: :class:`logging.handler`
@@ -32,16 +32,16 @@ class LoggingReporter(base.Reporter):
 
         import google.cloud.logging
         from google.cloud.logging.handlers import CloudLoggingHandler
-        from opencensus.trace.reporters import logging_reporter
+        from opencensus.trace.exporters import logging_exporter
 
         client = google.cloud.logging.Client()
         cloud_handler = CloudLoggingHandler(client)
-        reporter = logging_reporter.LoggingReporter(handler=cloud_handler)
+        exporter = logging_exporter.LoggingExporter(handler=cloud_handler)
 
-        reporter.report(your_spans_list)
+        exporter.export(your_spans_list)
 
-    Or initialize a context tracer with the logging reporter, then the traces
-    will be reported to logging when finished.
+    Or initialize a context tracer with the logging exporter, then the traces
+    will be exported to logging when finished.
     """
 
     def __init__(self, handler=None):
@@ -54,7 +54,7 @@ class LoggingReporter(base.Reporter):
         self.logger.addHandler(handler)
         self.logger.setLevel(logging.INFO)
 
-    def report(self, trace):
+    def export(self, trace):
         """
         :type traces: dict
         :param traces: Trace collected.

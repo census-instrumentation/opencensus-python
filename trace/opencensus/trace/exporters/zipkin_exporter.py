@@ -20,7 +20,7 @@ import logging
 import requests
 import calendar
 
-from opencensus.trace.reporters import base
+from opencensus.trace.exporters import base
 
 DEFAULT_ENDPOINT = '/api/v2/spans'
 DEFAULT_HOST_NAME = 'localhost'
@@ -38,8 +38,8 @@ SPAN_KIND_MAP = {
 SUCCESS_STATUS_CODE = (200, 202)
 
 
-class ZipkinReporter(base.Reporter):
-    """Report the spans to Zipkin.
+class ZipkinExporter(base.Exporter):
+    """export the spans to Zipkin.
 
     See: http://zipkin.io/zipkin-api/#
 
@@ -54,7 +54,7 @@ class ZipkinReporter(base.Reporter):
     :param port: (Optional) The port of the Zipkin server.
 
     :type end_point: str
-    :param end_point: (Optional) The path for the span reporting endpoint.
+    :param end_point: (Optional) The path for the span exporting endpoint.
     """
 
     def __init__(
@@ -76,7 +76,7 @@ class ZipkinReporter(base.Reporter):
             self.port,
             self.endpoint)
 
-    def report(self, trace):
+    def export(self, trace):
         """Send trace to Zipkin server, default using the v1 API.
 
         :type trace: dict
@@ -106,7 +106,7 @@ class ZipkinReporter(base.Reporter):
         :param trace_id: Trace ID.
 
         :type spans: list
-        :param spans: List of spans to be reported.
+        :param spans: List of spans to be exported.
 
         :rtype: list
         :returns: List of zipkin format spans.

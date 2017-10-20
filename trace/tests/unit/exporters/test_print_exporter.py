@@ -15,20 +15,20 @@
 import unittest
 
 
-class TestFileReporter(unittest.TestCase):
+class TestFileExporter(unittest.TestCase):
 
     @staticmethod
     def _get_target_class():
-        from opencensus.trace.reporters.print_reporter import PrintReporter
+        from opencensus.trace.exporters.print_exporter import PrintExporter
 
-        return PrintReporter
+        return PrintExporter
 
     def _make_one(self, *args, **kw):
         return self._get_target_class()(*args, **kw)
 
-    def test_report(self):
+    def test_export(self):
         traces = {}
-        reporter = self._make_one()
+        exporter = self._make_one()
 
-        printed = reporter.report(traces)
+        printed = exporter.export(traces)
         self.assertEqual(printed, traces)

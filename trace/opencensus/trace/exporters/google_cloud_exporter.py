@@ -12,13 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from opencensus.trace.reporters import base
+from opencensus.trace.exporters import base
 
 from google.cloud.trace.client import Client
 
 
-class GoogleCloudReporter(base.Reporter):
-    """A reporter that send traces and trace spans to Google Cloud Stackdriver
+class GoogleCloudExporter(base.Exporter):
+    """A exporter that send traces and trace spans to Google Cloud Stackdriver
     Trace.
     """
     def __init__(self, client=None, project_id=None):
@@ -29,7 +29,7 @@ class GoogleCloudReporter(base.Reporter):
         self.client = client
         self.project_id = client.project
 
-    def report(self, trace):
+    def export(self, trace):
         """
         :type trace: dict
         :param trace: Trace collected.

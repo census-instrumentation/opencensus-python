@@ -33,7 +33,7 @@ class TestWebApp2Tracer(unittest.TestCase):
     def test_constructor_default(
             self, mock_get_webapp2_header):
         from opencensus.trace import span_context
-        from opencensus.trace.reporters import print_reporter
+        from opencensus.trace.exporters import print_exporter
         from opencensus.trace.samplers import always_on
         from opencensus.trace.propagation import google_cloud_format
         from opencensus.trace.tracer import webapp2_tracer
@@ -50,7 +50,7 @@ class TestWebApp2Tracer(unittest.TestCase):
         with patch:
             tracer = webapp2_tracer.WebApp2Tracer()
 
-        assert isinstance(tracer.reporter, print_reporter.PrintReporter)
+        assert isinstance(tracer.exporter, print_exporter.PrintExporter)
         assert isinstance(tracer.sampler, always_on.AlwaysOnSampler)
         assert isinstance(
             tracer.propagator,
@@ -60,7 +60,7 @@ class TestWebApp2Tracer(unittest.TestCase):
 
     def test_constructor_explicit(self):
         from opencensus.trace import span_context
-        from opencensus.trace.reporters import print_reporter
+        from opencensus.trace.exporters import print_exporter
         from opencensus.trace.samplers import always_on
         from opencensus.trace.propagation import google_cloud_format
         from opencensus.trace.tracer import webapp2_tracer
@@ -68,18 +68,18 @@ class TestWebApp2Tracer(unittest.TestCase):
         trace_id = '6e0c63257de34c92bf9efcd03927272e'
         span_context = span_context.SpanContext(trace_id=trace_id)
         sampler = always_on.AlwaysOnSampler()
-        reporter = print_reporter.PrintReporter()
+        exporter = print_exporter.PrintExporter()
         propagator = google_cloud_format.GoogleCloudFormatPropagator()
 
         tracer = webapp2_tracer.WebApp2Tracer(
             span_context=span_context,
             sampler=sampler,
-            reporter=reporter,
+            exporter=exporter,
             propagator=propagator)
 
         self.assertEqual(tracer.span_context, span_context)
         self.assertEqual(tracer.sampler, sampler)
-        self.assertEqual(tracer.reporter, reporter)
+        self.assertEqual(tracer.exporter, exporter)
         self.assertEqual(tracer.propagator, propagator)
 
 
