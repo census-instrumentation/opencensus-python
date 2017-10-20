@@ -17,7 +17,7 @@
 import logging
 import re
 
-from opencensus.trace import trace
+from opencensus.trace import utils
 
 _INVALID_TRACE_ID = '0' * 32
 _INVALID_SPAN_ID = 0
@@ -51,7 +51,7 @@ class SpanContext(object):
             enabled=True,
             from_header=False):
         if trace_id is None:
-            trace_id = trace.generate_trace_id()
+            trace_id = utils.generate_trace_id()
 
         self.trace_id = self.check_trace_id(trace_id)
         self.span_id = self.check_span_id(span_id)
@@ -121,7 +121,7 @@ class SpanContext(object):
                 'Trace_id {} is invalid (cannot be all zero), '
                 'generate a new one.'.format(trace_id))
             self.from_header = False
-            return trace.generate_trace_id()
+            return utils.generate_trace_id()
 
         trace_id_pattern = re.compile(_TRACE_ID_FORMAT)
 
@@ -134,4 +134,4 @@ class SpanContext(object):
                 'Trace_id {} does not the match the required format,'
                 'generate a new one instead.'.format(trace_id))
             self.from_header = False
-            return trace.generate_trace_id()
+            return utils.generate_trace_id()

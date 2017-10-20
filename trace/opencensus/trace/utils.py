@@ -12,7 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from opencensus.trace.span import Span
+import uuid
 
 
-__all__ = ['Span']
+def generate_trace_id():
+    """Generate a trace_id randomly.
+
+    :rtype: str
+    :returns: 32 digit randomly generated trace ID.
+    """
+    trace_id = uuid.uuid4().hex
+    return trace_id
