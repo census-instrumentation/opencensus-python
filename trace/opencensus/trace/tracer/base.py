@@ -18,20 +18,8 @@ class Tracer(object):
 
     Subclasses of :class:`Tracer` must implement the below methods.
     """
-    def trace(self):
-        """Create a trace using the context information.
-
-        :rtype: :class:`~opencensus.trace.trace.Trace`
-        :returns: The Trace object.
-        """
-        raise NotImplementedError
-
-    def start_trace(self):
-        """Start a trace."""
-        raise NotImplementedError
-
-    def end_trace(self):
-        """End a trace."""
+    def finish(self):
+        """End the spans and send to reporters."""
         raise NotImplementedError
 
     def span(self, name='span'):

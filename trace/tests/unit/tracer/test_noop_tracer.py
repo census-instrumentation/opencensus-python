@@ -19,14 +19,6 @@ from opencensus.trace.tracer import noop_tracer
 
 class TestNoopTracer(unittest.TestCase):
 
-    def test_trace(self):
-        from opencensus.trace.tracer import base
-
-        tracer = noop_tracer.NoopTracer()
-        trace = tracer.trace()
-
-        assert isinstance(trace, base.NullContextManager)
-
     def test_list_collected_spans(self):
         tracer = noop_tracer.NoopTracer()
 

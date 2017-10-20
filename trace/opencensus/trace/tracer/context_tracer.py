@@ -17,7 +17,6 @@ import logging
 from opencensus.trace.span_context import SpanContext
 from opencensus.trace import labels_helper
 from opencensus.trace import span as trace_span
-from opencensus.trace.trace import Trace
 from opencensus.trace.tracer import base
 
 
@@ -34,24 +33,16 @@ class ContextTracer(base.Tracer):
 
         self.span_context = span_context
         self.trace_id = span_context.trace_id
-        self.cur_trace = self.trace()
-        self._span_stack = []
         self.root_span_id = span_context.span_id
 
-    def trace(self):
-        """Create a trace using the context information.
+        # Stack which maintains nested spans
+        self._span_stack = []
 
-        :rtype: :class:`~opencensus.trace.trace.Trace`
-        :returns: The Trace object.
-        """
-        return Trace(trace_id=self.trace_id)
+        # List of spans to report
+        self._spans_list = []
 
-    def start_trace(self):
-        """Start a trace."""
-        self.cur_trace.start()
-
-    def end_trace(self):
-        """End a trace.
+    def finish(self):
+        """Finish all spans
 
         :rtype: dict
         :returns: JSON format trace.
@@ -61,7 +52,6 @@ class ContextTracer(base.Tracer):
         helper.set_labels()
 
         trace = self._get_trace_json()
-        self.cur_trace.finish()
 
         return trace
 
@@ -91,7 +81,7 @@ class ContextTracer(base.Tracer):
             name,
             parent_span_id=parent_span_id,
             context_tracer=self)
-        self.cur_trace.spans.append(span)
+        self._spans_list.append(span)
         self._span_stack.append(span)
         self.span_context.span_id = span.span_id
         span.start()
@@ -123,7 +113,7 @@ class ContextTracer(base.Tracer):
         return cur_span
 
     def list_collected_spans(self):
-        return self.cur_trace.spans
+        return self._spans_list
 
     def add_label_to_current_span(self, label_key, label_value):
         """Add label to current span.
@@ -146,13 +136,13 @@ class ContextTracer(base.Tracer):
         :type label_value:str
         :param label_value: Label value.
         """
-        for span in self.cur_trace.spans:
+        for span in self._spans_list:
             span.add_label(label_key, label_value)
 
     def _get_trace_json(self):
         """Get the JSON format trace."""
         spans_list = []
-        for root_span in self.cur_trace.spans:
+        for root_span in self._spans_list:
             span_tree = list(iter(root_span))
             span_tree_json = [trace_span.format_span_json(span)
                               for span in span_tree]
@@ -162,7 +152,7 @@ class ContextTracer(base.Tracer):
             return
 
         trace = {
-            'traceId': self.cur_trace.trace_id,
+            'traceId': self.trace_id,
             'spans': spans_list,
         }
 

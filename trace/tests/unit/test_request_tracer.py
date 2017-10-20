@@ -1,4 +1,4 @@
-# Copyright 2017, OpenCensus Authors
+# copyright 2017, OpenCensus Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -109,48 +109,29 @@ class TestRequestTracer(unittest.TestCase):
 
         assert isinstance(result, context_tracer.ContextTracer)
 
-    def test_start_trace_sampled(self):
-        sampler = mock.Mock()
-        sampler.should_sample = True
-        tracer = request_tracer.RequestTracer(sampler=sampler)
+    def test_finish_not_sampled(self):
+        from opencensus.trace.tracer import noop_tracer
 
-        cur_trace = mock.Mock()
-        tracer.tracer.cur_trace = cur_trace
-
-        tracer.start_trace()
-        self.assertTrue(cur_trace.start.called)
-
-    def test_start_trace_not_sampled(self):
         sampler = mock.Mock()
         sampler.should_sample = False
         tracer = request_tracer.RequestTracer(sampler=sampler)
+        assert isinstance(tracer.tracer, noop_tracer.NoopTracer)
+        mock_tracer = mock.Mock()
+        tracer.tracer = mock_tracer
+        tracer.finish()
+        self.assertTrue(mock_tracer.finish.called)
 
-        cur_trace = mock.Mock()
-        tracer.tracer.cur_trace = cur_trace
+    def test_finish_sampled(self):
+        from opencensus.trace.tracer import context_tracer
 
-        tracer.start_trace()
-        self.assertFalse(cur_trace.start.called)
-
-    def test_end_trace_not_sampled(self):
-        sampler = mock.Mock()
-        sampler.should_sample = False
-        tracer = request_tracer.RequestTracer(sampler=sampler)
-        cur_trace = mock.Mock()
-        tracer.tracer.cur_trace = cur_trace
-
-        tracer.end_trace()
-        self.assertFalse(cur_trace.finish.called)
-
-    def test_end_trace_sampled(self):
         sampler = mock.Mock()
         sampler.should_sample = True
         tracer = request_tracer.RequestTracer(sampler=sampler)
-        cur_trace = mock.Mock()
-        cur_trace.spans = []
-        tracer.tracer.cur_trace = cur_trace
-
-        tracer.end_trace()
-        self.assertTrue(cur_trace.finish.called)
+        assert isinstance(tracer.tracer, context_tracer.ContextTracer)
+        mock_tracer = mock.Mock()
+        tracer.tracer = mock_tracer
+        tracer.finish()
+        self.assertTrue(mock_tracer.finish.called)
 
     def test_span_not_sampled(self):
         from opencensus.trace.tracer import base
@@ -261,6 +242,6 @@ class TestRequestTracer(unittest.TestCase):
 
         returned = test_decorator()
 
-        self.assertEqual(len(tracer.tracer.cur_trace.spans), 1)
-        self.assertEqual(tracer.tracer.cur_trace.spans[0].name, 'test_decorator')
+        self.assertEqual(len(tracer.tracer._spans_list), 1)
+        self.assertEqual(tracer.tracer._spans_list[0].name, 'test_decorator')
         self.assertEqual(returned, return_value)
