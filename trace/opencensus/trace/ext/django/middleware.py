@@ -30,11 +30,11 @@ REQUEST_THREAD_LOCAL_KEY = 'django_request'
 
 _DJANGO_TRACE_HEADER = 'HTTP_X_CLOUD_TRACE_CONTEXT'
 
-GCP_REPORTER_PROJECT = 'GCP_REPORTER_PROJECT'
+GCP_EXPORTER_PROJECT = 'GCP_EXPORTER_PROJECT'
 SAMPLING_RATE = 'SAMPLING_RATE'
-ZIPKIN_REPORTER_SERVICE_NAME = 'ZIPKIN_REPORTER_SERVICE_NAME'
-ZIPKIN_REPORTER_HOST_NAME = 'ZIPKIN_REPORTER_HOST_NAME'
-ZIPKIN_REPORTER_PORT = 'ZIPKIN_REPORTER_PORT'
+ZIPKIN_EXPORTER_SERVICE_NAME = 'ZIPKIN_EXPORTER_SERVICE_NAME'
+ZIPKIN_EXPORTER_HOST_NAME = 'ZIPKIN_EXPORTER_HOST_NAME'
+ZIPKIN_EXPORTER_PORT = 'ZIPKIN_EXPORTER_PORT'
 
 log = logging.getLogger(__name__)
 
@@ -91,7 +91,7 @@ class OpencensusMiddleware(object):
         # One-time configuration and initialization.
         self.get_response = get_response
         self._sampler = settings.SAMPLER
-        self._reporter = settings.REPORTER
+        self._exporter = settings.EXPORTER
         self._propagator = settings.PROPAGATOR
 
         # Initialize the sampler
@@ -102,23 +102,23 @@ class OpencensusMiddleware(object):
         else:
             self.sampler = self._sampler()
 
-        # Initialize the reporter
-        if self._reporter.__name__ == 'GoogleCloudReporter':
-            _project_id = settings.params.get(GCP_REPORTER_PROJECT, None)
-            self.reporter = self._reporter(project_id=_project_id)
-        elif self._reporter.__name__ == 'ZipkinReporter':
+        # Initialize the exporter
+        if self._exporter.__name__ == 'GoogleCloudExporter':
+            _project_id = settings.params.get(GCP_EXPORTER_PROJECT, None)
+            self.exporter = self._exporter(project_id=_project_id)
+        elif self._exporter.__name__ == 'ZipkinExporter':
             _zipkin_service_name = settings.params.get(
-                ZIPKIN_REPORTER_SERVICE_NAME, 'my_service')
+                ZIPKIN_EXPORTER_SERVICE_NAME, 'my_service')
             _zipkin_host_name = settings.params.get(
-                ZIPKIN_REPORTER_HOST_NAME, 'localhost')
+                ZIPKIN_EXPORTER_HOST_NAME, 'localhost')
             _zipkin_port = settings.params.get(
-                ZIPKIN_REPORTER_PORT, 9411)
-            self.reporter = self._reporter(
+                ZIPKIN_EXPORTER_PORT, 9411)
+            self.exporter = self._exporter(
                 service_name=_zipkin_service_name,
                 host_name=_zipkin_host_name,
                 port=_zipkin_port)
         else:
-            self.reporter = self._reporter()
+            self.exporter = self._exporter()
 
         # Initialize the propagator
         self.propagator = self._propagator()
@@ -143,7 +143,7 @@ class OpencensusMiddleware(object):
             tracer = request_tracer.RequestTracer(
                 span_context=span_context,
                 sampler=self.sampler,
-                reporter=self.reporter,
+                exporter=self.exporter,
                 propagator=self.propagator)
 
             tracer.start_trace()

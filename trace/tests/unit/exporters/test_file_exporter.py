@@ -16,29 +16,29 @@ import os
 import unittest
 
 
-class TestFileReporter(unittest.TestCase):
+class TestFileExporter(unittest.TestCase):
 
     @staticmethod
     def _get_target_class():
-        from opencensus.trace.reporters.file_reporter import FileReporter
+        from opencensus.trace.exporters.file_exporter import FileExporter
 
-        return FileReporter
+        return FileExporter
 
     def _make_one(self, *args, **kw):
         return self._get_target_class()(*args, **kw)
 
     def test_constructor(self):
         file_name = 'file_name'
-        reporter = self._make_one(file_name=file_name)
+        exporter = self._make_one(file_name=file_name)
 
-        self.assertEqual(reporter.file_name, file_name)
+        self.assertEqual(exporter.file_name, file_name)
 
-    def test_report(self):
+    def test_export(self):
         import os
         traces = {}
         file_name = 'file_name'
-        reporter = self._make_one(file_name=file_name)
+        exporter = self._make_one(file_name=file_name)
 
-        reporter.report(traces)
+        exporter.export(traces)
         assert os.path.exists(file_name) == 1
         os.remove(file_name)

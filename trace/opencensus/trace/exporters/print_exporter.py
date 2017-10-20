@@ -12,15 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import unittest
+"""Export the trace spans by printing them out."""
 
-class TestBaseReporter(unittest.TestCase):
+from opencensus.trace.exporters import base
 
-    def test_report_abstract(self):
-        from opencensus.trace.reporters import base
 
-        reporter = base.Reporter()
-        trace = {}
+class PrintExporter(base.Exporter):
+    def export(self, trace):
+        """export the traces by printing it out.
 
-        with self.assertRaises(NotImplementedError):
-            reporter.report(trace)
+        :type trace: dict
+        :param trace: Trace collected.
+
+        :rtype: dict
+        :returns: Trace printed.
+        """
+        print(trace)
+        return trace

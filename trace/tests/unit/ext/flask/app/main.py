@@ -22,7 +22,7 @@ import sqlalchemy
 
 from opencensus.trace.ext.flask.flask_middleware import FlaskMiddleware
 from opencensus.trace import config_integration
-from opencensus.trace.reporters import google_cloud_reporter
+from opencensus.trace.exporters import google_cloud_exporter
 
 sys.path.insert(0, os.path.abspath(__file__+"/../../../.."))
 from ext import config
@@ -32,8 +32,8 @@ INTEGRATIONS = ['mysql', 'postgresql', 'sqlalchemy']
 app = flask.Flask(__name__)
 
 # Enbale tracing, send traces to Stackdriver Trace
-reporter = google_cloud_reporter.GoogleCloudReporter()
-middleware = FlaskMiddleware(app, reporter=reporter)
+exporter = google_cloud_exporter.GoogleCloudEeporter()
+middleware = FlaskMiddleware(app, exporter=exporter)
 config_integration.trace_integrations(INTEGRATIONS)
 
 

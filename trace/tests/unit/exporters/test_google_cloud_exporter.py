@@ -16,7 +16,7 @@ import unittest
 
 import mock
 
-from opencensus.trace.reporters import google_cloud_reporter
+from opencensus.trace.exporters import google_cloud_exporter
 
 
 class _Client(object):
@@ -27,43 +27,43 @@ class _Client(object):
         self.project = project
 
 
-class TestGoogleCloudReporter(unittest.TestCase):
+class TestGoogleCloudExporter(unittest.TestCase):
 
     def test_constructor_default(self):
         patch = mock.patch(
-            'opencensus.trace.reporters.google_cloud_reporter.Client',
+            'opencensus.trace.exporters.google_cloud_exporter.Client',
             new=_Client)
 
         with patch:
-            reporter = google_cloud_reporter.GoogleCloudReporter()
+            exporter = google_cloud_exporter.GoogleCloudExporter()
 
         project_id = 'PROJECT'
-        self.assertEqual(reporter.project_id, project_id)
+        self.assertEqual(exporter.project_id, project_id)
 
     def test_constructor_explicit(self):
         client = mock.Mock()
         project_id = 'PROJECT'
         client.project = project_id
 
-        reporter = google_cloud_reporter.GoogleCloudReporter(
+        exporter = google_cloud_exporter.GoogleCloudExporter(
             client=client,
             project_id=project_id)
 
-        self.assertIs(reporter.client, client)
-        self.assertEqual(reporter.project_id, project_id)
+        self.assertIs(exporter.client, client)
+        self.assertEqual(exporter.project_id, project_id)
 
-    def test_report(self):
+    def test_export(self):
         trace = {'spans': [], 'traceId': '6e0c63257de34c92bf9efcd03927272e'}
 
         client = mock.Mock()
         project_id = 'PROJECT'
         client.project = project_id
 
-        reporter = google_cloud_reporter.GoogleCloudReporter(
+        exporter = google_cloud_exporter.GoogleCloudExporter(
             client=client,
             project_id=project_id)
 
-        reporter.report(trace)
+        exporter.export(trace)
 
         trace['projectId'] = project_id
         traces = {'traces': [trace]}
@@ -77,12 +77,12 @@ class TestGoogleCloudReporter(unittest.TestCase):
 
         client = mock.Mock()
         client.project = project_id
-        reporter = google_cloud_reporter.GoogleCloudReporter(
+        exporter = google_cloud_exporter.GoogleCloudExporter(
             client=client,
             project_id=project_id)
 
 
-        traces = reporter.translate_to_stackdriver(trace)
+        traces = exporter.translate_to_stackdriver(trace)
 
         trace['projectId'] = project_id
         expected_traces = {'traces': [trace]}
