@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from opencensus.trace.propagation import google_cloud_format
-from opencensus.trace.reporters import print_reporter
+from opencensus.trace.exporters import print_exporter
 from opencensus.trace.samplers import always_on
 from opencensus.trace.span_context import SpanContext
 from opencensus.trace.tracer import context_tracer
@@ -33,18 +33,18 @@ class RequestTracer(object):
                     :class:`.AlwaysOnSampler`. The rest options are
                     :class:`.AlwaysOffSampler`, :class:`.FixedRateSampler`.
 
-    :type reporter: :class:`~opencensus.trace.reporters.base.Reporter`
-    :param reporter: Instances of Reporter objects. Default to
-                     :class:`.PrintReporter`. The rest options are
-                     :class:`.FileReporter`, :class:`.PrintReporter`,
-                     :class:`.LoggingReporter`, :class:`.ZipkinReporter`,
-                     :class:`.GoogleCloudReporter`
+    :type exporter: :class:`~opencensus.trace.exporters.base.exporter`
+    :param exporter: Instances of exporter objects. Default to
+                     :class:`.Printexporter`. The rest options are
+                     :class:`.Fileexporter`, :class:`.Printexporter`,
+                     :class:`.Loggingexporter`, :class:`.Zipkinexporter`,
+                     :class:`.GoogleCloudexporter`
     """
     def __init__(
             self,
             span_context=None,
             sampler=None,
-            reporter=None,
+            exporter=None,
             propagator=None):
         if span_context is None:
             span_context = SpanContext()
@@ -52,15 +52,15 @@ class RequestTracer(object):
         if sampler is None:
             sampler = always_on.AlwaysOnSampler()
 
-        if reporter is None:
-            reporter = print_reporter.PrintReporter()
+        if exporter is None:
+            exporter = print_exporter.PrintExporter()
 
         if propagator is None:
             propagator = google_cloud_format.GoogleCloudFormatPropagator()
 
         self.span_context = span_context
         self.sampler = sampler
-        self.reporter = reporter
+        self.exporter = exporter
         self.propagator = propagator
         self.tracer = self.get_tracer()
         self.store_tracer()
@@ -93,11 +93,11 @@ class RequestTracer(object):
         self.tracer.start_trace()
 
     def end_trace(self):
-        """End a trace and send trace using reporter."""
+        """End a trace and send trace using exporter."""
         trace = self.tracer.end_trace()
 
         if trace is not None:
-            self.reporter.report(trace)
+            self.exporter.export(trace)
 
     def span(self, name=None):
         """Create a new span with the trace using the context information.

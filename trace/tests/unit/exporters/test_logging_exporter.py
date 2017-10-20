@@ -16,30 +16,30 @@ import mock
 import logging
 import unittest
 
-from opencensus.trace.reporters import logging_reporter
+from opencensus.trace.exporters import logging_exporter
 
 
-class TestLoggingReporter(unittest.TestCase):
+class TestLoggingExporter(unittest.TestCase):
 
     def test_constructor_default(self):
-        reporter = logging_reporter.LoggingReporter()
+        exporter = logging_exporter.LoggingExporter()
 
-        self.assertIn(reporter.handler, logging.getLogger().handlers)
-        assert isinstance(reporter.handler, logging.StreamHandler)
+        self.assertIn(exporter.handler, logging.getLogger().handlers)
+        assert isinstance(exporter.handler, logging.StreamHandler)
 
     def test_constructor_explicit(self):
         handler = _Handler(logging.INFO)
-        reporter = logging_reporter.LoggingReporter(handler=handler)
+        exporter = logging_exporter.LoggingExporter(handler=handler)
 
-        self.assertIn(reporter.handler, logging.getLogger().handlers)
+        self.assertIn(exporter.handler, logging.getLogger().handlers)
 
-    def test_report(self):
-        reporter = logging_reporter.LoggingReporter()
+    def test_export(self):
+        exporter = logging_exporter.LoggingExporter()
         logger = mock.Mock()
-        reporter.logger = logger
+        exporter.logger = logger
 
         traces = '{traces: test}'
-        reporter.report(traces)
+        exporter.export(traces)
 
         logger.info.assert_called_once_with(traces)
 
