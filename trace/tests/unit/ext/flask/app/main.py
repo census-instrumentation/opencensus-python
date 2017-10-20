@@ -32,7 +32,7 @@ INTEGRATIONS = ['mysql', 'postgresql', 'sqlalchemy']
 app = flask.Flask(__name__)
 
 # Enbale tracing, send traces to Stackdriver Trace
-exporter = google_cloud_exporter.GoogleCloudEeporter()
+exporter = google_cloud_exporter.GoogleCloudExporter()
 middleware = FlaskMiddleware(app, exporter=exporter)
 config_integration.trace_integrations(INTEGRATIONS)
 
