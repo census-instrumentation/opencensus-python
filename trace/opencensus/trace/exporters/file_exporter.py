@@ -16,12 +16,12 @@
 
 import json
 
-from opencensus.trace.reporters import base
+from opencensus.trace.exporters import base
 
 DEFAULT_FILENAME = 'opencensus-traces.json'
 
 
-class FileReporter(base.Reporter):
+class FileExporter(base.Exporter):
     """
     :type file_name: str
     :param file_name: The name of the output file.
@@ -30,7 +30,7 @@ class FileReporter(base.Reporter):
     def __init__(self, file_name=DEFAULT_FILENAME):
         self.file_name = file_name
 
-    def report(self, trace):
+    def export(self, trace):
         """
         :type trace: dict
         :param trace: Trace collected.
