@@ -42,16 +42,16 @@ class WebApp2Tracer(RequestTracer):
                     :class:`.AlwaysOnSampler`. The rest options are
                     :class:`.AlwaysOffSampler`, :class:`.FixedRateSampler`.
 
-    :type reporter: :class:`type`
-    :param reporter: Class for creating new Reporter objects. Default to
-                     :class:`.PrintReporter`. The rest option is
-                     :class:`.FileReporter`.
+    :type exporter: :class:`type`
+    :param exporter: Class for creating new Exporter objects. Default to
+                     :class:`.PrintExporter`. The rest option is
+                     :class:`.FileExporter`.
     """
     def __init__(
             self,
             span_context=None,
             sampler=None,
-            reporter=None,
+            exporter=None,
             propagator=None):
         if propagator is None:
             propagator = google_cloud_format.GoogleCloudFormatPropagator()
@@ -63,7 +63,7 @@ class WebApp2Tracer(RequestTracer):
         super(WebApp2Tracer, self).__init__(
             span_context=span_context,
             sampler=sampler,
-            reporter=reporter,
+            exporter=exporter,
             propagator=propagator)
 
 

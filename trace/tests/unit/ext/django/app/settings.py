@@ -67,7 +67,7 @@ TEMPLATES = [
 
 OPENCENSUS_TRACE = {
     'SAMPLER': 'opencensus.trace.samplers.fixed_rate.FixedRateSampler',
-    'REPORTER': 'opencensus.trace.reporters.print_reporter.PrintReporter',
+    'EXPORTER': 'opencensus.trace.exporters.print_exporter.PrintExporter',
     'PROPAGATOR': 'opencensus.trace.propagation.google_cloud_format.'
                   'GoogleCloudFormatPropagator',
 }

@@ -1,4 +1,4 @@
-# Copyright 2017, OpenCensus Authors
+# Copyright 2016-17, OpenCensus Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,14 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import uuid
+"""Module containing base class for exporters."""
 
 
-def generate_trace_id():
-    """Generate a trace_id randomly.
+class Exporter(object):
+    """Base class for opencensus trace request exporters.
 
-    :rtype: str
-    :returns: 32 digit randomly generated trace ID.
+    Subclasses of :class:`Exporter` must override :meth:`export`.
     """
-    trace_id = uuid.uuid4().hex
-    return trace_id
+
+    def export(self, trace):
+        """Export the trace."""
+        raise NotImplementedError

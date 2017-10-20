@@ -17,10 +17,10 @@ import unittest
 import mock
 
 
-from opencensus.trace.reporters import zipkin_reporter
+from opencensus.trace.exporters import zipkin_exporter
 
 
-class TestZipkinReporter(unittest.TestCase):
+class TestZipkinExporter(unittest.TestCase):
 
     def test_constructor(self):
         service_name = 'my_service'
@@ -28,7 +28,7 @@ class TestZipkinReporter(unittest.TestCase):
         port = 2333
         endpoint = '/api/v2/test'
 
-        reporter = zipkin_reporter.ZipkinReporter(
+        exporter = zipkin_exporter.ZipkinExporter(
             service_name=service_name,
             host_name=host_name,
             port=port,
@@ -36,51 +36,51 @@ class TestZipkinReporter(unittest.TestCase):
 
         expected_url = 'http://0.0.0.0:2333/api/v2/test'
 
-        self.assertEqual(reporter.service_name, service_name)
-        self.assertEqual(reporter.host_name, host_name)
-        self.assertEqual(reporter.port, port)
-        self.assertEqual(reporter.endpoint, endpoint)
-        self.assertEqual(reporter.url, expected_url)
+        self.assertEqual(exporter.service_name, service_name)
+        self.assertEqual(exporter.host_name, host_name)
+        self.assertEqual(exporter.port, port)
+        self.assertEqual(exporter.endpoint, endpoint)
+        self.assertEqual(exporter.url, expected_url)
 
     @mock.patch('requests.post')
-    @mock.patch.object(zipkin_reporter.ZipkinReporter,
+    @mock.patch.object(zipkin_exporter.ZipkinExporter,
                 'translate_to_zipkin')
-    def test_report_succeeded(self, translate_mock, requests_mock):
+    def test_export_succeeded(self, translate_mock, requests_mock):
         import json
 
         trace = {'test': 'this_is_for_test'}
 
-        reporter = zipkin_reporter.ZipkinReporter(service_name='my_service')
+        exporter = zipkin_exporter.ZipkinExporter(service_name='my_service')
         response = mock.Mock()
         response.status_code = 202
         requests_mock.return_value = response
         translate_mock.return_value = trace
-        reporter.report(trace)
+        exporter.export(trace)
 
         requests_mock.assert_called_once_with(
-            url=reporter.url,
+            url=exporter.url,
             data=json.dumps(trace),
-            headers=zipkin_reporter.ZIPKIN_HEADERS)
+            headers=zipkin_exporter.ZIPKIN_HEADERS)
 
     @mock.patch('requests.post')
-    @mock.patch.object(zipkin_reporter.ZipkinReporter,
+    @mock.patch.object(zipkin_exporter.ZipkinExporter,
                 'translate_to_zipkin')
-    def test_report_failed(self, translate_mock, requests_mock):
+    def test_export_failed(self, translate_mock, requests_mock):
         import json
 
         trace = {'test': 'this_is_for_test'}
 
-        reporter = zipkin_reporter.ZipkinReporter(service_name='my_service')
+        exporter = zipkin_exporter.ZipkinExporter(service_name='my_service')
         response = mock.Mock()
         response.status_code = 400
         requests_mock.return_value = response
         translate_mock.return_value = trace
-        reporter.report(trace)
+        exporter.export(trace)
 
         requests_mock.assert_called_once_with(
-            url=reporter.url,
+            url=exporter.url,
             data=json.dumps(trace),
-            headers=zipkin_reporter.ZIPKIN_HEADERS)
+            headers=zipkin_exporter.ZIPKIN_HEADERS)
 
     def test_translate_to_zipkin_span_kind_none(self):
         span1 = {
@@ -171,8 +171,8 @@ class TestZipkinReporter(unittest.TestCase):
             }
         ]
 
-        reporter = zipkin_reporter.ZipkinReporter(service_name='my_service')
-        zipkin_spans = reporter.translate_to_zipkin(
+        exporter = zipkin_exporter.ZipkinExporter(service_name='my_service')
+        zipkin_spans = exporter.translate_to_zipkin(
             trace_id=trace_id,
             spans=spans)
 

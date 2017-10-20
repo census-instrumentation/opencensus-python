@@ -12,12 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import random
-
+from datetime import datetime
 from itertools import chain
 
-from datetime import datetime
 from opencensus.trace.enums import Enum
+from opencensus.trace.span_context import generate_span_id
 
 
 class Span(object):
@@ -150,17 +149,6 @@ class Span(object):
             return
 
         self.finish()
-
-
-def generate_span_id():
-    """Return the random generated span ID for a span.
-
-    :rtype: int
-    :returns: Identifier for the span. Must be a 64-bit integer other
-              than 0 and unique within a trace.
-    """
-    span_id = random.getrandbits(64)
-    return span_id
 
 
 def format_span_json(span):

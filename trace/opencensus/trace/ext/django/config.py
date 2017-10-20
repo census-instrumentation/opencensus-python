@@ -19,18 +19,18 @@ from django.conf import settings as django_settings
 
 DEFAULT_DJANGO_TRACER_CONFIG = {
     'SAMPLER': 'opencensus.trace.samplers.always_on.AlwaysOnSampler',
-    'REPORTER':
-        'opencensus.trace.reporters.print_reporter.PrintReporter',
+    'EXPORTER':
+        'opencensus.trace.exporters.print_exporter.PrintExporter',
     'PROPAGATOR': 'opencensus.trace.propagation.google_cloud_format.'
                   'GoogleCloudFormatPropagator',
 }
 
 DEFAULT_DJANGO_TRACER_PARAMS = {
     'SAMPLING_RATE': 0.5,
-    'GCP_REPORTER_PROJECT': None,
-    'ZIPKIN_REPORTER_SERVICE_NAME': 'my_service',
-    'ZIPKIN_REPORTER_HOST_NAME': 'localhost',
-    'ZIPKIN_REPORTER_PORT': 9411,
+    'GCP_EXPORTER_PROJECT': None,
+    'ZIPKIN_EXPORTER_SERVICE_NAME': 'my_service',
+    'ZIPKIN_EXPORTER_HOST_NAME': 'localhost',
+    'ZIPKIN_EXPORTER_PORT': 9411,
 }
 
 
@@ -41,7 +41,7 @@ log = logging.getLogger(__name__)
 
 class DjangoTraceSettings(object):
     """Set the params for a django tracer, including the tracer, sampler and
-    reporter. If the user did not define the settings in django settings file.
+    exporter. If the user did not define the settings in django settings file.
     then use the dafaults.
     """
 

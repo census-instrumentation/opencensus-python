@@ -18,7 +18,7 @@ import logging
 from opencensus.trace import labels_helper
 from opencensus.trace import execution_context
 from opencensus.trace.propagation import google_cloud_format
-from opencensus.trace.reporters import print_reporter
+from opencensus.trace.exporters import print_exporter
 from opencensus.trace.samplers import always_on
 from opencensus.trace import request_tracer
 
@@ -44,24 +44,24 @@ class FlaskMiddleware(object):
                     :class:`.AlwaysOnSampler`. The rest options are
                     :class:`.AlwaysOffSampler`, :class:`.FixedRateSampler`.
 
-    :type reporter: :class: `type`
-    :param reporter: Class for creating new Reporter objects. Default to
-                     :class:`.PrintReporter`. The rest option is
-                     :class:`.FileReporter`.
+    :type exporter: :class: `type`
+    :param exporter: Class for creating new exporter objects. Default to
+                     :class:`.PrintExporter`. The rest option is
+                     :class:`.FileExporter`.
     """
-    def __init__(self, app, sampler=None, reporter=None, propagator=None):
+    def __init__(self, app, sampler=None, exporter=None, propagator=None):
         if sampler is None:
             sampler = always_on.AlwaysOnSampler()
 
-        if reporter is None:
-            reporter = print_reporter.PrintReporter()
+        if exporter is None:
+            exporter = print_exporter.PrintExporter()
 
         if propagator is None:
             propagator = google_cloud_format.GoogleCloudFormatPropagator()
 
         self.app = app
         self.sampler = sampler
-        self.reporter = reporter
+        self.exporter = exporter
         self.propagator = propagator
         self.setup_trace()
 
@@ -81,7 +81,7 @@ class FlaskMiddleware(object):
             tracer = request_tracer.RequestTracer(
                 span_context=span_context,
                 sampler=self.sampler,
-                reporter=self.reporter,
+                exporter=self.exporter,
                 propagator=self.propagator)
 
             span = tracer.start_span()

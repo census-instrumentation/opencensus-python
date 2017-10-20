@@ -40,60 +40,60 @@ class TestOpencensusMiddleware(unittest.TestCase):
         from opencensus.trace.samplers import always_on
         from opencensus.trace.propagation import google_cloud_format
 
-        class MockCloudReporter(object):
+        class MockCloudExporter(object):
             def __init__(self, project_id):
                 self.project_id = project_id
 
-        MockCloudReporter.__name__ = 'GoogleCloudReporter'
+        MockCloudExporter.__name__ = 'GoogleCloudExporter'
 
         project_id = 'my_project'
         params = {
-            'GCP_REPORTER_PROJECT': project_id,
+            'GCP_EXPORTER_PROJECT': project_id,
         }
 
         patch_params = mock.patch(
             'opencensus.trace.ext.django.config.settings.params', params)
-        patch_reporter = mock.patch(
-            'opencensus.trace.ext.django.config.settings.REPORTER',
-            MockCloudReporter)
+        patch_exporter = mock.patch(
+            'opencensus.trace.ext.django.config.settings.EXPORTER',
+            MockCloudExporter)
 
-        with patch_params, patch_reporter:
+        with patch_params, patch_exporter:
             middleware = middleware.OpencensusMiddleware()
 
         self.assertIs(middleware._sampler, always_on.AlwaysOnSampler)
         self.assertIs(
-            middleware._reporter, MockCloudReporter)
+            middleware._exporter, MockCloudExporter)
         self.assertIs(
             middleware._propagator,
             google_cloud_format.GoogleCloudFormatPropagator)
 
         assert isinstance(middleware.sampler, always_on.AlwaysOnSampler)
         assert isinstance(
-            middleware.reporter, MockCloudReporter)
+            middleware.exporter, MockCloudExporter)
         assert isinstance(
             middleware.propagator,
             google_cloud_format.GoogleCloudFormatPropagator)
 
-        self.assertEqual(middleware.reporter.project_id, project_id)
+        self.assertEqual(middleware.exporter.project_id, project_id)
 
     def test_constructor_zipkin(self):
         from opencensus.trace.ext.django import middleware
         from opencensus.trace.samplers import always_on
-        from opencensus.trace.reporters import zipkin_reporter
+        from opencensus.trace.exporters import zipkin_exporter
         from opencensus.trace.propagation import google_cloud_format
 
         service_name = 'test_service'
         host_name = 'test_hostname'
         port = 2333
         params = {
-            'ZIPKIN_REPORTER_SERVICE_NAME': service_name,
-            'ZIPKIN_REPORTER_HOST_NAME': host_name,
-            'ZIPKIN_REPORTER_PORT': port,
+            'ZIPKIN_EXPORTER_SERVICE_NAME': service_name,
+            'ZIPKIN_EXPORTER_HOST_NAME': host_name,
+            'ZIPKIN_EXPORTER_PORT': port,
         }
 
         patch_zipkin = mock.patch(
-            'opencensus.trace.ext.django.config.settings.REPORTER',
-            zipkin_reporter.ZipkinReporter)
+            'opencensus.trace.ext.django.config.settings.EXPORTER',
+            zipkin_exporter.ZipkinExporter)
 
         patch_params = mock.patch(
             'opencensus.trace.ext.django.config.settings.params',
@@ -104,26 +104,26 @@ class TestOpencensusMiddleware(unittest.TestCase):
 
         self.assertIs(middleware._sampler, always_on.AlwaysOnSampler)
         self.assertIs(
-            middleware._reporter, zipkin_reporter.ZipkinReporter)
+            middleware._exporter, zipkin_exporter.ZipkinExporter)
         self.assertIs(
             middleware._propagator,
             google_cloud_format.GoogleCloudFormatPropagator)
 
         assert isinstance(middleware.sampler, always_on.AlwaysOnSampler)
         assert isinstance(
-            middleware.reporter, zipkin_reporter.ZipkinReporter)
+            middleware.exporter, zipkin_exporter.ZipkinExporter)
         assert isinstance(
             middleware.propagator,
             google_cloud_format.GoogleCloudFormatPropagator)
 
-        self.assertEqual(middleware.reporter.service_name, service_name)
-        self.assertEqual(middleware.reporter.host_name, host_name)
-        self.assertEqual(middleware.reporter.port, port)
+        self.assertEqual(middleware.exporter.service_name, service_name)
+        self.assertEqual(middleware.exporter.host_name, host_name)
+        self.assertEqual(middleware.exporter.port, port)
 
     def test_constructor_fixed_rate_sampler(self):
         from opencensus.trace.ext.django import middleware
         from opencensus.trace.samplers import fixed_rate
-        from opencensus.trace.reporters import print_reporter
+        from opencensus.trace.exporters import print_exporter
         from opencensus.trace.propagation import google_cloud_format
 
         rate = 0.8
@@ -134,27 +134,27 @@ class TestOpencensusMiddleware(unittest.TestCase):
         patch_sampler = mock.patch(
             'opencensus.trace.ext.django.config.settings.SAMPLER',
             fixed_rate.FixedRateSampler)
-        patch_reporter = mock.patch(
-            'opencensus.trace.ext.django.config.settings.REPORTER',
-            print_reporter.PrintReporter)
+        patch_exporter = mock.patch(
+            'opencensus.trace.ext.django.config.settings.EXPORTER',
+            print_exporter.PrintExporter)
 
         patch_params = mock.patch(
             'opencensus.trace.ext.django.config.settings.params',
             params)
 
-        with patch_sampler, patch_reporter, patch_params:
+        with patch_sampler, patch_exporter, patch_params:
             middleware = middleware.OpencensusMiddleware()
 
         self.assertIs(middleware._sampler, fixed_rate.FixedRateSampler)
         self.assertIs(
-            middleware._reporter, print_reporter.PrintReporter)
+            middleware._exporter, print_exporter.PrintExporter)
         self.assertIs(
             middleware._propagator,
             google_cloud_format.GoogleCloudFormatPropagator)
 
         assert isinstance(middleware.sampler, fixed_rate.FixedRateSampler)
         assert isinstance(
-            middleware.reporter, print_reporter.PrintReporter)
+            middleware.exporter, print_exporter.PrintExporter)
         assert isinstance(
             middleware.propagator,
             google_cloud_format.GoogleCloudFormatPropagator)
@@ -216,8 +216,8 @@ class TestOpencensusMiddleware(unittest.TestCase):
         tracer = middleware._get_current_request_tracer()
         span = tracer.current_span()
 
-        reporter_mock = mock.Mock()
-        tracer.reporter = reporter_mock
+        exporter_mock = mock.Mock()
+        tracer.exporter = exporter_mock
 
         django_response = mock.Mock()
         django_response.status_code = 200
@@ -238,7 +238,7 @@ class TestOpencensusMiddleware(unittest.TestCase):
         middleware_obj.process_response(django_request, django_response)
 
         self.assertEqual(span.labels, expected_labels)
-        self.assertTrue(reporter_mock.report.called)
+        self.assertTrue(exporter_mock.export.called)
 
 
 class Test__set_django_labels(unittest.TestCase):
