@@ -95,13 +95,18 @@ class TestDjangoTrace(unittest.TestCase):
         time.sleep(5)
 
         trace = self.client.get_trace(trace_id=self.trace_id)
+        spans = trace.get('spans')
 
         self.assertEqual(trace.get('projectId'), PROJECT)
         self.assertEqual(trace.get('traceId'), str(self.trace_id))
-        self.assertEqual(len(trace.get('spans')), 1)
+        self.assertEqual(len(spans), 1)
         self.assertEqual(
-            trace.get('spans')[0].get('parentSpanId'),
+            spans[0].get('parentSpanId'),
             str(self.span_id))
+
+        for span in spans:
+            labels = span.get('labels')
+            self.assertEqual(labels.get('/http/status_code'), '200')
 
     def test_mysql_trace(self):
         requests.get(
@@ -111,15 +116,24 @@ class TestDjangoTrace(unittest.TestCase):
         time.sleep(5)
 
         trace = self.client.get_trace(trace_id=self.trace_id)
+        spans = trace.get('spans')
 
         self.assertEqual(trace.get('projectId'), PROJECT)
         self.assertEqual(trace.get('traceId'), str(self.trace_id))
 
         # Should have 2 spans, one for django request, one for mysql query
-        self.assertEqual(len(trace.get('spans')), 2)
+        self.assertEqual(len(spans), 2)
         self.assertEqual(
-            trace.get('spans')[0].get('parentSpanId'),
+            spans[0].get('parentSpanId'),
             str(self.span_id))
+
+        for span in spans:
+            labels = span.get('labels')
+            self.assertEqual(labels.get('/http/status_code'), '200')
+
+            if span.get('name') == '[mysql.query]SELECT 2*3':
+                self.assertEqual(labels.get('mysql/cursor/method/name'), 'execute')
+                self.assertEqual(labels.get('mysql/query'), 'SELECT 2*3')
 
     def test_postgresql_trace(self):
         requests.get(
@@ -129,6 +143,7 @@ class TestDjangoTrace(unittest.TestCase):
         time.sleep(5)
 
         trace = self.client.get_trace(trace_id=self.trace_id)
+        spans = trace.get('spans')
 
         self.assertEqual(trace.get('projectId'), PROJECT)
         self.assertEqual(trace.get('traceId'), str(self.trace_id))
@@ -136,8 +151,16 @@ class TestDjangoTrace(unittest.TestCase):
         # Should have 2 spans, one for django request, one for postgresql query
         self.assertEqual(len(trace.get('spans')), 2)
         self.assertEqual(
-            trace.get('spans')[0].get('parentSpanId'),
+            spans[0].get('parentSpanId'),
             str(self.span_id))
+
+        for span in spans:
+            labels = span.get('labels')
+            self.assertEqual(labels.get('/http/status_code'), '200')
+
+            if span.get('name') == '[postgresql.query]SELECT 2*3':
+                self.assertEqual(labels.get('postgresql/cursor/method/name'), 'execute')
+                self.assertEqual(labels.get('postgresql/query'), 'SELECT 2*3')
 
     def test_sqlalchemy_mysql_trace(self):
         requests.get(
@@ -147,6 +170,7 @@ class TestDjangoTrace(unittest.TestCase):
         time.sleep(5)
 
         trace = self.client.get_trace(trace_id=self.trace_id)
+        spans = trace.get('spans')
 
         self.assertEqual(trace.get('projectId'), PROJECT)
         self.assertEqual(trace.get('traceId'), str(self.trace_id))
@@ -154,6 +178,10 @@ class TestDjangoTrace(unittest.TestCase):
         self.assertEqual(
             trace.get('spans')[0].get('parentSpanId'),
             str(self.span_id))
+
+        for span in spans:
+            labels = span.get('labels')
+            self.assertEqual(labels.get('/http/status_code'), '200')
 
     def test_sqlalchemy_postgresql_trace(self):
         requests.get(
@@ -163,6 +191,7 @@ class TestDjangoTrace(unittest.TestCase):
         time.sleep(5)
 
         trace = self.client.get_trace(trace_id=self.trace_id)
+        spans = trace.get('spans')
 
         self.assertEqual(trace.get('projectId'), PROJECT)
         self.assertEqual(trace.get('traceId'), str(self.trace_id))
@@ -170,3 +199,7 @@ class TestDjangoTrace(unittest.TestCase):
         self.assertEqual(
             trace.get('spans')[0].get('parentSpanId'),
             str(self.span_id))
+
+        for span in spans:
+            labels = span.get('labels')
+            self.assertEqual(labels.get('/http/status_code'), '200')
