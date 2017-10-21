@@ -46,7 +46,7 @@ def unit_tests(session, python_version):
 
 
 @nox.session
-@nox.parametrize('python_version', ['2.7', '3.5'])
+@nox.parametrize('python_version', ['2.7', '3.6'])
 def system_tests(session, python_version):
     """Run the system test suite."""
 
@@ -71,8 +71,7 @@ def system_tests(session, python_version):
         '-vvv',
         '-s',
         'tests/system/',
-        *session.posargs,
-        success_codes=range(0, 100)
+        *session.posargs
     )
 
 

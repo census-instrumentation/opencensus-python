@@ -25,12 +25,14 @@ import unittest
 
 PROJECT = os.environ.get('GCLOUD_PROJECT_PYTHON')
 
+HOST_PORT = 'localhost:8000'
+BASE_URL = 'http://localhost:8000/'
+
 
 def wait_app_to_start():
     """Wait the application to start running."""
-    cmd = 'until nc -z -v -w30 127.0.0.1 8000; do sleep 2; done'
-    os.system(cmd)
-
+    cmd = 'wget --retry-connrefused --tries=5 {}'.format(BASE_URL)
+    subprocess.check_call(cmd, shell=True)
 
 def generate_header():
     """Generate a trace header."""
@@ -45,7 +47,7 @@ def generate_header():
 
 def run_application():
     """Start running the django application."""
-    cmd = 'python tests/system/django/manage.py runserver'
+    cmd = 'python tests/system/django/manage.py runserver {}'.format(HOST_PORT)
     process = subprocess.Popen(
         cmd,
         stdout=subprocess.PIPE,
@@ -87,7 +89,7 @@ class TestDjangoTrace(unittest.TestCase):
 
     def test_django_request_trace(self):
         requests.get(
-            'http://127.0.0.1:8000',
+            BASE_URL,
             headers=self.headers_trace)
 
         time.sleep(5)
@@ -103,7 +105,7 @@ class TestDjangoTrace(unittest.TestCase):
 
     def test_mysql_trace(self):
         requests.get(
-            'http://127.0.0.1:8000/mysql',
+            '{}mysql'.format(BASE_URL),
             headers=self.headers_trace)
 
         time.sleep(5)
@@ -121,7 +123,7 @@ class TestDjangoTrace(unittest.TestCase):
 
     def test_postgresql_trace(self):
         requests.get(
-            'http://127.0.0.1:8000/postgresql',
+            '{}postgresql'.format(BASE_URL),
             headers=self.headers_trace)
 
         time.sleep(5)
@@ -139,7 +141,7 @@ class TestDjangoTrace(unittest.TestCase):
 
     def test_sqlalchemy_mysql_trace(self):
         requests.get(
-            'http://127.0.0.1:8000/sqlalchemy_mysql',
+            '{}sqlalchemy_mysql'.format(BASE_URL),
             headers=self.headers_trace)
 
         time.sleep(5)
@@ -155,7 +157,7 @@ class TestDjangoTrace(unittest.TestCase):
 
     def test_sqlalchemy_postgresql_trace(self):
         requests.get(
-            'http://127.0.0.1:8000/sqlalchemy_postgresql',
+            '{}sqlalchemy_postgresql'.format(BASE_URL),
             headers=self.headers_trace)
 
         time.sleep(5)

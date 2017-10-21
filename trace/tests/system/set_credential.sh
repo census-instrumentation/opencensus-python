@@ -23,4 +23,5 @@ if [ -n "$GOOGLE_APPLICATION_CREDENTIALS" ]; then
         -out "$GOOGLE_APPLICATION_CREDENTIALS"
 else
     echo "No credentials. System tests will not run."
+    exit 1
 fi

@@ -29,7 +29,7 @@ class TestBasicTrace(unittest.TestCase):
 
         from opencensus.trace import request_tracer
         from opencensus.trace.samplers import always_on
-        from opencensus.trace.reporters import file_reporter
+        from opencensus.trace.exporters import file_exporter
         from opencensus.trace.propagation import google_cloud_format
 
         trace_id = 'f8739df974a4481f98748cd92b27177d'
@@ -39,18 +39,16 @@ class TestBasicTrace(unittest.TestCase):
         trace_header = '{}/{};o={}'.format(trace_id, span_id, trace_option)
 
         sampler = always_on.AlwaysOnSampler()
-        reporter = file_reporter.FileReporter()
+        exporter = file_exporter.FileExporter()
         propagator = google_cloud_format.GoogleCloudFormatPropagator()
         span_context = propagator.from_header(header=trace_header)
 
         tracer = request_tracer.RequestTracer(
             span_context=span_context,
             sampler=sampler,
-            reporter=reporter,
+            exporter=exporter,
             propagator=propagator
         )
-
-        tracer.start_trace()
 
         with tracer.span(name='root_span') as root:
             func_to_trace()
@@ -58,9 +56,9 @@ class TestBasicTrace(unittest.TestCase):
             with root.span(name='child_span'):
                 func_to_trace()
 
-        tracer.end_trace()
+        tracer.finish()
 
-        file = open(file_reporter.DEFAULT_FILENAME, 'r')
+        file = open(file_exporter.DEFAULT_FILENAME, 'r')
         trace_json = json.loads(file.read())
 
         spans = trace_json.get('spans')

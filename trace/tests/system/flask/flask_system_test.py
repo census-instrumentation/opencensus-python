@@ -15,7 +15,6 @@
 import os
 import random
 import requests
-import shlex
 import signal
 import subprocess
 import time
@@ -25,11 +24,14 @@ import unittest
 
 PROJECT = os.environ.get('GCLOUD_PROJECT_PYTHON')
 
+HOST_PORT = 'localhost:8080'
+BASE_URL = 'http://localhost:8080/'
+
 
 def wait_app_to_start():
     """Wait the application to start running."""
-    cmd = 'until nc -z -v -w30 127.0.0.1 8080; do sleep 2; done'
-    os.system(cmd)
+    cmd = 'wget --retry-connrefused --tries=5 {}'.format(BASE_URL)
+    subprocess.check_call(cmd, shell=True)
 
 
 def generate_header():
@@ -87,7 +89,7 @@ class TestFlaskTrace(unittest.TestCase):
 
     def test_flask_request_trace(self):
         requests.get(
-            'http://127.0.0.1:8080',
+            BASE_URL,
             headers=self.headers_trace)
 
         time.sleep(5)
@@ -103,7 +105,7 @@ class TestFlaskTrace(unittest.TestCase):
 
     def test_mysql_trace(self):
         requests.get(
-            'http://127.0.0.1:8080/mysql',
+            '{}mysql'.format(BASE_URL),
             headers=self.headers_trace)
 
         time.sleep(5)
@@ -121,7 +123,7 @@ class TestFlaskTrace(unittest.TestCase):
 
     def test_postgresql_trace(self):
         requests.get(
-            'http://127.0.0.1:8080/postgresql',
+            '{}postgresql'.format(BASE_URL),
             headers=self.headers_trace)
 
         time.sleep(5)
@@ -139,7 +141,7 @@ class TestFlaskTrace(unittest.TestCase):
 
     def test_sqlalchemy_mysql_trace(self):
         requests.get(
-            'http://127.0.0.1:8080/sqlalchemy-mysql',
+            '{}sqlalchemy-mysql'.format(BASE_URL),
             headers=self.headers_trace)
 
         time.sleep(5)
@@ -155,7 +157,7 @@ class TestFlaskTrace(unittest.TestCase):
 
     def test_sqlalchemy_postgresql_trace(self):
         requests.get(
-            'http://127.0.0.1:8080/sqlalchemy-postgresql',
+            '{}sqlalchemy-postgresql'.format(BASE_URL),
             headers=self.headers_trace)
 
         time.sleep(5)

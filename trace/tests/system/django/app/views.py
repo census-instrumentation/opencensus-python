@@ -26,7 +26,7 @@ import sqlalchemy
 import time
 import os
 
-DB_HOST = '127.0.0.1'
+DB_HOST = 'localhost'
 
 # MySQL settings
 MYSQL_PASSWORD = os.environ.get('SYSTEST_MYSQL_PASSWORD')

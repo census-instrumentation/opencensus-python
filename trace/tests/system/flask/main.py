@@ -38,7 +38,7 @@ POSTGRES_PASSWORD = os.environ.get('SYSTEST_POSTGRES_PASSWORD')
 
 app = flask.Flask(__name__)
 
-# Enbale tracing, send traces to Stackdriver Trace
+# Enable tracing, send traces to Stackdriver Trace
 exporter = google_cloud_exporter.GoogleCloudExporter()
 middleware = FlaskMiddleware(app, exporter=exporter)
 config_integration.trace_integrations(INTEGRATIONS)
@@ -154,4 +154,4 @@ def sqlalchemy_postgresql_query():
 
 
 if __name__ == '__main__':
-    app.run(host='127.0.0.1', port=8080, debug=True, use_reloader=False)
+    app.run(host='localhost', port=8080, debug=True, use_reloader=False)
