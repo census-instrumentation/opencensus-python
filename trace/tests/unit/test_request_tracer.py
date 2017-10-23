@@ -64,7 +64,7 @@ class TestRequestTracer(unittest.TestCase):
         from opencensus.trace import span_context
 
         span_context = mock.Mock()
-        span_context.enabled = False
+        span_context.trace_options.enabled = False
         tracer = request_tracer.RequestTracer(
             span_context=span_context)
         sampled = tracer.should_sample()

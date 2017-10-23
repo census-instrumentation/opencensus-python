@@ -38,13 +38,14 @@ class TestSpanContext(unittest.TestCase):
         self.assertEqual(span_context.span_id, span_id)
 
     def test__str__(self):
+        from opencensus.trace.trace_options import TraceOptions
         trace_id = '6e0c63257de34c92bf9efcd03927272e'
         span_id = 1234
 
         span_context = self._make_one(
             trace_id=trace_id,
             span_id=span_id,
-            enabled=True)
+            trace_options=TraceOptions('1'))
 
         header_expected = '6e0c63257de34c92bf9efcd03927272e/1234;o=1'
         header = span_context.__str__()

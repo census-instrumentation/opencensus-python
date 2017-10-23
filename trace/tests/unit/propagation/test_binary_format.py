@@ -45,18 +45,21 @@ class TestBinaryFormat(unittest.TestCase):
 
         self.assertEqual(span_context.trace_id, expected_trace_id)
         self.assertEqual(span_context.span_id, expected_span_id)
-        self.assertEqual(span_context.enabled, expected_trace_option)
+        self.assertEqual(
+            span_context.trace_options.enabled,
+            expected_trace_option)
 
     def test_to_header_span_id_zero(self):
         from opencensus.trace.span_context import SpanContext
+        from opencensus.trace.trace_options import TraceOptions
 
         span_context = mock.Mock(spec=SpanContext)
         trace_id = 'a0b72ca15c1a4bd18962d0ac59dc90b9'
         span_id = None
-        enabled = True
+        trace_options = '1'
         span_context.trace_id = trace_id
         span_context.span_id = span_id
-        span_context.enabled = enabled
+        span_context.trace_options = TraceOptions(trace_options)
 
         propagator = binary_format.BinaryFormatPropagator()
 
@@ -70,14 +73,15 @@ class TestBinaryFormat(unittest.TestCase):
 
     def test_to_header(self):
         from opencensus.trace.span_context import SpanContext
+        from opencensus.trace.trace_options import TraceOptions
 
         span_context = mock.Mock(spec=SpanContext)
         trace_id = 'a0b72ca15c1a4bd18962d0ac59dc90b9'
         span_id = 7433567179112518326
-        enabled = True
+        trace_options = '1'
         span_context.trace_id = trace_id
         span_context.span_id = span_id
-        span_context.enabled = enabled
+        span_context.trace_options = TraceOptions(trace_options)
 
         propagator = binary_format.BinaryFormatPropagator()
 

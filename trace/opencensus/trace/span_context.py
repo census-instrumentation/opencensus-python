@@ -19,14 +19,22 @@ import random
 import re
 import uuid
 
+from opencensus.trace import trace_options
+
 _INVALID_TRACE_ID = '0' * 32
 _INVALID_SPAN_ID = 0
 _TRACE_HEADER_KEY = 'X_CLOUD_TRACE_CONTEXT'
 _TRACE_ID_FORMAT = '[0-9a-f]{32}?'
 
+# Default options, enable tracing
+DEFAULT_OPTIONS = 1
+
+# Default trace options
+DEFAULT = trace_options.TraceOptions(DEFAULT_OPTIONS)
+
 
 class SpanContext(object):
-    """SpanContext includes 3 fields: traceId, spanId, and an enabled flag
+    """SpanContext includes 3 fields: traceId, spanId, and an trace_options flag
     which indicates whether or not the request is being traced. It contains the
     current context to be propagated to the child spans.
 
@@ -37,8 +45,8 @@ class SpanContext(object):
     :type span_id: int
     :param span_id: (Optional) Identifier for the span, unique within a trace.
 
-    :type enabled: bool
-    :param enabled: (Optional) Indicates whether the request is traced or not.
+    :type trace_options: :class: `~opencensus.trace.trace_options.TraceOptions`
+    :param trace_options: (Optional) TraceOptions indicates 8 trace options.
 
     :type from_header: bool
     :param from_header: (Optional) Indicates whether the trace context is
@@ -48,14 +56,17 @@ class SpanContext(object):
             self,
             trace_id=None,
             span_id=None,
-            enabled=True,
+            trace_options=None,
             from_header=False):
         if trace_id is None:
             trace_id = generate_trace_id()
 
+        if trace_options is None:
+            trace_options = DEFAULT
+
         self.trace_id = self.check_trace_id(trace_id)
         self.span_id = self.check_span_id(span_id)
-        self.enabled = enabled
+        self.trace_options = trace_options
         self.from_header = from_header
 
     def __str__(self):
@@ -66,10 +77,11 @@ class SpanContext(object):
         :rtype: str
         :returns: String form of the SpanContext.
         """
+        enabled = self.trace_options.enabled
         header = '{}/{};o={}'.format(
             self.trace_id,
             self.span_id,
-            int(self.enabled))
+            int(enabled))
         return header
 
     def check_span_id(self, span_id):
