@@ -30,3 +30,15 @@ class TestTraceOptions(unittest.TestCase):
 
         self.assertEqual(trace_options.trace_options_byte, trace_options_byte)
         self.assertFalse(trace_options.enabled)
+
+    def test_check_trace_options_valid(self):
+        trace_options_byte = '10'
+        trace_options = trace_opt.TraceOptions(trace_options_byte)
+
+        self.assertEqual(trace_options.trace_options_byte, trace_options_byte)
+
+    def test_check_trace_options_invalid(self):
+        trace_options_byte = '256'
+        trace_options = trace_opt.TraceOptions(trace_options_byte)
+
+        self.assertEqual(trace_options.trace_options_byte, trace_opt.DEFAULT)

@@ -54,7 +54,7 @@ class Test_from_carrier(unittest.TestCase):
     def test_to_carrier_has_span_id(self):
         test_trace_id = '6e0c63257de34c92bf9efcd03927272e'
         test_span_id = 1234
-        test_options = '1'
+        test_options = '2'
 
         span_context = mock.Mock()
         span_context.trace_id = test_trace_id

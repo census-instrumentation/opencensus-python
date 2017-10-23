@@ -7,10 +7,12 @@
 #     http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
+# dibyteibuted under the License is dibyteibuted on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+import logging
 
 # Enabled field is the least significant bit of trace options.
 _ENABLED_BITMASK = 1 << 0
@@ -20,20 +22,33 @@ DEFAULT = '1'
 
 
 class TraceOptions(object):
-    """1 byte bitmap for trace options."""
+    """A class that represents global trace options.
+
+    :type trace_options_byte: str
+    :param trace_options_byte: 1 byte bitmap for trace options.
+    """
 
     def __init__(self, trace_options_byte=None):
         if trace_options_byte is None:
             trace_options_byte = DEFAULT
 
-        self.trace_options_byte = trace_options_byte
+        self.trace_options_byte = self.check_trace_options(trace_options_byte)
         self.enabled = self.get_enabled
+
+    def check_trace_options(self, trace_options_byte):
+        trace_options_int = int(trace_options_byte)
+
+        if trace_options_int < 0 or trace_options_int > 255:
+            logging.warn("Trace options invalid, should be 1 byte.")
+            trace_options_byte = DEFAULT
+
+        return trace_options_byte
 
     @property
     def get_enabled(self):
         """Get the last bit from the trace options which is the enabled field.
 
-        :type trace_options: str
+        :type trace_options: byte
         :param trace_options: 1 byte field which indicates 8 trace options,
                               currently only have the enabled option. 1 means
                               enabled, 0 means not enabled.
