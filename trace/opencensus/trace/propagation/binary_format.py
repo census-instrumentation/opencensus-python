@@ -17,8 +17,8 @@ import collections
 import logging
 import struct
 
-from opencensus.trace.propagation import _helpers
 from opencensus.trace.span_context import SpanContext
+from opencensus.trace.trace_options import TraceOptions
 
 # Used for decoding hex bytes to hex string.
 UTF8 = 'utf-8'
@@ -118,14 +118,12 @@ class BinaryFormatPropagator(object):
         # with length 32, then decode it to hex string using utf-8.
         trace_id = str(binascii.hexlify(data.trace_id).decode(UTF8))
         span_id = data.span_id
-        trace_option = data.trace_option
-
-        enabled = _helpers._get_enabled_trace_option(trace_option)
+        trace_options = TraceOptions(data.trace_option)
 
         span_context = SpanContext(
                 trace_id=trace_id,
                 span_id=span_id,
-                enabled=enabled,
+                trace_options=trace_options,
                 from_header=True)
 
         return span_context
@@ -142,14 +140,12 @@ class BinaryFormatPropagator(object):
         """
         trace_id = span_context.trace_id
         span_id = span_context.span_id
-        enabled = span_context.enabled
+        trace_options = int(span_context.trace_options.trace_options_byte)
 
         # If there is no span_id in this context, set it to 0, which is
         # considered invalid and won't be set as the downstream parent span_id.
         if span_id is None:
             span_id = 0
-
-        enabled_int = int(enabled)
 
         # Convert trace_id to bytes with length 16, treat span_id as 64 bit
         # integer which is unsigned long long type and convert it to bytes with
@@ -162,4 +158,4 @@ class BinaryFormatPropagator(object):
             SPAN_ID_FIELD_ID,
             span_id,
             TRACE_OPTION_FIELD_ID,
-            enabled_int)
+            trace_options)

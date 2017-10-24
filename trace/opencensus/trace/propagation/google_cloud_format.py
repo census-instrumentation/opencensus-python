@@ -21,10 +21,9 @@ binary format and zipkin, opencensus format.
 import logging
 import re
 
-from opencensus.trace.propagation import _helpers
 from opencensus.trace.span_context import SpanContext
+from opencensus.trace.trace_options import TraceOptions
 
-_ENABLED_BITMASK = 1
 _TRACE_CONTEXT_HEADER_FORMAT = '([0-9a-f]{32})(\/(\d+))?(;o=(\d+))?'
 _TRACE_CONTEXT_HEADER_RE = re.compile(_TRACE_CONTEXT_HEADER_FORMAT)
 _TRACE_ID_DELIMETER = '/'
@@ -59,17 +58,15 @@ class GoogleCloudFormatPropagator(object):
         if match:
             trace_id = match.group(1)
             span_id = match.group(3)
-            options = match.group(5)
+            trace_options = match.group(5)
 
-            if options is None:
-                options = 1
-
-            enabled = _helpers._get_enabled_trace_option(options)
+            if trace_options is None:
+                trace_options = 1
 
             span_context = SpanContext(
                 trace_id=trace_id,
                 span_id=span_id,
-                enabled=enabled,
+                trace_options=TraceOptions(trace_options),
                 from_header=True)
             return span_context
         else:
@@ -90,10 +87,10 @@ class GoogleCloudFormatPropagator(object):
         """
         trace_id = span_context.trace_id
         span_id = span_context.span_id
-        enabled = span_context.enabled
+        trace_options = span_context.trace_options.trace_options_byte
 
         header = '{}/{};o={}'.format(
             trace_id,
             span_id,
-            int(enabled))
+            int(trace_options))
         return header

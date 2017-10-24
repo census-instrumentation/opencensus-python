@@ -18,11 +18,14 @@ generating a dict using the provided SpanContext.
 """
 
 from opencensus.trace.span_context import SpanContext
+from opencensus.trace.trace_options import TraceOptions
 
 _OPENCENSUS_TRACE_PREFIX = 'opencensus-trace'
 _TRACE_ID_KEY = '{}-traceid'.format(_OPENCENSUS_TRACE_PREFIX)
 _SPAN_ID_KEY = '{}-spanid'.format(_OPENCENSUS_TRACE_PREFIX)
-_ENABLED_TRACE_KEY = '{}-enabled'.format(_OPENCENSUS_TRACE_PREFIX)
+_TRACE_OPTIONS_KEY = '{}-traceoptions'.format(_OPENCENSUS_TRACE_PREFIX)
+
+DEFAULT_TRACE_OPTIONS = '1'
 
 
 class TextFormatPropagator(object):
@@ -39,7 +42,7 @@ class TextFormatPropagator(object):
         """
         trace_id = None
         span_id = None
-        enabled = 1
+        trace_options = None
 
         for key in carrier:
             key = key.lower()
@@ -47,13 +50,16 @@ class TextFormatPropagator(object):
                 trace_id = carrier[key]
             if key == _SPAN_ID_KEY:
                 span_id = carrier[key]
-            if key == _ENABLED_TRACE_KEY:
-                enabled = bool(carrier[key])
+            if key == _TRACE_OPTIONS_KEY:
+                trace_options = bool(carrier[key])
+
+        if trace_options is None:
+            trace_options = DEFAULT_TRACE_OPTIONS
 
         return SpanContext(
             trace_id=trace_id,
             span_id=span_id,
-            enabled=enabled,
+            trace_options=TraceOptions(trace_options),
             from_header=True)
 
     def to_carrier(self, span_context, carrier):
@@ -75,6 +81,7 @@ class TextFormatPropagator(object):
         if span_context.span_id is not None:
             carrier[_SPAN_ID_KEY] = str(span_context.span_id)
 
-        carrier[_ENABLED_TRACE_KEY] = str(span_context.enabled)
+        carrier[_TRACE_OPTIONS_KEY] = str(
+            span_context.trace_options.trace_options_byte)
 
         return carrier
