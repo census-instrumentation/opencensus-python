@@ -15,6 +15,7 @@
 from __future__ import absolute_import
 
 import nox
+import os
 
 
 @nox.session
@@ -39,7 +40,37 @@ def unit_tests(session, python_version):
         '--cov-config=.coveragerc',
         '--cov-report=',
         '--cov-fail-under=97',
-        'tests/',
+        'tests/unit/',
+        *session.posargs
+    )
+
+
+@nox.session
+@nox.parametrize('python_version', ['2.7', '3.6'])
+def system_tests(session, python_version):
+    """Run the system test suite."""
+
+    # Sanity check: Only run system tests if the environment variable is set.
+    if not os.environ.get('GOOGLE_APPLICATION_CREDENTIALS', ''):
+        session.skip('Credentials must be set via environment variable.')
+
+    # Run the system tests against latest Python 2 and Python 3 only.
+    session.interpreter = 'python{}'.format(python_version)
+
+    # Set the virtualenv dirname.
+    session.virtualenv_dirname = 'sys-' + python_version
+
+    # Install all test dependencies, then install this package into the
+    # virutalenv's dist-packages.
+    session.install('-r', 'requirements-test.txt')
+    session.install('.')
+
+    # Run py.test against the system tests.
+    session.run(
+        'py.test',
+        '-vvv',
+        '-s',
+        'tests/system/',
         *session.posargs
     )
 
