@@ -74,7 +74,7 @@ class RequestTracer(object):
         :returns: Whether to trace the request or not.
         """
         return self.span_context.trace_options.enabled \
-            and self.sampler.should_sample
+            and self.sampler.should_sample(self.span_context.trace_id)
 
     def get_tracer(self):
         """Return a tracer according to the sampling decision."""

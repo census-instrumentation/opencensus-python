@@ -22,4 +22,4 @@ class TestBaseSampler(unittest.TestCase):
         sampler = base.Sampler()
 
         with self.assertRaises(NotImplementedError):
-            sampler.should_sample()
+            sampler.should_sample(trace_id='fake_id')
