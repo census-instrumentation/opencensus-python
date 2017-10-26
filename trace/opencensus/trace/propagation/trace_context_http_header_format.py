@@ -67,7 +67,7 @@ class TraceContextPropagator(object):
             else:
                 logging.warning(
                     'Header format version {} is not supported, generate a new'
-                    'one instead.'.format(version))
+                    'context instead.'.format(version))
         else:
             logging.warning(
                 'Cannot parse the header {}, generate a new context instead.'
