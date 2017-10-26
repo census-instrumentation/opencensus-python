@@ -24,19 +24,43 @@ class TestFixedRateSampler(unittest.TestCase):
             fixed_rate.FixedRateSampler(rate=2)
 
     def test_constructor_valid(self):
-        rate = 0.5
+        rate = 0.8
+        trace_id = 'f8739df974a4481f98748cd92b27177d'
         sampler = fixed_rate.FixedRateSampler(rate=rate)
 
         self.assertEqual(sampler.rate, rate)
 
+    def test_constructor_default(self):
+        rate = 0.5
+        trace_id = 'f8739df974a4481f98748cd92b27177d'
+        sampler = fixed_rate.FixedRateSampler()
+
+        self.assertEqual(sampler.rate, rate)
+
     def test_should_sample_smaller(self):
+        trace_id = 'f8739df974a4481f98748cd92b27177d'
         sampler = fixed_rate.FixedRateSampler(rate=1)
-        should_sample = sampler.should_sample
+        should_sample = sampler.should_sample(trace_id=trace_id)
 
         self.assertTrue(should_sample)
 
     def test_should_sample_greater(self):
+        trace_id = 'f8739df974a4481f98748cd92b27177d'
         sampler = fixed_rate.FixedRateSampler(rate=0)
-        should_sample = sampler.should_sample
+        should_sample = sampler.should_sample(trace_id=trace_id)
+
+        self.assertFalse(should_sample)
+
+    def test_should_sample_trace_id_sampled(self):
+        trace_id = '00000000000000000000000000000000'
+        sampler = fixed_rate.FixedRateSampler(rate=0.5)
+        should_sample = sampler.should_sample(trace_id=trace_id)
+
+        self.assertTrue(should_sample)
+
+    def test_should_sample_trace_id_not_sampled(self):
+        trace_id = 'ffffffffffffffffffffffffffffffff'
+        sampler = fixed_rate.FixedRateSampler(rate=0.5)
+        should_sample = sampler.should_sample(trace_id=trace_id)
 
         self.assertFalse(should_sample)

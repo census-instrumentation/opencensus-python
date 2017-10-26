@@ -17,7 +17,6 @@ from opencensus.trace.samplers.base import Sampler
 
 class AlwaysOffSampler(Sampler):
 
-    @property
-    def should_sample(self):
+    def should_sample(self, trace_id):
         """Always return False because we don't want to sample."""
         return False
