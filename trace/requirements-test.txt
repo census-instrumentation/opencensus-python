@@ -4,6 +4,7 @@ google-cloud-trace==0.15.5
 mock==2.0.0
 mysql-connector==2.1.6
 psycopg2==2.7.3.1
+pymysql==0.7.11
 pytest==3.2.2
 pytest-cov==2.5.1
 SQLAlchemy==1.1.14

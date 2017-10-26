@@ -12,21 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import inspect
-import logging
-import mysql.connector
-
 from opencensus.trace.ext.dbapi import trace
 
-MODULE_NAME = 'mysql'
-
-CONN_WRAP_METHOD = 'connect'
-
-
-def trace_integration():
-    """Wrap the mysql connector to trace it."""
-    logging.info('Integrated module: {}'.format(MODULE_NAME))
-    conn_func = getattr(mysql.connector, CONN_WRAP_METHOD)
-    conn_module = inspect.getmodule(conn_func)
-    wrapped = trace.wrap_conn(conn_func)
-    setattr(conn_module, CONN_WRAP_METHOD, wrapped)
+__all__ = ['trace']
