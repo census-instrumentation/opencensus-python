@@ -16,10 +16,10 @@ import unittest
 
 import mock
 
-from opencensus.trace.ext.mysql import trace
+from opencensus.trace.ext.pymysql import trace
 
 
-class Test_mysql_trace(unittest.TestCase):
+class Test_pymysql_trace(unittest.TestCase):
 
     def test_trace_integration(self):
 
@@ -28,18 +28,18 @@ class Test_mysql_trace(unittest.TestCase):
 
         mock_call = 'mock call'
         mock_inspect = mock.Mock()
-        mock_mysql_module = mock.Mock()
+        mock_pymysql_module = mock.Mock()
 
-        mock_inspect.getmodule.return_value = mock_mysql_module
+        mock_inspect.getmodule.return_value = mock_pymysql_module
 
         patch_wrap = mock.patch(
-            'opencensus.trace.ext.mysql.trace.trace.wrap_conn',
+            'opencensus.trace.ext.pymysql.trace.trace.wrap_conn',
             side_effect=mock_wrap)
         patch_inspect = mock.patch(
-            'opencensus.trace.ext.mysql.trace.inspect',
+            'opencensus.trace.ext.pymysql.trace.inspect',
             mock_inspect)
 
         with patch_wrap, patch_inspect:
             trace.trace_integration()
 
-        self.assertEqual(mock_mysql_module.connect, mock_call)
+        self.assertEqual(mock_pymysql_module.connect, mock_call)

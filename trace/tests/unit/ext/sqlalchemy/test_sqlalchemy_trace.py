@@ -58,7 +58,7 @@ class Test_sqlalchemy_trace(unittest.TestCase):
         mock_tracer = MockTracer()
 
         patch = mock.patch(
-            'opencensus.trace.ext.mysql.trace.execution_context.'
+            'opencensus.trace.ext.sqlalchemy.trace.execution_context.'
             'get_opencensus_tracer',
             return_value=mock_tracer)
 
@@ -84,7 +84,7 @@ class Test_sqlalchemy_trace(unittest.TestCase):
         mock_tracer = MockTracer()
 
         patch = mock.patch(
-            'opencensus.trace.ext.mysql.trace.execution_context.'
+            'opencensus.trace.ext.sqlalchemy.trace.execution_context.'
             'get_opencensus_tracer',
             return_value=mock_tracer)
 
@@ -110,7 +110,7 @@ class Test_sqlalchemy_trace(unittest.TestCase):
         mock_tracer = mock.Mock()
 
         patch = mock.patch(
-            'opencensus.trace.ext.mysql.trace.execution_context.'
+            'opencensus.trace.ext.sqlalchemy.trace.execution_context.'
             'get_opencensus_tracer',
             return_value=mock_tracer)
 

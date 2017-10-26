@@ -14,11 +14,11 @@
 
 import inspect
 import logging
-import mysql.connector
+import pymysql
 
 from opencensus.trace.ext.dbapi import trace
 
-MODULE_NAME = 'mysql'
+MODULE_NAME = 'pymysql'
 
 CONN_WRAP_METHOD = 'connect'
 
@@ -26,7 +26,7 @@ CONN_WRAP_METHOD = 'connect'
 def trace_integration():
     """Wrap the mysql connector to trace it."""
     logging.info('Integrated module: {}'.format(MODULE_NAME))
-    conn_func = getattr(mysql.connector, CONN_WRAP_METHOD)
+    conn_func = getattr(pymysql, CONN_WRAP_METHOD)
     conn_module = inspect.getmodule(conn_func)
     wrapped = trace.wrap_conn(conn_func)
     setattr(conn_module, CONN_WRAP_METHOD, wrapped)
