@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import random
-
 from opencensus.trace.samplers.base import Sampler
 
 DEFAULT_SAMPLING_RATE = 0.5
+
+MAX_VALUE = 0xffffffffffffffff
 
 
 class FixedRateSampler(Sampler):
@@ -25,17 +25,33 @@ class FixedRateSampler(Sampler):
     :type rate: float
     :param rate: The rate of sampling.
     """
-    def __init__(self, rate=DEFAULT_SAMPLING_RATE):
+    def __init__(self, rate=None):
+        if rate is None:
+            rate = DEFAULT_SAMPLING_RATE
+
         if rate > 1 or rate < 0:
             raise ValueError('Rate must between 0 and 1.')
 
         self.rate = rate
 
-    @property
-    def should_sample(self):
-        random_number = random.uniform(0, 1)
+    def should_sample(self, trace_id):
+        lower_long = get_lower_long_from_trace_id(trace_id)
+        bound = self.rate * MAX_VALUE
 
-        if random_number <= self.rate:
+        if lower_long <= bound:
             return True
         else:
             return False
+
+
+def get_lower_long_from_trace_id(trace_id):
+    """Returns the lower 8 bytes of the trace ID as a long value, assuming
+    little endian order.
+
+    :rtype: long
+    :returns: Lower 8 bytes of trace ID
+    """
+    lower_bytes = trace_id[16:]
+    lower_long = int(lower_bytes, 16)
+
+    return lower_long

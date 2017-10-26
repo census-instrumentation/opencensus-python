@@ -21,7 +21,6 @@ class Sampler(object):
     Subclasses of :class:`Sampler` must override :meth:`should_sample`.
     """
 
-    @property
-    def should_sample(self):
+    def should_sample(self, trace_id):
         """Determine whether to sample this request or not."""
         raise NotImplementedError

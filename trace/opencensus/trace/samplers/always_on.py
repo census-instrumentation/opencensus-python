@@ -17,7 +17,6 @@ from opencensus.trace.samplers.base import Sampler
 
 class AlwaysOnSampler(Sampler):
 
-    @property
-    def should_sample(self):
+    def should_sample(self, trace_id):
         """Always return True because we want to sampler all requests."""
         return True
