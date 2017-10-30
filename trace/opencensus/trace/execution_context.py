@@ -47,6 +47,14 @@ def get_opencensus_attr(attr_key):
     return None
 
 
+def get_current_span():
+    return getattr(_thread_local, 'current_span', None)
+
+
+def set_current_span(current_span):
+    setattr(_thread_local, 'current_span', current_span)
+
+
 def clear():
     """Clear the thread local, used in test."""
     _thread_local.__dict__.clear()

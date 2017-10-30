@@ -27,7 +27,6 @@ class TestContextTracer(unittest.TestCase):
         tracer = context_tracer.ContextTracer()
 
         assert isinstance(tracer.span_context, span_context.SpanContext)
-        self.assertEqual(tracer._span_stack, [])
         self.assertEqual(tracer._spans_list, [])
         self.assertEqual(tracer.root_span_id, tracer.span_context.span_id)
 
@@ -39,7 +38,6 @@ class TestContextTracer(unittest.TestCase):
 
         self.assertIs(tracer.span_context, span_context)
         self.assertEqual(tracer.trace_id, span_context.trace_id)
-        self.assertEqual(tracer._span_stack, [])
         self.assertEqual(tracer._spans_list, [])
         self.assertEqual(tracer.root_span_id, span_context.span_id)
 
@@ -75,7 +73,6 @@ class TestContextTracer(unittest.TestCase):
         child_span = mock.Mock(spec=Span)
         child_span.name = child_span_name
         child_span.kind = kind
-        child_span.parent_span_id = root_span_id
         child_span.span_id = child_span_id
         child_span.start_time = start_time
         child_span.end_time = end_time
@@ -86,7 +83,7 @@ class TestContextTracer(unittest.TestCase):
         root_span = mock.Mock(spec=Span)
         root_span.name = root_span_name
         root_span.kind = kind
-        root_span.parent_span_id = None
+        root_span.parent_span = None
         root_span.span_id = root_span_id
         root_span.start_time = start_time
         root_span.end_time = end_time
@@ -94,6 +91,8 @@ class TestContextTracer(unittest.TestCase):
         root_span.children = []
         root_span.__iter__ = mock.Mock(
             return_value=iter([root_span, child_span]))
+
+        child_span.parent_span = root_span
 
         child_span_json = {
             'name': child_span.name,
@@ -127,57 +126,54 @@ class TestContextTracer(unittest.TestCase):
 
         self.assertEqual(trace_json, trace)
 
-    def test_span(self):
+    @mock.patch.object(context_tracer.ContextTracer, 'current_span')
+    def test_span(self, current_span_mock):
         from opencensus.trace import span_context
 
         span_id = 1234
+        parent_span_id = 6666
         span_name = 'test_span'
+        mock_span = mock.Mock()
+        mock_span.span_id = parent_span_id
+        mock_current_span = mock_span
         span_context = span_context.SpanContext(span_id=span_id)
         tracer = context_tracer.ContextTracer(span_context=span_context)
+        current_span_mock.return_value = mock_current_span
 
         span = tracer.span(name=span_name)
 
-        self.assertEqual(span.parent_span_id, span_id)
+        self.assertEqual(span.parent_span.span_id, parent_span_id)
         self.assertEqual(span.name, span_name)
         self.assertEqual(len(tracer._spans_list), 1)
-        self.assertEqual(len(tracer._span_stack), 1)
         self.assertEqual(span_context.span_id, span.span_id)
 
     def test_start_span(self):
         tracer = context_tracer.ContextTracer()
         tracer.start_span()
 
-        self.assertEqual(len(tracer._span_stack), 1)
         self.assertEqual(len(tracer._spans_list), 1)
 
-    def test_end_span_index_error(self):
+    @mock.patch.object(context_tracer.ContextTracer, 'current_span')
+    def test_end_span_no_active_span(self, mock_current_span):
         tracer = context_tracer.ContextTracer()
+        mock_current_span.return_value = None
+        self.assertIsNone(tracer.current_span())
 
-        with self.assertRaises(IndexError):
-            tracer.end_span()
-
-    def test_end_span_empty_span_stack(self):
-        tracer = context_tracer.ContextTracer()
-        span = mock.Mock()
-        tracer._span_stack.append(span)
         tracer.end_span()
 
-        self.assertEqual(tracer.span_context.span_id, tracer.root_span_id)
-        self.assertTrue(span.finish.called)
+        self.assertIsNone(tracer.current_span())
 
-    def test_end_span_span_stack_not_empty(self):
+    @mock.patch.object(context_tracer.ContextTracer, 'current_span')
+    def test_end_span_active(self, mock_current_span):
         tracer = context_tracer.ContextTracer()
-        span1 = mock.Mock()
-        span2 = mock.Mock()
-        tracer._span_stack.append(span1)
-        tracer._span_stack.append(span2)
+        mock_span = mock.Mock()
+        parent_span_id = 1234
+        mock_span.parent_span.span_id = parent_span_id
+        mock_current_span.return_value = mock_span
         tracer.end_span()
 
-        self.assertEqual(
-            tracer.span_context.span_id,
-            tracer._span_stack[-1].span_id)
-        self.assertEqual(tracer.span_context.span_id, span1.span_id)
-        self.assertTrue(span2.finish.called)
+        self.assertTrue(mock_span.finish.called)
+        self.assertEqual(tracer.span_context.span_id, parent_span_id)
 
     def test_list_collected_spans(self):
         tracer = context_tracer.ContextTracer()
@@ -192,12 +188,13 @@ class TestContextTracer(unittest.TestCase):
 
     def test_add_label_to_current_span(self):
         from opencensus.trace.span import Span
+        from opencensus.trace import execution_context
 
         tracer = context_tracer.ContextTracer()
         span1 = mock.Mock(spec=Span)
 
         span1.labels = {}
-        tracer._span_stack.append(span1)
+        execution_context.set_current_span(span1)
 
         label_key = 'key'
         label_value = 'value'
