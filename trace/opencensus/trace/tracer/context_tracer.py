@@ -102,7 +102,12 @@ class ContextTracer(base.Tracer):
             return
 
         cur_span.finish()
-        self.span_context.span_id = self.current_span().parent_span.span_id
+        self.span_context.span_id = cur_span.parent_span.span_id
+
+        if isinstance(cur_span.parent_span, trace_span.Span):
+            execution_context.set_current_span(cur_span.parent_span)
+        else:
+            execution_context.set_current_span(None)
 
     def current_span(self):
         """Return the current span."""

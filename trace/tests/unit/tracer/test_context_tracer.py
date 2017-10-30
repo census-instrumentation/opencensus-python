@@ -175,6 +175,18 @@ class TestContextTracer(unittest.TestCase):
         self.assertTrue(mock_span.finish.called)
         self.assertEqual(tracer.span_context.span_id, parent_span_id)
 
+    @mock.patch.object(context_tracer.ContextTracer, 'current_span')
+    def test_end_span_without_parent(self, mock_current_span):
+        from opencensus.trace.execution_context import get_current_span
+
+        tracer = context_tracer.ContextTracer()
+        mock_span = mock.Mock()
+        mock_current_span.return_value = mock_span
+        tracer.end_span()
+
+        cur_span = get_current_span()
+        self.assertIsNone(cur_span)
+
     def test_list_collected_spans(self):
         tracer = context_tracer.ContextTracer()
         span1 = mock.Mock()
