@@ -80,21 +80,21 @@ Samplers
 
 You can specify different samplers when initializing a tracer, default
 is using ``AlwaysOnSampler``, the other options are ``AlwaysOffSampler``
-and ``FixedRateSampler``
+and ``ProbabilitySampler``
 
 .. code:: python
 
-    from opencensus.trace.samplers import fixed_rate
+    from opencensus.trace.samplers import probability
     from opencensus.trace import request_tracer
 
     # Sampling the requests at the rate equals 0.5
-    sampler = fixed_rate.FixedRateSampler(rate=0.5)
+    sampler = probability.ProbabilitySampler(rate=0.5)
     tracer = request_tracer.RequestTracer(sampler=sampler)
 
-Reporters
+Exporters
 ~~~~~~~~~
 
-You can choose different reporters to send the traces to. Default is
+You can choose different exporters to send the traces to. Default is
 printing the traces in JSON format. The rest options are sending to
 logging, or write to a file. Will add reporters to report to different
 trace backend later.
@@ -112,12 +112,12 @@ Report to Stackdriver Trace:
 
 .. code:: python
 
-    from opencensus.trace.reporters import google_cloud_reporter
+    from opencensus.trace.exporters import stackdriver_exporter
     from opencensus.trace import request_tracer
 
-    reporter = google_cloud_reporter.GoogleCloudReporter(
+    exporter = stackdriver_exporter.StackdriverReporter(
         project_id='your_cloud_project')
-    tracer = request_tracer.RequestTracer(reporter=reporter)
+    tracer = request_tracer.RequestTracer(exporter=exporter)
 
 Propagators
 ~~~~~~~~~~~
@@ -185,7 +185,7 @@ Customize the sampler, reporter, propagator in the ``settings.py`` file:
 ::
 
     OPENCENSUS_TRACE = {
-        'SAMPLER': 'opencensus.trace.samplers.fixed_rate.FixedRateSampler',
+        'SAMPLER': 'opencensus.trace.samplers.probability.ProbabilitySampler',
         'REPORTER': 'opencensus.trace.reporters.print_reporter.PrintReporter',
         'PROPAGATOR': 'opencensus.trace.propagation.google_cloud_format.'
                       'GoogleCloudFormatPropagator',
