@@ -91,10 +91,10 @@ and ``ProbabilitySampler``
     sampler = probability.ProbabilitySampler(rate=0.5)
     tracer = request_tracer.RequestTracer(sampler=sampler)
 
-Reporters
+Exporters
 ~~~~~~~~~
 
-You can choose different reporters to send the traces to. Default is
+You can choose different exporters to send the traces to. Default is
 printing the traces in JSON format. The rest options are sending to
 logging, or write to a file. Will add reporters to report to different
 trace backend later.
@@ -112,12 +112,12 @@ Report to Stackdriver Trace:
 
 .. code:: python
 
-    from opencensus.trace.reporters import google_cloud_reporter
+    from opencensus.trace.exporters import stackdriver_exporter
     from opencensus.trace import request_tracer
 
-    reporter = google_cloud_reporter.GoogleCloudReporter(
+    exporter = stackdriver_exporter.StackdriverReporter(
         project_id='your_cloud_project')
-    tracer = request_tracer.RequestTracer(reporter=reporter)
+    tracer = request_tracer.RequestTracer(exporter=exporter)
 
 Propagators
 ~~~~~~~~~~~

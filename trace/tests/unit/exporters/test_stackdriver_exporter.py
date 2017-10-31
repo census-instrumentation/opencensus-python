@@ -16,7 +16,7 @@ import unittest
 
 import mock
 
-from opencensus.trace.exporters import google_cloud_exporter
+from opencensus.trace.exporters import stackdriver_exporter
 
 
 class _Client(object):
@@ -27,15 +27,15 @@ class _Client(object):
         self.project = project
 
 
-class TestGoogleCloudExporter(unittest.TestCase):
+class TestStackdriverExporter(unittest.TestCase):
 
     def test_constructor_default(self):
         patch = mock.patch(
-            'opencensus.trace.exporters.google_cloud_exporter.Client',
+            'opencensus.trace.exporters.stackdriver_exporter.Client',
             new=_Client)
 
         with patch:
-            exporter = google_cloud_exporter.GoogleCloudExporter()
+            exporter = stackdriver_exporter.StackdriverExporter()
 
         project_id = 'PROJECT'
         self.assertEqual(exporter.project_id, project_id)
@@ -45,7 +45,7 @@ class TestGoogleCloudExporter(unittest.TestCase):
         project_id = 'PROJECT'
         client.project = project_id
 
-        exporter = google_cloud_exporter.GoogleCloudExporter(
+        exporter = stackdriver_exporter.StackdriverExporter(
             client=client,
             project_id=project_id)
 
@@ -59,7 +59,7 @@ class TestGoogleCloudExporter(unittest.TestCase):
         project_id = 'PROJECT'
         client.project = project_id
 
-        exporter = google_cloud_exporter.GoogleCloudExporter(
+        exporter = stackdriver_exporter.StackdriverExporter(
             client=client,
             project_id=project_id)
 
@@ -77,7 +77,7 @@ class TestGoogleCloudExporter(unittest.TestCase):
 
         client = mock.Mock()
         client.project = project_id
-        exporter = google_cloud_exporter.GoogleCloudExporter(
+        exporter = stackdriver_exporter.StackdriverExporter(
             client=client,
             project_id=project_id)
 
