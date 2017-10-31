@@ -33,4 +33,4 @@ def docs(session):
 
     # Build the docs!
     session.run(
-        'bash', os.path.join('.', 'test_utils', 'scripts', 'update_docs.sh'))
+        'bash', os.path.join('.', 'scripts', 'update_docs.sh'))
