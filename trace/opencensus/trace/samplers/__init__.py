@@ -15,8 +15,8 @@
 from opencensus.trace.samplers.always_off import AlwaysOffSampler
 from opencensus.trace.samplers.always_on import AlwaysOnSampler
 from opencensus.trace.samplers.base import Sampler
-from opencensus.trace.samplers.fixed_rate import FixedRateSampler
+from opencensus.trace.samplers.probability import ProbabilitySampler
 
 
 __all__ = ['Sampler', 'AlwaysOnSampler', 'AlwaysOffSampler',
-           'FixedRateSampler']
+           'ProbabilitySampler']

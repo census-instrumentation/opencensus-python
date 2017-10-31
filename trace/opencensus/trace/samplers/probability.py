@@ -19,7 +19,7 @@ DEFAULT_SAMPLING_RATE = 0.5
 MAX_VALUE = 0xffffffffffffffff
 
 
-class FixedRateSampler(Sampler):
+class ProbabilitySampler(Sampler):
     """Sample a request at a fixed rate.
 
     :type rate: float
