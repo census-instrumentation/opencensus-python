@@ -22,7 +22,7 @@ import sqlalchemy
 
 from opencensus.trace.ext.flask.flask_middleware import FlaskMiddleware
 from opencensus.trace import config_integration
-from opencensus.trace.exporters import google_cloud_exporter
+from opencensus.trace.exporters import stackdriver_exporter
 
 INTEGRATIONS = ['mysql', 'postgresql', 'sqlalchemy']
 
@@ -39,7 +39,7 @@ POSTGRES_PASSWORD = os.environ.get('SYSTEST_POSTGRES_PASSWORD')
 app = flask.Flask(__name__)
 
 # Enable tracing, send traces to Stackdriver Trace
-exporter = google_cloud_exporter.GoogleCloudExporter()
+exporter = stackdriver_exporter.StackdriverExporter()
 middleware = FlaskMiddleware(app, exporter=exporter)
 config_integration.trace_integrations(INTEGRATIONS)
 
