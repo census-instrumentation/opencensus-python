@@ -17,7 +17,7 @@ from opencensus.trace.exporters import base
 from google.cloud.trace.client import Client
 
 
-class GoogleCloudExporter(base.Exporter):
+class StackdriverExporter(base.Exporter):
     """A exporter that send traces and trace spans to Google Cloud Stackdriver
     Trace.
     """
