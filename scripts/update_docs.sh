@@ -24,16 +24,3 @@ function build_docs {
 build_docs
 
 cp -R docs/build/html/* docs/
-
-git add -A
-git status
-
-# If there are no changes, just exit cleanly.
-if [[ -z "$(git status --porcelain)" ]]; then
-    echo "Nothing to commit. Exiting without pushing changes."
-    exit
-fi
-
-git commit -m "Update docs after merge to master"
-
-git push
