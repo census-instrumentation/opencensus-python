@@ -90,7 +90,7 @@ class Span(object):
             labels = {}
 
         # Do not manipulate spans directly using the methods in Span Class,
-        # make usre to use the RequestTracer.
+        # make sure to use the RequestTracer.
         if parent_span is None:
             parent_span = base.NullContextManager()
 
