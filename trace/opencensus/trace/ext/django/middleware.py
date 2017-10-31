@@ -20,7 +20,7 @@ from opencensus.trace.ext.django.config import settings
 from opencensus.trace import labels_helper
 from opencensus.trace import request_tracer
 from opencensus.trace import execution_context
-from opencensus.trace.samplers import fixed_rate
+from opencensus.trace.samplers import probability
 
 HTTP_METHOD = labels_helper.STACKDRIVER_LABELS['HTTP_METHOD']
 HTTP_URL = labels_helper.STACKDRIVER_LABELS['HTTP_URL']
@@ -95,9 +95,9 @@ class OpencensusMiddleware(object):
         self._propagator = settings.PROPAGATOR
 
         # Initialize the sampler
-        if self._sampler.__name__ == 'FixedRateSampler':
+        if self._sampler.__name__ == 'ProbabilitySampler':
             _rate = settings.params.get(
-                SAMPLING_RATE, fixed_rate.DEFAULT_SAMPLING_RATE)
+                SAMPLING_RATE, probability.DEFAULT_SAMPLING_RATE)
             self.sampler = self._sampler(_rate)
         else:
             self.sampler = self._sampler()

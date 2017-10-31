@@ -120,9 +120,9 @@ class TestOpencensusMiddleware(unittest.TestCase):
         self.assertEqual(middleware.exporter.host_name, host_name)
         self.assertEqual(middleware.exporter.port, port)
 
-    def test_constructor_fixed_rate_sampler(self):
+    def test_constructor_probability_sampler(self):
         from opencensus.trace.ext.django import middleware
-        from opencensus.trace.samplers import fixed_rate
+        from opencensus.trace.samplers import probability
         from opencensus.trace.exporters import print_exporter
         from opencensus.trace.propagation import google_cloud_format
 
@@ -133,7 +133,7 @@ class TestOpencensusMiddleware(unittest.TestCase):
 
         patch_sampler = mock.patch(
             'opencensus.trace.ext.django.config.settings.SAMPLER',
-            fixed_rate.FixedRateSampler)
+            probability.ProbabilitySampler)
         patch_exporter = mock.patch(
             'opencensus.trace.ext.django.config.settings.EXPORTER',
             print_exporter.PrintExporter)
@@ -145,14 +145,14 @@ class TestOpencensusMiddleware(unittest.TestCase):
         with patch_sampler, patch_exporter, patch_params:
             middleware = middleware.OpencensusMiddleware()
 
-        self.assertIs(middleware._sampler, fixed_rate.FixedRateSampler)
+        self.assertIs(middleware._sampler, probability.ProbabilitySampler)
         self.assertIs(
             middleware._exporter, print_exporter.PrintExporter)
         self.assertIs(
             middleware._propagator,
             google_cloud_format.GoogleCloudFormatPropagator)
 
-        assert isinstance(middleware.sampler, fixed_rate.FixedRateSampler)
+        assert isinstance(middleware.sampler, probability.ProbabilitySampler)
         assert isinstance(
             middleware.exporter, print_exporter.PrintExporter)
         assert isinstance(
