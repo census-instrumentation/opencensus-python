@@ -17,6 +17,7 @@ from itertools import chain
 
 from opencensus.trace.enums import Enum
 from opencensus.trace.span_context import generate_span_id
+from opencensus.trace.tracer import base
 
 
 class Span(object):
@@ -87,6 +88,11 @@ class Span(object):
 
         if labels is None:
             labels = {}
+
+        # Do not manipulate spans directly using the methods in Span Class,
+        # make usre to use the RequestTracer.
+        if parent_span is None:
+            parent_span = base.NullContextManager()
 
         self.labels = labels
         self.span_id = span_id
