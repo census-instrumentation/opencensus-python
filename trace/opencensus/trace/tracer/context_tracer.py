@@ -76,6 +76,8 @@ class ContextTracer(base.Tracer):
         """
         parent_span = self.current_span()
 
+        # If a span has remote parent span, then the parent_span.span_id
+        # should be the span_id from the request header.
         if parent_span is None:
             parent_span = base.NullContextManager(
                 span_id=self.span_context.span_id)
