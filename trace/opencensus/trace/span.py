@@ -17,6 +17,7 @@ from itertools import chain
 
 from opencensus.trace.enums import Enum
 from opencensus.trace.span_context import generate_span_id
+from opencensus.trace.tracer import base
 
 
 class Span(object):
@@ -37,8 +38,8 @@ class Span(object):
                  distinguished using RPC_CLIENT and RPC_SERVER to identify
                  queueing latency associated with the span.
 
-    :type parent_span_id: int
-    :param parent_span_id: (Optional) ID of the parent span.
+    :type parent_span: :class:`~opencensus.trace.span.Span`
+    :param parent_span: (Optional) Parent span.
 
     :type labels: dict
     :param labels: Collection of labels associated with the span.
@@ -70,7 +71,7 @@ class Span(object):
             self,
             name,
             kind=Enum.SpanKind.SPAN_KIND_UNSPECIFIED,
-            parent_span_id=None,
+            parent_span=None,
             labels=None,
             start_time=None,
             end_time=None,
@@ -78,7 +79,7 @@ class Span(object):
             context_tracer=None):
         self.name = name
         self.kind = kind
-        self.parent_span_id = parent_span_id
+        self.parent_span = parent_span
         self.start_time = start_time
         self.end_time = end_time
 
@@ -87,6 +88,11 @@ class Span(object):
 
         if labels is None:
             labels = {}
+
+        # Do not manipulate spans directly using the methods in Span Class,
+        # make sure to use the RequestTracer.
+        if parent_span is None:
+            parent_span = base.NullContextManager()
 
         self.labels = labels
         self.span_id = span_id
@@ -108,7 +114,7 @@ class Span(object):
         :rtype: :class: `~opencensus.trace.span.Span`
         :returns: A child Span to be added to the current span.
         """
-        child_span = Span(name, parent_span_id=self.span_id)
+        child_span = Span(name, parent_span=self)
         self._child_spans.append(child_span)
         return child_span
 
@@ -168,8 +174,8 @@ def format_span_json(span):
         'endTime': span.end_time,
     }
 
-    if span.parent_span_id is not None:
-        span_json['parentSpanId'] = span.parent_span_id
+    if span.parent_span is not None:
+        span_json['parentSpanId'] = span.parent_span.span_id
 
     if span.labels is not None:
         span_json['labels'] = span.labels

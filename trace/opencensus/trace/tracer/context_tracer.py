@@ -14,6 +14,7 @@
 
 import logging
 
+from opencensus.trace import execution_context
 from opencensus.trace.span_context import SpanContext
 from opencensus.trace import labels_helper
 from opencensus.trace import span as trace_span
@@ -34,9 +35,6 @@ class ContextTracer(base.Tracer):
         self.span_context = span_context
         self.trace_id = span_context.trace_id
         self.root_span_id = span_context.span_id
-
-        # Stack which maintains nested spans
-        self._span_stack = []
 
         # List of spans to report
         self._spans_list = []
@@ -76,14 +74,21 @@ class ContextTracer(base.Tracer):
         :rtype: :class:`~opencensus.trace.span.Span`
         :returns: The Span object.
         """
-        parent_span_id = self.span_context.span_id
+        parent_span = self.current_span()
+
+        # If a span has remote parent span, then the parent_span.span_id
+        # should be the span_id from the request header.
+        if parent_span is None:
+            parent_span = base.NullContextManager(
+                span_id=self.span_context.span_id)
+
         span = trace_span.Span(
             name,
-            parent_span_id=parent_span_id,
+            parent_span=parent_span,
             context_tracer=self)
         self._spans_list.append(span)
-        self._span_stack.append(span)
         self.span_context.span_id = span.span_id
+        execution_context.set_current_span(span)
         span.start()
         return span
 
@@ -94,23 +99,23 @@ class ContextTracer(base.Tracer):
         """
         cur_span = self.current_span()
 
-        self._span_stack.pop()
-        cur_span.finish()
+        if cur_span is None:
+            logging.warning('No active span, cannot do end_span.')
+            return
 
-        if not self._span_stack:
-            self.span_context.span_id = self.root_span_id
+        cur_span.finish()
+        self.span_context.span_id = cur_span.parent_span.span_id
+
+        if isinstance(cur_span.parent_span, trace_span.Span):
+            execution_context.set_current_span(cur_span.parent_span)
         else:
-            self.span_context.span_id = self._span_stack[-1].span_id
+            execution_context.set_current_span(None)
 
     def current_span(self):
         """Return the current span."""
-        try:
-            cur_span = self._span_stack[-1]
-        except IndexError:
-            logging.error('No span in the span stack.')
-            cur_span = base.NullContextManager()
+        current_span = execution_context.get_current_span()
 
-        return cur_span
+        return current_span
 
     def list_collected_spans(self):
         return self._spans_list

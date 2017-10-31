@@ -187,7 +187,7 @@ class TestOpencensusMiddleware(unittest.TestCase):
             '/http/method': 'GET',
         }
         self.assertEqual(span.labels, expected_labels)
-        self.assertEqual(span.parent_span_id, span_id)
+        self.assertEqual(span.parent_span.span_id, span_id)
 
         span_context = tracer.span_context
         self.assertEqual(span_context.trace_id, trace_id)

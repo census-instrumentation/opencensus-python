@@ -46,7 +46,7 @@ class TestSpan(unittest.TestCase):
         self.assertEqual(span.name, span_name)
         self.assertEqual(span.span_id, span_id)
         self.assertEqual(span.kind, Enum.SpanKind.SPAN_KIND_UNSPECIFIED)
-        self.assertIsNone(span.parent_span_id)
+        self.assertIsNone(span.parent_span)
         self.assertEqual(span.labels, {})
         self.assertIsNone(span.start_time)
         self.assertIsNone(span.end_time)
@@ -61,7 +61,7 @@ class TestSpan(unittest.TestCase):
         span_id = 'test_span_id'
         span_name = 'test_span_name'
         kind = Enum.SpanKind.RPC_CLIENT
-        parent_span_id = 1234
+        parent_span = mock.Mock()
         start_time = datetime.utcnow().isoformat() + 'Z'
         end_time = datetime.utcnow().isoformat() + 'Z'
         labels = {
@@ -73,7 +73,7 @@ class TestSpan(unittest.TestCase):
         span = self._make_one(
             name=span_name,
             kind=kind,
-            parent_span_id=parent_span_id,
+            parent_span=parent_span,
             labels=labels,
             start_time=start_time,
             end_time=end_time,
@@ -83,7 +83,7 @@ class TestSpan(unittest.TestCase):
         self.assertEqual(span.name, span_name)
         self.assertEqual(span.span_id, span_id)
         self.assertEqual(span.kind, kind)
-        self.assertEqual(span.parent_span_id, parent_span_id)
+        self.assertEqual(span.parent_span, parent_span)
         self.assertEqual(span.labels, labels)
         self.assertEqual(span.start_time, start_time)
         self.assertEqual(span.end_time, end_time)
@@ -115,7 +115,7 @@ class TestSpan(unittest.TestCase):
         self.assertEqual(result_child_span.name, child_span_name)
         self.assertEqual(result_child_span.span_id, span_id)
         self.assertEqual(result_child_span.kind, kind)
-        self.assertEqual(result_child_span.parent_span_id, root_span.span_id)
+        self.assertEqual(result_child_span.parent_span, root_span)
         self.assertEqual(result_child_span.labels, {})
         self.assertIsNone(result_child_span.start_time)
         self.assertIsNone(result_child_span.end_time)

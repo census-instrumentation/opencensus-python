@@ -188,11 +188,13 @@ class TestRequestTracer(unittest.TestCase):
         self.assertFalse(span_context.span_id.called)
 
     def test_end_span_sampled(self):
+        from opencensus.trace import execution_context
+
         sampler = mock.Mock()
         sampler.should_sample.return_value = True
         tracer = request_tracer.RequestTracer(sampler=sampler)
         span = mock.Mock()
-        tracer.tracer._span_stack.append(span)
+        execution_context.set_current_span(span)
         tracer.end_span()
 
         self.assertTrue(span.finish.called)
@@ -209,11 +211,13 @@ class TestRequestTracer(unittest.TestCase):
         assert isinstance(span, base.NullContextManager)
 
     def test_current_span_sampled(self):
+        from opencensus.trace import execution_context
+
         sampler = mock.Mock()
         sampler.should_sample.return_value = True
         tracer = request_tracer.RequestTracer(sampler=sampler)
         span = mock.Mock()
-        tracer.tracer._span_stack.append(span)
+        execution_context.set_current_span(span)
 
         result = tracer.current_span()
 

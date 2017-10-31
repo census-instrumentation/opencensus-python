@@ -104,7 +104,7 @@ class TestFlaskMiddleware(unittest.TestCase):
             }
 
             self.assertEqual(span.labels, expected_labels)
-            self.assertEqual(span.parent_span_id, span_id)
+            self.assertEqual(span.parent_span.span_id, span_id)
 
             span_context = tracer.span_context
             self.assertEqual(span_context.trace_id, trace_id)
@@ -116,6 +116,7 @@ class TestFlaskMiddleware(unittest.TestCase):
         # in SpanContext because it cannot match the pattern for trace_id,
         # And a new trace_id will generate for the context.
         from opencensus.trace import execution_context
+        from opencensus.trace.tracer import base
 
         flask_trace_header = 'X_CLOUD_TRACE_CONTEXT'
         trace_id = "你好"
@@ -141,13 +142,14 @@ class TestFlaskMiddleware(unittest.TestCase):
             }
 
             self.assertEqual(span.labels, expected_labels)
-            self.assertIsNone(span.parent_span_id)
+            assert isinstance(span.parent_span, base.NullContextManager)
 
             span_context = tracer.span_context
             self.assertNotEqual(span_context.trace_id, trace_id)
 
     def test_header_is_none(self):
         from opencensus.trace import execution_context
+        from opencensus.trace.tracer import base
 
         app = self.create_app()
         flask_middleware.FlaskMiddleware(app=app)
@@ -167,7 +169,7 @@ class TestFlaskMiddleware(unittest.TestCase):
             }
 
             self.assertEqual(span.labels, expected_labels)
-            self.assertIsNone(span.parent_span_id)
+            assert isinstance(span.parent_span, base.NullContextManager)
 
     def test__after_request_not_sampled(self):
         from opencensus.trace.samplers import always_off
