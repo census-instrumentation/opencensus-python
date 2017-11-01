@@ -12,9 +12,62 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+
 from opencensus.trace.exporters import base
 
 from google.cloud.trace.client import Client
+
+# Environment variable set in App Engine when vm:true is set.
+_APPENGINE_FLEXIBLE_ENV_VM = 'GAE_APPENGINE_HOSTNAME'
+
+# Environment variable set in App Engine when env:flex is set.
+_APPENGINE_FLEXIBLE_ENV_FLEX = 'GAE_INSTANCE'
+
+# GAE common labels
+# See: https://cloud.google.com/appengine/docs/flexible/python/runtime#
+#      environment_variables
+GAE_LABELS = {
+    'GAE_FLEX_VERSION': 'g.co/gae/app/version',
+    'GAE_FLEX_SERVICE': 'g.co/gae/app/service',
+    'GAE_FLEX_PROJECT': 'g.co/gae/app/project',
+    'GAE_FLEX_INSTANCE': 'g.co/gae/app/instance',
+    'GAE_FLEX_MEMORY_MB': 'g.co/gae/app/memory_mb',
+    'GAE_FLEX_PORT': 'g.co/gae/app/port',
+}
+
+# GCE common labels
+GCE_LABELS = {
+    'GCE_INSTANCE_ID': 'g.co/gce/instanceid',
+    'GCE_HOSTNAME': 'g.co/gce/hostname',
+}
+
+
+def set_labels(trace):
+    """Automatically set labels for Google Cloud environment."""
+    if is_gae_environment():
+        set_gae_labels(trace)
+
+
+def set_gae_labels(trace):
+    """Set the GAE environment common labels."""
+    spans = trace.get('spans')
+
+    for env_var, label_key in GAE_LABELS.items():
+        label_value = os.environ.get(env_var)
+
+        if label_value is not None:
+            for span in spans:
+                labels = span.get('labels')
+                labels[label_key] = label_value
+                span['labels'] = labels
+
+
+def is_gae_environment():
+    """Return True if the GAE related env vars is detected."""
+    if (_APPENGINE_FLEXIBLE_ENV_VM in os.environ or
+            _APPENGINE_FLEXIBLE_ENV_FLEX in os.environ):
+        return True
 
 
 class StackdriverExporter(base.Exporter):
@@ -45,6 +98,7 @@ class StackdriverExporter(base.Exporter):
         :rtype: dict
         :returns: Traces in Google Cloud StackDriver Trace format.
         """
+        set_labels(trace)
         trace['projectId'] = self.project_id
         traces = {'traces': [trace]}
         return traces

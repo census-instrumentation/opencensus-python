@@ -88,3 +88,35 @@ class TestStackdriverExporter(unittest.TestCase):
         expected_traces = {'traces': [trace]}
 
         self.assertEqual(traces, expected_traces)
+
+
+class Test_set_labels_gae(unittest.TestCase):
+
+    def test_set_labels_gae(self):
+        import os
+
+        trace = {
+            'spans': [
+                {
+                    'labels':{},
+                    'span_id': 123,
+                },
+            ],
+        }
+
+        expected_labels = {
+            stackdriver_exporter.GAE_LABELS['GAE_FLEX_PROJECT']: 'project',
+            stackdriver_exporter.GAE_LABELS['GAE_FLEX_SERVICE']: 'service',
+            stackdriver_exporter.GAE_LABELS['GAE_FLEX_VERSION']: 'version',
+        }
+
+        with mock.patch.dict(
+                os.environ,
+                {stackdriver_exporter._APPENGINE_FLEXIBLE_ENV_VM: 'vm',
+                 stackdriver_exporter._APPENGINE_FLEXIBLE_ENV_FLEX: 'flex',
+                 'GAE_FLEX_PROJECT': 'project',
+                 'GAE_FLEX_SERVICE': 'service',
+                 'GAE_FLEX_VERSION': 'version'}):
+            stackdriver_exporter.set_labels(trace)
+
+        self.assertEqual(trace['spans'][0]['labels'], expected_labels)
