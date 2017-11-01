@@ -16,7 +16,6 @@ import logging
 
 from opencensus.trace import execution_context
 from opencensus.trace.span_context import SpanContext
-from opencensus.trace import labels_helper
 from opencensus.trace import span as trace_span
 from opencensus.trace.tracer import base
 
@@ -45,10 +44,6 @@ class ContextTracer(base.Tracer):
         :rtype: dict
         :returns: JSON format trace.
         """
-        # Insert the common labels to spans
-        helper = labels_helper.LabelsHelper(self)
-        helper.set_labels()
-
         trace = self._get_trace_json()
 
         return trace
