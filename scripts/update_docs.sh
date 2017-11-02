@@ -24,3 +24,4 @@ function build_docs {
 build_docs
 
 cp -R docs/build/html/* docs/
+rm -rf docs/build
