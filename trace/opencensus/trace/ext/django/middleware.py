@@ -22,9 +22,9 @@ from opencensus.trace import request_tracer
 from opencensus.trace import execution_context
 from opencensus.trace.samplers import probability
 
-HTTP_METHOD = labels_helper.STACKDRIVER_LABELS['HTTP_METHOD']
-HTTP_URL = labels_helper.STACKDRIVER_LABELS['HTTP_URL']
-HTTP_STATUS_CODE = labels_helper.STACKDRIVER_LABELS['HTTP_STATUS_CODE']
+HTTP_METHOD = labels_helper.COMMON_LABELS['HTTP_METHOD']
+HTTP_URL = labels_helper.COMMON_LABELS['HTTP_URL']
+HTTP_STATUS_CODE = labels_helper.COMMON_LABELS['HTTP_STATUS_CODE']
 
 REQUEST_THREAD_LOCAL_KEY = 'django_request'
 
