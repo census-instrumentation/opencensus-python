@@ -14,6 +14,8 @@
 
 from opencensus.trace.propagation import google_cloud_format
 from opencensus.trace.exporters import print_exporter
+from opencensus.trace.exporters.transports.background_thread import (
+    BackgroundThreadTransport)
 from opencensus.trace.samplers import always_on
 from opencensus.trace.span_context import SpanContext
 from opencensus.trace.tracer import context_tracer
@@ -45,7 +47,8 @@ class RequestTracer(object):
             span_context=None,
             sampler=None,
             exporter=None,
-            propagator=None):
+            propagator=None,
+            transport=BackgroundThreadTransport):
         if span_context is None:
             span_context = SpanContext()
 
@@ -58,10 +61,16 @@ class RequestTracer(object):
         if propagator is None:
             propagator = google_cloud_format.GoogleCloudFormatPropagator()
 
+        if transport is BackgroundThreadTransport:
+            transport = transport(exporter)
+        else:
+            transport = None
+
         self.span_context = span_context
         self.sampler = sampler
         self.exporter = exporter
         self.propagator = propagator
+        self.transport = transport
         self.tracer = self.get_tracer()
         self.store_tracer()
 
@@ -81,7 +90,8 @@ class RequestTracer(object):
         sampled = self.should_sample()
 
         if sampled:
-            return context_tracer.ContextTracer(self.span_context)
+            return context_tracer.ContextTracer(
+                span_context=self.span_context, transport=self.transport)
         else:
             return noop_tracer.NoopTracer()
 

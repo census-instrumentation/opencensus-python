@@ -27,11 +27,12 @@ class ContextTracer(base.Tracer):
     :param span_context: SpanContext encapsulates the current context within
                          the request's trace.
     """
-    def __init__(self, span_context=None):
+    def __init__(self, span_context=None, transport=None):
         if span_context is None:
             span_context = SpanContext()
 
         self.span_context = span_context
+        self.transport = transport
         self.trace_id = span_context.trace_id
         self.root_span_id = span_context.span_id
 
@@ -44,7 +45,8 @@ class ContextTracer(base.Tracer):
         :rtype: dict
         :returns: JSON format trace.
         """
-        trace = self._get_trace_json()
+        trace = self.get_trace_json(self._spans_list)
+        self._spans_list = []
 
         return trace
 
@@ -106,6 +108,12 @@ class ContextTracer(base.Tracer):
         else:
             execution_context.set_current_span(None)
 
+        # Put the span into queue for batch exporting
+        if self.transport is not None:
+            span = self._spans_list.pop()
+            span_json = self.get_trace_json(span)
+            self.transport.export(span_json)
+
     def current_span(self):
         """Return the current span."""
         current_span = execution_context.get_current_span()
@@ -139,10 +147,10 @@ class ContextTracer(base.Tracer):
         for span in self._spans_list:
             span.add_label(label_key, label_value)
 
-    def _get_trace_json(self):
+    def get_trace_json(self, root_spans):
         """Get the JSON format trace."""
         spans_list = []
-        for root_span in self._spans_list:
+        for root_span in root_spans:
             span_tree = list(iter(root_span))
             span_tree_json = [trace_span.format_span_json(span)
                               for span in span_tree]
