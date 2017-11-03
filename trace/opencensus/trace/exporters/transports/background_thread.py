@@ -59,15 +59,16 @@ class _Worker(object):
         while True:
             items = self._get_items()
             trace_id = None
-
             spans = []
+
+            if items[0] is not _WORKER_TERMINATOR:
+                trace_id = items[0].get('traceId')
+
             for item in items:
                 if item is _WORKER_TERMINATOR:
                     quit_ = True
                 else:
-                    with self._lock:
-                        trace_id = item.get('traceId')
-                        spans.extend(item.get('spans'))
+                    spans.extend(item.get('spans'))
 
             if spans and trace_id:
                 spans_json = {
@@ -88,6 +89,7 @@ class _Worker(object):
         print('Background thread exited.')
 
     def start(self):
+        # Ensure calling start again does not create a new thread
         with self._lock:
             if self.is_alive:
                 return
