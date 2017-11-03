@@ -45,6 +45,7 @@ class ContextTracer(base.Tracer):
         :returns: JSON format trace.
         """
         trace = self._get_trace_json()
+        self._spans_list = []
 
         return trace
 
