@@ -13,13 +13,14 @@
 # limitations under the License.
 
 import atexit
-import logging
 import threading
+import time
 
 from six.moves import queue
 from six.moves import range
 
 _DEFAULT_GRACE_PERIOD = 5.0  # Seconds
+_WAIT_PERIOD = 3.0  # Seconds
 _DEFAULT_MAX_BATCH_SIZE = 10
 _WORKER_THREAD_NAME = 'opencensus.trace.Worker'
 _WORKER_TERMINATOR = object()
@@ -51,26 +52,40 @@ class _Worker(object):
         return items
 
     def _thread_main(self):
-        logging.info('Background thread started.')
+        print('Background thread started.')
 
         quit_ = False
 
         while True:
             items = self._get_items()
+            trace_id = None
 
+            spans = []
             for item in items:
                 if item is _WORKER_TERMINATOR:
                     quit_ = True
                 else:
-                    self.exporter.export(item)
+                    with self._lock:
+                        trace_id = item.get('traceId')
+                        spans.extend(item.get('spans'))
+
+            if spans and trace_id:
+                spans_json = {
+                    'traceId': trace_id,
+                    'spans': spans,
+                }
+                self.exporter.export(spans_json)
 
             for _ in range(len(items)):
                 self._queue.task_done()
 
+            # Wait for a while before next export
+            time.sleep(_WAIT_PERIOD)
+
             if quit_:
                 break
 
-        logging.info('Background thread exited.')
+        print('Background thread exited.')
 
     def start(self):
         with self._lock:
@@ -101,12 +116,12 @@ class _Worker(object):
             return
 
         if not self._queue.empty():
-            logging.info('Sending all pending spans before terminated.')
+            print('Sending all pending spans before terminated.')
 
         if self.stop():
-            logging.info('Sent all pending spans.')
+            print('Sent all pending spans.')
         else:
-            logging.info('Failed to send pending spans.')
+            print('Failed to send pending spans.')
 
     def enqueue(self, trace):
         self._queue.put_nowait(trace)
