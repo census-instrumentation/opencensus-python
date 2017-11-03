@@ -109,7 +109,7 @@ class ContextTracer(base.Tracer):
             execution_context.set_current_span(None)
 
         # Put the span into queue for batch exporting
-        if self.transport is not None:
+        if self.transport and self._spans_list:
             span = self._spans_list.pop()
             span_json = self.get_trace_json(span)
             self.transport.export(span_json)

@@ -21,7 +21,7 @@ from six.moves import range
 
 _DEFAULT_GRACE_PERIOD = 5.0  # Seconds
 _WAIT_PERIOD = 3.0  # Seconds
-_DEFAULT_MAX_BATCH_SIZE = 10
+_DEFAULT_MAX_BATCH_SIZE = 2
 _WORKER_THREAD_NAME = 'opencensus.trace.Worker'
 _WORKER_TERMINATOR = object()
 

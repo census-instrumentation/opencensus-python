@@ -49,7 +49,8 @@ class FlaskMiddleware(object):
                      :class:`.PrintExporter`. The rest option is
                      :class:`.FileExporter`.
     """
-    def __init__(self, app, sampler=None, exporter=None, propagator=None):
+    def __init__(self, app, sampler=None, exporter=None, propagator=None,
+                 transport=None):
         if sampler is None:
             sampler = always_on.AlwaysOnSampler()
 
@@ -59,10 +60,14 @@ class FlaskMiddleware(object):
         if propagator is None:
             propagator = google_cloud_format.GoogleCloudFormatPropagator()
 
+        if transport is not None:
+            transport = transport(exporter)
+
         self.app = app
         self.sampler = sampler
         self.exporter = exporter
         self.propagator = propagator
+        self.transport = transport
         self.setup_trace()
 
     def setup_trace(self):

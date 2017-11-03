@@ -236,7 +236,7 @@ class TestRequestTracer(unittest.TestCase):
         assert isinstance(span, base.NullContextManager)
 
     def test_trace_decorator(self):
-        tracer = request_tracer.RequestTracer()
+        tracer = request_tracer.RequestTracer(transport=None)
 
         return_value = "test"
 

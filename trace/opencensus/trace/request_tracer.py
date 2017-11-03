@@ -48,7 +48,7 @@ class RequestTracer(object):
             sampler=None,
             exporter=None,
             propagator=None,
-            transport=BackgroundThreadTransport):
+            transport=None):
         if span_context is None:
             span_context = SpanContext()
 
@@ -61,10 +61,8 @@ class RequestTracer(object):
         if propagator is None:
             propagator = google_cloud_format.GoogleCloudFormatPropagator()
 
-        if transport is BackgroundThreadTransport:
+        if transport is not None:
             transport = transport(exporter)
-        else:
-            transport = None
 
         self.span_context = span_context
         self.sampler = sampler
