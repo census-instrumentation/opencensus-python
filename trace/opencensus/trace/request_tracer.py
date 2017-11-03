@@ -14,8 +14,6 @@
 
 from opencensus.trace.propagation import google_cloud_format
 from opencensus.trace.exporters import print_exporter
-from opencensus.trace.exporters.transports.background_thread import (
-    BackgroundThreadTransport)
 from opencensus.trace.samplers import always_on
 from opencensus.trace.span_context import SpanContext
 from opencensus.trace.tracer import context_tracer

@@ -50,6 +50,7 @@ class TestContextTracer(unittest.TestCase):
         trace = tracer.finish()
 
         self.assertIsNone(trace)
+        self.assertEqual(tracer._spans_list, [])
 
     def test_finish_with_spans(self):
         from opencensus.trace.enums import Enum
@@ -125,6 +126,7 @@ class TestContextTracer(unittest.TestCase):
         trace_json = tracer.finish()
 
         self.assertEqual(trace_json, trace)
+        self.assertEqual(tracer._spans_list, [])
 
     @mock.patch.object(context_tracer.ContextTracer, 'current_span')
     def test_span(self, current_span_mock):
@@ -186,6 +188,25 @@ class TestContextTracer(unittest.TestCase):
 
         cur_span = get_current_span()
         self.assertIsNone(cur_span)
+
+    @mock.patch.object(context_tracer.ContextTracer, 'current_span')
+    def test_end_span_batch_export(self, mock_current_span):
+        from opencensus.trace import span
+
+        span = span.Span(name='test')
+        tracer = context_tracer.ContextTracer()
+        tracer.transport = mock.Mock()
+        tracer._spans_list = [span]
+        mock_span = mock.Mock()
+        parent_span_id = 1234
+        mock_span.parent_span.span_id = parent_span_id
+        mock_current_span.return_value = mock_span
+        tracer.end_span()
+
+        self.assertTrue(mock_span.finish.called)
+        self.assertEqual(tracer.span_context.span_id, parent_span_id)
+        self.assertEqual(tracer._spans_list, [])
+        self.assertTrue(tracer.transport.export.called)
 
     def test_list_collected_spans(self):
         tracer = context_tracer.ContextTracer()

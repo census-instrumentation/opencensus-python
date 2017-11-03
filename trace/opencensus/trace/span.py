@@ -174,9 +174,13 @@ def format_span_json(span):
         'endTime': span.end_time,
     }
 
-    if not isinstance(span.parent_span, base.NullContextManager)\
-            and span.parent_span is not None:
-        span_json['parentSpanId'] = span.parent_span.span_id
+    parent_span_id = None
+
+    if span.parent_span is not None:
+        parent_span_id = span.parent_span.span_id
+
+    if parent_span_id is not None:
+        span_json['parentSpanId'] = parent_span_id
 
     if span.labels is not None:
         span_json['labels'] = span.labels

@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc.
+# Copyright 2017, OpenCensus Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -102,7 +102,7 @@ class Test_Worker(unittest.TestCase):
 
         self.assertFalse(worker.is_alive)
 
-    def test__main_thread_terminated_did_not_join(self):
+    def test__export_pending_spans_did_not_join(self):
         exporter = mock.Mock()
         worker = background_thread._Worker(exporter)
 
@@ -117,8 +117,14 @@ class Test_Worker(unittest.TestCase):
         exporter = mock.Mock()
         worker = background_thread._Worker(exporter)
 
-        trace1 = {}
-        trace2 = {}
+        trace1 = {
+            'traceId': 'test1',
+            'spans': [{}, {}],
+            }
+        trace2 = {
+            'traceId': 'test2',
+            'spans': [{}],
+        }
 
         worker.enqueue(trace1)
         worker.enqueue(trace2)
@@ -126,52 +132,99 @@ class Test_Worker(unittest.TestCase):
 
         worker._thread_main()
 
-        self.assertTrue(worker._cloud_logger._batch.commit_called)
-        self.assertEqual(worker._cloud_logger._batch.commit_count, 2)
-        self.assertEqual(worker._queue.qsize(), 0)
-
-    def test__thread_main_error(self):
-        from google.cloud.logging.handlers.transports import background_thread
-
-        worker = self._make_one(_Logger(self.NAME))
-        worker._cloud_logger._batch_cls = _RaisingBatch
-
-        # Enqueue one record and the termination signal.
-        self._enqueue_record(worker, '1')
-        worker._queue.put_nowait(background_thread._WORKER_TERMINATOR)
-
-        worker._thread_main()
-
-        self.assertTrue(worker._cloud_logger._batch.commit_called)
+        self.assertTrue(worker.exporter.export.called)
         self.assertEqual(worker._queue.qsize(), 0)
 
     def test__thread_main_batches(self):
-        from google.cloud.logging.handlers.transports import background_thread
-
-        worker = self._make_one(_Logger(self.NAME), max_batch_size=2)
+        exporter = mock.Mock()
+        worker = background_thread._Worker(exporter, max_batch_size=2)
 
         # Enqueue three records and the termination signal. This should be
         # enough to perform two separate batches and a third loop with just
         # the exit.
-        self._enqueue_record(worker, '1')
-        self._enqueue_record(worker, '2')
-        self._enqueue_record(worker, '3')
-        self._enqueue_record(worker, '4')
+        trace1 = {
+            'traceId': 'test1',
+            'spans': [{}, {}],
+        }
+        trace2 = {
+            'traceId': 'test2',
+            'spans': [{}, {}],
+        }
+        trace3 = {
+            'traceId': 'test3',
+            'spans': [{}, {}],
+        }
+        trace4 = {
+            'traceId': 'test4',
+            'spans': [{}, {}],
+        }
+        worker.enqueue(trace1)
+        worker.enqueue(trace2)
+        worker.enqueue(trace3)
+        worker.enqueue(trace4)
+
         worker._queue.put_nowait(background_thread._WORKER_TERMINATOR)
 
         worker._thread_main()
 
-        # The last batch should not have been executed because it had no items.
-        self.assertFalse(worker._cloud_logger._batch.commit_called)
         self.assertEqual(worker._queue.qsize(), 0)
 
     def test_flush(self):
-        worker = self._make_one(_Logger(self.NAME))
+        from six.moves import queue
+
+        exporter = mock.Mock()
+        worker = background_thread._Worker(exporter)
         worker._queue = mock.Mock(spec=queue.Queue)
 
         # Queue is empty, should not block.
         worker.flush()
         worker._queue.join.assert_called()
+
+
+class TestBackgroundThreadTransport(unittest.TestCase):
+
+    def test_constructor(self):
+        patch_worker = mock.patch(
+            'opencensus.trace.exporters.transports.background_thread._Worker',
+            autospec=True)
+        exporter = mock.Mock()
+
+        with patch_worker as mock_worker:
+            transport = background_thread.BackgroundThreadTransport(exporter)
+
+        self.assertTrue(transport.worker.start.called)
+        self.assertEqual(transport.exporter, exporter)
+
+    def test_export(self):
+        patch_worker = mock.patch(
+            'opencensus.trace.exporters.transports.background_thread._Worker',
+            autospec=True)
+        exporter = mock.Mock()
+
+        with patch_worker as mock_worker:
+            transport = background_thread.BackgroundThreadTransport(exporter)
+
+        trace = {
+            'traceId': 'test',
+            'spans': [{}, {}],
+        }
+
+        transport.export(trace)
+
+        self.assertTrue(transport.worker.enqueue.called)
+
+    def test_flush(self):
+        patch_worker = mock.patch(
+            'opencensus.trace.exporters.transports.background_thread._Worker',
+            autospec=True)
+        exporter = mock.Mock()
+
+        with patch_worker as mock_worker:
+            transport = background_thread.BackgroundThreadTransport(exporter)
+
+            transport.flush()
+
+            self.assertTrue(transport.worker.flush.called)
 
 
 class _Thread(object):

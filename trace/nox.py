@@ -81,7 +81,7 @@ def lint(session):
     Returns a failure if flake8 finds linting errors or sufficiently
     serious code quality issues.
     """
-    session.interpreter = 'python3.4'
+    session.interpreter = 'python3.6'
     session.install('flake8')
     session.install('.')
     session.run('flake8', 'opencensus/trace')
@@ -90,7 +90,7 @@ def lint(session):
 @nox.session
 def lint_setup_py(session):
     """Verify that setup.py is valid (including RST check)."""
-    session.interpreter = 'python3.4'
+    session.interpreter = 'python3.6'
     session.install('docutils', 'pygments')
     session.run(
         'python', 'setup.py', 'check', '--restructuredtext', '--strict')
@@ -102,7 +102,7 @@ def cover(session):
     This outputs the coverage report aggregating coverage from the unit
     test runs (not system test runs), and then erases coverage data.
     """
-    session.interpreter = 'python3.4'
+    session.interpreter = 'python3.6'
     session.install('coverage', 'pytest-cov')
     session.run('coverage', 'report', '--show-missing', '--fail-under=100')
     session.run('coverage', 'erase')
