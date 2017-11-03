@@ -50,6 +50,7 @@ class TestContextTracer(unittest.TestCase):
         trace = tracer.finish()
 
         self.assertIsNone(trace)
+        self.assertEqual(tracer._spans_list, [])
 
     def test_finish_with_spans(self):
         from opencensus.trace.enums import Enum
@@ -125,6 +126,7 @@ class TestContextTracer(unittest.TestCase):
         trace_json = tracer.finish()
 
         self.assertEqual(trace_json, trace)
+        self.assertEqual(tracer._spans_list, [])
 
     @mock.patch.object(context_tracer.ContextTracer, 'current_span')
     def test_span(self, current_span_mock):
