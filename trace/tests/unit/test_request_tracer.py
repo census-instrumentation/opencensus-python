@@ -47,12 +47,14 @@ class TestRequestTracer(unittest.TestCase):
         exporter = mock.Mock()
         propagator = mock.Mock()
         span_context = mock.Mock()
+        transport = mock.Mock()
 
         tracer = request_tracer.RequestTracer(
             span_context=span_context,
             sampler=sampler,
             exporter=exporter,
-            propagator=propagator)
+            propagator=propagator,
+            transport=transport)
 
         self.assertIs(tracer.span_context, span_context)
         self.assertIs(tracer.sampler, sampler)
@@ -236,7 +238,7 @@ class TestRequestTracer(unittest.TestCase):
         assert isinstance(span, base.NullContextManager)
 
     def test_trace_decorator(self):
-        tracer = request_tracer.RequestTracer(transport=None)
+        tracer = request_tracer.RequestTracer()
 
         return_value = "test"
 

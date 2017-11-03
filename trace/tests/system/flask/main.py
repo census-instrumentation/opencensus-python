@@ -40,7 +40,6 @@ app = flask.Flask(__name__)
 
 # Enable tracing, send traces to Stackdriver Trace
 exporter = stackdriver_exporter.StackdriverExporter()
-
 middleware = FlaskMiddleware(app, exporter=exporter)
 config_integration.trace_integrations(INTEGRATIONS)
 

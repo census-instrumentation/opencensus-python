@@ -63,12 +63,14 @@ class TestFlaskMiddleware(unittest.TestCase):
         sampler = mock.Mock()
         exporter = mock.Mock()
         propagator = mock.Mock()
+        transport = mock.Mock()
 
         middleware = flask_middleware.FlaskMiddleware(
             app=app,
             sampler=sampler,
             exporter=exporter,
-            propagator=propagator)
+            propagator=propagator,
+            transport=transport)
 
         self.assertIs(middleware.app, app)
         self.assertIs(middleware.sampler, sampler)
