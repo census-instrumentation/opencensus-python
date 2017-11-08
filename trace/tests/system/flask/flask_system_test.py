@@ -134,14 +134,19 @@ class TestFlaskTrace(unittest.TestCase):
                 spans[0].get('parentSpanId'),
                 str(self.span_id))
 
+            request_succeeded = False
+
             for span in spans:
                 labels = span.get('labels')
                 if '/http/status_code' in labels.keys():
                     self.assertEqual(labels.get('/http/status_code'), '200')
+                    request_succeeded = True
 
                 if span.get('name') == '[mysql.query]SELECT 2*3':
                     self.assertEqual(labels.get('mysql/cursor/method/name'), 'execute')
                     self.assertEqual(labels.get('mysql/query'), 'SELECT 2*3')
+
+            self.assertTrue(request_succeeded)
 
         test_with_retry(self)
 
@@ -164,14 +169,19 @@ class TestFlaskTrace(unittest.TestCase):
                 spans[0].get('parentSpanId'),
                 str(self.span_id))
 
+            request_succeeded = False
+
             for span in spans:
                 labels = span.get('labels')
                 if '/http/status_code' in labels.keys():
                     self.assertEqual(labels.get('/http/status_code'), '200')
+                    request_succeeded = True
 
                 if span.get('name') == '[postgresql.query]SELECT 2*3':
                     self.assertEqual(labels.get('postgresql/cursor/method/name'), 'execute')
                     self.assertEqual(labels.get('postgresql/query'), 'SELECT 2*3')
+
+            self.assertTrue(request_succeeded)
 
         test_with_retry(self)
 
@@ -188,19 +198,23 @@ class TestFlaskTrace(unittest.TestCase):
             self.assertEqual(trace.get('projectId'), PROJECT)
             self.assertEqual(trace.get('traceId'), str(self.trace_id))
             self.assertNotEqual(len(spans), 0)
+
             has_parent_span = False
+            request_succeeded = False
 
             for span in spans:
                 if span.get('name') == \
                         '[GET]http://localhost:8080/sqlalchemy-mysql':
                     self.assertEqual(span.get('parentSpanId'), str(self.span_id))
                     has_parent_span = True
+                    request_succeeded = True
 
                 labels = span.get('labels')
                 if '/http/status_code' in labels.keys():
                     self.assertEqual(labels.get('/http/status_code'), '200')
 
             self.assertTrue(has_parent_span)
+            self.assertTrue(request_succeeded)
 
         test_with_retry(self)
 
@@ -217,18 +231,22 @@ class TestFlaskTrace(unittest.TestCase):
             self.assertEqual(trace.get('projectId'), PROJECT)
             self.assertEqual(trace.get('traceId'), str(self.trace_id))
             self.assertNotEqual(len(trace.get('spans')), 0)
+
             has_parent_span = False
+            request_succeeded = False
 
             for span in spans:
                 if span.get('name') == \
                         '[GET]http://localhost:8080/sqlalchemy-postgresql':
                     self.assertEqual(span.get('parentSpanId'), str(self.span_id))
                     has_parent_span = True
+                    request_succeeded = True
 
                 labels = span.get('labels')
                 if '/http/status_code' in labels.keys():
                     self.assertEqual(labels.get('/http/status_code'), '200')
 
             self.assertTrue(has_parent_span)
+            self.assertTrue(request_succeeded)
 
         test_with_retry(self)
