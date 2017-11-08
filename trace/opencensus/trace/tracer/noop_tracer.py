@@ -50,7 +50,7 @@ class NoopTracer(base.Tracer):
         span_id in TraceContext as the current span_id which is the peek
         element in the span stack.
         """
-        return
+        return base.NullContextManager()
 
     def current_span(self):
         """Return the current span."""

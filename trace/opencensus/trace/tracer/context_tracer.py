@@ -17,6 +17,7 @@ import logging
 from opencensus.trace import execution_context
 from opencensus.trace.span_context import SpanContext
 from opencensus.trace import span as trace_span
+from opencensus.trace.exporters import print_exporter
 from opencensus.trace.tracer import base
 
 
@@ -27,12 +28,15 @@ class ContextTracer(base.Tracer):
     :param span_context: SpanContext encapsulates the current context within
                          the request's trace.
     """
-    def __init__(self, span_context=None, transport=None):
+    def __init__(self, exporter=None, span_context=None):
+        if exporter is None:
+            exporter = print_exporter.PrintExporter()
+
         if span_context is None:
             span_context = SpanContext()
 
+        self.exporter = exporter
         self.span_context = span_context
-        self.transport = transport
         self.trace_id = span_context.trace_id
         self.root_span_id = span_context.span_id
 
@@ -45,10 +49,7 @@ class ContextTracer(base.Tracer):
         :rtype: dict
         :returns: JSON format trace.
         """
-        trace = self.get_trace_json(self._spans_list)
         self._spans_list = []
-
-        return trace
 
     def span(self, name='span'):
         """Create a new span with the trace using the context information.
@@ -60,6 +61,7 @@ class ContextTracer(base.Tracer):
         :returns: The Span object.
         """
         span = self.start_span(name=name)
+        span.__exit__ = self.end_span()
         return span
 
     def start_span(self, name='span'):
@@ -90,9 +92,8 @@ class ContextTracer(base.Tracer):
         return span
 
     def end_span(self):
-        """End a span. Remove the span from the span stack, and update the
-        span_id in TraceContext as the current span_id which is the peek
-        element in the span stack.
+        """End a span. Update the span_id in SpanContext to the current span's
+        parent span id; Update the current span.
         """
         cur_span = self.current_span()
 
@@ -108,11 +109,10 @@ class ContextTracer(base.Tracer):
         else:
             execution_context.set_current_span(None)
 
-        # Put the span into queue for batch exporting
-        if self.transport and self._spans_list:
-            span = self._spans_list.pop()
-            span_json = self.get_trace_json(span)
-            self.transport.export(span_json)
+        span_json = self.get_trace_json(cur_span)
+        self.exporter.export(span_json)
+
+        return cur_span
 
     def current_span(self):
         """Return the current span."""
@@ -135,33 +135,13 @@ class ContextTracer(base.Tracer):
         current_span = self.current_span()
         current_span.add_label(label_key, label_value)
 
-    def add_label_to_spans(self, label_key, label_value):
-        """Add label to the spans in current trace.
-
-        :type label_key: str
-        :param label_key: Label key.
-
-        :type label_value:str
-        :param label_value: Label value.
-        """
-        for span in self._spans_list:
-            span.add_label(label_key, label_value)
-
-    def get_trace_json(self, root_spans):
+    def get_trace_json(self, span):
         """Get the JSON format trace."""
-        spans_list = []
-        for root_span in root_spans:
-            span_tree = list(iter(root_span))
-            span_tree_json = [trace_span.format_span_json(span)
-                              for span in span_tree]
-            spans_list.extend(span_tree_json)
-
-        if len(spans_list) == 0:
-            return
+        span_json = trace_span.format_span_json(span)
 
         trace = {
             'traceId': self.trace_id,
-            'spans': spans_list,
+            'spans': [span_json],
         }
 
         return trace

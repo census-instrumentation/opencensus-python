@@ -75,7 +75,7 @@ class _Worker(object):
                     'traceId': trace_id,
                     'spans': spans,
                 }
-                self.exporter.export(spans_json)
+                self.exporter.emit(spans_json)
 
             for _ in range(len(items)):
                 self._queue.task_done()

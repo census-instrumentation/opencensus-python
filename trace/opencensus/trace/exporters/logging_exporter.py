@@ -17,6 +17,7 @@
 import logging
 
 from opencensus.trace.exporters import base
+from opencensus.trace.exporters.transports import sync
 
 
 class LoggingExporter(base.Exporter):
@@ -44,7 +45,7 @@ class LoggingExporter(base.Exporter):
     will be exported to logging when finished.
     """
 
-    def __init__(self, handler=None):
+    def __init__(self, handler=None, transport=sync.SyncTransport):
         self.logger = logging.getLogger()
 
         if handler is None:
@@ -53,10 +54,14 @@ class LoggingExporter(base.Exporter):
         self.handler = handler
         self.logger.addHandler(handler)
         self.logger.setLevel(logging.INFO)
+        self.transport = transport(self)
 
-    def export(self, trace):
+    def emit(self, trace):
         """
         :type traces: dict
         :param traces: Trace collected.
         """
         self.logger.info(trace)
+
+    def export(self, trace):
+        self.transport.export(trace)

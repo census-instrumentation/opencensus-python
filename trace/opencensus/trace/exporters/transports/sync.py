@@ -12,23 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import unittest
 
+class SyncTransport(object):
+    def __init__(self, exporter):
+        self.exporter = exporter
 
-class TestPrintExporter(unittest.TestCase):
-
-    @staticmethod
-    def _get_target_class():
-        from opencensus.trace.exporters.print_exporter import PrintExporter
-
-        return PrintExporter
-
-    def _make_one(self, *args, **kw):
-        return self._get_target_class()(*args, **kw)
-
-    def test_emit(self):
-        traces = {}
-        exporter = self._make_one()
-
-        printed = exporter.emit(traces)
-        self.assertEqual(printed, traces)
+    def export(self, trace):
+        self.exporter.emit(trace)

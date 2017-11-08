@@ -238,7 +238,6 @@ class TestOpencensusMiddleware(unittest.TestCase):
         middleware_obj.process_response(django_request, django_response)
 
         self.assertEqual(span.labels, expected_labels)
-        self.assertTrue(exporter_mock.export.called)
 
 
 class Test__set_django_labels(unittest.TestCase):
@@ -247,7 +246,7 @@ class Test__set_django_labels(unittest.TestCase):
         def __init__(self):
             self.labels = {}
 
-        def add_label_to_spans(self, key, value):
+        def add_label_to_current_span(self, key, value):
             self.labels[key] = value
 
     def test__set_django_labels_no_user(self):

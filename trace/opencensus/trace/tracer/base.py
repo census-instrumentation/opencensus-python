@@ -58,17 +58,6 @@ class Tracer(object):
     def add_label_to_current_span(self, label_key, label_value):
         raise NotImplementedError
 
-    def add_label_to_spans(self, label_key, label_value):
-        """Add label to the spans in current trace.
-
-        :type label_key: str
-        :param label_key: Label key.
-
-        :type label_value:str
-        :param label_value: Label value.
-        """
-        raise NotImplementedError
-
     def list_collected_spans(self):
         """List collected spans."""
         raise NotImplementedError

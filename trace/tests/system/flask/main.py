@@ -38,8 +38,11 @@ POSTGRES_PASSWORD = os.environ.get('SYSTEST_POSTGRES_PASSWORD')
 
 app = flask.Flask(__name__)
 
-# Enable tracing, send traces to Stackdriver Trace
-exporter = stackdriver_exporter.StackdriverExporter()
+# Enable tracing, send traces to Stackdriver Trace using background thread transport
+from opencensus.trace.exporters.transports import background_thread
+exporter = stackdriver_exporter.StackdriverExporter(
+    transport=background_thread.BackgroundThreadTransport)
+
 middleware = FlaskMiddleware(app, exporter=exporter)
 config_integration.trace_integrations(INTEGRATIONS)
 

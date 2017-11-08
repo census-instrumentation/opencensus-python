@@ -17,7 +17,6 @@ import unittest
 
 def func_to_trace():
     import time
-
     print('Test simple tracing...')
     time.sleep(2)
 
@@ -64,7 +63,7 @@ class TestBasicTrace(unittest.TestCase):
         spans = trace_json.get('spans')
 
         self.assertEqual(trace_json.get('traceId'), trace_id)
-        self.assertEqual(len(spans), 2)
+        self.assertEqual(len(spans), 1)
 
         for span in spans:
             if span.get('name') == 'root_span':

@@ -33,13 +33,13 @@ class TestLoggingExporter(unittest.TestCase):
 
         self.assertIn(exporter.handler, logging.getLogger().handlers)
 
-    def test_export(self):
+    def test_emit(self):
         exporter = logging_exporter.LoggingExporter()
         logger = mock.Mock()
         exporter.logger = logger
 
         traces = '{traces: test}'
-        exporter.export(traces)
+        exporter.emit(traces)
 
         logger.info.assert_called_once_with(traces)
 

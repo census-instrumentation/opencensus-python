@@ -47,14 +47,12 @@ class TestRequestTracer(unittest.TestCase):
         exporter = mock.Mock()
         propagator = mock.Mock()
         span_context = mock.Mock()
-        transport = mock.Mock()
 
         tracer = request_tracer.RequestTracer(
             span_context=span_context,
             sampler=sampler,
             exporter=exporter,
-            propagator=propagator,
-            transport=transport)
+            propagator=propagator)
 
         self.assertIs(tracer.span_context, span_context)
         self.assertIs(tracer.sampler, sampler)

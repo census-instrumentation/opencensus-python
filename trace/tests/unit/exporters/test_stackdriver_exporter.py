@@ -44,15 +44,17 @@ class TestStackdriverExporter(unittest.TestCase):
         client = mock.Mock()
         project_id = 'PROJECT'
         client.project = project_id
+        transport = mock.Mock()
 
         exporter = stackdriver_exporter.StackdriverExporter(
             client=client,
-            project_id=project_id)
+            project_id=project_id,
+            transport=transport)
 
         self.assertIs(exporter.client, client)
         self.assertEqual(exporter.project_id, project_id)
 
-    def test_export(self):
+    def test_emit(self):
         trace = {'spans': [], 'traceId': '6e0c63257de34c92bf9efcd03927272e'}
 
         client = mock.Mock()
@@ -63,7 +65,7 @@ class TestStackdriverExporter(unittest.TestCase):
             client=client,
             project_id=project_id)
 
-        exporter.export(trace)
+        exporter.emit(trace)
 
         trace['projectId'] = project_id
         traces = {'traces': [trace]}

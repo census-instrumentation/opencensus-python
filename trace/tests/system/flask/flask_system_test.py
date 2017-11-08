@@ -20,12 +20,17 @@ import subprocess
 import time
 import uuid
 
+from retrying import retry
+
 import unittest
 
 PROJECT = os.environ.get('GCLOUD_PROJECT_PYTHON')
 
 HOST_PORT = 'localhost:8080'
 BASE_URL = 'http://localhost:8080/'
+
+RETRY_WAIT_PERIOD = 8000 # Wait 8 seconds between each retry
+RETRY_MAX_ATTEMPT = 10 # Retry 10 times
 
 
 def wait_app_to_start():
@@ -92,114 +97,138 @@ class TestFlaskTrace(unittest.TestCase):
             BASE_URL,
             headers=self.headers_trace)
 
-        time.sleep(5)
+        @retry(wait_fixed=RETRY_WAIT_PERIOD, stop_max_attempt_number=RETRY_MAX_ATTEMPT)
+        def test_with_retry(self):
+            trace = self.client.get_trace(trace_id=self.trace_id)
+            spans = trace.get('spans')
 
-        trace = self.client.get_trace(trace_id=self.trace_id)
-        spans = trace.get('spans')
+            self.assertEqual(trace.get('projectId'), PROJECT)
+            self.assertEqual(trace.get('traceId'), str(self.trace_id))
+            self.assertEqual(len(spans), 1)
+            self.assertEqual(
+                spans[0].get('parentSpanId'),
+                str(self.span_id))
 
-        self.assertEqual(trace.get('projectId'), PROJECT)
-        self.assertEqual(trace.get('traceId'), str(self.trace_id))
-        self.assertEqual(len(spans), 1)
-        self.assertEqual(
-            spans[0].get('parentSpanId'),
-            str(self.span_id))
+            for span in spans:
+                labels = span.get('labels')
+                self.assertEqual(labels.get('/http/status_code'), '200')
 
-        for span in spans:
-            labels = span.get('labels')
-            self.assertEqual(labels.get('/http/status_code'), '200')
+        test_with_retry(self)
 
     def test_mysql_trace(self):
         requests.get(
             '{}mysql'.format(BASE_URL),
             headers=self.headers_trace)
 
-        time.sleep(5)
+        @retry(wait_fixed=RETRY_WAIT_PERIOD, stop_max_attempt_number=RETRY_MAX_ATTEMPT)
+        def test_with_retry(self):
+            trace = self.client.get_trace(trace_id=self.trace_id)
+            spans = trace.get('spans')
 
-        trace = self.client.get_trace(trace_id=self.trace_id)
-        spans = trace.get('spans')
+            self.assertEqual(trace.get('projectId'), PROJECT)
+            self.assertEqual(trace.get('traceId'), str(self.trace_id))
 
-        self.assertEqual(trace.get('projectId'), PROJECT)
-        self.assertEqual(trace.get('traceId'), str(self.trace_id))
+            # Should have 2 spans, one for flask request, one for mysql query
+            self.assertEqual(len(spans), 2)
+            self.assertEqual(
+                spans[0].get('parentSpanId'),
+                str(self.span_id))
 
-        # Should have 2 spans, one for flask request, one for mysql query
-        self.assertEqual(len(spans), 2)
-        self.assertEqual(
-            spans[0].get('parentSpanId'),
-            str(self.span_id))
-      
-        for span in spans:
-            labels = span.get('labels')
-            self.assertEqual(labels.get('/http/status_code'), '200')
+            for span in spans:
+                labels = span.get('labels')
+                if '/http/status_code' in labels.keys():
+                    self.assertEqual(labels.get('/http/status_code'), '200')
 
-            if span.get('name') == '[mysql.query]SELECT 2*3':
-                self.assertEqual(labels.get('mysql/cursor/method/name'), 'execute')
-                self.assertEqual(labels.get('mysql/query'), 'SELECT 2*3')
+                if span.get('name') == '[mysql.query]SELECT 2*3':
+                    self.assertEqual(labels.get('mysql/cursor/method/name'), 'execute')
+                    self.assertEqual(labels.get('mysql/query'), 'SELECT 2*3')
+
+        test_with_retry(self)
 
     def test_postgresql_trace(self):
         requests.get(
             '{}postgresql'.format(BASE_URL),
             headers=self.headers_trace)
 
-        time.sleep(5)
+        @retry(wait_fixed=RETRY_WAIT_PERIOD, stop_max_attempt_number=RETRY_MAX_ATTEMPT)
+        def test_with_retry(self):
+            trace = self.client.get_trace(trace_id=self.trace_id)
+            spans = trace.get('spans')
 
-        trace = self.client.get_trace(trace_id=self.trace_id)
-        spans = trace.get('spans')
+            self.assertEqual(trace.get('projectId'), PROJECT)
+            self.assertEqual(trace.get('traceId'), str(self.trace_id))
 
-        self.assertEqual(trace.get('projectId'), PROJECT)
-        self.assertEqual(trace.get('traceId'), str(self.trace_id))
+            # Should have 2 spans, one for flask request, one for postgresql query
+            self.assertEqual(len(spans), 2)
+            self.assertEqual(
+                spans[0].get('parentSpanId'),
+                str(self.span_id))
 
-        # Should have 2 spans, one for flask request, one for postgresql query
-        self.assertEqual(len(spans), 2)
-        self.assertEqual(
-            spans[0].get('parentSpanId'),
-            str(self.span_id))
+            for span in spans:
+                labels = span.get('labels')
+                if '/http/status_code' in labels.keys():
+                    self.assertEqual(labels.get('/http/status_code'), '200')
 
-        for span in spans:
-            labels = span.get('labels')
-            self.assertEqual(labels.get('/http/status_code'), '200')
+                if span.get('name') == '[postgresql.query]SELECT 2*3':
+                    self.assertEqual(labels.get('postgresql/cursor/method/name'), 'execute')
+                    self.assertEqual(labels.get('postgresql/query'), 'SELECT 2*3')
 
-            if span.get('name') == '[postgresql.query]SELECT 2*3':
-                self.assertEqual(labels.get('postgresql/cursor/method/name'), 'execute')
-                self.assertEqual(labels.get('postgresql/query'), 'SELECT 2*3')
+        test_with_retry(self)
 
     def test_sqlalchemy_mysql_trace(self):
         requests.get(
             '{}sqlalchemy-mysql'.format(BASE_URL),
             headers=self.headers_trace)
 
-        time.sleep(5)
+        @retry(wait_fixed=RETRY_WAIT_PERIOD, stop_max_attempt_number=RETRY_MAX_ATTEMPT)
+        def test_with_retry(self):
+            trace = self.client.get_trace(trace_id=self.trace_id)
+            spans = trace.get('spans')
 
-        trace = self.client.get_trace(trace_id=self.trace_id)
-        spans = trace.get('spans')
+            self.assertEqual(trace.get('projectId'), PROJECT)
+            self.assertEqual(trace.get('traceId'), str(self.trace_id))
+            self.assertNotEqual(len(spans), 0)
+            has_parent_span = False
 
-        self.assertEqual(trace.get('projectId'), PROJECT)
-        self.assertEqual(trace.get('traceId'), str(self.trace_id))
-        self.assertNotEqual(len(spans), 0)
-        self.assertEqual(
-            spans[0].get('parentSpanId'),
-            str(self.span_id))
+            for span in spans:
+                if span.get('name') == \
+                        '[GET]http://localhost:8080/sqlalchemy-mysql':
+                    self.assertEqual(span.get('parentSpanId'), str(self.span_id))
+                    has_parent_span = True
 
-        for span in spans:
-            labels = span.get('labels')
-            self.assertEqual(labels.get('/http/status_code'), '200')
+                labels = span.get('labels')
+                if '/http/status_code' in labels.keys():
+                    self.assertEqual(labels.get('/http/status_code'), '200')
+
+            self.assertTrue(has_parent_span)
+
+        test_with_retry(self)
 
     def test_sqlalchemy_postgresql_trace(self):
         requests.get(
             '{}sqlalchemy-postgresql'.format(BASE_URL),
             headers=self.headers_trace)
 
-        time.sleep(5)
+        @retry(wait_fixed=RETRY_WAIT_PERIOD, stop_max_attempt_number=RETRY_MAX_ATTEMPT)
+        def test_with_retry(self):
+            trace = self.client.get_trace(trace_id=self.trace_id)
+            spans = trace.get('spans')
 
-        trace = self.client.get_trace(trace_id=self.trace_id)
-        spans = trace.get('spans')
+            self.assertEqual(trace.get('projectId'), PROJECT)
+            self.assertEqual(trace.get('traceId'), str(self.trace_id))
+            self.assertNotEqual(len(trace.get('spans')), 0)
+            has_parent_span = False
 
-        self.assertEqual(trace.get('projectId'), PROJECT)
-        self.assertEqual(trace.get('traceId'), str(self.trace_id))
-        self.assertNotEqual(len(trace.get('spans')), 0)
-        self.assertEqual(
-            trace.get('spans')[0].get('parentSpanId'),
-            str(self.span_id))
+            for span in spans:
+                if span.get('name') == \
+                        '[GET]http://localhost:8080/sqlalchemy-postgresql':
+                    self.assertEqual(span.get('parentSpanId'), str(self.span_id))
+                    has_parent_span = True
 
-        for span in spans:
-            labels = span.get('labels')
-            self.assertEqual(labels.get('/http/status_code'), '200')
+                labels = span.get('labels')
+                if '/http/status_code' in labels.keys():
+                    self.assertEqual(labels.get('/http/status_code'), '200')
+
+            self.assertTrue(has_parent_span)
+
+        test_with_retry(self)

@@ -132,7 +132,7 @@ class Test_Worker(unittest.TestCase):
 
         worker._thread_main()
 
-        self.assertTrue(worker.exporter.export.called)
+        self.assertTrue(worker.exporter.emit.called)
         self.assertEqual(worker._queue.qsize(), 0)
 
     def test__thread_main_batches(self):
