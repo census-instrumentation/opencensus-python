@@ -100,7 +100,7 @@ class ZipkinExporter(base.Exporter):
                     "Failed to send spans to Zipkin server! Spans are {}"
                     .format(zipkin_spans))
         except Exception as e:  # pragma: NO COVER
-            logging.error(e.message)
+            logging.error(getattr(e, 'message', e))
 
     def export(self, trace):
         self.transport.export(trace)

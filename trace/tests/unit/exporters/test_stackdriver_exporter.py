@@ -54,6 +54,18 @@ class TestStackdriverExporter(unittest.TestCase):
         self.assertIs(exporter.client, client)
         self.assertEqual(exporter.project_id, project_id)
 
+    def test_export(self):
+        client = mock.Mock()
+        project_id = 'PROJECT'
+        client.project = project_id
+        exporter = stackdriver_exporter.StackdriverExporter(
+            client=client,
+            project_id=project_id,
+            transport=MockTransport)
+        exporter.export({})
+
+        self.assertTrue(exporter.transport.export_called)
+
     def test_emit(self):
         trace = {'spans': [], 'traceId': '6e0c63257de34c92bf9efcd03927272e'}
 
@@ -122,3 +134,12 @@ class Test_set_labels_gae(unittest.TestCase):
             stackdriver_exporter.set_labels(trace)
 
         self.assertEqual(trace['spans'][0]['labels'], expected_labels)
+
+
+class MockTransport(object):
+    def __init__(self, exporter=None):
+        self.export_called = False
+        self.exporter = exporter
+
+    def export(self, trace):
+        self.export_called = True

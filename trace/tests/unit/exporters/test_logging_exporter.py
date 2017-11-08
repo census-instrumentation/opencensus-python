@@ -44,7 +44,7 @@ class TestLoggingExporter(unittest.TestCase):
         logger.info.assert_called_once_with(traces)
 
     def test_export(self):
-        exporter = logging_exporter.LoggingExporter()
+        exporter = logging_exporter.LoggingExporter(transport=MockTransport)
         exporter.export({})
 
         self.assertTrue(exporter.transport.export_called)
@@ -58,8 +58,9 @@ class TestLoggingExporter(unittest.TestCase):
 
 
 class MockTransport(object):
-    def __init__(self):
+    def __init__(self, exporter=None):
         self.export_called = False
+        self.exporter = exporter
 
     def export(self, trace):
         self.export_called = True

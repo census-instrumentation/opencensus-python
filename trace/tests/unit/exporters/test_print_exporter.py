@@ -34,15 +34,16 @@ class TestPrintExporter(unittest.TestCase):
         self.assertEqual(printed, traces)
 
     def test_export(self):
-        exporter = self._make_one()
+        exporter = self._make_one(transport=MockTransport)
         exporter.export({})
 
         self.assertTrue(exporter.transport.export_called)
 
 
 class MockTransport(object):
-    def __init__(self):
+    def __init__(self, exporter=None):
         self.export_called = False
+        self.exporter = exporter
 
     def export(self, trace):
         self.export_called = True

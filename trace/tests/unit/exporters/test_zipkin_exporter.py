@@ -43,7 +43,8 @@ class TestZipkinExporter(unittest.TestCase):
         self.assertEqual(exporter.url, expected_url)
 
     def test_export(self):
-        exporter = zipkin_exporter.ZipkinExporter(service_name='my_service')
+        exporter = zipkin_exporter.ZipkinExporter(
+            service_name='my_service', transport=MockTransport)
         exporter.export({})
 
         self.assertTrue(exporter.transport.export_called)
@@ -186,8 +187,9 @@ class TestZipkinExporter(unittest.TestCase):
 
 
 class MockTransport(object):
-    def __init__(self):
+    def __init__(self, exporter=None):
         self.export_called = False
+        self.exporter = exporter
 
     def export(self, trace):
         self.export_called = True

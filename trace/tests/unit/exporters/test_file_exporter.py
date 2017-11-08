@@ -54,8 +54,9 @@ class TestFileExporter(unittest.TestCase):
 
 class MockTransport(object):
 
-    def __init__(self):
+    def __init__(self, exporter=None):
         self.export_called = False
+        self.exporter = exporter
 
     def export(self, trace):
         self.export_called = True
