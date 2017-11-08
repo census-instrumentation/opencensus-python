@@ -83,11 +83,11 @@ class TestContextTracer(unittest.TestCase):
         self.assertEqual(len(tracer._spans_list), 1)
         self.assertEqual(span_context.span_id, span.span_id)
 
-    def test_start_span(self):
+    def test_span(self):
         tracer = context_tracer.ContextTracer()
-        tracer.start_span()
+        span = tracer.span()
 
-        self.assertEqual(len(tracer._spans_list), 1)
+        self.assertEqual(span.__exit__, tracer.end_span)
 
     @mock.patch.object(context_tracer.ContextTracer, 'current_span')
     def test_end_span_no_active_span(self, mock_current_span):

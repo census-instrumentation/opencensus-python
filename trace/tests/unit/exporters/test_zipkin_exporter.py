@@ -42,6 +42,12 @@ class TestZipkinExporter(unittest.TestCase):
         self.assertEqual(exporter.endpoint, endpoint)
         self.assertEqual(exporter.url, expected_url)
 
+    def test_export(self):
+        exporter = zipkin_exporter.ZipkinExporter(service_name='my_service')
+        exporter.export({})
+
+        self.assertTrue(exporter.transport.export_called)
+
     @mock.patch('requests.post')
     @mock.patch.object(zipkin_exporter.ZipkinExporter,
                 'translate_to_zipkin')
@@ -177,3 +183,11 @@ class TestZipkinExporter(unittest.TestCase):
             spans=spans)
 
         self.assertEqual(zipkin_spans, expected_zipkin_spans)
+
+
+class MockTransport(object):
+    def __init__(self):
+        self.export_called = False
+
+    def export(self, trace):
+        self.export_called = True
