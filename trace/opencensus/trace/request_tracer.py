@@ -81,7 +81,9 @@ class RequestTracer(object):
         sampled = self.should_sample()
 
         if sampled:
-            return context_tracer.ContextTracer(self.span_context)
+            return context_tracer.ContextTracer(
+                exporter=self.exporter,
+                span_context=self.span_context)
         else:
             return noop_tracer.NoopTracer()
 
@@ -90,11 +92,8 @@ class RequestTracer(object):
         execution_context.set_opencensus_tracer(self)
 
     def finish(self):
-        """End all spans and send spans using reporter."""
-        trace = self.tracer.finish()
-
-        if trace is not None:
-            self.exporter.export(trace)
+        """End all spans."""
+        self.tracer.finish()
 
     def span(self, name=None):
         """Create a new span with the trace using the context information.
@@ -111,9 +110,8 @@ class RequestTracer(object):
         return self.tracer.start_span(name)
 
     def end_span(self):
-        """End a span. Remove the span from the span stack, and update the
-        span_id in TraceContext as the current span_id which is the peek
-        element in the span stack.
+        """End a span. Update the span_id in SpanContext to the current span's
+        parent span id; Update the current span; Send the span to exporter.
         """
         self.tracer.end_span()
 
@@ -131,9 +129,6 @@ class RequestTracer(object):
         :param label_value: Label value.
         """
         self.tracer.add_label_to_current_span(label_key, label_value)
-
-    def add_label_to_spans(self, label_key, label_value):
-        self.tracer.add_label_to_spans(label_key, label_value)
 
     def trace_decorator(self):
         """Decorator to trace a function."""

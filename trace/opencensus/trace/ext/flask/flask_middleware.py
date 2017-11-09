@@ -49,7 +49,8 @@ class FlaskMiddleware(object):
                      :class:`.PrintExporter`. The rest option is
                      :class:`.FileExporter`.
     """
-    def __init__(self, app, sampler=None, exporter=None, propagator=None):
+    def __init__(self, app, sampler=None, exporter=None, propagator=None,
+                 transport=None):
         if sampler is None:
             sampler = always_on.AlwaysOnSampler()
 
@@ -90,8 +91,8 @@ class FlaskMiddleware(object):
             span.name = '[{}]{}'.format(
                 flask.request.method,
                 flask.request.url)
-            tracer.add_label_to_spans(HTTP_METHOD, flask.request.method)
-            tracer.add_label_to_spans(HTTP_URL, flask.request.url)
+            tracer.add_label_to_current_span(HTTP_METHOD, flask.request.method)
+            tracer.add_label_to_current_span(HTTP_URL, flask.request.url)
         except Exception:  # pragma: NO COVER
             log.error('Failed to trace request', exc_info=True)
 
@@ -102,7 +103,7 @@ class FlaskMiddleware(object):
         """
         try:
             tracer = execution_context.get_opencensus_tracer()
-            tracer.add_label_to_spans(
+            tracer.add_label_to_current_span(
                 HTTP_STATUS_CODE,
                 str(response.status_code))
 

@@ -57,14 +57,6 @@ class Span(object):
 
     :type span_id: int
     :param span_id: Identifier for the span, unique within a trace.
-
-    :type context_tracer: :class:`~opencensus.trace.tracer.context_tracer.
-                                 ContextTracer`
-    :param context_tracer: The tracer that holds a stack of spans. If this is
-                           not None, then when exiting a span, use the end_span
-                           method in the tracer class to finish a span. If no
-                           tracer is passed in, then just finish the span using
-                           the finish method in the Span class.
     """
 
     def __init__(
@@ -97,7 +89,6 @@ class Span(object):
         self.labels = labels
         self.span_id = span_id
         self._child_spans = []
-        self.context_tracer = context_tracer
 
     @property
     def children(self):
@@ -150,10 +141,6 @@ class Span(object):
 
     def __exit__(self, exception_type, exception_value, traceback):
         """Finish a span."""
-        if self.context_tracer is not None:
-            self.context_tracer.end_span()
-            return
-
         self.finish()
 
 

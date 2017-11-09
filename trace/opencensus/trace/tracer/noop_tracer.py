@@ -50,7 +50,7 @@ class NoopTracer(base.Tracer):
         span_id in TraceContext as the current span_id which is the peek
         element in the span stack.
         """
-        return
+        return base.NullContextManager()
 
     def current_span(self):
         """Return the current span."""
@@ -58,17 +58,6 @@ class NoopTracer(base.Tracer):
 
     def add_label_to_current_span(self, label_key, label_value):
         """Add label to current span.
-
-        :type label_key: str
-        :param label_key: Label key.
-
-        :type label_value:str
-        :param label_value: Label value.
-        """
-        return
-
-    def add_label_to_spans(self, label_key, label_value):
-        """Add label to the spans in current trace.
 
         :type label_key: str
         :param label_key: Label key.
