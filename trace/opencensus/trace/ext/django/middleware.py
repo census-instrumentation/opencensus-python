@@ -65,10 +65,10 @@ def _set_django_labels(tracer, request):
 
     # User id is the django autofield for User model as the primary key
     if user_id is not None:
-        tracer.add_label_to_spans('/django/user/id', str(user_id))
+        tracer.add_label_to_current_span('/django/user/id', str(user_id))
 
     if user_name is not None:
-        tracer.add_label_to_spans('/django/user/name', user_name)
+        tracer.add_label_to_current_span('/django/user/name', user_name)
 
 
 def get_django_header():
@@ -148,10 +148,10 @@ class OpencensusMiddleware(object):
 
             # Span name is being set at process_view
             tracer.start_span()
-            tracer.add_label_to_spans(
+            tracer.add_label_to_current_span(
                 label_key=HTTP_METHOD,
                 label_value=request.method)
-            tracer.add_label_to_spans(
+            tracer.add_label_to_current_span(
                 label_key=HTTP_URL,
                 label_value=request.path)
         except Exception:  # pragma: NO COVER
@@ -173,7 +173,7 @@ class OpencensusMiddleware(object):
     def process_response(self, request, response):
         try:
             tracer = _get_current_request_tracer()
-            tracer.add_label_to_spans(
+            tracer.add_label_to_current_span(
                 label_key=HTTP_STATUS_CODE,
                 label_value=str(response.status_code))
 
