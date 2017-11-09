@@ -61,7 +61,6 @@ class ContextTracer(base.Tracer):
         :returns: The Span object.
         """
         span = self.start_span(name=name)
-        span.__class__.__exit__ = self.end_span
         return span
 
     def start_span(self, name='span'):
