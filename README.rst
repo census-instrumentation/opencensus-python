@@ -22,7 +22,6 @@ Installation
     from opencensus.trace import request_tracer
 
     tracer = request_tracer.RequestTracer()
-    tracer.start_trace()
 
 Usage
 -----
@@ -40,9 +39,8 @@ Usage 1: ``with`` statement (Recommended)
 
     from opencensus.trace import request_tracer
 
-    # Initialize a tracer, by default using the `PrintReporter`
+    # Initialize a tracer, by default using the `PrintExporter`
     tracer = request_tracer.RequestTracer()
-    tracer.start_trace()
 
     # Example for creating nested spans
     with tracer.span(name='span1') as span1:
@@ -54,8 +52,7 @@ Usage 1: ``with`` statement (Recommended)
     with tracer.span(name='span2') as span2:
         do_something_to_trace()
 
-    # The trace spans will be sent to the reporter when you call `end_trace()`
-    tracer.end_trace()
+    # The spans will be exported when exiting the with block.
 
 Usage 2: Explicitly start and end spans
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -64,7 +61,7 @@ Usage 2: Explicitly start and end spans
 
     from opencensus.trace import request_tracer
 
-    # Initialize a tracer, by default using the `PrintReporter`
+    # Initialize a tracer, by default using the `PrintExporter`
     tracer = request_tracer.RequestTracer()
     tracer.start_trace()
 
@@ -96,17 +93,17 @@ Exporters
 
 You can choose different exporters to send the traces to. Default is
 printing the traces in JSON format. The rest options are sending to
-logging, or write to a file. Will add reporters to report to different
+logging, or write to a file. Will add exporters to report to different
 trace backend later.
 
 .. code:: python
 
-    from opencensus.trace.reporters import file_reporter
+    from opencensus.trace.exporters import file_exporter
     from opencensus.trace.tracer import context_tracer
 
     # Export the traces to a local file
-    reporter = file_reporter.FileReporter(file_name='traces')
-    tracer = context_tracer.ContextTracer(reporter=reporter)
+    exporter = file_exporter.FileExporter(file_name='traces')
+    tracer = context_tracer.ContextTracer(exporter=exporter)
 
 Report to Stackdriver Trace:
 
@@ -115,7 +112,7 @@ Report to Stackdriver Trace:
     from opencensus.trace.exporters import stackdriver_exporter
     from opencensus.trace import request_tracer
 
-    exporter = stackdriver_exporter.StackdriverReporter(
+    exporter = stackdriver_exporter.StackdriverExporter(
         project_id='your_cloud_project')
     tracer = request_tracer.RequestTracer(exporter=exporter)
 
@@ -159,8 +156,8 @@ requests will be automatically traced.
 
     app = flask.Flask(__name__)
 
-    # You can also specify the sampler, reporter, propagator in the middleware,
-    # default is using `AlwaysOnSampler` as sampler, `PrintReporter` as reporter,
+    # You can also specify the sampler, exporter, propagator in the middleware,
+    # default is using `AlwaysOnSampler` as sampler, `PrintExporter` as exporter,
     # `GoogleCloudFormatPropagator` as propagator.
     middleware = FlaskMiddleware(app)
 
@@ -180,13 +177,13 @@ Add this line to the ``INSTALLED_APPS`` section:
 
     'opencensus.trace.ext.django',
 
-Customize the sampler, reporter, propagator in the ``settings.py`` file:
+Customize the sampler, exporter, propagator in the ``settings.py`` file:
 
 ::
 
     OPENCENSUS_TRACE = {
         'SAMPLER': 'opencensus.trace.samplers.probability.ProbabilitySampler',
-        'REPORTER': 'opencensus.trace.reporters.print_reporter.PrintReporter',
+        'REPORTER': 'opencensus.trace.exporters.print_exporter.PrintExporter',
         'PROPAGATOR': 'opencensus.trace.propagation.google_cloud_format.'
                       'GoogleCloudFormatPropagator',
     }
@@ -201,12 +198,9 @@ Webapp2
     from opencensus.trace.tracer import webapp2_tracer
 
     tracer = webapp2_tracer.WebApp2Tracer()
-    tracer.start_trace()
 
     with tracer.span(name='span1'):
         do_something_to_trace()
-
-    tracer.end_trace()
 
 Service Integration
 -------------------
@@ -227,14 +221,11 @@ want to instrument. Usage for enabling MySQL instrumentation like below:
     config_integration.trace_integrations(INTEGRATIONS)
 
     tracer = request_tracer.RequestTracer()
-    tracer.start_trace()
 
     conn = mysql.connector.connect(user='user', password='password')
     cursor = conn.cursor()
     query = 'SELECT 2*3'
     cursor.execute(query)
-
-    tracer.end_trace()
 
 MySQL
 ~~~~~
@@ -295,7 +286,6 @@ integration with requests module.
 
     # Create a tracer
     tracer = RequestTracer()
-    tracer.start_trace()
 
     # Integrate with requests module
     trace_integrations(['requests'])

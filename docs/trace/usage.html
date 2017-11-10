@@ -57,7 +57,6 @@
 <div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">opencensus.trace</span> <span class="k">import</span> <span class="n">request_tracer</span>
 
 <span class="n">tracer</span> <span class="o">=</span> <span class="n">request_tracer</span><span class="o">.</span><span class="n">RequestTracer</span><span class="p">()</span>
-<span class="n">tracer</span><span class="o">.</span><span class="n">start_trace</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
@@ -72,9 +71,8 @@ below:</p>
 <h3>Usage 1: <code class="docutils literal"><span class="pre">with</span></code> statement (Recommended)<a class="headerlink" href="#usage-1-with-statement-recommended" title="Permalink to this headline">¶</a></h3>
 <div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">opencensus.trace</span> <span class="k">import</span> <span class="n">request_tracer</span>
 
-<span class="c1"># Initialize a tracer, by default using the `PrintReporter`</span>
+<span class="c1"># Initialize a tracer, by default using the `PrintExporter`</span>
 <span class="n">tracer</span> <span class="o">=</span> <span class="n">request_tracer</span><span class="o">.</span><span class="n">RequestTracer</span><span class="p">()</span>
-<span class="n">tracer</span><span class="o">.</span><span class="n">start_trace</span><span class="p">()</span>
 
 <span class="c1"># Example for creating nested spans</span>
 <span class="k">with</span> <span class="n">tracer</span><span class="o">.</span><span class="n">span</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;span1&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">span1</span><span class="p">:</span>
@@ -86,8 +84,7 @@ below:</p>
 <span class="k">with</span> <span class="n">tracer</span><span class="o">.</span><span class="n">span</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;span2&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">span2</span><span class="p">:</span>
     <span class="n">do_something_to_trace</span><span class="p">()</span>
 
-<span class="c1"># The trace spans will be sent to the reporter when you call `end_trace()`</span>
-<span class="n">tracer</span><span class="o">.</span><span class="n">end_trace</span><span class="p">()</span>
+<span class="c1"># The spans will be exported when exiting the with block.</span>
 </pre></div>
 </div>
 </div>
@@ -95,7 +92,7 @@ below:</p>
 <h3>Usage 2: Explicitly start and end spans<a class="headerlink" href="#usage-2-explicitly-start-and-end-spans" title="Permalink to this headline">¶</a></h3>
 <div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">opencensus.trace</span> <span class="k">import</span> <span class="n">request_tracer</span>
 
-<span class="c1"># Initialize a tracer, by default using the `PrintReporter`</span>
+<span class="c1"># Initialize a tracer, by default using the `PrintExporter`</span>
 <span class="n">tracer</span> <span class="o">=</span> <span class="n">request_tracer</span><span class="o">.</span><span class="n">RequestTracer</span><span class="p">()</span>
 <span class="n">tracer</span><span class="o">.</span><span class="n">start_trace</span><span class="p">()</span>
 
@@ -112,37 +109,37 @@ below:</p>
 <h3>Samplers<a class="headerlink" href="#samplers" title="Permalink to this headline">¶</a></h3>
 <p>You can specify different samplers when initializing a tracer, default
 is using <code class="docutils literal"><span class="pre">AlwaysOnSampler</span></code>, the other options are <code class="docutils literal"><span class="pre">AlwaysOffSampler</span></code>
-and <code class="docutils literal"><span class="pre">FixedRateSampler</span></code></p>
-<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">opencensus.trace.samplers</span> <span class="k">import</span> <span class="n">fixed_rate</span>
+and <code class="docutils literal"><span class="pre">ProbabilitySampler</span></code></p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">opencensus.trace.samplers</span> <span class="k">import</span> <span class="n">probability</span>
 <span class="kn">from</span> <span class="nn">opencensus.trace</span> <span class="k">import</span> <span class="n">request_tracer</span>
 
 <span class="c1"># Sampling the requests at the rate equals 0.5</span>
-<span class="n">sampler</span> <span class="o">=</span> <span class="n">fixed_rate</span><span class="o">.</span><span class="n">FixedRateSampler</span><span class="p">(</span><span class="n">rate</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="n">sampler</span> <span class="o">=</span> <span class="n">probability</span><span class="o">.</span><span class="n">ProbabilitySampler</span><span class="p">(</span><span class="n">rate</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
 <span class="n">tracer</span> <span class="o">=</span> <span class="n">request_tracer</span><span class="o">.</span><span class="n">RequestTracer</span><span class="p">(</span><span class="n">sampler</span><span class="o">=</span><span class="n">sampler</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
-<div class="section" id="reporters">
-<h3>Reporters<a class="headerlink" href="#reporters" title="Permalink to this headline">¶</a></h3>
-<p>You can choose different reporters to send the traces to. Default is
+<div class="section" id="exporters">
+<h3>Exporters<a class="headerlink" href="#exporters" title="Permalink to this headline">¶</a></h3>
+<p>You can choose different exporters to send the traces to. Default is
 printing the traces in JSON format. The rest options are sending to
-logging, or write to a file. Will add reporters to report to different
+logging, or write to a file. Will add exporters to report to different
 trace backend later.</p>
-<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">opencensus.trace.reporters</span> <span class="k">import</span> <span class="n">file_reporter</span>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">opencensus.trace.exporters</span> <span class="k">import</span> <span class="n">file_exporter</span>
 <span class="kn">from</span> <span class="nn">opencensus.trace.tracer</span> <span class="k">import</span> <span class="n">context_tracer</span>
 
 <span class="c1"># Export the traces to a local file</span>
-<span class="n">reporter</span> <span class="o">=</span> <span class="n">file_reporter</span><span class="o">.</span><span class="n">FileReporter</span><span class="p">(</span><span class="n">file_name</span><span class="o">=</span><span class="s1">&#39;traces&#39;</span><span class="p">)</span>
-<span class="n">tracer</span> <span class="o">=</span> <span class="n">context_tracer</span><span class="o">.</span><span class="n">ContextTracer</span><span class="p">(</span><span class="n">reporter</span><span class="o">=</span><span class="n">reporter</span><span class="p">)</span>
+<span class="n">exporter</span> <span class="o">=</span> <span class="n">file_exporter</span><span class="o">.</span><span class="n">FileExporter</span><span class="p">(</span><span class="n">file_name</span><span class="o">=</span><span class="s1">&#39;traces&#39;</span><span class="p">)</span>
+<span class="n">tracer</span> <span class="o">=</span> <span class="n">context_tracer</span><span class="o">.</span><span class="n">ContextTracer</span><span class="p">(</span><span class="n">exporter</span><span class="o">=</span><span class="n">exporter</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Report to Stackdriver Trace:</p>
-<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">opencensus.trace.reporters</span> <span class="k">import</span> <span class="n">google_cloud_reporter</span>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">opencensus.trace.exporters</span> <span class="k">import</span> <span class="n">stackdriver_exporter</span>
 <span class="kn">from</span> <span class="nn">opencensus.trace</span> <span class="k">import</span> <span class="n">request_tracer</span>
 
-<span class="n">reporter</span> <span class="o">=</span> <span class="n">google_cloud_reporter</span><span class="o">.</span><span class="n">GoogleCloudReporter</span><span class="p">(</span>
+<span class="n">exporter</span> <span class="o">=</span> <span class="n">stackdriver_exporter</span><span class="o">.</span><span class="n">StackdriverExporter</span><span class="p">(</span>
     <span class="n">project_id</span><span class="o">=</span><span class="s1">&#39;your_cloud_project&#39;</span><span class="p">)</span>
-<span class="n">tracer</span> <span class="o">=</span> <span class="n">request_tracer</span><span class="o">.</span><span class="n">RequestTracer</span><span class="p">(</span><span class="n">reporter</span><span class="o">=</span><span class="n">reporter</span><span class="p">)</span>
+<span class="n">tracer</span> <span class="o">=</span> <span class="n">request_tracer</span><span class="o">.</span><span class="n">RequestTracer</span><span class="p">(</span><span class="n">exporter</span><span class="o">=</span><span class="n">exporter</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -179,8 +176,8 @@ requests will be automatically traced.</p>
 
 <span class="n">app</span> <span class="o">=</span> <span class="n">flask</span><span class="o">.</span><span class="n">Flask</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
-<span class="c1"># You can also specify the sampler, reporter, propagator in the middleware,</span>
-<span class="c1"># default is using `AlwaysOnSampler` as sampler, `PrintReporter` as reporter,</span>
+<span class="c1"># You can also specify the sampler, exporter, propagator in the middleware,</span>
+<span class="c1"># default is using `AlwaysOnSampler` as sampler, `PrintExporter` as exporter,</span>
 <span class="c1"># `GoogleCloudFormatPropagator` as propagator.</span>
 <span class="n">middleware</span> <span class="o">=</span> <span class="n">FlaskMiddleware</span><span class="p">(</span><span class="n">app</span><span class="p">)</span>
 </pre></div>
@@ -197,10 +194,10 @@ the <code class="docutils literal"><span class="pre">MIDDLEWARE_CLASSES</span></
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="s1">&#39;opencensus.trace.ext.django&#39;</span><span class="p">,</span>
 </pre></div>
 </div>
-<p>Customize the sampler, reporter, propagator in the <code class="docutils literal"><span class="pre">settings.py</span></code> file:</p>
+<p>Customize the sampler, exporter, propagator in the <code class="docutils literal"><span class="pre">settings.py</span></code> file:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">OPENCENSUS_TRACE</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s1">&#39;SAMPLER&#39;</span><span class="p">:</span> <span class="s1">&#39;opencensus.trace.samplers.fixed_rate.FixedRateSampler&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;REPORTER&#39;</span><span class="p">:</span> <span class="s1">&#39;opencensus.trace.reporters.print_reporter.PrintReporter&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;SAMPLER&#39;</span><span class="p">:</span> <span class="s1">&#39;opencensus.trace.samplers.probability.ProbabilitySampler&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;REPORTER&#39;</span><span class="p">:</span> <span class="s1">&#39;opencensus.trace.exporters.print_exporter.PrintExporter&#39;</span><span class="p">,</span>
     <span class="s1">&#39;PROPAGATOR&#39;</span><span class="p">:</span> <span class="s1">&#39;opencensus.trace.propagation.google_cloud_format.&#39;</span>
                   <span class="s1">&#39;GoogleCloudFormatPropagator&#39;</span><span class="p">,</span>
 <span class="p">}</span>
@@ -213,12 +210,9 @@ the <code class="docutils literal"><span class="pre">MIDDLEWARE_CLASSES</span></
 <div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">opencensus.trace.tracer</span> <span class="k">import</span> <span class="n">webapp2_tracer</span>
 
 <span class="n">tracer</span> <span class="o">=</span> <span class="n">webapp2_tracer</span><span class="o">.</span><span class="n">WebApp2Tracer</span><span class="p">()</span>
-<span class="n">tracer</span><span class="o">.</span><span class="n">start_trace</span><span class="p">()</span>
 
 <span class="k">with</span> <span class="n">tracer</span><span class="o">.</span><span class="n">span</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;span1&#39;</span><span class="p">):</span>
     <span class="n">do_something_to_trace</span><span class="p">()</span>
-
-<span class="n">tracer</span><span class="o">.</span><span class="n">end_trace</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
@@ -238,14 +232,11 @@ want to instrument. Usage for enabling MySQL instrumentation like below:</p>
 <span class="n">config_integration</span><span class="o">.</span><span class="n">trace_integrations</span><span class="p">(</span><span class="n">INTEGRATIONS</span><span class="p">)</span>
 
 <span class="n">tracer</span> <span class="o">=</span> <span class="n">request_tracer</span><span class="o">.</span><span class="n">RequestTracer</span><span class="p">()</span>
-<span class="n">tracer</span><span class="o">.</span><span class="n">start_trace</span><span class="p">()</span>
 
 <span class="n">conn</span> <span class="o">=</span> <span class="n">mysql</span><span class="o">.</span><span class="n">connector</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">user</span><span class="o">=</span><span class="s1">&#39;user&#39;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s1">&#39;password&#39;</span><span class="p">)</span>
 <span class="n">cursor</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
 <span class="n">query</span> <span class="o">=</span> <span class="s1">&#39;SELECT 2*3&#39;</span>
 <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
-
-<span class="n">tracer</span><span class="o">.</span><span class="n">end_trace</span><span class="p">()</span>
 </pre></div>
 </div>
 <div class="section" id="mysql">
@@ -293,7 +284,6 @@ integration with requests module.</p>
 
 <span class="c1"># Create a tracer</span>
 <span class="n">tracer</span> <span class="o">=</span> <span class="n">RequestTracer</span><span class="p">()</span>
-<span class="n">tracer</span><span class="o">.</span><span class="n">start_trace</span><span class="p">()</span>
 
 <span class="c1"># Integrate with requests module</span>
 <span class="n">trace_integrations</span><span class="p">([</span><span class="s1">&#39;requests&#39;</span><span class="p">])</span>
