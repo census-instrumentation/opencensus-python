@@ -134,6 +134,24 @@ class TestSpan(unittest.TestCase):
         span.start()
         self.assertIsNotNone(span.start_time)
 
+    def test_finish_without_context_tracer(self):
+        span_name = 'root_span'
+        span = self._make_one(span_name)
+        self.assertIsNone(span.end_time)
+
+        span.finish()
+        self.assertIsNotNone(span.end_time)
+
+    def test_finish_with_context_tracer(self):
+        context_tracer = mock.Mock()
+        span_name = 'root_span'
+        span = self._make_one(name=span_name, context_tracer=context_tracer)
+
+        with span:
+            print('test')
+
+        self.assertTrue(context_tracer.end_span.called)
+
     def test_finish(self):
         span_name = 'root_span'
         span = self._make_one(span_name)

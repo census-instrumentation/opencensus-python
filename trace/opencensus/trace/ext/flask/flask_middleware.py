@@ -49,8 +49,7 @@ class FlaskMiddleware(object):
                      :class:`.PrintExporter`. The rest option is
                      :class:`.FileExporter`.
     """
-    def __init__(self, app, sampler=None, exporter=None, propagator=None,
-                 transport=None):
+    def __init__(self, app, sampler=None, exporter=None, propagator=None):
         if sampler is None:
             sampler = always_on.AlwaysOnSampler()
 

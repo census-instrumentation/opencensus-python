@@ -83,11 +83,24 @@ class TestContextTracer(unittest.TestCase):
         self.assertEqual(len(tracer._spans_list), 1)
         self.assertEqual(span_context.span_id, span.span_id)
 
-    def test_span(self):
-        tracer = context_tracer.ContextTracer()
-        span = tracer.span()
+    @mock.patch.object(context_tracer.ContextTracer, 'current_span')
+    def test_span(self, current_span_mock):
+        from opencensus.trace import span_context
 
-        self.assertEqual(span.__exit__, tracer.end_span)
+        span_id = 1234
+        span_name = 'test_span'
+        mock_span = mock.Mock()
+        mock_span.span_id = span_id
+        span_context = span_context.SpanContext(span_id=span_id)
+        tracer = context_tracer.ContextTracer(span_context=span_context)
+        current_span_mock.return_value = mock_span
+
+        span = tracer.start_span(name=span_name)
+
+        self.assertEqual(span.parent_span.span_id, span_id)
+        self.assertEqual(span.name, span_name)
+        self.assertEqual(len(tracer._spans_list), 1)
+        self.assertEqual(span_context.span_id, span.span_id)
 
     @mock.patch.object(context_tracer.ContextTracer, 'current_span')
     def test_end_span_no_active_span(self, mock_current_span):
