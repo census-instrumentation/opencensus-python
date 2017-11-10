@@ -51,6 +51,7 @@ class TestSpan(unittest.TestCase):
         self.assertIsNone(span.start_time)
         self.assertIsNone(span.end_time)
         self.assertEqual(span.children, [])
+        self.assertIsNone(span.context_tracer)
 
     def test_constructor_explicit(self):
         from datetime import datetime
@@ -67,6 +68,7 @@ class TestSpan(unittest.TestCase):
             '/http/status_code': '200',
             '/component': 'HTTP load balancer',
         }
+        context_tracer = mock.Mock()
 
         span = self._make_one(
             name=span_name,
@@ -75,7 +77,8 @@ class TestSpan(unittest.TestCase):
             labels=labels,
             start_time=start_time,
             end_time=end_time,
-            span_id=span_id)
+            span_id=span_id,
+            context_tracer=context_tracer)
 
         self.assertEqual(span.name, span_name)
         self.assertEqual(span.span_id, span_id)
@@ -85,6 +88,7 @@ class TestSpan(unittest.TestCase):
         self.assertEqual(span.start_time, start_time)
         self.assertEqual(span.end_time, end_time)
         self.assertEqual(span.children, [])
+        self.assertEqual(span.context_tracer, context_tracer)
 
     def test_span(self):
         from opencensus.trace.enums import Enum
