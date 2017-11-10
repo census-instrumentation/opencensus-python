@@ -95,7 +95,7 @@ class TestContextTracer(unittest.TestCase):
         tracer = context_tracer.ContextTracer(span_context=span_context)
         current_span_mock.return_value = mock_span
 
-        span = tracer.start_span(name=span_name)
+        span = tracer.span(name=span_name)
 
         self.assertEqual(span.parent_span.span_id, span_id)
         self.assertEqual(span.name, span_name)
