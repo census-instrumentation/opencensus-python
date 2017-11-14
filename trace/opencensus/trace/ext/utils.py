@@ -12,6 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# By default the blacklist urls are not tracing, currently just include the
+# health check url.
+DEFAULT_BLACKLIST_PATHS = [
+    '/_ah/health',
+]
+
 
 def get_func_name(func):
     """Return a name which includes the module name and function name."""
@@ -23,3 +29,20 @@ def get_func_name(func):
         return '{}.{}'.format(module_name, func_name)
 
     return func_name
+
+
+def disable_tracing_url(url, blacklist_paths=None):
+    """Disable tracing on the provided blacklist paths, by default not tracing
+    the health check request. True if not tracing, False if tracing.
+
+    :type blacklist_paths: list
+    :param blacklist_paths: Paths that not tracing.
+    """
+    if blacklist_paths is None:
+        blacklist_paths = DEFAULT_BLACKLIST_PATHS
+
+    for path in blacklist_paths:
+        if path in url:
+            return True
+
+    return False
