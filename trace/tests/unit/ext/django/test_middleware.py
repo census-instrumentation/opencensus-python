@@ -204,22 +204,24 @@ class TestOpencensusMiddleware(unittest.TestCase):
         from opencensus.trace.ext.django import middleware
         from opencensus.trace.tracer import base
         from opencensus.trace.tracer import noop_tracer
+        from opencensus.trace.ext import utils
+        from opencensus.trace import execution_context
+
+        execution_context.clear()
 
         blacklist_paths = ['/test_blacklist_path',]
-
-        params = {
-            'BLACKLIST_PATHS': ['/test_blacklist_path',]
-        }
-
+        params = {'BLACKLIST_PATHS': ['/test_blacklist_path',]}
         patch_params = mock.patch(
-            'opencensus.trace.ext.django.config.settings.params',
+            'opencensus.trace.ext.django.middleware.settings.params',
             params)
 
         with patch_params:
             middleware_obj = middleware.OpencensusMiddleware()
 
         django_request = RequestFactory().get('/test_blacklist_path')
-
+        disabled = utils.disable_tracing_url(django_request.path,
+                                             blacklist_paths)
+        self.assertTrue(disabled)
         self.assertEqual(middleware_obj._blacklist_paths, blacklist_paths)
 
         # test process_request
@@ -228,14 +230,13 @@ class TestOpencensusMiddleware(unittest.TestCase):
         tracer = middleware._get_current_request_tracer()
         span = tracer.current_span()
 
-        assert isinstance(span, base.NullContextManager)
-
         # process view
         view_func = mock.Mock()
         middleware_obj.process_view(django_request, view_func)
 
         tracer = middleware._get_current_request_tracer()
         span = tracer.current_span()
+
         assert isinstance(span, base.NullContextManager)
 
         # process response
