@@ -31,6 +31,7 @@ DEFAULT_DJANGO_TRACER_PARAMS = {
     'ZIPKIN_EXPORTER_SERVICE_NAME': 'my_service',
     'ZIPKIN_EXPORTER_HOST_NAME': 'localhost',
     'ZIPKIN_EXPORTER_PORT': 9411,
+    'BLACKLIST_PATHS': ['/_ah/health'],
 }
 
 

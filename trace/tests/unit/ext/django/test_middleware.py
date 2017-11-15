@@ -198,6 +198,56 @@ class TestOpencensusMiddleware(unittest.TestCase):
 
         self.assertEqual(span.name, 'mock.mock.Mock')
 
+    def test_blacklist_path(self):
+        from django.test import RequestFactory
+
+        from opencensus.trace.ext.django import middleware
+        from opencensus.trace.tracer import base
+        from opencensus.trace.tracer import noop_tracer
+
+        blacklist_paths = ['/test_blacklist_path',]
+
+        params = {
+            'BLACKLIST_PATHS': ['/test_blacklist_path',]
+        }
+
+        patch_params = mock.patch(
+            'opencensus.trace.ext.django.config.settings.params',
+            params)
+
+        with patch_params:
+            middleware_obj = middleware.OpencensusMiddleware()
+
+        django_request = RequestFactory().get('/test_blacklist_path')
+
+        self.assertEqual(middleware_obj._blacklist_paths, blacklist_paths)
+
+        # test process_request
+        middleware_obj.process_request(django_request)
+
+        tracer = middleware._get_current_request_tracer()
+        span = tracer.current_span()
+
+        assert isinstance(span, base.NullContextManager)
+
+        # process view
+        view_func = mock.Mock()
+        middleware_obj.process_view(django_request, view_func)
+
+        tracer = middleware._get_current_request_tracer()
+        span = tracer.current_span()
+        assert isinstance(span, base.NullContextManager)
+
+        # process response
+        django_response = mock.Mock()
+        django_response.status_code = 200
+
+        middleware_obj.process_response(django_request, django_response)
+
+        tracer = middleware._get_current_request_tracer()
+        span = tracer.current_span()
+        assert isinstance(span, base.NullContextManager)
+
     def test_process_response(self):
         from django.test import RequestFactory
 

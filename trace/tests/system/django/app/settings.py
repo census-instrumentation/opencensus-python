@@ -82,6 +82,7 @@ DEFAULT_DJANGO_TRACER_PARAMS = {
 
 OPENCENSUS_TRACE_PARAMS = {
     'SAMPLING_RATE': 0.5,
+    'BLACKLIST_PATHS': ['/_ah/health',]
 }
 
 # Internationalization
