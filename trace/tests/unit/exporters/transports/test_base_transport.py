@@ -1,4 +1,4 @@
-# Copyright 2017, OpenCensus Authors
+# Copyright 2016-17, OpenCensus Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,22 +14,19 @@
 
 import unittest
 
-class TestBaseExporter(unittest.TestCase):
+class TestBaseTransport(unittest.TestCase):
 
     def test_export_abstract(self):
-        from opencensus.trace.exporters import base
+        from opencensus.trace.exporters.transports import base
 
-        exporter = base.Exporter()
+        transport = base.Transport()
         trace = {}
 
         with self.assertRaises(NotImplementedError):
-            exporter.export(trace)
+            transport.export(trace)
 
-    def test_emit_abstract(self):
-        from opencensus.trace.exporters import base
+    def test_flush_abstract_and_optional(self):
+        from opencensus.trace.exporters.transports import base
 
-        exporter = base.Exporter()
-        trace = {}
-
-        with self.assertRaises(NotImplementedError):
-            exporter.emit(trace)
+        transport = base.Transport()
+        transport.flush()

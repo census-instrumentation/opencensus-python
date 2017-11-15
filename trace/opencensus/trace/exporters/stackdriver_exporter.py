@@ -74,18 +74,18 @@ def is_gae_environment():
 class StackdriverExporter(base.Exporter):
     """A exporter that send traces and trace spans to Google Cloud Stackdriver
     Trace.
-    
+
     :type client: :class: `~google.cloud.trace.client.Client`
     :param client: Stackdriver Trace client.
-    
+
     :type project_id: str
     :param project_id: project_id to create the Trace client.
-    
+
     :type transport: :class:`type`
     :param transport: Class for creating new transport objects. It should
                       extend from the base :class:`.Transport` type and
                       implement :meth`.Transport.export`. Defaults to
-                      :class:`.SyncTransport`. The other option is 
+                      :class:`.SyncTransport`. The other option is
                       :class:`.BackgroundThreadTransport`.
     """
     def __init__(self, client=None, project_id=None,

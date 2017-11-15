@@ -56,12 +56,12 @@ class ZipkinExporter(base.Exporter):
 
     :type end_point: str
     :param end_point: (Optional) The path for the span exporting endpoint.
-    
+
     :type transport: :class:`type`
     :param transport: Class for creating new transport objects. It should
                       extend from the base :class:`.Transport` type and
                       implement :meth`.Transport.export`. Defaults to
-                      :class:`.SyncTransport`. The other option is 
+                      :class:`.SyncTransport`. The other option is
                       :class:`.BackgroundThreadTransport`.
     """
 

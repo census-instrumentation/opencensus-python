@@ -30,13 +30,13 @@ _WORKER_TERMINATOR = object()
 
 class _Worker(object):
     """A background thread that exports batches of spans.
-    
+
     :type exporter: :class:`~opencensus.trace.exporters.base.Exporter`
     :param exporter: Instances of Exporter objects. Defaults to
                     :class:`.PrintExporter`. The rest options are
                     :class:`.ZipkinExporter`, :class:`.StackdriverExporter`,
                     :class:`.LoggingExporter`, :class:`.FileExporter`.
-    
+
     :type grace_period: float
     :param grace_period: The amount of time to wait for pending spans to
                          be submitted when the process is shutting down.
@@ -64,7 +64,7 @@ class _Worker(object):
 
         Gets at least one (blocking) and at most ``max_items`` items
         (non-blocking) from a given Queue. Does not mark the items as done.
-        
+
         :rtype: Sequence
         :returns: A sequence of items retrieved from the queue.
         """
@@ -80,7 +80,7 @@ class _Worker(object):
 
     def _thread_main(self):
         """The entry point for the worker thread.
-        
+
         Pulls pending spans off the queue and writes them in batches to
         the specified tracing backend using the exporter.
         """
@@ -124,7 +124,7 @@ class _Worker(object):
 
     def start(self):
         """Starts the background thread.
-        
+
         Additionally, this registers a handler for process exit to attempt
         to send any pending spans before shutdown.
         """
@@ -199,7 +199,7 @@ class BackgroundThreadTransport(base.Transport):
                      :class:`.PrintExporter`. The rest options are
                      :class:`.ZipkinExporter`, :class:`.StackdriverExporter`,
                      :class:`.LoggingExporter`, :class:`.FileExporter`.
-    
+
     :type grace_period: float
     :param grace_period: The amount of time to wait for pending spans to
                          be submitted when the process is shutting down.
