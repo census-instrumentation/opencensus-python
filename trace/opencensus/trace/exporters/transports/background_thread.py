@@ -19,6 +19,8 @@ import time
 from six.moves import queue
 from six.moves import range
 
+from opencensus.trace.exporters.transports import base
+
 _DEFAULT_GRACE_PERIOD = 5.0  # Seconds
 _WAIT_PERIOD = 3.0  # Seconds
 _DEFAULT_MAX_BATCH_SIZE = 2
@@ -27,6 +29,22 @@ _WORKER_TERMINATOR = object()
 
 
 class _Worker(object):
+    """A background thread that exports batches of spans.
+    
+    :type exporter: :class:`~opencensus.trace.exporters.base.Exporter`
+    :param exporter: Instances of Exporter objects. Defaults to
+                    :class:`.PrintExporter`. The rest options are
+                    :class:`.ZipkinExporter`, :class:`.StackdriverExporter`,
+                    :class:`.LoggingExporter`, :class:`.FileExporter`.
+    
+    :type grace_period: float
+    :param grace_period: The amount of time to wait for pending spans to
+                         be submitted when the process is shutting down.
+
+    :type max_batch_size: int
+    :param max_batch_size: The maximum number of items to send at a time
+                           in the background thread.
+    """
     def __init__(self, exporter, grace_period=_DEFAULT_GRACE_PERIOD,
                  max_batch_size=_DEFAULT_MAX_BATCH_SIZE):
         self.exporter = exporter
@@ -38,9 +56,18 @@ class _Worker(object):
 
     @property
     def is_alive(self):
+        """Returns True is the background thread is running."""
         return self._thread is not None and self._thread.is_alive()
 
     def _get_items(self):
+        """Get multiple items from a Queue.
+
+        Gets at least one (blocking) and at most ``max_items`` items
+        (non-blocking) from a given Queue. Does not mark the items as done.
+        
+        :rtype: Sequence
+        :returns: A sequence of items retrieved from the queue.
+        """
         items = [self._queue.get()]
 
         while len(items) < self._max_batch_size:
@@ -52,6 +79,11 @@ class _Worker(object):
         return items
 
     def _thread_main(self):
+        """The entry point for the worker thread.
+        
+        Pulls pending spans off the queue and writes them in batches to
+        the specified tracing backend using the exporter.
+        """
         print('Background thread started.')
 
         quit_ = False
@@ -67,6 +99,8 @@ class _Worker(object):
             for item in items:
                 if item is _WORKER_TERMINATOR:
                     quit_ = True
+                    # Continue processing items, don't break, try to process
+                    # all items we got back before quitting.
                 else:
                     spans.extend(item.get('spans'))
 
@@ -89,7 +123,11 @@ class _Worker(object):
         print('Background thread exited.')
 
     def start(self):
-        # Ensure calling start again does not create a new thread
+        """Starts the background thread.
+        
+        Additionally, this registers a handler for process exit to attempt
+        to send any pending spans before shutdown.
+        """
         with self._lock:
             if self.is_alive:
                 return
@@ -101,6 +139,23 @@ class _Worker(object):
             atexit.register(self._export_pending_spans)
 
     def stop(self):
+        """Signals the background thread to stop.
+
+        This does not terminate the background thread. It simply queues the
+        stop signal. If the main process exits before the background thread
+        processes the stop signal, it will be terminated without finishing
+        work. The ``grace_period`` parameter will give the background
+        thread some time to finish processing before this function returns.
+
+        :type grace_period: float
+        :param grace_period: If specified, this method will block up to this
+                             many seconds to allow the background thread to
+                             finish work before returning.
+
+        :rtype: bool
+        :returns: True if the thread terminated. False if the thread is still
+                  running.
+        """
         if not self.is_alive:
             return True
 
@@ -114,6 +169,8 @@ class _Worker(object):
             return success
 
     def _export_pending_spans(self):
+        """Callback that attempts to send pending spans before termination."""
+
         if not self.is_alive:
             return
 
@@ -126,13 +183,32 @@ class _Worker(object):
             print('Failed to send pending spans.')
 
     def enqueue(self, trace):
+        """Queues a trace to be written by the background thread."""
         self._queue.put_nowait(trace)
 
     def flush(self):
+        """Submit any pending spans."""
         self._queue.join()
 
 
-class BackgroundThreadTransport(object):
+class BackgroundThreadTransport(base.Transport):
+    """Asynchronous transport that uses a background thread.
+
+    :type exporter: :class:`~opencensus.trace.exporters.base.Exporter`
+    :param exporter: Instances of Exporter objects. Defaults to
+                     :class:`.PrintExporter`. The rest options are
+                     :class:`.ZipkinExporter`, :class:`.StackdriverExporter`,
+                     :class:`.LoggingExporter`, :class:`.FileExporter`.
+    
+    :type grace_period: float
+    :param grace_period: The amount of time to wait for pending spans to
+                         be submitted when the process is shutting down.
+
+    :type max_batch_size: int
+    :param max_batch_size: The maximum number of items to send at a time
+                           in the background thread.
+    """
+
     def __init__(self, exporter, grace_period=_DEFAULT_GRACE_PERIOD,
                  max_batch_size=_DEFAULT_MAX_BATCH_SIZE):
         self.exporter = exporter
@@ -140,7 +216,9 @@ class BackgroundThreadTransport(object):
         self.worker.start()
 
     def export(self, trace):
+        """Put the trace to be exported into queue."""
         self.worker.enqueue(trace)
 
     def flush(self):
+        """Submit any pending traces."""
         self.worker.flush()

@@ -12,8 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from opencensus.trace.exporters.transports import base
 
-class SyncTransport(object):
+
+class SyncTransport(base.Transport):
     def __init__(self, exporter):
         self.exporter = exporter
 

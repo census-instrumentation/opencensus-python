@@ -38,7 +38,9 @@ POSTGRES_PASSWORD = os.environ.get('SYSTEST_POSTGRES_PASSWORD')
 
 app = flask.Flask(__name__)
 
-# Enable tracing, send traces to Stackdriver Trace using background thread transport
+# Enable tracing, send traces to Stackdriver Trace using background thread transport.
+# This is intentionally different from the Django system test which is using sync
+# transport to test both.
 from opencensus.trace.exporters.transports import background_thread
 exporter = stackdriver_exporter.StackdriverExporter(
     transport=background_thread.BackgroundThreadTransport)
