@@ -151,6 +151,8 @@ class TestContextTracer(unittest.TestCase):
         tracer = context_tracer.ContextTracer(exporter=exporter)
         tracer._spans_list = [span]
         mock_span = mock.Mock()
+        mock_span.__iter__ = mock.Mock(
+            return_value=iter([mock_span]))
         parent_span_id = 1234
         mock_span.parent_span.span_id = parent_span_id
         mock_current_span.return_value = mock_span
