@@ -38,6 +38,9 @@ class FlaskMiddleware(object):
     :type app: :class: `~flask.Flask`
     :param app: A flask application.
 
+    :type blacklist_paths: list
+    :param blacklist_paths: Paths that do not trace.
+
     :type sampler: :class: `type`
     :param sampler: Class for creating new Sampler objects. It should extend
                     from the base :class:`.Sampler` type and implement
@@ -49,6 +52,13 @@ class FlaskMiddleware(object):
     :param exporter: Class for creating new exporter objects. Default to
                      :class:`.PrintExporter`. The rest option is
                      :class:`.FileExporter`.
+
+    :type propagator: :class: 'type'
+    :param propagator: Class for creating new propagator objects. Default to
+                       :class:`.GoogleCloudFormatPropagator`. The rest option
+                       are :class:`.BinaryFormatPropagator`,
+                       :class:`.TextFormatPropagator` and
+                       :class:`.TraceContextPropagator`.
     """
     def __init__(self, app, blacklist_paths=None, sampler=None, exporter=None,
                  propagator=None):
