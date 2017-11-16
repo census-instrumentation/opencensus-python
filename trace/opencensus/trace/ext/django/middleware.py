@@ -30,11 +30,13 @@ REQUEST_THREAD_LOCAL_KEY = 'django_request'
 
 _DJANGO_TRACE_HEADER = 'HTTP_X_CLOUD_TRACE_CONTEXT'
 
+BLACKLIST_PATHS = 'BLACKLIST_PATHS'
 GCP_EXPORTER_PROJECT = 'GCP_EXPORTER_PROJECT'
 SAMPLING_RATE = 'SAMPLING_RATE'
 ZIPKIN_EXPORTER_SERVICE_NAME = 'ZIPKIN_EXPORTER_SERVICE_NAME'
 ZIPKIN_EXPORTER_HOST_NAME = 'ZIPKIN_EXPORTER_HOST_NAME'
 ZIPKIN_EXPORTER_PORT = 'ZIPKIN_EXPORTER_PORT'
+
 
 log = logging.getLogger(__name__)
 
@@ -94,6 +96,8 @@ class OpencensusMiddleware(object):
         self._exporter = settings.EXPORTER
         self._propagator = settings.PROPAGATOR
 
+        self._blacklist_paths = settings.params.get(BLACKLIST_PATHS)
+
         # Initialize the sampler
         if self._sampler.__name__ == 'ProbabilitySampler':
             _rate = settings.params.get(
@@ -129,6 +133,10 @@ class OpencensusMiddleware(object):
         :type request: :class:`~django.http.request.HttpRequest`
         :param request: Django http request.
         """
+        # Do not trace if the url is blacklisted
+        if utils.disable_tracing_url(request.path, self._blacklist_paths):
+            return
+
         # Add the request to thread local
         execution_context.set_opencensus_attr(
             REQUEST_THREAD_LOCAL_KEY,
@@ -161,6 +169,10 @@ class OpencensusMiddleware(object):
         """Process view is executed before the view function, here we get the
         function name add set it as the span name.
         """
+        # Do not trace if the url is blacklisted
+        if utils.disable_tracing_url(request.path, self._blacklist_paths):
+            return
+
         try:
             # Get the current span and set the span name to the current
             # function name of the request.
@@ -171,6 +183,10 @@ class OpencensusMiddleware(object):
             log.error('Failed to trace request', exc_info=True)
 
     def process_response(self, request, response):
+        # Do not trace if the url is blacklisted
+        if utils.disable_tracing_url(request.path, self._blacklist_paths):
+            return response
+
         try:
             tracer = _get_current_request_tracer()
             tracer.add_label_to_current_span(

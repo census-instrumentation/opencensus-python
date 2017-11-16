@@ -34,6 +34,10 @@ class TestFlaskMiddleware(unittest.TestCase):
         def index():
             return 'test flask trace'  # pragma: NO COVER
 
+        @app.route('/_ah/health')
+        def health_check():
+            return 'test health check'  # pragma: NO COVER
+
         return app
 
     def tearDown(self):
@@ -108,6 +112,31 @@ class TestFlaskMiddleware(unittest.TestCase):
 
             span_context = tracer.span_context
             self.assertEqual(span_context.trace_id, trace_id)
+
+    def test__before_request_blacklist(self):
+        from opencensus.trace import execution_context
+        from opencensus.trace.tracer import base
+        from opencensus.trace.tracer import noop_tracer
+
+        flask_trace_header = 'X_CLOUD_TRACE_CONTEXT'
+        trace_id = '2dd43a1d6b2549c6bc2a1a54c2fc0b05'
+        span_id = 1234
+        flask_trace_id = '{}/{}'.format(trace_id, span_id)
+
+        app = self.create_app()
+        flask_middleware.FlaskMiddleware(app=app)
+        context = app.test_request_context(
+            path='/_ah/health',
+            headers={flask_trace_header: flask_trace_id})
+
+        with context:
+            app.preprocess_request()
+            tracer = execution_context.get_opencensus_tracer()
+            assert isinstance(tracer, noop_tracer.NoopTracer)
+
+            span = tracer.current_span()
+
+            assert isinstance(span, base.NullContextManager)
 
     def test_header_encoding(self):
         # The test is for detecting the encoding compatibility issue in
@@ -203,3 +232,24 @@ class TestFlaskMiddleware(unittest.TestCase):
             headers={flask_trace_header: flask_trace_id})
 
         self.assertEqual(response.status_code, 200)
+
+    def test__after_request_blacklist(self):
+        from opencensus.trace import execution_context
+        from opencensus.trace.tracer import noop_tracer
+
+        flask_trace_header = 'X_CLOUD_TRACE_CONTEXT'
+        trace_id = '2dd43a1d6b2549c6bc2a1a54c2fc0b05'
+        span_id = 1234
+        flask_trace_id = '{}/{}'.format(trace_id, span_id)
+
+        app = self.create_app()
+        flask_middleware.FlaskMiddleware(app=app)
+
+        response = app.test_client().get(
+            '/_ah/health',
+            headers={flask_trace_header: flask_trace_id})
+
+        tracer = execution_context.get_opencensus_tracer()
+
+        self.assertEqual(response.status_code, 200)
+        assert isinstance(tracer, noop_tracer.NoopTracer)

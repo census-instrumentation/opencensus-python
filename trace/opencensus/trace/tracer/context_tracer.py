@@ -136,11 +136,13 @@ class ContextTracer(base.Tracer):
 
     def get_trace_json(self, span):
         """Get the JSON format trace."""
-        span_json = trace_span.format_span_json(span)
+        span_tree = list(iter(span))
+        span_tree_list = [trace_span.format_span_json(span)
+                          for span in span_tree]
 
         trace = {
             'traceId': self.trace_id,
-            'spans': [span_json],
+            'spans': span_tree_list,
         }
 
         return trace
