@@ -21,6 +21,7 @@ import requests
 import calendar
 
 from opencensus.trace.exporters import base
+from opencensus.trace.exporters.transports import sync
 
 DEFAULT_ENDPOINT = '/api/v2/spans'
 DEFAULT_HOST_NAME = 'localhost'
@@ -39,7 +40,7 @@ SUCCESS_STATUS_CODE = (200, 202)
 
 
 class ZipkinExporter(base.Exporter):
-    """export the spans to Zipkin.
+    """Export the spans to Zipkin.
 
     See: http://zipkin.io/zipkin-api/#
 
@@ -55,6 +56,13 @@ class ZipkinExporter(base.Exporter):
 
     :type end_point: str
     :param end_point: (Optional) The path for the span exporting endpoint.
+
+    :type transport: :class:`type`
+    :param transport: Class for creating new transport objects. It should
+                      extend from the base :class:`.Transport` type and
+                      implement :meth`.Transport.export`. Defaults to
+                      :class:`.SyncTransport`. The other option is
+                      :class:`.BackgroundThreadTransport`.
     """
 
     def __init__(
@@ -62,12 +70,14 @@ class ZipkinExporter(base.Exporter):
             service_name='my_service',
             host_name=DEFAULT_HOST_NAME,
             port=DEFAULT_PORT,
-            endpoint=DEFAULT_ENDPOINT):
+            endpoint=DEFAULT_ENDPOINT,
+            transport=sync.SyncTransport):
         self.service_name = service_name
         self.host_name = host_name
         self.port = port
         self.endpoint = endpoint
         self.url = self.get_url
+        self.transport = transport(self)
 
     @property
     def get_url(self):
@@ -76,7 +86,7 @@ class ZipkinExporter(base.Exporter):
             self.port,
             self.endpoint)
 
-    def export(self, trace):
+    def emit(self, trace):
         """Send trace to Zipkin server, default using the v1 API.
 
         :type trace: dict
@@ -97,7 +107,10 @@ class ZipkinExporter(base.Exporter):
                     "Failed to send spans to Zipkin server! Spans are {}"
                     .format(zipkin_spans))
         except Exception as e:  # pragma: NO COVER
-            logging.error(e.message)
+            logging.error(getattr(e, 'message', e))
+
+    def export(self, trace):
+        self.transport.export(trace)
 
     def translate_to_zipkin(self, trace_id, spans):
         """Translate the opencensus spans to zipkin spans.

@@ -11,25 +11,3 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-import unittest
-
-class TestBaseExporter(unittest.TestCase):
-
-    def test_export_abstract(self):
-        from opencensus.trace.exporters import base
-
-        exporter = base.Exporter()
-        trace = {}
-
-        with self.assertRaises(NotImplementedError):
-            exporter.export(trace)
-
-    def test_emit_abstract(self):
-        from opencensus.trace.exporters import base
-
-        exporter = base.Exporter()
-        trace = {}
-
-        with self.assertRaises(NotImplementedError):
-            exporter.emit(trace)

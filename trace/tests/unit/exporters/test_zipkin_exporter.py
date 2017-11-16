@@ -42,10 +42,17 @@ class TestZipkinExporter(unittest.TestCase):
         self.assertEqual(exporter.endpoint, endpoint)
         self.assertEqual(exporter.url, expected_url)
 
+    def test_export(self):
+        exporter = zipkin_exporter.ZipkinExporter(
+            service_name='my_service', transport=MockTransport)
+        exporter.export({})
+
+        self.assertTrue(exporter.transport.export_called)
+
     @mock.patch('requests.post')
     @mock.patch.object(zipkin_exporter.ZipkinExporter,
                 'translate_to_zipkin')
-    def test_export_succeeded(self, translate_mock, requests_mock):
+    def test_emit_succeeded(self, translate_mock, requests_mock):
         import json
 
         trace = {'test': 'this_is_for_test'}
@@ -55,7 +62,7 @@ class TestZipkinExporter(unittest.TestCase):
         response.status_code = 202
         requests_mock.return_value = response
         translate_mock.return_value = trace
-        exporter.export(trace)
+        exporter.emit(trace)
 
         requests_mock.assert_called_once_with(
             url=exporter.url,
@@ -65,7 +72,7 @@ class TestZipkinExporter(unittest.TestCase):
     @mock.patch('requests.post')
     @mock.patch.object(zipkin_exporter.ZipkinExporter,
                 'translate_to_zipkin')
-    def test_export_failed(self, translate_mock, requests_mock):
+    def test_emit_failed(self, translate_mock, requests_mock):
         import json
 
         trace = {'test': 'this_is_for_test'}
@@ -75,7 +82,7 @@ class TestZipkinExporter(unittest.TestCase):
         response.status_code = 400
         requests_mock.return_value = response
         translate_mock.return_value = trace
-        exporter.export(trace)
+        exporter.emit(trace)
 
         requests_mock.assert_called_once_with(
             url=exporter.url,
@@ -177,3 +184,12 @@ class TestZipkinExporter(unittest.TestCase):
             spans=spans)
 
         self.assertEqual(zipkin_spans, expected_zipkin_spans)
+
+
+class MockTransport(object):
+    def __init__(self, exporter=None):
+        self.export_called = False
+        self.exporter = exporter
+
+    def export(self, trace):
+        self.export_called = True

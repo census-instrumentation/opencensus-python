@@ -15,7 +15,7 @@
 import unittest
 
 
-class TestFileExporter(unittest.TestCase):
+class TestPrintExporter(unittest.TestCase):
 
     @staticmethod
     def _get_target_class():
@@ -26,9 +26,24 @@ class TestFileExporter(unittest.TestCase):
     def _make_one(self, *args, **kw):
         return self._get_target_class()(*args, **kw)
 
-    def test_export(self):
+    def test_emit(self):
         traces = {}
         exporter = self._make_one()
 
-        printed = exporter.export(traces)
+        printed = exporter.emit(traces)
         self.assertEqual(printed, traces)
+
+    def test_export(self):
+        exporter = self._make_one(transport=MockTransport)
+        exporter.export({})
+
+        self.assertTrue(exporter.transport.export_called)
+
+
+class MockTransport(object):
+    def __init__(self, exporter=None):
+        self.export_called = False
+        self.exporter = exporter
+
+    def export(self, trace):
+        self.export_called = True

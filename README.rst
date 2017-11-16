@@ -135,6 +135,34 @@ SpanContext and headers. Currently support
     # Serialize
     header = propagator.to_header(span_context)
 
+Blacklist Paths
+~~~~~~~~~~~~~~~
+
+You can specify which paths you do not want to trace by configuring the
+blacklist paths. By default the health check path in GAE Flex is not traced,
+but you can turn it on in the setting.
+
+Here is the sample code for configuring the blacklist:
+
+For Flask:
+
+.. code:: python
+
+    from opencensus.trace.ext.flask.flask_middleware import FlaskMiddleware
+
+    app = flask.Flask(__name__)
+
+    blacklist_paths = ['_ah/health']
+    middleware = FlaskMiddleware(app, blacklist_paths=blacklist_paths)
+
+For Django:
+
+Add this line in the OPENCENSUS_PARAMS:
+
+::
+
+    'BLACKLIST_PATHS': ['_ah/health',]
+
 Framework Integration
 ---------------------
 
@@ -186,6 +214,20 @@ Customize the sampler, exporter, propagator in the ``settings.py`` file:
         'REPORTER': 'opencensus.trace.exporters.print_exporter.PrintExporter',
         'PROPAGATOR': 'opencensus.trace.propagation.google_cloud_format.'
                       'GoogleCloudFormatPropagator',
+    }
+
+Configure the sampling rate and other params:
+
+::
+
+    OPENCENSUS_TRACE_PARAMS = {
+        'BLACKLIST_PATHS': ['/_ah/health'],
+        'GCP_EXPORTER_PROJECT': None,
+        'SAMPLING_RATE': 0.5,
+        'ZIPKIN_EXPORTER_SERVICE_NAME': 'my_service',
+        'ZIPKIN_EXPORTER_HOST_NAME': 'localhost',
+        'ZIPKIN_EXPORTER_PORT': 9411,
+
     }
 
 Then the requests will be automatically traced.
