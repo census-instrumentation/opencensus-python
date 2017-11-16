@@ -194,6 +194,8 @@ class TestRequestTracer(unittest.TestCase):
         sampler.should_sample.return_value = True
         tracer = request_tracer.RequestTracer(sampler=sampler)
         span = mock.Mock()
+        span.__iter__ = mock.Mock(
+            return_value=iter([span]))
         execution_context.set_current_span(span)
         tracer.end_span()
 

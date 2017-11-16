@@ -22,7 +22,7 @@ def docs(session):
     """Build the docs."""
 
     # Build docs against the latest version of Python, because we can.
-    session.interpreter = 'python3.4'
+    session.interpreter = 'python3.6'
 
     # Set the virtualenv dirname.
     session.virtualenv_dirname = 'docs'

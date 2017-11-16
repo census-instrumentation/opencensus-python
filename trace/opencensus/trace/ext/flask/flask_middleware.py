@@ -19,6 +19,7 @@ from opencensus.trace import labels_helper
 from opencensus.trace import execution_context
 from opencensus.trace.propagation import google_cloud_format
 from opencensus.trace.exporters import print_exporter
+from opencensus.trace.ext import utils
 from opencensus.trace.samplers import always_on
 from opencensus.trace import request_tracer
 
@@ -37,6 +38,9 @@ class FlaskMiddleware(object):
     :type app: :class: `~flask.Flask`
     :param app: A flask application.
 
+    :type blacklist_paths: list
+    :param blacklist_paths: Paths that do not trace.
+
     :type sampler: :class: `type`
     :param sampler: Class for creating new Sampler objects. It should extend
                     from the base :class:`.Sampler` type and implement
@@ -48,8 +52,16 @@ class FlaskMiddleware(object):
     :param exporter: Class for creating new exporter objects. Default to
                      :class:`.PrintExporter`. The rest option is
                      :class:`.FileExporter`.
+
+    :type propagator: :class: 'type'
+    :param propagator: Class for creating new propagator objects. Default to
+                       :class:`.GoogleCloudFormatPropagator`. The rest option
+                       are :class:`.BinaryFormatPropagator`,
+                       :class:`.TextFormatPropagator` and
+                       :class:`.TraceContextPropagator`.
     """
-    def __init__(self, app, sampler=None, exporter=None, propagator=None):
+    def __init__(self, app, blacklist_paths=None, sampler=None, exporter=None,
+                 propagator=None):
         if sampler is None:
             sampler = always_on.AlwaysOnSampler()
 
@@ -60,6 +72,7 @@ class FlaskMiddleware(object):
             propagator = google_cloud_format.GoogleCloudFormatPropagator()
 
         self.app = app
+        self.blacklist_paths = blacklist_paths
         self.sampler = sampler
         self.exporter = exporter
         self.propagator = propagator
@@ -74,6 +87,10 @@ class FlaskMiddleware(object):
 
         See: http://flask.pocoo.org/docs/0.12/api/#flask.Flask.before_request
         """
+        # Do not trace if the url is blacklisted
+        if utils.disable_tracing_url(flask.request.url, self.blacklist_paths):
+            return
+
         try:
             header = get_flask_header()
             span_context = self.propagator.from_header(header)
@@ -100,6 +117,10 @@ class FlaskMiddleware(object):
 
         See: http://flask.pocoo.org/docs/0.12/api/#flask.Flask.after_request
         """
+        # Do not trace if the url is blacklisted
+        if utils.disable_tracing_url(flask.request.url, self.blacklist_paths):
+            return response
+
         try:
             tracer = execution_context.get_opencensus_tracer()
             tracer.add_label_to_current_span(

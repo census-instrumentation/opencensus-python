@@ -72,16 +72,9 @@ OPENCENSUS_TRACE = {
                   'GoogleCloudFormatPropagator',
 }
 
-DEFAULT_DJANGO_TRACER_PARAMS = {
-    'SAMPLING_RATE': 0.5,
-    'GCP_REPORTER_PROJECT': os.environ.get('GCLOUD_PROJECT_PYTHON'),
-    'ZIPKIN_REPORTER_SERVICE_NAME': 'my_service',
-    'ZIPKIN_REPORTER_HOST_NAME': 'localhost',
-    'ZIPKIN_REPORTER_PORT': 9411,
-}
-
 OPENCENSUS_TRACE_PARAMS = {
     'SAMPLING_RATE': 0.5,
+    'BLACKLIST_PATHS': ['_ah/health',]
 }
 
 # Internationalization

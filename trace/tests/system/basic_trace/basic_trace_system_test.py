@@ -63,7 +63,7 @@ class TestBasicTrace(unittest.TestCase):
         spans = trace_json.get('spans')
 
         self.assertEqual(trace_json.get('traceId'), trace_id)
-        self.assertEqual(len(spans), 1)
+        self.assertEqual(len(spans), 2)
 
         for span in spans:
             if span.get('name') == 'root_span':
