@@ -54,7 +54,7 @@ def wrap_requests(requests_func):
 
         # Add the status code to labels
         _tracer.add_label_to_current_span(
-            'requests/status_code', result.status_code)
+            'requests/status_code', str(result.status_code))
 
         _tracer.end_span()
         return result
@@ -76,7 +76,7 @@ def wrap_session_request(request_func):
 
         # Add the status code to labels
         _tracer.add_label_to_current_span(
-            'requests/status_code', result.status_code)
+            'requests/status_code', str(result.status_code))
 
         _tracer.end_span()
         return result
