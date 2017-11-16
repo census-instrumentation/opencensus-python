@@ -26,11 +26,15 @@ DEFAULT_DJANGO_TRACER_CONFIG = {
 }
 
 DEFAULT_DJANGO_TRACER_PARAMS = {
-    'SAMPLING_RATE': 0.5,
+    # https://cloud.google.com/appengine/docs/flexible/python/
+    # how-instances-are-managed#health_checking
+    'BLACKLIST_PATHS': ['/_ah/health'],
     'GCP_EXPORTER_PROJECT': None,
+    'SAMPLING_RATE': 0.5,
     'ZIPKIN_EXPORTER_SERVICE_NAME': 'my_service',
     'ZIPKIN_EXPORTER_HOST_NAME': 'localhost',
     'ZIPKIN_EXPORTER_PORT': 9411,
+
 }
 
 
