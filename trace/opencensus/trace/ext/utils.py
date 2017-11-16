@@ -52,7 +52,7 @@ def disable_tracing_url(url, blacklist_paths=None):
     if blacklist_paths is None:
         blacklist_paths = DEFAULT_BLACKLIST_PATHS
 
-    # Remove the 'http://' if exists
+    # Remove the 'https?|ftp://' if exists
     url = re.sub(URL_PATTERN, '', url)
 
     # Split the url by the first '/' and get the path part
