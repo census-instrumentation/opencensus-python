@@ -12,25 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
-import requests
-import sys
+from django.http import HttpResponse
+from django.shortcuts import render
 
-import flask
+from .forms import HelloForm
+
+from opencensus.trace import config_integration
+
 import mysql.connector
 import psycopg2
 import sqlalchemy
 
-from opencensus.trace.ext.flask.flask_middleware import FlaskMiddleware
-from opencensus.trace import config_integration
-from opencensus.trace.exporters import stackdriver_exporter
-from opencensus.trace.samplers import probability
+import time
+import os
+import requests
 
-INTEGRATIONS = ['mysql', 'postgresql', 'sqlalchemy', 'requests']
-
-DB_HOST = '127.0.0.1'
-
-PROJECT = os.environ.get('GCLOUD_PROJECT_PYTHON')
+DB_HOST = 'localhost'
 
 # MySQL settings
 MYSQL_PASSWORD = os.environ.get('SYSTEST_MYSQL_PASSWORD')
@@ -38,28 +35,36 @@ MYSQL_PASSWORD = os.environ.get('SYSTEST_MYSQL_PASSWORD')
 # PostgreSQL settings
 POSTGRES_PASSWORD = os.environ.get('SYSTEST_POSTGRES_PASSWORD')
 
-app = flask.Flask(__name__)
+INTEGRATIONS = ['mysql', 'postgresql', 'sqlalchemy', 'requests']
 
-# Enable tracing, configure the trace params, send traces to Stackdriver Trace
-exporter = stackdriver_exporter.StackdriverExporter(project_id='yanhuili-sandbox')
-sampler = probability.ProbabilitySampler(rate=1)
-middleware = FlaskMiddleware(app, exporter=exporter, sampler=sampler)
 config_integration.trace_integrations(INTEGRATIONS)
 
 
-@app.route('/')
-def hello():
-    return 'Hello world!'
+def home(request):
+    return render(request, 'home.html')
 
 
-@app.route('/requests')
-def trace_requests():
+def greetings(request):
+    if request.method == 'POST':
+        form = HelloForm(request.POST)
+
+        if form.is_valid():
+            first_name = form.cleaned_data['fname']
+            last_name = form.cleaned_data['lname']
+            return HttpResponse(
+                "Hello, {} {}".format(first_name, last_name))
+        else:
+            return render(request, 'home.html')
+
+    return render(request, 'home.html')
+
+
+def trace_requests(request):
     response = requests.get('http://www.google.com')
-    return str(response.status_code)
+    return HttpResponse(str(response.status_code))
 
 
-@app.route('/mysql')
-def mysql_query():
+def mysql_trace(request):
     try:
         conn = mysql.connector.connect(
             host=DB_HOST,
@@ -75,18 +80,14 @@ def mysql_query():
         for item in cursor:
             result.append(item)
 
-        cursor.close()
-        conn.close()
-
-        return str(result)
+        return HttpResponse(str(result))
 
     except Exception:
         msg = "Query failed. Check your env vars for connection settings."
-        return msg, 500
+        return HttpResponse(msg, status=500)
 
 
-@app.route('/postgresql')
-def postgresql_query():
+def postgresql_trace(request):
     try:
         conn = psycopg2.connect(
             host=DB_HOST,
@@ -103,18 +104,14 @@ def postgresql_query():
         for item in cursor.fetchall():
             result.append(item)
 
-        cursor.close()
-        conn.close()
-
-        return str(result)
+        return HttpResponse(str(result))
 
     except Exception:
         msg = "Query failed. Check your env vars for connection settings."
-        return msg, 500
+        return HttpResponse(msg, status=500)
 
 
-@app.route('/sqlalchemy-mysql')
-def sqlalchemy_mysql_query():
+def sqlalchemy_mysql_trace(request):
     try:
         engine = sqlalchemy.create_engine(
             'mysql+mysqlconnector://{}:{}@{}'.format(
@@ -130,15 +127,14 @@ def sqlalchemy_mysql_query():
         for item in result_set:
             result.append(item)
 
-        return str(result)
+        return HttpResponse(str(result))
 
     except Exception:
         msg = "Query failed. Check your env vars for connection settings."
-        return msg, 500
+        return HttpResponse(msg, status=500)
 
 
-@app.route('/sqlalchemy-postgresql')
-def sqlalchemy_postgresql_query():
+def sqlalchemy_postgresql_trace(request):
     try:
         engine = sqlalchemy.create_engine(
             'postgresql://{}:{}@{}/{}'.format(
@@ -155,12 +151,16 @@ def sqlalchemy_postgresql_query():
         for item in result_set:
             result.append(item)
 
-        return str(result)
+        return HttpResponse(str(result))
 
     except Exception:
         msg = "Query failed. Check your env vars for connection settings."
-        return msg, 500
+        return HttpResponse(msg, status=500)
 
 
-if __name__ == '__main__':
-    app.run(host='localhost', port=8080)
+def health_check(request):
+    return HttpResponse("ok", status=200)
+
+
+def get_request_header(request):
+    return HttpResponse(request.META.get('HTTP_X_CLOUD_TRACE_CONTEXT'))
