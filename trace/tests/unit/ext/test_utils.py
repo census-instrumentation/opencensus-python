@@ -52,7 +52,7 @@ class TestUtils(unittest.TestCase):
 
     def test_disable_tracing_url_explicit(self):
         url = 'http://127.0.0.1:8080/test_no_tracing'
-        blacklist_paths = ['/test_no_tracing']
+        blacklist_paths = ['test_no_tracing']
 
         disable_tracing = utils.disable_tracing_url(url, blacklist_paths)
         self.assertTrue(disable_tracing)

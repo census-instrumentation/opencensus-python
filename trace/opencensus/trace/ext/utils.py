@@ -12,11 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import re
+
 # By default the blacklist urls are not tracing, currently just include the
-# health check url.
+# health check url. The paths are literal string matched instead of regular
+# expressions. Do not include the '/' at the beginning of the path.
 DEFAULT_BLACKLIST_PATHS = [
-    '/_ah/health',
+    '_ah/health',
 ]
+
+# Pattern for matching the 'https://', 'http://', 'ftp://' part.
+URL_PATTERN = '^(https?|ftp):\\/\\/'
 
 
 def get_func_name(func):
@@ -33,16 +39,27 @@ def get_func_name(func):
 
 def disable_tracing_url(url, blacklist_paths=None):
     """Disable tracing on the provided blacklist paths, by default not tracing
-    the health check request. True if not tracing, False if tracing.
+    the health check request.
+
+    If the url path starts with the blacklisted path, return True.
 
     :type blacklist_paths: list
     :param blacklist_paths: Paths that not tracing.
+
+    :rtype: bool
+    :returns: True if not tracing, False if tracing.
     """
     if blacklist_paths is None:
         blacklist_paths = DEFAULT_BLACKLIST_PATHS
 
+    # Remove the 'http://' if exists
+    url = re.sub(URL_PATTERN, '', url)
+
+    # Split the url by the first '/' and get the path part
+    url_path = url.split('/', 1)[1]
+
     for path in blacklist_paths:
-        if path in url:
+        if url_path.startswith(path):
             return True
 
     return False

@@ -209,8 +209,8 @@ class TestOpencensusMiddleware(unittest.TestCase):
 
         execution_context.clear()
 
-        blacklist_paths = ['/test_blacklist_path',]
-        params = {'BLACKLIST_PATHS': ['/test_blacklist_path',]}
+        blacklist_paths = ['test_blacklist_path',]
+        params = {'BLACKLIST_PATHS': ['test_blacklist_path',]}
         patch_params = mock.patch(
             'opencensus.trace.ext.django.middleware.settings.params',
             params)
