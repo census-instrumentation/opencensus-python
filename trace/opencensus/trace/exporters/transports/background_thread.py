@@ -93,15 +93,13 @@ class _Worker(object):
             trace_id = None
             spans = []
 
-            if items[0] is not _WORKER_TERMINATOR:
-                trace_id = items[0].get('traceId')
-
             for item in items:
                 if item is _WORKER_TERMINATOR:
                     quit_ = True
                     # Continue processing items, don't break, try to process
                     # all items we got back before quitting.
                 else:
+                    trace_id = item.get('traceId')
                     spans.extend(item.get('spans'))
 
             if spans and trace_id:

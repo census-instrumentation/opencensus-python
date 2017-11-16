@@ -169,6 +169,45 @@ class Test_Worker(unittest.TestCase):
 
         self.assertEqual(worker._queue.qsize(), 0)
 
+    def test__thread_main_terminate_before_finish(self):
+
+        class Exporter(object):
+            def __init__(self):
+                self.exported = []
+
+            def emit(self, span):
+                self.exported.append(span)
+
+        exporter = Exporter()
+        worker = background_thread._Worker(exporter, max_batch_size=2)
+
+        # Enqueue three records and the termination signal. This should be
+        # enough to perform two separate batches and a third loop with just
+        # the exit.
+        worker._queue.put_nowait(background_thread._WORKER_TERMINATOR)
+
+        trace1 = {
+            'traceId': 'test1',
+            'spans': [{}, {}],
+        }
+
+        # Worker should be terminated after sending trace1, and trace2 won't be
+        # exported.
+        trace2 = {
+            'traceId': 'test2',
+            'spans': [{}, {}],
+        }
+
+        worker.enqueue(trace1)
+        worker.enqueue(trace2)
+
+        worker._thread_main()
+
+        self.assertEqual(exporter.exported, [trace1])
+
+        # trace2 should be left in the queue because worker is terminated.
+        self.assertEqual(worker._queue.qsize(), 1)
+
     def test_flush(self):
         from six.moves import queue
 
