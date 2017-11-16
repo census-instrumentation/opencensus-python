@@ -17,6 +17,7 @@
 import json
 
 from opencensus.trace.exporters import base
+from opencensus.trace.exporters.transports import sync
 
 DEFAULT_FILENAME = 'opencensus-traces.json'
 
@@ -25,12 +26,21 @@ class FileExporter(base.Exporter):
     """
     :type file_name: str
     :param file_name: The name of the output file.
+
+    :type transport: :class:`type`
+    :param transport: Class for creating new transport objects. It should
+                      extend from the base :class:`.Transport` type and
+                      implement :meth`.Transport.export`. Defaults to
+                      :class:`.SyncTransport`. The other option is
+                      :class:`.BackgroundThreadTransport`.
     """
 
-    def __init__(self, file_name=DEFAULT_FILENAME):
+    def __init__(self, file_name=DEFAULT_FILENAME,
+                 transport=sync.SyncTransport):
         self.file_name = file_name
+        self.transport = transport(self)
 
-    def export(self, trace):
+    def emit(self, trace):
         """
         :type trace: dict
         :param trace: Trace collected.
@@ -38,3 +48,6 @@ class FileExporter(base.Exporter):
         with open(self.file_name, 'w+') as file:
             trace_str = json.dumps(trace)
             file.write(trace_str)
+
+    def export(self, trace):
+        self.transport.export(trace)

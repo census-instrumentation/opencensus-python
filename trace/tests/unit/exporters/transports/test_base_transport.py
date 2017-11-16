@@ -12,21 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module containing base class for exporters."""
+import unittest
 
+class TestBaseTransport(unittest.TestCase):
 
-class Exporter(object):
-    """Base class for opencensus trace request exporters.
+    def test_export_abstract(self):
+        from opencensus.trace.exporters.transports import base
 
-    Subclasses of :class:`Exporter` must override :meth:`export`.
-    """
-    def emit(self, trace):
-        """Emit the trace."""
-        raise NotImplementedError
+        transport = base.Transport()
+        trace = {}
 
-    def export(self, trace):
-        """Export the trace. Send trace to transport, and transport will call
-        exporter.emit() to actually send the trace to the specified tracing
-        backend.
-        """
-        raise NotImplementedError
+        with self.assertRaises(NotImplementedError):
+            transport.export(trace)
+
+    def test_flush_abstract_and_optional(self):
+        from opencensus.trace.exporters.transports import base
+
+        transport = base.Transport()
+        transport.flush()

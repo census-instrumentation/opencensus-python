@@ -1,4 +1,4 @@
-# Copyright 2016-17, OpenCensus Authors
+# Copyright 2017, OpenCensus Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,21 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module containing base class for exporters."""
+from opencensus.trace.exporters.transports import base
 
 
-class Exporter(object):
-    """Base class for opencensus trace request exporters.
-
-    Subclasses of :class:`Exporter` must override :meth:`export`.
-    """
-    def emit(self, trace):
-        """Emit the trace."""
-        raise NotImplementedError
+class SyncTransport(base.Transport):
+    def __init__(self, exporter):
+        self.exporter = exporter
 
     def export(self, trace):
-        """Export the trace. Send trace to transport, and transport will call
-        exporter.emit() to actually send the trace to the specified tracing
-        backend.
-        """
-        raise NotImplementedError
+        self.exporter.emit(trace)

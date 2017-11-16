@@ -33,15 +33,21 @@ class TestLoggingExporter(unittest.TestCase):
 
         self.assertIn(exporter.handler, logging.getLogger().handlers)
 
-    def test_export(self):
+    def test_emit(self):
         exporter = logging_exporter.LoggingExporter()
         logger = mock.Mock()
         exporter.logger = logger
 
         traces = '{traces: test}'
-        exporter.export(traces)
+        exporter.emit(traces)
 
         logger.info.assert_called_once_with(traces)
+
+    def test_export(self):
+        exporter = logging_exporter.LoggingExporter(transport=MockTransport)
+        exporter.export({})
+
+        self.assertTrue(exporter.transport.export_called)
 
     def setUp(self):
         self._handlers_cache = logging.getLogger().handlers[:]
@@ -49,6 +55,15 @@ class TestLoggingExporter(unittest.TestCase):
     def tearDown(self):
         # cleanup handlers
         logging.getLogger().handlers = self._handlers_cache[:]
+
+
+class MockTransport(object):
+    def __init__(self, exporter=None):
+        self.export_called = False
+        self.exporter = exporter
+
+    def export(self, trace):
+        self.export_called = True
 
 
 class _Handler(object):

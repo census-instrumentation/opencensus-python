@@ -15,10 +15,23 @@
 """Export the trace spans by printing them out."""
 
 from opencensus.trace.exporters import base
+from opencensus.trace.exporters.transports import sync
 
 
 class PrintExporter(base.Exporter):
-    def export(self, trace):
+    """Export the spans by printing them.
+
+    :type transport: :class:`type`
+    :param transport: Class for creating new transport objects. It should
+                      extend from the base :class:`.Transport` type and
+                      implement :meth`.Transport.export`. Defaults to
+                      :class:`.SyncTransport`. The other option is
+                      :class:`.BackgroundThreadTransport`.
+    """
+    def __init__(self, transport=sync.SyncTransport):
+        self.transport = transport(self)
+
+    def emit(self, trace):
         """export the traces by printing it out.
 
         :type trace: dict
@@ -29,3 +42,6 @@ class PrintExporter(base.Exporter):
         """
         print(trace)
         return trace
+
+    def export(self, trace):
+        self.transport.export(trace)

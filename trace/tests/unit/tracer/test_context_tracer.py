@@ -88,18 +88,16 @@ class TestContextTracer(unittest.TestCase):
         from opencensus.trace import span_context
 
         span_id = 1234
-        parent_span_id = 6666
         span_name = 'test_span'
         mock_span = mock.Mock()
-        mock_span.span_id = parent_span_id
-        mock_current_span = mock_span
+        mock_span.span_id = span_id
         span_context = span_context.SpanContext(span_id=span_id)
         tracer = context_tracer.ContextTracer(span_context=span_context)
-        current_span_mock.return_value = mock_current_span
+        current_span_mock.return_value = mock_span
 
         span = tracer.span(name=span_name)
 
-        self.assertEqual(span.parent_span.span_id, parent_span_id)
+        self.assertEqual(span.parent_span.span_id, span_id)
         self.assertEqual(span.name, span_name)
         self.assertEqual(len(tracer._spans_list), 1)
         self.assertEqual(span_context.span_id, span.span_id)
@@ -143,6 +141,26 @@ class TestContextTracer(unittest.TestCase):
 
         cur_span = get_current_span()
         self.assertIsNone(cur_span)
+
+    @mock.patch.object(context_tracer.ContextTracer, 'current_span')
+    def test_end_span_batch_export(self, mock_current_span):
+        from opencensus.trace import span
+
+        span = span.Span(name='test')
+        exporter = mock.Mock()
+        tracer = context_tracer.ContextTracer(exporter=exporter)
+        tracer._spans_list = [span]
+        mock_span = mock.Mock()
+        mock_span.__iter__ = mock.Mock(
+            return_value=iter([mock_span]))
+        parent_span_id = 1234
+        mock_span.parent_span.span_id = parent_span_id
+        mock_current_span.return_value = mock_span
+        tracer.end_span()
+
+        self.assertTrue(mock_span.finish.called)
+        self.assertEqual(tracer.span_context.span_id, parent_span_id)
+        self.assertTrue(tracer.exporter.export.called)
 
     def test_list_collected_spans(self):
         tracer = context_tracer.ContextTracer()

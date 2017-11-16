@@ -15,6 +15,7 @@
 import os
 
 from opencensus.trace.exporters import base
+from opencensus.trace.exporters.transports import sync
 
 from google.cloud.trace.client import Client
 
@@ -73,22 +74,40 @@ def is_gae_environment():
 class StackdriverExporter(base.Exporter):
     """A exporter that send traces and trace spans to Google Cloud Stackdriver
     Trace.
+
+    :type client: :class: `~google.cloud.trace.client.Client`
+    :param client: Stackdriver Trace client.
+
+    :type project_id: str
+    :param project_id: project_id to create the Trace client.
+
+    :type transport: :class:`type`
+    :param transport: Class for creating new transport objects. It should
+                      extend from the base :class:`.Transport` type and
+                      implement :meth`.Transport.export`. Defaults to
+                      :class:`.SyncTransport`. The other option is
+                      :class:`.BackgroundThreadTransport`.
     """
-    def __init__(self, client=None, project_id=None):
+    def __init__(self, client=None, project_id=None,
+                 transport=sync.SyncTransport):
         # The client will handler the case when project_id is None
         if client is None:
             client = Client(project=project_id)
 
         self.client = client
         self.project_id = client.project
+        self.transport = transport(self)
 
-    def export(self, trace):
+    def emit(self, trace):
         """
         :type trace: dict
         :param trace: Trace collected.
         """
         stackdriver_traces = self.translate_to_stackdriver(trace)
         self.client.patch_traces(stackdriver_traces)
+
+    def export(self, trace):
+        self.transport.export(trace)
 
     def translate_to_stackdriver(self, trace):
         """

@@ -33,12 +33,30 @@ class TestFileExporter(unittest.TestCase):
 
         self.assertEqual(exporter.file_name, file_name)
 
-    def test_export(self):
+    def test_emit(self):
         import os
         traces = {}
         file_name = 'file_name'
         exporter = self._make_one(file_name=file_name)
 
-        exporter.export(traces)
+        exporter.emit(traces)
         assert os.path.exists(file_name) == 1
         os.remove(file_name)
+
+    def test_export(self):
+        file_name = 'file_name'
+        exporter = self._make_one(file_name=file_name, transport=MockTransport)
+
+        exporter.export({})
+
+        self.assertTrue(exporter.transport.export_called)
+
+
+class MockTransport(object):
+
+    def __init__(self, exporter=None):
+        self.export_called = False
+        self.exporter = exporter
+
+    def export(self, trace):
+        self.export_called = True
