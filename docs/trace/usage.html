@@ -5,7 +5,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="Python">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>OpenCensus Trace &#8212; OPENCENSUS 0.0.1 documentation</title>
+    <title>OpenCensus for Python - A stats collection and distributed tracing framework &#8212; OPENCENSUS 0.0.1 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
@@ -39,20 +39,22 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="opencensus-trace">
-<h1>OpenCensus Trace<a class="headerlink" href="#opencensus-trace" title="Permalink to this headline">¶</a></h1>
-<div class="toctree-wrapper compound">
-</div>
-<div class="section" id="installation">
-<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+  <div class="section" id="opencensus-for-python-a-stats-collection-and-distributed-tracing-framework">
+<h1>OpenCensus for Python - A stats collection and distributed tracing framework<a class="headerlink" href="#opencensus-for-python-a-stats-collection-and-distributed-tracing-framework" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference external" href="https://github.com/census-instrumentation">Census</a> for Python. Census provides a framework to measure a server's resource
+usage and collect performance stats. This repository contains Python related
+utilities and supporting software needed by Census.</p>
+<div class="section" id="installation-basic-usage">
+<h2>Installation &amp; basic usage<a class="headerlink" href="#installation-basic-usage" title="Permalink to this headline">¶</a></h2>
 <ol class="arabic simple">
-<li>Install the opencensus-trace package using pip</li>
+<li>Install the opencensus-trace package using <a class="reference external" href="https://pip.pypa.io">pip</a> or <a class="reference external" href="https://docs.pipenv.org/">pipenv</a>:</li>
 </ol>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">opencensus</span><span class="o">-</span><span class="n">trace</span>
+<span class="n">pipenv</span> <span class="n">install</span> <span class="n">opencensus</span><span class="o">-</span><span class="n">trace</span>
 </pre></div>
 </div>
 <ol class="arabic simple" start="2">
-<li>Initialize a tracer to enable trace in your application</li>
+<li>Initialize a tracer for application:</li>
 </ol>
 <div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">opencensus.trace</span> <span class="k">import</span> <span class="n">request_tracer</span>
 
@@ -62,13 +64,7 @@
 </div>
 <div class="section" id="usage">
 <h2>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
-<p>There are two ways to trace your code blocks. One is using a <code class="docutils literal"><span class="pre">with</span></code>
-statement to wrap your code, and the trace span will end when exit the
-<code class="docutils literal"><span class="pre">with</span></code> statement. Another is explicitly start and finish the trace
-span before and after your code block. Sample code for the two usages as
-below:</p>
-<div class="section" id="usage-1-with-statement-recommended">
-<h3>Usage 1: <code class="docutils literal"><span class="pre">with</span></code> statement (Recommended)<a class="headerlink" href="#usage-1-with-statement-recommended" title="Permalink to this headline">¶</a></h3>
+<p>You can collect traces using the <code class="docutils literal"><span class="pre">RequestTracer</span></code> <a class="reference external" href="https://docs.python.org/3/reference/datamodel.html#context-managers">context manager</a>:</p>
 <div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">opencensus.trace</span> <span class="k">import</span> <span class="n">request_tracer</span>
 
 <span class="c1"># Initialize a tracer, by default using the `PrintExporter`</span>
@@ -83,13 +79,10 @@ below:</p>
         <span class="n">do_something_to_trace</span><span class="p">()</span>
 <span class="k">with</span> <span class="n">tracer</span><span class="o">.</span><span class="n">span</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;span2&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">span2</span><span class="p">:</span>
     <span class="n">do_something_to_trace</span><span class="p">()</span>
-
-<span class="c1"># The spans will be exported when exiting the with block.</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="usage-2-explicitly-start-and-end-spans">
-<h3>Usage 2: Explicitly start and end spans<a class="headerlink" href="#usage-2-explicitly-start-and-end-spans" title="Permalink to this headline">¶</a></h3>
+<p>Census will collect everything within the <code class="docutils literal"><span class="pre">with</span></code> statement as a single span.</p>
+<p>Alternatively, you can explicitly start and end a span:</p>
 <div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">opencensus.trace</span> <span class="k">import</span> <span class="n">request_tracer</span>
 
 <span class="c1"># Initialize a tracer, by default using the `PrintExporter`</span>
@@ -100,7 +93,6 @@ below:</p>
 <span class="n">do_something_to_trace</span><span class="p">()</span>
 <span class="n">tracer</span><span class="o">.</span><span class="n">end_span</span><span class="p">()</span>
 </pre></div>
-</div>
 </div>
 </div>
 <div class="section" id="customization">
@@ -121,19 +113,20 @@ and <code class="docutils literal"><span class="pre">ProbabilitySampler</span></
 </div>
 <div class="section" id="exporters">
 <h3>Exporters<a class="headerlink" href="#exporters" title="Permalink to this headline">¶</a></h3>
-<p>You can choose different exporters to send the traces to. Default is
-printing the traces in JSON format. The rest options are sending to
-logging, or write to a file. Will add exporters to report to different
-trace backend later.</p>
+<p>You can choose different exporters to send the traces to. By default,
+the traces are printed to stdout in JSON format. Other options include
+writing to a file, sending to Python logging, or reporting to
+Stackdriver.</p>
+<p>This example shows how to configure Census to save the traces to a
+file:</p>
 <div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">opencensus.trace.exporters</span> <span class="k">import</span> <span class="n">file_exporter</span>
 <span class="kn">from</span> <span class="nn">opencensus.trace.tracer</span> <span class="k">import</span> <span class="n">context_tracer</span>
 
-<span class="c1"># Export the traces to a local file</span>
 <span class="n">exporter</span> <span class="o">=</span> <span class="n">file_exporter</span><span class="o">.</span><span class="n">FileExporter</span><span class="p">(</span><span class="n">file_name</span><span class="o">=</span><span class="s1">&#39;traces&#39;</span><span class="p">)</span>
 <span class="n">tracer</span> <span class="o">=</span> <span class="n">context_tracer</span><span class="o">.</span><span class="n">ContextTracer</span><span class="p">(</span><span class="n">exporter</span><span class="o">=</span><span class="n">exporter</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Report to Stackdriver Trace:</p>
+<p>This example shows how to report the traces to Stackdriver Trace:</p>
 <div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">opencensus.trace.exporters</span> <span class="k">import</span> <span class="n">stackdriver_exporter</span>
 <span class="kn">from</span> <span class="nn">opencensus.trace</span> <span class="k">import</span> <span class="n">request_tracer</span>
 
@@ -145,9 +138,10 @@ trace backend later.</p>
 </div>
 <div class="section" id="propagators">
 <h3>Propagators<a class="headerlink" href="#propagators" title="Permalink to this headline">¶</a></h3>
-<p>You can specify the propagator type for serialize and deserialize the
-SpanContext and headers. Currently support
-<code class="docutils literal"><span class="pre">GoogleCloudFormatPropagator</span></code>, <code class="docutils literal"><span class="pre">TextFormatPropagator</span></code>.</p>
+<p>You can specify the propagator type for serializing and deserializing the
+<code class="docutils literal"><span class="pre">SpanContex</span></code> and its headers. There are currently two built in propagators:
+<code class="docutils literal"><span class="pre">GoogleCloudFormatPropagator</span></code> and <code class="docutils literal"><span class="pre">TextFormatPropagator</span></code>.</p>
+<p>This example shows how to use the <code class="docutils literal"><span class="pre">GoogleCloudFormatPropagator</span></code>:</p>
 <div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">opencensus.trace.propagation</span> <span class="k">import</span> <span class="n">google_cloud_format</span>
 
 <span class="n">propagator</span> <span class="o">=</span> <span class="n">google_cloud_format</span><span class="o">.</span><span class="n">GoogleCloudFormatPropagator</span><span class="p">()</span>
@@ -160,14 +154,41 @@ SpanContext and headers. Currently support
 </pre></div>
 </div>
 </div>
+<div class="section" id="blacklist-paths">
+<h3>Blacklist Paths<a class="headerlink" href="#blacklist-paths" title="Permalink to this headline">¶</a></h3>
+<p>You can specify which paths you do not want to trace by configuring the
+blacklist paths.</p>
+<p>This example shows how to configure the blacklist to ignore the <cite>_ah/health</cite> endpoint
+for a Flask application:</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">opencensus.trace.ext.flask.flask_middleware</span> <span class="k">import</span> <span class="n">FlaskMiddleware</span>
+
+<span class="n">app</span> <span class="o">=</span> <span class="n">flask</span><span class="o">.</span><span class="n">Flask</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="n">blacklist_paths</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;_ah/health&#39;</span><span class="p">]</span>
+<span class="n">middleware</span> <span class="o">=</span> <span class="n">FlaskMiddleware</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="n">blacklist_paths</span><span class="o">=</span><span class="n">blacklist_paths</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>For Django, you can configure the blacklist in the <code class="docutils literal"><span class="pre">OPENCENSUS_PARAMS</span></code> in <code class="docutils literal"><span class="pre">settings.py</span></code>:</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">OPENCENSUS_PARAMS</span><span class="p">:</span> <span class="p">{</span>
+    <span class="o">...</span>
+    <span class="s1">&#39;BLACKLIST_PATHS&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;_ah/health&#39;</span><span class="p">,],</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">By default the health check path for the App Engine flexible environment is not traced,
+but you can turn it on by excluding it from the blacklist setting.</p>
+</div>
+</div>
 </div>
 <div class="section" id="framework-integration">
 <h2>Framework Integration<a class="headerlink" href="#framework-integration" title="Permalink to this headline">¶</a></h2>
 <p>Opencensus supports integration with popular web frameworks including
-Django, Flask and Webapp2. When the application receives a HTTP request,
+Django, Flask, and Webapp2. When the application receives a HTTP request,
 the tracer will automatically generate a span context using the trace
 information extracted from the request headers, and propagated to the
-child spans. Below is the sample code snippets:</p>
+child spans.</p>
 <div class="section" id="flask">
 <h3>Flask<a class="headerlink" href="#flask" title="Permalink to this headline">¶</a></h3>
 <p>In your application, use the middleware to wrap your app and the
@@ -187,15 +208,22 @@ requests will be automatically traced.</p>
 <h3>Django<a class="headerlink" href="#django" title="Permalink to this headline">¶</a></h3>
 <p>For tracing Django requests, you will need to add the following line to
 the <code class="docutils literal"><span class="pre">MIDDLEWARE_CLASSES</span></code> section in the Django <code class="docutils literal"><span class="pre">settings.py</span></code> file.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="s1">&#39;opencensus.trace.ext.django.middleware.OpencensusMiddleware&#39;</span><span class="p">,</span>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">MIDDLEWARE_CLASSES</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="o">...</span>
+    <span class="s1">&#39;opencensus.trace.ext.django.middleware.OpencensusMiddleware&#39;</span><span class="p">,</span>
+<span class="p">]</span>
 </pre></div>
 </div>
-<p>Add this line to the <code class="docutils literal"><span class="pre">INSTALLED_APPS</span></code> section:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="s1">&#39;opencensus.trace.ext.django&#39;</span><span class="p">,</span>
+<p>And add this line to the <code class="docutils literal"><span class="pre">INSTALLED_APPS</span></code> section:</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">INSTALLED_APPS</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="o">...</span>
+    <span class="s1">&#39;opencensus.trace.ext.django&#39;</span><span class="p">,</span>
+<span class="p">]</span>
 </pre></div>
 </div>
-<p>Customize the sampler, exporter, propagator in the <code class="docutils literal"><span class="pre">settings.py</span></code> file:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">OPENCENSUS_TRACE</span> <span class="o">=</span> <span class="p">{</span>
+<p>You can configure the the sampler, exporter, propagator using the <code class="docutils literal"><span class="pre">OPENCENSUS_TRACE</span></code> setting in
+<code class="docutils literal"><span class="pre">settings.py</span></code>:</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">OPENCENSUS_TRACE</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s1">&#39;SAMPLER&#39;</span><span class="p">:</span> <span class="s1">&#39;opencensus.trace.samplers.probability.ProbabilitySampler&#39;</span><span class="p">,</span>
     <span class="s1">&#39;REPORTER&#39;</span><span class="p">:</span> <span class="s1">&#39;opencensus.trace.exporters.print_exporter.PrintExporter&#39;</span><span class="p">,</span>
     <span class="s1">&#39;PROPAGATOR&#39;</span><span class="p">:</span> <span class="s1">&#39;opencensus.trace.propagation.google_cloud_format.&#39;</span>
@@ -203,7 +231,18 @@ the <code class="docutils literal"><span class="pre">MIDDLEWARE_CLASSES</span></
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>Then the requests will be automatically traced.</p>
+<p>You can configure the sampling rate and other parameters using the <code class="docutils literal"><span class="pre">OPENCENSUS_TRACE_PARAMS</span></code>
+setting in <code class="docutils literal"><span class="pre">settings.py</span></code>:</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">OPENCENSUS_TRACE_PARAMS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;BLACKLIST_PATHS&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;/_ah/health&#39;</span><span class="p">],</span>
+    <span class="s1">&#39;GCP_EXPORTER_PROJECT&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="s1">&#39;SAMPLING_RATE&#39;</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span>
+    <span class="s1">&#39;ZIPKIN_EXPORTER_SERVICE_NAME&#39;</span><span class="p">:</span> <span class="s1">&#39;my_service&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;ZIPKIN_EXPORTER_HOST_NAME&#39;</span><span class="p">:</span> <span class="s1">&#39;localhost&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;ZIPKIN_EXPORTER_PORT&#39;</span><span class="p">:</span> <span class="mi">9411</span><span class="p">,</span>
+<span class="p">}</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="webapp2">
 <h3>Webapp2<a class="headerlink" href="#webapp2" title="Permalink to this headline">¶</a></h3>
@@ -219,92 +258,52 @@ the <code class="docutils literal"><span class="pre">MIDDLEWARE_CLASSES</span></
 </div>
 <div class="section" id="service-integration">
 <h2>Service Integration<a class="headerlink" href="#service-integration" title="Permalink to this headline">¶</a></h2>
-<p>Opencensus supports integration with various popular services (working in progress).
-By default there is no integration, you need to specify which service(s) you
-want to instrument. Usage for enabling MySQL instrumentation like below:</p>
+<p>Opencensus supports integration with various popular outbound services such as
+MySQL and Requests. To enable integration you will need to pass the list of
+services to census:</p>
 <div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">opencensus.trace</span> <span class="k">import</span> <span class="n">config_integration</span>
 <span class="kn">from</span> <span class="nn">opencensus.trace</span> <span class="k">import</span> <span class="n">request_tracer</span>
 
 <span class="kn">import</span> <span class="nn">mysql.connector</span>
 
-<span class="n">INTEGRATIONS</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;mysql&#39;</span><span class="p">,</span> <span class="s1">&#39;postgresql&#39;</span><span class="p">]</span>
+<span class="c1"># Trace both mysql-connection and psycopg2</span>
+<span class="n">integration</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;mysql&#39;</span><span class="p">,</span> <span class="s1">&#39;postgresql&#39;</span><span class="p">]</span>
 
-<span class="n">config_integration</span><span class="o">.</span><span class="n">trace_integrations</span><span class="p">(</span><span class="n">INTEGRATIONS</span><span class="p">)</span>
-
-<span class="n">tracer</span> <span class="o">=</span> <span class="n">request_tracer</span><span class="o">.</span><span class="n">RequestTracer</span><span class="p">()</span>
-
-<span class="n">conn</span> <span class="o">=</span> <span class="n">mysql</span><span class="o">.</span><span class="n">connector</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">user</span><span class="o">=</span><span class="s1">&#39;user&#39;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s1">&#39;password&#39;</span><span class="p">)</span>
-<span class="n">cursor</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
-<span class="n">query</span> <span class="o">=</span> <span class="s1">&#39;SELECT 2*3&#39;</span>
-<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+<span class="n">config_integration</span><span class="o">.</span><span class="n">trace_integrations</span><span class="p">(</span><span class="n">integration</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="section" id="mysql">
 <h3>MySQL<a class="headerlink" href="#mysql" title="Permalink to this headline">¶</a></h3>
-<p>The integration with MySQL is based on the mysql-connector-python library,
-github link is <a class="reference external" href="https://github.com/mysql/mysql-connector-python">https://github.com/mysql/mysql-connector-python</a>.</p>
-<p>Run this command to install this package,</p>
-<div class="code bash highlight-default"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">mysql</span><span class="o">-</span><span class="n">connector</span>
-</pre></div>
-</div>
+<p>The integration with MySQL supports the <a class="reference external" href="https://pypi.org/project/mysql-connector">mysql-connector</a> library and is specified
+to <code class="docutils literal"><span class="pre">trace_integrations</span></code> using <code class="docutils literal"><span class="pre">'mysql'</span></code>.</p>
 </div>
 <div class="section" id="postgresql">
 <h3>PostgreSQL<a class="headerlink" href="#postgresql" title="Permalink to this headline">¶</a></h3>
-<p>The integration with PostgreSQL is based on the psycopg2 library, which is the
-most popular PostgreSQL python library based on the download data in PSF stats.</p>
-<p>Run this command to install this package,</p>
-<div class="code bash highlight-default"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">psycopg2</span>
-</pre></div>
-</div>
+<p>The integration with PostgreSQL supports the <a class="reference external" href="https://pypi.org/project/psycopg2">psycopg2</a> library and is specified
+to <code class="docutils literal"><span class="pre">trace_integrations</span></code> using <code class="docutils literal"><span class="pre">'postgresql'</span></code>.</p>
 </div>
 <div class="section" id="sqlalchemy">
 <h3>SQLAlchemy<a class="headerlink" href="#sqlalchemy" title="Permalink to this headline">¶</a></h3>
-<p>Note that if enabled tracing both SQLAlchemy and the database it connected,
-the communication between SQLAlchemy and the database will also be traced.
-To avoid the verbose spans, you can just trace SQLAlchemy.</p>
-<p>Run this command to install the SQLAlchemy package,</p>
-<div class="code bash highlight-default"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">sqlalchemy</span>
-</pre></div>
+<p>You can trace usage of <a class="reference external" href="https://pypi.org/project/SQLAlchemy">SQLAlchemy</a>, regardless of the underlying database, by
+specifying <code class="docutils literal"><span class="pre">'sqlalchemy'</span></code> to <code class="docutils literal"><span class="pre">trace_integrations</span></code>.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If you enable tracing of SQLAlchemy and the underlying database
+driver, you will get duplicate spans. Instead, just trace SQLAlchemy.</p>
 </div>
 </div>
 <div class="section" id="requests">
 <h3>Requests<a class="headerlink" href="#requests" title="Permalink to this headline">¶</a></h3>
-<p>Supports tracing the requests methods including get, post, put, delete, head
-and options. The request url and status code will be added to the span labels.</p>
-<p>As most of the Google Cloud client libraries supports HTTP as the background
-transport, to trace the client libraries requests, you can turn on the trace
-integration with requests module.</p>
-<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">requests</span>
-<span class="kn">import</span> <span class="nn">uuid</span>
-
-<span class="kn">from</span> <span class="nn">opencensus.trace.config_integration</span> <span class="k">import</span> <span class="n">trace_integrations</span>
-<span class="kn">from</span> <span class="nn">opencensus.trace.request_tracer</span> <span class="k">import</span> <span class="n">RequestTracer</span>
-
-<span class="kn">from</span> <span class="nn">google.cloud</span> <span class="k">import</span> <span class="n">bigquery</span>
-
-<span class="c1"># Create a tracer</span>
-<span class="n">tracer</span> <span class="o">=</span> <span class="n">RequestTracer</span><span class="p">()</span>
-
-<span class="c1"># Integrate with requests module</span>
-<span class="n">trace_integrations</span><span class="p">([</span><span class="s1">&#39;requests&#39;</span><span class="p">])</span>
-
-<span class="c1"># Run a query to trace</span>
-<span class="n">query</span> <span class="o">=</span> <span class="s1">&#39;SELECT * FROM sample_table&#39;</span>
-<span class="n">client</span> <span class="o">=</span> <span class="n">bigquery</span><span class="o">.</span><span class="n">Client</span><span class="p">()</span>
-<span class="n">query_job</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">run_async_query</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()),</span> <span class="n">query</span><span class="p">)</span>
-
-<span class="c1"># Start the query job and wait it to complete</span>
-<span class="n">query_job</span><span class="o">.</span><span class="n">begin</span><span class="p">()</span>
-<span class="n">query_job</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>
-</pre></div>
-</div>
-<p>Then you will get the request trace data from the start of executing the query
-to the end.</p>
+<p>Census can trace HTTP requests made with the <a class="reference internal" href="#requests">Requests</a> library. The request URL,
+method, and status will be collected.</p>
+<p>You can enable Requests integration by specifying <code class="docutils literal"><span class="pre">'requests'</span></code> to <code class="docutils literal"><span class="pre">trace_integrations</span></code>.</p>
 </div>
 </div>
-<div class="section" id="status">
-<h2>Status<a class="headerlink" href="#status" title="Permalink to this headline">¶</a></h2>
-<p>Currently under active development.</p>
+<div class="section" id="contributing">
+<h2>Contributing<a class="headerlink" href="#contributing" title="Permalink to this headline">¶</a></h2>
+<p>Contributions to this library are always welcome and highly encouraged.</p>
+<p>See <a class="reference external" href="CONTRIBUTING.md">CONTRIBUTING</a> for more information on how to
+get started.</p>
 </div>
 <div class="section" id="development">
 <h2>Development<a class="headerlink" href="#development" title="Permalink to this headline">¶</a></h2>
@@ -337,12 +336,6 @@ to the end.</p>
 </div>
 </div>
 </div>
-<div class="section" id="contributing">
-<h2>Contributing<a class="headerlink" href="#contributing" title="Permalink to this headline">¶</a></h2>
-<p>Contributions to this library are always welcome and highly encouraged.</p>
-<p>See <a class="reference external" href="CONTRIBUTING.md">CONTRIBUTING</a> for more information on how to
-get started.</p>
-</div>
 <div class="section" id="license">
 <h2>License<a class="headerlink" href="#license" title="Permalink to this headline">¶</a></h2>
 <p>Apache 2.0 - See <a class="reference external" href="LICENSE">LICENSE</a> for more information.</p>
@@ -370,15 +363,14 @@ get started.</p>
 
 <h3>Navigation</h3>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">OpenCensus Trace</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">OpenCensus for Python - A stats collection and distributed tracing framework</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#installation-basic-usage">Installation &amp; basic usage</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#usage">Usage</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#customization">Customization</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#framework-integration">Framework Integration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#service-integration">Service Integration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#status">Status</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#development">Development</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#contributing">Contributing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#development">Development</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#license">License</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#disclaimer">Disclaimer</a></li>
 </ul>
