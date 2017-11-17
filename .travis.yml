@@ -1,0 +1,12 @@
+branches:
+  only:
+    - master
+
+deploy:
+  provider: pages
+  local_dir: docs
+  skip_cleanup: true
+  email: yanhuil@google.com # To satisfy the CLA check, replace this with bot email.
+  github_token: $GITHUB_TOKEN # Set in travis-ci.org dashboard
+  on:
+    branch: master
