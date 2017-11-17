@@ -67,7 +67,7 @@ class Test_requests_trace(unittest.TestCase):
 
         expected_labels = {
             'requests/url': url,
-            'requests/status_code': 200}
+            'requests/status_code': '200'}
         expected_name = '[requests]get'
 
         self.assertEqual(expected_labels, mock_tracer.current_span.labels)
@@ -96,7 +96,7 @@ class Test_requests_trace(unittest.TestCase):
 
         expected_labels = {
             'requests/url': url,
-            'requests/status_code': 200}
+            'requests/status_code': '200'}
         expected_name = '[requests]POST'
 
         self.assertEqual(expected_labels, mock_tracer.current_span.labels)
