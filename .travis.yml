@@ -6,7 +6,7 @@ install:
   - pip install --upgrade sphinx
 
 script:
-  - ./script/update_docs.sh
+  - ./scripts/update_docs.sh
   - touch docs/.nojekyll
 
 branches:
