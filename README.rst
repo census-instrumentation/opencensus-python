@@ -1,10 +1,11 @@
-OpenCensus - A stats collection and distributed tracing framework
-=================================================================
+OpenCensus for Python - A stats collection and distributed tracing framework
+============================================================================
 
-    This is the open-source release of Census for Python. Census provides a
-    framework to measure a server's resource usage and collect performance
-    stats. This repository contains python related utilities and supporting
-    software needed by Census.
+    `Census`_ for Python. Census provides a framework to measure a server's resource
+    usage and collect performance stats. This repository contains Python related
+    utilities and supporting software needed by Census.
+    
+    .. _Census: https://github.com/census-instrumentation
 
 |circleci|
 
@@ -15,16 +16,17 @@ OpenCensus - A stats collection and distributed tracing framework
 
 .. _API Documentation: http://opencensus.io/opencensus-python/trace/usage.html
 
-Installation
-------------
+Installation & basic usage
+--------------------------
 
-1. Install the opencensus-trace package using pip
+1. Install the opencensus-trace package using `pip`_ or `pipenv`_:
 
 ::
 
     pip install opencensus-trace
+    pipenv install opencensus-trace
 
-2. Initialize a tracer to enable trace in your application
+2. Initialize a tracer for application:
 
 .. code:: python
 
@@ -32,17 +34,13 @@ Installation
 
     tracer = request_tracer.RequestTracer()
 
+.. _pip: https://pip.pypa.io
+.. _pipenv: https://docs.pipenv.org/
+
 Usage
 -----
 
-There are two ways to trace your code blocks. One is using a ``with``
-statement to wrap your code, and the trace span will end when exit the
-``with`` statement. Another is explicitly start and finish the trace
-span before and after your code block. Sample code for the two usages as
-below:
-
-Usage 1: ``with`` statement (Recommended)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+You can collect traces using the ``RequestTracer`` `context manager`_:
 
 .. code:: python
 
@@ -61,10 +59,9 @@ Usage 1: ``with`` statement (Recommended)
     with tracer.span(name='span2') as span2:
         do_something_to_trace()
 
-    # The spans will be exported when exiting the with block.
+Census will collect everything within the ``with`` statement as a single span.
 
-Usage 2: Explicitly start and end spans
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Alternatively, you can explicitly start and end a span:
 
 .. code:: python
 
@@ -77,6 +74,10 @@ Usage 2: Explicitly start and end spans
     tracer.start_span(name='span1')
     do_something_to_trace()
     tracer.end_span()
+
+
+.. _context manager: https://docs.python.org/3/reference/datamodel.html#context-managers
+
 
 Customization
 -------------
@@ -100,21 +101,23 @@ and ``ProbabilitySampler``
 Exporters
 ~~~~~~~~~
 
-You can choose different exporters to send the traces to. Default is
-printing the traces in JSON format. The rest options are sending to
-logging, or write to a file. Will add exporters to report to different
-trace backend later.
+You can choose different exporters to send the traces to. By default,
+the traces are printed to stdout in JSON format. Other options include
+writing to a file, sending to Python logging, or reporting to
+Stackdriver.
+
+This example shows how to configure Census to save the traces to a
+file:
 
 .. code:: python
 
     from opencensus.trace.exporters import file_exporter
     from opencensus.trace.tracer import context_tracer
 
-    # Export the traces to a local file
     exporter = file_exporter.FileExporter(file_name='traces')
     tracer = context_tracer.ContextTracer(exporter=exporter)
 
-Report to Stackdriver Trace:
+This example shows how to report the traces to Stackdriver Trace:
 
 .. code:: python
 
@@ -128,9 +131,11 @@ Report to Stackdriver Trace:
 Propagators
 ~~~~~~~~~~~
 
-You can specify the propagator type for serialize and deserialize the
-SpanContext and headers. Currently support
-``GoogleCloudFormatPropagator``, ``TextFormatPropagator``.
+You can specify the propagator type for serializing and deserializing the
+``SpanContex`` and its headers. There are currently two built in propagators:
+``GoogleCloudFormatPropagator`` and ``TextFormatPropagator``.
+
+This example shows how to use the ``GoogleCloudFormatPropagator``:
 
 .. code:: python
 
@@ -148,12 +153,10 @@ Blacklist Paths
 ~~~~~~~~~~~~~~~
 
 You can specify which paths you do not want to trace by configuring the
-blacklist paths. By default the health check path in GAE Flex is not traced,
-but you can turn it on in the setting.
+blacklist paths.
 
-Here is the sample code for configuring the blacklist:
-
-For Flask:
+This example shows how to configure the blacklist to ignore the `_ah/health` endpoint
+for a Flask application:
 
 .. code:: python
 
@@ -164,22 +167,27 @@ For Flask:
     blacklist_paths = ['_ah/health']
     middleware = FlaskMiddleware(app, blacklist_paths=blacklist_paths)
 
-For Django:
+For Django, you can configure the blacklist in the ``OPENCENSUS_PARAMS`` in ``settings.py``:
 
-Add this line in the OPENCENSUS_PARAMS:
+.. code:: python
 
-::
+    OPENCENSUS_PARAMS: {
+        ...
+        'BLACKLIST_PATHS': ['_ah/health',],
+    }
 
-    'BLACKLIST_PATHS': ['_ah/health',]
+
+.. note:: By default the health check path for the App Engine flexible environment is not traced,
+    but you can turn it on by excluding it from the blacklist setting.
 
 Framework Integration
 ---------------------
 
 Opencensus supports integration with popular web frameworks including
-Django, Flask and Webapp2. When the application receives a HTTP request,
+Django, Flask, and Webapp2. When the application receives a HTTP request,
 the tracer will automatically generate a span context using the trace
 information extracted from the request headers, and propagated to the
-child spans. Below is the sample code snippets:
+child spans.
 
 Flask
 ~~~~~
@@ -204,19 +212,26 @@ Django
 For tracing Django requests, you will need to add the following line to
 the ``MIDDLEWARE_CLASSES`` section in the Django ``settings.py`` file.
 
-::
+.. code:: python
 
-    'opencensus.trace.ext.django.middleware.OpencensusMiddleware',
+    MIDDLEWARE_CLASSES = [
+        ...
+        'opencensus.trace.ext.django.middleware.OpencensusMiddleware',
+    ]
 
-Add this line to the ``INSTALLED_APPS`` section:
+And add this line to the ``INSTALLED_APPS`` section:
 
-::
+.. code:: python
 
-    'opencensus.trace.ext.django',
+    INSTALLED_APPS = [
+        ...
+        'opencensus.trace.ext.django',
+    ]
 
-Customize the sampler, exporter, propagator in the ``settings.py`` file:
+You can configure the the sampler, exporter, propagator using the ``OPENCENSUS_TRACE`` setting in
+``settings.py``:
 
-::
+.. code:: python
 
     OPENCENSUS_TRACE = {
         'SAMPLER': 'opencensus.trace.samplers.probability.ProbabilitySampler',
@@ -225,9 +240,10 @@ Customize the sampler, exporter, propagator in the ``settings.py`` file:
                       'GoogleCloudFormatPropagator',
     }
 
-Configure the sampling rate and other params:
+You can configure the sampling rate and other parameters using the ``OPENCENSUS_TRACE_PARAMS``
+setting in ``settings.py``:
 
-::
+.. code:: python
 
     OPENCENSUS_TRACE_PARAMS = {
         'BLACKLIST_PATHS': ['/_ah/health'],
@@ -236,10 +252,7 @@ Configure the sampling rate and other params:
         'ZIPKIN_EXPORTER_SERVICE_NAME': 'my_service',
         'ZIPKIN_EXPORTER_HOST_NAME': 'localhost',
         'ZIPKIN_EXPORTER_PORT': 9411,
-
     }
-
-Then the requests will be automatically traced.
 
 Webapp2
 ~~~~~~~
@@ -253,12 +266,13 @@ Webapp2
     with tracer.span(name='span1'):
         do_something_to_trace()
 
+
 Service Integration
 -------------------
 
-Opencensus supports integration with various popular services (working in progress).
-By default there is no integration, you need to specify which service(s) you
-want to instrument. Usage for enabling MySQL instrumentation like below:
+Opencensus supports integration with various popular outbound services such as
+MySQL and Requests. To enable integration you will need to pass the list of
+services to census:
 
 .. code:: python
 
@@ -267,96 +281,57 @@ want to instrument. Usage for enabling MySQL instrumentation like below:
 
     import mysql.connector
 
-    INTEGRATIONS = ['mysql', 'postgresql']
+    # Trace both mysql-connection and psycopg2
+    integration = ['mysql', 'postgresql']
 
-    config_integration.trace_integrations(INTEGRATIONS)
+    config_integration.trace_integrations(integration)
 
-    tracer = request_tracer.RequestTracer()
-
-    conn = mysql.connector.connect(user='user', password='password')
-    cursor = conn.cursor()
-    query = 'SELECT 2*3'
-    cursor.execute(query)
 
 MySQL
 ~~~~~
 
-The integration with MySQL is based on the mysql-connector-python library,
-github link is https://github.com/mysql/mysql-connector-python.
+The integration with MySQL supports the `mysql-connector`_ library and is specified
+to ``trace_integrations`` using ``'mysql'``.
 
-Run this command to install this package,
-
-.. code:: bash
-
-    pip install mysql-connector
+.. _mysql-connector: https://pypi.org/project/mysql-connector
 
 PostgreSQL
 ~~~~~~~~~~
 
-The integration with PostgreSQL is based on the psycopg2 library, which is the
-most popular PostgreSQL python library based on the download data in PSF stats.
+The integration with PostgreSQL supports the `psycopg2`_ library and is specified
+to ``trace_integrations`` using ``'postgresql'``.
 
-Run this command to install this package,
+.. _psycopg2: https://pypi.org/project/psycopg2
 
-.. code:: bash
-
-    pip install psycopg2
 
 SQLAlchemy
 ~~~~~~~~~~
 
-Note that if enabled tracing both SQLAlchemy and the database it connected,
-the communication between SQLAlchemy and the database will also be traced.
-To avoid the verbose spans, you can just trace SQLAlchemy.
+You can trace usage of `SQLAlchemy`_, regardless of the underlying database, by
+specifying ``'sqlalchemy'`` to ``trace_integrations``.
 
-Run this command to install the SQLAlchemy package,
+.. _SQLAlchemy: https://pypi.org/project/SQLAlchemy
 
-.. code:: bash
-
-    pip install sqlalchemy
+.. note:: If you enable tracing of SQLAlchemy and the underlying database
+    driver, you will get duplicate spans. Instead, just trace SQLAlchemy.
 
 Requests
 ~~~~~~~~
 
-Supports tracing the requests methods including get, post, put, delete, head
-and options. The request url and status code will be added to the span labels.
+Census can trace HTTP requests made with the `Requests`_ library. The request URL,
+method, and status will be collected.
 
-As most of the Google Cloud client libraries supports HTTP as the background
-transport, to trace the client libraries requests, you can turn on the trace
-integration with requests module.
+You can enable Requests integration by specifying ``'requests'`` to ``trace_integrations``.
 
-.. code:: python
 
-    import requests
-    import uuid
+Contributing
+------------
 
-    from opencensus.trace.config_integration import trace_integrations
-    from opencensus.trace.request_tracer import RequestTracer
+Contributions to this library are always welcome and highly encouraged.
 
-    from google.cloud import bigquery
+See `CONTRIBUTING <CONTRIBUTING.md>`__ for more information on how to
+get started.
 
-    # Create a tracer
-    tracer = RequestTracer()
-
-    # Integrate with requests module
-    trace_integrations(['requests'])
-
-    # Run a query to trace
-    query = 'SELECT * FROM sample_table'
-    client = bigquery.Client()
-    query_job = client.run_async_query(str(uuid.uuid4()), query)
-
-    # Start the query job and wait it to complete
-    query_job.begin()
-    query_job.result()
-
-Then you will get the request trace data from the start of executing the query
-to the end.
-
-Status
-------
-
-Currently under active development.
 
 Development
 -----------
@@ -389,14 +364,6 @@ Tests
     pip install opencensus-0.0.1-py2.py3-none-any.whl
 
     # Then just run the tracers normally as you want to test.
-
-Contributing
-------------
-
-Contributions to this library are always welcome and highly encouraged.
-
-See `CONTRIBUTING <CONTRIBUTING.md>`__ for more information on how to
-get started.
 
 License
 -------
