@@ -6,7 +6,10 @@ OpenCensus - A stats collection and distributed tracing framework
     stats. This repository contains python related utilities and supporting
     software needed by Census.
 
-[![CircleCI](https://circleci.com/gh/census-instrumentation/opencensus-python.svg?style=svg)](https://circleci.com/gh/census-instrumentation/opencensus-python)
+|circleci|
+
+.. |circleci| image:: https://circleci.com/gh/census-instrumentation/opencensus-python.svg?style=shield
+   :target: https://circleci.com/gh/census-instrumentation/opencensus-python
 
 -  `API Documentation`_
 
