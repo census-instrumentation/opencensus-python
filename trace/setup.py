@@ -18,9 +18,7 @@ import io
 from setuptools import setup, find_packages
 
 install_requires = [
-    'google-gax>=0.15.7, <0.16dev',
-    'googleapis-common-protos[grpc]>=1.5.2, <2.0dev',
-    'mysql-connector>=2.1.6, <2.2dev',
+    'google-cloud-trace>=0.16.0, <0.17dev',
 ]
 
 setup(
