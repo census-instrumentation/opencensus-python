@@ -22,6 +22,11 @@ from opencensus.trace import request_tracer
 from opencensus.trace import execution_context
 from opencensus.trace.samplers import probability
 
+try:
+    from django.utils.deprecation import MiddlewareMixin
+except ImportError:  # pragma: NO COVER
+    MiddlewareMixin = object
+
 HTTP_METHOD = labels_helper.COMMON_LABELS['HTTP_METHOD']
 HTTP_URL = labels_helper.COMMON_LABELS['HTTP_URL']
 HTTP_STATUS_CODE = labels_helper.COMMON_LABELS['HTTP_STATUS_CODE']
@@ -86,7 +91,7 @@ def get_django_header():
     return header
 
 
-class OpencensusMiddleware(object):
+class OpencensusMiddleware(MiddlewareMixin):
     """Saves the request in thread local"""
 
     def __init__(self, get_response=None):

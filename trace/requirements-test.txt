@@ -1,6 +1,6 @@
-Django==1.11.5
+Django==1.11.7
 Flask==0.12.2
-google-cloud-trace==0.15.5
+google-cloud-trace==0.16.0
 mock==2.0.0
 mysql-connector==2.1.6
 psycopg2==2.7.3.1

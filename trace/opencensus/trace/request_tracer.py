@@ -95,7 +95,7 @@ class RequestTracer(object):
         """End all spans."""
         self.tracer.finish()
 
-    def span(self, name=None):
+    def span(self, name='span'):
         """Create a new span with the trace using the context information.
 
         :type name: str
@@ -106,7 +106,7 @@ class RequestTracer(object):
         """
         return self.tracer.span(name)
 
-    def start_span(self, name=None):
+    def start_span(self, name='span'):
         return self.tracer.start_span(name)
 
     def end_span(self):
