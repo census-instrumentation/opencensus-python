@@ -16,7 +16,7 @@
 import logging
 
 from opencensus.trace.ext import utils
-from opencensus.trace.ext.django.config import settings
+from opencensus.trace.ext.django.config import (settings, convert_to_import)
 from opencensus.trace import labels_helper
 from opencensus.trace import request_tracer
 from opencensus.trace import execution_context
@@ -113,7 +113,7 @@ class OpencensusMiddleware(MiddlewareMixin):
             self.sampler = self._sampler()
 
         # Initialize the exporter
-        transport = settings.params.get(TRANSPORT, None)
+        transport = convert_to_import(settings.params.get(TRANSPORT))
 
         if self._exporter.__name__ == 'GoogleCloudExporter':
             _project_id = settings.params.get(GCP_EXPORTER_PROJECT, None)

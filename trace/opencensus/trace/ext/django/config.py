@@ -28,7 +28,7 @@ DEFAULT_DJANGO_TRACER_CONFIG = {
 DEFAULT_DJANGO_TRACER_PARAMS = {
     # https://cloud.google.com/appengine/docs/flexible/python/
     # how-instances-are-managed#health_checking
-    'BLACKLIST_PATHS': ['/_ah/health'],
+    'BLACKLIST_PATHS': ['_ah/health'],
     'GCP_EXPORTER_PROJECT': None,
     'SAMPLING_RATE': 0.5,
     'ZIPKIN_EXPORTER_SERVICE_NAME': 'my_service',
@@ -63,14 +63,10 @@ class DjangoTraceSettings(object):
             DEFAULT_DJANGO_TRACER_PARAMS)
 
         # Set default value for the tracer config if user not specified
-        self._set_default_configs(self.settings, DEFAULT_DJANGO_TRACER_CONFIG)
+        _set_default_configs(self.settings, DEFAULT_DJANGO_TRACER_CONFIG)
 
         # Set default value for the params if user not specified
-        self._set_default_configs(self.params, DEFAULT_DJANGO_TRACER_PARAMS)
-
-        # Convert transport param to import path
-        transport = self.params.get(TRANSPORT)
-        self.params[TRANSPORT] = convert_to_import(transport)
+        _set_default_configs(self.params, DEFAULT_DJANGO_TRACER_PARAMS)
 
     def __getattr__(self, attr):
         # If not in defaults, it is something we cannot parse.
@@ -84,18 +80,19 @@ class DjangoTraceSettings(object):
 
         return module_class
 
-    def _set_default_configs(self, user_settings, default):
-        """Set the default value to user settings if user not specified
-        the value.
-        """
-        config_keys = user_settings.keys()
-        supported_keys = default.keys()
 
-        for key in supported_keys:
-            if key not in config_keys:
-                user_settings[key] = default[key]
+def _set_default_configs(user_settings, default):
+    """Set the default value to user settings if user not specified
+    the value.
+    """
+    config_keys = user_settings.keys()
+    supported_keys = default.keys()
 
-        return user_settings
+    for key in supported_keys:
+        if key not in config_keys:
+            user_settings[key] = default[key]
+
+    return user_settings
 
 
 def convert_to_import(path):
