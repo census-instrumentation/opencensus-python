@@ -34,11 +34,12 @@ DEFAULT_DJANGO_TRACER_PARAMS = {
     'ZIPKIN_EXPORTER_SERVICE_NAME': 'my_service',
     'ZIPKIN_EXPORTER_HOST_NAME': 'localhost',
     'ZIPKIN_EXPORTER_PORT': 9411,
-
+    'TRANSPORT': 'opencensus.trace.exporters.transports.sync.SyncTransport',
 }
 
 
 PATH_DELIMITER = '.'
+TRANSPORT = 'TRANSPORT'
 
 log = logging.getLogger(__name__)
 
@@ -61,6 +62,16 @@ class DjangoTraceSettings(object):
             'OPENCENSUS_TRACE_PARAMS',
             DEFAULT_DJANGO_TRACER_PARAMS)
 
+        # Set default value for the tracer config if user not specified
+        self._set_default_configs(self.settings, DEFAULT_DJANGO_TRACER_CONFIG)
+
+        # Set default value for the params if user not specified
+        self._set_default_configs(self.params, DEFAULT_DJANGO_TRACER_PARAMS)
+
+        # Convert transport param to import path
+        transport = self.params.get(TRANSPORT)
+        self.params[TRANSPORT] = convert_to_import(transport)
+
     def __getattr__(self, attr):
         # If not in defaults, it is something we cannot parse.
         if attr not in DEFAULT_DJANGO_TRACER_CONFIG:
@@ -72,6 +83,19 @@ class DjangoTraceSettings(object):
         module_class = convert_to_import(path)
 
         return module_class
+
+    def _set_default_configs(self, user_settings, default):
+        """Set the default value to user settings if user not specified
+        the value.
+        """
+        config_keys = user_settings.keys()
+        supported_keys = default.keys()
+
+        for key in supported_keys:
+            if key not in config_keys:
+                user_settings[key] = default[key]
+
+        return user_settings
 
 
 def convert_to_import(path):
