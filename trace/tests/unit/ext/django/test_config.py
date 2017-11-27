@@ -60,6 +60,36 @@ class TestDjangoTraceSettings(unittest.TestCase):
         assert isinstance(sampler_class(), AlwaysOnSampler)
 
 
+class Test__set_default_configs(unittest.TestCase):
+
+    def test__set_default_configs(self):
+        from opencensus.trace.ext.django import config
+
+        custom_django_params = {
+            'SAMPLING_RATE': 0.6,
+            'BLACKLIST_PATHS': ['_ah/health', ],
+            'TRANSPORT':
+                'opencensus.trace.exporters.transports.sync.SyncTransport',
+        }
+
+        params = config._set_default_configs(
+            custom_django_params,
+            config.DEFAULT_DJANGO_TRACER_PARAMS)
+
+        expected_params = {
+            'BLACKLIST_PATHS': ['_ah/health', ],
+            'GCP_EXPORTER_PROJECT': None,
+            'SAMPLING_RATE': 0.6,
+            'ZIPKIN_EXPORTER_SERVICE_NAME': 'my_service',
+            'ZIPKIN_EXPORTER_HOST_NAME': 'localhost',
+            'ZIPKIN_EXPORTER_PORT': 9411,
+            'TRANSPORT':
+                'opencensus.trace.exporters.transports.sync.SyncTransport',
+        }
+
+        self.assertEqual(params, expected_params)
+
+
 class Test_convert_to_import(unittest.TestCase):
 
     def test_convert_to_import(self):

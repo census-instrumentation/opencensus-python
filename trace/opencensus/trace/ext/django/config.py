@@ -28,17 +28,18 @@ DEFAULT_DJANGO_TRACER_CONFIG = {
 DEFAULT_DJANGO_TRACER_PARAMS = {
     # https://cloud.google.com/appengine/docs/flexible/python/
     # how-instances-are-managed#health_checking
-    'BLACKLIST_PATHS': ['/_ah/health'],
+    'BLACKLIST_PATHS': ['_ah/health'],
     'GCP_EXPORTER_PROJECT': None,
     'SAMPLING_RATE': 0.5,
     'ZIPKIN_EXPORTER_SERVICE_NAME': 'my_service',
     'ZIPKIN_EXPORTER_HOST_NAME': 'localhost',
     'ZIPKIN_EXPORTER_PORT': 9411,
-
+    'TRANSPORT': 'opencensus.trace.exporters.transports.sync.SyncTransport',
 }
 
 
 PATH_DELIMITER = '.'
+TRANSPORT = 'TRANSPORT'
 
 log = logging.getLogger(__name__)
 
@@ -61,6 +62,12 @@ class DjangoTraceSettings(object):
             'OPENCENSUS_TRACE_PARAMS',
             DEFAULT_DJANGO_TRACER_PARAMS)
 
+        # Set default value for the tracer config if user not specified
+        _set_default_configs(self.settings, DEFAULT_DJANGO_TRACER_CONFIG)
+
+        # Set default value for the params if user not specified
+        _set_default_configs(self.params, DEFAULT_DJANGO_TRACER_PARAMS)
+
     def __getattr__(self, attr):
         # If not in defaults, it is something we cannot parse.
         if attr not in DEFAULT_DJANGO_TRACER_CONFIG:
@@ -72,6 +79,17 @@ class DjangoTraceSettings(object):
         module_class = convert_to_import(path)
 
         return module_class
+
+
+def _set_default_configs(user_settings, default):
+    """Set the default value to user settings if user not specified
+    the value.
+    """
+    for key in default:
+        if key not in user_settings:
+            user_settings[key] = default[key]
+
+    return user_settings
 
 
 def convert_to_import(path):

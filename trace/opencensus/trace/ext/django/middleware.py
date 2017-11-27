@@ -16,7 +16,7 @@
 import logging
 
 from opencensus.trace.ext import utils
-from opencensus.trace.ext.django.config import settings
+from opencensus.trace.ext.django.config import (settings, convert_to_import)
 from opencensus.trace import labels_helper
 from opencensus.trace import request_tracer
 from opencensus.trace import execution_context
@@ -38,6 +38,7 @@ _DJANGO_TRACE_HEADER = 'HTTP_X_CLOUD_TRACE_CONTEXT'
 BLACKLIST_PATHS = 'BLACKLIST_PATHS'
 GCP_EXPORTER_PROJECT = 'GCP_EXPORTER_PROJECT'
 SAMPLING_RATE = 'SAMPLING_RATE'
+TRANSPORT = 'TRANSPORT'
 ZIPKIN_EXPORTER_SERVICE_NAME = 'ZIPKIN_EXPORTER_SERVICE_NAME'
 ZIPKIN_EXPORTER_HOST_NAME = 'ZIPKIN_EXPORTER_HOST_NAME'
 ZIPKIN_EXPORTER_PORT = 'ZIPKIN_EXPORTER_PORT'
@@ -112,9 +113,13 @@ class OpencensusMiddleware(MiddlewareMixin):
             self.sampler = self._sampler()
 
         # Initialize the exporter
+        transport = convert_to_import(settings.params.get(TRANSPORT))
+
         if self._exporter.__name__ == 'GoogleCloudExporter':
             _project_id = settings.params.get(GCP_EXPORTER_PROJECT, None)
-            self.exporter = self._exporter(project_id=_project_id)
+            self.exporter = self._exporter(
+                project_id=_project_id,
+                transport=transport)
         elif self._exporter.__name__ == 'ZipkinExporter':
             _zipkin_service_name = settings.params.get(
                 ZIPKIN_EXPORTER_SERVICE_NAME, 'my_service')
@@ -125,9 +130,10 @@ class OpencensusMiddleware(MiddlewareMixin):
             self.exporter = self._exporter(
                 service_name=_zipkin_service_name,
                 host_name=_zipkin_host_name,
-                port=_zipkin_port)
+                port=_zipkin_port,
+                transport=transport)
         else:
-            self.exporter = self._exporter()
+            self.exporter = self._exporter(transport=transport)
 
         # Initialize the propagator
         self.propagator = self._propagator()
