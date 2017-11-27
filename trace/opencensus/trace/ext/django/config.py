@@ -85,11 +85,8 @@ def _set_default_configs(user_settings, default):
     """Set the default value to user settings if user not specified
     the value.
     """
-    config_keys = user_settings.keys()
-    supported_keys = default.keys()
-
-    for key in supported_keys:
-        if key not in config_keys:
+    for key in default:
+        if key not in user_settings:
             user_settings[key] = default[key]
 
     return user_settings
