@@ -49,7 +49,7 @@ def trace_cursor_query(query_func):
     def call(query, *args, **kwargs):
         _tracer = execution_context.get_opencensus_tracer()
         _span = _tracer.start_span()
-        _span.name = '[{}.query]{}'.format(MODULE_NAME, query)
+        _span.name = '{}.query'.format(MODULE_NAME)
         _tracer.add_label_to_current_span(
             '{}/query'.format(MODULE_NAME), query)
         _tracer.add_label_to_current_span(
