@@ -40,12 +40,10 @@ config_integration.trace_integrations(INTEGRATIONS)
 
 
 def home(request):
-    time.sleep(1)
     return render(request, 'home.html')
 
 
 def greetings(request):
-    time.sleep(1)
     if request.method == 'POST':
         form = HelloForm(request.POST)
 

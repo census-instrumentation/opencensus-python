@@ -91,7 +91,8 @@ OPENCENSUS_TRACE = {
 
 OPENCENSUS_TRACE_PARAMS = {
     'SAMPLING_RATE': 0.5,
-    'BLACKLIST_PATHS': ['_ah/health',]
+    'BLACKLIST_PATHS': ['_ah/health',],
+    'TRANSPORT': 'opencensus.trace.exporters.transports.sync.SyncTransport',
 }
 
 # Internationalization

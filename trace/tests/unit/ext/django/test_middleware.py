@@ -39,16 +39,20 @@ class TestOpencensusMiddleware(unittest.TestCase):
         from opencensus.trace.ext.django import middleware
         from opencensus.trace.samplers import always_on
         from opencensus.trace.propagation import google_cloud_format
+        from opencensus.trace.exporters.transports import sync
 
         class MockCloudExporter(object):
-            def __init__(self, project_id):
+            def __init__(self, project_id, transport):
                 self.project_id = project_id
+                self.transport = transport
 
         MockCloudExporter.__name__ = 'GoogleCloudExporter'
 
         project_id = 'my_project'
         params = {
             'GCP_EXPORTER_PROJECT': project_id,
+            'TRANSPORT':
+                'opencensus.trace.exporters.transports.sync.SyncTransport',
         }
 
         patch_params = mock.patch(
@@ -75,6 +79,7 @@ class TestOpencensusMiddleware(unittest.TestCase):
             google_cloud_format.GoogleCloudFormatPropagator)
 
         self.assertEqual(middleware.exporter.project_id, project_id)
+        self.assertEqual(middleware.exporter.transport, sync.SyncTransport)
 
     def test_constructor_zipkin(self):
         from opencensus.trace.ext.django import middleware
@@ -89,6 +94,8 @@ class TestOpencensusMiddleware(unittest.TestCase):
             'ZIPKIN_EXPORTER_SERVICE_NAME': service_name,
             'ZIPKIN_EXPORTER_HOST_NAME': host_name,
             'ZIPKIN_EXPORTER_PORT': port,
+            'TRANSPORT':
+                'opencensus.trace.exporters.transports.sync.SyncTransport',
         }
 
         patch_zipkin = mock.patch(
@@ -129,6 +136,8 @@ class TestOpencensusMiddleware(unittest.TestCase):
         rate = 0.8
         params = {
             'SAMPLING_RATE': 0.8,
+            'TRANSPORT':
+                'opencensus.trace.exporters.transports.sync.SyncTransport',
         }
 
         patch_sampler = mock.patch(
@@ -210,7 +219,10 @@ class TestOpencensusMiddleware(unittest.TestCase):
         execution_context.clear()
 
         blacklist_paths = ['test_blacklist_path',]
-        params = {'BLACKLIST_PATHS': ['test_blacklist_path',]}
+        params = {
+            'BLACKLIST_PATHS': ['test_blacklist_path',],
+            'TRANSPORT':
+                'opencensus.trace.exporters.transports.sync.SyncTransport',}
         patch_params = mock.patch(
             'opencensus.trace.ext.django.middleware.settings.params',
             params)
