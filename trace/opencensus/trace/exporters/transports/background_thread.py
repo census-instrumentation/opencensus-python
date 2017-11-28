@@ -22,8 +22,8 @@ from six.moves import range
 from opencensus.trace.exporters.transports import base
 
 _DEFAULT_GRACE_PERIOD = 5.0  # Seconds
-_WAIT_PERIOD = 3.0  # Seconds
-_DEFAULT_MAX_BATCH_SIZE = 2
+_DEFAULT_MAX_BATCH_SIZE = 10
+_WAIT_PERIOD = 1.0  # Seconds
 _WORKER_THREAD_NAME = 'opencensus.trace.Worker'
 _WORKER_TERMINATOR = object()
 
@@ -107,6 +107,7 @@ class _Worker(object):
                     'traceId': trace_id,
                     'spans': spans,
                 }
+
                 self.exporter.emit(spans_json)
 
             for _ in range(len(items)):
