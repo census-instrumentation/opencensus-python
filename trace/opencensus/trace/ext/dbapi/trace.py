@@ -54,7 +54,7 @@ def trace_cursor_query(query_func):
     def call(query, *args, **kwargs):
         _tracer = execution_context.get_opencensus_tracer()
         _span = _tracer.start_span()
-        _span.name = '[mysql.query]{}'.format(query)
+        _span.name = 'mysql.query'
         _tracer.add_label_to_current_span('mysql/query', query)
         _tracer.add_label_to_current_span(
             'mysql/cursor/method/name',
