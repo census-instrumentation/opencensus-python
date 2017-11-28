@@ -90,7 +90,7 @@ class StackdriverExporter(base.Exporter):
     """
     def __init__(self, client=None, project_id=None,
                  transport=sync.SyncTransport):
-        # The client will handler the case when project_id is None
+        # The client will handle the case when project_id is None
         if client is None:
             client = Client(project=project_id)
 
