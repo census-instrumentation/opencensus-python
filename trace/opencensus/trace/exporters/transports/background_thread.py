@@ -14,6 +14,7 @@
 
 import atexit
 import threading
+import time
 
 from six.moves import queue
 from six.moves import range
@@ -22,6 +23,7 @@ from opencensus.trace.exporters.transports import base
 
 _DEFAULT_GRACE_PERIOD = 5.0  # Seconds
 _DEFAULT_MAX_BATCH_SIZE = 10
+_WAIT_PERIOD = 1.0  # Seconds
 _WORKER_THREAD_NAME = 'opencensus.trace.Worker'
 _WORKER_TERMINATOR = object()
 
@@ -111,6 +113,9 @@ class _Worker(object):
             for _ in range(len(items)):
                 self._queue.task_done()
 
+            # Wait for a while before next export
+            time.sleep(_WAIT_PERIOD)
+
             if quit_:
                 break
 
@@ -154,14 +159,11 @@ class _Worker(object):
             return True
 
         with self._lock:
-            print('Number of spans pending sent: {}'.format(
-                self._queue.qsize()))
             self._queue.put_nowait(_WORKER_TERMINATOR)
             self._thread.join(timeout=self._grace_period)
 
             success = not self.is_alive
             self._thread = None
-            print('Number of spans not send: {}'.format(self._queue.qsize()))
 
             return success
 
