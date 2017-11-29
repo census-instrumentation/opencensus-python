@@ -12,12 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""This file is for converting the trace header in google cloud format and
-generate a SpanContext, or converting a SpanContext to a google cloud format
-header. Later we will add implementation for supporting other format like
-binary format and zipkin, opencensus format.
-"""
-
 import logging
 import re
 
@@ -31,7 +25,11 @@ _SPAN_ID_DELIMETER = ';'
 
 
 class GoogleCloudFormatPropagator(object):
-
+    """This class is for converting the trace header in google cloud format
+    and generate a SpanContext, or converting a SpanContext to a google cloud
+    format header. Later we will add implementation for supporting other
+    format like binary format and zipkin, opencensus format.
+    """
     def from_header(self, header):
         """Generate a SpanContext object using the trace context header.
         The value of enabled parsed from header is int. Need to convert to
