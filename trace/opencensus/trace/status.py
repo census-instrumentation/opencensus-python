@@ -17,13 +17,13 @@ class Status(object):
     """The Status type defines a logical error model that is suitable for
     different programming environments, including REST APIs and RPC APIs.
     It is used by gRPC.
-    
+
     :type code: int
     :param code: An enum value of :class: `~google.rpc.Code`.
-    
+
     :type message: str
     :param message: A developer-facing error message, should be in English.
-    
+
     :type details: list
     :param details: A list of messages that carry the error details.
                     There is a common set of message types for APIs to use.

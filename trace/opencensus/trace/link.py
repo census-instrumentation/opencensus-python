@@ -20,7 +20,8 @@ class Type(object):
     Attributes:
       TYPE_UNSPECIFIED (int): The relationship of the two spans is unknown.
       CHILD_LINKED_SPAN (int): The linked span is a child of the current span.
-      PARENT_LINKED_SPAN (int): The linked span is a parent of the current span.
+      PARENT_LINKED_SPAN (int): The linked span is a parent of the current
+      span.
     """
     TYPE_UNSPECIFIED = 0
     CHILD_LINKED_SPAN = 1
@@ -32,17 +33,17 @@ class Link(object):
     a different trace. For example, this can be used in batching operations,
     where a single batch handler processes multiple requests from different
     traces or when the handler receives a request from a different project.
-    
+
     :type trace_id: str
     :param trace_id: The [TRACE_ID] for a trace within a project.
-    
+
     :type span_id: str
     :param span_id: The [SPAN_ID] for a span within a trace.
-    
+
     :type type: Enum of :class:`~opencensus.trace.link.Type`
     :param type: The relationship of the current span relative to the linked
                  span.
-    
+
     :type attributes: :class:`~opencensus.trace.attributes.Attributes`
     :param attributes: A set of attributes on the link. You have have up to 32
                        attributes per link.

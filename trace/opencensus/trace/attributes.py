@@ -14,11 +14,11 @@
 
 
 def _format_attribute_value(value):
-    if isinstance(value, str):
+    if type(value).__name__ == 'str':
         value_type = 'string_value'
-    elif isinstance(value, int):
+    elif type(value).__name__ == 'int':
         value_type = 'int_value'
-    elif isinstance(value, bool):
+    elif type(value).__name__ == 'bool':
         value_type = 'bool_value'
     else:
         raise TypeError("Value must be str, int, or bool.")
@@ -28,7 +28,7 @@ def _format_attribute_value(value):
 
 class Attributes(object):
     """A set of attributes, each in the format [KEY]:[VALUE].
-    
+
     :type attributes: dict
     :param attributes: The set of attributes. Each attribute's key can be up
                        to 128 bytes long. The value can be a string up to 256

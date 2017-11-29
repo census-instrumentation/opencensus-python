@@ -19,8 +19,43 @@ from opencensus.trace.utils import _get_truncatable_str
 
 class StackFrame(object):
     """Represents a single stack frame in a stack trace.
-    
-    :type func_name
+
+    :type func_name: str
+    :param func_name: The fully-qualified name that uniquely identifies the
+                      function or method that is active in this frame (up to
+                      1024 bytes).
+
+    :type original_func_name: str
+    :param original_func_name: An un-mangled function name, if functionName is
+                               mangled. The name can be fully-qualified
+                               (up to 1024 bytes).
+
+    :type file_name: str
+    :param file_name: The name of the source file where the function call
+                      appears (up to 256 bytes).
+
+    :type line_num: int
+    :param line_num: The line number in fileName where the function call
+                     appears.
+
+    :type col_num: int
+    :param col_num: The column number where the function call appears, if
+                    available. This is important in JavaScript because of its
+                    anonymous functions.
+
+    :type load_module: str
+    :param load_module: For example: main binary, kernel modules, and dynamic
+                        libraries such as libc.so, sharedlib.so
+                        (up to 256 bytes).
+
+    :type build_id: str
+    :param build_id: A unique identifier for the module, usually a hash of its
+                    contents (up to 128 bytes).
+
+
+    :type source_version: str
+    :param source_version: The version of the deployed source code
+                           (up to 128 bytes).
     """
     def __init__(self,
                  func_name,
@@ -30,7 +65,7 @@ class StackFrame(object):
                  col_num,
                  load_module,
                  build_id,
-                 source_version)
+                 source_version):
         self.func_name = func_name
         self.original_func_name = original_func_name
         self.file_name = file_name
@@ -43,7 +78,8 @@ class StackFrame(object):
     def format_stack_frame_json(self):
         """Convert StackFrame object to json format."""
         stack_frame_json = {}
-        stack_frame_json['function_name'] = _get_truncatable_str(self.func_name)
+        stack_frame_json['function_name'] = _get_truncatable_str(
+            self.func_name)
         stack_frame_json['original_function_name'] = _get_truncatable_str(
             self.original_func_name)
         stack_frame_json['file_name'] = _get_truncatable_str(self.file_name)
@@ -61,11 +97,11 @@ class StackFrame(object):
 
 class StackTrace(object):
     """A call stack appearing in a trace.
-    
+
     :type stack_frames: list
     :param stack_frames: Stack frames in this stack trace. A maximum of 128
                          frames are allowed.
-    
+
     :type stack_trace_hash_id: str
     :param stack_trace_hash_id: The hash ID is used to conserve network
                                 bandwidth for duplicate stack traces within a
@@ -76,20 +112,20 @@ class StackTrace(object):
             stack_frames = []
 
         if stack_trace_hash_id is None:
-            stack_trace_hash_id = _generate_hash_id()
+            stack_trace_hash_id = generate_hash_id()
 
         self.stack_frames = stack_frames
         self.stack_trace_hash_id = stack_trace_hash_id
 
     def add_stack_frame(self, stack_frame):
         """Add StackFrame to frames list."""
-        self.stack_frames.append(stack_frame)
+        self.stack_frames.append(stack_frame.format_stack_frame_json())
 
     def format_stack_trace_json(self):
         """Convert a StackTrace object to json format."""
         stack_trace_json = {}
 
-        if stack_frames:
+        if self.stack_frames:
             stack_trace_json['stack_frames'] = self.stack_frames
 
         stack_trace_json['stack_trace_hash_id'] = self.stack_trace_hash_id

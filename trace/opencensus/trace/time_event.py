@@ -12,50 +12,54 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from opencensus.trace.utils import _get_truncatable_str
+
 
 class Annotation(object):
-    pass
+    """Text annotation with a set of attributes.
 
+    :type description: str
+    :param description: A user-supplied message describing the event.
+                        The maximum length for the description is 256 bytes.
 
-class MessageEvent(object):
-    pass
+    :type attributes: :class:`~opencensus.trace.attributes.Attributes`
+    :param attributes: A set of attributes on the annotation.
+                       You can have up to 4 attributes per Annotation.
+    """
+    def __init__(self, description, attributes=None):
+        self.description = description
+        self.attributes = attributes
+
+    def format_annotation_json(self):
+        annotation_json = {}
+        annotation_json['description'] = _get_truncatable_str(self.description)
+
+        if self.attributes is not None:
+            annotation_json['attributes'] = self.attributes.\
+                format_attributes_json()
+
+        return annotation_json
 
 
 class TimeEvent(object):
     """A collection of TimeEvents. A TimeEvent is a time-stamped annotation on
     the span, consisting of either user-supplied key:value pairs, or details
     of a message sent/received between Spans.
-    
+
     :type timestamp: :class:`~datetime.datetime`
     :param timestamp: The timestamp indicating the time the event occurred.
-    
+
     :type annotation: :class: `~opencensus.trace.time_event.Annotation`
     :param annotation: (Optional) Text annotation with a set of attributes.
-    
-    :type message_event: :class: `~opencensus.trace.time_event.MessageEvent`
-    :param message_event: (Optional) An event describing a message
-                          sent/received between Spans.
     """
-    def __init__(self, timestamp, annotation=None, message_event=None):
+    def __init__(self, timestamp, annotation):
         self.timestamp = timestamp.isoformat() + 'Z'
         self.annotation = annotation
-        self.message_event = message_event
 
     def format_time_event_json(self):
         """Convert a TimeEvent object to json format."""
         time_event = {}
-
         time_event['time'] = self.timestamp
+        time_event['annotation'] = self.annotation.format_annotation_json()
 
-        if self.annotation is not None:
-            time_event['annotation'] = self.annotation
-
-            return time_event
-
-        if self.message_event is not None:
-            time_event['message_event'] = self.message_event
-
-            return time_event
-
-        raise ValueError("TimeEvent can contain either an Annotation or a"
-                         "MessageEvent object, but not both.")
+        return time_event
