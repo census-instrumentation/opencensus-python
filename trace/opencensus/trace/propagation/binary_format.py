@@ -77,8 +77,6 @@ class BinaryFormatPropagator(object):
          master/encodings/BinaryEncoding.md
 
     Example:
-    
-    .. code-block::
         [SpanContext]
             trace_id: hex string with length 32.
                 e.g. 'a0b72ca15c1a4bd18962d0ac59dc90b9'
