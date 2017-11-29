@@ -24,6 +24,7 @@ _TRACE_CONTEXT_HEADER_RE = re.compile(_TRACE_CONTEXT_HEADER_FORMAT)
 
 
 class TraceContextPropagator(object):
+    """Propagator for processing the trace context HTTP header format."""
 
     def from_header(self, header):
         """Generate a SpanContext object using the trace context header.
