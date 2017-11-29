@@ -76,3 +76,13 @@ class TestAttributes(unittest.TestCase):
         }
 
         self.assertEqual(expected_attributes_json, attributes_json)
+
+    def test_format_attributes_json_type_error(self):
+        attrs = {
+            'key1': mock.Mock(),
+        }
+
+        attributes = attributes_module.Attributes(attrs)
+
+        with self.assertRaises(TypeError):
+            attributes_json = attributes.format_attributes_json()
