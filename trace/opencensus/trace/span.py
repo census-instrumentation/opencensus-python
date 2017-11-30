@@ -43,8 +43,8 @@ class Span(object):
 
     :type attributes: dict
     :param attributes: Collection of attributes associated with the span.
-                   Label keys must be less than 128 bytes.
-                   Label values must be less than 16 kilobytes.
+                   Attribute keys must be less than 128 bytes.
+                   Attribute values must be less than 16 kilobytes.
 
     :type start_time: str
     :param start_time: (Optional) Start of the time interval (inclusive)
@@ -122,10 +122,10 @@ class Span(object):
         """Add attribute to span.
 
         :type attribute_key: str
-        :param attribute_key: Label key.
+        :param attribute_key: Attribute key.
 
         :type attribute_value:str
-        :param attribute_value: Label value.
+        :param attribute_value: Attribute value.
         """
         self.attributes[attribute_key] = attribute_value
 

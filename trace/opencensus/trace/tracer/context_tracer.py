@@ -126,10 +126,10 @@ class ContextTracer(base.Tracer):
         """Add attribute to current span.
 
         :type attribute_key: str
-        :param attribute_key: Label key.
+        :param attribute_key: Attribute key.
 
         :type attribute_value:str
-        :param attribute_value: Label value.
+        :param attribute_value: Attribute value.
         """
         current_span = self.current_span()
         current_span.add_attribute(attribute_key, attribute_value)

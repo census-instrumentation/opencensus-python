@@ -123,10 +123,10 @@ class RequestTracer(object):
         """Add attribute to current span.
 
         :type attribute_key: str
-        :param attribute_key: Label key.
+        :param attribute_key: Attribute key.
 
         :type attribute_value:str
-        :param attribute_value: Label value.
+        :param attribute_value: Attribute value.
         """
         self.tracer.add_attribute_to_current_span(attribute_key, attribute_value)
 
