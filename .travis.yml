@@ -3,10 +3,10 @@ python:
   - '3.6'
 
 install:
-  - pip install --upgrade sphinx
+  - pip install --upgrade nox-automation
 
 script:
-  - ./scripts/update_docs.sh
+  - nox -s docs
   - touch docs/.nojekyll
 
 branches:

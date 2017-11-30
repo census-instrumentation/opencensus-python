@@ -12,11 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""This module provides the basic utilities for extracting the trace
-information from a carrier which is a dict to form a SpanContext. And
-generating a dict using the provided SpanContext.
-"""
-
 from opencensus.trace.span_context import SpanContext
 from opencensus.trace.trace_options import TraceOptions
 
@@ -29,7 +24,10 @@ DEFAULT_TRACE_OPTIONS = '1'
 
 
 class TextFormatPropagator(object):
-
+    """This class provides the basic utilities for extracting the trace
+    information from a carrier which is a dict to form a SpanContext. And
+    generating a dict using the provided SpanContext.
+    """
     def from_carrier(self, carrier):
         """Generate a SpanContext object using the information in the carrier.
 

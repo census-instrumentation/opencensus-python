@@ -24,7 +24,7 @@ class PrintExporter(base.Exporter):
     :type transport: :class:`type`
     :param transport: Class for creating new transport objects. It should
                       extend from the base :class:`.Transport` type and
-                      implement :meth`.Transport.export`. Defaults to
+                      implement :meth:`.Transport.export`. Defaults to
                       :class:`.SyncTransport`. The other option is
                       :class:`.BackgroundThreadTransport`.
     """
