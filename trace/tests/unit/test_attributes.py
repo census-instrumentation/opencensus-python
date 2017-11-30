@@ -65,7 +65,10 @@ class TestAttributes(unittest.TestCase):
 
         expected_attributes_json = {
             'key1': {
-                'string_value': 'test string'
+                'string_value': {
+                    'value': 'test string',
+                    'truncated_byte_count': 0
+                }
             },
             'key2': {
                 'bool_value': True

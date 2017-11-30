@@ -12,10 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from opencensus.trace.utils import _get_truncatable_str
+
 
 def _format_attribute_value(value):
     if type(value).__name__ == 'str':
         value_type = 'string_value'
+        value = _get_truncatable_str(value)
     elif type(value).__name__ == 'int':
         value_type = 'int_value'
     elif type(value).__name__ == 'bool':
