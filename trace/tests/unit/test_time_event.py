@@ -66,21 +66,97 @@ class TestAnnotation(unittest.TestCase):
         self.assertEqual(annotation_json, expected_annotation_json)
 
 
+class TestMessageEvent(unittest.TestCase):
+    def test_constructor_default(self):
+        id = '1234'
+
+        message_event = time_event_module.MessageEvent(id)
+
+        self.assertEqual(message_event.id, id)
+        self.assertEqual(
+            message_event.type, time_event_module.Type.TYPE_UNSPECIFIED)
+        self.assertIsNone(message_event.uncompressed_size_bytes)
+        self.assertIsNone(message_event.compressed_size_bytes)
+
+    def test_constructor_explicit(self):
+        id = '1234'
+        type = time_event_module.Type.SENT
+        uncompressed_size_bytes = '100'
+
+        message_event = time_event_module.MessageEvent(
+            id, type, uncompressed_size_bytes)
+
+        self.assertEqual(message_event.id, id)
+        self.assertEqual(
+            message_event.type, type)
+        self.assertEqual(
+            message_event.uncompressed_size_bytes, uncompressed_size_bytes)
+        self.assertEqual(
+            message_event.compressed_size_bytes, uncompressed_size_bytes)
+
+    def test_format_message_event_json(self):
+        id = '1234'
+        type = time_event_module.Type.SENT
+        uncompressed_size_bytes = '100'
+
+        message_event = time_event_module.MessageEvent(
+            id, type, uncompressed_size_bytes)
+
+        expected_message_event_json = {
+            'type': type,
+            'id': id,
+            'uncompressed_size_bytes': uncompressed_size_bytes,
+            'compressed_size_bytes': uncompressed_size_bytes
+        }
+
+        message_event_json = message_event.format_message_event_json()
+
+        self.assertEqual(expected_message_event_json, message_event_json)
+
+    def test_format_message_event_json_no_size(self):
+        id = '1234'
+        type = time_event_module.Type.SENT
+
+        message_event = time_event_module.MessageEvent(id, type)
+
+        expected_message_event_json = {
+            'type': type,
+            'id': id,
+        }
+
+        message_event_json = message_event.format_message_event_json()
+
+        self.assertEqual(expected_message_event_json, message_event_json)
+
+
 class TestTimeEvent(unittest.TestCase):
     def test_constructor(self):
         import datetime
 
         timestamp = datetime.datetime.utcnow()
-        annotation = mock.Mock()
+        message_event = mock.Mock()
 
         time_event =  time_event_module.TimeEvent(
             timestamp=timestamp,
-            annotation=annotation)
+            message_event=message_event)
 
         self.assertEqual(time_event.timestamp, timestamp.isoformat() + 'Z')
-        self.assertEqual(time_event.annotation, annotation)
+        self.assertEqual(time_event.message_event, message_event)
 
-    def test_format_time_event_json(self):
+    def test_constructor_value_error(self):
+        import datetime
+
+        timestamp = datetime.datetime.utcnow()
+        annotation = mock.Mock()
+        message_event = mock.Mock()
+
+        with self.assertRaises(ValueError):
+            time_event =  time_event_module.TimeEvent(
+                timestamp=timestamp,
+                annotation=annotation,
+                message_event=message_event)
+
+    def test_format_time_event_json_annotation(self):
         import datetime
 
         timestamp = datetime.datetime.utcnow()
@@ -96,6 +172,27 @@ class TestTimeEvent(unittest.TestCase):
         expected_time_event_json = {
             'time': timestamp.isoformat() + 'Z',
             'annotation': mock_annotation
+        }
+
+        self.assertEqual(time_event_json, expected_time_event_json)
+
+    def test_format_time_event_json_message_event(self):
+        import datetime
+
+        timestamp = datetime.datetime.utcnow()
+        mock_message_event = 'test annotation'
+        message_event = mock.Mock()
+        message_event.format_message_event_json.return_value = \
+            mock_message_event
+
+        time_event = time_event_module.TimeEvent(
+            timestamp=timestamp,
+            message_event=message_event)
+
+        time_event_json = time_event.format_time_event_json()
+        expected_time_event_json = {
+            'time': timestamp.isoformat() + 'Z',
+            'message_event': mock_message_event
         }
 
         self.assertEqual(time_event_json, expected_time_event_json)
