@@ -84,7 +84,7 @@ class Test_postgresql_trace(unittest.TestCase):
 
         self.assertEqual(result, return_value)
         self.assertTrue(mock_tracer.start_span.called)
-        self.assertTrue(mock_tracer.add_label_to_current_span.called)
+        self.assertTrue(mock_tracer.add_attribute_to_current_span.called)
         self.assertTrue(mock_tracer.end_span.called)
 
 class TestTraceCursor(unittest.TestCase):

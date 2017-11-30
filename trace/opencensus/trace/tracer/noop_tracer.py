@@ -56,14 +56,14 @@ class NoopTracer(base.Tracer):
         """Return the current span."""
         return base.NullContextManager()
 
-    def add_label_to_current_span(self, label_key, label_value):
-        """Add label to current span.
+    def add_attribute_to_current_span(self, attribute_key, attribute_value):
+        """Add attribute to current span.
 
-        :type label_key: str
-        :param label_key: Label key.
+        :type attribute_key: str
+        :param attribute_key: Label key.
 
-        :type label_value:str
-        :param label_value: Label value.
+        :type attribute_value:str
+        :param attribute_value: Label value.
         """
         return
 

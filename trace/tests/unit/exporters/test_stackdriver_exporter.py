@@ -104,21 +104,21 @@ class TestStackdriverExporter(unittest.TestCase):
         self.assertEqual(traces, expected_traces)
 
 
-class Test_set_labels_gae(unittest.TestCase):
+class Test_set_attributes_gae(unittest.TestCase):
 
-    def test_set_labels_gae(self):
+    def test_set_attributes_gae(self):
         import os
 
         trace = {
             'spans': [
                 {
-                    'labels':{},
+                    'attributes':{},
                     'span_id': 123,
                 },
             ],
         }
 
-        expected_labels = {
+        expected_attributes = {
             stackdriver_exporter.GAE_LABELS['GAE_FLEX_PROJECT']: 'project',
             stackdriver_exporter.GAE_LABELS['GAE_FLEX_SERVICE']: 'service',
             stackdriver_exporter.GAE_LABELS['GAE_FLEX_VERSION']: 'version',
@@ -131,9 +131,9 @@ class Test_set_labels_gae(unittest.TestCase):
                  'GAE_FLEX_PROJECT': 'project',
                  'GAE_FLEX_SERVICE': 'service',
                  'GAE_FLEX_VERSION': 'version'}):
-            stackdriver_exporter.set_labels(trace)
+            stackdriver_exporter.set_attributes(trace)
 
-        self.assertEqual(trace['spans'][0]['labels'], expected_labels)
+        self.assertEqual(trace['spans'][0]['attributes'], expected_attributes)
 
 
 class MockTransport(object):

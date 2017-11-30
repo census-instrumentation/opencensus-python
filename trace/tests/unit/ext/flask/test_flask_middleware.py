@@ -102,12 +102,12 @@ class TestFlaskMiddleware(unittest.TestCase):
 
             span = tracer.current_span()
 
-            expected_labels = {
+            expected_attributes = {
                 '/http/url': u'http://localhost/',
                 '/http/method': 'GET',
             }
 
-            self.assertEqual(span.labels, expected_labels)
+            self.assertEqual(span.attributes, expected_attributes)
             self.assertEqual(span.parent_span.span_id, span_id)
 
             span_context = tracer.span_context
@@ -165,12 +165,12 @@ class TestFlaskMiddleware(unittest.TestCase):
 
             span = tracer.current_span()
 
-            expected_labels = {
+            expected_attributes = {
                 '/http/url': u'http://localhost/',
                 '/http/method': 'GET',
             }
 
-            self.assertEqual(span.labels, expected_labels)
+            self.assertEqual(span.attributes, expected_attributes)
             assert isinstance(span.parent_span, base.NullContextManager)
 
             span_context = tracer.span_context
@@ -192,12 +192,12 @@ class TestFlaskMiddleware(unittest.TestCase):
 
             span = tracer.current_span()
 
-            expected_labels = {
+            expected_attributes = {
                 '/http/url': u'http://localhost/',
                 '/http/method': 'GET',
             }
 
-            self.assertEqual(span.labels, expected_labels)
+            self.assertEqual(span.attributes, expected_attributes)
             assert isinstance(span.parent_span, base.NullContextManager)
 
     def test__after_request_not_sampled(self):

@@ -225,13 +225,13 @@ class TestRequestTracer(unittest.TestCase):
 
         self.assertEqual(result, span)
 
-    def test_add_label_to_current_span_not_sampled(self):
+    def test_add_attribute_to_current_span_not_sampled(self):
         from opencensus.trace.tracer import base
 
         sampler = mock.Mock()
         sampler.should_sample.return_value = False
         tracer = request_tracer.RequestTracer(sampler=sampler)
-        tracer.add_label_to_current_span('key', 'value')
+        tracer.add_attribute_to_current_span('key', 'value')
 
         span = tracer.current_span()
 

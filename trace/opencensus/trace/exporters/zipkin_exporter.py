@@ -155,7 +155,7 @@ class ZipkinExporter(base.Exporter):
                 'timestamp': int(round(start_timestamp_ms)),
                 'duration': int(round(duration_ms)),
                 'localEndpoint': local_endpoint,
-                'tags': span.get('labels'),
+                'tags': span.get('attributes'),
             }
 
             span_kind = span.get('kind')

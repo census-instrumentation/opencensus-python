@@ -47,7 +47,7 @@ class TestSpan(unittest.TestCase):
         self.assertEqual(span.span_id, span_id)
         self.assertEqual(span.kind, Enum.SpanKind.SPAN_KIND_UNSPECIFIED)
         self.assertIsNone(span.parent_span)
-        self.assertEqual(span.labels, {})
+        self.assertEqual(span.attributes, {})
         self.assertIsNone(span.start_time)
         self.assertIsNone(span.end_time)
         self.assertEqual(span.children, [])
@@ -64,7 +64,7 @@ class TestSpan(unittest.TestCase):
         parent_span = mock.Mock()
         start_time = datetime.utcnow().isoformat() + 'Z'
         end_time = datetime.utcnow().isoformat() + 'Z'
-        labels = {
+        attributes = {
             '/http/status_code': '200',
             '/component': 'HTTP load balancer',
         }
@@ -74,7 +74,7 @@ class TestSpan(unittest.TestCase):
             name=span_name,
             kind=kind,
             parent_span=parent_span,
-            labels=labels,
+            attributes=attributes,
             start_time=start_time,
             end_time=end_time,
             span_id=span_id,
@@ -84,7 +84,7 @@ class TestSpan(unittest.TestCase):
         self.assertEqual(span.span_id, span_id)
         self.assertEqual(span.kind, kind)
         self.assertEqual(span.parent_span, parent_span)
-        self.assertEqual(span.labels, labels)
+        self.assertEqual(span.attributes, attributes)
         self.assertEqual(span.start_time, start_time)
         self.assertEqual(span.end_time, end_time)
         self.assertEqual(span.children, [])
@@ -116,19 +116,19 @@ class TestSpan(unittest.TestCase):
         self.assertEqual(result_child_span.span_id, span_id)
         self.assertEqual(result_child_span.kind, kind)
         self.assertEqual(result_child_span.parent_span, root_span)
-        self.assertEqual(result_child_span.labels, {})
+        self.assertEqual(result_child_span.attributes, {})
         self.assertIsNone(result_child_span.start_time)
         self.assertIsNone(result_child_span.end_time)
 
-    def test_add_label(self):
+    def test_add_attribute(self):
         span_name = 'test_span_name'
         span = self._make_one(span_name)
-        label_key = 'label_key'
-        label_value = 'label_value'
-        span.add_label(label_key, label_value)
+        attribute_key = 'attribute_key'
+        attribute_value = 'attribute_value'
+        span.add_attribute(attribute_key, attribute_value)
 
-        self.assertEqual(span.labels[label_key], label_value)
-        span.labels.pop(label_key, None)
+        self.assertEqual(span.attributes[attribute_key], attribute_value)
+        span.attributes.pop(attribute_key, None)
 
     def test_start(self):
         span_name = 'root_span'
@@ -204,7 +204,7 @@ class Test_format_span_json(unittest.TestCase):
         span.start_time = start_time
         span.end_time = end_time
         span.parent_span = None
-        span.labels = None
+        span.attributes = None
 
         expected_span_json = {
             'name': name,
@@ -224,7 +224,7 @@ class Test_format_span_json(unittest.TestCase):
         name = 'test span'
         kind = Enum.SpanKind.SPAN_KIND_UNSPECIFIED
         span_id = 1234
-        labels = {
+        attributes = {
             '/http/status_code': '200',
             '/component': 'HTTP load balancer',
         }
@@ -238,7 +238,7 @@ class Test_format_span_json(unittest.TestCase):
         span.parent_span = parent_span
         span.name = name
         span.kind = kind
-        span.labels = labels
+        span.attributes = attributes
         span.span_id = span_id
         span.start_time = start_time
         span.end_time = end_time
@@ -250,7 +250,7 @@ class Test_format_span_json(unittest.TestCase):
             'parentSpanId': parent_span_id,
             'startTime': start_time,
             'endTime': end_time,
-            'labels': labels,
+            'attributes': attributes,
         }
 
         span_json = format_span_json(span)

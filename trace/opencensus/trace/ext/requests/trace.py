@@ -47,13 +47,13 @@ def wrap_requests(requests_func):
         _span = _tracer.start_span()
         _span.name = '[requests]{}'.format(requests_func.__name__)
 
-        # Add the requests url to labels
-        _tracer.add_label_to_current_span('requests/url', url)
+        # Add the requests url to attributes
+        _tracer.add_attribute_to_current_span('requests/url', url)
 
         result = requests_func(url, *args, **kwargs)
 
-        # Add the status code to labels
-        _tracer.add_label_to_current_span(
+        # Add the status code to attributes
+        _tracer.add_attribute_to_current_span(
             'requests/status_code', str(result.status_code))
 
         _tracer.end_span()
@@ -69,13 +69,13 @@ def wrap_session_request(request_func):
         _span = _tracer.start_span()
         _span.name = '[requests]{}'.format(method)
 
-        # Add the requests url to labels
-        _tracer.add_label_to_current_span('requests/url', url)
+        # Add the requests url to attributes
+        _tracer.add_attribute_to_current_span('requests/url', url)
 
         result = request_func(method, url, *args, **kwargs)
 
-        # Add the status code to labels
-        _tracer.add_label_to_current_span(
+        # Add the status code to attributes
+        _tracer.add_attribute_to_current_span(
             'requests/status_code', str(result.status_code))
 
         _tracer.end_span()

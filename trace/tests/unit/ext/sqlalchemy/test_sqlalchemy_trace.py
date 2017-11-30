@@ -69,7 +69,7 @@ class Test_sqlalchemy_trace(unittest.TestCase):
             trace._before_cursor_execute(None, None, query,
                                          parameters, None, False)
 
-        expected_labels = {
+        expected_attributes = {
             'sqlalchemy/query': query,
             'sqlalchemy/query/parameters': parameters,
             'sqlalchemy/cursor/method/name': 'execute'
@@ -77,7 +77,7 @@ class Test_sqlalchemy_trace(unittest.TestCase):
 
         expected_name = '[sqlalchemy.query]{}'.format(query)
 
-        self.assertEqual(mock_tracer.current_span.labels, expected_labels)
+        self.assertEqual(mock_tracer.current_span.attributes, expected_attributes)
         self.assertEqual(mock_tracer.current_span.name, expected_name)
 
     def test__before_cursor_executemany(self):
@@ -95,7 +95,7 @@ class Test_sqlalchemy_trace(unittest.TestCase):
             trace._before_cursor_execute(None, None, query,
                                          parameters, None, True)
 
-        expected_labels = {
+        expected_attributes = {
             'sqlalchemy/query': query,
             'sqlalchemy/query/parameters': parameters,
             'sqlalchemy/cursor/method/name': 'executemany'
@@ -103,7 +103,7 @@ class Test_sqlalchemy_trace(unittest.TestCase):
 
         expected_name = '[sqlalchemy.query]{}'.format(query)
 
-        self.assertEqual(mock_tracer.current_span.labels, expected_labels)
+        self.assertEqual(mock_tracer.current_span.attributes, expected_attributes)
         self.assertEqual(mock_tracer.current_span.name, expected_name)
 
     def test__after_cursor_execute(self):
@@ -126,9 +126,9 @@ class MockTracer(object):
 
     def start_span(self):
         span = mock.Mock()
-        span.labels = {}
+        span.attributes = {}
         self.current_span = span
         return span
 
-    def add_label_to_current_span(self, key, value):
-        self.current_span.labels[key] = value
+    def add_attribute_to_current_span(self, key, value):
+        self.current_span.attributes[key] = value
