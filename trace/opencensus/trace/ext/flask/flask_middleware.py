@@ -25,9 +25,9 @@ from opencensus.trace import request_tracer
 
 _FLASK_TRACE_HEADER = 'X_CLOUD_TRACE_CONTEXT'
 
-HTTP_METHOD = attributes_helper.COMMON_LABELS['HTTP_METHOD']
-HTTP_URL = attributes_helper.COMMON_LABELS['HTTP_URL']
-HTTP_STATUS_CODE = attributes_helper.COMMON_LABELS['HTTP_STATUS_CODE']
+HTTP_METHOD = attributes_helper.COMMON_ATTRIBUTES['HTTP_METHOD']
+HTTP_URL = attributes_helper.COMMON_ATTRIBUTES['HTTP_URL']
+HTTP_STATUS_CODE = attributes_helper.COMMON_ATTRIBUTES['HTTP_STATUS_CODE']
 
 log = logging.getLogger(__name__)
 

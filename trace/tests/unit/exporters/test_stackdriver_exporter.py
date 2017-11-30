@@ -119,9 +119,9 @@ class Test_set_attributes_gae(unittest.TestCase):
         }
 
         expected_attributes = {
-            stackdriver_exporter.GAE_LABELS['GAE_FLEX_PROJECT']: 'project',
-            stackdriver_exporter.GAE_LABELS['GAE_FLEX_SERVICE']: 'service',
-            stackdriver_exporter.GAE_LABELS['GAE_FLEX_VERSION']: 'version',
+            stackdriver_exporter.GAE_ATTRIBUTES['GAE_FLEX_PROJECT']: 'project',
+            stackdriver_exporter.GAE_ATTRIBUTES['GAE_FLEX_SERVICE']: 'service',
+            stackdriver_exporter.GAE_ATTRIBUTES['GAE_FLEX_VERSION']: 'version',
         }
 
         with mock.patch.dict(

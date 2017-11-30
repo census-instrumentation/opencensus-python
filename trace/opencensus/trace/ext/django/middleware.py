@@ -27,9 +27,9 @@ try:
 except ImportError:  # pragma: NO COVER
     MiddlewareMixin = object
 
-HTTP_METHOD = attributes_helper.COMMON_LABELS['HTTP_METHOD']
-HTTP_URL = attributes_helper.COMMON_LABELS['HTTP_URL']
-HTTP_STATUS_CODE = attributes_helper.COMMON_LABELS['HTTP_STATUS_CODE']
+HTTP_METHOD = attributes_helper.COMMON_ATTRIBUTES['HTTP_METHOD']
+HTTP_URL = attributes_helper.COMMON_ATTRIBUTES['HTTP_URL']
+HTTP_STATUS_CODE = attributes_helper.COMMON_ATTRIBUTES['HTTP_STATUS_CODE']
 
 REQUEST_THREAD_LOCAL_KEY = 'django_request'
 

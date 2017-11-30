@@ -28,7 +28,7 @@ _APPENGINE_FLEXIBLE_ENV_FLEX = 'GAE_INSTANCE'
 # GAE common attributes
 # See: https://cloud.google.com/appengine/docs/flexible/python/runtime#
 #      environment_variables
-GAE_LABELS = {
+GAE_ATTRIBUTES = {
     'GAE_FLEX_VERSION': 'g.co/gae/app/version',
     'GAE_FLEX_SERVICE': 'g.co/gae/app/service',
     'GAE_FLEX_PROJECT': 'g.co/gae/app/project',
@@ -38,7 +38,7 @@ GAE_LABELS = {
 }
 
 # GCE common attributes
-GCE_LABELS = {
+GCE_ATTRIBUTES = {
     'GCE_INSTANCE_ID': 'g.co/gce/instanceid',
     'GCE_HOSTNAME': 'g.co/gce/hostname',
 }
@@ -54,7 +54,7 @@ def set_gae_attributes(trace):
     """Set the GAE environment common attributes."""
     spans = trace.get('spans')
 
-    for env_var, attribute_key in GAE_LABELS.items():
+    for env_var, attribute_key in GAE_ATTRIBUTES.items():
         attribute_value = os.environ.get(env_var)
 
         if attribute_value is not None:
