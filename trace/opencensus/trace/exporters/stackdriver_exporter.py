@@ -118,6 +118,26 @@ class StackdriverExporter(base.Exporter):
         :returns: Traces in Google Cloud StackDriver Trace format.
         """
         set_attributes(trace)
-        trace['projectId'] = self.project_id
-        traces = {'traces': [trace]}
+        spans = trace.get('spans')
+        trace_id = trace.get('traceId')
+        spans_json = []
+
+        for span in spans:
+            span_json = {
+                'name': span.get('name'),
+                'startTime': span.get('startTime'),
+                'endTime': span.get('endTime'),
+                'spanId': span.get('spanId'),
+                'parentSpanId': span.get('parentSpanId'),
+                'labels': span.get('attributes')
+            }
+            spans_json.append(span_json)
+
+        trace_json = {
+            'projectId': self.project_id,
+            'traceId': trace_id,
+            'spans': spans_json
+        }
+
+        traces = {'traces': [trace_json]}
         return traces

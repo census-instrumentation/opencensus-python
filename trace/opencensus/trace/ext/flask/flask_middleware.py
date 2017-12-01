@@ -107,7 +107,8 @@ class FlaskMiddleware(object):
             span.name = '[{}]{}'.format(
                 flask.request.method,
                 flask.request.url)
-            tracer.add_attribute_to_current_span(HTTP_METHOD, flask.request.method)
+            tracer.add_attribute_to_current_span(
+                HTTP_METHOD, flask.request.method)
             tracer.add_attribute_to_current_span(HTTP_URL, flask.request.url)
         except Exception:  # pragma: NO COVER
             log.error('Failed to trace request', exc_info=True)

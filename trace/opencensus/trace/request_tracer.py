@@ -128,7 +128,8 @@ class RequestTracer(object):
         :type attribute_value:str
         :param attribute_value: Attribute value.
         """
-        self.tracer.add_attribute_to_current_span(attribute_key, attribute_value)
+        self.tracer.add_attribute_to_current_span(
+            attribute_key, attribute_value)
 
     def trace_decorator(self):
         """Decorator to trace a function."""
