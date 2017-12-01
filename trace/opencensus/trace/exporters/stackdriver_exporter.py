@@ -98,26 +98,35 @@ class StackdriverExporter(base.Exporter):
         self.project_id = client.project
         self.transport = transport(self)
 
-    def emit(self, trace):
+    def emit(self, spans):
         """
-        :type trace: dict
-        :param trace: Trace collected.
+        :type spans: dict
+        :param spans: Spans collected.
         """
-        stackdriver_traces = self.translate_to_stackdriver(trace)
-        self.client.patch_traces(stackdriver_traces)
+        name = 'projects/{}'.format(self.project_id)
+        stackdriver_spans = self.translate_to_stackdriver(spans)
+        self.client.batch_write_spans(name, stackdriver_spans)
 
     def export(self, trace):
         self.transport.export(trace)
 
-    def translate_to_stackdriver(self, trace):
+    def translate_to_stackdriver(self, spans):
         """
-        :type trace: dict
-        :param trace: Trace collected.
+        :type spans: dict
+        :param spans: Spans collected.
 
         :rtype: dict
-        :returns: Traces in Google Cloud StackDriver Trace format.
+        :returns: Spans in Google Cloud StackDriver Trace format.
         """
-        set_labels(trace)
-        trace['projectId'] = self.project_id
-        traces = {'traces': [trace]}
-        return traces
+        trace_id = spans.get('traceId')
+        spans_json = spans.get('spans')
+
+        for span_json in spans_json:
+            span_name = 'projects/{}/traces/{}/spans/{}'.format(
+                self.project_id, trace_id, span_json.get('spanId'))
+            span_json['name'] = span_name
+            span_json['spanId'] = str(span_json['spanId'])
+            set_labels(span_json)
+
+        spans = {'spans': [spans_json]}
+        return spans

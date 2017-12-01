@@ -15,10 +15,11 @@
 from datetime import datetime
 from itertools import chain
 
+from opencensus.trace import stack_trace
 from opencensus.trace.enums import Enum
 from opencensus.trace.span_context import generate_span_id
 from opencensus.trace.tracer import base
-
+from opencensus.trace.utils import _get_truncatable_str
 
 class Span(object):
     """A span is an individual timed event which forms a node of the trace
@@ -58,6 +59,27 @@ class Span(object):
     :type span_id: int
     :param span_id: Identifier for the span, unique within a trace.
 
+    :type stack_trace: :class: `~opencensus.trace.stack_trace.StackTrace`
+    :param stack_trace: (Optional) A call stack appearing in a trace
+
+    :type time_events: list
+    :param time_events: (Optional) A set of time events. You can have up to 32
+                        annotations and 128 message events per span.
+
+    :type links: list
+    :param links: (Optional) Links associated with the span. You can have up
+                  to 128 links per Span.
+
+    :type status: :class: `~opencensus.trace.status.Status`
+    :param status: (Optional) An optional final status for this span.
+
+    :type same_process_as_parent_span: bool
+    :param same_process_as_parent_span: (Optional) A highly recommended but not
+                                        required flag that identifies when a
+                                        trace crosses a process boundary.
+                                        True when the parent_span belongs to
+                                        the same process as the current span.
+
     :type context_tracer: :class:`~opencensus.trace.tracer.context_tracer.
                                  ContextTracer`
     :param context_tracer: The tracer that holds a stack of spans. If this is
@@ -70,15 +92,18 @@ class Span(object):
     def __init__(
             self,
             name,
-            kind=Enum.SpanKind.SPAN_KIND_UNSPECIFIED,
             parent_span=None,
             labels=None,
             start_time=None,
             end_time=None,
             span_id=None,
+            stack_trace=None,
+            time_events=None,
+            links=None,
+            status=None,
+            same_process_as_parent_span=None,
             context_tracer=None):
         self.name = name
-        self.kind = kind
         self.parent_span = parent_span
         self.start_time = start_time
         self.end_time = end_time
@@ -94,8 +119,19 @@ class Span(object):
         if parent_span is None:
             parent_span = base.NullContextManager()
 
+        if time_events is None:
+            time_events = []
+
+        if links is None:
+            links = []
+
         self.labels = labels
         self.span_id = span_id
+        self.stack_trace = stack_trace
+        self.time_events = time_events
+        self.links = links
+        self.status = status
+        self.same_process_as_parent_span = same_process_as_parent_span
         self._child_spans = []
         self.context_tracer = context_tracer
 
@@ -128,6 +164,14 @@ class Span(object):
         :param label_value: Label value.
         """
         self.labels[label_key] = label_value
+
+    def add_time_event(self, time_event):
+        """Add a TimeEvent."""
+        self.time_events.append(time_event)
+
+    def add_link(self, link):
+        """Add a Link."""
+        self.links.append(link)
 
     def start(self):
         """Set the start time for a span."""
@@ -167,8 +211,7 @@ def format_span_json(span):
     :returns: Formatted Span.
     """
     span_json = {
-        'name': span.name,
-        'kind': span.kind,
+        'displayName': _get_truncatable_str(span.name),
         'spanId': span.span_id,
         'startTime': span.start_time,
         'endTime': span.end_time,
@@ -182,7 +225,25 @@ def format_span_json(span):
     if parent_span_id is not None:
         span_json['parentSpanId'] = parent_span_id
 
-    if span.labels is not None:
+    if span.labels:
         span_json['labels'] = span.labels
+
+    if span.stack_trace is not None:
+        span_json['stackTrace'] = span.stack_trace.format_stack_trace_json()
+
+    if span.time_events:
+        span_json['timeEvents'] = [
+            time_event.format_time_event_json()
+                for time_event in span.time_events]
+
+    if span.links:
+        span_json['links'] = [link.format_link_json() for link in span.links]
+
+    if span.status is not None:
+        span_json['status'] = span.status.format_status_json()
+
+    if span.same_process_as_parent_span is not None:
+        span_json['sameProcessAsParentSpan'] = \
+            span.same_process_as_parent_span
 
     return span_json
