@@ -25,10 +25,10 @@ _APPENGINE_FLEXIBLE_ENV_VM = 'GAE_APPENGINE_HOSTNAME'
 # Environment variable set in App Engine when env:flex is set.
 _APPENGINE_FLEXIBLE_ENV_FLEX = 'GAE_INSTANCE'
 
-# GAE common labels
+# GAE common attributes
 # See: https://cloud.google.com/appengine/docs/flexible/python/runtime#
 #      environment_variables
-GAE_LABELS = {
+GAE_ATTRIBUTES = {
     'GAE_FLEX_VERSION': 'g.co/gae/app/version',
     'GAE_FLEX_SERVICE': 'g.co/gae/app/service',
     'GAE_FLEX_PROJECT': 'g.co/gae/app/project',
@@ -37,31 +37,31 @@ GAE_LABELS = {
     'GAE_FLEX_PORT': 'g.co/gae/app/port',
 }
 
-# GCE common labels
-GCE_LABELS = {
+# GCE common attributes
+GCE_ATTRIBUTES = {
     'GCE_INSTANCE_ID': 'g.co/gce/instanceid',
     'GCE_HOSTNAME': 'g.co/gce/hostname',
 }
 
 
-def set_labels(trace):
-    """Automatically set labels for Google Cloud environment."""
+def set_attributes(trace):
+    """Automatically set attributes for Google Cloud environment."""
     if is_gae_environment():
-        set_gae_labels(trace)
+        set_gae_attributes(trace)
 
 
-def set_gae_labels(trace):
-    """Set the GAE environment common labels."""
+def set_gae_attributes(trace):
+    """Set the GAE environment common attributes."""
     spans = trace.get('spans')
 
-    for env_var, label_key in GAE_LABELS.items():
-        label_value = os.environ.get(env_var)
+    for env_var, attribute_key in GAE_ATTRIBUTES.items():
+        attribute_value = os.environ.get(env_var)
 
-        if label_value is not None:
+        if attribute_value is not None:
             for span in spans:
-                labels = span.get('labels')
-                labels[label_key] = label_value
-                span['labels'] = labels
+                attributes = span.get('attributes')
+                attributes[attribute_key] = attribute_value
+                span['attributes'] = attributes
 
 
 def is_gae_environment():
@@ -117,7 +117,27 @@ class StackdriverExporter(base.Exporter):
         :rtype: dict
         :returns: Traces in Google Cloud StackDriver Trace format.
         """
-        set_labels(trace)
-        trace['projectId'] = self.project_id
-        traces = {'traces': [trace]}
+        set_attributes(trace)
+        spans = trace.get('spans')
+        trace_id = trace.get('traceId')
+        spans_json = []
+
+        for span in spans:
+            span_json = {
+                'name': span.get('name'),
+                'startTime': span.get('startTime'),
+                'endTime': span.get('endTime'),
+                'spanId': span.get('spanId'),
+                'parentSpanId': span.get('parentSpanId'),
+                'labels': span.get('attributes')
+            }
+            spans_json.append(span_json)
+
+        trace_json = {
+            'projectId': self.project_id,
+            'traceId': trace_id,
+            'spans': spans_json
+        }
+
+        traces = {'traces': [trace_json]}
         return traces

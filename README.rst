@@ -69,7 +69,6 @@ Alternatively, you can explicitly start and end a span:
 
     # Initialize a tracer, by default using the `PrintExporter`
     tracer = request_tracer.RequestTracer()
-    tracer.start_trace()
 
     tracer.start_span(name='span1')
     do_something_to_trace()

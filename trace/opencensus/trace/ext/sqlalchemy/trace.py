@@ -64,16 +64,16 @@ def _before_cursor_execute(conn, cursor, statement, parameters,
     _span = _tracer.start_span()
     _span.name = '[{}.query]{}'.format(MODULE_NAME, statement)
 
-    # Set query statement label
-    _tracer.add_label_to_current_span(
+    # Set query statement attribute
+    _tracer.add_attribute_to_current_span(
         '{}/query'.format(MODULE_NAME), statement)
 
-    # Set query parameters label
-    _tracer.add_label_to_current_span(
+    # Set query parameters attribute
+    _tracer.add_attribute_to_current_span(
         '{}/query/parameters'.format(MODULE_NAME), str(parameters))
 
-    # Set query function label
-    _tracer.add_label_to_current_span(
+    # Set query function attribute
+    _tracer.add_attribute_to_current_span(
         '{}/cursor/method/name'.format(MODULE_NAME),
         query_func)
 

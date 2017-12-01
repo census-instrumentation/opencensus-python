@@ -49,13 +49,13 @@ class TestBaseTracer(unittest.TestCase):
         with self.assertRaises(NotImplementedError):
             tracer.current_span()
 
-    def test_add_label_to_current_span(self):
+    def test_add_attribute_to_current_span(self):
         tracer = base.Tracer()
-        label_key = 'key'
-        label_value = 'value'
+        attribute_key = 'key'
+        attribute_value = 'value'
 
         with self.assertRaises(NotImplementedError):
-            tracer.add_label_to_current_span(label_key, label_value)
+            tracer.add_attribute_to_current_span(attribute_key, attribute_value)
 
     def test_list_collected_spans_abstract(self):
         tracer = base.Tracer()

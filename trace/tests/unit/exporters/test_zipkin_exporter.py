@@ -96,7 +96,7 @@ class TestZipkinExporter(unittest.TestCase):
             'spanId': 1234567890,
             'startTime': '2017-08-15T18:02:26.071158Z',
             'endTime': '2017-08-15T18:02:36.071158Z',
-            'labels': {
+            'attributes': {
                 'key': 'test_key',
                 'value': 'test_value',
             },
@@ -109,7 +109,7 @@ class TestZipkinExporter(unittest.TestCase):
             'spanId': 1234567890,
             'startTime': '2017-08-15T18:02:26.071158Z',
             'endTime': '2017-08-15T18:02:36.071158Z',
-            'labels': {
+            'attributes': {
                 'key': 'test_key',
                 'value': 'test_value',
             },
@@ -121,7 +121,7 @@ class TestZipkinExporter(unittest.TestCase):
             'spanId': 1234567890,
             'startTime': '2017-08-15T18:02:26.071158Z',
             'endTime': '2017-08-15T18:02:36.071158Z',
-            'labels': {
+            'attributes': {
                 'key': 'test_key',
                 'value': 'test_value',
             },
