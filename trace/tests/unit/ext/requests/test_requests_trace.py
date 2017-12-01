@@ -65,12 +65,12 @@ class Test_requests_trace(unittest.TestCase):
         with patch:
             wrapped(url)
 
-        expected_labels = {
+        expected_attributes = {
             'requests/url': url,
             'requests/status_code': '200'}
         expected_name = '[requests]get'
 
-        self.assertEqual(expected_labels, mock_tracer.current_span.labels)
+        self.assertEqual(expected_attributes, mock_tracer.current_span.attributes)
         self.assertEqual(expected_name, mock_tracer.current_span.name)
 
     def test_wrap_session_request(self):
@@ -94,12 +94,12 @@ class Test_requests_trace(unittest.TestCase):
         with patch:
             wrapped(request_method, url)
 
-        expected_labels = {
+        expected_attributes = {
             'requests/url': url,
             'requests/status_code': '200'}
         expected_name = '[requests]POST'
 
-        self.assertEqual(expected_labels, mock_tracer.current_span.labels)
+        self.assertEqual(expected_attributes, mock_tracer.current_span.attributes)
         self.assertEqual(expected_name, mock_tracer.current_span.name)
 
 
@@ -126,12 +126,12 @@ class MockTracer(object):
 
     def start_span(self):
         span = mock.Mock()
-        span.labels = {}
+        span.attributes = {}
         self.current_span = span
         return span
 
     def end_span(self):
         pass
 
-    def add_label_to_current_span(self, key, value):
-        self.current_span.labels[key] = value
+    def add_attribute_to_current_span(self, key, value):
+        self.current_span.attributes[key] = value

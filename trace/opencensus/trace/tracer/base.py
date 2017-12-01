@@ -55,7 +55,7 @@ class Tracer(object):
         """Return the current span."""
         raise NotImplementedError
 
-    def add_label_to_current_span(self, label_key, label_value):
+    def add_attribute_to_current_span(self, attribute_key, attribute_value):
         raise NotImplementedError
 
     def list_collected_spans(self):

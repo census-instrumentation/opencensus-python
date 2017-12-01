@@ -17,7 +17,7 @@ import logging
 
 from opencensus.trace.ext import utils
 from opencensus.trace.ext.django.config import (settings, convert_to_import)
-from opencensus.trace import labels_helper
+from opencensus.trace import attributes_helper
 from opencensus.trace import request_tracer
 from opencensus.trace import execution_context
 from opencensus.trace.samplers import probability
@@ -27,9 +27,9 @@ try:
 except ImportError:  # pragma: NO COVER
     MiddlewareMixin = object
 
-HTTP_METHOD = labels_helper.COMMON_LABELS['HTTP_METHOD']
-HTTP_URL = labels_helper.COMMON_LABELS['HTTP_URL']
-HTTP_STATUS_CODE = labels_helper.COMMON_LABELS['HTTP_STATUS_CODE']
+HTTP_METHOD = attributes_helper.COMMON_ATTRIBUTES['HTTP_METHOD']
+HTTP_URL = attributes_helper.COMMON_ATTRIBUTES['HTTP_URL']
+HTTP_STATUS_CODE = attributes_helper.COMMON_ATTRIBUTES['HTTP_STATUS_CODE']
 
 REQUEST_THREAD_LOCAL_KEY = 'django_request'
 
@@ -61,8 +61,8 @@ def _get_current_request_tracer():
     return execution_context.get_opencensus_tracer()
 
 
-def _set_django_labels(tracer, request):
-    """Set the django related labels."""
+def _set_django_attributes(tracer, request):
+    """Set the django related attributes."""
     django_user = getattr(request, 'user', None)
 
     if django_user is None:
@@ -73,10 +73,10 @@ def _set_django_labels(tracer, request):
 
     # User id is the django autofield for User model as the primary key
     if user_id is not None:
-        tracer.add_label_to_current_span('/django/user/id', str(user_id))
+        tracer.add_attribute_to_current_span('/django/user/id', str(user_id))
 
     if user_name is not None:
-        tracer.add_label_to_current_span('/django/user/name', user_name)
+        tracer.add_attribute_to_current_span('/django/user/name', user_name)
 
 
 def get_django_header():
@@ -167,12 +167,12 @@ class OpencensusMiddleware(MiddlewareMixin):
 
             # Span name is being set at process_view
             tracer.start_span()
-            tracer.add_label_to_current_span(
-                label_key=HTTP_METHOD,
-                label_value=request.method)
-            tracer.add_label_to_current_span(
-                label_key=HTTP_URL,
-                label_value=request.path)
+            tracer.add_attribute_to_current_span(
+                attribute_key=HTTP_METHOD,
+                attribute_value=request.method)
+            tracer.add_attribute_to_current_span(
+                attribute_key=HTTP_URL,
+                attribute_value=request.path)
         except Exception:  # pragma: NO COVER
             log.error('Failed to trace request', exc_info=True)
 
@@ -200,11 +200,11 @@ class OpencensusMiddleware(MiddlewareMixin):
 
         try:
             tracer = _get_current_request_tracer()
-            tracer.add_label_to_current_span(
-                label_key=HTTP_STATUS_CODE,
-                label_value=str(response.status_code))
+            tracer.add_attribute_to_current_span(
+                attribute_key=HTTP_STATUS_CODE,
+                attribute_value=str(response.status_code))
 
-            _set_django_labels(tracer, request)
+            _set_django_attributes(tracer, request)
 
             tracer.end_span()
             tracer.finish()

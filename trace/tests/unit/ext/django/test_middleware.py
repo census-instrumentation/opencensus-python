@@ -191,11 +191,11 @@ class TestOpencensusMiddleware(unittest.TestCase):
 
         span = tracer.current_span()
 
-        expected_labels = {
+        expected_attributes = {
             '/http/url': u'/',
             '/http/method': 'GET',
         }
-        self.assertEqual(span.labels, expected_labels)
+        self.assertEqual(span.attributes, expected_attributes)
         self.assertEqual(span.parent_span.span_id, span_id)
 
         span_context = tracer.span_context
@@ -285,7 +285,7 @@ class TestOpencensusMiddleware(unittest.TestCase):
         django_response = mock.Mock()
         django_response.status_code = 200
 
-        expected_labels = {
+        expected_attributes = {
             '/http/url': u'/',
             '/http/method': 'GET',
             '/http/status_code': '200',
@@ -300,34 +300,34 @@ class TestOpencensusMiddleware(unittest.TestCase):
 
         middleware_obj.process_response(django_request, django_response)
 
-        self.assertEqual(span.labels, expected_labels)
+        self.assertEqual(span.attributes, expected_attributes)
 
 
-class Test__set_django_labels(unittest.TestCase):
+class Test__set_django_attributes(unittest.TestCase):
 
     class Tracer(object):
         def __init__(self):
-            self.labels = {}
+            self.attributes = {}
 
-        def add_label_to_current_span(self, key, value):
-            self.labels[key] = value
+        def add_attribute_to_current_span(self, key, value):
+            self.attributes[key] = value
 
-    def test__set_django_labels_no_user(self):
-        from opencensus.trace.ext.django.middleware import _set_django_labels
+    def test__set_django_attributes_no_user(self):
+        from opencensus.trace.ext.django.middleware import _set_django_attributes
 
         tracer = self.Tracer()
         request = mock.Mock()
 
         request.user = None
 
-        _set_django_labels(tracer, request)
+        _set_django_attributes(tracer, request)
 
-        expected_labels = {}
+        expected_attributes = {}
 
-        self.assertEqual(tracer.labels, expected_labels)
+        self.assertEqual(tracer.attributes, expected_attributes)
 
-    def test__set_django_labels_no_user_info(self):
-        from opencensus.trace.ext.django.middleware import _set_django_labels
+    def test__set_django_attributes_no_user_info(self):
+        from opencensus.trace.ext.django.middleware import _set_django_attributes
 
         tracer = self.Tracer()
         request = mock.Mock()
@@ -337,14 +337,14 @@ class Test__set_django_labels(unittest.TestCase):
         django_user.pk = None
         django_user.get_username.return_value = None
 
-        _set_django_labels(tracer, request)
+        _set_django_attributes(tracer, request)
 
-        expected_labels = {}
+        expected_attributes = {}
 
-        self.assertEqual(tracer.labels, expected_labels)
+        self.assertEqual(tracer.attributes, expected_attributes)
 
-    def test__set_django_labels_with_user_info(self):
-        from opencensus.trace.ext.django.middleware import _set_django_labels
+    def test__set_django_attributes_with_user_info(self):
+        from opencensus.trace.ext.django.middleware import _set_django_attributes
 
         tracer = self.Tracer()
         request = mock.Mock()
@@ -356,10 +356,10 @@ class Test__set_django_labels(unittest.TestCase):
         django_user.pk = test_id
         django_user.get_username.return_value = test_name
 
-        _set_django_labels(tracer, request)
+        _set_django_attributes(tracer, request)
 
-        expected_labels = {
+        expected_attributes = {
             '/django/user/id': '123',
             '/django/user/name': test_name}
 
-        self.assertEqual(tracer.labels, expected_labels)
+        self.assertEqual(tracer.attributes, expected_attributes)

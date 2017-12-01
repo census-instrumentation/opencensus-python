@@ -15,7 +15,7 @@
 import flask
 import logging
 
-from opencensus.trace import labels_helper
+from opencensus.trace import attributes_helper
 from opencensus.trace import execution_context
 from opencensus.trace.propagation import google_cloud_format
 from opencensus.trace.exporters import print_exporter
@@ -25,9 +25,9 @@ from opencensus.trace import request_tracer
 
 _FLASK_TRACE_HEADER = 'X_CLOUD_TRACE_CONTEXT'
 
-HTTP_METHOD = labels_helper.COMMON_LABELS['HTTP_METHOD']
-HTTP_URL = labels_helper.COMMON_LABELS['HTTP_URL']
-HTTP_STATUS_CODE = labels_helper.COMMON_LABELS['HTTP_STATUS_CODE']
+HTTP_METHOD = attributes_helper.COMMON_ATTRIBUTES['HTTP_METHOD']
+HTTP_URL = attributes_helper.COMMON_ATTRIBUTES['HTTP_URL']
+HTTP_STATUS_CODE = attributes_helper.COMMON_ATTRIBUTES['HTTP_STATUS_CODE']
 
 log = logging.getLogger(__name__)
 
@@ -107,8 +107,9 @@ class FlaskMiddleware(object):
             span.name = '[{}]{}'.format(
                 flask.request.method,
                 flask.request.url)
-            tracer.add_label_to_current_span(HTTP_METHOD, flask.request.method)
-            tracer.add_label_to_current_span(HTTP_URL, flask.request.url)
+            tracer.add_attribute_to_current_span(
+                HTTP_METHOD, flask.request.method)
+            tracer.add_attribute_to_current_span(HTTP_URL, flask.request.url)
         except Exception:  # pragma: NO COVER
             log.error('Failed to trace request', exc_info=True)
 
@@ -123,7 +124,7 @@ class FlaskMiddleware(object):
 
         try:
             tracer = execution_context.get_opencensus_tracer()
-            tracer.add_label_to_current_span(
+            tracer.add_attribute_to_current_span(
                 HTTP_STATUS_CODE,
                 str(response.status_code))
 

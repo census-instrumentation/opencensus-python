@@ -122,17 +122,17 @@ class ContextTracer(base.Tracer):
     def list_collected_spans(self):
         return self._spans_list
 
-    def add_label_to_current_span(self, label_key, label_value):
-        """Add label to current span.
+    def add_attribute_to_current_span(self, attribute_key, attribute_value):
+        """Add attribute to current span.
 
-        :type label_key: str
-        :param label_key: Label key.
+        :type attribute_key: str
+        :param attribute_key: Attribute key.
 
-        :type label_value:str
-        :param label_value: Label value.
+        :type attribute_value:str
+        :param attribute_value: Attribute value.
         """
         current_span = self.current_span()
-        current_span.add_label(label_key, label_value)
+        current_span.add_attribute(attribute_key, attribute_value)
 
     def get_trace_json(self, span):
         """Get the JSON format trace."""

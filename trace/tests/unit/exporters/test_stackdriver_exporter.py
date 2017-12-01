@@ -87,7 +87,27 @@ class TestStackdriverExporter(unittest.TestCase):
 
     def test_translate_to_stackdriver(self):
         project_id = 'PROJECT'
-        trace = {'spans': [], 'traceId': '6e0c63257de34c92bf9efcd03927272e'}
+        trace_id = '6e0c63257de34c92bf9efcd03927272e'
+        span_name = 'test span'
+        span_id = 1234
+        attributes = {}
+        parent_span_id = 1111
+        start_time = 'test start time'
+        end_time = 'test end time'
+        trace = {
+            'spans': [
+                {
+                    'name': span_name,
+                    'spanId': span_id,
+                    'startTime': start_time,
+                    'endTime': end_time,
+                    'parentSpanId': parent_span_id,
+                    'attributes': attributes,
+                    'someRandomKey': 'this should not be included in result'
+                }
+            ],
+            'traceId': trace_id
+        }
 
         client = mock.Mock()
         client.project = project_id
@@ -98,30 +118,46 @@ class TestStackdriverExporter(unittest.TestCase):
 
         traces = exporter.translate_to_stackdriver(trace)
 
-        trace['projectId'] = project_id
-        expected_traces = {'traces': [trace]}
+        expected_traces = {
+            'traces': [
+                {
+                    'projectId': project_id,
+                    'traceId': trace_id,
+                    'spans': [
+                        {
+                            'name': span_name,
+                            'spanId': span_id,
+                            'startTime': start_time,
+                            'endTime': end_time,
+                            'parentSpanId': parent_span_id,
+                            'labels': attributes
+                        }
+                    ]
+                }
+            ]
+        }
 
         self.assertEqual(traces, expected_traces)
 
 
-class Test_set_labels_gae(unittest.TestCase):
+class Test_set_attributes_gae(unittest.TestCase):
 
-    def test_set_labels_gae(self):
+    def test_set_attributes_gae(self):
         import os
 
         trace = {
             'spans': [
                 {
-                    'labels':{},
+                    'attributes':{},
                     'span_id': 123,
                 },
             ],
         }
 
-        expected_labels = {
-            stackdriver_exporter.GAE_LABELS['GAE_FLEX_PROJECT']: 'project',
-            stackdriver_exporter.GAE_LABELS['GAE_FLEX_SERVICE']: 'service',
-            stackdriver_exporter.GAE_LABELS['GAE_FLEX_VERSION']: 'version',
+        expected_attributes = {
+            stackdriver_exporter.GAE_ATTRIBUTES['GAE_FLEX_PROJECT']: 'project',
+            stackdriver_exporter.GAE_ATTRIBUTES['GAE_FLEX_SERVICE']: 'service',
+            stackdriver_exporter.GAE_ATTRIBUTES['GAE_FLEX_VERSION']: 'version',
         }
 
         with mock.patch.dict(
@@ -131,9 +167,9 @@ class Test_set_labels_gae(unittest.TestCase):
                  'GAE_FLEX_PROJECT': 'project',
                  'GAE_FLEX_SERVICE': 'service',
                  'GAE_FLEX_VERSION': 'version'}):
-            stackdriver_exporter.set_labels(trace)
+            stackdriver_exporter.set_attributes(trace)
 
-        self.assertEqual(trace['spans'][0]['labels'], expected_labels)
+        self.assertEqual(trace['spans'][0]['attributes'], expected_attributes)
 
 
 class MockTransport(object):

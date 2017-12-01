@@ -119,16 +119,17 @@ class RequestTracer(object):
         """Return the current span."""
         return self.tracer.current_span()
 
-    def add_label_to_current_span(self, label_key, label_value):
-        """Add label to current span.
+    def add_attribute_to_current_span(self, attribute_key, attribute_value):
+        """Add attribute to current span.
 
-        :type label_key: str
-        :param label_key: Label key.
+        :type attribute_key: str
+        :param attribute_key: Attribute key.
 
-        :type label_value:str
-        :param label_value: Label value.
+        :type attribute_value:str
+        :param attribute_value: Attribute value.
         """
-        self.tracer.add_label_to_current_span(label_key, label_value)
+        self.tracer.add_attribute_to_current_span(
+            attribute_key, attribute_value)
 
     def trace_decorator(self):
         """Decorator to trace a function."""

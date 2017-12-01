@@ -10,7 +10,7 @@ Welcome to OPENCENSUS's documentation!
    :maxdepth: 2
    :hidden:
 
-   trace/usage
+   trace/index
 
 Getting started
 ---------------

@@ -42,10 +42,10 @@ class Span(object):
     :type parent_span: :class:`~opencensus.trace.span.Span`
     :param parent_span: (Optional) Parent span.
 
-    :type labels: dict
-    :param labels: Collection of labels associated with the span.
-                   Label keys must be less than 128 bytes.
-                   Label values must be less than 16 kilobytes.
+    :type attributes: dict
+    :param attributes: Collection of attributes associated with the span.
+                   Attribute keys must be less than 128 bytes.
+                   Attribute values must be less than 16 kilobytes.
 
     :type start_time: str
     :param start_time: (Optional) Start of the time interval (inclusive)
@@ -93,7 +93,7 @@ class Span(object):
             self,
             name,
             parent_span=None,
-            labels=None,
+            attributes=None,
             start_time=None,
             end_time=None,
             span_id=None,
@@ -111,8 +111,8 @@ class Span(object):
         if span_id is None:
             span_id = generate_span_id()
 
-        if labels is None:
-            labels = {}
+        if attributes is None:
+            attributes = {}
 
         # Do not manipulate spans directly using the methods in Span Class,
         # make sure to use the RequestTracer.
@@ -125,7 +125,7 @@ class Span(object):
         if links is None:
             links = []
 
-        self.labels = labels
+        self.attributes = attributes
         self.span_id = span_id
         self.stack_trace = stack_trace
         self.time_events = time_events
@@ -154,16 +154,16 @@ class Span(object):
         self._child_spans.append(child_span)
         return child_span
 
-    def add_label(self, label_key, label_value):
-        """Add label to span.
+    def add_attribute(self, attribute_key, attribute_value):
+        """Add attribute to span.
 
-        :type label_key: str
-        :param label_key: Label key.
+        :type attribute_key: str
+        :param attribute_key: Attribute key.
 
-        :type label_value:str
-        :param label_value: Label value.
+        :type attribute_value:str
+        :param attribute_value: Attribute value.
         """
-        self.labels[label_key] = label_value
+        self.attributes[attribute_key] = attribute_value
 
     def add_time_event(self, time_event):
         """Add a TimeEvent."""
@@ -225,8 +225,8 @@ def format_span_json(span):
     if parent_span_id is not None:
         span_json['parentSpanId'] = parent_span_id
 
-    if span.labels:
-        span_json['labels'] = span.labels
+    if span.attributes is not None:
+        span_json['attributes'] = span.attributes
 
     if span.stack_trace is not None:
         span_json['stackTrace'] = span.stack_trace.format_stack_trace_json()

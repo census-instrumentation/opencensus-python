@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-COMMON_LABELS = {
+COMMON_ATTRIBUTES = {
     'AGENT': '/agent',
     'COMPONENT': '/component',
     'ERROR_MESSAGE': '/error/message',
