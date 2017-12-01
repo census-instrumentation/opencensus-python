@@ -1,6 +1,21 @@
 OpenCensus Trace for Python
 ===========================
 
+    `Census`_ for Python. Census provides a framework to measure a server's resource
+    usage and collect performance stats. This repository contains Python related
+    utilities and supporting software needed by Census.
+
+    .. _Census: https://github.com/census-instrumentation
+
+|circleci|
+
+.. |circleci| image:: https://circleci.com/gh/census-instrumentation/opencensus-python.svg?style=shield
+   :target: https://circleci.com/gh/census-instrumentation/opencensus-python
+
+-  `API Documentation`_
+
+.. _API Documentation: http://opencensus.io/opencensus-python/trace/usage.html
+
 Installation & basic usage
 --------------------------
 
@@ -54,7 +69,6 @@ Alternatively, you can explicitly start and end a span:
 
     # Initialize a tracer, by default using the `PrintExporter`
     tracer = request_tracer.RequestTracer()
-    tracer.start_trace()
 
     tracer.start_span(name='span1')
     do_something_to_trace()
