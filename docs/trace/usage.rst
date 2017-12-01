@@ -1,11 +1,29 @@
-OpenCensus for Python - A stats collection and distributed tracing framework
-============================================================================
+OpenCensus Trace for Python
+===========================
 
-`Census`_ for Python. Census provides a framework to measure a server's resource
-usage and collect performance stats. This repository contains Python related
-utilities and supporting software needed by Census.
+.. toctree::
+  :maxdepth: 2
+  :hidden:
 
-.. _Census: https://github.com/census-instrumentation
+  span
+  span_context
+  request_tracer
+  execution_context
+  trace_options
+  always_on_sampler
+  always_off_sampler
+  probability_sampler
+  print_exporter
+  logging_exporter
+  stackdriver_exporter
+  zipkin_exporter
+  file_exporter
+  binary_format_propagation
+  google_cloud_format_propagation
+  text_format_propagation
+  trace_context_http_header_format_propagation
+  noop_tracer
+  context_tracer
 
 Installation & basic usage
 --------------------------

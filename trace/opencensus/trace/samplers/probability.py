@@ -35,6 +35,15 @@ class ProbabilitySampler(Sampler):
         self.rate = rate
 
     def should_sample(self, trace_id):
+        """Make the sampling decision based on the lower 8 bytes of the trace
+        ID. If the value is less than the bound, return True, else False.
+
+        :type trace_id: str
+        :param trace_id: Trace ID of the current trace.
+
+        :rtype: bool
+        :returns: The sampling decision.
+        """
         lower_long = get_lower_long_from_trace_id(trace_id)
         bound = self.rate * MAX_VALUE
 

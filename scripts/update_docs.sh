@@ -17,7 +17,6 @@ set -ev
 # Build docs
 function build_docs {
     rm -rf docs/build/
-    cp README.rst docs/trace/usage.rst
     make html
     return $?
 }
