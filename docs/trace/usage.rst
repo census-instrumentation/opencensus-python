@@ -1,29 +1,20 @@
 OpenCensus Trace for Python
 ===========================
 
-.. toctree::
-  :maxdepth: 2
-  :hidden:
+    `Census`_ for Python. Census provides a framework to measure a server's resource
+    usage and collect performance stats. This repository contains Python related
+    utilities and supporting software needed by Census.
 
-  span
-  span_context
-  request_tracer
-  execution_context
-  trace_options
-  always_on_sampler
-  always_off_sampler
-  probability_sampler
-  print_exporter
-  logging_exporter
-  stackdriver_exporter
-  zipkin_exporter
-  file_exporter
-  binary_format_propagation
-  google_cloud_format_propagation
-  text_format_propagation
-  trace_context_http_header_format_propagation
-  noop_tracer
-  context_tracer
+    .. _Census: https://github.com/census-instrumentation
+
+|circleci|
+
+.. |circleci| image:: https://circleci.com/gh/census-instrumentation/opencensus-python.svg?style=shield
+   :target: https://circleci.com/gh/census-instrumentation/opencensus-python
+
+-  `API Documentation`_
+
+.. _API Documentation: http://opencensus.io/opencensus-python/trace/usage.html
 
 Installation & basic usage
 --------------------------
@@ -78,7 +69,6 @@ Alternatively, you can explicitly start and end a span:
 
     # Initialize a tracer, by default using the `PrintExporter`
     tracer = request_tracer.RequestTracer()
-    tracer.start_trace()
 
     tracer.start_span(name='span1')
     do_something_to_trace()
