@@ -150,13 +150,13 @@ class SpanContext(object):
 
 
 def generate_span_id():
-    """Return the random generated span ID for a span.
+    """Return the random generated span ID for a span. Must be 16 digits.
 
     :rtype: int
     :returns: Identifier for the span. Must be a 64-bit integer other
               than 0 and unique within a trace.
     """
-    span_id = random.getrandbits(64)
+    span_id = random.randint(10**15, 10**16 - 1)
     return span_id
 
 

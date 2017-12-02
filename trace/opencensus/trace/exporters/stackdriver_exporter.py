@@ -19,6 +19,8 @@ from opencensus.trace.exporters.transports import sync
 
 from google.cloud.trace.client import Client
 
+from opencensus.trace.utils import _get_truncatable_str
+
 # Environment variable set in App Engine when vm:true is set.
 _APPENGINE_FLEXIBLE_ENV_VM = 'GAE_APPENGINE_HOSTNAME'
 
@@ -118,27 +120,30 @@ class StackdriverExporter(base.Exporter):
         :rtype: dict
         :returns: Spans in Google Cloud StackDriver Trace format.
         """
-        set_attributes(trace)
-        spans = trace.get('spans')
-        trace_id = trace.get('traceId')
-        spans_json = []
+        set_attributes(spans)
+        spans_json = spans.get('spans')
+        trace_id = spans.get('traceId')
+        spans_list = []
 
-        for span in spans:
+        for span in spans_json:
+            span_name = 'projects/{}/traces/{}/spans/{}'.format(
+                self.project_id, trace_id, span.get('spanId'))
             span_json = {
-                'name': span.get('name'),
+                'name': span_name,
+                'displayName': span.get('displayName'),
                 'startTime': span.get('startTime'),
                 'endTime': span.get('endTime'),
-                'spanId': span.get('spanId'),
-                'parentSpanId': span.get('parentSpanId'),
-                'labels': span.get('attributes')
+                'spanId': str(span.get('spanId')),
+                'parentSpanId': str(span.get('parentSpanId')),
+                'attributes': span.get('attributes'),
+                'links': span.get('links'),
+                'status': span.get('status'),
+                'stackTrace': span.get('stackTrace'),
+                'timeEvents': span.get('timeEvents'),
+                'sameProcessAsParentSpan': span.get('sameProcessAsParentSpan'),
+                'childSpanCount': span.get('childSpanCount')
             }
-            spans_json.append(span_json)
+            spans_list.append(span_json)
 
-        trace_json = {
-            'projectId': self.project_id,
-            'traceId': trace_id,
-            'spans': spans_json
-        }
-
-        traces = {'traces': [trace_json]}
-        return traces
+        spans = {'spans': spans_list}
+        return spans

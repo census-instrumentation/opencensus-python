@@ -60,4 +60,8 @@ class Attributes(object):
             value_json = _format_attribute_value(value)
             attributes_json[key] = value_json
 
-        return attributes_json
+        result = {
+            'attributeMap': attributes_json
+        }
+
+        return result

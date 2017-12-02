@@ -97,13 +97,17 @@ class TestStackdriverExporter(unittest.TestCase):
         trace = {
             'spans': [
                 {
-                    'name': span_name,
+                    'displayName': {
+                        'value': span_name,
+                        'truncated_byte_count': 0
+                    },
                     'spanId': span_id,
                     'startTime': start_time,
                     'endTime': end_time,
                     'parentSpanId': parent_span_id,
                     'attributes': attributes,
-                    'someRandomKey': 'this should not be included in result'
+                    'someRandomKey': 'this should not be included in result',
+                    'childSpanCount': 0
                 }
             ],
             'traceId': trace_id
@@ -116,28 +120,36 @@ class TestStackdriverExporter(unittest.TestCase):
             project_id=project_id)
 
 
-        traces = exporter.translate_to_stackdriver(trace)
+        spans = exporter.translate_to_stackdriver(trace)
 
         expected_traces = {
-            'traces': [
+            'spans': [
                 {
-                    'projectId': project_id,
-                    'traceId': trace_id,
-                    'spans': [
-                        {
-                            'name': span_name,
-                            'spanId': span_id,
-                            'startTime': start_time,
-                            'endTime': end_time,
-                            'parentSpanId': parent_span_id,
-                            'labels': attributes
-                        }
-                    ]
+                    'name': 'projects/{}/traces/{}/spans/{}'.format(
+                        project_id, trace_id, span_id),
+                    'displayName': {
+                        'value': span_name,
+                        'truncated_byte_count': 0
+                    },
+                    'spanId': str(span_id),
+                    'startTime': start_time,
+                    'endTime': end_time,
+                    'parentSpanId': str(parent_span_id),
+                    'attributes': {},
+                    'status': None,
+                    'links': None,
+                    'stackTrace': None,
+                    'timeEvents': None,
+                    'childSpanCount': 0,
+                    'sameProcessAsParentSpan': None
                 }
             ]
         }
 
-        self.assertEqual(traces, expected_traces)
+        print(spans)
+        print(expected_traces)
+
+        self.assertEqual(spans, expected_traces)
 
 
 class Test_set_attributes_gae(unittest.TestCase):

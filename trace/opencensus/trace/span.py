@@ -15,6 +15,7 @@
 from datetime import datetime
 from itertools import chain
 
+from opencensus.trace import attributes
 from opencensus.trace import stack_trace
 from opencensus.trace.enums import Enum
 from opencensus.trace.span_context import generate_span_id
@@ -215,6 +216,7 @@ def format_span_json(span):
         'spanId': span.span_id,
         'startTime': span.start_time,
         'endTime': span.end_time,
+        'childSpanCount': len(span._child_spans)
     }
 
     parent_span_id = None
@@ -225,8 +227,9 @@ def format_span_json(span):
     if parent_span_id is not None:
         span_json['parentSpanId'] = parent_span_id
 
-    if span.attributes is not None:
-        span_json['attributes'] = span.attributes
+    if span.attributes:
+        span_json['attributes'] = attributes.Attributes(
+            span.attributes).format_attributes_json()
 
     if span.stack_trace is not None:
         span_json['stackTrace'] = span.stack_trace.format_stack_trace_json()
