@@ -12,17 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from opencensus.trace.utils import _get_truncatable_str
+from opencensus.trace import utils
 
 
 def _format_attribute_value(value):
-    if type(value).__name__ == 'str':
-        value_type = 'string_value'
-        value = _get_truncatable_str(value)
-    elif type(value).__name__ == 'int':
-        value_type = 'int_value'
-    elif type(value).__name__ == 'bool':
+    if isinstance(value, bool):
         value_type = 'bool_value'
+    elif isinstance(value, int):
+        value_type = 'int_value'
+    elif isinstance(value, str):
+        value_type = 'string_value'
+        value = utils._get_truncatable_str(value)
     else:
         raise TypeError("Value must be str, int, or bool.")
 
@@ -38,14 +38,15 @@ class Attributes(object):
                        bytes, an integer, or the Boolean values true and false.
     """
     def __init__(self, attributes=None):
-        if attributes is None:
-            attributes = {}
-
-        self.attributes = attributes
+        self.attributes = dict(attributes or {})
 
     def set_attribute(self, key, value):
         """Set a key value pair."""
         self.attributes[key] = value
+
+    def delete_attribute(self, key):
+        """Delete an attribute given a key if existed."""
+        self.attributes.pop(key, None)
 
     def get_attribute(self, key):
         """Get a attribute value."""
@@ -53,12 +54,10 @@ class Attributes(object):
 
     def format_attributes_json(self):
         """Convert the Attributes object to json format."""
-        attributes_json = {}
-
-        for key in self.attributes:
-            value = self.attributes.get(key)
-            value_json = _format_attribute_value(value)
-            attributes_json[key] = value_json
+        attribute_json = {
+            utils.check_str_length(key): _format_attribute_value(value) \
+            for key, value in self.attributes
+        }
 
         result = {
             'attributeMap': attributes_json

@@ -16,7 +16,9 @@ from datetime import datetime
 from itertools import chain
 
 from opencensus.trace import attributes
-from opencensus.trace import stack_trace
+from opencensus.trace import link as link_module
+from opencensus.trace import stack_trace as stack_trace_module
+from opencensus.trace import time_event as time_event_module
 from opencensus.trace.enums import Enum
 from opencensus.trace.span_context import generate_span_id
 from opencensus.trace.tracer import base
@@ -167,12 +169,28 @@ class Span(object):
         self.attributes[attribute_key] = attribute_value
 
     def add_time_event(self, time_event):
-        """Add a TimeEvent."""
-        self.time_events.append(time_event)
+        """Add a TimeEvent.
+        
+        :type time_event: :class: `~opencensus.trace.time_event.TimeEvent`
+        :param time_event: A TimeEvent object.
+        """
+        if isinstance(time_event, time_event_module.TimeEvent):
+            self.time_events.append(time_event)
+        else:
+            raise TypeError("Type Error: received {}, but requires TimeEvent.".
+                            format(type(time_event).__name__))
 
     def add_link(self, link):
-        """Add a Link."""
-        self.links.append(link)
+        """Add a Link.
+        
+        :type link: :class: `~opencensus.trace.link.Link`
+        :param link: A Link object.
+        """
+        if isinstance(link, link_module.Link):
+            self.links.append(link)
+        else:
+            raise TypeError("Type Error: received {}, but requires Link.".
+                            format(type(link).__name__))
 
     def start(self):
         """Set the start time for a span."""
