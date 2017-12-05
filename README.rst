@@ -21,21 +21,21 @@ Installation & basic usage
 
 1. Install the opencensus-trace package using `pip`_ or `pipenv`_:
 
-::
+    ::
 
-    pip install opencensus-trace
-    pipenv install opencensus-trace
+        pip install opencensus-trace
+        pipenv install opencensus-trace
 
 2. Initialize a tracer for application:
 
-.. code:: python
+    .. code:: python
 
-    from opencensus.trace import request_tracer
+        from opencensus.trace import request_tracer
 
-    tracer = request_tracer.RequestTracer()
+        tracer = request_tracer.RequestTracer()
 
-.. _pip: https://pip.pypa.io
-.. _pipenv: https://docs.pipenv.org/
+    .. _pip: https://pip.pypa.io
+    .. _pipenv: https://docs.pipenv.org/
 
 Usage
 -----
@@ -306,10 +306,10 @@ to ``trace_integrations`` using ``'postgresql'``.
 SQLAlchemy
 ~~~~~~~~~~
 
-You can trace usage of `SQLAlchemy`_, regardless of the underlying database, by
+You can trace usage of `sqlalchemy package`_, regardless of the underlying database, by
 specifying ``'sqlalchemy'`` to ``trace_integrations``.
 
-.. _SQLAlchemy: https://pypi.org/project/SQLAlchemy
+.. _SQLAlchemy package: https://pypi.org/project/SQLAlchemy
 
 .. note:: If you enable tracing of SQLAlchemy and the underlying database
     driver, you will get duplicate spans. Instead, just trace SQLAlchemy.
