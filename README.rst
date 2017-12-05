@@ -322,7 +322,7 @@ method, and status will be collected.
 
 You can enable Requests integration by specifying ``'requests'`` to ``trace_integrations``.
 
-.. _Requests: https://pypi.python.org/pypi/requests
+.. _Requests package: https://pypi.python.org/pypi/requests
 
 
 Contributing
