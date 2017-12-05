@@ -14,18 +14,21 @@
 
 """A setup module for Open Source Census Instrumentation Library"""
 
+import io
 from setuptools import setup, find_packages
 
-install_requires = []
+install_requires = [
+    'google-cloud-trace>=0.16.0, <0.17dev',
+]
 
 setup(
     name='opencensus',
-    version='0.0.1',
-    author='OpenCensus Contributors',
-    author_email='opencensus-io@googlegroups.com',
+    version='0.1.0',
+    author='OpenCensus Authors',
+    author_email='census-developers@googlegroups.com',
     classifiers=[
         'Intended Audience :: Developers',
-        'Development Status :: 2 - Pre-Alpha',
+        'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: Apache Software License',
         'Programming Language :: Python',
@@ -33,8 +36,7 @@ setup(
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.4',
-        'Programming Language :: Python :: 3.5',
-        'Programming Language :: Python :: Implementation :: CPython',
+        'Programming Language :: Python :: 3.6',
     ],
     description='A stats collection and distributed tracing framework',
     include_package_data=True,
