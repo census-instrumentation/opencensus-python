@@ -23,8 +23,8 @@ Installation & basic usage
 
     ::
 
-        pip install opencensus-trace
-        pipenv install opencensus-trace
+        pip install opencensus
+        pipenv install opencensus
 
 2. Initialize a tracer for application:
 
