@@ -29,12 +29,12 @@ jobs:
           command: |
             if [ -n "$GOOGLE_APPLICATION_CREDENTIALS" ]; then
               openssl aes-256-cbc -d -a -k "$GOOGLE_CREDENTIALS_PASSPHRASE" \
-                  -in trace/tests/system/credentials.json.enc \
-                  -out trace/$GOOGLE_APPLICATION_CREDENTIALS
+                  -in tests/system/trace/credentials.json.enc \
+                  -out $GOOGLE_APPLICATION_CREDENTIALS
             else
               echo "No credentials. System tests will not run."
             fi
       - run:
-          name: Run tests - opencensus.trace
+          name: Run tests - opencensus
           command: |
-            nox -f trace/nox.py
+            nox -f nox.py
