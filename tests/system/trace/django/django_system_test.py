@@ -52,7 +52,7 @@ def generate_header():
 
 def run_application():
     """Start running the django application."""
-    cmd = 'python tests/system/django/manage.py runserver {}'.format(HOST_PORT)
+    cmd = 'python tests/system/trace/django/manage.py runserver {}'.format(HOST_PORT)
     process = subprocess.Popen(
         cmd,
         stdout=subprocess.PIPE,

@@ -52,7 +52,7 @@ def generate_header():
 
 def run_application():
     """Start running the flask application."""
-    cmd = 'python tests/system/flask/main.py'
+    cmd = 'python tests/system/trace/flask/main.py'
     process = subprocess.Popen(
         cmd,
         stdout=subprocess.PIPE,
