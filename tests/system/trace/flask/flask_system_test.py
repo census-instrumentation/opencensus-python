@@ -15,7 +15,6 @@
 import os
 import random
 import requests
-import shlex
 import signal
 import subprocess
 import time
@@ -27,8 +26,8 @@ import unittest
 
 PROJECT = os.environ.get('GCLOUD_PROJECT_PYTHON')
 
-HOST_PORT = 'localhost:8000'
-BASE_URL = 'http://localhost:8000/'
+HOST_PORT = 'localhost:8080'
+BASE_URL = 'http://localhost:8080/'
 
 RETRY_WAIT_PERIOD = 8000 # Wait 8 seconds between each retry
 RETRY_MAX_ATTEMPT = 10 # Retry 10 times
@@ -38,6 +37,7 @@ def wait_app_to_start():
     """Wait the application to start running."""
     cmd = 'wget --retry-connrefused --tries=5 {}'.format(BASE_URL)
     subprocess.check_call(cmd, shell=True)
+
 
 def generate_header():
     """Generate a trace header."""
@@ -51,8 +51,8 @@ def generate_header():
 
 
 def run_application():
-    """Start running the django application."""
-    cmd = 'python tests/system/django/manage.py runserver {}'.format(HOST_PORT)
+    """Start running the flask application."""
+    cmd = 'python tests/system/trace/flask/main.py'
     process = subprocess.Popen(
         cmd,
         stdout=subprocess.PIPE,
@@ -61,7 +61,7 @@ def run_application():
     return process
 
 
-class TestDjangoTrace(unittest.TestCase):
+class TestFlaskTrace(unittest.TestCase):
 
     def setUp(self):
         from google.cloud import trace
@@ -78,7 +78,7 @@ class TestDjangoTrace(unittest.TestCase):
         self.process = run_application()
 
         self.headers_trace = {
-            'x-cloud-trace-context': '{}/{};o={}'.format(
+            'X_CLOUD_TRACE_CONTEXT': '{}/{};o={}'.format(
                 self.trace_id, self.span_id, 1)
         }
 
@@ -89,10 +89,10 @@ class TestDjangoTrace(unittest.TestCase):
         self.client = trace.Client(project=PROJECT)
 
     def tearDown(self):
-        # Kill the django application process
+        # Kill the flask application process
         os.killpg(os.getpgid(self.process.pid), signal.SIGTERM)
 
-    def test_django_request_trace(self):
+    def test_flask_request_trace(self):
         requests.get(
             BASE_URL,
             headers=self.headers_trace)
@@ -128,7 +128,7 @@ class TestDjangoTrace(unittest.TestCase):
             self.assertEqual(trace.get('projectId'), PROJECT)
             self.assertEqual(trace.get('traceId'), str(self.trace_id))
 
-            # Should have 2 spans, one for django request, one for mysql query
+            # Should have 2 spans, one for flask request, one for mysql query
             self.assertEqual(len(spans), 2)
             self.assertEqual(
                 spans[0].get('parentSpanId'),
@@ -163,8 +163,8 @@ class TestDjangoTrace(unittest.TestCase):
             self.assertEqual(trace.get('projectId'), PROJECT)
             self.assertEqual(trace.get('traceId'), str(self.trace_id))
 
-            # Should have 2 spans, one for django request, one for postgresql query
-            self.assertEqual(len(trace.get('spans')), 2)
+            # Should have 2 spans, one for flask request, one for postgresql query
+            self.assertEqual(len(spans), 2)
             self.assertEqual(
                 spans[0].get('parentSpanId'),
                 str(self.span_id))
@@ -187,7 +187,7 @@ class TestDjangoTrace(unittest.TestCase):
 
     def test_sqlalchemy_mysql_trace(self):
         requests.get(
-            '{}sqlalchemy_mysql'.format(BASE_URL),
+            '{}sqlalchemy-mysql'.format(BASE_URL),
             headers=self.headers_trace)
 
         @retry(wait_fixed=RETRY_WAIT_PERIOD, stop_max_attempt_number=RETRY_MAX_ATTEMPT)
@@ -197,20 +197,21 @@ class TestDjangoTrace(unittest.TestCase):
 
             self.assertEqual(trace.get('projectId'), PROJECT)
             self.assertEqual(trace.get('traceId'), str(self.trace_id))
-            self.assertNotEqual(len(trace.get('spans')), 0)
+            self.assertNotEqual(len(spans), 0)
 
             has_parent_span = False
             request_succeeded = False
 
             for span in spans:
+                if span.get('name') == \
+                        '[GET]http://localhost:8080/sqlalchemy-mysql':
+                    self.assertEqual(span.get('parentSpanId'), str(self.span_id))
+                    has_parent_span = True
+                    request_succeeded = True
+
                 labels = span.get('labels')
                 if '/http/status_code' in labels.keys():
                     self.assertEqual(labels.get('/http/status_code'), '200')
-                    request_succeeded = True
-
-                if span.get('name') == 'app.views.sqlalchemy_mysql_trace':
-                    self.assertEqual(span.get('parentSpanId'), str(self.span_id))
-                    has_parent_span = True
 
             self.assertTrue(has_parent_span)
             self.assertTrue(request_succeeded)
@@ -219,7 +220,7 @@ class TestDjangoTrace(unittest.TestCase):
 
     def test_sqlalchemy_postgresql_trace(self):
         requests.get(
-            '{}sqlalchemy_postgresql'.format(BASE_URL),
+            '{}sqlalchemy-postgresql'.format(BASE_URL),
             headers=self.headers_trace)
 
         @retry(wait_fixed=RETRY_WAIT_PERIOD, stop_max_attempt_number=RETRY_MAX_ATTEMPT)
@@ -235,14 +236,15 @@ class TestDjangoTrace(unittest.TestCase):
             request_succeeded = False
 
             for span in spans:
+                if span.get('name') == \
+                        '[GET]http://localhost:8080/sqlalchemy-postgresql':
+                    self.assertEqual(span.get('parentSpanId'), str(self.span_id))
+                    has_parent_span = True
+                    request_succeeded = True
+
                 labels = span.get('labels')
                 if '/http/status_code' in labels.keys():
                     self.assertEqual(labels.get('/http/status_code'), '200')
-                    request_succeeded = True
-
-                if span.get('name') == 'app.views.sqlalchemy_postgresql_trace':
-                    self.assertEqual(span.get('parentSpanId'), str(self.span_id))
-                    has_parent_span = True
 
             self.assertTrue(has_parent_span)
             self.assertTrue(request_succeeded)
