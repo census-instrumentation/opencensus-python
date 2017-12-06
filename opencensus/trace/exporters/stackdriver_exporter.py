@@ -19,7 +19,6 @@ from opencensus.trace.exporters.transports import sync
 
 from google.cloud.trace.client import Client
 
-from opencensus.trace.utils import _get_truncatable_str
 
 # Environment variable set in App Engine when vm:true is set.
 _APPENGINE_FLEXIBLE_ENV_VM = 'GAE_APPENGINE_HOSTNAME'
@@ -114,10 +113,10 @@ class StackdriverExporter(base.Exporter):
 
     def translate_to_stackdriver(self, spans):
         """Translate the spans json to Stackdriver format.
-        
+ 
         See: https://cloud.google.com/trace/docs/reference/v2/rest/v2/
              projects.traces/batchWrite
-        
+
         :type spans: dict
         :param spans: Spans collected.
 

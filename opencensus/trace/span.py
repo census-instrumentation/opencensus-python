@@ -17,12 +17,11 @@ from itertools import chain
 
 from opencensus.trace import attributes
 from opencensus.trace import link as link_module
-from opencensus.trace import stack_trace as stack_trace_module
 from opencensus.trace import time_event as time_event_module
-from opencensus.trace.enums import Enum
 from opencensus.trace.span_context import generate_span_id
 from opencensus.trace.tracer import base
 from opencensus.trace.utils import _get_truncatable_str
+
 
 class Span(object):
     """A span is an individual timed event which forms a node of the trace
@@ -35,12 +34,6 @@ class Span(object):
 
     :type name: str
     :param name: The name of the span.
-
-    :type kind: :class:`~opencensus.trace.enums.Enums.SpanKind`
-    :param kind: Distinguishes between spans generated in a particular context.
-                 For example, two spans with the same name may be
-                 distinguished using RPC_CLIENT and RPC_SERVER to identify
-                 queueing latency associated with the span.
 
     :type parent_span: :class:`~opencensus.trace.span.Span`
     :param parent_span: (Optional) Parent span.
@@ -170,7 +163,7 @@ class Span(object):
 
     def add_time_event(self, time_event):
         """Add a TimeEvent.
-        
+
         :type time_event: :class: `~opencensus.trace.time_event.TimeEvent`
         :param time_event: A TimeEvent object.
         """
@@ -182,7 +175,7 @@ class Span(object):
 
     def add_link(self, link):
         """Add a Link.
-        
+
         :type link: :class: `~opencensus.trace.link.Link`
         :param link: A Link object.
         """
@@ -253,12 +246,16 @@ def format_span_json(span):
         span_json['stackTrace'] = span.stack_trace.format_stack_trace_json()
 
     if span.time_events:
-        span_json['timeEvents'] = [
-            time_event.format_time_event_json()
-                for time_event in span.time_events]
+        span_json['timeEvents'] = {
+            'timeEvent': [time_event.format_time_event_json()
+                          for time_event in span.time_events]
+        }
 
     if span.links:
-        span_json['links'] = [link.format_link_json() for link in span.links]
+        span_json['links'] = {
+            'link': [
+                link.format_link_json() for link in span.links]
+        }
 
     if span.status is not None:
         span_json['status'] = span.status.format_status_json()

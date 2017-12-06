@@ -44,6 +44,19 @@ class TestAttributes(unittest.TestCase):
 
         self.assertEqual(expected_attr, attributes.attributes)
 
+    def test_delete_attribute(self):
+        attr = {
+            'key1': 'value1',
+            'key2': 'value2'
+        }
+        attributes = attributes_module.Attributes(attr)
+        attributes.delete_attribute('key1')
+
+        self.assertEqual(attributes.attributes, {
+            'key2': 'value2'
+        })
+
+
     def test_get_attribute(self):
         attr = {
             'key': 'value'
@@ -64,17 +77,19 @@ class TestAttributes(unittest.TestCase):
         attributes_json = attributes.format_attributes_json()
 
         expected_attributes_json = {
-            'key1': {
-                'string_value': {
-                    'value': 'test string',
-                    'truncated_byte_count': 0
+            'attributeMap': {
+                'key1': {
+                    'string_value': {
+                        'value': 'test string',
+                        'truncated_byte_count': 0
+                    }
+                },
+                'key2': {
+                    'bool_value': True
+                },
+                'key3': {
+                    'int_value': 100
                 }
-            },
-            'key2': {
-                'bool_value': True
-            },
-            'key3': {
-                'int_value': 100
             }
         }
 

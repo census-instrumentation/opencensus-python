@@ -59,7 +59,7 @@ class Link(object):
         self.attributes = attributes
 
     def format_link_json(self):
-        """Conver a Link object to json format."""
+        """Convert a Link object to json format."""
         link_json = {}
         link_json['trace_id'] = self.trace_id
         link_json['span_id'] = self.span_id

@@ -67,7 +67,7 @@ class TestStackdriverExporter(unittest.TestCase):
         self.assertTrue(exporter.transport.export_called)
 
     def test_emit(self):
-        trace = {'spans': [], 'traceId': '6e0c63257de34c92bf9efcd03927272e'}
+        spans = {'spans': []}
 
         client = mock.Mock()
         project_id = 'PROJECT'
@@ -77,13 +77,12 @@ class TestStackdriverExporter(unittest.TestCase):
             client=client,
             project_id=project_id)
 
-        exporter.emit(trace)
+        exporter.emit(spans)
 
-        trace['projectId'] = project_id
-        traces = {'traces': [trace]}
+        name = 'projects/{}'.format(project_id)
 
-        client.patch_traces.assert_called_with(traces)
-        self.assertTrue(client.patch_traces.called)
+        client.batch_write_spans.assert_called_with(name, spans)
+        self.assertTrue(client.batch_write_spans.called)
 
     def test_translate_to_stackdriver(self):
         project_id = 'PROJECT'
