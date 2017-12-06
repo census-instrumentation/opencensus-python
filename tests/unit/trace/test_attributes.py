@@ -100,7 +100,13 @@ class TestAttributes(unittest.TestCase):
             'key1': mock.Mock(),
         }
 
-        attributes = attributes_module.Attributes(attrs)
+        expected_json = {
+            'attributeMap': {
+                'key1': None
+            }
+        }
 
-        with self.assertRaises(TypeError):
-            attributes_json = attributes.format_attributes_json()
+        attributes = attributes_module.Attributes(attrs)
+        attributes_json = attributes.format_attributes_json()
+
+        self.assertEqual(attributes_json, expected_json)

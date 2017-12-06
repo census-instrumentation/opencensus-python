@@ -131,13 +131,18 @@ class StackdriverExporter(base.Exporter):
         for span in spans_json:
             span_name = 'projects/{}/traces/{}/spans/{}'.format(
                 self.project_id, trace_id, span.get('spanId'))
+            parent_span_id = None
+
+            if span.get('parentSpanId') is not None:
+                parent_span_id = str(span.get('parentSpanId'))
+
             span_json = {
                 'name': span_name,
                 'displayName': span.get('displayName'),
                 'startTime': span.get('startTime'),
                 'endTime': span.get('endTime'),
                 'spanId': str(span.get('spanId')),
-                'parentSpanId': str(span.get('parentSpanId')),
+                'parentSpanId': parent_span_id,
                 'attributes': span.get('attributes'),
                 'links': span.get('links'),
                 'status': span.get('status'),

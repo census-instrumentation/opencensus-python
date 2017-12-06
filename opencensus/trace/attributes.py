@@ -24,7 +24,7 @@ def _format_attribute_value(value):
         value_type = 'string_value'
         value = utils._get_truncatable_str(value)
     else:
-        raise TypeError("Value must be str, int, or bool.")
+        return None
 
     return {value_type: value}
 

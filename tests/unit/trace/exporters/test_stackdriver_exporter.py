@@ -67,7 +67,41 @@ class TestStackdriverExporter(unittest.TestCase):
         self.assertTrue(exporter.transport.export_called)
 
     def test_emit(self):
-        spans = {'spans': []}
+        spans = {'spans':
+            [
+                {
+                    'displayName': {
+                        'value': 'span',
+                        'truncated_byte_count': 0
+                    },
+                    'spanId': '1111',
+                }
+            ]
+        }
+
+        stackdriver_spans = {
+            'spans': [
+                {
+                    'status': None,
+                    'childSpanCount': None,
+                    'links': None,
+                    'startTime': None,
+                    'spanId': '1111',
+                    'stackTrace': None,
+                    'displayName':
+                        {
+                            'truncated_byte_count': 0,
+                            'value': 'span'
+                        },
+                    'name': 'projects/PROJECT/traces/None/spans/1111',
+                    'parentSpanId': None,
+                    'attributes': None,
+                    'timeEvents': None,
+                    'endTime': None,
+                    'sameProcessAsParentSpan': None
+                }
+            ]
+        }
 
         client = mock.Mock()
         project_id = 'PROJECT'
@@ -81,7 +115,7 @@ class TestStackdriverExporter(unittest.TestCase):
 
         name = 'projects/{}'.format(project_id)
 
-        client.batch_write_spans.assert_called_with(name, spans)
+        client.batch_write_spans.assert_called_with(name, stackdriver_spans)
         self.assertTrue(client.batch_write_spans.called)
 
     def test_translate_to_stackdriver(self):
@@ -144,9 +178,6 @@ class TestStackdriverExporter(unittest.TestCase):
                 }
             ]
         }
-
-        print(spans)
-        print(expected_traces)
 
         self.assertEqual(spans, expected_traces)
 
