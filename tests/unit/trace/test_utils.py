@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 # Copyright 2017, OpenCensus Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -45,3 +48,18 @@ class TestUtils(unittest.TestCase):
         }
 
         self.assertEqual(expected_str, truncatable_str)
+
+    def test_check_str_length(self):
+        limit = 5
+
+        str_to_check = u'test测试'
+
+        (result, truncated_byte_count) = utils.check_str_length(
+            str_to_check, limit)
+
+        expected_result = 'test'
+
+        # Should only have 4 bytes remained, dropped off the invalid part if
+        # truncated in the middle of a character.
+        self.assertEqual(expected_result, result)
+        self.assertEqual(truncated_byte_count, 5)

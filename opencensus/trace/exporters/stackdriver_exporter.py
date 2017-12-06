@@ -113,7 +113,7 @@ class StackdriverExporter(base.Exporter):
 
     def translate_to_stackdriver(self, spans):
         """Translate the spans json to Stackdriver format.
- 
+
         See: https://cloud.google.com/trace/docs/reference/v2/rest/v2/
              projects.traces/batchWrite
 

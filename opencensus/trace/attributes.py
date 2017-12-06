@@ -55,7 +55,7 @@ class Attributes(object):
     def format_attributes_json(self):
         """Convert the Attributes object to json format."""
         attributes_json = {
-            utils.check_str_length(key): _format_attribute_value(value)
+            utils.check_str_length(key)[0]: _format_attribute_value(value)
             for key, value in self.attributes.items()
         }
 
