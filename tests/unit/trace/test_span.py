@@ -273,6 +273,7 @@ class Test_format_span_json(unittest.TestCase):
         attributes = {
             '/http/status_code': '200',
             '/component': 'HTTP load balancer',
+            'none_key': None
         }
 
         links = {

@@ -101,9 +101,7 @@ class TestAttributes(unittest.TestCase):
         }
 
         expected_json = {
-            'attributeMap': {
-                'key1': None
-            }
+            'attributeMap': {}
         }
 
         attributes = attributes_module.Attributes(attrs)

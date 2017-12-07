@@ -87,6 +87,7 @@ class TestStackdriverExporter(unittest.TestCase):
                     'links': None,
                     'startTime': None,
                     'spanId': '1111',
+                    'attributes': None,
                     'stackTrace': None,
                     'displayName':
                         {
@@ -94,8 +95,6 @@ class TestStackdriverExporter(unittest.TestCase):
                             'value': 'span'
                         },
                     'name': 'projects/PROJECT/traces/None/spans/1111',
-                    'parentSpanId': None,
-                    'attributes': None,
                     'timeEvents': None,
                     'endTime': None,
                     'sameProcessAsParentSpan': None
@@ -123,7 +122,9 @@ class TestStackdriverExporter(unittest.TestCase):
         trace_id = '6e0c63257de34c92bf9efcd03927272e'
         span_name = 'test span'
         span_id = 1234
-        attributes = {}
+        attributes = {'attributeMap': {
+            'key': 'value'}
+        }
         parent_span_id = 1111
         start_time = 'test start time'
         end_time = 'test end time'
@@ -152,7 +153,6 @@ class TestStackdriverExporter(unittest.TestCase):
             client=client,
             project_id=project_id)
 
-
         spans = exporter.translate_to_stackdriver(trace)
 
         expected_traces = {
@@ -164,11 +164,11 @@ class TestStackdriverExporter(unittest.TestCase):
                         'value': span_name,
                         'truncated_byte_count': 0
                     },
+                    'attributes': {'attributeMap': {'key': 'value'}},
                     'spanId': str(span_id),
                     'startTime': start_time,
                     'endTime': end_time,
                     'parentSpanId': str(parent_span_id),
-                    'attributes': {},
                     'status': None,
                     'links': None,
                     'stackTrace': None,
@@ -178,6 +178,9 @@ class TestStackdriverExporter(unittest.TestCase):
                 }
             ]
         }
+
+        print(spans)
+        print(expected_traces)
 
         self.assertEqual(spans, expected_traces)
 

@@ -59,6 +59,15 @@ class Attributes(object):
             for key, value in self.attributes.items()
         }
 
+        attributes_json = {}
+
+        for key, value in self.attributes.items():
+            key = utils.check_str_length(key)[0]
+            value = _format_attribute_value(value)
+
+            if value is not None:
+                attributes_json[key] = value
+
         result = {
             'attributeMap': attributes_json
         }
