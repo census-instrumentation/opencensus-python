@@ -64,7 +64,7 @@ def run_application():
 class TestFlaskTrace(unittest.TestCase):
 
     def setUp(self):
-        from google.cloud import trace
+        from google.cloud.trace.v1 import client as client_module
 
         # Generate trace headers
         trace_id, span_id, trace_header = generate_header()
@@ -86,7 +86,7 @@ class TestFlaskTrace(unittest.TestCase):
         wait_app_to_start()
 
         # Initialize the stackdriver trace client
-        self.client = trace.Client(project=PROJECT)
+        self.client = client_module.Client(project=PROJECT)
 
     def tearDown(self):
         # Kill the flask application process

@@ -39,6 +39,7 @@ def wait_app_to_start():
     cmd = 'wget --retry-connrefused --tries=5 {}'.format(BASE_URL)
     subprocess.check_call(cmd, shell=True)
 
+
 def generate_header():
     """Generate a trace header."""
     trace_id = uuid.uuid4().hex
@@ -64,7 +65,7 @@ def run_application():
 class TestDjangoTrace(unittest.TestCase):
 
     def setUp(self):
-        from google.cloud import trace
+        from google.cloud.trace.v1 import client as client_module
 
         # Generate trace headers
         trace_id, span_id, trace_header = generate_header()
@@ -86,7 +87,7 @@ class TestDjangoTrace(unittest.TestCase):
         wait_app_to_start()
 
         # Initialize the stackdriver trace client
-        self.client = trace.Client(project=PROJECT)
+        self.client = client_module.Client(project=PROJECT)
 
     def tearDown(self):
         # Kill the django application process
