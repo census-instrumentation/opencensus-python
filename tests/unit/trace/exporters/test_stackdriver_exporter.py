@@ -67,7 +67,40 @@ class TestStackdriverExporter(unittest.TestCase):
         self.assertTrue(exporter.transport.export_called)
 
     def test_emit(self):
-        trace = {'spans': [], 'traceId': '6e0c63257de34c92bf9efcd03927272e'}
+        spans = {'spans':
+            [
+                {
+                    'displayName': {
+                        'value': 'span',
+                        'truncated_byte_count': 0
+                    },
+                    'spanId': '1111',
+                }
+            ]
+        }
+
+        stackdriver_spans = {
+            'spans': [
+                {
+                    'status': None,
+                    'childSpanCount': None,
+                    'links': None,
+                    'startTime': None,
+                    'spanId': '1111',
+                    'attributes': None,
+                    'stackTrace': None,
+                    'displayName':
+                        {
+                            'truncated_byte_count': 0,
+                            'value': 'span'
+                        },
+                    'name': 'projects/PROJECT/traces/None/spans/1111',
+                    'timeEvents': None,
+                    'endTime': None,
+                    'sameProcessAsParentSpan': None
+                }
+            ]
+        }
 
         client = mock.Mock()
         project_id = 'PROJECT'
@@ -77,33 +110,38 @@ class TestStackdriverExporter(unittest.TestCase):
             client=client,
             project_id=project_id)
 
-        exporter.emit(trace)
+        exporter.emit(spans)
 
-        trace['projectId'] = project_id
-        traces = {'traces': [trace]}
+        name = 'projects/{}'.format(project_id)
 
-        client.patch_traces.assert_called_with(traces)
-        self.assertTrue(client.patch_traces.called)
+        client.batch_write_spans.assert_called_with(name, stackdriver_spans)
+        self.assertTrue(client.batch_write_spans.called)
 
     def test_translate_to_stackdriver(self):
         project_id = 'PROJECT'
         trace_id = '6e0c63257de34c92bf9efcd03927272e'
         span_name = 'test span'
         span_id = 1234
-        attributes = {}
+        attributes = {'attributeMap': {
+            'key': 'value'}
+        }
         parent_span_id = 1111
         start_time = 'test start time'
         end_time = 'test end time'
         trace = {
             'spans': [
                 {
-                    'name': span_name,
+                    'displayName': {
+                        'value': span_name,
+                        'truncated_byte_count': 0
+                    },
                     'spanId': span_id,
                     'startTime': start_time,
                     'endTime': end_time,
                     'parentSpanId': parent_span_id,
                     'attributes': attributes,
-                    'someRandomKey': 'this should not be included in result'
+                    'someRandomKey': 'this should not be included in result',
+                    'childSpanCount': 0
                 }
             ],
             'traceId': trace_id
@@ -115,29 +153,36 @@ class TestStackdriverExporter(unittest.TestCase):
             client=client,
             project_id=project_id)
 
-
-        traces = exporter.translate_to_stackdriver(trace)
+        spans = exporter.translate_to_stackdriver(trace)
 
         expected_traces = {
-            'traces': [
+            'spans': [
                 {
-                    'projectId': project_id,
-                    'traceId': trace_id,
-                    'spans': [
-                        {
-                            'name': span_name,
-                            'spanId': span_id,
-                            'startTime': start_time,
-                            'endTime': end_time,
-                            'parentSpanId': parent_span_id,
-                            'labels': attributes
-                        }
-                    ]
+                    'name': 'projects/{}/traces/{}/spans/{}'.format(
+                        project_id, trace_id, span_id),
+                    'displayName': {
+                        'value': span_name,
+                        'truncated_byte_count': 0
+                    },
+                    'attributes': {'attributeMap': {'key': 'value'}},
+                    'spanId': str(span_id),
+                    'startTime': start_time,
+                    'endTime': end_time,
+                    'parentSpanId': str(parent_span_id),
+                    'status': None,
+                    'links': None,
+                    'stackTrace': None,
+                    'timeEvents': None,
+                    'childSpanCount': 0,
+                    'sameProcessAsParentSpan': None
                 }
             ]
         }
 
-        self.assertEqual(traces, expected_traces)
+        print(spans)
+        print(expected_traces)
+
+        self.assertEqual(spans, expected_traces)
 
 
 class Test_set_attributes_gae(unittest.TestCase):

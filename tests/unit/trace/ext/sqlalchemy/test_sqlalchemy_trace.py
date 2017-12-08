@@ -75,7 +75,7 @@ class Test_sqlalchemy_trace(unittest.TestCase):
             'sqlalchemy/cursor/method/name': 'execute'
         }
 
-        expected_name = '[sqlalchemy.query]{}'.format(query)
+        expected_name = 'sqlalchemy.query'
 
         self.assertEqual(mock_tracer.current_span.attributes, expected_attributes)
         self.assertEqual(mock_tracer.current_span.name, expected_name)
@@ -101,7 +101,7 @@ class Test_sqlalchemy_trace(unittest.TestCase):
             'sqlalchemy/cursor/method/name': 'executemany'
         }
 
-        expected_name = '[sqlalchemy.query]{}'.format(query)
+        expected_name = 'sqlalchemy.query'
 
         self.assertEqual(mock_tracer.current_span.attributes, expected_attributes)
         self.assertEqual(mock_tracer.current_span.name, expected_name)

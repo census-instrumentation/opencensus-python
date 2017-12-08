@@ -15,9 +15,12 @@
 from datetime import datetime
 from itertools import chain
 
-from opencensus.trace.enums import Enum
+from opencensus.trace import attributes
+from opencensus.trace import link as link_module
+from opencensus.trace import time_event as time_event_module
 from opencensus.trace.span_context import generate_span_id
 from opencensus.trace.tracer import base
+from opencensus.trace.utils import _get_truncatable_str
 
 
 class Span(object):
@@ -31,12 +34,6 @@ class Span(object):
 
     :type name: str
     :param name: The name of the span.
-
-    :type kind: :class:`~opencensus.trace.enums.Enums.SpanKind`
-    :param kind: Distinguishes between spans generated in a particular context.
-                 For example, two spans with the same name may be
-                 distinguished using RPC_CLIENT and RPC_SERVER to identify
-                 queueing latency associated with the span.
 
     :type parent_span: :class:`~opencensus.trace.span.Span`
     :param parent_span: (Optional) Parent span.
@@ -58,6 +55,27 @@ class Span(object):
     :type span_id: int
     :param span_id: Identifier for the span, unique within a trace.
 
+    :type stack_trace: :class: `~opencensus.trace.stack_trace.StackTrace`
+    :param stack_trace: (Optional) A call stack appearing in a trace
+
+    :type time_events: list
+    :param time_events: (Optional) A set of time events. You can have up to 32
+                        annotations and 128 message events per span.
+
+    :type links: list
+    :param links: (Optional) Links associated with the span. You can have up
+                  to 128 links per Span.
+
+    :type status: :class: `~opencensus.trace.status.Status`
+    :param status: (Optional) An optional final status for this span.
+
+    :type same_process_as_parent_span: bool
+    :param same_process_as_parent_span: (Optional) A highly recommended but not
+                                        required flag that identifies when a
+                                        trace crosses a process boundary.
+                                        True when the parent_span belongs to
+                                        the same process as the current span.
+
     :type context_tracer: :class:`~opencensus.trace.tracer.context_tracer.
                                  ContextTracer`
     :param context_tracer: The tracer that holds a stack of spans. If this is
@@ -70,15 +88,18 @@ class Span(object):
     def __init__(
             self,
             name,
-            kind=Enum.SpanKind.SPAN_KIND_UNSPECIFIED,
             parent_span=None,
             attributes=None,
             start_time=None,
             end_time=None,
             span_id=None,
+            stack_trace=None,
+            time_events=None,
+            links=None,
+            status=None,
+            same_process_as_parent_span=None,
             context_tracer=None):
         self.name = name
-        self.kind = kind
         self.parent_span = parent_span
         self.start_time = start_time
         self.end_time = end_time
@@ -94,8 +115,19 @@ class Span(object):
         if parent_span is None:
             parent_span = base.NullContextManager()
 
+        if time_events is None:
+            time_events = []
+
+        if links is None:
+            links = []
+
         self.attributes = attributes
         self.span_id = span_id
+        self.stack_trace = stack_trace
+        self.time_events = time_events
+        self.links = links
+        self.status = status
+        self.same_process_as_parent_span = same_process_as_parent_span
         self._child_spans = []
         self.context_tracer = context_tracer
 
@@ -128,6 +160,30 @@ class Span(object):
         :param attribute_value: Attribute value.
         """
         self.attributes[attribute_key] = attribute_value
+
+    def add_time_event(self, time_event):
+        """Add a TimeEvent.
+
+        :type time_event: :class: `~opencensus.trace.time_event.TimeEvent`
+        :param time_event: A TimeEvent object.
+        """
+        if isinstance(time_event, time_event_module.TimeEvent):
+            self.time_events.append(time_event)
+        else:
+            raise TypeError("Type Error: received {}, but requires TimeEvent.".
+                            format(type(time_event).__name__))
+
+    def add_link(self, link):
+        """Add a Link.
+
+        :type link: :class: `~opencensus.trace.link.Link`
+        :param link: A Link object.
+        """
+        if isinstance(link, link_module.Link):
+            self.links.append(link)
+        else:
+            raise TypeError("Type Error: received {}, but requires Link.".
+                            format(type(link).__name__))
 
     def start(self):
         """Set the start time for a span."""
@@ -167,11 +223,11 @@ def format_span_json(span):
     :returns: Formatted Span.
     """
     span_json = {
-        'name': span.name,
-        'kind': span.kind,
+        'displayName': _get_truncatable_str(span.name),
         'spanId': span.span_id,
         'startTime': span.start_time,
         'endTime': span.end_time,
+        'childSpanCount': len(span._child_spans)
     }
 
     parent_span_id = None
@@ -182,7 +238,30 @@ def format_span_json(span):
     if parent_span_id is not None:
         span_json['parentSpanId'] = parent_span_id
 
-    if span.attributes is not None:
-        span_json['attributes'] = span.attributes
+    if span.attributes:
+        span_json['attributes'] = attributes.Attributes(
+            span.attributes).format_attributes_json()
+
+    if span.stack_trace is not None:
+        span_json['stackTrace'] = span.stack_trace.format_stack_trace_json()
+
+    if span.time_events:
+        span_json['timeEvents'] = {
+            'timeEvent': [time_event.format_time_event_json()
+                          for time_event in span.time_events]
+        }
+
+    if span.links:
+        span_json['links'] = {
+            'link': [
+                link.format_link_json() for link in span.links]
+        }
+
+    if span.status is not None:
+        span_json['status'] = span.status.format_status_json()
+
+    if span.same_process_as_parent_span is not None:
+        span_json['sameProcessAsParentSpan'] = \
+            span.same_process_as_parent_span
 
     return span_json
