@@ -18,7 +18,7 @@ import io
 from setuptools import setup, find_packages
 
 install_requires = [
-    'google-cloud-trace>=0.16.0, <0.17dev',
+    'google-cloud-trace>=0.17.0, <0.18dev',
 ]
 
 setup(

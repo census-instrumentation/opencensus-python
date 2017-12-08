@@ -62,7 +62,7 @@ def _before_cursor_execute(conn, cursor, statement, parameters,
 
     _tracer = execution_context.get_opencensus_tracer()
     _span = _tracer.start_span()
-    _span.name = '[{}.query]{}'.format(MODULE_NAME, statement)
+    _span.name = '{}.query'.format(MODULE_NAME)
 
     # Set query statement attribute
     _tracer.add_attribute_to_current_span(
