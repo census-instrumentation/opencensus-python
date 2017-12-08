@@ -14,10 +14,8 @@
 
 import logging
 import sys
-import time
 
-from retrying import retry
-
+from opencensus.trace import attributes_helper
 from opencensus.trace import execution_context
 
 PYTHON2 = sys.version_info.major == 2
@@ -33,8 +31,9 @@ MODULE_NAME = 'httplib'
 HTTPLIB_REQUEST_FUNC = 'request'
 HTTPLIB_RESPONSE_FUNC = 'getresponse'
 
-RETRY_WAIT_PERIOD = 1 # Wait 1 seconds between each retry
-RETRY_MAX_ATTEMPT = 5 # Retry 5 times
+HTTP_METHOD = attributes_helper.COMMON_ATTRIBUTES['HTTP_METHOD']
+HTTP_URL = attributes_helper.COMMON_ATTRIBUTES['HTTP_URL']
+HTTP_STATUS_CODE = attributes_helper.COMMON_ATTRIBUTES['HTTP_STATUS_CODE']
 
 
 def trace_integration():
@@ -55,22 +54,25 @@ def trace_integration():
 
 
 def wrap_httplib_request(request_func):
-    """Wrap the httplib request function to trace. Create a new span and update or
-    close the span in the response later.
+    """Wrap the httplib request function to trace. Create a new span and update
+    and close the span in the response later.
     """
-    def call(method, url, *args, **kwargs):
+    def call(self, method, url, *args, **kwargs):
         _tracer = execution_context.get_opencensus_tracer()
         _span = _tracer.start_span()
         _span.name = '[httplib]{}'.format(request_func.__name__)
 
         # Add the request url to attributes
-        _tracer.add_attribute_to_current_span('httplib/request/url', url)
+        _tracer.add_attribute_to_current_span(HTTP_URL, url)
+
+        # Add the request method to attributes
+        _tracer.add_attribute_to_current_span(HTTP_METHOD, method)
 
         # Store the current span id to thread local.
         execution_context.set_opencensus_attr(
             'httplib/current_span_id', _span.span_id)
 
-        return request_func(method, url, *args, **kwargs)
+        return request_func(self, method, url, *args, **kwargs)
 
     return call
 
@@ -79,9 +81,9 @@ def wrap_httplib_response(response_func):
     """Wrap the httplib response function to trace.
 
     If there is a corresponding httplib request span, update and close it.
-    If not, return.
+    If not, return the response.
     """
-    def call(*args, **kwargs):
+    def call(self, *args, **kwargs):
         _tracer = execution_context.get_opencensus_tracer()
         current_span_id = execution_context.get_opencensus_attr(
             'httplib/current_span_id')
@@ -92,11 +94,11 @@ def wrap_httplib_response(response_func):
         if span.span_id != current_span_id:
             return response_func(*args, **kwargs)
 
-        result = response_func(*args, **kwargs)
+        result = response_func(self, *args, **kwargs)
 
         # Add the status code to attributes
         _tracer.add_attribute_to_current_span(
-            'httplib/response/status_code', str(result.status))
+            HTTP_STATUS_CODE, str(result.status))
 
         _tracer.end_span()
         return result
