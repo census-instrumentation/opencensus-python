@@ -66,7 +66,7 @@ class TestBasicTrace(unittest.TestCase):
         self.assertEqual(len(spans), 2)
 
         for span in spans:
-            if span.get('name') == 'root_span':
+            if span.get('displayName').get('value') == 'root_span':
                 self.assertEqual(str(span.get('parentSpanId')), span_id)
             else:
                 self.assertEqual(span.get('parentSpanId'), parent_span_id)

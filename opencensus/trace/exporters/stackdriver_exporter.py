@@ -19,6 +19,7 @@ from opencensus.trace.exporters.transports import sync
 
 from google.cloud.trace.client import Client
 
+
 # Environment variable set in App Engine when vm:true is set.
 _APPENGINE_FLEXIBLE_ENV_VM = 'GAE_APPENGINE_HOSTNAME'
 
@@ -90,7 +91,7 @@ class StackdriverExporter(base.Exporter):
     """
     def __init__(self, client=None, project_id=None,
                  transport=sync.SyncTransport):
-        # The client will handler the case when project_id is None
+        # The client will handle the case when project_id is None
         if client is None:
             client = Client(project=project_id)
 
@@ -98,46 +99,59 @@ class StackdriverExporter(base.Exporter):
         self.project_id = client.project
         self.transport = transport(self)
 
-    def emit(self, trace):
+    def emit(self, spans):
         """
-        :type trace: dict
-        :param trace: Trace collected.
+        :type spans: dict
+        :param spans: Spans collected.
         """
-        stackdriver_traces = self.translate_to_stackdriver(trace)
-        self.client.patch_traces(stackdriver_traces)
+        name = 'projects/{}'.format(self.project_id)
+        stackdriver_spans = self.translate_to_stackdriver(spans)
+        self.client.batch_write_spans(name, stackdriver_spans)
 
     def export(self, trace):
         self.transport.export(trace)
 
-    def translate_to_stackdriver(self, trace):
-        """
-        :type trace: dict
-        :param trace: Trace collected.
+    def translate_to_stackdriver(self, spans):
+        """Translate the spans json to Stackdriver format.
+
+        See: https://cloud.google.com/trace/docs/reference/v2/rest/v2/
+             projects.traces/batchWrite
+
+        :type spans: dict
+        :param spans: Spans collected.
 
         :rtype: dict
-        :returns: Traces in Google Cloud StackDriver Trace format.
+        :returns: Spans in Google Cloud StackDriver Trace format.
         """
-        set_attributes(trace)
-        spans = trace.get('spans')
-        trace_id = trace.get('traceId')
-        spans_json = []
+        set_attributes(spans)
+        spans_json = spans.get('spans')
+        trace_id = spans.get('traceId')
+        spans_list = []
 
-        for span in spans:
+        for span in spans_json:
+            span_name = 'projects/{}/traces/{}/spans/{}'.format(
+                self.project_id, trace_id, span.get('spanId'))
+
             span_json = {
-                'name': span.get('name'),
+                'name': span_name,
+                'displayName': span.get('displayName'),
                 'startTime': span.get('startTime'),
                 'endTime': span.get('endTime'),
-                'spanId': span.get('spanId'),
-                'parentSpanId': span.get('parentSpanId'),
-                'labels': span.get('attributes')
+                'spanId': str(span.get('spanId')),
+                'attributes': span.get('attributes'),
+                'links': span.get('links'),
+                'status': span.get('status'),
+                'stackTrace': span.get('stackTrace'),
+                'timeEvents': span.get('timeEvents'),
+                'sameProcessAsParentSpan': span.get('sameProcessAsParentSpan'),
+                'childSpanCount': span.get('childSpanCount')
             }
-            spans_json.append(span_json)
 
-        trace_json = {
-            'projectId': self.project_id,
-            'traceId': trace_id,
-            'spans': spans_json
-        }
+            if span.get('parentSpanId') is not None:
+                parent_span_id = str(span.get('parentSpanId'))
+                span_json['parentSpanId'] = parent_span_id
 
-        traces = {'traces': [trace_json]}
-        return traces
+            spans_list.append(span_json)
+
+        spans = {'spans': spans_list}
+        return spans

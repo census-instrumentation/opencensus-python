@@ -16,6 +16,10 @@ import unittest
 
 import mock
 
+from opencensus.trace.stack_trace import StackTrace
+from opencensus.trace.status import Status
+from opencensus.trace.time_event import TimeEvent
+
 
 class TestSpan(unittest.TestCase):
 
@@ -31,8 +35,6 @@ class TestSpan(unittest.TestCase):
         return self._get_target_class()(*args, **kw)
 
     def test_constructor_defaults(self):
-        from opencensus.trace.enums import Enum
-
         span_id = 'test_span_id'
         span_name = 'test_span_name'
 
@@ -45,7 +47,6 @@ class TestSpan(unittest.TestCase):
 
         self.assertEqual(span.name, span_name)
         self.assertEqual(span.span_id, span_id)
-        self.assertEqual(span.kind, Enum.SpanKind.SPAN_KIND_UNSPECIFIED)
         self.assertIsNone(span.parent_span)
         self.assertEqual(span.attributes, {})
         self.assertIsNone(span.start_time)
@@ -56,11 +57,8 @@ class TestSpan(unittest.TestCase):
     def test_constructor_explicit(self):
         from datetime import datetime
 
-        from opencensus.trace.enums import Enum
-
         span_id = 'test_span_id'
         span_name = 'test_span_name'
-        kind = Enum.SpanKind.RPC_CLIENT
         parent_span = mock.Mock()
         start_time = datetime.utcnow().isoformat() + 'Z'
         end_time = datetime.utcnow().isoformat() + 'Z'
@@ -68,37 +66,44 @@ class TestSpan(unittest.TestCase):
             '/http/status_code': '200',
             '/component': 'HTTP load balancer',
         }
+        time_events = mock.Mock()
+        links = mock.Mock()
+        stack_trace = mock.Mock()
+        status = mock.Mock()
         context_tracer = mock.Mock()
 
         span = self._make_one(
             name=span_name,
-            kind=kind,
             parent_span=parent_span,
             attributes=attributes,
             start_time=start_time,
             end_time=end_time,
             span_id=span_id,
+            stack_trace=stack_trace,
+            time_events=time_events,
+            links=links,
+            status=status,
             context_tracer=context_tracer)
 
         self.assertEqual(span.name, span_name)
         self.assertEqual(span.span_id, span_id)
-        self.assertEqual(span.kind, kind)
         self.assertEqual(span.parent_span, parent_span)
         self.assertEqual(span.attributes, attributes)
         self.assertEqual(span.start_time, start_time)
         self.assertEqual(span.end_time, end_time)
+        self.assertEqual(span.time_events, time_events)
+        self.assertEqual(span.stack_trace, stack_trace)
+        self.assertEqual(span.links, links)
+        self.assertEqual(span.status, status)
         self.assertEqual(span.children, [])
         self.assertEqual(span.context_tracer, context_tracer)
 
     def test_span(self):
-        from opencensus.trace.enums import Enum
-
         span_id = 'test_span_id'
         root_span_name = 'root_span'
         child_span_name = 'child_span'
         root_span = self._make_one(root_span_name)
         root_span._child_spans = []
-        kind = Enum.SpanKind.SPAN_KIND_UNSPECIFIED
 
         patch = mock.patch(
             'opencensus.trace.span.generate_span_id',
@@ -114,7 +119,6 @@ class TestSpan(unittest.TestCase):
 
         self.assertEqual(result_child_span.name, child_span_name)
         self.assertEqual(result_child_span.span_id, span_id)
-        self.assertEqual(result_child_span.kind, kind)
         self.assertEqual(result_child_span.parent_span, root_span)
         self.assertEqual(result_child_span.attributes, {})
         self.assertIsNone(result_child_span.start_time)
@@ -129,6 +133,37 @@ class TestSpan(unittest.TestCase):
 
         self.assertEqual(span.attributes[attribute_key], attribute_value)
         span.attributes.pop(attribute_key, None)
+
+    def test_add_time_event(self):
+        from opencensus.trace.time_event import TimeEvent
+        import datetime
+
+        span_name = 'test_span_name'
+        span = self._make_one(span_name)
+        time_event = mock.Mock()
+
+        with self.assertRaises(TypeError):
+            span.add_time_event(time_event)
+
+        time_event = TimeEvent(datetime.datetime.now())
+        span.add_time_event(time_event)
+
+        self.assertEqual(len(span.time_events), 1)
+
+    def test_add_link(self):
+        from opencensus.trace.link import Link
+
+        span_name = 'test_span_name'
+        span = self._make_one(span_name)
+        link = mock.Mock()
+
+        with self.assertRaises(TypeError):
+            span.add_link(link)
+
+        link = Link(span_id='1234', trace_id='4567')
+        span.add_link(link)
+
+        self.assertEqual(len(span.links), 1)
 
     def test_start(self):
         span_name = 'root_span'
@@ -189,45 +224,68 @@ class Test_format_span_json(unittest.TestCase):
 
     def test_format_span_json_no_parent_span(self):
         from opencensus.trace.span import format_span_json
-        from opencensus.trace.enums import Enum
 
         name = 'test span'
-        kind = Enum.SpanKind.SPAN_KIND_UNSPECIFIED
         span_id = 1234
         start_time = '2017-06-25'
         end_time = '2017-06-26'
 
         span = mock.Mock()
         span.name = name
-        span.kind = kind
         span.span_id = span_id
         span.start_time = start_time
         span.end_time = end_time
         span.parent_span = None
         span.attributes = None
+        span.stack_trace = None
+        span.status = None
+        span._child_spans = []
+        span.time_events = []
+        span.links = []
+        span.same_process_as_parent_span = None
 
         expected_span_json = {
-            'name': name,
-            'kind': kind,
             'spanId': span_id,
             'startTime': start_time,
             'endTime': end_time,
+            'displayName': {
+                'truncated_byte_count': 0,
+                'value': 'test span'},
+            'childSpanCount': 0,
         }
 
         span_json = format_span_json(span)
         self.assertEqual(span_json, expected_span_json)
 
-    def test_format_span_json_with_parent_span(self):
+    @mock.patch.object(StackTrace, 'format_stack_trace_json')
+    @mock.patch.object(Status, 'format_status_json')
+    @mock.patch.object(TimeEvent, 'format_time_event_json')
+    def test_format_span_json_with_parent_span(
+            self, time_event_mock, status_mock, stack_trace_mock):
+        import datetime
+
+        from opencensus.trace.link import Link
         from opencensus.trace.span import format_span_json
-        from opencensus.trace.enums import Enum
 
         name = 'test span'
-        kind = Enum.SpanKind.SPAN_KIND_UNSPECIFIED
         span_id = 1234
+        trace_id = '3456'
         attributes = {
             '/http/status_code': '200',
             '/component': 'HTTP load balancer',
+            'none_key': None
         }
+
+        links = {
+            'link': [
+                {
+                    'trace_id': trace_id,
+                    'span_id': span_id,
+                    'type': 0
+                },
+            ],
+        }
+
         start_time = '2017-06-25'
         end_time = '2017-06-26'
         parent_span = mock.Mock()
@@ -237,21 +295,63 @@ class Test_format_span_json(unittest.TestCase):
         span = mock.Mock()
         span.parent_span = parent_span
         span.name = name
-        span.kind = kind
         span.attributes = attributes
         span.span_id = span_id
         span.start_time = start_time
         span.end_time = end_time
+        span._child_spans = []
+        span.time_events = [TimeEvent(datetime.datetime.now())]
+        span.stack_trace = StackTrace()
+        span.status = Status(code='200', message='test')
+        span.links = [Link(trace_id, span_id)]
+        span.same_process_as_parent_span = True
+
+        mock_stack_trace = 'stack trace'
+        mock_status = 'status'
+        mock_time_event = 'time event'
+
+        stack_trace_mock.return_value = mock_stack_trace
+        status_mock.return_value = mock_status
+        time_event_mock.return_value = mock_time_event
 
         expected_span_json = {
-            'name': name,
-            'kind': kind,
             'spanId': span_id,
             'parentSpanId': parent_span_id,
             'startTime': start_time,
             'endTime': end_time,
-            'attributes': attributes,
+            'attributes': {
+                'attributeMap': {
+                    '/component': {
+                        'string_value': {
+                            'truncated_byte_count': 0,
+                            'value': 'HTTP load balancer'
+                        }
+                    },
+                    '/http/status_code': {
+                        'string_value': {
+                            'truncated_byte_count': 0,
+                            'value': '200'
+                        }
+                    }
+                }
+            },
+            'links': links,
+            'stackTrace': mock_stack_trace,
+            'status': mock_status,
+            'timeEvents': {
+                'timeEvent':
+                    [mock_time_event]
+            },
+            'displayName': {
+                'truncated_byte_count': 0,
+                'value': 'test span'},
+            'childSpanCount': 0,
+            'sameProcessAsParentSpan': True
         }
 
         span_json = format_span_json(span)
+
+        print(span_json)
+
+        print(expected_span_json)
         self.assertEqual(span_json, expected_span_json)
