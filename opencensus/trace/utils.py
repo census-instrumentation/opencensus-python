@@ -22,7 +22,8 @@ def _get_truncatable_str(str_to_convert):
     """Truncate a string if exceed limit and record the truncated bytes
     count.
     """
-    truncated, truncated_byte_count = check_str_length(str_to_convert)
+    truncated, truncated_byte_count = check_str_length(
+        str_to_convert, MAX_LENGTH)
 
     result = {
         'value': truncated,
@@ -31,7 +32,7 @@ def _get_truncatable_str(str_to_convert):
     return result
 
 
-def check_str_length(str_to_check, limit=None):
+def check_str_length(str_to_check, limit=MAX_LENGTH):
     """Check the length of a string. If exceeds limit, then truncate it.
 
     :type str_to_check: str
@@ -44,9 +45,6 @@ def check_str_length(str_to_check, limit=None):
     :returns: The string it self if not exceeded length, or truncated string
               if exceeded and the truncated byte count.
     """
-    if limit is None:
-        limit = MAX_LENGTH
-
     str_bytes = str_to_check.encode(UTF8)
     str_len = len(str_bytes)
     truncated_byte_count = 0

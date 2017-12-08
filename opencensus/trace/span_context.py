@@ -150,7 +150,8 @@ class SpanContext(object):
 
 
 def generate_span_id():
-    """Return the random generated span ID for a span. Must be 16 digits.
+    """Return the random generated span ID for a span. Must be 16 digits
+    as Stackdriver Trace V2 API only accepts 16 digits span ID.
 
     :rtype: int
     :returns: Identifier for the span. Must be a 64-bit integer other
