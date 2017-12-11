@@ -92,7 +92,7 @@ def wrap_httplib_response(response_func):
 
         # No corresponding request span is found, request not traced.
         if span.span_id != current_span_id:
-            return response_func(*args, **kwargs)
+            return response_func(self, *args, **kwargs)
 
         result = response_func(self, *args, **kwargs)
 
