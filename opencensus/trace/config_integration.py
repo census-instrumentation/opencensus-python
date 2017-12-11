@@ -17,7 +17,8 @@ import logging
 
 log = logging.getLogger(__name__)
 
-SUPPORTED_INTEGRATIONS = ['mysql', 'postgresql', 'sqlalchemy', 'requests']
+SUPPORTED_INTEGRATIONS = ['httplib', 'mysql', 'postgresql', 'pymysql',
+                          'requests', 'sqlalchemy']
 
 PATH_PREFIX = 'opencensus.trace.ext'
 
