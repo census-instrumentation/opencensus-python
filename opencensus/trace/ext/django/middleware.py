@@ -18,7 +18,7 @@ import logging
 from opencensus.trace.ext import utils
 from opencensus.trace.ext.django.config import (settings, convert_to_import)
 from opencensus.trace import attributes_helper
-from opencensus.trace import request_tracer
+from opencensus.trace import tracer as tracer_module
 from opencensus.trace import execution_context
 from opencensus.trace.samplers import probability
 
@@ -56,7 +56,7 @@ def _get_django_request():
     return execution_context.get_opencensus_attr(REQUEST_THREAD_LOCAL_KEY)
 
 
-def _get_current_request_tracer():
+def _get_current_tracer():
     """Get the current request tracer."""
     return execution_context.get_opencensus_tracer()
 
@@ -159,7 +159,7 @@ class OpencensusMiddleware(MiddlewareMixin):
             span_context = self.propagator.from_header(header)
 
             # Reload the tracer with the new span context
-            tracer = request_tracer.RequestTracer(
+            tracer = tracer_module.Tracer(
                 span_context=span_context,
                 sampler=self.sampler,
                 exporter=self.exporter,
@@ -187,7 +187,7 @@ class OpencensusMiddleware(MiddlewareMixin):
         try:
             # Get the current span and set the span name to the current
             # function name of the request.
-            tracer = _get_current_request_tracer()
+            tracer = _get_current_tracer()
             span = tracer.current_span()
             span.name = utils.get_func_name(view_func)
         except Exception:  # pragma: NO COVER
@@ -199,7 +199,7 @@ class OpencensusMiddleware(MiddlewareMixin):
             return response
 
         try:
-            tracer = _get_current_request_tracer()
+            tracer = _get_current_tracer()
             tracer.add_attribute_to_current_span(
                 attribute_key=HTTP_STATUS_CODE,
                 attribute_value=str(response.status_code))

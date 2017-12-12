@@ -16,13 +16,13 @@ from opencensus.trace.propagation import google_cloud_format
 from opencensus.trace.exporters import print_exporter
 from opencensus.trace.samplers import always_on
 from opencensus.trace.span_context import SpanContext
-from opencensus.trace.tracer import context_tracer
-from opencensus.trace.tracer import noop_tracer
+from opencensus.trace.tracers import context_tracer
+from opencensus.trace.tracers import noop_tracer
 from opencensus.trace import execution_context
 
 
-class RequestTracer(object):
-    """The RequestTracer is for tracing a request for web applications.
+class Tracer(object):
+    """The Tracer is for tracing a request for web applications.
 
     :type span_context: :class:`~opencensus.trace.span_context.SpanContext`
     :param span_context: SpanContext encapsulates the current context within

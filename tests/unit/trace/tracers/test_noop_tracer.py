@@ -14,7 +14,7 @@
 
 import unittest
 
-from opencensus.trace.tracer import noop_tracer
+from opencensus.trace.tracers import noop_tracer
 
 
 class TestNoopTracer(unittest.TestCase):

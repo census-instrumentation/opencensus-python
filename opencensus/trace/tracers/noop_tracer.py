@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from opencensus.trace.tracer import base
+from opencensus.trace.tracers import base
 
 
 class NoopTracer(base.Tracer):

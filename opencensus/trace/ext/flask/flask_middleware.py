@@ -21,7 +21,7 @@ from opencensus.trace.propagation import google_cloud_format
 from opencensus.trace.exporters import print_exporter
 from opencensus.trace.ext import utils
 from opencensus.trace.samplers import always_on
-from opencensus.trace import request_tracer
+from opencensus.trace import tracer as tracer_module
 
 _FLASK_TRACE_HEADER = 'X_CLOUD_TRACE_CONTEXT'
 
@@ -95,7 +95,7 @@ class FlaskMiddleware(object):
             header = get_flask_header()
             span_context = self.propagator.from_header(header)
 
-            tracer = request_tracer.RequestTracer(
+            tracer = tracer_module.Tracer(
                 span_context=span_context,
                 sampler=self.sampler,
                 exporter=self.exporter,

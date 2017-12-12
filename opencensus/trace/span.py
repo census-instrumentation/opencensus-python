@@ -19,7 +19,7 @@ from opencensus.trace import attributes
 from opencensus.trace import link as link_module
 from opencensus.trace import time_event as time_event_module
 from opencensus.trace.span_context import generate_span_id
-from opencensus.trace.tracer import base
+from opencensus.trace.tracers import base
 from opencensus.trace.utils import _get_truncatable_str
 
 
@@ -76,7 +76,7 @@ class Span(object):
                                         True when the parent_span belongs to
                                         the same process as the current span.
 
-    :type context_tracer: :class:`~opencensus.trace.tracer.context_tracer.
+    :type context_tracer: :class:`~opencensus.trace.tracers.context_tracer.
                                  ContextTracer`
     :param context_tracer: The tracer that holds a stack of spans. If this is
                            not None, then when exiting a span, use the end_span
@@ -111,7 +111,7 @@ class Span(object):
             attributes = {}
 
         # Do not manipulate spans directly using the methods in Span Class,
-        # make sure to use the RequestTracer.
+        # make sure to use the Tracer.
         if parent_span is None:
             parent_span = base.NullContextManager()
 

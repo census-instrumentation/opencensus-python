@@ -1,6 +1,6 @@
 Request Tracer
 ==============
 
-.. automodule:: opencensus.trace.request_tracer
+.. automodule:: opencensus.trace.tracer
   :members:
   :show-inheritance:
