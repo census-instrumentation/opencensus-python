@@ -253,19 +253,6 @@ setting in ``settings.py``:
         'ZIPKIN_EXPORTER_PORT': 9411,
     }
 
-Webapp2
-~~~~~~~
-
-.. code:: python
-
-    from opencensus.trace.tracers import webapp2_tracer
-
-    tracer = webapp2_tracer.WebApp2Tracer()
-
-    with tracer.span(name='span1'):
-        do_something_to_trace()
-
-
 Service Integration
 -------------------
 
