@@ -16,7 +16,7 @@ import time
 
 from opencensus.trace import execution_context
 from opencensus.trace.exporters import print_exporter
-from opencensus.trace.request_tracer import RequestTracer
+from opencensus.trace.tracers import Tracer
 from opencensus.trace.samplers import always_on
 
 
@@ -27,7 +27,7 @@ def function_to_trace():
 def main():
     sampler = always_on.AlwaysOnSampler()
     exporter = print_exporter.PrintExporter()
-    tracer = RequestTracer(sampler=sampler, exporter=exporter)
+    tracer = Tracer(sampler=sampler, exporter=exporter)
 
     with tracer.span(name='root') as root_span:
         tracer.add_label_to_current_span(label_key='example key',

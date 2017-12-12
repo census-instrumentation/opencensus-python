@@ -23,10 +23,10 @@ def func_to_trace():
 
 class TestBasicTrace(unittest.TestCase):
 
-    def test_request_tracer(self):
+    def test_tracer(self):
         import json
 
-        from opencensus.trace import request_tracer
+        from opencensus.trace import tracer as tracer_module
         from opencensus.trace.samplers import always_on
         from opencensus.trace.exporters import file_exporter
         from opencensus.trace.propagation import google_cloud_format
@@ -42,7 +42,7 @@ class TestBasicTrace(unittest.TestCase):
         propagator = google_cloud_format.GoogleCloudFormatPropagator()
         span_context = propagator.from_header(header=trace_header)
 
-        tracer = request_tracer.RequestTracer(
+        tracer = tracer_module.Tracer(
             span_context=span_context,
             sampler=sampler,
             exporter=exporter,

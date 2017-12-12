@@ -16,7 +16,7 @@ import unittest
 
 import mock
 
-from opencensus.trace.tracer import context_tracer
+from opencensus.trace.tracers import context_tracer
 
 
 class TestContextTracer(unittest.TestCase):

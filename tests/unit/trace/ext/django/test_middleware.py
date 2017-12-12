@@ -187,7 +187,7 @@ class TestOpencensusMiddleware(unittest.TestCase):
         # test process_request
         middleware_obj.process_request(django_request)
 
-        tracer = middleware._get_current_request_tracer()
+        tracer = middleware._get_current_tracer()
 
         span = tracer.current_span()
 
@@ -211,8 +211,8 @@ class TestOpencensusMiddleware(unittest.TestCase):
         from django.test import RequestFactory
 
         from opencensus.trace.ext.django import middleware
-        from opencensus.trace.tracer import base
-        from opencensus.trace.tracer import noop_tracer
+        from opencensus.trace.tracers import base
+        from opencensus.trace.tracers import noop_tracer
         from opencensus.trace.ext import utils
         from opencensus.trace import execution_context
 
@@ -239,14 +239,14 @@ class TestOpencensusMiddleware(unittest.TestCase):
         # test process_request
         middleware_obj.process_request(django_request)
 
-        tracer = middleware._get_current_request_tracer()
+        tracer = middleware._get_current_tracer()
         span = tracer.current_span()
 
         # process view
         view_func = mock.Mock()
         middleware_obj.process_view(django_request, view_func)
 
-        tracer = middleware._get_current_request_tracer()
+        tracer = middleware._get_current_tracer()
         span = tracer.current_span()
 
         assert isinstance(span, base.NullContextManager)
@@ -257,7 +257,7 @@ class TestOpencensusMiddleware(unittest.TestCase):
 
         middleware_obj.process_response(django_request, django_response)
 
-        tracer = middleware._get_current_request_tracer()
+        tracer = middleware._get_current_tracer()
         span = tracer.current_span()
         assert isinstance(span, base.NullContextManager)
 
@@ -276,7 +276,7 @@ class TestOpencensusMiddleware(unittest.TestCase):
         middleware_obj = middleware.OpencensusMiddleware()
 
         middleware_obj.process_request(django_request)
-        tracer = middleware._get_current_request_tracer()
+        tracer = middleware._get_current_tracer()
         span = tracer.current_span()
 
         exporter_mock = mock.Mock()

@@ -18,7 +18,7 @@ from opencensus.trace import execution_context
 from opencensus.trace.span_context import SpanContext
 from opencensus.trace import span as trace_span
 from opencensus.trace.exporters import print_exporter
-from opencensus.trace.tracer import base
+from opencensus.trace.tracers import base
 
 
 class ContextTracer(base.Tracer):

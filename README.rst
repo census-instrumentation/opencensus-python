@@ -30,9 +30,9 @@ Installation & basic usage
 
     .. code:: python
 
-        from opencensus.trace import request_tracer
+        from opencensus.trace import tracer as tracer_module
 
-        tracer = request_tracer.RequestTracer()
+        tracer = tracer_module.Tracer()
 
     .. _pip: https://pip.pypa.io
     .. _pipenv: https://docs.pipenv.org/
@@ -40,14 +40,14 @@ Installation & basic usage
 Usage
 -----
 
-You can collect traces using the ``RequestTracer`` `context manager`_:
+You can collect traces using the ``Tracer`` `context manager`_:
 
 .. code:: python
 
-    from opencensus.trace import request_tracer
+    from opencensus.trace import tracer as tracer_module
 
     # Initialize a tracer, by default using the `PrintExporter`
-    tracer = request_tracer.RequestTracer()
+    tracer = tracer_module.Tracer()
 
     # Example for creating nested spans
     with tracer.span(name='span1') as span1:
@@ -65,10 +65,10 @@ Alternatively, you can explicitly start and end a span:
 
 .. code:: python
 
-    from opencensus.trace import request_tracer
+    from opencensus.trace import tracer as tracer_module
 
     # Initialize a tracer, by default using the `PrintExporter`
-    tracer = request_tracer.RequestTracer()
+    tracer = tracer_module.Tracer()
 
     tracer.start_span(name='span1')
     do_something_to_trace()
@@ -91,11 +91,11 @@ and ``ProbabilitySampler``
 .. code:: python
 
     from opencensus.trace.samplers import probability
-    from opencensus.trace import request_tracer
+    from opencensus.trace import tracer as tracer_module
 
     # Sampling the requests at the rate equals 0.5
     sampler = probability.ProbabilitySampler(rate=0.5)
-    tracer = request_tracer.RequestTracer(sampler=sampler)
+    tracer = tracer_module.Tracer(sampler=sampler)
 
 Exporters
 ~~~~~~~~~
@@ -111,7 +111,7 @@ file:
 .. code:: python
 
     from opencensus.trace.exporters import file_exporter
-    from opencensus.trace.tracer import context_tracer
+    from opencensus.trace.tracers import context_tracer
 
     exporter = file_exporter.FileExporter(file_name='traces')
     tracer = context_tracer.ContextTracer(exporter=exporter)
@@ -121,11 +121,11 @@ This example shows how to report the traces to Stackdriver Trace:
 .. code:: python
 
     from opencensus.trace.exporters import stackdriver_exporter
-    from opencensus.trace import request_tracer
+    from opencensus.trace import tracer as tracer_module
 
     exporter = stackdriver_exporter.StackdriverExporter(
         project_id='your_cloud_project')
-    tracer = request_tracer.RequestTracer(exporter=exporter)
+    tracer = tracer_module.Tracer(exporter=exporter)
 
 Propagators
 ~~~~~~~~~~~
@@ -253,19 +253,6 @@ setting in ``settings.py``:
         'ZIPKIN_EXPORTER_PORT': 9411,
     }
 
-Webapp2
-~~~~~~~
-
-.. code:: python
-
-    from opencensus.trace.tracer import webapp2_tracer
-
-    tracer = webapp2_tracer.WebApp2Tracer()
-
-    with tracer.span(name='span1'):
-        do_something_to_trace()
-
-
 Service Integration
 -------------------
 
@@ -276,7 +263,7 @@ services to census:
 .. code:: python
 
     from opencensus.trace import config_integration
-    from opencensus.trace import request_tracer
+    from opencensus.trace import tracer as tracer_module
 
     import mysql.connector
 

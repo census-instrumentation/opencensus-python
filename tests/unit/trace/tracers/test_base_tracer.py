@@ -14,7 +14,7 @@
 
 import unittest
 
-from opencensus.trace.tracer import base
+from opencensus.trace.tracers import base
 
 
 class TestBaseTracer(unittest.TestCase):

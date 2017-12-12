@@ -5,7 +5,7 @@ API Documentation
 
   span
   span_context
-  request_tracer
+  tracer
   execution_context
   trace_options
   always_on_sampler

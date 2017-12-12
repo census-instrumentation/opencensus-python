@@ -1,6 +1,6 @@
 Noop Tracer
 ===========
 
-.. automodule:: opencensus.trace.tracer.noop_tracer
+.. automodule:: opencensus.trace.tracers.noop_tracer
   :members:
   :show-inheritance:

@@ -14,7 +14,7 @@
 
 import threading
 
-from opencensus.trace.tracer import noop_tracer
+from opencensus.trace.tracers import noop_tracer
 
 _thread_local = threading.local()
 

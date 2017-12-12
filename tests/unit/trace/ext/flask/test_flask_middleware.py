@@ -115,8 +115,8 @@ class TestFlaskMiddleware(unittest.TestCase):
 
     def test__before_request_blacklist(self):
         from opencensus.trace import execution_context
-        from opencensus.trace.tracer import base
-        from opencensus.trace.tracer import noop_tracer
+        from opencensus.trace.tracers import base
+        from opencensus.trace.tracers import noop_tracer
 
         flask_trace_header = 'X_CLOUD_TRACE_CONTEXT'
         trace_id = '2dd43a1d6b2549c6bc2a1a54c2fc0b05'
@@ -145,7 +145,7 @@ class TestFlaskMiddleware(unittest.TestCase):
         # in SpanContext because it cannot match the pattern for trace_id,
         # And a new trace_id will generate for the context.
         from opencensus.trace import execution_context
-        from opencensus.trace.tracer import base
+        from opencensus.trace.tracers import base
 
         flask_trace_header = 'X_CLOUD_TRACE_CONTEXT'
         trace_id = "你好"
@@ -178,7 +178,7 @@ class TestFlaskMiddleware(unittest.TestCase):
 
     def test_header_is_none(self):
         from opencensus.trace import execution_context
-        from opencensus.trace.tracer import base
+        from opencensus.trace.tracers import base
 
         app = self.create_app()
         flask_middleware.FlaskMiddleware(app=app)
@@ -235,7 +235,7 @@ class TestFlaskMiddleware(unittest.TestCase):
 
     def test__after_request_blacklist(self):
         from opencensus.trace import execution_context
-        from opencensus.trace.tracer import noop_tracer
+        from opencensus.trace.tracers import noop_tracer
 
         flask_trace_header = 'X_CLOUD_TRACE_CONTEXT'
         trace_id = '2dd43a1d6b2549c6bc2a1a54c2fc0b05'
