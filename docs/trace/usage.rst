@@ -1,5 +1,5 @@
-OpenCensus for Python - A stats collection and distributed tracing framework
-============================================================================
+OpenCensus Trace for Python
+===========================
 
     `Census`_ for Python. Census provides a framework to measure a server's resource
     usage and collect performance stats. This repository contains Python related
@@ -23,10 +23,10 @@ Installation & basic usage
 
     ::
 
-        pip install opencensus
-        pipenv install opencensus
+        pip install opencensus-trace
+        pipenv install opencensus-trace
 
-2. Initialize a tracer for your application:
+2. Initialize a tracer for application:
 
     .. code:: python
 
@@ -131,7 +131,7 @@ Propagators
 ~~~~~~~~~~~
 
 You can specify the propagator type for serializing and deserializing the
-``SpanContext`` and its headers. There are currently two built in propagators:
+``SpanContex`` and its headers. There are currently two built in propagators:
 ``GoogleCloudFormatPropagator`` and ``TextFormatPropagator``.
 
 This example shows how to use the ``GoogleCloudFormatPropagator``:
@@ -182,7 +182,7 @@ For Django, you can configure the blacklist in the ``OPENCENSUS_PARAMS`` in ``se
 Framework Integration
 ---------------------
 
-Census supports integration with popular web frameworks including
+Opencensus supports integration with popular web frameworks including
 Django, Flask, and Webapp2. When the application receives a HTTP request,
 the tracer will automatically generate a span context using the trace
 information extracted from the request headers, and propagated to the
@@ -227,7 +227,7 @@ And add this line to the ``INSTALLED_APPS`` section:
         'opencensus.trace.ext.django',
     ]
 
-You can configure the sampler, exporter, propagator using the ``OPENCENSUS_TRACE`` setting in
+You can configure the the sampler, exporter, propagator using the ``OPENCENSUS_TRACE`` setting in
 ``settings.py``:
 
 .. code:: python
@@ -252,6 +252,19 @@ setting in ``settings.py``:
         'ZIPKIN_EXPORTER_HOST_NAME': 'localhost',
         'ZIPKIN_EXPORTER_PORT': 9411,
     }
+
+Webapp2
+~~~~~~~
+
+.. code:: python
+
+    from opencensus.trace.tracers import webapp2_tracer
+
+    tracer = webapp2_tracer.WebApp2Tracer()
+
+    with tracer.span(name='span1'):
+        do_something_to_trace()
+
 
 Service Integration
 -------------------
@@ -293,23 +306,21 @@ to ``trace_integrations`` using ``'postgresql'``.
 SQLAlchemy
 ~~~~~~~~~~
 
-You can trace usage of the `sqlalchemy package`_, regardless of the underlying
-database, by specifying ``'sqlalchemy'`` to ``trace_integrations``.
+You can trace usage of `sqlalchemy package`_, regardless of the underlying database, by
+specifying ``'sqlalchemy'`` to ``trace_integrations``.
 
 .. _SQLAlchemy package: https://pypi.org/project/SQLAlchemy
 
-.. note:: If you enable tracing of SQLAlchemy as well as the underlying database
+.. note:: If you enable tracing of SQLAlchemy and the underlying database
     driver, you will get duplicate spans. Instead, just trace SQLAlchemy.
 
 Requests
 ~~~~~~~~
 
-Census can trace HTTP requests made with the `Requests package`_. The request URL,
+Census can trace HTTP requests made with the `Requests`_ library. The request URL,
 method, and status will be collected.
 
 You can enable Requests integration by specifying ``'requests'`` to ``trace_integrations``.
-
-.. _Requests package: https://pypi.python.org/pypi/requests
 
 
 Contributing
