@@ -49,15 +49,13 @@ class OpenCensusClientInterceptor(grpc.UnaryUnaryClientInterceptor,
             tracer = execution_context.get_opencensus_tracer()
 
         self._tracer = tracer
-        self._current_span = None
         self.host_port = host_port
         self._propagator = binary_format.BinaryFormatPropagator()
 
-    def _start_client_span(self, method):
+    def _start_client_span(self, method, grpc_type):
         log.info('Start client span')
         span = self._tracer.start_span(
-            name='[gRPC_client]{}'.format(str(method)))
-        self._current_span = span
+            name='[gRPC_client][{}]{}'.format(grpc_type, str(method)))
 
         # Add the component grpc to span attribute
         self._tracer.add_attribute_to_current_span(
@@ -80,14 +78,15 @@ class OpenCensusClientInterceptor(grpc.UnaryUnaryClientInterceptor,
         return span
 
     def _intercept_call(
-            self, client_call_details, request_iterator, request_streaming,
-            response_streaming):
+            self, client_call_details, request_iterator, grpc_type):
         metadata = ()
         if client_call_details.metadata is not None:
             metadata = client_call_details.metadata
 
         # Start a span
-        self._start_client_span(client_call_details.method)
+        current_span = self._start_client_span(
+            client_call_details.method,
+            grpc_type)
 
         span_context = self._tracer.span_context
         header = self._propagator.to_header(span_context)
@@ -102,56 +101,68 @@ class OpenCensusClientInterceptor(grpc.UnaryUnaryClientInterceptor,
             metadata,
             client_call_details.credentials)
 
-        return client_call_details, request_iterator
+        return client_call_details, request_iterator, current_span
 
-    def _end_span_between_context(self):
-        execution_context.set_current_span(self._current_span)
+    def _end_span_between_context(self, current_span):
+        execution_context.set_current_span(current_span)
         self._tracer.end_span()
-        self._current_span = None
 
-    def _future_done_callback(self):
+    def _future_done_callback(self, current_span):
         def callback(future_response):
-            self._end_span_between_context()
+            self._end_span_between_context(current_span)
 
         return callback
 
     def intercept_unary_unary(
             self, continuation, client_call_details, request):
-        new_details, new_request = self._intercept_call(
-            client_call_details, iter((request,)), False, False)
+        new_details, new_request, current_span = self._intercept_call(
+            client_call_details=client_call_details,
+            request_iterator=iter((request,)),
+            grpc_type=oc_grpc.UNARY_UNARY)
 
         response = continuation(new_details, next(new_request))
+        response.add_done_callback(self._future_done_callback(current_span))
 
-        if isinstance(response, grpc.Future):
-            response.add_done_callback(self._future_done_callback())
-        else:
-            self._end_span_between_context()
         return response
 
     def intercept_unary_stream(self, continuation, client_call_details,
                                request):
-        new_details, new_request_iterator = self._intercept_call(
-            client_call_details, iter((request,)), False, True)
-        response_it = continuation(new_details, next(new_request_iterator))
-        self._end_span_between_context()
+        new_details, new_request_iterator, current_span = self._intercept_call(
+            client_call_details=client_call_details,
+            request_iterator=iter((request,)),
+            grpc_type=oc_grpc.UNARY_STREAM)
+
+        response_it = continuation(
+            new_details,
+            next(new_request_iterator))
+        self._end_span_between_context(current_span)
+
         return response_it
 
     def intercept_stream_unary(self, continuation, client_call_details,
                                request_iterator):
-        new_details, new_request_iterator = self._intercept_call(
-            client_call_details, iter((request_iterator,)), True, False)
-        response = continuation(new_details, next(new_request_iterator))
+        new_details, new_request_iterator, current_span = self._intercept_call(
+            client_call_details=client_call_details,
+            request_iterator=request_iterator,
+            grpc_type=oc_grpc.STREAM_UNARY)
 
-        if isinstance(response, grpc.Future):
-            response.add_done_callback(self._future_done_callback())
-        else:
-            self._end_span_between_context()
+        response = continuation(
+            new_details,
+            new_request_iterator)
+        response.add_done_callback(self._future_done_callback(current_span))
+
         return response
 
     def intercept_stream_stream(self, continuation, client_call_details,
                                 request_iterator):
-        new_details, new_request_iterator = self._intercept_call(
-            client_call_details, request_iterator, True, True)
-        response_it = continuation(new_details, new_request_iterator)
-        self._end_span_between_context()
+        new_details, new_request_iterator, current_span = self._intercept_call(
+            client_call_details=client_call_details,
+            request_iterator=request_iterator,
+            grpc_type=oc_grpc.STREAM_STREAM)
+
+        response_it = continuation(
+            new_details,
+            new_request_iterator)
+        self._end_span_between_context(current_span)
+
         return response_it
