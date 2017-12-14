@@ -12,96 +12,65 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import sys
+import grpc
 import logging
+import sys
 
-# Note: Currently the interceptor support for Python in grpc is not available
-# yet, this is based on the code in the pull request in the grpc repository.
-from opencensus.trace import grpc
-from opencensus.trace import labels_helper
-from opencensus.trace import request_tracer
-from opencensus.trace.enums import Enum
-from opencensus.trace.grpc import grpc_ext
+from opencensus.trace import attributes_helper
+from opencensus.trace import tracer as tracer_module
+from opencensus.trace.ext import grpc as oc_grpc
 from opencensus.trace.propagation import binary_format
 
-LABEL_COMPONENT = 'COMPONENT'
-LABEL_ERROR_NAME = 'ERROR_NAME'
-LABEL_ERROR_MESSAGE = 'ERROR_MESSAGE'
+ATTRIBUTE_COMPONENT = 'COMPONENT'
+ATTRIBUTE_ERROR_NAME = 'ERROR_NAME'
+ATTRIBUTE_ERROR_MESSAGE = 'ERROR_MESSAGE'
 
 
-class OpenCensusServerInterceptor(grpc_ext.UnaryUnaryServerInterceptor,
-                                  grpc_ext.UnaryStreamServerInterceptor,
-                                  grpc_ext.StreamUnaryServerInterceptor,
-                                  grpc_ext.StreamStreamServerInterceptor):
+class OpenCensusServerInterceptor(grpc.ServerInterceptor):
 
-    def __init__(self, sampler=None, reporter=None):
+    def __init__(self, sampler=None, exporter=None):
         self.sampler = sampler
-        self.reporter = reporter
+        self.exporter = exporter
 
-    def _start_server_span(self, request_type, tracer, method):
-        span = tracer.start_span(
-            name='[gRPC_server][{}]{}'.format(request_type, str(method)))
-        span.add_label(
-            label_key=labels_helper.STACKDRIVER_LABELS.get(LABEL_COMPONENT),
-            label_value='grpc')
+    def _start_server_span(self, tracer):
+        span = tracer.start_span(name='grpc_server')
+        tracer.add_attribute_to_current_span(
+            attribute_key=attributes_helper.COMMON_ATTRIBUTES.get(
+                ATTRIBUTE_COMPONENT),
+            attribute_value='grpc')
 
-
-
-        span.kind = Enum.SpanKind.RPC_SERVER
         return span
 
-    def intercept_handler(self, request_type, handler, method, request,
-                          servicer_context):
-        metadata = servicer_context.invocation_metadata()
+    def intercept_handler(self, continuation, handler_call_details):
+        metadata = handler_call_details.invocation_metadata
         span_context = None
 
         if metadata is not None:
             propagator = binary_format.BinaryFormatPropagator()
             metadata_dict = dict(metadata)
-            trace_header = metadata_dict[grpc.GRPC_TRACE_KEY]
+            trace_header = metadata_dict.get(oc_grpc.GRPC_TRACE_KEY)
+
             span_context = propagator.from_header(trace_header)
 
-        tracer = request_tracer.RequestTracer(span_context=span_context,
-                                              sampler=self.sampler,
-                                              reporter=self.reporter)
+        tracer = tracer_module.Tracer(span_context=span_context,
+                                      sampler=self.sampler,
+                                      exporter=self.exporter)
 
-        tracer.start_trace()
-
-        with self._start_server_span(
-                request_type, tracer, servicer_context, method) as span:
+        with self._start_server_span(tracer) as span:
             response = None
 
             try:
-                response = handler(request, servicer_context)
+                response = continuation(handler_call_details)
             except Exception as e:
                 logging.error(e)
-                span.add_label(
-                    labels_helper.STACKDRIVER_LABELS.get(LABEL_ERROR_MESSAGE),
+                tracer.add_attribute_to_current_span(
+                    attributes_helper.COMMON_ATTRIBUTES.get(
+                        ATTRIBUTE_ERROR_MESSAGE),
                     str(e))
-                span.finish()
-                tracer.end_trace()
+                tracer.end_span()
                 raise
 
-        tracer.end_trace()
         return response
 
-    def intercept_unary_unary_handler(self, handler, method, request,
-                                      servicer_context):
-        return self.intercept_handler(grpc.UNARY_UNARY, handler, method,
-                                      request, servicer_context)
-
-    def intercept_unary_stream_handler(self, handler, method, request,
-                                       servicer_context):
-        return self.intercept_handler(grpc.UNARY_STREAM, handler, method,
-                                      request, servicer_context)
-
-    def intercept_stream_unary_handler(self, handler, method, request_iterator,
-                                       servicer_context):
-        return self.intercept_handler(grpc.STREAM_UNARY, handler, method,
-                                      request_iterator, servicer_context)
-
-    def intercept_stream_stream_handler(self, handler, method,
-                                        request_iterator,
-                                        servicer_context):
-        return self.intercept_handler(grpc.STREAM_STREAM, handler, method,
-                                      request_iterator, servicer_context)
+    def intercept_service(self, continuation, handler_call_details):
+        return self.intercept_handler(continuation, handler_call_details)

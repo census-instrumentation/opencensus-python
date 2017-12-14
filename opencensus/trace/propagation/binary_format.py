@@ -108,7 +108,7 @@ class BinaryFormatPropagator(object):
         # from binary.
         try:
             data = Header._make(struct.unpack(BINARY_FORMAT, binary))
-        except struct.error:
+        except Exception:
             logging.warn('Cannot parse the incoming binary data {}, '
                          'wrong format. Total bytes length should be {}.'
                          .format(binary, FORMAT_LENGTH))

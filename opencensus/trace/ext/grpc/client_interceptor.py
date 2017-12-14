@@ -12,162 +12,146 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import collections
 import logging
 import grpc
 import six
 import sys
 
-
 from opencensus.trace import execution_context
-from opencensus.trace import grpc as oc_grpc
-from opencensus.trace import labels_helper
-from opencensus.trace.enums import Enum
-from opencensus.trace.grpc import grpc_ext
+from opencensus.trace import attributes_helper
+from opencensus.trace.ext import grpc as oc_grpc
 from opencensus.trace.propagation import binary_format
 
 log = logging.getLogger(__name__)
 
-LABEL_COMPONENT = 'COMPONENT'
-LABEL_ERROR_NAME = 'ERROR_NAME'
-LABEL_ERROR_MESSAGE = 'ERROR_MESSAGE'
+ATTRIBUTE_COMPONENT = 'COMPONENT'
+ATTRIBUTE_ERROR_NAME = 'ERROR_NAME'
+ATTRIBUTE_ERROR_MESSAGE = 'ERROR_MESSAGE'
 GRPC_HOST_PORT = 'GRPC_HOST_PORT'
 GRPC_METHOD = 'GRPC_METHOD'
 
 
-class OpenCensusClientInterceptor(grpc_ext.UnaryUnaryClientInterceptor,
-                                  grpc_ext.UnaryStreamClientInterceptor,
-                                  grpc_ext.StreamUnaryClientInterceptor,
-                                  grpc_ext.StreamStreamClientInterceptor):
+class _ClientCallDetails(
+        collections.namedtuple('_ClientCallDetails',
+                               ('method', 'timeout', 'metadata',
+                                'credentials')), grpc.ClientCallDetails):
+    pass
+
+
+class OpenCensusClientInterceptor(grpc.UnaryUnaryClientInterceptor,
+                                  grpc.UnaryStreamClientInterceptor,
+                                  grpc.StreamUnaryClientInterceptor,
+                                  grpc.StreamStreamClientInterceptor):
 
     def __init__(self, tracer=None, host_port=None):
         if tracer is None:
             tracer = execution_context.get_opencensus_tracer()
 
         self._tracer = tracer
+        self._current_span = None
         self.host_port = host_port
         self._propagator = binary_format.BinaryFormatPropagator()
 
-    def _start_client_span(self, request_type, method):
+    def _start_client_span(self, method):
         log.info('Start client span')
         span = self._tracer.start_span(
-            name='[gRPC_client][{}]{}'.format(request_type, str(method)))
+            name='[gRPC_client]{}'.format(str(method)))
+        self._current_span = span
 
-        # Add the component grpc to span label
-        span.add_label(
-            label_key=labels_helper.STACKDRIVER_LABELS.get(LABEL_COMPONENT),
-            label_value='grpc')
+        # Add the component grpc to span attribute
+        self._tracer.add_attribute_to_current_span(
+            attribute_key=attributes_helper.COMMON_ATTRIBUTES.get(
+                ATTRIBUTE_COMPONENT),
+            attribute_value='grpc')
 
-        # Add the host:port info to span label
+        # Add the host:port info to span attribute
         if self.host_port is not None:
-            span.add_label(
-                label_key=labels_helper.GRPC_LABELS.get(GRPC_HOST_PORT),
-                label_value=self.host_port)
+            self._tracer.add_attribute_to_current_span(
+                attribute_key=attributes_helper.GRPC_ATTRIBUTES.get(
+                    GRPC_HOST_PORT),
+                attribute_value=self.host_port)
 
-        # Add the method to span label
-        span.add_label(
-            label_key=labels_helper.GRPC_LABELS.get(GRPC_METHOD),
-            label_value=str(method))
+        # Add the method to span attribute
+        self._tracer.add_attribute_to_current_span(
+            attribute_key=attributes_helper.GRPC_ATTRIBUTES.get(GRPC_METHOD),
+            attribute_value=str(method))
 
-        span.kind = Enum.SpanKind.RPC_CLIENT
         return span
 
-    def _trace_async_result(self, result):
-        if isinstance(result, grpc.Future):
-            result.add_done_callback(self._future_done_callback())
+    def _intercept_call(
+            self, client_call_details, request_iterator, request_streaming,
+            response_streaming):
+        metadata = ()
+        if client_call_details.metadata is not None:
+            metadata = client_call_details.metadata
 
-        return result
+        # Start a span
+        self._start_client_span(client_call_details.method)
+
+        span_context = self._tracer.span_context
+        header = self._propagator.to_header(span_context)
+        grpc_trace_metadata = {
+            oc_grpc.GRPC_TRACE_KEY: header,
+        }
+        metadata = metadata + tuple(six.iteritems(grpc_trace_metadata))
+
+        client_call_details = _ClientCallDetails(
+            client_call_details.method,
+            client_call_details.timeout,
+            metadata,
+            client_call_details.credentials)
+
+        return client_call_details, request_iterator
+
+    def _end_span_between_context(self):
+        execution_context.set_current_span(self._current_span)
+        self._tracer.end_span()
+        self._current_span = None
 
     def _future_done_callback(self):
         def callback(future_response):
-            code = future_response.code()
-
-            if code != grpc.StatusCode.OK:
-                span.add_label(
-                    labels_helper.STACKDRIVER_LABELS.get(LABEL_ERROR_NAME),
-                    str(code))
-
-            response = future_response.result()
-            self._tracer.end_span()
+            self._end_span_between_context()
 
         return callback
 
-    def intercept_call(self, request_type, invoker, method, request, **kwargs):
-        metadata = getattr(kwargs, 'metadata', ())
+    def intercept_unary_unary(
+            self, continuation, client_call_details, request):
+        new_details, new_request = self._intercept_call(
+            client_call_details, iter((request,)), False, False)
 
-        with self._start_client_span(request_type, method) as span:
-            span_context = self._tracer.span_context
-            header = self._propagator.to_header(span_context)
-            grpc_trace_metadata = {
-                oc_grpc.GRPC_TRACE_KEY: header,
-            }
-            metadata = metadata + tuple(six.iteritems(grpc_trace_metadata))
+        response = continuation(new_details, next(new_request))
 
-            kwargs['metadata'] = metadata
+        if isinstance(response, grpc.Future):
+            response.add_done_callback(self._future_done_callback())
+        else:
+            self._end_span_between_context()
+        return response
 
-            try:
-                result = invoker(method, request, **kwargs)
-            except Exception as e:
-                span.add_label(
-                    labels_helper.STACKDRIVER_LABELS.get(LABEL_ERROR_MESSAGE),
-                    str(e))
-                span.finish()
-                self._tracer.end_trace()
-                raise
+    def intercept_unary_stream(self, continuation, client_call_details,
+                               request):
+        new_details, new_request_iterator = self._intercept_call(
+            client_call_details, iter((request,)), False, True)
+        response_it = continuation(new_details, next(new_request_iterator))
+        self._end_span_between_context()
+        return response_it
 
-        return result
+    def intercept_stream_unary(self, continuation, client_call_details,
+                               request_iterator):
+        new_details, new_request_iterator = self._intercept_call(
+            client_call_details, iter((request_iterator,)), True, False)
+        response = continuation(new_details, next(new_request_iterator))
 
-    def intercept_future(
-            self, request_type, invoker, method, request, **kwargs):
-        metadata = getattr(kwargs, 'metadata', ())
+        if isinstance(response, grpc.Future):
+            response.add_done_callback(self._future_done_callback())
+        else:
+            self._end_span_between_context()
+        return response
 
-        with self._start_client_span(request_type, method) as span:
-            span_context = self._tracer.span_context
-            header = self._propagator.to_header(span_context)
-            grpc_trace_metadata = {
-                oc_grpc.GRPC_TRACE_KEY: header,
-            }
-            metadata = metadata + tuple(six.iteritems(grpc_trace_metadata))
-
-            kwargs['metadata'] = metadata
-
-            try:
-                result = invoker(method, request, **kwargs)
-            except Exception as e:
-                span.add_label(
-                    labels_helper.STACKDRIVER_LABELS.get(LABEL_ERROR_MESSAGE),
-                    str(e))
-                span.finish()
-                self._tracer.end_trace()
-                raise
-
-        return self._trace_async_result(result)
-
-    def intercept_unary_unary_call(self, invoker, method, request,
-                                   *args, **kwargs):
-        return self.intercept_call(
-            oc_grpc.UNARY_UNARY, invoker, method, request, **kwargs)
-
-    def intercept_unary_unary_future(self, invoker, method, request,
-                                     *args, **kwargs):
-        return self.intercept_future(
-            oc_grpc.UNARY_UNARY, invoker, method, request, **kwargs)
-
-    def intercept_unary_stream_call(self, invoker, method, request,
-                                    *args, **kwargs):
-        return self.intercept_call(
-            oc_grpc.UNARY_STREAM, invoker, method, request, **kwargs)
-
-    def intercept_stream_unary_call(self, invoker, method, request_iterator,
-                                    *args, **kwargs):
-        return self.intercept_call(
-            oc_grpc.STREAM_UNARY, invoker, method, request_iterator, **kwargs)
-
-    def intercept_stream_unary_future(self, invoker, method, request_iterator,
-                                      *args, **kwargs):
-        return self.intercept_future(
-            oc_grpc.STREAM_UNARY, invoker, method, request_iterator, **kwargs)
-
-    def intercept_stream_stream_call(self, invoker, method, request_iterator,
-                                     *args, **kwargs):
-        return self.intercept_call(
-            oc_grpc.STREAM_STREAM, invoker, method, request_iterator, **kwargs)
+    def intercept_stream_stream(self, continuation, client_call_details,
+                                request_iterator):
+        new_details, new_request_iterator = self._intercept_call(
+            client_call_details, request_iterator, True, True)
+        response_it = continuation(new_details, new_request_iterator)
+        self._end_span_between_context()
+        return response_it
