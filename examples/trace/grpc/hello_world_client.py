@@ -26,7 +26,7 @@ from opencensus.trace.ext.grpc import client_interceptor
 HOST_PORT = 'localhost:50051'
 
 
-def run():
+def main():
     exporter = stackdriver_exporter.StackdriverExporter()
     tracer = Tracer(exporter=exporter)
     tracer_interceptor = client_interceptor.OpenCensusClientInterceptor(
@@ -40,4 +40,4 @@ def run():
 
 
 if __name__ == '__main__':
-    run()
+    main()
