@@ -30,6 +30,14 @@ class TestBinaryFormat(unittest.TestCase):
 
         self.assertFalse(span_context.from_header)
 
+    def test_from_header_none(self):
+        binary_header = None
+
+        propagator = binary_format.BinaryFormatPropagator()
+        span_context = propagator.from_header(binary_header)
+
+        self.assertFalse(span_context.from_header)
+
     def test_from_header(self):
         binary_header = b'\x00\x00\xa0\xb7,\xa1\\\x1aK\xd1\x89b\xd0' \
                         b'\xacY\xdc\x90\xb9\x01g)U\xf6\xf5\x01\x12' \

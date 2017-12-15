@@ -119,12 +119,13 @@ class OpenCensusClientInterceptor(grpc.UnaryUnaryClientInterceptor,
         # Trace the exception for a grpc.Future if any
         exception = response.exception(timeout=TIMEOUT)
 
-        # If there is not exception, the attribute with null value will be
-        # dropped and not exported.
+        if exception is not None:
+            exception = str(exception)
+
         self._tracer.add_attribute_to_current_span(
             attribute_key=attributes_helper.COMMON_ATTRIBUTES.get(
                 ATTRIBUTE_ERROR_MESSAGE),
-            attribute_value=str(exception))
+            attribute_value=exception)
 
     def intercept_unary_unary(
             self, continuation, client_call_details, request):

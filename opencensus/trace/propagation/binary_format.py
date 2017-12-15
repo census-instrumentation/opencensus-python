@@ -104,11 +104,15 @@ class BinaryFormatPropagator(object):
         :rtype: :class:`~opencensus.trace.span_context.SpanContext`
         :returns: SpanContext generated from the trace context header.
         """
+        # If no binary provided, generate a new SpanContext
+        if binary is None:
+            return SpanContext(from_header=False)
+
         # If cannot parse, return a new SpanContext and ignore the context
         # from binary.
         try:
             data = Header._make(struct.unpack(BINARY_FORMAT, binary))
-        except Exception:
+        except struct.error:
             logging.warn('Cannot parse the incoming binary data {}, '
                          'wrong format. Total bytes length should be {}.'
                          .format(binary, FORMAT_LENGTH))

@@ -128,6 +128,20 @@ class TestOpenCensusClientInterceptor(unittest.TestCase):
 
         self.assertEqual(current_span.attributes, expected_attributes)
 
+    def test__callback_no_exception(self):
+        current_span = mock.Mock()
+        tracer = MockTracer(current_span)
+        interceptor = client_interceptor.OpenCensusClientInterceptor(
+            tracer=tracer, host_port='test')
+        current_span.attributes = {}
+        callback = interceptor._callback(current_span)
+        response = mock.Mock()
+        response.exception.return_value = None
+        callback(response)
+        expected_attributes = {'/error/message': None}
+
+        self.assertEqual(current_span.attributes, expected_attributes)
+
     def _unary_helper(self):
         continuation = mock.Mock()
         mock_response = mock.Mock()
