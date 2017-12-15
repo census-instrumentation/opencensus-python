@@ -104,6 +104,10 @@ class BinaryFormatPropagator(object):
         :rtype: :class:`~opencensus.trace.span_context.SpanContext`
         :returns: SpanContext generated from the trace context header.
         """
+        # If no binary provided, generate a new SpanContext
+        if binary is None:
+            return SpanContext(from_header=False)
+
         # If cannot parse, return a new SpanContext and ignore the context
         # from binary.
         try:
