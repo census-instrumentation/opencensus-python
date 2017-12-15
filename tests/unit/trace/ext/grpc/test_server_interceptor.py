@@ -100,4 +100,3 @@ class MockTracer(object):
 
     def add_attribute_to_current_span(self, attribute_key, attribute_value):
         self.current_span.attributes[attribute_key] = attribute_value
-

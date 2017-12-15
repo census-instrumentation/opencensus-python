@@ -91,26 +91,26 @@ class TestOpenCensusClientInterceptor(unittest.TestCase):
         self.assertEqual(expected_metadata, client_call_details.metadata)
 
     def test__intercept_call(self):
-      tracer = mock.Mock()
-      tracer.span_context = mock.Mock()
-      test_header = 'test header'
-      mock_propagator = mock.Mock()
-      mock_propagator.to_header.return_value = test_header
+        tracer = mock.Mock()
+        tracer.span_context = mock.Mock()
+        test_header = 'test header'
+        mock_propagator = mock.Mock()
+        mock_propagator.to_header.return_value = test_header
 
-      interceptor = client_interceptor.OpenCensusClientInterceptor(
-          tracer=tracer, host_port='test')
-      interceptor._propagator = mock_propagator
-      mock_client_call_details = mock.Mock()
-      mock_client_call_details.metadata = (('test_key', 'test_value'),)
+        interceptor = client_interceptor.OpenCensusClientInterceptor(
+            tracer=tracer, host_port='test')
+        interceptor._propagator = mock_propagator
+        mock_client_call_details = mock.Mock()
+        mock_client_call_details.metadata = (('test_key', 'test_value'),)
 
-      client_call_details, request_iterator, current_span = interceptor._intercept_call(
-          mock_client_call_details,
-          mock.Mock(),
-          'unary_unary')
+        client_call_details, request_iterator, current_span = interceptor._intercept_call(
+            mock_client_call_details,
+            mock.Mock(),
+            'unary_unary')
 
-      expected_metadata = (('test_key', 'test_value'), ('grpc-trace-bin', test_header),)
+        expected_metadata = (('test_key', 'test_value'), ('grpc-trace-bin', test_header),)
 
-      self.assertEqual(expected_metadata, client_call_details.metadata)
+        self.assertEqual(expected_metadata, client_call_details.metadata)
 
     def test__callback(self):
         current_span = mock.Mock()
@@ -175,4 +175,3 @@ class MockTracer(object):
 
     def end_span(self):
         return
-
