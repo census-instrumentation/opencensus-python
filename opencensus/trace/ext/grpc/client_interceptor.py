@@ -16,7 +16,6 @@ import collections
 import logging
 import grpc
 import six
-import sys
 
 from opencensus.trace import execution_context
 from opencensus.trace import attributes_helper
@@ -35,10 +34,10 @@ TIMEOUT = 3
 
 
 class _ClientCallDetails(
-        collections.namedtuple('_ClientCallDetails',
-                               ('method', 'timeout', 'metadata',
-                                'credentials')),
-                               grpc.ClientCallDetails):
+    collections.namedtuple(
+        '_ClientCallDetails',
+        ('method', 'timeout', 'metadata', 'credentials')),
+        grpc.ClientCallDetails):
     pass
 
 
@@ -56,7 +55,6 @@ class OpenCensusClientInterceptor(grpc.UnaryUnaryClientInterceptor,
         self._propagator = binary_format.BinaryFormatPropagator()
 
     def _start_client_span(self, method, grpc_type):
-        log.info('Start client span')
         span = self._tracer.start_span(
             name='[gRPC_client][{}]{}'.format(grpc_type, str(method)))
 
@@ -67,11 +65,10 @@ class OpenCensusClientInterceptor(grpc.UnaryUnaryClientInterceptor,
             attribute_value='grpc')
 
         # Add the host:port info to span attribute
-        if self.host_port is not None:
-            self._tracer.add_attribute_to_current_span(
-                attribute_key=attributes_helper.GRPC_ATTRIBUTES.get(
-                    GRPC_HOST_PORT),
-                attribute_value=self.host_port)
+        self._tracer.add_attribute_to_current_span(
+            attribute_key=attributes_helper.GRPC_ATTRIBUTES.get(
+                GRPC_HOST_PORT),
+            attribute_value=self.host_port)
 
         # Add the method to span attribute
         self._tracer.add_attribute_to_current_span(
@@ -122,11 +119,12 @@ class OpenCensusClientInterceptor(grpc.UnaryUnaryClientInterceptor,
         # Trace the exception for a grpc.Future if any
         exception = response.exception(timeout=TIMEOUT)
 
-        if exception is not None:
-            self._tracer.add_attribute_to_current_span(
-                attribute_key=attributes_helper.COMMON_ATTRIBUTES.get(
-                    ATTRIBUTE_ERROR_MESSAGE),
-                attribute_value=str(exception))
+        # If there is not exception, the attribute with null value will be
+        # dropped and not exported.
+        self._tracer.add_attribute_to_current_span(
+            attribute_key=attributes_helper.COMMON_ATTRIBUTES.get(
+                ATTRIBUTE_ERROR_MESSAGE),
+            attribute_value=str(exception))
 
     def intercept_unary_unary(
             self, continuation, client_call_details, request):

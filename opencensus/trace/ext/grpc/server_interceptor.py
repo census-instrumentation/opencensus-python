@@ -14,7 +14,6 @@
 
 import grpc
 import logging
-import sys
 
 from opencensus.trace import attributes_helper
 from opencensus.trace import tracer as tracer_module
@@ -56,12 +55,12 @@ class OpenCensusServerInterceptor(grpc.ServerInterceptor):
                                       sampler=self.sampler,
                                       exporter=self.exporter)
 
-        with self._start_server_span(tracer) as span:
+        with self._start_server_span(tracer):
             response = None
 
             try:
                 response = continuation(handler_call_details)
-            except Exception as e:
+            except Exception as e:  # pragma: NO COVER
                 logging.error(e)
                 tracer.add_attribute_to_current_span(
                     attributes_helper.COMMON_ATTRIBUTES.get(
