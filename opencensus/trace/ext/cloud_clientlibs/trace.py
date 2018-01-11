@@ -26,7 +26,6 @@ from opencensus.trace.ext.grpc.client_interceptor import (
 from opencensus.trace.ext.requests.trace import (
     trace_integration as trace_requests)
 
-
 log = logging.getLogger(__name__)
 
 MODULE_NAME = 'cloud_clientlibs'
@@ -72,6 +71,27 @@ def trace_grpc():
 def trace_http():
     """Integrate with HTTP (requests library)."""
     trace_requests()
+
+
+def wrap_session_request(session_request_func):
+    def call(method, url, *args, **kwargs):
+        _tracer = execution_context.get_opencensus_tracer()
+        _span = _tracer.start_span()
+        _span.name = '[session_requests]{}'.format(method)
+
+        # Add the requests url to attributes
+        _tracer.add_attribute_to_current_span('requests/url', url)
+
+        result = session_request_func(method, url, *args, **kwargs)
+
+        # Add the status code to attributes
+        _tracer.add_attribute_to_current_span(
+            'requests/status_code', str(result.status_code))
+
+        _tracer.end_span()
+        return result
+
+    return call
 
 
 def wrap_make_secure_channel(make_secure_channel_func):
