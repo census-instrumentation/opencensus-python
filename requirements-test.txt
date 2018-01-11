@@ -12,3 +12,4 @@ retrying==1.3.3
 SQLAlchemy==1.1.14
 webapp2==2.5.2
 WebOb==1.7.3
+wrapt==1.10.11

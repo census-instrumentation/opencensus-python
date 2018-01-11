@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import inspect
 import logging
 
 import grpc
@@ -49,21 +48,19 @@ def trace_grpc():
     """Integrate with gRPC."""
     # Wrap google.cloud._helpers.make_secure_channel
     make_secure_channel_func = getattr(_helpers, MAKE_SECURE_CHANNEL)
-    make_secure_channel_module = inspect.getmodule(make_secure_channel_func)
     make_secure_channel_wrapped = wrap_make_secure_channel(
         make_secure_channel_func)
     setattr(
-        make_secure_channel_module,
+        _helpers,
         MAKE_SECURE_CHANNEL,
         make_secure_channel_wrapped)
 
     # Wrap the grpc.insecure_channel.
     insecure_channel_func = getattr(grpc, INSECURE_CHANNEL)
-    insecure_channel_module = inspect.getmodule(insecure_channel_func)
     insecure_channel_wrapped = wrap_insecure_channel(
         insecure_channel_func)
     setattr(
-        insecure_channel_module,
+        grpc,
         INSECURE_CHANNEL,
         insecure_channel_wrapped)
 
@@ -71,27 +68,6 @@ def trace_grpc():
 def trace_http():
     """Integrate with HTTP (requests library)."""
     trace_requests()
-
-
-def wrap_session_request(session_request_func):
-    def call(method, url, *args, **kwargs):
-        _tracer = execution_context.get_opencensus_tracer()
-        _span = _tracer.start_span()
-        _span.name = '[session_requests]{}'.format(method)
-
-        # Add the requests url to attributes
-        _tracer.add_attribute_to_current_span('requests/url', url)
-
-        result = session_request_func(method, url, *args, **kwargs)
-
-        # Add the status code to attributes
-        _tracer.add_attribute_to_current_span(
-            'requests/status_code', str(result.status_code))
-
-        _tracer.end_span()
-        return result
-
-    return call
 
 
 def wrap_make_secure_channel(make_secure_channel_func):
@@ -105,7 +81,7 @@ def wrap_make_secure_channel(make_secure_channel_func):
             tracer_interceptor = OpenCensusClientInterceptor(_tracer, host)
             intercepted_channel = grpc.intercept_channel(
                 channel, tracer_interceptor)
-            return intercepted_channel
+            return intercepted_channel  # pragma: NO COVER
         except Exception:
             log.warning(
                 'Failed to wrap secure channel, '
@@ -125,7 +101,7 @@ def wrap_insecure_channel(insecure_channel_func):
             tracer_interceptor = OpenCensusClientInterceptor(_tracer, target)
             intercepted_channel = grpc.intercept_channel(
                 channel, tracer_interceptor)
-            return intercepted_channel
+            return intercepted_channel  # pragma: NO COVER
         except Exception:
             log.warning(
                 'Failed to wrap insecure channel, '

@@ -74,11 +74,11 @@ class Test_requests_trace(unittest.TestCase):
         self.assertEqual(expected_name, mock_tracer.current_span.name)
 
     def test_wrap_session_request(self):
-        mock_return = mock.Mock()
-        mock_return.status_code = 200
-        return_value = mock_return
-        mock_func = mock.Mock()
-        mock_func.return_value = return_value
+        def wrapped(*args, **kwargs):
+            result = mock.Mock()
+            result.status_code = 200
+            return result
+
         mock_tracer = MockTracer()
 
         patch = mock.patch(
@@ -86,13 +86,12 @@ class Test_requests_trace(unittest.TestCase):
             'get_opencensus_tracer',
             return_value=mock_tracer)
 
-        wrapped = trace.wrap_session_request(mock_func)
-
         url = 'http://localhost:8080'
         request_method = 'POST'
 
         with patch:
-            wrapped(request_method, url)
+            result = trace.wrap_session_request(
+                wrapped, 'Session.request', (request_method, url), {})
 
         expected_attributes = {
             'requests/url': url,
@@ -101,23 +100,6 @@ class Test_requests_trace(unittest.TestCase):
 
         self.assertEqual(expected_attributes, mock_tracer.current_span.attributes)
         self.assertEqual(expected_name, mock_tracer.current_span.name)
-
-
-class TestTraceSession(unittest.TestCase):
-
-    def test___init__(self):
-        import requests
-
-        mock_wrapped = mock.Mock()
-        patch = mock.patch(
-            'opencensus.trace.ext.requests.trace.wrap_session_request',
-            return_value=mock_wrapped)
-
-        with patch:
-            session = trace.TraceSession()
-
-        self.assertEqual(session.request, mock_wrapped)
-        assert isinstance(session, requests.Session)
 
 
 class MockTracer(object):
