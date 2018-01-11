@@ -16,7 +16,7 @@ import time
 
 from opencensus.trace import execution_context
 from opencensus.trace.exporters import print_exporter
-from opencensus.trace.tracers import Tracer
+from opencensus.trace.tracer import Tracer
 from opencensus.trace.samplers import always_on
 
 
@@ -30,8 +30,8 @@ def main():
     tracer = Tracer(sampler=sampler, exporter=exporter)
 
     with tracer.span(name='root') as root_span:
-        tracer.add_label_to_current_span(label_key='example key',
-                                         label_value='example value')
+        tracer.add_attribute_to_current_span(attribute_key='example key',
+                                             attribute_value='example value')
         function_to_trace()
         with tracer.span(name='child') as child_span:
             function_to_trace()
