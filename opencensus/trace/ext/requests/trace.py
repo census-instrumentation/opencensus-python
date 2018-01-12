@@ -14,6 +14,7 @@
 
 import logging
 import requests
+import wrapt
 
 from opencensus.trace import execution_context
 
@@ -37,7 +38,8 @@ def trace_integration():
         setattr(requests, requests_func.__name__, wrapped)
 
     # Wrap Session class
-    setattr(requests, SESSION_CLASS_NAME, TraceSession)
+    wrapt.wrap_function_wrapper(
+        MODULE_NAME, 'Session.request', wrap_session_request)
 
 
 def wrap_requests(requests_func):
@@ -62,33 +64,22 @@ def wrap_requests(requests_func):
     return call
 
 
-def wrap_session_request(request_func):
+def wrap_session_request(wrapped, instance, args, kwargs):
     """Wrap the session function to trace it."""
-    def call(method, url, *args, **kwargs):
-        _tracer = execution_context.get_opencensus_tracer()
-        _span = _tracer.start_span()
-        _span.name = '[requests]{}'.format(method)
+    method = kwargs.get('method') or args[0]
+    url = kwargs.get('url') or args[1]
+    _tracer = execution_context.get_opencensus_tracer()
+    _span = _tracer.start_span()
+    _span.name = '[requests]{}'.format(method)
 
-        # Add the requests url to attributes
-        _tracer.add_attribute_to_current_span('requests/url', url)
+    # Add the requests url to attributes
+    _tracer.add_attribute_to_current_span('requests/url', url)
 
-        result = request_func(method, url, *args, **kwargs)
+    result = wrapped(*args, **kwargs)
 
-        # Add the status code to attributes
-        _tracer.add_attribute_to_current_span(
-            'requests/status_code', str(result.status_code))
+    # Add the status code to attributes
+    _tracer.add_attribute_to_current_span(
+        'requests/status_code', str(result.status_code))
 
-        _tracer.end_span()
-        return result
-
-    return call
-
-
-class TraceSession(requests.Session):
-
-    def __init__(self, *args, **kwargs):
-        request_func = getattr(self, SESSION_WRAP_METHODS)
-        wrapped = wrap_session_request(request_func)
-        setattr(self, request_func.__name__, wrapped)
-
-        super(TraceSession, self).__init__(*args, **kwargs)
+    _tracer.end_span()
+    return result

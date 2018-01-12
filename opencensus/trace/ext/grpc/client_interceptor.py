@@ -97,7 +97,15 @@ class OpenCensusClientInterceptor(grpc.UnaryUnaryClientInterceptor,
         grpc_trace_metadata = {
             oc_grpc.GRPC_TRACE_KEY: header,
         }
-        metadata = metadata + tuple(six.iteritems(grpc_trace_metadata))
+
+        metadata_to_append = None
+
+        if isinstance(metadata, list):
+            metadata_to_append = list(six.iteritems(grpc_trace_metadata))
+        else:
+            metadata_to_append = tuple(six.iteritems(grpc_trace_metadata))
+
+        metadata = metadata + metadata_to_append
 
         client_call_details = _ClientCallDetails(
             client_call_details.method,
