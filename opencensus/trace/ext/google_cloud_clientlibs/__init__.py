@@ -12,6 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from opencensus.trace.ext.cloud_clientlibs import trace
+from opencensus.trace.ext.google_cloud_clientlibs import trace
 
 __all__ = ['trace']

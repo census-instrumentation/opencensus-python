@@ -27,14 +27,16 @@ from opencensus.trace.ext.requests.trace import (
 
 log = logging.getLogger(__name__)
 
-MODULE_NAME = 'cloud_clientlibs'
+MODULE_NAME = 'google_cloud_clientlibs'
 
 MAKE_SECURE_CHANNEL = 'make_secure_channel'
 INSECURE_CHANNEL = 'insecure_channel'
 
 
 def trace_integration():
-    """Wrap the mysql connector to trace it."""
+    """Trace the Google Cloud Client libraries by integrating with
+    the transport level including HTTP and gRPC.
+    """
     log.info('Integrated module: {}'.format(MODULE_NAME))
 
     # Integrate with gRPC
