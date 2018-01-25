@@ -17,7 +17,8 @@ import logging
 import grpc
 
 from opencensus.trace import attributes_helper
-from opencensus.trace import tracer as tracer_module, execution_context
+from opencensus.trace import tracer as tracer_module
+from opencensus.trace import execution_context
 from opencensus.trace.ext import grpc as oc_grpc
 from opencensus.trace.propagation import binary_format
 
@@ -25,20 +26,31 @@ ATTRIBUTE_COMPONENT = 'COMPONENT'
 ATTRIBUTE_ERROR_NAME = 'ERROR_NAME'
 ATTRIBUTE_ERROR_MESSAGE = 'ERROR_MESSAGE'
 
-RpcRequestInfo = collections.namedtuple('RPCRequestInfo', ('request', 'context'))
-RpcResponseInfo = collections.namedtuple('RPCCallbackInfo', ('request', 'context', 'response', 'exc'))
+RpcRequestInfo = collections.namedtuple(
+    'RPCRequestInfo', ('request', 'context')
+)
+RpcResponseInfo = collections.namedtuple(
+    'RPCCallbackInfo', ('request', 'context', 'response', 'exc')
+)
 
 
 class RpcMethodHandlerWrapper(object):
-    """Wraps a grpc RPCMethodHandler and records the variables about the execution context and response"""
+    """Wraps a grpc RPCMethodHandler and records the variables about the
+     execution context and response
+    """
 
-    def __init__(self, handler, pre_handler_callbacks=None, post_handler_callbacks=None):
+    def __init__(
+        self, handler, pre_handler_callbacks=None, post_handler_callbacks=None
+    ):
         """
         :param handler: instance of RpcMethodHandler
-        :param pre_handler_callbacks: iterable of callbacks that accept an instance of RpcRequestInfo that
-         are called before the server handler
-        :param post_handler_callbacks: iterable of callbacks that accept an instance of RpcResponseInfo that
-         are called after the server handler finishes execution
+
+        :param pre_handler_callbacks: iterable of callbacks that accept an
+         instance of RpcRequestInfo that are called before the server handler
+
+        :param post_handler_callbacks: iterable of callbacks that accept an
+         instance of RpcResponseInfo that are called after the server
+         handler finishes execution
         """
         self.handler = handler
         self._pre_handler_callbacks = pre_handler_callbacks or []
@@ -51,7 +63,9 @@ class RpcMethodHandlerWrapper(object):
             exc = None
             response = None
             try:
-                response = getattr(self.handler, prop_name)(request, context, *args, **kwargs)
+                response = getattr(
+                    self.handler, prop_name
+                )(request, context, *args, **kwargs)
             except Exception as e:
                 logging.error(e)
                 exc = e
@@ -64,7 +78,9 @@ class RpcMethodHandlerWrapper(object):
         return _wrapper
 
     def __getattr__(self, item):
-        if item in ('unary_unary', 'unary_stream', 'stream_unary', 'stream_stream'):
+        if item in (
+            'unary_unary', 'unary_stream', 'stream_unary', 'stream_stream'
+        ):
             return self.proxy(item)
         return getattr(self.handler, item)
 
