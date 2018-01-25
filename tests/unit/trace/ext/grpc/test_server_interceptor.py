@@ -16,8 +16,8 @@ import unittest
 
 import mock
 
-from opencensus.trace.ext.grpc import server_interceptor
 from opencensus.trace import execution_context
+from opencensus.trace.ext.grpc import server_interceptor
 
 
 class TestOpenCensusServerInterceptor(unittest.TestCase):
@@ -29,19 +29,28 @@ class TestOpenCensusServerInterceptor(unittest.TestCase):
         self.assertEqual(interceptor.sampler, sampler)
         self.assertEqual(interceptor.exporter, exporter)
 
+    def test_rpc_handler_wrapper(self):
+        """Ensure that RPCHandlerWrapper proxies to the unerlying handler"""
+        mock_handler = mock.Mock()
+        mock_handler.response_streaming = False
+        wrapper = server_interceptor.RpcMethodHandlerWrapper(mock_handler)
+        self.assertEqual(wrapper.response_streaming, False)
+
     def test_intercept_handler_no_metadata(self):
         current_span = mock.Mock()
         mock_tracer = MockTracer(None, None, None)
         patch = mock.patch(
             'opencensus.trace.ext.grpc.server_interceptor.tracer_module.Tracer',
             MockTracer)
-        mock_details = mock.Mock()
-        mock_details.invocation_metadata = None
+        mock_context = mock.Mock()
+        mock_context.invocation_metadata = mock.Mock(return_value=None)
         interceptor = server_interceptor.OpenCensusServerInterceptor(
             None, None)
 
         with patch:
-            interceptor.intercept_handler(mock.Mock(), mock_details)
+            interceptor.intercept_handler(
+                mock.Mock(), mock.Mock()
+            ).unary_unary(mock.Mock(), mock_context)
 
         expected_attributes = {
             '/component': 'grpc',
@@ -57,13 +66,17 @@ class TestOpenCensusServerInterceptor(unittest.TestCase):
         patch = mock.patch(
             'opencensus.trace.ext.grpc.server_interceptor.tracer_module.Tracer',
             MockTracer)
-        mock_details = mock.Mock()
-        mock_details.invocation_metadata = (('test_key', b'test_value'),)
+        mock_context = mock.Mock()
+        mock_context.invocation_metadata = mock.Mock(
+            return_value=(('test_key', b'test_value'),)
+        )
         interceptor = server_interceptor.OpenCensusServerInterceptor(
             None, None)
 
         with patch:
-            interceptor.intercept_handler(mock.Mock(), mock_details)
+            interceptor.intercept_handler(
+                mock.Mock(), mock.Mock()
+            ).unary_unary(mock.Mock(), mock_context)
 
         expected_attributes = {
             '/component': 'grpc',
@@ -80,6 +93,36 @@ class TestOpenCensusServerInterceptor(unittest.TestCase):
         interceptor.intercept_handler = mock_handler
         interceptor.intercept_service(None, None)
         self.assertTrue(mock_handler.called)
+
+    def test_intercept_handler_exception(self):
+        current_span = mock.Mock()
+        mock_tracer = MockTracer(None, None, None)
+        patch = mock.patch(
+            'opencensus.trace.ext.grpc.server_interceptor.tracer_module.Tracer',
+            MockTracer)
+        interceptor = server_interceptor.OpenCensusServerInterceptor(
+            None, None)
+        mock_context = mock.Mock()
+        mock_context.invocation_metadata = mock.Mock(return_value=None)
+        mock_continuation = mock.Mock()
+        mock_continuation.unary_unary = mock.Mock(side_effect=Exception('Test'))
+        with patch:
+            # patch the wrapper's handler to return an exception
+            rpc_wrapper = interceptor.intercept_handler(
+                mock.Mock(), mock.Mock())
+            rpc_wrapper.handler.unary_unary = mock.Mock(
+                side_effect=Exception('Test'))
+            with self.assertRaises(Exception):
+                rpc_wrapper.unary_unary(mock.Mock(), mock_context)
+
+        expected_attributes = {
+            '/component': 'grpc',
+            '/error/message': 'Test'
+        }
+
+        self.assertEqual(
+            execution_context.get_opencensus_tracer().current_span.attributes,
+            expected_attributes)
 
 
 class MockTracer(object):
