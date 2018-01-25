@@ -35,13 +35,13 @@ class TestOpenCensusServerInterceptor(unittest.TestCase):
         patch = mock.patch(
             'opencensus.trace.ext.grpc.server_interceptor.tracer_module.Tracer',
             MockTracer)
-        mock_details = mock.Mock()
-        mock_details.invocation_metadata = None
+        mock_context = mock.Mock()
+        mock_context.invocation_metadata = mock.Mock(return_value=None)
         interceptor = server_interceptor.OpenCensusServerInterceptor(
             None, None)
 
         with patch:
-            interceptor.intercept_handler(mock.Mock(), mock_details)
+            interceptor.intercept_handler(mock.Mock(), mock.Mock()).unary_unary(mock.Mock(), mock_context)
 
         expected_attributes = {
             '/component': 'grpc',
@@ -57,13 +57,13 @@ class TestOpenCensusServerInterceptor(unittest.TestCase):
         patch = mock.patch(
             'opencensus.trace.ext.grpc.server_interceptor.tracer_module.Tracer',
             MockTracer)
-        mock_details = mock.Mock()
-        mock_details.invocation_metadata = (('test_key', b'test_value'),)
+        mock_context = mock.Mock()
+        mock_context.invocation_metadata = mock.Mock(return_value=(('test_key', b'test_value'),))
         interceptor = server_interceptor.OpenCensusServerInterceptor(
             None, None)
 
         with patch:
-            interceptor.intercept_handler(mock.Mock(), mock_details)
+            interceptor.intercept_handler(mock.Mock(), mock.Mock()).unary_unary(mock.Mock(), mock_context)
 
         expected_attributes = {
             '/component': 'grpc',
