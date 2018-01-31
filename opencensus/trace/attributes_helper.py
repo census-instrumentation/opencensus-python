@@ -13,7 +13,7 @@
 # limitations under the License.
 
 COMMON_ATTRIBUTES = {
-    'AGENT': '/agent',
+    'AGENT': 'g.co/agent',
     'COMPONENT': '/component',
     'ERROR_MESSAGE': '/error/message',
     'ERROR_NAME': '/error/name',

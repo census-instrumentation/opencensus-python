@@ -14,11 +14,19 @@
 
 import os
 
+from opencensus.trace.attributes import Attributes
+from opencensus.trace import attributes_helper
 from opencensus.trace.exporters import base
 from opencensus.trace.exporters.transports import sync
 
 from google.cloud.trace.client import Client
 
+
+# OpenCensus Version
+VERSION = '0.1.1'
+
+# Agent
+AGENT = 'opencensus-python [{}]'.format(VERSION)
 
 # Environment variable set in App Engine when vm:true is set.
 _APPENGINE_FLEXIBLE_ENV_VM = 'GAE_APPENGINE_HOSTNAME'
@@ -47,22 +55,36 @@ GCE_ATTRIBUTES = {
 
 def set_attributes(trace):
     """Automatically set attributes for Google Cloud environment."""
-    if is_gae_environment():
-        set_gae_attributes(trace)
-
-
-def set_gae_attributes(trace):
-    """Set the GAE environment common attributes."""
     spans = trace.get('spans')
+    for span in spans:
+        if span.get('attributes') is None:
+            span['attributes'] = {}
+
+        if is_gae_environment():
+            set_gae_attributes(span)
+
+        set_common_attributes(span)
+
+
+def set_common_attributes(span):
+    """Set the common attributes."""
+    attributes = Attributes(span.get('attributes', {}).get('attributeMap', {}))
+    attributes.set_attribute(
+        attributes_helper.COMMON_ATTRIBUTES.get('AGENT'), AGENT)
+    span['attributes'] = attributes.format_attributes_json()
+
+
+def set_gae_attributes(span):
+    """Set the GAE environment common attributes."""
+    attributes = Attributes(span.get('attributes', {}).get('attributeMap', {}))
 
     for env_var, attribute_key in GAE_ATTRIBUTES.items():
         attribute_value = os.environ.get(env_var)
 
         if attribute_value is not None:
-            for span in spans:
-                attributes = span.get('attributes')
-                attributes[attribute_key] = attribute_value
-                span['attributes'] = attributes
+            attributes.set_attribute(attribute_key, attribute_value)
+
+    span['attributes'] = attributes.format_attributes_json()
 
 
 def is_gae_environment():
