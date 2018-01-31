@@ -91,39 +91,50 @@ class TestZipkinExporter(unittest.TestCase):
 
     def test_translate_to_zipkin_span_kind_none(self):
         span1 = {
-            'name': 'child_span',
+            'displayName': {'value': 'child_span'},
             'parentSpanId': 1111111111,
             'spanId': 1234567890,
             'startTime': '2017-08-15T18:02:26.071158Z',
             'endTime': '2017-08-15T18:02:36.071158Z',
             'attributes': {
-                'key': 'test_key',
-                'value': 'test_value',
+                'attributeMap': {
+                    'test_key': {
+                        'string_value': {
+                            'value': 'test_value'
+                        }
+                    }
+                }
             },
         }
 
         span2 = {
-            'name': 'child_span',
+            'displayName': {'value': 'child_span'},
             'kind': 0,
             'parentSpanId': 1111111111,
             'spanId': 1234567890,
             'startTime': '2017-08-15T18:02:26.071158Z',
             'endTime': '2017-08-15T18:02:36.071158Z',
             'attributes': {
-                'key': 'test_key',
-                'value': 'test_value',
+                'attributeMap': {
+                    'test_key':  {
+                        'int_value': 1
+                    }
+                }
             },
         }
 
         span3 = {
-            'name': 'child_span',
+            'displayName': {'value': 'child_span'},
             'kind': 1,
             'spanId': 1234567890,
             'startTime': '2017-08-15T18:02:26.071158Z',
             'endTime': '2017-08-15T18:02:36.071158Z',
             'attributes': {
-                'key': 'test_key',
-                'value': 'test_value',
+                'attributeMap': {
+                    'test_key':  {
+                        'bool_value': False
+                    }
+                }
             },
         }
 
@@ -145,10 +156,7 @@ class TestZipkinExporter(unittest.TestCase):
                 'timestamp': 1502820146000000,
                 'duration': 10000000,
                 'localEndpoint': local_endpoint,
-                'tags': {
-                    'key': 'test_key',
-                    'value': 'test_value',
-                },
+                'tags': {'test_key': 'test_value'},
             },
             {
                 'traceId': '6e0c63257de34c92bf9efcd03927272e',
@@ -158,10 +166,7 @@ class TestZipkinExporter(unittest.TestCase):
                 'timestamp': 1502820146000000,
                 'duration': 10000000,
                 'localEndpoint': local_endpoint,
-                'tags': {
-                    'key': 'test_key',
-                    'value': 'test_value',
-                },
+                'tags': {'test_key': '1'},
             },
             {
                 'traceId': '6e0c63257de34c92bf9efcd03927272e',
@@ -170,10 +175,7 @@ class TestZipkinExporter(unittest.TestCase):
                 'timestamp': 1502820146000000,
                 'duration': 10000000,
                 'localEndpoint': local_endpoint,
-                'tags': {
-                    'key': 'test_key',
-                    'value': 'test_value',
-                },
+                'tags': {'test_key': 'False'},
                 'kind': 'SERVER',
             }
         ]
