@@ -87,7 +87,7 @@ class ZipkinExporter(base.Exporter):
             self.endpoint)
 
     def emit(self, trace):
-        """Send trace to Zipkin server, default using the v1 API.
+        """Send trace to Zipkin server, default using the v2 API.
 
         :type trace: dict
         :param trace: Trace data in dictionary format.
@@ -151,11 +151,11 @@ class ZipkinExporter(base.Exporter):
             zipkin_span = {
                 'traceId': trace_id,
                 'id': str(span.get('spanId')),
-                'name': span.get('name'),
+                'name': span.get('displayName', {}).get('value'),
                 'timestamp': int(round(start_timestamp_ms)),
                 'duration': int(round(duration_ms)),
                 'localEndpoint': local_endpoint,
-                'tags': span.get('attributes'),
+                'tags': _extract_tags_from_span(span),
             }
 
             span_kind = span.get('kind')
@@ -174,3 +174,22 @@ class ZipkinExporter(base.Exporter):
             zipkin_spans.append(zipkin_span)
 
         return zipkin_spans
+
+
+def _extract_tags_from_span(span):
+    tags = {}
+    for attribute_key, attribute_value in span.get(
+            'attributes', {}).get('attributeMap', {}).items():
+        if not isinstance(attribute_value, dict):
+            continue
+        if attribute_value.get('string_value') is not None:
+            value = attribute_value.get('string_value').get('value')
+        elif attribute_value.get('int_value') is not None:
+            value = str(attribute_value.get('int_value'))
+        elif attribute_value.get('bool_value') is not None:
+            value = str(attribute_value.get('bool_value'))
+        else:
+            logging.warn('Could not serialize tag {}'.format(attribute_key))
+            continue
+        tags[attribute_key] = value
+    return tags
