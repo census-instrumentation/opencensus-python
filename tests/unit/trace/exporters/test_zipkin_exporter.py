@@ -133,7 +133,12 @@ class TestZipkinExporter(unittest.TestCase):
                 'attributeMap': {
                     'test_key':  {
                         'bool_value': False
-                    }
+                    },
+                    # these tags are malformed and should be omitted
+                    'test_key2': 'raw_value',
+                    'test_key3': {
+                        'float_value': 0.1
+                    },
                 }
             },
         }

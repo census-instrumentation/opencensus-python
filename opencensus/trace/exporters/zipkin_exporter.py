@@ -180,13 +180,16 @@ def _extract_tags_from_span(span):
     tags = {}
     for attribute_key, attribute_value in span.get(
             'attributes', {}).get('attributeMap', {}).items():
-        if 'string_value' in attribute_value:
+        if not isinstance(attribute_value, dict):
+            continue
+        if attribute_value.get('string_value') is not None:
             value = attribute_value.get('string_value').get('value')
-        elif 'int_value' in attribute_value:
+        elif attribute_value.get('int_value') is not None:
             value = str(attribute_value.get('int_value'))
-        elif 'bool_value' in attribute_value:
+        elif attribute_value.get('bool_value') is not None:
             value = str(attribute_value.get('bool_value'))
         else:
+            logging.warn('Could not serialize tag {}'.format(attribute_key))
             continue
         tags[attribute_key] = value
     return tags
