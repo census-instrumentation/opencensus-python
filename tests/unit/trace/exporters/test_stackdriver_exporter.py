@@ -87,7 +87,16 @@ class TestStackdriverExporter(unittest.TestCase):
                     'links': None,
                     'startTime': None,
                     'spanId': '1111',
-                    'attributes': None,
+                    'attributes': {
+                        'attributeMap': {
+                            'g.co/agent': {
+                                'string_value': {
+                                    'truncated_byte_count': 0,
+                                    'value': 'opencensus-python [0.1.1]'
+                                }
+                            }
+                        }
+                    },
                     'stackTrace': None,
                     'displayName':
                         {
@@ -122,8 +131,15 @@ class TestStackdriverExporter(unittest.TestCase):
         trace_id = '6e0c63257de34c92bf9efcd03927272e'
         span_name = 'test span'
         span_id = 1234
-        attributes = {'attributeMap': {
-            'key': 'value'}
+        attributes = {
+            'attributeMap': {
+                'key': {
+                    'string_value': {
+                        'truncated_byte_count': 0,
+                        'value': 'value'
+                    }
+               }
+            }
         }
         parent_span_id = 1111
         start_time = 'test start time'
@@ -164,7 +180,21 @@ class TestStackdriverExporter(unittest.TestCase):
                         'value': span_name,
                         'truncated_byte_count': 0
                     },
-                    'attributes': {'attributeMap': {'key': 'value'}},
+                    'attributes': {
+                        'attributeMap': {
+                            'g.co/agent': {
+                                'string_value': {
+                                    'truncated_byte_count': 0,
+                                    'value': 'opencensus-python [0.1.1]'}
+                            },
+                            'key': {
+                                'string_value': {
+                                    'truncated_byte_count': 0,
+                                    'value': 'value'
+                                }
+                            }
+                        }
+                    },
                     'spanId': str(span_id),
                     'startTime': start_time,
                     'endTime': end_time,
@@ -179,9 +209,6 @@ class TestStackdriverExporter(unittest.TestCase):
             ]
         }
 
-        print(spans)
-        print(expected_traces)
-
         self.assertEqual(spans, expected_traces)
 
 
@@ -190,19 +217,41 @@ class Test_set_attributes_gae(unittest.TestCase):
     def test_set_attributes_gae(self):
         import os
 
-        trace = {
-            'spans': [
-                {
-                    'attributes':{},
-                    'span_id': 123,
-                },
-            ],
-        }
+        trace = {'spans': [
+            {
+                'attributes': {}
+            }
+        ]}
 
-        expected_attributes = {
-            stackdriver_exporter.GAE_ATTRIBUTES['GAE_FLEX_PROJECT']: 'project',
-            stackdriver_exporter.GAE_ATTRIBUTES['GAE_FLEX_SERVICE']: 'service',
-            stackdriver_exporter.GAE_ATTRIBUTES['GAE_FLEX_VERSION']: 'version',
+        expected = {
+            'attributes': {
+                'attributeMap': {
+                    'g.co/gae/app/service': {
+                        'string_value': {
+                            'truncated_byte_count': 0,
+                            'value': 'service'
+                        }
+                    },
+                    'g.co/gae/app/version': {
+                        'string_value': {
+                            'truncated_byte_count': 0,
+                            'value': 'version'
+                        }
+                    },
+                    'g.co/gae/app/project': {
+                        'string_value': {
+                            'truncated_byte_count': 0,
+                            'value': 'project'
+                        }
+                    },
+                    'g.co/agent': {
+                        'string_value': {
+                            'truncated_byte_count': 0,
+                            'value': 'opencensus-python [0.1.1]'
+                        }
+                    },
+                }
+            }
         }
 
         with mock.patch.dict(
@@ -212,9 +261,11 @@ class Test_set_attributes_gae(unittest.TestCase):
                  'GAE_FLEX_PROJECT': 'project',
                  'GAE_FLEX_SERVICE': 'service',
                  'GAE_FLEX_VERSION': 'version'}):
+            self.assertTrue(stackdriver_exporter.is_gae_environment())
             stackdriver_exporter.set_attributes(trace)
 
-        self.assertEqual(trace['spans'][0]['attributes'], expected_attributes)
+        span = trace.get('spans')[0]
+        self.assertEqual(span, expected)
 
 
 class MockTransport(object):

@@ -14,11 +14,19 @@
 
 import os
 
+from opencensus.trace.attributes import Attributes
+from opencensus.trace import attributes_helper
 from opencensus.trace.exporters import base
 from opencensus.trace.exporters.transports import sync
 
 from google.cloud.trace.client import Client
 
+
+# OpenCensus Version
+VERSION = '0.1.1'
+
+# Agent
+AGENT = 'opencensus-python [{}]'.format(VERSION)
 
 # Environment variable set in App Engine when vm:true is set.
 _APPENGINE_FLEXIBLE_ENV_VM = 'GAE_APPENGINE_HOSTNAME'
@@ -45,24 +53,49 @@ GCE_ATTRIBUTES = {
 }
 
 
+def _update_attr_map(span, attrs):
+    attr_map = span.get('attributes', {}).get('attributeMap', {})
+    attr_map.update(attrs)
+    span['attributes']['attributeMap'] = attr_map
+
+
 def set_attributes(trace):
     """Automatically set attributes for Google Cloud environment."""
-    if is_gae_environment():
-        set_gae_attributes(trace)
-
-
-def set_gae_attributes(trace):
-    """Set the GAE environment common attributes."""
     spans = trace.get('spans')
+    for span in spans:
+        if span.get('attributes') is None:
+            span['attributes'] = {}
 
+        if is_gae_environment():
+            set_gae_attributes(span)
+
+        set_common_attributes(span)
+
+
+def set_common_attributes(span):
+    """Set the common attributes."""
+    common = {
+        attributes_helper.COMMON_ATTRIBUTES.get('AGENT'): AGENT,
+    }
+    common_attrs = Attributes(common)\
+        .format_attributes_json()\
+        .get('attributeMap')
+
+    _update_attr_map(span, common_attrs)
+
+
+def set_gae_attributes(span):
+    """Set the GAE environment common attributes."""
     for env_var, attribute_key in GAE_ATTRIBUTES.items():
         attribute_value = os.environ.get(env_var)
 
         if attribute_value is not None:
-            for span in spans:
-                attributes = span.get('attributes')
-                attributes[attribute_key] = attribute_value
-                span['attributes'] = attributes
+            pair = {attribute_key: attribute_value}
+            pair_attrs = Attributes(pair)\
+                .format_attributes_json()\
+                .get('attributeMap')
+
+            _update_attr_map(span, pair_attrs)
 
 
 def is_gae_environment():
