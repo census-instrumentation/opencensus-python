@@ -217,7 +217,11 @@ class Test_set_attributes_gae(unittest.TestCase):
     def test_set_attributes_gae(self):
         import os
 
-        span = {'attributes': {}}
+        trace = {'spans': [
+            {
+                'attributes': {}
+            }
+        ]}
 
         expected = {
             'attributes': {
@@ -239,7 +243,13 @@ class Test_set_attributes_gae(unittest.TestCase):
                             'truncated_byte_count': 0,
                             'value': 'project'
                         }
-                    }
+                    },
+                    'g.co/agent': {
+                        'string_value': {
+                            'truncated_byte_count': 0,
+                            'value': 'opencensus-python [0.1.1]'
+                        }
+                    },
                 }
             }
         }
@@ -252,8 +262,9 @@ class Test_set_attributes_gae(unittest.TestCase):
                  'GAE_FLEX_SERVICE': 'service',
                  'GAE_FLEX_VERSION': 'version'}):
             self.assertTrue(stackdriver_exporter.is_gae_environment())
-            stackdriver_exporter.set_gae_attributes(span)
+            stackdriver_exporter.set_attributes(trace)
 
+        span = trace.get('spans')[0]
         self.assertEqual(span, expected)
 
 

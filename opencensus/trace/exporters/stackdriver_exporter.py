@@ -55,10 +55,6 @@ GCE_ATTRIBUTES = {
 
 def _update_attr_map(span, attrs):
     attr_map = span.get('attributes', {}).get('attributeMap', {})
-
-    if attr_map is None:
-        attr_map = {}
-
     attr_map.update(attrs)
     span['attributes']['attributeMap'] = attr_map
 
