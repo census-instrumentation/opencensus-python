@@ -131,8 +131,15 @@ class TestStackdriverExporter(unittest.TestCase):
         trace_id = '6e0c63257de34c92bf9efcd03927272e'
         span_name = 'test span'
         span_id = 1234
-        attributes = {'attributeMap': {
-            'key': 'value'}
+        attributes = {
+            'attributeMap': {
+                'key': {
+                    'string_value': {
+                        'truncated_byte_count': 0,
+                        'value': 'value'
+                    }
+               }
+            }
         }
         parent_span_id = 1111
         start_time = 'test start time'
@@ -202,9 +209,6 @@ class TestStackdriverExporter(unittest.TestCase):
             ]
         }
 
-        print(spans)
-        print(expected_traces)
-
         self.assertEqual(spans, expected_traces)
 
 
@@ -213,7 +217,7 @@ class Test_set_attributes_gae(unittest.TestCase):
     def test_set_attributes_gae(self):
         import os
 
-        span = {}
+        span = {'attributes': {}}
 
         expected = {
             'attributes': {

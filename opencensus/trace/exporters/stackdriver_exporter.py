@@ -53,6 +53,16 @@ GCE_ATTRIBUTES = {
 }
 
 
+def _update_attr_map(span, attrs):
+    attr_map = span.get('attributes', {}).get('attributeMap', {})
+
+    if attr_map is None:
+        attr_map = {}
+
+    attr_map.update(attrs)
+    span['attributes']['attributeMap'] = attr_map
+
+
 def set_attributes(trace):
     """Automatically set attributes for Google Cloud environment."""
     spans = trace.get('spans')
@@ -68,23 +78,28 @@ def set_attributes(trace):
 
 def set_common_attributes(span):
     """Set the common attributes."""
-    attributes = Attributes(span.get('attributes', {}).get('attributeMap', {}))
-    attributes.set_attribute(
-        attributes_helper.COMMON_ATTRIBUTES.get('AGENT'), AGENT)
-    span['attributes'] = attributes.format_attributes_json()
+    common = {
+        attributes_helper.COMMON_ATTRIBUTES.get('AGENT'): AGENT,
+    }
+    common_attrs = Attributes(common)\
+        .format_attributes_json()\
+        .get('attributeMap')
+
+    _update_attr_map(span, common_attrs)
 
 
 def set_gae_attributes(span):
     """Set the GAE environment common attributes."""
-    attributes = Attributes(span.get('attributes', {}).get('attributeMap', {}))
-
     for env_var, attribute_key in GAE_ATTRIBUTES.items():
         attribute_value = os.environ.get(env_var)
 
         if attribute_value is not None:
-            attributes.set_attribute(attribute_key, attribute_value)
+            pair = {attribute_key: attribute_value}
+            pair_attrs = Attributes(pair)\
+                .format_attributes_json()\
+                .get('attributeMap')
 
-    span['attributes'] = attributes.format_attributes_json()
+            _update_attr_map(span, pair_attrs)
 
 
 def is_gae_environment():
