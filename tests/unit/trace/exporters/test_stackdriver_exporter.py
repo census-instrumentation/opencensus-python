@@ -92,7 +92,7 @@ class TestStackdriverExporter(unittest.TestCase):
                             'g.co/agent': {
                                 'string_value': {
                                     'truncated_byte_count': 0,
-                                    'value': 'opencensus-python [0.1.1]'
+                                    'value': 'opencensus-python [{}]'.format(stackdriver_exporter.VERSION)
                                 }
                             }
                         }
@@ -185,7 +185,8 @@ class TestStackdriverExporter(unittest.TestCase):
                             'g.co/agent': {
                                 'string_value': {
                                     'truncated_byte_count': 0,
-                                    'value': 'opencensus-python [0.1.1]'}
+                                    'value': 'opencensus-python [{}]'.format(stackdriver_exporter.VERSION)
+                                }
                             },
                             'key': {
                                 'string_value': {
@@ -247,7 +248,7 @@ class Test_set_attributes_gae(unittest.TestCase):
                     'g.co/agent': {
                         'string_value': {
                             'truncated_byte_count': 0,
-                            'value': 'opencensus-python [0.1.1]'
+                            'value': 'opencensus-python [{}]'.format(stackdriver_exporter.VERSION)
                         }
                     },
                 }
