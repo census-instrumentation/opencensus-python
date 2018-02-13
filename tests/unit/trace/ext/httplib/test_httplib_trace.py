@@ -21,6 +21,11 @@ from opencensus.trace.ext.httplib import trace
 
 class Test_httplib_trace(unittest.TestCase):
 
+    def tearDown(self):
+        from opencensus.trace import execution_context
+
+        execution_context.clear()
+
     def test_trace_integration(self):
         mock_wrap_request = mock.Mock()
         mock_wrap_response = mock.Mock()
