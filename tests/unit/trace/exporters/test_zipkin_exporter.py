@@ -27,12 +27,14 @@ class TestZipkinExporter(unittest.TestCase):
         host_name = '0.0.0.0'
         port = 2333
         endpoint = '/api/v2/test'
+        ipv4 = '127.0.0.1'
 
         exporter = zipkin_exporter.ZipkinExporter(
             service_name=service_name,
             host_name=host_name,
             port=port,
-            endpoint=endpoint)
+            endpoint=endpoint,
+            ipv4=ipv4)
 
         expected_url = 'http://0.0.0.0:2333/api/v2/test'
 
@@ -41,6 +43,7 @@ class TestZipkinExporter(unittest.TestCase):
         self.assertEqual(exporter.port, port)
         self.assertEqual(exporter.endpoint, endpoint)
         self.assertEqual(exporter.url, expected_url)
+        self.assertEqual(exporter.ipv4, ipv4)
 
     def test_export(self):
         exporter = zipkin_exporter.ZipkinExporter(
@@ -144,15 +147,25 @@ class TestZipkinExporter(unittest.TestCase):
         }
 
         trace_id = '6e0c63257de34c92bf9efcd03927272e'
-        spans = [span1, span2, span3]
+        spans_ipv4 = [span1, span2]
+        spans_ipv6 = [span3]
 
-        local_endpoint = {
+        ipv4 = '127.0.0.1'
+        ipv6 = '2001:0db8:85a3:0000:0000:8a2e:0370:7334'
+
+        local_endpoint_ipv4 = {
             'serviceName': 'my_service',
-            'ipv4': 'localhost',
+            'ipv4': ipv4,
             'port': 9411,
         }
 
-        expected_zipkin_spans = [
+        local_endpoint_ipv6 = {
+            'serviceName': 'my_service',
+            'ipv6': ipv6,
+            'port': 9411,
+        }
+
+        expected_zipkin_spans_ipv4 = [
             {
                 'traceId': '6e0c63257de34c92bf9efcd03927272e',
                 'id': '1234567890',
@@ -160,7 +173,7 @@ class TestZipkinExporter(unittest.TestCase):
                 'name': 'child_span',
                 'timestamp': 1502820146000000,
                 'duration': 10000000,
-                'localEndpoint': local_endpoint,
+                'localEndpoint': local_endpoint_ipv4,
                 'tags': {'test_key': 'test_value'},
             },
             {
@@ -170,27 +183,41 @@ class TestZipkinExporter(unittest.TestCase):
                 'name': 'child_span',
                 'timestamp': 1502820146000000,
                 'duration': 10000000,
-                'localEndpoint': local_endpoint,
+                'localEndpoint': local_endpoint_ipv4,
                 'tags': {'test_key': '1'},
             },
+        ]
+
+        expected_zipkin_spans_ipv6 = [
             {
                 'traceId': '6e0c63257de34c92bf9efcd03927272e',
                 'id': '1234567890',
                 'name': 'child_span',
                 'timestamp': 1502820146000000,
                 'duration': 10000000,
-                'localEndpoint': local_endpoint,
+                'localEndpoint': local_endpoint_ipv6,
                 'tags': {'test_key': 'False'},
                 'kind': 'SERVER',
-            }
+            },
         ]
 
-        exporter = zipkin_exporter.ZipkinExporter(service_name='my_service')
-        zipkin_spans = exporter.translate_to_zipkin(
+        # Test ipv4 local endpoint
+        exporter_ipv4 = zipkin_exporter.ZipkinExporter(
+            service_name='my_service', ipv4=ipv4)
+        zipkin_spans_ipv4 = exporter_ipv4.translate_to_zipkin(
             trace_id=trace_id,
-            spans=spans)
+            spans=spans_ipv4)
 
-        self.assertEqual(zipkin_spans, expected_zipkin_spans)
+        self.assertEqual(zipkin_spans_ipv4, expected_zipkin_spans_ipv4)
+
+        # Test ipv6 local endpoint
+        exporter_ipv6 = zipkin_exporter.ZipkinExporter(
+            service_name='my_service', ipv6=ipv6)
+        zipkin_spans_ipv6 = exporter_ipv6.translate_to_zipkin(
+            trace_id=trace_id,
+            spans=spans_ipv6)
+
+        self.assertEqual(zipkin_spans_ipv6, expected_zipkin_spans_ipv6)
 
 
 class MockTransport(object):

@@ -71,13 +71,17 @@ class ZipkinExporter(base.Exporter):
             host_name=DEFAULT_HOST_NAME,
             port=DEFAULT_PORT,
             endpoint=DEFAULT_ENDPOINT,
-            transport=sync.SyncTransport):
+            transport=sync.SyncTransport,
+            ipv4=None,
+            ipv6=None):
         self.service_name = service_name
         self.host_name = host_name
         self.port = port
         self.endpoint = endpoint
         self.url = self.get_url
         self.transport = transport(self)
+        self.ipv4 = ipv4
+        self.ipv6 = ipv6
 
     @property
     def get_url(self):
@@ -126,9 +130,14 @@ class ZipkinExporter(base.Exporter):
         """
         local_endpoint = {
             'serviceName': self.service_name,
-            'ipv4': self.host_name,
             'port': self.port,
         }
+
+        if self.ipv4 is not None:
+            local_endpoint['ipv4'] = self.ipv4
+
+        if self.ipv6 is not None:
+            local_endpoint['ipv6'] = self.ipv6
 
         zipkin_spans = []
 
