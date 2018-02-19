@@ -16,6 +16,8 @@ import unittest
 
 import mock
 
+from google.rpc import code_pb2
+
 from opencensus.trace.stack_trace import StackTrace
 from opencensus.trace.status import Status
 from opencensus.trace.time_event import TimeEvent
@@ -218,6 +220,39 @@ class TestSpan(unittest.TestCase):
         self.assertEqual(
             span_iter_list,
             [child1_child1_span, child1_span, child2_span, root_span])
+
+    def test_exception_in_span(self):
+        """Make sure that an exception within a span context is
+        attached to the span"""
+        root_span = self._make_one('root_span')
+        exception_message = 'error'
+        with self.assertRaises(AssertionError):
+            with root_span:
+                raise AssertionError(exception_message)
+        stack_trace = root_span.stack_trace
+        # make sure a stack trace has been attached and populated
+        self.assertIsNotNone(stack_trace)
+        self.assertIsNotNone(stack_trace.stack_trace_hash_id)
+        self.assertEqual(len(stack_trace.stack_frames), 1)
+
+        stack_frame = stack_trace.stack_frames[0]
+        self.assertEqual(stack_frame['file_name']['value'], __file__)
+        self.assertEqual(
+            stack_frame['function_name']['value'], 'test_exception_in_span'
+        )
+        self.assertEqual(
+            stack_frame['load_module']['module']['value'], __file__
+        )
+        self.assertEqual(
+            stack_frame['original_function_name']['value'],
+            'test_exception_in_span'
+        )
+        self.assertIsNotNone(stack_frame['source_version']['value'])
+        self.assertIsNotNone(stack_frame['load_module']['build_id']['value'])
+
+        self.assertIsNotNone(root_span.status)
+        self.assertEqual(root_span.status.message, exception_message)
+        self.assertEqual(root_span.status.code, code_pb2.UNKNOWN)
 
 
 class Test_format_span_json(unittest.TestCase):

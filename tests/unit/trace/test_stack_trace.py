@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import unittest
-
+import sys
 import mock
 
 from opencensus.trace import stack_trace as stack_trace_module
@@ -81,7 +81,7 @@ class TestStackFrame(unittest.TestCase):
             'original_function_name': original_func_name,
             'file_name': file_name,
             'line_number': line_num,
-            'col_number': col_num,
+            'column_number': col_num,
             'load_module': {
                 'module': load_module,
                 'build_id': build_id
@@ -116,6 +116,15 @@ class TestStackTrace(unittest.TestCase):
         self.assertEqual(stack_trace.stack_frames, stack_frames)
         self.assertEqual(stack_trace.stack_trace_hash_id, hash_id)
 
+    def test_constructor_max_frames(self):
+        stack_frames = [mock.Mock()] * (stack_trace_module.MAX_FRAMES + 1)
+        stack_trace = stack_trace_module.StackTrace(stack_frames, 100)
+        self.assertEqual(stack_trace.dropped_frames_count, 1)
+        self.assertEqual(
+            len(stack_trace.stack_frames),
+            stack_trace_module.MAX_FRAMES
+        )
+
     def test_add_stack_frame(self):
         stack_trace = stack_trace_module.StackTrace()
         stack_frame = mock.Mock()
@@ -136,7 +145,10 @@ class TestStackTrace(unittest.TestCase):
         stack_trace_json = stack_trace.format_stack_trace_json()
 
         expected_stack_trace_json = {
-            'stack_frames': stack_frame,
+            'stack_frames': {
+                'frame': stack_frame,
+                'dropped_frames_count': 0
+            },
             'stack_trace_hash_id': hash_id
         }
 
@@ -155,3 +167,50 @@ class TestStackTrace(unittest.TestCase):
         }
 
         self.assertEqual(expected_stack_trace_json, stack_trace_json)
+
+    def test_create_from_traceback(self):
+        try:
+            raise AssertionError('something went wrong')
+        except AssertionError:
+            _, _, tb = sys.exc_info()
+
+        stack_trace = stack_trace_module.StackTrace.from_traceback(tb)
+        self.assertIsNotNone(stack_trace)
+        self.assertIsNotNone(stack_trace.stack_trace_hash_id)
+        self.assertEqual(len(stack_trace.stack_frames), 1)
+
+        stack_frame = stack_trace.stack_frames[0]
+        self.assertEqual(stack_frame['file_name']['value'], __file__)
+        self.assertEqual(
+            stack_frame['function_name']['value'], 'test_create_from_traceback'
+        )
+        self.assertEqual(
+            stack_frame['load_module']['module']['value'], __file__
+        )
+        self.assertEqual(
+            stack_frame['original_function_name']['value'],
+            'test_create_from_traceback'
+        )
+        self.assertIsNotNone(stack_frame['source_version']['value'])
+        self.assertIsNotNone(stack_frame['load_module']['build_id']['value'])
+
+    def test_dropped_frames(self):
+        """Make sure the limit of 128 frames is enforced"""
+        def recur(max_depth):
+            def _recur_helper(depth):
+                if depth >= max_depth:
+                    raise AssertionError('reached max depth')
+                _recur_helper(depth+1)
+            _recur_helper(0)
+        try:
+            recur(stack_trace_module.MAX_FRAMES)
+        except AssertionError:
+            _, _, tb = sys.exc_info()
+
+        stack_trace = stack_trace_module.StackTrace.from_traceback(tb)
+        # total frames should be MAX_FRAMES + 3 (1 for test function,
+        # 1 for recursion start, one for exception, MAX_FRAMES in helper)
+        self.assertEqual(stack_trace.dropped_frames_count, 3)
+
+
+
