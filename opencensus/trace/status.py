@@ -60,5 +60,5 @@ class Status(object):
     def from_exception(cls, exc):
         return cls(
             code=code_pb2.UNKNOWN,
-            message=exc.message
+            message=str(exc)
         )

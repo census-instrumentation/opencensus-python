@@ -182,7 +182,10 @@ def generate_hash_id():
 def generate_hash_id_from_traceback(tb):
     m = hashlib.md5()
     for tb_line in traceback.format_tb(tb):
-        m.update(tb_line)
+        if isinstance(m, str):
+            m.update(tb_line)
+        else:
+            m.update(tb_line.encode('utf-8'))
     # truncate the hash for easier compatibility with StackDriver,
     # should still be unique enough to avoid collisions
     return int(m.hexdigest()[:12], 16)
