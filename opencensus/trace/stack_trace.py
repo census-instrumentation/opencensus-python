@@ -12,10 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
 import hashlib
+import os
 import random
 import traceback
+
 from opencensus.trace.utils import _get_truncatable_str
 
 MAX_FRAMES = 128
