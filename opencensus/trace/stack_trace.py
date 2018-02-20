@@ -12,9 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import hashlib
+import os
 import random
+import traceback
 
 from opencensus.trace.utils import _get_truncatable_str
+
+MAX_FRAMES = 128
+
+BUILD_ID = os.environ.get('BUILD_ID', 'unknown')
+SOURCE_VERSION = os.environ.get('SOURCE_VERSION', 'unknown')
 
 
 class StackFrame(object):
@@ -84,7 +92,7 @@ class StackFrame(object):
             self.original_func_name)
         stack_frame_json['file_name'] = _get_truncatable_str(self.file_name)
         stack_frame_json['line_number'] = self.line_num
-        stack_frame_json['col_number'] = self.col_num
+        stack_frame_json['column_number'] = self.col_num
         stack_frame_json['load_module'] = {
             'module': _get_truncatable_str(self.load_module),
             'build_id': _get_truncatable_str(self.build_id),
@@ -110,6 +118,11 @@ class StackTrace(object):
     def __init__(self, stack_frames=None, stack_trace_hash_id=None):
         if stack_frames is None:
             stack_frames = []
+        if len(stack_frames) > MAX_FRAMES:
+            self.dropped_frames_count = len(stack_frames) - MAX_FRAMES
+            stack_frames = stack_frames[-MAX_FRAMES:]
+        else:
+            self.dropped_frames_count = 0
 
         if stack_trace_hash_id is None:
             stack_trace_hash_id = generate_hash_id()
@@ -117,16 +130,45 @@ class StackTrace(object):
         self.stack_frames = stack_frames
         self.stack_trace_hash_id = stack_trace_hash_id
 
+    @classmethod
+    def from_traceback(cls, tb):
+        """Initializes a StackTrace from a python traceback instance"""
+        stack_trace = cls(
+            stack_trace_hash_id=generate_hash_id_from_traceback(tb)
+        )
+        # use the add_stack_frame so that json formatting is applied
+        for tb_frame_info in traceback.extract_tb(tb):
+            filename, line_num, fn_name, _ = tb_frame_info
+            stack_trace.add_stack_frame(
+                StackFrame(
+                    func_name=fn_name,
+                    original_func_name=fn_name,
+                    file_name=filename,
+                    line_num=line_num,
+                    col_num=0,  # I don't think this is available in python
+                    load_module=filename,
+                    build_id=BUILD_ID,
+                    source_version=SOURCE_VERSION
+                )
+            )
+        return stack_trace
+
     def add_stack_frame(self, stack_frame):
         """Add StackFrame to frames list."""
-        self.stack_frames.append(stack_frame.format_stack_frame_json())
+        if len(self.stack_frames) >= MAX_FRAMES:
+            self.dropped_frames_count += 1
+        else:
+            self.stack_frames.append(stack_frame.format_stack_frame_json())
 
     def format_stack_trace_json(self):
         """Convert a StackTrace object to json format."""
         stack_trace_json = {}
 
         if self.stack_frames:
-            stack_trace_json['stack_frames'] = self.stack_frames
+            stack_trace_json['stack_frames'] = {
+                'frame': self.stack_frames,
+                'dropped_frames_count': self.dropped_frames_count
+            }
 
         stack_trace_json['stack_trace_hash_id'] = self.stack_trace_hash_id
 
@@ -136,3 +178,12 @@ class StackTrace(object):
 def generate_hash_id():
     """Generate a hash id."""
     return random.getrandbits(64)
+
+
+def generate_hash_id_from_traceback(tb):
+    m = hashlib.md5()
+    for tb_line in traceback.format_tb(tb):
+        m.update(tb_line.encode('utf-8'))
+    # truncate the hash for easier compatibility with StackDriver,
+    # should still be unique enough to avoid collisions
+    return int(m.hexdigest()[:12], 16)
