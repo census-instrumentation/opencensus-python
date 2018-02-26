@@ -35,7 +35,25 @@ log = logging.getLogger(__name__)
 
 
 class OpenCensusTweenFactory(object):
+    """Pyramid tweens are like wsgi middleware, but have access to things
+    like the request, response, and application registry.
+
+    The tween factory is a globally importable callable whose
+    constructor takes a request handler and application registry. It
+    will be called with a pyramid request object.
+
+    For details on pyramid tweens, see
+    https://docs.pylonsproject.org/projects/pyramid/en/latest/narr/hooks.html#creating-a-tween
+    """
     def __init__(self, handler, registry):
+        """Constructor for the pyramid tween
+
+        :param handler: Either the main Pyramid request handling
+        function or another tween
+        :type handler: function
+        :param registry: The pyramid application registry
+        :type registry: :class:`pyramid.registry.Registry`
+        """
         self.handler = handler
         self.registry = registry
         settings = PyramidTraceSettings(registry)
@@ -103,5 +121,4 @@ class OpenCensusTweenFactory(object):
 
 def get_context_header(request):
     """Get trace context header from pyramid request headers."""
-
     return request.headers.get(_PYRAMID_TRACE_HEADER)
