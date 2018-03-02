@@ -358,7 +358,7 @@ Requests
 Census can trace HTTP requests made with the `Requests package`_. The request URL,
 method, and status will be collected.
 
-You can enable Requests integration by specifying ``'requests'`` to ``trace_integrations``.
+You can enable Requests integration by specifying ``'httplib'`` to ``trace_integrations``.
 
 .. _Requests package: https://pypi.python.org/pypi/requests
 
