@@ -33,19 +33,26 @@ class FileExporter(base.Exporter):
                       implement :meth:`.Transport.export`. Defaults to
                       :class:`.SyncTransport`. The other option is
                       :class:`.BackgroundThreadTransport`.
+
+    :type file_mode: str
+    :param file_mode: The file mode to open the output file with.
+                      Defaults to w+
+
     """
 
     def __init__(self, file_name=DEFAULT_FILENAME,
-                 transport=sync.SyncTransport):
+                 transport=sync.SyncTransport,
+                 file_mode='w+'):
         self.file_name = file_name
         self.transport = transport(self)
+        self.file_mode = file_mode
 
     def emit(self, trace):
         """
         :type trace: dict
         :param trace: Trace collected.
         """
-        with open(self.file_name, 'w+') as file:
+        with open(self.file_name, self.file_mode) as file:
             trace_str = json.dumps(trace)
             file.write(trace_str)
 
