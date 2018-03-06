@@ -34,8 +34,8 @@ class FileExporter(base.Exporter):
                       :class:`.SyncTransport`. The other option is
                       :class:`.BackgroundThreadTransport`.
 
-    :type file_name: str
-    :param file_name: The file mode to open the output file with.
+    :type file_mode: str
+    :param file_mode: The file mode to open the output file with.
                       Defaults to w+
 
     """
