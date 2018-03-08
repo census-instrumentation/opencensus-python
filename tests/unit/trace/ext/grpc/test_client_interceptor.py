@@ -20,6 +20,12 @@ from opencensus.trace.ext.grpc import client_interceptor
 
 
 class TestOpenCensusClientInterceptor(unittest.TestCase):
+
+    def setUp(self):
+        from opencensus.trace import execution_context
+
+        execution_context.clear()
+
     def test_constructor_default(self):
         from opencensus.trace.tracers import noop_tracer
         from opencensus.trace.propagation import binary_format
