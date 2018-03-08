@@ -35,25 +35,25 @@ INSECURE_CHANNEL = 'insecure_channel'
 CREATE_CHANNEL = 'create_channel'
 
 
-def trace_integration():
+def trace_integration(tracer=None):
     """Trace the Google Cloud Client libraries by integrating with
     the transport level including HTTP and gRPC.
     """
     log.info('Integrated module: {}'.format(MODULE_NAME))
 
     # Integrate with gRPC
-    trace_grpc()
+    trace_grpc(tracer)
 
     # Integrate with HTTP
-    trace_http()
+    trace_http(tracer)
 
 
-def trace_grpc():
+def trace_grpc(tracer=None):
     """Integrate with gRPC."""
     # Wrap google.cloud._helpers.make_secure_channel
     make_secure_channel_func = getattr(_helpers, MAKE_SECURE_CHANNEL)
     make_secure_channel_wrapped = wrap_make_secure_channel(
-        make_secure_channel_func)
+        make_secure_channel_func, tracer)
     setattr(
         _helpers,
         MAKE_SECURE_CHANNEL,
@@ -62,7 +62,7 @@ def trace_grpc():
     # Wrap the grpc.insecure_channel.
     insecure_channel_func = getattr(grpc, INSECURE_CHANNEL)
     insecure_channel_wrapped = wrap_insecure_channel(
-        insecure_channel_func)
+        insecure_channel_func, tracer)
     setattr(
         grpc,
         INSECURE_CHANNEL,
@@ -70,26 +70,29 @@ def trace_grpc():
 
     # Wrap google.api_core.grpc_helpers.create_channel
     create_channel_func = getattr(grpc_helpers, CREATE_CHANNEL)
-    create_channel_wrapped = wrap_create_channel(create_channel_func)
+    create_channel_wrapped = wrap_create_channel(create_channel_func, tracer)
     setattr(
         grpc_helpers,
         CREATE_CHANNEL,
         create_channel_wrapped)
 
 
-def trace_http():
+def trace_http(tracer=None):
     """Integrate with HTTP (requests library)."""
-    trace_requests()
+    trace_requests(tracer)
 
 
-def wrap_make_secure_channel(make_secure_channel_func):
+def wrap_make_secure_channel(make_secure_channel_func, tracer=None):
     """Wrap the google.cloud._helpers.make_secure_channel."""
     def call(*args, **kwargs):
         channel = make_secure_channel_func(*args, **kwargs)
 
         try:
             host = kwargs.get('host')
-            _tracer = execution_context.get_opencensus_tracer()
+            if tracer is None:
+                _tracer = execution_context.get_opencensus_tracer()
+            else:  # pragma: NO COVER
+                _tracer = tracer
             tracer_interceptor = OpenCensusClientInterceptor(_tracer, host)
             intercepted_channel = grpc.intercept_channel(
                 channel, tracer_interceptor)
@@ -102,14 +105,17 @@ def wrap_make_secure_channel(make_secure_channel_func):
     return call
 
 
-def wrap_insecure_channel(insecure_channel_func):
+def wrap_insecure_channel(insecure_channel_func, tracer=None):
     """Wrap the grpc.insecure_channel."""
     def call(*args, **kwargs):
         channel = insecure_channel_func(*args, **kwargs)
 
         try:
             target = kwargs.get('target')
-            _tracer = execution_context.get_opencensus_tracer()
+            if tracer is None:
+                _tracer = execution_context.get_opencensus_tracer()
+            else:  # pragma: NO COVER
+                _tracer = tracer
             tracer_interceptor = OpenCensusClientInterceptor(_tracer, target)
             intercepted_channel = grpc.intercept_channel(
                 channel, tracer_interceptor)
@@ -122,14 +128,17 @@ def wrap_insecure_channel(insecure_channel_func):
     return call
 
 
-def wrap_create_channel(create_channel_func):
+def wrap_create_channel(create_channel_func, tracer=None):
     """Wrap the google.api_core.grpc_helpers.create_channel."""
     def call(*args, **kwargs):
         channel = create_channel_func(*args, **kwargs)
 
         try:
             target = kwargs.get('target')
-            _tracer = execution_context.get_opencensus_tracer()
+            if tracer is None:
+                _tracer = execution_context.get_opencensus_tracer()
+            else:  # pragma: NO COVER
+                _tracer = tracer
             tracer_interceptor = OpenCensusClientInterceptor(_tracer, target)
             intercepted_channel = grpc.intercept_channel(
                 channel, tracer_interceptor)

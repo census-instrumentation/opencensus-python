@@ -27,9 +27,11 @@ SESSION_WRAP_METHODS = 'request'
 SESSION_CLASS_NAME = 'Session'
 
 
-def trace_integration():
+def trace_integration(tracer=None):
     """Wrap the requests library to trace it."""
     log.info('Integrated module: {}'.format(MODULE_NAME))
+
+    execution_context.set_opencensus_tracer(tracer)
 
     # Wrap the requests functions
     for func in REQUESTS_WRAP_METHODS:

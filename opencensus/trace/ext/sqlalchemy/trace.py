@@ -25,7 +25,7 @@ log = logging.getLogger(__name__)
 MODULE_NAME = 'sqlalchemy'
 
 
-def trace_integration():
+def trace_integration(tracer=None):
     """Integrate with SQLAlchemy to trace it using event listener.
 
     See: http://docs.sqlalchemy.org/en/latest/core/events.html
