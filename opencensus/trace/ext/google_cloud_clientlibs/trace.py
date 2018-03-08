@@ -48,7 +48,7 @@ def trace_integration(tracer=None):
     trace_http(tracer)
 
 
-def trace_grpc(tracer):
+def trace_grpc(tracer=None):
     """Integrate with gRPC."""
     # Wrap google.cloud._helpers.make_secure_channel
     make_secure_channel_func = getattr(_helpers, MAKE_SECURE_CHANNEL)
@@ -77,12 +77,12 @@ def trace_grpc(tracer):
         create_channel_wrapped)
 
 
-def trace_http(tracer):
+def trace_http(tracer=None):
     """Integrate with HTTP (requests library)."""
     trace_requests(tracer)
 
 
-def wrap_make_secure_channel(make_secure_channel_func, tracer):
+def wrap_make_secure_channel(make_secure_channel_func, tracer=None):
     """Wrap the google.cloud._helpers.make_secure_channel."""
     def call(*args, **kwargs):
         channel = make_secure_channel_func(*args, **kwargs)
@@ -105,7 +105,7 @@ def wrap_make_secure_channel(make_secure_channel_func, tracer):
     return call
 
 
-def wrap_insecure_channel(insecure_channel_func, tracer):
+def wrap_insecure_channel(insecure_channel_func, tracer=None):
     """Wrap the grpc.insecure_channel."""
     def call(*args, **kwargs):
         channel = insecure_channel_func(*args, **kwargs)
@@ -128,7 +128,7 @@ def wrap_insecure_channel(insecure_channel_func, tracer):
     return call
 
 
-def wrap_create_channel(create_channel_func, tracer):
+def wrap_create_channel(create_channel_func, tracer=None):
     """Wrap the google.api_core.grpc_helpers.create_channel."""
     def call(*args, **kwargs):
         channel = create_channel_func(*args, **kwargs)
