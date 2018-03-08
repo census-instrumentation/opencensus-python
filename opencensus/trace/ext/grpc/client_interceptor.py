@@ -32,6 +32,9 @@ GRPC_METHOD = 'GRPC_METHOD'
 
 TIMEOUT = 3
 
+# Do not trace StackDriver Trace exporter activities to avoid deadlock.
+CLOUD_TRACE = 'google.devtools.cloudtrace'
+
 
 class _ClientCallDetails(
     collections.namedtuple(
@@ -137,6 +140,10 @@ class OpenCensusClientInterceptor(grpc.UnaryUnaryClientInterceptor,
 
     def intercept_unary_unary(
             self, continuation, client_call_details, request):
+        if CLOUD_TRACE in client_call_details.method:
+            response = continuation(client_call_details, request)
+            return response
+
         new_details, new_request, current_span = self._intercept_call(
             client_call_details=client_call_details,
             request_iterator=iter((request,)),
@@ -152,6 +159,10 @@ class OpenCensusClientInterceptor(grpc.UnaryUnaryClientInterceptor,
 
     def intercept_unary_stream(self, continuation, client_call_details,
                                request):
+        if CLOUD_TRACE in client_call_details.method:
+            response = continuation(client_call_details, request)
+            return response
+
         new_details, new_request_iterator, current_span = self._intercept_call(
             client_call_details=client_call_details,
             request_iterator=iter((request,)),
@@ -166,6 +177,10 @@ class OpenCensusClientInterceptor(grpc.UnaryUnaryClientInterceptor,
 
     def intercept_stream_unary(self, continuation, client_call_details,
                                request_iterator):
+        if CLOUD_TRACE in client_call_details.method:
+            response = continuation(client_call_details, request_iterator)
+            return response
+
         new_details, new_request_iterator, current_span = self._intercept_call(
             client_call_details=client_call_details,
             request_iterator=request_iterator,
@@ -181,6 +196,10 @@ class OpenCensusClientInterceptor(grpc.UnaryUnaryClientInterceptor,
 
     def intercept_stream_stream(self, continuation, client_call_details,
                                 request_iterator):
+        if CLOUD_TRACE in client_call_details.method:
+            response = continuation(client_call_details, request_iterator)
+            return response
+
         new_details, new_request_iterator, current_span = self._intercept_call(
             client_call_details=client_call_details,
             request_iterator=request_iterator,
