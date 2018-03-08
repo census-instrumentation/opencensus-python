@@ -23,7 +23,7 @@ from google.cloud.trace.client import Client
 
 
 # OpenCensus Version
-VERSION = '0.1.2'
+VERSION = '0.1.3'
 
 # Agent
 AGENT = 'opencensus-python [{}]'.format(VERSION)
