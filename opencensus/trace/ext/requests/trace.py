@@ -28,7 +28,7 @@ SESSION_CLASS_NAME = 'Session'
 
 
 def trace_integration():
-    """Wrap the mysql connector to trace it."""
+    """Wrap the requests library to trace it."""
     log.info('Integrated module: {}'.format(MODULE_NAME))
 
     # Wrap the requests functions
