@@ -26,10 +26,14 @@ REQUESTS_WRAP_METHODS = ['get', 'post', 'put', 'delete', 'head', 'options']
 SESSION_WRAP_METHODS = 'request'
 SESSION_CLASS_NAME = 'Session'
 
+TRACER = None
 
-def trace_integration():
+
+def trace_integration(trace=None):
     """Wrap the mysql connector to trace it."""
     log.info('Integrated module: {}'.format(MODULE_NAME))
+
+    TRACER = tracer
 
     # Wrap the requests functions
     for func in REQUESTS_WRAP_METHODS:
@@ -45,7 +49,10 @@ def trace_integration():
 def wrap_requests(requests_func):
     """Wrap the requests function to trace it."""
     def call(url, *args, **kwargs):
-        _tracer = execution_context.get_opencensus_tracer()
+        if TRACER is None:
+            _tracer = execution_context.get_opencensus_tracer()
+        else:
+            _tracer = TRACER
         _span = _tracer.start_span()
         _span.name = '[requests]{}'.format(requests_func.__name__)
 
@@ -68,7 +75,10 @@ def wrap_session_request(wrapped, instance, args, kwargs):
     """Wrap the session function to trace it."""
     method = kwargs.get('method') or args[0]
     url = kwargs.get('url') or args[1]
-    _tracer = execution_context.get_opencensus_tracer()
+    if TRACER is None:
+        _tracer = execution_context.get_opencensus_tracer()
+    else:
+        _tracer = TRACER
     _span = _tracer.start_span()
     _span.name = '[requests]{}'.format(method)
 

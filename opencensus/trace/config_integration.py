@@ -23,7 +23,7 @@ SUPPORTED_INTEGRATIONS = ['httplib', 'mysql', 'postgresql', 'pymysql',
 PATH_PREFIX = 'opencensus.trace.ext'
 
 
-def trace_integrations(integrations):
+def trace_integrations(integrations, tracer=None):
     """Enable tracing on the selected integrations.
 
     :type integrations: list
@@ -32,16 +32,9 @@ def trace_integrations(integrations):
     integrated = []
 
     for item in integrations:
-        try:
-            path_to_module = '{}.{}.trace'.format(PATH_PREFIX, item)
-            module = importlib.import_module(path_to_module)
-            module.trace_integration()
-            integrated.append(item)
-        except Exception:
-            log.warning(
-                'Failed to integrate module: {}, supported integrations are {}'
-                .format(
-                    item,
-                    ', '.join(str(x) for x in SUPPORTED_INTEGRATIONS)))
+	    path_to_module = '{}.{}.trace'.format(PATH_PREFIX, item)
+	    module = importlib.import_module(path_to_module)
+	    module.trace_integration(tracer=tracer)
+	    integrated.append(item)
 
     return integrated

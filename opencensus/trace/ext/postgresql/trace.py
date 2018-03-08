@@ -30,7 +30,7 @@ CURSOR_WRAP_METHOD = 'cursor'
 QUERY_WRAP_METHODS = ['execute', 'executemany']
 
 
-def trace_integration():
+def trace_integration(tracer=None):
     """Wrap the mysql connector to trace it."""
     log.info('Integrated module: {}'.format(MODULE_NAME))
     conn_func = getattr(psycopg2, CONN_WRAP_METHOD)
