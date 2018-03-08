@@ -26,13 +26,12 @@ REQUESTS_WRAP_METHODS = ['get', 'post', 'put', 'delete', 'head', 'options']
 SESSION_WRAP_METHODS = 'request'
 SESSION_CLASS_NAME = 'Session'
 
-TRACER = None
-
 
 def trace_integration(tracer=None):
     """Wrap the requests library to trace it."""
     log.info('Integrated module: {}'.format(MODULE_NAME))
 
+    global TRACER
     TRACER = tracer
 
     # Wrap the requests functions
@@ -46,12 +45,12 @@ def trace_integration(tracer=None):
         MODULE_NAME, 'Session.request', wrap_session_request)
 
 
-def wrap_requests(requests_func):
+def wrap_requests(requests_func, tracer=None):
     """Wrap the requests function to trace it."""
     def call(url, *args, **kwargs):
         if TRACER is None:
             _tracer = execution_context.get_opencensus_tracer()
-        else:
+        else:  # pragma: NO COVER
             _tracer = TRACER
         _span = _tracer.start_span()
         _span.name = '[requests]{}'.format(requests_func.__name__)
@@ -77,7 +76,7 @@ def wrap_session_request(wrapped, instance, args, kwargs):
     url = kwargs.get('url') or args[1]
     if TRACER is None:
         _tracer = execution_context.get_opencensus_tracer()
-    else:
+    else:  # pragma: NO COVER
         _tracer = TRACER
     _span = _tracer.start_span()
     _span.name = '[requests]{}'.format(method)

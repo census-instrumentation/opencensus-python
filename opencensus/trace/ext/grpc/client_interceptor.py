@@ -178,7 +178,7 @@ class OpenCensusClientInterceptor(grpc.UnaryUnaryClientInterceptor,
     def intercept_stream_unary(self, continuation, client_call_details,
                                request_iterator):
         if CLOUD_TRACE in client_call_details.method:
-            response = continuation(client_call_details, request)
+            response = continuation(client_call_details, request_iterator)
             return response
 
         new_details, new_request_iterator, current_span = self._intercept_call(
@@ -197,7 +197,7 @@ class OpenCensusClientInterceptor(grpc.UnaryUnaryClientInterceptor,
     def intercept_stream_stream(self, continuation, client_call_details,
                                 request_iterator):
         if CLOUD_TRACE in client_call_details.method:
-            response = continuation(client_call_details, request)
+            response = continuation(client_call_details, request_iterator)
             return response
 
         new_details, new_request_iterator, current_span = self._intercept_call(

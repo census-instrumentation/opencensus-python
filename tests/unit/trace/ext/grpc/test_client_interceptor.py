@@ -181,14 +181,29 @@ class TestOpenCensusClientInterceptor(unittest.TestCase):
         interceptor._intercept_call = mock.Mock(return_value=(None, iter([mock.Mock()]), None))
         return interceptor, continuation, mock_tracer
 
-    def test_intercept_unary_unary(self):
+    def test_intercept_unary_unary_trace(self):
         interceptor, continuation, mock_response = self._unary_helper()
         client_call_details = mock.Mock()
         client_call_details.method = 'test'
         interceptor.intercept_unary_unary(continuation, client_call_details, [])
         self.assertTrue(mock_response.add_done_callback.called)
 
-    def test_intercept_unary_stream(self):
+    def test_intercept_unary_unary_not_trace(self):
+        interceptor, continuation, mock_response = self._unary_helper()
+        client_call_details = mock.Mock()
+        client_call_details.method = 'google.devtools.cloudtrace'
+        interceptor.intercept_unary_unary(continuation, client_call_details, [])
+        # Should skip tracing the cloud trace activities
+        self.assertFalse(mock_response.add_done_callback.called)
+
+    def test_intercept_unary_stream_trace(self):
+        interceptor, continuation, mock_tracer = self._stream_helper()
+        client_call_details = mock.Mock()
+        client_call_details.method = 'test'
+        interceptor.intercept_unary_stream(continuation, client_call_details, [])
+        self.assertTrue(mock_tracer.end_span.called)
+
+    def test_intercept_unary_stream_not_trace(self):
         interceptor, continuation, mock_tracer = self._stream_helper()
         client_call_details = mock.Mock()
         client_call_details.method = 'google.devtools.cloudtrace'
@@ -196,19 +211,35 @@ class TestOpenCensusClientInterceptor(unittest.TestCase):
         # Should skip tracing the cloud trace activities
         self.assertFalse(mock_tracer.end_span.called)
 
-    def test_intercept_stream_unary(self):
+    def test_intercept_stream_unary_trace(self):
         interceptor, continuation, mock_response = self._unary_helper()
         client_call_details = mock.Mock()
         client_call_details.method = 'test'
         interceptor.intercept_stream_unary(continuation, client_call_details, [])
         self.assertTrue(mock_response.add_done_callback.called)
 
-    def test_intercept_stream_stream(self):
+    def test_intercept_stream_unary_not_trace(self):
+        interceptor, continuation, mock_tracer = self._stream_helper()
+        client_call_details = mock.Mock()
+        client_call_details.method = 'google.devtools.cloudtrace'
+        interceptor.intercept_stream_unary(continuation, client_call_details, [])
+        # Should skip tracing the cloud trace activities
+        self.assertFalse(mock_tracer.end_span.called)
+
+    def test_intercept_stream_stream_trace(self):
         interceptor, continuation, mock_tracer = self._stream_helper()
         client_call_details = mock.Mock()
         client_call_details.method = 'test'
         interceptor.intercept_stream_stream(continuation, client_call_details, [])
         self.assertTrue(mock_tracer.end_span.called)
+
+    def test_intercept_stream_stream_not_trace(self):
+        interceptor, continuation, mock_tracer = self._stream_helper()
+        client_call_details = mock.Mock()
+        client_call_details.method = 'google.devtools.cloudtrace'
+        interceptor.intercept_stream_stream(continuation, client_call_details, [])
+        # Should skip tracing the cloud trace activities
+        self.assertFalse(mock_tracer.end_span.called)
 
 
 class MockTracer(object):

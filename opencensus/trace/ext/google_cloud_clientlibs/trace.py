@@ -91,7 +91,7 @@ def wrap_make_secure_channel(make_secure_channel_func, tracer=None):
             host = kwargs.get('host')
             if tracer is None:
                 _tracer = execution_context.get_opencensus_tracer()
-            else:
+            else:  # pragma: NO COVER
                 _tracer = tracer
             tracer_interceptor = OpenCensusClientInterceptor(_tracer, host)
             intercepted_channel = grpc.intercept_channel(
@@ -114,7 +114,7 @@ def wrap_insecure_channel(insecure_channel_func, tracer=None):
             target = kwargs.get('target')
             if tracer is None:
                 _tracer = execution_context.get_opencensus_tracer()
-            else:
+            else:  # pragma: NO COVER
                 _tracer = tracer
             tracer_interceptor = OpenCensusClientInterceptor(_tracer, target)
             intercepted_channel = grpc.intercept_channel(
@@ -137,7 +137,7 @@ def wrap_create_channel(create_channel_func, tracer=None):
             target = kwargs.get('target')
             if tracer is None:
                 _tracer = execution_context.get_opencensus_tracer()
-            else:
+            else:  # pragma: NO COVER
                 _tracer = tracer
             tracer_interceptor = OpenCensusClientInterceptor(_tracer, target)
             intercepted_channel = grpc.intercept_channel(
