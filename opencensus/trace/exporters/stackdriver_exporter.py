@@ -162,15 +162,19 @@ class StackdriverExporter(base.Exporter):
         spans_list = []
 
         for span in spans_json:
+            # Need to convert span_id from int to hex string
+            span_id_hex = hex(span.get('spanId'))
+            span_id = span_id_hex[2:].zfill(16)
+
             span_name = 'projects/{}/traces/{}/spans/{}'.format(
-                self.project_id, trace_id, span.get('spanId'))
+                self.project_id, trace_id, span_id)
 
             span_json = {
                 'name': span_name,
                 'displayName': span.get('displayName'),
                 'startTime': span.get('startTime'),
                 'endTime': span.get('endTime'),
-                'spanId': str(span.get('spanId')),
+                'spanId': span_id,
                 'attributes': span.get('attributes'),
                 'links': span.get('links'),
                 'status': span.get('status'),
@@ -181,7 +185,9 @@ class StackdriverExporter(base.Exporter):
             }
 
             if span.get('parentSpanId') is not None:
-                parent_span_id = str(span.get('parentSpanId'))
+                # Need to convert parent_span_id from int to hex string
+                parent_span_id_hex = hex(span.get('parentSpanId'))
+                parent_span_id = parent_span_id_hex[2:].zfill(16)
                 span_json['parentSpanId'] = parent_span_id
 
             spans_list.append(span_json)
