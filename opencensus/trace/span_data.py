@@ -12,29 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import typing
+import collections
 
-from opencensus.trace import link as link_module
-from opencensus.trace import stack_trace
-from opencensus.trace import status
-from opencensus.trace import time_event as time_event_module
-
-_SpanData = typing.NamedTuple(
+_SpanData = collections.namedtuple(
     '_SpanData',
     (
-        ('name', str),
-        ('span_id', int),
-        ('parent_span_id', typing.Optional[int]),
-        ('attributes', typing.Optional[dict]),
-        ('start_time', str),
-        ('end_time', str),
-        ('stack_trace', typing.Optional[stack_trace.StackTrace]),
-        ('time_events',
-         typing.Optional[typing.Sequence[time_event_module.TimeEvent]]),
-        ('links', typing.Optional[typing.Sequence[link_module.Link]]),
-        ('status', typing.Optional[status.Status]),
-        ('same_process_as_parent_span', typing.Optional[bool]),
-    )
+        'name',
+        'span_id',
+        'parent_span_id',
+        'attributes',
+        'start_time',
+        'end_time',
+        'stack_trace',
+        'time_events',
+        'links',
+        'status',
+        'same_process_as_parent_span',
+    ),
 )
 
 
