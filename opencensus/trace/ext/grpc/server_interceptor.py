@@ -130,14 +130,14 @@ class OpenCensusServerInterceptor(grpc.ServerInterceptor):
             current_span.add_attribute(
                 attributes_helper.COMMON_ATTRIBUTES.get(
                     ATTRIBUTE_ERROR_MESSAGE),
-                str(exc_value.message)
+                str(exc_value)
             )
             current_span.stack_trace = stack_trace.StackTrace.from_traceback(
                 tb
             )
             current_span.status = status.Status(
                 code=code_pb2.UNKNOWN,
-                message=exc_value.message
+                message=str(exc_value)
             )
 
         tracer.end_span()
