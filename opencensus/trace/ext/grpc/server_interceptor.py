@@ -13,12 +13,16 @@
 # limitations under the License.
 import collections
 import logging
+import sys
 
+from google.rpc import code_pb2
 import grpc
 
 from opencensus.trace import attributes_helper
-from opencensus.trace import tracer as tracer_module
 from opencensus.trace import execution_context
+from opencensus.trace import stack_trace as stack_trace
+from opencensus.trace import status
+from opencensus.trace import tracer as tracer_module
 from opencensus.trace.ext import grpc as oc_grpc
 from opencensus.trace.propagation import binary_format
 
@@ -29,8 +33,10 @@ ATTRIBUTE_ERROR_MESSAGE = 'ERROR_MESSAGE'
 RpcRequestInfo = collections.namedtuple(
     'RPCRequestInfo', ('request', 'context')
 )
+# exc_info is the three tuple defined at:
+# https://docs.python.org/3/library/sys.html#sys.exc_info
 RpcResponseInfo = collections.namedtuple(
-    'RPCCallbackInfo', ('request', 'context', 'response', 'exc')
+    'RPCCallbackInfo', ('request', 'context', 'response', 'exc_info')
 )
 
 
@@ -60,19 +66,21 @@ class RpcMethodHandlerWrapper(object):
         def _wrapper(request, context, *args, **kwargs):
             for callback in self._pre_handler_callbacks:
                 callback(RpcRequestInfo(request, context))
-            exc = None
+            exc_info = (None, None, None)
             response = None
             try:
                 response = getattr(
                     self.handler, prop_name
                 )(request, context, *args, **kwargs)
             except Exception as e:
-                logging.error(e)
-                exc = e
+                logging.exception(e)
+                exc_info = sys.exc_info()
                 raise
             finally:
                 for callback in self._post_handler_callbacks:
-                    callback(RpcResponseInfo(request, context, response, exc))
+                    callback(RpcResponseInfo(
+                        request, context, response, exc_info)
+                    )
             return response
 
         return _wrapper
@@ -116,11 +124,22 @@ class OpenCensusServerInterceptor(grpc.ServerInterceptor):
 
     def _end_server_span(self, rpc_response_info):
         tracer = execution_context.get_opencensus_tracer()
-        if rpc_response_info.exc is not None:
-            tracer.add_attribute_to_current_span(
+        exc_type, exc_value, tb = rpc_response_info.exc_info
+        if exc_type is not None:
+            current_span = tracer.current_span()
+            current_span.add_attribute(
                 attributes_helper.COMMON_ATTRIBUTES.get(
                     ATTRIBUTE_ERROR_MESSAGE),
-                str(rpc_response_info.exc))
+                str(exc_value.message)
+            )
+            current_span.stack_trace = stack_trace.StackTrace.from_traceback(
+                tb
+            )
+            current_span.status = status.Status(
+                code=code_pb2.UNKNOWN,
+                message=exc_value.message
+            )
+
         tracer.end_span()
 
     def intercept_handler(self, continuation, handler_call_details):
