@@ -29,9 +29,13 @@ class MeanAggregation(BaseAggregation):
         return self.instance
 
 class DistributionAggregation(BaseAggregation):
-    def __init__(self, bucket_boundaries, distribution=None):
+    def __init__(self, boundaries=None, distribution=None):
+        '''self.boundaries = list(bucket_boundaries.BucketBoundaries(boundaries) or [])'''
+        self.boundaries = bucket_boundaries.BucketBoundaries(boundaries)
         self.distribution = dict(distribution or {})
-        self.bucket_boundaries = bucket_boundaries.BucketBoundaries(bucket_boundaries)
 
     def get_boundaries(self):
-        return bucket_boundaries.BucketBoundaries.get_boundaries(self.bucket_boundaries)
+        return bucket_boundaries.BucketBoundaries.get_boundaries(self.boundaries)
+
+    def get_distribution(self):
+        return self.distribution

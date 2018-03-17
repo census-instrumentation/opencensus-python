@@ -1,14 +1,13 @@
-from opencensus.stats import measure
-from opencensus.stats import aggregation
-from opencensus.tags import tag_key
+from opencensus.stats.measure import BaseMeasure
+from opencensus.stats.aggregation import DistributionAggregation
+
 
 class View(object):
-    def __init__(self, name, description, measure, aggregation, columns):
+    def __init__(self, name, description, measure, aggregation):
         self.name = name
         self.description = description
-        self.measure = measure.Measure(self.measure)
-        self.aggregation = aggregation.BaseAggregation(self.aggregation)
-        self.columns = columns[tag_key]
+        self.measure = BaseMeasure(measure.get_name(), measure.get_description(), measure.get_unit())
+        self.aggregation = DistributionAggregation(aggregation.get_boundaries(), aggregation.get_distribution())
 
     def get_name(self):
         return self.name
@@ -17,10 +16,7 @@ class View(object):
         return self.description
 
     def get_measure(self):
-        return measure.Measure.get_description(self.measure)
+        return self.measure
 
     def get_aggregation(self):
-        return aggregation.BaseAggregation.get_aggregation(self.aggregation)
-
-    def get_columns(self):
-        return self.columns
+        return self.aggregation

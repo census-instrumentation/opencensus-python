@@ -14,31 +14,23 @@
 
 from google.cloud import monitoring
 from opencensus.stats.exporters import stackdriver_exporter
-
-HOST_PORT = 'localhost:50051'
-
+from opencensus.stats import measure
+from opencensus.stats import view
+from opencensus.stats import aggregation
 
 def main():
+    views = []
 
-    client = monitoring.Client()
-    exporter = stackdriver_exporter.StackdriverExporter(client, "opencensus-python")
+    client = monitoring.Client(project='opencensus-python')
+    exporter = stackdriver_exporter.StackDriverExporter(client, "opencensus-python")
 
-    metric = client.metric(
-        type_= 'serviceruntime.googleapis.com/api/request_latencies',
-        labels={}
-    )
-    resource = client.resource(
-        type_='gce_instance',
-        labels={
-            'instance_id': '1234567890123456789',
-            'zone': 'us-central1-f',
-        }
-    )
+    boundaries = [0, 1/16, 1/32]
 
-    '''metric_descriptor = exporter.translate_to_stackdriver(metric)'''
-    '''metric_descriptor.create()'''
-    client.write_point(metric, resource, 3.14)
+    video_size = measure.BaseMeasure("my.org/measure/video_size", "size of processed videos", "MBy")
+    my_view = view.View("my.org/views/video_size_cum", "processed video size over time", video_size, aggregation.DistributionAggregation(boundaries))
+    views = views.append(my_view)
 
+    metric_descriptor = exporter.translate_to_stackdriver(views)
 
 if __name__ == '__main__':
     main()

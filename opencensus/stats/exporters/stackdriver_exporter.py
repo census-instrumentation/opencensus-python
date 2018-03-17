@@ -1,8 +1,10 @@
 import os
 from google.cloud.monitoring import Client
-from google.cloud.monitoring import LabelDescriptor
 from google.cloud.monitoring import Metric
+from google.cloud.monitoring import MetricDescriptor
 from google.cloud.monitoring import MetricKind, ValueType
+from google.cloud.monitoring import LabelValueType
+from google.cloud.monitoring import LabelDescriptor
 from opencensus.stats import view
 
 class StackDriverExporter(object):
@@ -16,28 +18,28 @@ class StackDriverExporter(object):
     def emit(self, metrics):
         ''' finish this up '''
 
-
     def translate_to_stackdriver(self, views):
-        metric_list = []
-        for view in views:
-            metric_type = view.get_name()
-            metric_label = view.get_description()
-            metrics = {metric_type : metric_label}
-
+        metric_list = {}
+        metrics = {}
+        labels = []
+        for v in views or []:
+            metric_type = v.View.name
+            metric_label = v.view.get_description()
+            metrics[metric_type] = metric_label
+            labels.append(LabelDescriptor(metric_type, LabelValueType.STRING, metric_label))
             for metric in metrics:
-                metric_descriptor = {
-                    'type': metrics[metric_type],
-                    'metricKind': metric['metricKind'],
-                    'valueType': metric['valueType'],
-                    'labels': metrics.values(),
-                    'unit': metric['unit'],
-                    'description': metric['description'],
-                    'displayName': metric['displayName']
-                }
-
-                metric_list.append(metric_descriptor)
-        metrics = {metric_type: metric_descriptor}
-        return metrics
+                metric_descriptor = MetricDescriptor(
+                    self.client,
+                    metric_type,
+                    MetricKind.CUMULATIVE,
+                    ValueType.DISTRIBUTION,
+                    labels,
+                    metric,
+                    metric_label,
+                    metric_type
+                )
+                metric_list[metric_type]= metric_descriptor
+        return metric_list
 
 
 
