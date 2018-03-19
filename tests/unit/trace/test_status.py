@@ -14,7 +14,7 @@
 
 import unittest
 
-import mock
+from google.rpc import code_pb2
 
 from opencensus.trace import status as status_module
 
@@ -63,3 +63,10 @@ class TestStatus(unittest.TestCase):
         }
 
         self.assertEqual(expected_status_json, status_json)
+
+    def test_create_from_exception(self):
+        message = 'test message'
+        exc = ValueError(message)
+        status = status_module.Status.from_exception(exc)
+        self.assertEqual(status.message, message)
+        self.assertEqual(status.code, code_pb2.UNKNOWN)

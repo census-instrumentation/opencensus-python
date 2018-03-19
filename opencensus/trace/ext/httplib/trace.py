@@ -36,7 +36,7 @@ HTTP_URL = attributes_helper.COMMON_ATTRIBUTES['HTTP_URL']
 HTTP_STATUS_CODE = attributes_helper.COMMON_ATTRIBUTES['HTTP_STATUS_CODE']
 
 
-def trace_integration():
+def trace_integration(tracer=None):
     """Wrap the httplib to trace."""
     log.info('Integrated module: {}'.format(MODULE_NAME))
 

@@ -19,6 +19,8 @@ class NoopTracer(base.Tracer):
     """No-op implementation of the :class:`Tracer` interface, all methods are
     no-ops. Should be used when tracing is not enabled or not sampled.
     """
+    span_context = None
+
     def finish(self):
         """End spans and send to reporter."""
         return None

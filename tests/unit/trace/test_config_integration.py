@@ -22,9 +22,7 @@ from opencensus.trace import config_integration
 class Test_trace_integrations(unittest.TestCase):
 
     def test_trace_integrations_not_exist(self):
-        integrations = {
-            'test_not_exists': True,
-        }
+        integrations = ['test_not_exists']
 
         integrated = config_integration.trace_integrations(integrations)
 

@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from google.rpc import code_pb2
+
 
 class Status(object):
     """The Status type defines a logical error model that is suitable for
@@ -53,3 +55,10 @@ class Status(object):
             status_json['details'] = self.details
 
         return status_json
+
+    @classmethod
+    def from_exception(cls, exc):
+        return cls(
+            code=code_pb2.UNKNOWN,
+            message=str(exc)
+        )

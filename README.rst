@@ -14,7 +14,7 @@ OpenCensus for Python - A stats collection and distributed tracing framework
 
 -  `API Documentation`_
 
-.. _API Documentation: http://opencensus.io/opencensus-python/trace/usage.html
+.. _API Documentation: http://census-instrumentation.github.io/opencensus-python/trace/usage.html
 
 Installation & basic usage
 --------------------------
@@ -183,7 +183,7 @@ Framework Integration
 ---------------------
 
 Census supports integration with popular web frameworks including
-Django, Flask, and Webapp2. When the application receives a HTTP request,
+Django, Flask, Pyramid, and Webapp2. When the application receives a HTTP request,
 the tracer will automatically generate a span context using the trace
 information extracted from the request headers, and propagated to the
 child spans.
@@ -252,6 +252,39 @@ setting in ``settings.py``:
         'ZIPKIN_EXPORTER_HOST_NAME': 'localhost',
         'ZIPKIN_EXPORTER_PORT': 9411,
     }
+
+
+Pyramid
+~~~~~~~
+
+In your application, add the pyramid tween and your requests will be
+traced.
+
+.. code:: python
+
+    def main(global_config, **settings):
+        config = Configurator(settings=settings)
+
+        config.add_tween('opencensus.trace.ext.pyramid'
+                         '.pyramid_middleware.OpenCensusTweenFactory')
+
+To configure the sampler, exporter, and propagator, pass the instances
+into the pyramid settings
+
+.. code:: python
+
+    from opencensus.trace.exporters import print_exporter
+    from opencensus.trace.propagation import google_cloud_format
+    from opencensus.trace.samplers import probability
+
+    settings = {}
+    settings['OPENCENSUS_TRACE'] = {
+        'EXPORTER': print_exporter.PrintExporter(),
+        'SAMPLER': probability.ProbabilitySampler(rate=0.5),
+        'PROPAGATOR': google_cloud_format.GoogleCloudFormatPropagator(),
+    }
+
+    config = Configurator(settings=settings)
 
 gRPC Integration
 ----------------

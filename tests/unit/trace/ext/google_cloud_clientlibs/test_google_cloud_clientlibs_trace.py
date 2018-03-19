@@ -112,3 +112,23 @@ class Test_google_cloud_clientlibs_trace(unittest.TestCase):
             wrapped()
 
         self.assertTrue(mock_interceptor.called)
+
+    def test_wrap_create_channel(self):
+        mock_tracer = mock.Mock()
+        mock_interceptor = mock.Mock()
+        mock_func = mock.Mock()
+
+        patch_tracer = mock.patch(
+            'opencensus.trace.ext.google_cloud_clientlibs.trace.execution_context.'
+            'get_opencensus_tracer',
+            return_value=mock_tracer)
+        patch_interceptor = mock.patch(
+            'opencensus.trace.ext.google_cloud_clientlibs.trace.OpenCensusClientInterceptor',
+            mock_interceptor)
+
+        wrapped = trace.wrap_create_channel(mock_func)
+
+        with patch_tracer, patch_interceptor:
+            wrapped()
+
+        self.assertTrue(mock_interceptor.called)
