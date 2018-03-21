@@ -20,13 +20,24 @@ class Exporter(object):
 
     Subclasses of :class:`Exporter` must override :meth:`export`.
     """
-    def emit(self, trace):
-        """Emit the trace."""
+
+    def emit(self, span_datas):
+        """
+        :type span_datas: list of :class:
+            `~opencensus.trace.span_data.SpanData`
+        :param list of opencensus.trace.span_data.SpanData span_datas:
+            SpanData tuples to emit
+        """
         raise NotImplementedError
 
-    def export(self, trace):
+    def export(self, span_datas):
         """Export the trace. Send trace to transport, and transport will call
         exporter.emit() to actually send the trace to the specified tracing
         backend.
+
+        :type span_datas: list of :class:
+            `~opencensus.trace.span_data.SpanData`
+        :param list of opencensus.trace.span_data.SpanData span_datas:
+            SpanData tuples to export
         """
         raise NotImplementedError

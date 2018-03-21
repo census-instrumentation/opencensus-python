@@ -16,6 +16,7 @@ import unittest
 
 import mock
 
+from opencensus.trace import span_data as span_data_module
 from opencensus.trace.exporters import stackdriver_exporter
 
 
@@ -67,17 +68,24 @@ class TestStackdriverExporter(unittest.TestCase):
         self.assertTrue(exporter.transport.export_called)
 
     def test_emit(self):
-        spans = {'spans':
-            [
-                {
-                    'displayName': {
-                        'value': 'span',
-                        'truncated_byte_count': 0
-                    },
-                    'spanId': '1111',
-                }
-            ]
-        }
+        span_datas = [
+            span_data_module.SpanData(
+                name='span',
+                context=None,
+                span_id='1111',
+                parent_span_id=None,
+                attributes=None,
+                start_time=None,
+                end_time=None,
+                child_span_count=None,
+                stack_trace=None,
+                time_events=None,
+                links=None,
+                status=None,
+                same_process_as_parent_span=None,
+                span_kind=0,
+            )
+        ]
 
         stackdriver_spans = {
             'spans': [
@@ -119,7 +127,7 @@ class TestStackdriverExporter(unittest.TestCase):
             client=client,
             project_id=project_id)
 
-        exporter.emit(spans)
+        exporter.emit(span_datas)
 
         name = 'projects/{}'.format(project_id)
 

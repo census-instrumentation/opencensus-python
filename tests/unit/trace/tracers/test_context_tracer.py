@@ -118,7 +118,7 @@ class TestContextTracer(unittest.TestCase):
         tracer = context_tracer.ContextTracer(exporter=exporter)
         mock_span = mock.Mock()
         mock_span.name = 'span'
-        mock_span._child_spans = []
+        mock_span.children = []
         mock_span.status = None
         mock_span.links = None
         mock_span.stack_trace = None
@@ -142,7 +142,7 @@ class TestContextTracer(unittest.TestCase):
         tracer = context_tracer.ContextTracer()
         mock_span = mock.Mock()
         mock_span.name = 'span'
-        mock_span._child_spans = []
+        mock_span.children = []
         mock_span.status = None
         mock_span.links = None
         mock_span.stack_trace = None
@@ -166,7 +166,7 @@ class TestContextTracer(unittest.TestCase):
         tracer._spans_list = [span]
         mock_span = mock.Mock()
         mock_span.name = 'span'
-        mock_span._child_spans = []
+        mock_span.children = []
         mock_span.status = None
         mock_span.links = None
         mock_span.stack_trace = None

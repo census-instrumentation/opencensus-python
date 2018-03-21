@@ -30,8 +30,7 @@ class TestPrintExporter(unittest.TestCase):
         traces = {}
         exporter = self._make_one()
 
-        printed = exporter.emit(traces)
-        self.assertEqual(printed, traces)
+        exporter.emit(traces)
 
     def test_export(self):
         exporter = self._make_one(transport=MockTransport)

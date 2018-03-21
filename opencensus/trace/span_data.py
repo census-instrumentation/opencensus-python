@@ -13,21 +13,26 @@
 # limitations under the License.
 
 import collections
+from opencensus.trace import utils
+from opencensus.trace import attributes
 
 _SpanData = collections.namedtuple(
     '_SpanData',
     (
         'name',
+        'context',
         'span_id',
         'parent_span_id',
         'attributes',
         'start_time',
         'end_time',
+        'child_span_count',
         'stack_trace',
         'time_events',
         'links',
         'status',
         'same_process_as_parent_span',
+        'span_kind',
     ),
 )
 
@@ -38,6 +43,9 @@ class SpanData(_SpanData):
 
     :type name: str
     :param name: The name of the span.
+
+    :type: context: :class: `~opencensus.trace.span_context.SpanContext`
+    :param context: The SpanContext of the Span
 
     :type span_id: int
     :param span_id: Identifier for the span, unique within a trace.
@@ -81,6 +89,81 @@ class SpanData(_SpanData):
                                         trace crosses a process boundary.
                                         True when the parent_span belongs to
                                         the same process as the current span.
+    :type span_kind: int
+    :param span_kind: (Optional) Highly recommended flag that denotes the type
+                        of span (valid values defined by :class:
+                        `opencensus.trace.span.SpanKind`)
 
     """
     __slots__ = ()
+
+
+def _format_legacy_span_json(span_data):
+    """
+    :param SpanData span_data: SpanData object to convert
+    :rtype: dict
+    :return: Dictionary representing the Span
+    """
+    span_json = {
+        'displayName': utils._get_truncatable_str(span_data.name),
+        'spanId': span_data.span_id,
+        'startTime': span_data.start_time,
+        'endTime': span_data.end_time,
+        'childSpanCount': span_data.child_span_count,
+        'kind': span_data.span_kind
+    }
+
+    if span_data.parent_span_id is not None:
+        span_json['parentSpanId'] = span_data.parent_span_id
+
+    if span_data.attributes:
+        span_json['attributes'] = attributes.Attributes(
+            span_data.attributes).format_attributes_json()
+
+    if span_data.stack_trace is not None:
+        span_json['stackTrace'] = \
+            span_data.stack_trace.format_stack_trace_json()
+
+    if span_data.time_events:
+        span_json['timeEvents'] = {
+            'timeEvent': [time_event.format_time_event_json()
+                          for time_event in span_data.time_events]
+        }
+
+    if span_data.links:
+        span_json['links'] = {
+            'link': [
+                link.format_link_json() for link in span_data.links]
+        }
+
+    if span_data.status is not None:
+        span_json['status'] = span_data.status.format_status_json()
+
+    if span_data.same_process_as_parent_span is not None:
+        span_json['sameProcessAsParentSpan'] = \
+            span_data.same_process_as_parent_span
+
+    return span_json
+
+
+def format_legacy_trace_json(span_datas):
+    """Formats a list of SpanData tuples into the legacy 'trace' dictionary
+    format for backwards compatibility
+    :type span_datas: list of :class:
+            `~opencensus.trace.span_data.SpanData`
+    :param list of opencensus.trace.span_data.SpanData span_datas:
+        SpanData tuples to emit
+    :rtype: dict
+    :return: Legacy 'trace' dictionary representing given SpanData tuples
+    """
+    if not span_datas:
+        return {}
+    top_span = span_datas[0]
+    assert isinstance(top_span, SpanData)
+    trace_id = None
+    if top_span.context is not None:
+        trace_id = top_span.context.trace_id
+    return {
+        'traceId': trace_id,
+        'spans': [_format_legacy_span_json(sd) for sd in span_datas],
+    }

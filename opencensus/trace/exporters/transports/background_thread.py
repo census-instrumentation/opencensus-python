@@ -81,8 +81,8 @@ class _Worker(object):
     def _thread_main(self):
         """The entry point for the worker thread.
 
-        Pulls pending spans off the queue and writes them in batches to
-        the specified tracing backend using the exporter.
+        Pulls pending SpanData tuples off the queue and writes them in
+        batches to the specified tracing backend using the exporter.
         """
         print('Background thread started.')
 
@@ -90,8 +90,7 @@ class _Worker(object):
 
         while True:
             items = self._get_items()
-            trace_id = None
-            spans = []
+            span_datas = []
 
             for item in items:
                 if item is _WORKER_TERMINATOR:
@@ -99,16 +98,10 @@ class _Worker(object):
                     # Continue processing items, don't break, try to process
                     # all items we got back before quitting.
                 else:
-                    trace_id = item.get('traceId')
-                    spans.extend(item.get('spans'))
+                    span_datas.extend(item)
 
-            if spans and trace_id:
-                spans_json = {
-                    'traceId': trace_id,
-                    'spans': spans,
-                }
-
-                self.exporter.emit(spans_json)
+            if span_datas:
+                self.exporter.emit(span_datas)
 
             for _ in range(len(items)):
                 self._queue.task_done()
@@ -181,9 +174,9 @@ class _Worker(object):
         else:
             print('Failed to send pending spans.')
 
-    def enqueue(self, trace):
-        """Queues a trace to be written by the background thread."""
-        self._queue.put_nowait(trace)
+    def enqueue(self, span_datas):
+        """Queues span_datas to be written by the background thread."""
+        self._queue.put_nowait(span_datas)
 
     def flush(self):
         """Submit any pending spans."""
@@ -214,9 +207,9 @@ class BackgroundThreadTransport(base.Transport):
         self.worker = _Worker(exporter, grace_period, max_batch_size)
         self.worker.start()
 
-    def export(self, trace):
+    def export(self, span_datas):
         """Put the trace to be exported into queue."""
-        self.worker.enqueue(trace)
+        self.worker.enqueue(span_datas)
 
     def flush(self):
         """Submit any pending traces."""

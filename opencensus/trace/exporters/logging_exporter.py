@@ -16,6 +16,7 @@
 
 import logging
 
+from opencensus.trace import span_data
 from opencensus.trace.exporters import base
 from opencensus.trace.exporters.transports import sync
 
@@ -63,12 +64,23 @@ class LoggingExporter(base.Exporter):
         self.logger.setLevel(logging.INFO)
         self.transport = transport(self)
 
-    def emit(self, trace):
+    def emit(self, span_datas):
         """
-        :type traces: dict
-        :param traces: Trace collected.
+        :type span_datas: list of :class:
+            `~opencensus.trace.span_data.SpanData`
+        :param list of opencensus.trace.span_data.SpanData span_datas:
+            SpanData tuples to emit
         """
-        self.logger.info(trace)
+        # convert to the legacy trace json for easier refactoring
+        # todo refactor this to use the span data directly
+        legacy_trace_json = span_data.format_legacy_trace_json(span_datas)
+        self.logger.info(legacy_trace_json)
 
-    def export(self, trace):
-        self.transport.export(trace)
+    def export(self, span_datas):
+        """
+        :type span_datas: list of :class:
+            `~opencensus.trace.span_data.SpanData`
+        :param list of opencensus.trace.span_data.SpanData span_datas:
+            SpanData tuples to export
+        """
+        self.transport.export(span_datas)
