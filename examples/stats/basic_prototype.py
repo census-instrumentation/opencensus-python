@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from google.cloud import monitoring
+from google.cloud.monitoring import MetricDescriptor
 from opencensus.stats.exporters import stackdriver_exporter
 from opencensus.stats import measure
 from opencensus.stats import view
@@ -22,7 +23,7 @@ def main():
     views = []
 
     client = monitoring.Client(project='opencensus-python')
-    exporter = stackdriver_exporter.StackDriverExporter(client, "opencensus-python")
+    exporter = stackdriver_exporter.StackDriverExporter(client, 'opencensus-python')
 
     boundaries = [0, 1/16, 1/32]
 
@@ -30,7 +31,12 @@ def main():
     my_view = view.View("my.org/views/video_size_cum", "processed video size over time", video_size, aggregation.DistributionAggregation(boundaries))
     views = views.append(my_view)
 
-    metric_descriptor = exporter.translate_to_stackdriver(views)
+    exporter.emit(views, 25648)
+
+    '''metric_descriptor = exporter.translate_to_stackdriver(views)'''
+    '''exporter.emit(metric_descriptor)'''
+
+
 
 if __name__ == '__main__':
     main()
