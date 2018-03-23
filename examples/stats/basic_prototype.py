@@ -19,11 +19,12 @@ from opencensus.stats import measure
 from opencensus.stats import view
 from opencensus.stats import aggregation
 
+
 def main():
     views = []
 
     client = monitoring.Client(project='opencensus-python')
-    exporter = stackdriver_exporter.StackDriverExporter(client, 'opencensus-python')
+    exporter = stackdriver_exporter.StackDriverExporter(client, "opencensus-python")
 
     boundaries = [0, 1/16, 1/32]
 
@@ -31,7 +32,7 @@ def main():
     my_view = view.View("my.org/views/video_size_cum", "processed video size over time", video_size, aggregation.DistributionAggregation(boundaries))
     views = views.append(my_view)
 
-    exporter.emit(views, 25648)
+    exporter.emit(views, datapoint=25648)
 
 if __name__ == '__main__':
     main()

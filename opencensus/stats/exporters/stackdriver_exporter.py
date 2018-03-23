@@ -8,6 +8,8 @@ from google.cloud.monitoring import LabelValueType
 from google.cloud.monitoring import LabelDescriptor
 from google.cloud.monitoring import Resource
 from opencensus.stats import view
+from datetime import datetime
+from datetime import timedelta
 
 class StackDriverExporter(object):
     def __init__(self, client=None, project_id=None, resource=None):
@@ -24,12 +26,12 @@ class StackDriverExporter(object):
         metrics = self.translate_to_stackdriver(views)
         for metric_type, metric_label in metrics.items():
             metric = self.client.metric(metric_type, metric_label)
-            descriptor = self.client.metric_descriptor(metric_type, monitoring.MetricKind.CUMULATIVE, monitoring.ValueType.DISTRIBUTION, description=metric_label)
+            descriptor = self.client.metric_descriptor(metric_type, monitoring.MetricKind.CUMULATIVE, monitoring.ValueType.INT64, description=metric_label)
             descriptor.create()
-            if datapoint is not None:
-                self.client.resource = self.set_resource(type_='global', labels= {'project_id': self.project_id})
-                self.client.write_point(metric, self.resource, datapoint)
-                self.client.time_series(metric, self.resource, datapoint)
+            self.client.resource = self.set_resource(type_='global', labels= {'project_id': self.project_id})
+            self.client.write_point(metric, self.client.resource, datapoint, datetime.utcnow() + timedelta(seconds=60), datetime.utcnow())
+            self.client.time_series(metric, self.client.resource, datapoint, datetime.utcnow() + timedelta(seconds=60), datetime.utcnow())
+            return 'Successfully wrote time series.'
 
     def set_resource(self, type_, labels):
         return self.client.resource(type_, labels)
