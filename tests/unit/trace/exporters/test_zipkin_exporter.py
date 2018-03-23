@@ -107,7 +107,7 @@ class TestZipkinExporter(unittest.TestCase):
                 links=None,
                 status=None,
                 same_process_as_parent_span=None,
-                span_kind=None,
+                span_kind=0,
             ),
             span_data_module.SpanData(
                 name='child_span',
