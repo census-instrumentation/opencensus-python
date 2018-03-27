@@ -16,6 +16,7 @@ import unittest
 
 import mock
 
+from opencensus.trace import span_context
 from opencensus.trace import span_data as span_data_module
 from opencensus.trace.exporters import zipkin_exporter
 
@@ -92,10 +93,11 @@ class TestZipkinExporter(unittest.TestCase):
             headers=zipkin_exporter.ZIPKIN_HEADERS)
 
     def test_translate_to_zipkin_span_kind_none(self):
+        trace_id = '6e0c63257de34c92bf9efcd03927272e'
         spans_ipv4 = [
             span_data_module.SpanData(
                 name='child_span',
-                context=None,
+                context=span_context.SpanContext(trace_id=trace_id),
                 span_id=1234567890,
                 parent_span_id=1111111111,
                 attributes={'test_key': 'test_value'},
@@ -111,7 +113,7 @@ class TestZipkinExporter(unittest.TestCase):
             ),
             span_data_module.SpanData(
                 name='child_span',
-                context=None,
+                context=span_context.SpanContext(trace_id=trace_id),
                 span_id=1234567890,
                 parent_span_id=1111111111,
                 attributes={'test_key': 1},
@@ -131,7 +133,7 @@ class TestZipkinExporter(unittest.TestCase):
         spans_ipv6 = [
             span_data_module.SpanData(
                 name='child_span',
-                context=None,
+                context=span_context.SpanContext(trace_id=trace_id),
                 span_id=1234567890,
                 parent_span_id=None,
                 attributes={
