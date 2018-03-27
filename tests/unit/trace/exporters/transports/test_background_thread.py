@@ -18,7 +18,6 @@ import mock
 
 from opencensus.trace.exporters.transports import background_thread
 
-
 class Test_Worker(unittest.TestCase):
 
     def _start_worker(self, worker):
@@ -186,24 +185,17 @@ class Test_Worker(unittest.TestCase):
         # the exit.
         worker._queue.put_nowait(background_thread._WORKER_TERMINATOR)
 
-        trace1 = {
-            'traceId': 'test1',
-            'spans': [{}, {}],
-        }
+        # Worker should be terminated after sending span_data1, and
+        # span_data2 won't be exported.
+        span_data1 = [mock.Mock()]
+        span_data2 = [mock.Mock()]
 
-        # Worker should be terminated after sending trace1, and trace2 won't be
-        # exported.
-        trace2 = {
-            'traceId': 'test2',
-            'spans': [{}, {}],
-        }
-
-        worker.enqueue(trace1)
-        worker.enqueue(trace2)
+        worker.enqueue(span_data1)
+        worker.enqueue(span_data2)
 
         worker._thread_main()
 
-        self.assertEqual(exporter.exported, [trace1])
+        self.assertEqual(exporter.exported, [span_data1])
 
         # trace2 should be left in the queue because worker is terminated.
         self.assertEqual(worker._queue.qsize(), 1)
