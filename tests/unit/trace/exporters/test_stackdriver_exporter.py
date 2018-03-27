@@ -16,6 +16,7 @@ import unittest
 
 import mock
 
+from opencensus.trace import span_context
 from opencensus.trace import span_data as span_data_module
 from opencensus.trace.exporters import stackdriver_exporter
 
@@ -68,10 +69,11 @@ class TestStackdriverExporter(unittest.TestCase):
         self.assertTrue(exporter.transport.export_called)
 
     def test_emit(self):
+        trace_id = '6e0c63257de34c92bf9efcd03927272e'
         span_datas = [
             span_data_module.SpanData(
                 name='span',
-                context=None,
+                context=span_context.SpanContext(trace_id=trace_id),
                 span_id='1111',
                 parent_span_id=None,
                 attributes=None,
@@ -100,7 +102,9 @@ class TestStackdriverExporter(unittest.TestCase):
                             'g.co/agent': {
                                 'string_value': {
                                     'truncated_byte_count': 0,
-                                    'value': 'opencensus-python [{}]'.format(stackdriver_exporter.VERSION)
+                                    'value': 'opencensus-python [{}]'.format(
+                                        stackdriver_exporter.VERSION
+                                    )
                                 }
                             }
                         }
@@ -111,7 +115,9 @@ class TestStackdriverExporter(unittest.TestCase):
                             'truncated_byte_count': 0,
                             'value': 'span'
                         },
-                    'name': 'projects/PROJECT/traces/None/spans/1111',
+                    'name': 'projects/PROJECT/traces/{}/spans/1111'.format(
+                        trace_id
+                    ),
                     'timeEvents': None,
                     'endTime': None,
                     'sameProcessAsParentSpan': None
@@ -193,7 +199,9 @@ class TestStackdriverExporter(unittest.TestCase):
                             'g.co/agent': {
                                 'string_value': {
                                     'truncated_byte_count': 0,
-                                    'value': 'opencensus-python [{}]'.format(stackdriver_exporter.VERSION)
+                                    'value': 'opencensus-python [{}]'.format(
+                                        stackdriver_exporter.VERSION
+                                    )
                                 }
                             },
                             'key': {
@@ -256,7 +264,9 @@ class Test_set_attributes_gae(unittest.TestCase):
                     'g.co/agent': {
                         'string_value': {
                             'truncated_byte_count': 0,
-                            'value': 'opencensus-python [{}]'.format(stackdriver_exporter.VERSION)
+                            'value': 'opencensus-python [{}]'.format(
+                                stackdriver_exporter.VERSION
+                            )
                         }
                     },
                 }

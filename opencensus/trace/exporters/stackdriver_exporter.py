@@ -142,7 +142,7 @@ class StackdriverExporter(base.Exporter):
         name = 'projects/{}'.format(self.project_id)
 
         # convert to the legacy trace json for easier refactoring
-        # todo refactor this to use the span data directly
+        # TODO: refactor this to use the span data directly
         trace = span_data.format_legacy_trace_json(span_datas)
 
         stackdriver_spans = self.translate_to_stackdriver(trace)

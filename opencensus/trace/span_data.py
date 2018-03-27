@@ -160,9 +160,9 @@ def format_legacy_trace_json(span_datas):
         return {}
     top_span = span_datas[0]
     assert isinstance(top_span, SpanData)
-    trace_id = None
-    if top_span.context is not None:
-        trace_id = top_span.context.trace_id
+    trace_id = top_span.context.trace_id if top_span.context is not None \
+        else None
+    assert trace_id is not None
     return {
         'traceId': trace_id,
         'spans': [_format_legacy_span_json(sd) for sd in span_datas],

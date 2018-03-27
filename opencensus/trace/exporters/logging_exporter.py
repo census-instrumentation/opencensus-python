@@ -72,7 +72,7 @@ class LoggingExporter(base.Exporter):
             SpanData tuples to emit
         """
         # convert to the legacy trace json for easier refactoring
-        # todo refactor this to use the span data directly
+        # TODO: refactor this to use the span data directly
         legacy_trace_json = span_data.format_legacy_trace_json(span_datas)
         self.logger.info(legacy_trace_json)
 

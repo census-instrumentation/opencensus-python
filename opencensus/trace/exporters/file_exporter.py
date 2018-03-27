@@ -57,7 +57,7 @@ class FileExporter(base.Exporter):
         """
         with open(self.file_name, self.file_mode) as file:
             # convert to the legacy trace json for easier refactoring
-            # todo refactor this to use the span data directly
+            # TODO: refactor this to use the span data directly
             legacy_trace_json = span_data.format_legacy_trace_json(span_datas)
             trace_str = json.dumps(legacy_trace_json)
             file.write(trace_str)

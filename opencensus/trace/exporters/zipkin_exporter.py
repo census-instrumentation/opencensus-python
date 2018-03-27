@@ -101,7 +101,7 @@ class ZipkinExporter(base.Exporter):
             SpanData tuples to emit
         """
         # convert to the legacy trace json for easier refactoring
-        # todo refactor this to use the span data directly
+        # TODO: refactor this to use the span data directly
         trace = span_data.format_legacy_trace_json(span_datas)
 
         trace_id = trace.get('traceId')
