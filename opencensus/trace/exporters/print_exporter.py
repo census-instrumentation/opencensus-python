@@ -28,20 +28,24 @@ class PrintExporter(base.Exporter):
                       :class:`.SyncTransport`. The other option is
                       :class:`.BackgroundThreadTransport`.
     """
+
     def __init__(self, transport=sync.SyncTransport):
         self.transport = transport(self)
 
-    def emit(self, trace):
-        """export the traces by printing it out.
-
-        :type trace: dict
-        :param trace: Trace collected.
-
-        :rtype: dict
-        :returns: Trace printed.
+    def emit(self, span_datas):
         """
-        print(trace)
-        return trace
+        :type span_datas: list of :class:
+            `~opencensus.trace.span_data.SpanData`
+        :param list of opencensus.trace.span_data.SpanData span_datas:
+            SpanData tuples to emit
+        """
+        print(span_datas)
 
-    def export(self, trace):
-        self.transport.export(trace)
+    def export(self, span_datas):
+        """
+        :type span_datas: list of :class:
+            `~opencensus.trace.span_data.SpanData`
+        :param list of opencensus.trace.span_data.SpanData span_datas:
+            SpanData tuples to export
+        """
+        self.transport.export(span_datas)
