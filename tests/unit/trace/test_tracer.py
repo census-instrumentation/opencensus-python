@@ -61,7 +61,6 @@ class TestTracer(unittest.TestCase):
         assert isinstance(tracer.tracer, noop_tracer.NoopTracer)
 
     def test_should_sample_force_not_trace(self):
-        from opencensus.trace import span_context
 
         span_context = mock.Mock()
         span_context.trace_options.enabled = False
@@ -194,10 +193,10 @@ class TestTracer(unittest.TestCase):
         sampler.should_sample.return_value = True
         tracer = tracer_module.Tracer(sampler=sampler)
         span = mock.Mock()
-        span._child_spans = []
         span.attributes = {}
         span.time_events = []
         span.links = []
+        span.children = []
         span.__iter__ = mock.Mock(
             return_value=iter([span]))
         execution_context.set_current_span(span)

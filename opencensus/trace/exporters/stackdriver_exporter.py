@@ -14,13 +14,13 @@
 
 import os
 
-from opencensus.trace.attributes import Attributes
-from opencensus.trace import attributes_helper
-from opencensus.trace.exporters import base
-from opencensus.trace.exporters.transports import sync
-
 from google.cloud.trace.client import Client
 
+from opencensus.trace import attributes_helper
+from opencensus.trace import span_data
+from opencensus.trace.attributes import Attributes
+from opencensus.trace.exporters import base
+from opencensus.trace.exporters.transports import sync
 
 # OpenCensus Version
 VERSION = '0.1.3'
@@ -132,33 +132,46 @@ class StackdriverExporter(base.Exporter):
         self.project_id = client.project
         self.transport = transport(self)
 
-    def emit(self, spans):
+    def emit(self, span_datas):
         """
-        :type spans: dict
-        :param spans: Spans collected.
+        :type span_datas: list of :class:
+            `~opencensus.trace.span_data.SpanData`
+        :param list of opencensus.trace.span_data.SpanData span_datas:
+            SpanData tuples to emit
         """
         name = 'projects/{}'.format(self.project_id)
-        stackdriver_spans = self.translate_to_stackdriver(spans)
+
+        # convert to the legacy trace json for easier refactoring
+        # TODO: refactor this to use the span data directly
+        trace = span_data.format_legacy_trace_json(span_datas)
+
+        stackdriver_spans = self.translate_to_stackdriver(trace)
         self.client.batch_write_spans(name, stackdriver_spans)
 
-    def export(self, trace):
-        self.transport.export(trace)
+    def export(self, span_datas):
+        """
+        :type span_datas: list of :class:
+            `~opencensus.trace.span_data.SpanData`
+        :param list of opencensus.trace.span_data.SpanData span_datas:
+            SpanData tuples to export
+        """
+        self.transport.export(span_datas)
 
-    def translate_to_stackdriver(self, spans):
+    def translate_to_stackdriver(self, trace):
         """Translate the spans json to Stackdriver format.
 
         See: https://cloud.google.com/trace/docs/reference/v2/rest/v2/
              projects.traces/batchWrite
 
-        :type spans: dict
-        :param spans: Spans collected.
+        :type trace: dict
+        :param trace: Trace dictionary
 
         :rtype: dict
         :returns: Spans in Google Cloud StackDriver Trace format.
         """
-        set_attributes(spans)
-        spans_json = spans.get('spans')
-        trace_id = spans.get('traceId')
+        set_attributes(trace)
+        spans_json = trace.get('spans')
+        trace_id = trace.get('traceId')
         spans_list = []
 
         for span in spans_json:

@@ -16,6 +16,7 @@
 
 import json
 
+from opencensus.trace import span_data
 from opencensus.trace.exporters import base
 from opencensus.trace.exporters.transports import sync
 
@@ -47,14 +48,25 @@ class FileExporter(base.Exporter):
         self.transport = transport(self)
         self.file_mode = file_mode
 
-    def emit(self, trace):
+    def emit(self, span_datas):
         """
-        :type trace: dict
-        :param trace: Trace collected.
+        :type span_datas: list of :class:
+            `~opencensus.trace.span_data.SpanData`
+        :param list of opencensus.trace.span_data.SpanData span_datas:
+            SpanData tuples to emit
         """
         with open(self.file_name, self.file_mode) as file:
-            trace_str = json.dumps(trace)
+            # convert to the legacy trace json for easier refactoring
+            # TODO: refactor this to use the span data directly
+            legacy_trace_json = span_data.format_legacy_trace_json(span_datas)
+            trace_str = json.dumps(legacy_trace_json)
             file.write(trace_str)
 
-    def export(self, trace):
-        self.transport.export(trace)
+    def export(self, span_datas):
+        """
+        :type span_datas: list of :class:
+            `~opencensus.trace.span_data.SpanData`
+        :param list of opencensus.trace.span_data.SpanData span_datas:
+            SpanData tuples to export
+        """
+        self.transport.export(span_datas)
