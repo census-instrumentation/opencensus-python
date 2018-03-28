@@ -21,15 +21,15 @@ class StackDriverExporter(object):
     def emit(self, views, datapoint=None):
         name = 'projects/{}'.format(self.project_id)
         '''metric = {}'''
-        self.resource = self.set_resource(type_='global', labels= {'project_id': self.project_id})
         metrics = self.translate_to_stackdriver(views)
-        for type, label in metrics:
-            metric = self.client.metric(type, label)
-            descriptor = self.client.metric_descriptor(type, monitoring.MetricKind.CUMULATIVE, monitoring.ValueType.DISTRIBUTION, description=label)
+        for metric_type, metric_label in metrics.items():
+            metric = self.client.metric(metric_type, metric_label)
+            descriptor = self.client.metric_descriptor(metric_type, monitoring.MetricKind.CUMULATIVE, monitoring.ValueType.DISTRIBUTION, description=metric_label)
             descriptor.create()
             if datapoint is not None:
+                self.client.resource = self.set_resource(type_='global', labels= {'project_id': self.project_id})
                 self.client.write_point(metric, self.resource, datapoint)
-                return self.client.time_series(metric, self.resource, datapoint)
+                self.client.time_series(metric, self.resource, datapoint)
 
     def set_resource(self, type_, labels):
         return self.client.resource(type_, labels)
