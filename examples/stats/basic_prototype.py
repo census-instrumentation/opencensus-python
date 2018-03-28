@@ -33,10 +33,5 @@ def main():
 
     exporter.emit(views, 25648)
 
-    '''metric_descriptor = exporter.translate_to_stackdriver(views)'''
-    '''exporter.emit(metric_descriptor)'''
-
-
-
 if __name__ == '__main__':
     main()
