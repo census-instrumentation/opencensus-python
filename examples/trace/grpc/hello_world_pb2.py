@@ -17,9 +17,9 @@ _sym_db = _symbol_database.Default()
 
 DESCRIPTOR = _descriptor.FileDescriptor(
   name='hello_world.proto',
-  package='',
+  package='helloworld',
   syntax='proto3',
-  serialized_pb=_b('\n\x11hello_world.proto\"\x1c\n\x0cHelloRequest\x12\x0c\n\x04name\x18\x01 \x01(\t\"\x1d\n\nHelloReply\x12\x0f\n\x07message\x18\x01 \x01(\t26\n\nHelloWorld\x12(\n\x08SayHello\x12\r.HelloRequest\x1a\x0b.HelloReply\"\x00\x62\x06proto3')
+  serialized_pb=_b('\n\x11hello_world.proto\x12\nhelloworld\"\x1c\n\x0cHelloRequest\x12\x0c\n\x04name\x18\x01 \x01(\t\"\x1d\n\nHelloReply\x12\x0f\n\x07message\x18\x01 \x01(\t2I\n\x07Greeter\x12>\n\x08SayHello\x12\x18.helloworld.HelloRequest\x1a\x16.helloworld.HelloReply\"\x00\x42\x30\n\x1bio.grpc.examples.helloworldB\x0fHelloWorldProtoP\x01\x62\x06proto3')
 )
 
 
@@ -27,13 +27,13 @@ DESCRIPTOR = _descriptor.FileDescriptor(
 
 _HELLOREQUEST = _descriptor.Descriptor(
   name='HelloRequest',
-  full_name='HelloRequest',
+  full_name='helloworld.HelloRequest',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='name', full_name='HelloRequest.name', index=0,
+      name='name', full_name='helloworld.HelloRequest.name', index=0,
       number=1, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
@@ -51,20 +51,20 @@ _HELLOREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=21,
-  serialized_end=49,
+  serialized_start=33,
+  serialized_end=61,
 )
 
 
 _HELLOREPLY = _descriptor.Descriptor(
   name='HelloReply',
-  full_name='HelloReply',
+  full_name='helloworld.HelloReply',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='message', full_name='HelloReply.message', index=0,
+      name='message', full_name='helloworld.HelloReply.message', index=0,
       number=1, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
@@ -82,8 +82,8 @@ _HELLOREPLY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=51,
-  serialized_end=80,
+  serialized_start=63,
+  serialized_end=92,
 )
 
 DESCRIPTOR.message_types_by_name['HelloRequest'] = _HELLOREQUEST
@@ -93,31 +93,33 @@ _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 HelloRequest = _reflection.GeneratedProtocolMessageType('HelloRequest', (_message.Message,), dict(
   DESCRIPTOR = _HELLOREQUEST,
   __module__ = 'hello_world_pb2'
-  # @@protoc_insertion_point(class_scope:HelloRequest)
+  # @@protoc_insertion_point(class_scope:helloworld.HelloRequest)
   ))
 _sym_db.RegisterMessage(HelloRequest)
 
 HelloReply = _reflection.GeneratedProtocolMessageType('HelloReply', (_message.Message,), dict(
   DESCRIPTOR = _HELLOREPLY,
   __module__ = 'hello_world_pb2'
-  # @@protoc_insertion_point(class_scope:HelloReply)
+  # @@protoc_insertion_point(class_scope:helloworld.HelloReply)
   ))
 _sym_db.RegisterMessage(HelloReply)
 
 
+DESCRIPTOR.has_options = True
+DESCRIPTOR._options = _descriptor._ParseOptions(descriptor_pb2.FileOptions(), _b('\n\033io.grpc.examples.helloworldB\017HelloWorldProtoP\001'))
 
-_HELLOWORLD = _descriptor.ServiceDescriptor(
-  name='HelloWorld',
-  full_name='HelloWorld',
+_GREETER = _descriptor.ServiceDescriptor(
+  name='Greeter',
+  full_name='helloworld.Greeter',
   file=DESCRIPTOR,
   index=0,
   options=None,
-  serialized_start=82,
-  serialized_end=136,
+  serialized_start=94,
+  serialized_end=167,
   methods=[
   _descriptor.MethodDescriptor(
     name='SayHello',
-    full_name='HelloWorld.SayHello',
+    full_name='helloworld.Greeter.SayHello',
     index=0,
     containing_service=None,
     input_type=_HELLOREQUEST,
@@ -125,8 +127,8 @@ _HELLOWORLD = _descriptor.ServiceDescriptor(
     options=None,
   ),
 ])
-_sym_db.RegisterServiceDescriptor(_HELLOWORLD)
+_sym_db.RegisterServiceDescriptor(_GREETER)
 
-DESCRIPTOR.services_by_name['HelloWorld'] = _HELLOWORLD
+DESCRIPTOR.services_by_name['Greeter'] = _GREETER
 
 # @@protoc_insertion_point(module_scope)

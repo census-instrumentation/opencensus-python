@@ -4,7 +4,7 @@ import grpc
 import hello_world_pb2 as hello__world__pb2
 
 
-class HelloWorldStub(object):
+class GreeterStub(object):
   """The hello world service definition.
   """
 
@@ -15,13 +15,13 @@ class HelloWorldStub(object):
       channel: A grpc.Channel.
     """
     self.SayHello = channel.unary_unary(
-        '/HelloWorld/SayHello',
+        '/helloworld.Greeter/SayHello',
         request_serializer=hello__world__pb2.HelloRequest.SerializeToString,
         response_deserializer=hello__world__pb2.HelloReply.FromString,
         )
 
 
-class HelloWorldServicer(object):
+class GreeterServicer(object):
   """The hello world service definition.
   """
 
@@ -33,7 +33,7 @@ class HelloWorldServicer(object):
     raise NotImplementedError('Method not implemented!')
 
 
-def add_HelloWorldServicer_to_server(servicer, server):
+def add_GreeterServicer_to_server(servicer, server):
   rpc_method_handlers = {
       'SayHello': grpc.unary_unary_rpc_method_handler(
           servicer.SayHello,
@@ -42,5 +42,5 @@ def add_HelloWorldServicer_to_server(servicer, server):
       ),
   }
   generic_handler = grpc.method_handlers_generic_handler(
-      'HelloWorld', rpc_method_handlers)
+      'helloworld.Greeter', rpc_method_handlers)
   server.add_generic_rpc_handlers((generic_handler,))
