@@ -51,7 +51,7 @@ class TestTraceContextPropagator(unittest.TestCase):
         # Trace option is not enabled.
         header = '00-6e0c63257de34c92bf9efcd03927272e-00f067aa0ba902b7-00'
         expected_trace_id = '6e0c63257de34c92bf9efcd03927272e'
-        expected_span_id = 67667974448284343
+        expected_span_id = '00f067aa0ba902b7'
 
         propagator = trace_context_http_header_format.\
             TraceContextPropagator()
@@ -64,7 +64,7 @@ class TestTraceContextPropagator(unittest.TestCase):
         # Trace option is enabled.
         header = '00-6e0c63257de34c92bf9efcd03927272e-00f067aa0ba902b7-01'
         expected_trace_id = '6e0c63257de34c92bf9efcd03927272e'
-        expected_span_id = 67667974448284343
+        expected_span_id = '00f067aa0ba902b7'
 
         propagator = trace_context_http_header_format.\
             TraceContextPropagator()
@@ -77,7 +77,7 @@ class TestTraceContextPropagator(unittest.TestCase):
     def test_header_match_no_option(self):
         header = '00-6e0c63257de34c92bf9efcd03927272e-00f067aa0ba902b7'
         expected_trace_id = '6e0c63257de34c92bf9efcd03927272e'
-        expected_span_id = 67667974448284343
+        expected_span_id = '00f067aa0ba902b7'
 
         propagator = trace_context_http_header_format.\
             TraceContextPropagator()
@@ -102,11 +102,10 @@ class TestTraceContextPropagator(unittest.TestCase):
         from opencensus.trace import trace_options
 
         trace_id = '6e0c63257de34c92bf9efcd03927272e'
-        span_id = 67667974448284343
         span_id_hex = '00f067aa0ba902b7'
         span_context = span_context.SpanContext(
             trace_id=trace_id,
-            span_id=span_id,
+            span_id=span_id_hex,
             trace_options=trace_options.TraceOptions('1'))
 
         propagator = trace_context_http_header_format.\

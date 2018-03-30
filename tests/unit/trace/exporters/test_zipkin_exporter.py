@@ -98,8 +98,8 @@ class TestZipkinExporter(unittest.TestCase):
             span_data_module.SpanData(
                 name='child_span',
                 context=span_context.SpanContext(trace_id=trace_id),
-                span_id=1234567890,
-                parent_span_id=1111111111,
+                span_id='6e0c63257de34c92',
+                parent_span_id='6e0c63257de34c93',
                 attributes={'test_key': 'test_value'},
                 start_time='2017-08-15T18:02:26.071158Z',
                 end_time='2017-08-15T18:02:36.071158Z',
@@ -114,8 +114,8 @@ class TestZipkinExporter(unittest.TestCase):
             span_data_module.SpanData(
                 name='child_span',
                 context=span_context.SpanContext(trace_id=trace_id),
-                span_id=1234567890,
-                parent_span_id=1111111111,
+                span_id='6e0c63257de34c92',
+                parent_span_id='6e0c63257de34c93',
                 attributes={'test_key': 1},
                 start_time='2017-08-15T18:02:26.071158Z',
                 end_time='2017-08-15T18:02:36.071158Z',
@@ -134,7 +134,7 @@ class TestZipkinExporter(unittest.TestCase):
             span_data_module.SpanData(
                 name='child_span',
                 context=span_context.SpanContext(trace_id=trace_id),
-                span_id=1234567890,
+                span_id='6e0c63257de34c92',
                 parent_span_id=None,
                 attributes={
                     'test_key': False,
@@ -172,8 +172,8 @@ class TestZipkinExporter(unittest.TestCase):
         expected_zipkin_spans_ipv4 = [
             {
                 'traceId': '6e0c63257de34c92bf9efcd03927272e',
-                'id': '1234567890',
-                'parentId': '1111111111',
+                'id': '6e0c63257de34c92',
+                'parentId': '6e0c63257de34c93',
                 'name': 'child_span',
                 'timestamp': 1502820146000000,
                 'duration': 10000000,
@@ -182,8 +182,8 @@ class TestZipkinExporter(unittest.TestCase):
             },
             {
                 'traceId': '6e0c63257de34c92bf9efcd03927272e',
-                'id': '1234567890',
-                'parentId': '1111111111',
+                'id': '6e0c63257de34c92',
+                'parentId': '6e0c63257de34c93',
                 'name': 'child_span',
                 'timestamp': 1502820146000000,
                 'duration': 10000000,
@@ -195,7 +195,7 @@ class TestZipkinExporter(unittest.TestCase):
         expected_zipkin_spans_ipv6 = [
             {
                 'traceId': '6e0c63257de34c92bf9efcd03927272e',
-                'id': '1234567890',
+                'id': '6e0c63257de34c92',
                 'name': 'child_span',
                 'timestamp': 1502820146000000,
                 'duration': 10000000,
