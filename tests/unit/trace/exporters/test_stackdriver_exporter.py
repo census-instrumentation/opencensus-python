@@ -144,7 +144,7 @@ class TestStackdriverExporter(unittest.TestCase):
         project_id = 'PROJECT'
         trace_id = '6e0c63257de34c92bf9efcd03927272e'
         span_name = 'test span'
-        span_id = 1234
+        span_id = '6e0c63257de34c92'
         attributes = {
             'attributeMap': {
                 'key': {
@@ -155,7 +155,7 @@ class TestStackdriverExporter(unittest.TestCase):
                }
             }
         }
-        parent_span_id = 1111
+        parent_span_id = '6e0c63257de34c93'
         start_time = 'test start time'
         end_time = 'test end time'
         trace = {

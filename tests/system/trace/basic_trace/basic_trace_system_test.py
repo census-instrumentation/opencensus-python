@@ -32,7 +32,7 @@ class TestBasicTrace(unittest.TestCase):
         from opencensus.trace.propagation import google_cloud_format
 
         trace_id = 'f8739df974a4481f98748cd92b27177d'
-        span_id = '16971691944144156899'
+        span_id = '6e0c63257de34c92'
         trace_option = 1
 
         trace_header = '{}/{};o={}'.format(trace_id, span_id, trace_option)

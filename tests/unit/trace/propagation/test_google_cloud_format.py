@@ -37,9 +37,9 @@ class TestGoogleCloudFormatPropagator(unittest.TestCase):
 
     def test_header_match(self):
         # Trace option is not enabled.
-        header = '6e0c63257de34c92bf9efcd03927272e/1234;o=0'
+        header = '6e0c63257de34c92bf9efcd03927272e/00f067aa0ba902b7;o=0'
         expected_trace_id = '6e0c63257de34c92bf9efcd03927272e'
-        expected_span_id = 1234
+        expected_span_id = '00f067aa0ba902b7'
 
         propagator = google_cloud_format.GoogleCloudFormatPropagator()
         span_context = propagator.from_header(header)
@@ -49,9 +49,9 @@ class TestGoogleCloudFormatPropagator(unittest.TestCase):
         self.assertFalse(span_context.trace_options.enabled)
 
         # Trace option is enabled.
-        header = '6e0c63257de34c92bf9efcd03927272e/1234;o=1'
+        header = '6e0c63257de34c92bf9efcd03927272e/00f067aa0ba902b7;o=1'
         expected_trace_id = '6e0c63257de34c92bf9efcd03927272e'
-        expected_span_id = 1234
+        expected_span_id = '00f067aa0ba902b7'
 
         propagator = google_cloud_format.GoogleCloudFormatPropagator()
         span_context = propagator.from_header(header)
@@ -61,9 +61,9 @@ class TestGoogleCloudFormatPropagator(unittest.TestCase):
         self.assertTrue(span_context.trace_options.enabled)
 
     def test_header_match_no_option(self):
-        header = '6e0c63257de34c92bf9efcd03927272e/1234'
+        header = '6e0c63257de34c92bf9efcd03927272e/00f067aa0ba902b7'
         expected_trace_id = '6e0c63257de34c92bf9efcd03927272e'
-        expected_span_id = 1234
+        expected_span_id = '00f067aa0ba902b7'
 
         propagator = google_cloud_format.GoogleCloudFormatPropagator()
         span_context = propagator.from_header(header)
@@ -86,7 +86,7 @@ class TestGoogleCloudFormatPropagator(unittest.TestCase):
         from opencensus.trace import trace_options
 
         trace_id = '6e0c63257de34c92bf9efcd03927272e'
-        span_id = 1234
+        span_id = '00f067aa0ba902b7'
         span_context = span_context.SpanContext(
             trace_id=trace_id,
             span_id=span_id,
