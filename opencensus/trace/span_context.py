@@ -129,9 +129,6 @@ class SpanContext(object):
         :rtype: str
         :returns: Trace_id for the current context.
         """
-        if trace_id is None:
-            return generate_span_id()
-
         assert isinstance(trace_id, str)
 
         if trace_id is _INVALID_TRACE_ID:
