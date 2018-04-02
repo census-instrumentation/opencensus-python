@@ -28,8 +28,8 @@ class TestSpanData(unittest.TestCase):
         span_data_module.SpanData(
             name='root',
             context=None,
-            span_id=2,
-            parent_span_id=1,
+            span_id='6e0c63257de34c92',
+            parent_span_id='6e0c63257de34c93',
             attributes={'key1': 'value1'},
             start_time=datetime.datetime.utcnow().isoformat() + 'Z',
             end_time=datetime.datetime.utcnow().isoformat() + 'Z',
@@ -46,8 +46,8 @@ class TestSpanData(unittest.TestCase):
         span_data = span_data_module.SpanData(
             name='root',
             context=None,
-            span_id=2,
-            parent_span_id=1,
+            span_id='6e0c63257de34c92',
+            parent_span_id='6e0c63257de34c93',
             attributes={'key1': 'value1'},
             start_time=datetime.datetime.utcnow().isoformat() + 'Z',
             end_time=datetime.datetime.utcnow().isoformat() + 'Z',
@@ -71,15 +71,15 @@ class TestSpanData(unittest.TestCase):
             name='root',
             context=span_context.SpanContext(
                 trace_id=trace_id,
-                span_id=1111
+                span_id='6e0c63257de34c92'
             ),
-            span_id=2,
-            parent_span_id=1,
+            span_id='6e0c63257de34c92',
+            parent_span_id='6e0c63257de34c93',
             attributes={'key1': 'value1'},
             start_time=datetime.datetime.utcnow().isoformat() + 'Z',
             end_time=datetime.datetime.utcnow().isoformat() + 'Z',
             stack_trace=stack_trace.StackTrace(stack_trace_hash_id='111'),
-            links=[link.Link('1111', span_id='111')],
+            links=[link.Link('1111', span_id='6e0c63257de34c92')],
             status=status.Status(code=0, message='pok'),
             time_events=[
                 time_event.TimeEvent(

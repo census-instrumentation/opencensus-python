@@ -17,17 +17,23 @@
 
 import unittest
 
+import flask
 import mock
 
+from opencensus.trace import execution_context
+from opencensus.trace.exporters import print_exporter
 from opencensus.trace.ext.flask import flask_middleware
+from opencensus.trace.propagation import google_cloud_format
+from opencensus.trace.samplers import always_off
+from opencensus.trace.samplers import always_on
+from opencensus.trace.tracers import base
+from opencensus.trace.tracers import noop_tracer
 
 
 class TestFlaskMiddleware(unittest.TestCase):
 
     @staticmethod
     def create_app():
-        import flask
-
         app = flask.Flask(__name__)
 
         @app.route('/')
@@ -46,10 +52,6 @@ class TestFlaskMiddleware(unittest.TestCase):
         execution_context.clear()
 
     def test_constructor_default(self):
-        from opencensus.trace.exporters import print_exporter
-        from opencensus.trace.samplers import always_on
-        from opencensus.trace.propagation import google_cloud_format
-
         app = mock.Mock()
         middleware = flask_middleware.FlaskMiddleware(app=app)
 
@@ -86,7 +88,7 @@ class TestFlaskMiddleware(unittest.TestCase):
 
         flask_trace_header = 'X_CLOUD_TRACE_CONTEXT'
         trace_id = '2dd43a1d6b2549c6bc2a1a54c2fc0b05'
-        span_id = 1234
+        span_id = '6e0c63257de34c92'
         flask_trace_id = '{}/{}'.format(trace_id, span_id)
 
         app = self.create_app()
@@ -114,13 +116,9 @@ class TestFlaskMiddleware(unittest.TestCase):
             self.assertEqual(span_context.trace_id, trace_id)
 
     def test__before_request_blacklist(self):
-        from opencensus.trace import execution_context
-        from opencensus.trace.tracers import base
-        from opencensus.trace.tracers import noop_tracer
-
         flask_trace_header = 'X_CLOUD_TRACE_CONTEXT'
         trace_id = '2dd43a1d6b2549c6bc2a1a54c2fc0b05'
-        span_id = 1234
+        span_id = '6e0c63257de34c92'
         flask_trace_id = '{}/{}'.format(trace_id, span_id)
 
         app = self.create_app()
@@ -144,12 +142,10 @@ class TestFlaskMiddleware(unittest.TestCase):
         # This test case is expected to fail at the check_trace_id method
         # in SpanContext because it cannot match the pattern for trace_id,
         # And a new trace_id will generate for the context.
-        from opencensus.trace import execution_context
-        from opencensus.trace.tracers import base
 
         flask_trace_header = 'X_CLOUD_TRACE_CONTEXT'
         trace_id = "你好"
-        span_id = 1234
+        span_id = '6e0c63257de34c92'
         flask_trace_id = '{}/{}'.format(trace_id, span_id)
 
         app = self.create_app()
@@ -177,9 +173,6 @@ class TestFlaskMiddleware(unittest.TestCase):
             self.assertNotEqual(span_context.trace_id, trace_id)
 
     def test_header_is_none(self):
-        from opencensus.trace import execution_context
-        from opencensus.trace.tracers import base
-
         app = self.create_app()
         flask_middleware.FlaskMiddleware(app=app)
         context = app.test_request_context(
@@ -201,11 +194,9 @@ class TestFlaskMiddleware(unittest.TestCase):
             assert isinstance(span.parent_span, base.NullContextManager)
 
     def test__after_request_not_sampled(self):
-        from opencensus.trace.samplers import always_off
-
         flask_trace_header = 'X_CLOUD_TRACE_CONTEXT'
         trace_id = '2dd43a1d6b2549c6bc2a1a54c2fc0b05'
-        span_id = 1234
+        span_id = '6e0c63257de34c92'
         flask_trace_id = '{}/{}'.format(trace_id, span_id)
         sampler = always_off.AlwaysOffSampler()
 
@@ -221,7 +212,7 @@ class TestFlaskMiddleware(unittest.TestCase):
     def test__after_request_sampled(self):
         flask_trace_header = 'X_CLOUD_TRACE_CONTEXT'
         trace_id = '2dd43a1d6b2549c6bc2a1a54c2fc0b05'
-        span_id = 1234
+        span_id = '6e0c63257de34c92'
         flask_trace_id = '{}/{}'.format(trace_id, span_id)
 
         app = self.create_app()
@@ -234,12 +225,9 @@ class TestFlaskMiddleware(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test__after_request_blacklist(self):
-        from opencensus.trace import execution_context
-        from opencensus.trace.tracers import noop_tracer
-
         flask_trace_header = 'X_CLOUD_TRACE_CONTEXT'
         trace_id = '2dd43a1d6b2549c6bc2a1a54c2fc0b05'
-        span_id = 1234
+        span_id = '6e0c63257de34c92'
         flask_trace_id = '{}/{}'.format(trace_id, span_id)
 
         app = self.create_app()
