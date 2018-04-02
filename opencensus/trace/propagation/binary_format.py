@@ -17,7 +17,7 @@ import collections
 import logging
 import struct
 
-from opencensus.trace.span_context import SpanContext
+from opencensus.trace import span_context as span_context_module
 from opencensus.trace.trace_options import TraceOptions
 
 # Used for decoding hex bytes to hex string.
@@ -54,7 +54,7 @@ BINARY_FORMAT = '{big_endian}{version_id}' \
         trace_id_field_id=UNSIGNED_CHAR,
         trace_id='{}{}'.format(TRACE_ID_SIZE, CHAR_ARRAY_FORMAT),
         span_id_field_id=UNSIGNED_CHAR,
-        span_id=UNSIGNED_LONG_LONG,
+        span_id='{}{}'.format(SPAN_ID_SIZE, CHAR_ARRAY_FORMAT),
         trace_option_field_id=UNSIGNED_CHAR,
         trace_option=UNSIGNED_CHAR)
 
@@ -80,15 +80,15 @@ class BinaryFormatPropagator(object):
         [SpanContext]
             trace_id: hex string with length 32.
                 e.g. 'a0b72ca15c1a4bd18962d0ac59dc90b9'
-            span_id: 64 bits integer.
-                e.g. 7433567179112518326
+            span_id: hex string with length 16.
+                e.g. 'a0b72ca15c1a4bd1'
             enabled (trace option): bool.
                 e.g. True
         [Binary Format]
             trace_id: Bytes with length 16.
                 e.g. b'\xa0\xb7,\xa1\\\x1aK\xd1\x89b\xd0\xacY\xdc\x90\xb9'
             span_id: Bytes with length 8.
-                e.g. b'\xb6\x12\x01\xf5\xf6U)g'
+                e.g. b'\x00\xf0g\xaa\x0b\xa9\x02\xb7'
             trace_option: Byte with length 1.
                 e.g. b'\x01'
     """
@@ -106,25 +106,28 @@ class BinaryFormatPropagator(object):
         """
         # If no binary provided, generate a new SpanContext
         if binary is None:
-            return SpanContext(from_header=False)
+            return span_context_module.SpanContext(from_header=False)
 
         # If cannot parse, return a new SpanContext and ignore the context
         # from binary.
         try:
             data = Header._make(struct.unpack(BINARY_FORMAT, binary))
         except struct.error:
-            logging.warn('Cannot parse the incoming binary data {}, '
-                         'wrong format. Total bytes length should be {}.'
-                         .format(binary, FORMAT_LENGTH))
-            return SpanContext(from_header=False)
+            logging.warning(
+                'Cannot parse the incoming binary data {}, '
+                'wrong format. Total bytes length should be {}.'.format(
+                    binary, FORMAT_LENGTH
+                )
+            )
+            return span_context_module.SpanContext(from_header=False)
 
         # data.trace_id is in bytes with length 16, hexlify it to hex bytes
         # with length 32, then decode it to hex string using utf-8.
         trace_id = str(binascii.hexlify(data.trace_id).decode(UTF8))
-        span_id = data.span_id
+        span_id = str(binascii.hexlify(data.span_id).decode(UTF8))
         trace_options = TraceOptions(data.trace_option)
 
-        span_context = SpanContext(
+        span_context = span_context_module.SpanContext(
                 trace_id=trace_id,
                 span_id=span_id,
                 trace_options=trace_options,
@@ -149,7 +152,7 @@ class BinaryFormatPropagator(object):
         # If there is no span_id in this context, set it to 0, which is
         # considered invalid and won't be set as the downstream parent span_id.
         if span_id is None:
-            span_id = 0
+            span_id = span_context_module.INVALID_SPAN_ID
 
         # Convert trace_id to bytes with length 16, treat span_id as 64 bit
         # integer which is unsigned long long type and convert it to bytes with
@@ -160,6 +163,6 @@ class BinaryFormatPropagator(object):
             TRACE_ID_FIELD_ID,
             binascii.unhexlify(trace_id),
             SPAN_ID_FIELD_ID,
-            span_id,
+            binascii.unhexlify(span_id),
             TRACE_OPTION_FIELD_ID,
             trace_options)
