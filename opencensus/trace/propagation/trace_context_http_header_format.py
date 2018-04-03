@@ -61,7 +61,7 @@ class TraceContextPropagator(object):
                 # Need to convert span_id from hex string to int
                 span_context = SpanContext(
                     trace_id=trace_id,
-                    span_id=int(span_id, 16),
+                    span_id=span_id,
                     trace_options=TraceOptions(trace_options),
                     from_header=True)
                 return span_context
@@ -89,10 +89,6 @@ class TraceContextPropagator(object):
         trace_id = span_context.trace_id
         span_id = span_context.span_id
         trace_options = span_context.trace_options.enabled
-
-        # Need to convert span_id from int to hex string
-        span_id_hex = hex(span_id)
-        span_id = span_id_hex[2:].zfill(16)
 
         # Convert the trace options
         trace_options = '01' if trace_options else '00'

@@ -19,5 +19,5 @@ class SyncTransport(base.Transport):
     def __init__(self, exporter):
         self.exporter = exporter
 
-    def export(self, trace):
-        self.exporter.emit(trace)
+    def export(self, span_datas):
+        self.exporter.emit(span_datas)

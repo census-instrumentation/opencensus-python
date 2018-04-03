@@ -15,8 +15,10 @@
 import unittest
 
 import mock
+from google.rpc import code_pb2
 
 from opencensus.trace import execution_context
+from opencensus.trace import span as span_module
 from opencensus.trace.ext.grpc import server_interceptor
 
 
@@ -37,8 +39,6 @@ class TestOpenCensusServerInterceptor(unittest.TestCase):
         self.assertEqual(wrapper.response_streaming, False)
 
     def test_intercept_handler_no_metadata(self):
-        current_span = mock.Mock()
-        mock_tracer = MockTracer(None, None, None)
         patch = mock.patch(
             'opencensus.trace.ext.grpc.server_interceptor.tracer_module.Tracer',
             MockTracer)
@@ -57,12 +57,10 @@ class TestOpenCensusServerInterceptor(unittest.TestCase):
         }
 
         self.assertEqual(
-            execution_context.get_opencensus_tracer().current_span.attributes,
+            execution_context.get_opencensus_tracer().current_span().attributes,
             expected_attributes)
 
     def test_intercept_handler(self):
-        current_span = mock.Mock()
-        mock_tracer = MockTracer(None, None, None)
         patch = mock.patch(
             'opencensus.trace.ext.grpc.server_interceptor.tracer_module.Tracer',
             MockTracer)
@@ -83,7 +81,7 @@ class TestOpenCensusServerInterceptor(unittest.TestCase):
         }
 
         self.assertEqual(
-            execution_context.get_opencensus_tracer().current_span.attributes,
+            execution_context.get_opencensus_tracer().current_span().attributes,
             expected_attributes)
 
     def test_intercept_service(self):
@@ -95,8 +93,6 @@ class TestOpenCensusServerInterceptor(unittest.TestCase):
         self.assertTrue(mock_handler.called)
 
     def test_intercept_handler_exception(self):
-        current_span = mock.Mock()
-        mock_tracer = MockTracer(None, None, None)
         patch = mock.patch(
             'opencensus.trace.ext.grpc.server_interceptor.tracer_module.Tracer',
             MockTracer)
@@ -120,26 +116,36 @@ class TestOpenCensusServerInterceptor(unittest.TestCase):
             '/error/message': 'Test'
         }
 
+        current_span = execution_context.get_opencensus_tracer().current_span()
         self.assertEqual(
-            execution_context.get_opencensus_tracer().current_span.attributes,
+            execution_context.get_opencensus_tracer().current_span().attributes,
             expected_attributes)
+
+        # check that the stack trace is attached to the current span
+        self.assertIsNotNone(current_span.stack_trace)
+        self.assertIsNotNone(current_span.stack_trace.stack_trace_hash_id)
+        self.assertNotEqual(current_span.stack_trace.stack_frames, [])
+
+        # check that the status obj is attached to the current span
+        self.assertIsNotNone(current_span.status)
+        self.assertEqual(current_span.status.code, code_pb2.UNKNOWN)
+        self.assertEqual(current_span.status.message, 'Test')
 
 
 class MockTracer(object):
     def __init__(self, *args, **kwargs):
-        self.current_span = mock.Mock()
-        self.current_span.attributes = {}
+        self._current_span = span_module.Span('mock_span')
         execution_context.set_opencensus_tracer(self)
 
     def start_span(self, name):
-        self.current_span.name = name
-        span = mock.Mock()
-        span.__enter__ = mock.Mock()
-        span.__exit__ = mock.Mock()
-        return span
+        self._current_span.name = name
+        return self._current_span
 
     def end_span(self):
         return
 
     def add_attribute_to_current_span(self, attribute_key, attribute_value):
-        self.current_span.attributes[attribute_key] = attribute_value
+        self._current_span.attributes[attribute_key] = attribute_value
+
+    def current_span(self):
+        return self._current_span
