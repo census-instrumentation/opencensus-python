@@ -1,7 +1,6 @@
 from opencensus.tags import tag_key
 from opencensus.tags import tag_value
 
-
 class TagContext(object):
 
     def __init__(self, tags=None):
