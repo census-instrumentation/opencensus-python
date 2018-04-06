@@ -15,12 +15,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import mock
 import unittest
 
+import mock
 from pyramid.registry import Registry
 from pyramid.response import Response
 from pyramid.testing import DummyRequest
+
+from opencensus.trace import execution_context
+from opencensus.trace.exporters import print_exporter
+from opencensus.trace.exporters import zipkin_exporter
+from opencensus.trace.exporters.transports import sync
+from opencensus.trace.ext.pyramid import pyramid_middleware
+from opencensus.trace.propagation import google_cloud_format
+from opencensus.trace.samplers import always_on
+from opencensus.trace.tracers import base
+from opencensus.trace.tracers import noop_tracer
 
 
 class TestPyramidMiddleware(unittest.TestCase):
@@ -30,24 +40,20 @@ class TestPyramidMiddleware(unittest.TestCase):
         execution_context.clear()
 
     def test_constructor(self):
-        from opencensus.trace.ext.pyramid import pyramid_middleware
-        from opencensus.trace.samplers import always_on
-        from opencensus.trace.propagation import google_cloud_format
-        from opencensus.trace.exporters.transports import sync
-        from opencensus.trace.exporters import print_exporter
-
         pyramid_trace_header = 'X_CLOUD_TRACE_CONTEXT'
         trace_id = '2dd43a1d6b2549c6bc2a1a54c2fc0b05'
-        span_id = 1234
+        span_id = '6e0c63257de34c92'
         pyramid_trace_id = '{}/{}'.format(trace_id, span_id)
 
         response = Response()
+
         def dummy_handler(request):
             return response
 
         mock_registry = mock.Mock(spec=Registry)
         mock_registry.settings = {}
-        mock_registry.settings['OPENCENSUS_TRACE'] = {'EXPORTER': print_exporter.PrintExporter()}
+        mock_registry.settings['OPENCENSUS_TRACE'] = {
+            'EXPORTER': print_exporter.PrintExporter()}
 
         middleware = pyramid_middleware.OpenCensusTweenFactory(
             dummy_handler,
@@ -71,17 +77,12 @@ class TestPyramidMiddleware(unittest.TestCase):
         assert middleware(request) == response
 
     def test_constructor_zipkin(self):
-        from opencensus.trace.ext.pyramid import pyramid_middleware
-        from opencensus.trace.samplers import always_on
-        from opencensus.trace.exporters import zipkin_exporter
-        from opencensus.trace.propagation import google_cloud_format
-        from opencensus.trace.exporters.transports import sync
-
         service_name = 'test_service'
         host_name = 'test_hostname'
         port = 2333
 
         response = Response()
+
         def dummy_handler(request):
             return response
 
@@ -115,15 +116,13 @@ class TestPyramidMiddleware(unittest.TestCase):
         self.assertEqual(middleware.exporter.port, port)
 
     def test__before_request(self):
-        from opencensus.trace import execution_context
-        from opencensus.trace.ext.pyramid import pyramid_middleware
-
         pyramid_trace_header = 'X_CLOUD_TRACE_CONTEXT'
         trace_id = '2dd43a1d6b2549c6bc2a1a54c2fc0b05'
-        span_id = 1234
+        span_id = '6e0c63257de34c92'
         pyramid_trace_id = '{}/{}'.format(trace_id, span_id)
 
         response = Response()
+
         def dummy_handler(request):
             return response
 
@@ -159,17 +158,13 @@ class TestPyramidMiddleware(unittest.TestCase):
         self.assertEqual(span_context.trace_id, trace_id)
 
     def test__before_request_blacklist(self):
-        from opencensus.trace import execution_context
-        from opencensus.trace.tracers import base
-        from opencensus.trace.tracers import noop_tracer
-        from opencensus.trace.ext.pyramid import pyramid_middleware
-
         pyramid_trace_header = 'X_CLOUD_TRACE_CONTEXT'
         trace_id = '2dd43a1d6b2549c6bc2a1a54c2fc0b05'
-        span_id = 1234
+        span_id = '6e0c63257de34c92'
         pyramid_trace_id = '{}/{}'.format(trace_id, span_id)
 
         response = Response()
+
         def dummy_handler(request):
             return response
 
@@ -197,16 +192,13 @@ class TestPyramidMiddleware(unittest.TestCase):
         assert isinstance(span, base.NullContextManager)
 
     def test__after_request(self):
-        from opencensus.trace import execution_context
-        from opencensus.trace.ext.pyramid import pyramid_middleware
-        from opencensus.trace.samplers import always_off
-
         pyramid_trace_header = 'X_CLOUD_TRACE_CONTEXT'
         trace_id = '2dd43a1d6b2549c6bc2a1a54c2fc0b05'
-        span_id = 1234
+        span_id = '6e0c63257de34c92'
         pyramid_trace_id = '{}/{}'.format(trace_id, span_id)
 
         response = Response(status=200)
+
         def dummy_handler(request):
             return response
 
@@ -244,17 +236,13 @@ class TestPyramidMiddleware(unittest.TestCase):
         self.assertEqual(span.attributes, expected_attributes)
 
     def test__after_request_blacklist(self):
-        from opencensus.trace import execution_context
-        from opencensus.trace.tracers import base
-        from opencensus.trace.tracers import noop_tracer
-        from opencensus.trace.ext.pyramid import pyramid_middleware
-
         pyramid_trace_header = 'X_CLOUD_TRACE_CONTEXT'
         trace_id = '2dd43a1d6b2549c6bc2a1a54c2fc0b05'
-        span_id = 1234
+        span_id = '6e0c63257de34c92'
         pyramid_trace_id = '{}/{}'.format(trace_id, span_id)
 
         response = Response()
+
         def dummy_handler(request):
             return response
 

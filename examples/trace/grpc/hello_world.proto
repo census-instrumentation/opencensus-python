@@ -14,8 +14,14 @@
 
 syntax = "proto3";
 
+option java_multiple_files = true;
+option java_package = "io.grpc.examples.helloworld";
+option java_outer_classname = "HelloWorldProto";
+
+package helloworld;
+
 // The hello world service definition.
-service HelloWorld {
+service Greeter {
   // Say hello to the request sender (unary-unary)
   rpc SayHello (HelloRequest) returns (HelloReply) {}
 }
