@@ -4,13 +4,13 @@ from opencensus.stats import aggregation_data
 class BaseAggregation(object):
     def __init__(self, aggregation_type=None, buckets=None):
         if aggregation_type is not None:
-            self.aggregation = aggregation_type
+            self.aggregation_type = aggregation_type
 
         if buckets is not None:
             self.buckets = buckets
 
     def get_aggregation(self):
-        return self.aggregation
+        return self.aggregation_type
 
 class SumAggregation(BaseAggregation):
     def __init__(self, sum=None, aggregation_type="sum"):

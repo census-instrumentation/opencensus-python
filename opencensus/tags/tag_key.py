@@ -9,7 +9,7 @@ class TagKey(object):
         return name
 
     def is_valid(self, name):
-        if len(name) > 0 and len(name) <= max_length:
+        if (len(name) > 0) and (len(name) <= max_length):
             return True
         else:
             return False
