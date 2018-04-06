@@ -1,12 +1,20 @@
 from opencensus.tags import tag
+from opencensus.tags import tag_key
+from opencensus.tags import tag_value
 
 class TagMap(object):
 
-    def __init__(self, tags=None):
-        self.tags = dict(tags or {})
-        self.map = {}
-        for tag.Tag in self.tags:
-            self.map[tag.tag_key] = tag.tag_value
+    def __init__(self, tags=None, map=None):
+        if map is None:
+            self.map = {}
+        else:
+            self.map = map
+        if tags is not None:
+            self.tags = {}
+            for tag.Tag in tags:
+                self.tags[] = tag.tag_value
+        else:
+            self.tags = {}
 
     def insert(self, key, value):
         if key in self.map:
@@ -21,7 +29,13 @@ class TagMap(object):
         if key in self.map:
             self.map[key] = value
 
-    def value(self, key):
+    def tag_key_exits(self, key):
+        if key in self.map:
+            return True
+        else:
+            return False
+
+    def get_value(self, key):
         if key in self.map:
             return self.map[key]
         else:

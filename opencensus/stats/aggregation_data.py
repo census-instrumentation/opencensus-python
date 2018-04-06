@@ -32,7 +32,7 @@ class MeanAggregationData(BaseAggregationData):
 
     def add_sample(self, value):
         self.count = self.count + 1
-        self.mean = (self.mean * value) / self.count
+        self.mean = (self.mean + (value - self.mean)) / self.count
 
     def get_mean(self):
         return self.mean
@@ -72,8 +72,8 @@ class DistributionAggregationData(BaseAggregationData):
             return
 
         old_mean = self.mean
-        self.mean = self.mean + (value-self.mean)/self.count
-        self.sum_of_sqd_deviations = self.sum_of_sqd_deviations + (value - old_mean)*(value - self.mean)
+        self.mean = self.mean + (value - self.mean) / self.count
+        self.sum_of_sqd_deviations = self.sum_of_sqd_deviations + (value - old_mean) * (value - self.mean)
 
     def increment_bucket_count(self, value):
         if len(self.bounds) == 0:
