@@ -18,11 +18,12 @@ import mock
 
 from opencensus.trace.propagation import text_format
 
+
 class Test_from_carrier(unittest.TestCase):
 
     def test_from_carrier_keys_exist(self):
         test_trace_id = '6e0c63257de34c92bf9efcd03927272e'
-        test_span_id = 1234
+        test_span_id = '00f067aa0ba902b7'
         test_options = 1
 
         carrier = {
@@ -53,7 +54,7 @@ class Test_from_carrier(unittest.TestCase):
 
     def test_to_carrier_has_span_id(self):
         test_trace_id = '6e0c63257de34c92bf9efcd03927272e'
-        test_span_id = 1234
+        test_span_id = '00f067aa0ba902b7'
         test_options = '2'
 
         span_context = mock.Mock()

@@ -12,10 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import mock
 import logging
 import unittest
 
+import mock
+
+from opencensus.trace import span_context
+from opencensus.trace import span_data as span_data_module
 from opencensus.trace.exporters import logging_exporter
 
 
@@ -38,10 +41,29 @@ class TestLoggingExporter(unittest.TestCase):
         logger = mock.Mock()
         exporter.logger = logger
 
-        traces = '{traces: test}'
-        exporter.emit(traces)
+        span_datas = [
+            span_data_module.SpanData(
+                name='span',
+                context=span_context.SpanContext(trace_id='1'),
+                span_id='1111',
+                parent_span_id=None,
+                attributes=None,
+                start_time=None,
+                end_time=None,
+                child_span_count=None,
+                stack_trace=None,
+                time_events=None,
+                links=None,
+                status=None,
+                same_process_as_parent_span=None,
+                span_kind=0,
+            )
+        ]
+        exporter.emit(span_datas)
 
-        logger.info.assert_called_once_with(traces)
+        logger.info.assert_called_once_with(
+            span_data_module.format_legacy_trace_json(span_datas)
+        )
 
     def test_export(self):
         exporter = logging_exporter.LoggingExporter(transport=MockTransport)

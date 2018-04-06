@@ -13,93 +13,114 @@
 # limitations under the License.
 
 import unittest
+from opencensus.trace import span_context as span_context_module
+from opencensus.trace.trace_options import TraceOptions
 
 
 class TestSpanContext(unittest.TestCase):
-
     project = 'PROJECT'
+    trace_id = '6e0c63257de34c92bf9efcd03927272e'
+    span_id = '6e0c63257de34c92'
 
     @staticmethod
     def _get_target_class():
-        from opencensus.trace.span_context import SpanContext
-
-        return SpanContext
+        return span_context_module.SpanContext
 
     def _make_one(self, *args, **kw):
         return self._get_target_class()(*args, **kw)
 
     def test_constructor(self):
-        trace_id = '6e0c63257de34c92bf9efcd03927272e'
-        span_id = 1234
+        span_context = self._make_one(
+            trace_id=self.trace_id,
+            span_id=self.span_id
+        )
 
-        span_context = self._make_one(trace_id=trace_id, span_id=span_id)
-
-        self.assertEqual(span_context.trace_id, trace_id)
-        self.assertEqual(span_context.span_id, span_id)
+        self.assertEqual(span_context.trace_id, self.trace_id)
+        self.assertEqual(span_context.span_id, self.span_id)
 
     def test__str__(self):
-        from opencensus.trace.trace_options import TraceOptions
-        trace_id = '6e0c63257de34c92bf9efcd03927272e'
-        span_id = 1234
-
         span_context = self._make_one(
-            trace_id=trace_id,
-            span_id=span_id,
+            trace_id=self.trace_id,
+            span_id=self.span_id,
             trace_options=TraceOptions('1'))
 
-        header_expected = '6e0c63257de34c92bf9efcd03927272e/1234;o=1'
+        header_expected = '6e0c63257de34c92bf9efcd03927272e' \
+                          '/6e0c63257de34c92;o=1'
         header = span_context.__str__()
 
         self.assertEqual(header_expected, header)
 
     def test_check_span_id_none(self):
-        span_context = self._make_one(from_header=True)
-        span_id = span_context.check_span_id(None)
-        self.assertIsNone(span_id)
+        span_context = self._make_one(
+            trace_id=self.trace_id,
+            from_header=True)
+        self.assertIsNone(span_context.span_id)
 
     def test_check_span_id_zero(self):
-        span_context = self._make_one(from_header=True)
-        span_id = span_context.check_span_id(0)
+        span_context = self._make_one(
+            from_header=True,
+            trace_id=self.trace_id,
+            span_id=span_context_module.INVALID_SPAN_ID
+        )
         self.assertFalse(span_context.from_header)
-        self.assertIsNone(span_id)
+        self.assertIsNone(span_context.span_id)
 
-    def test_check_span_id_not_int(self):
-        span_id = {}
-        span_context = self._make_one()
-        span_id_checked = span_context.check_span_id(span_id)
-        self.assertIsNone(span_id_checked)
-        self.assertFalse(span_context.from_header)
+    def test_check_span_id_not_str(self):
+        with self.assertRaises(AssertionError):
+            self._make_one(
+                from_header=True,
+                trace_id=self.trace_id,
+                span_id={}
+            )
 
     def test_check_span_id_valid(self):
-        span_id = 1234
-        span_context = self._make_one(from_header=True)
-        span_id_checked = span_context.check_span_id(span_id)
-        self.assertEqual(span_id, span_id_checked)
+        span_context = self._make_one(
+            from_header=True,
+            trace_id=self.trace_id,
+            span_id=self.span_id
+        )
+        self.assertEqual(span_context.span_id, self.span_id)
 
     def test_check_trace_id_invalid(self):
-        from opencensus.trace.span_context import _INVALID_TRACE_ID
-
-        span_context = self._make_one(from_header=True)
-
-        trace_id_checked = span_context.check_trace_id(_INVALID_TRACE_ID)
+        span_context = self._make_one(
+            from_header=True,
+            trace_id=span_context_module._INVALID_TRACE_ID,
+            span_id=self.span_id
+        )
 
         self.assertFalse(span_context.from_header)
-        self.assertNotEqual(trace_id_checked, _INVALID_TRACE_ID)
+        self.assertNotEqual(
+            span_context.trace_id, span_context_module._INVALID_TRACE_ID
+        )
 
-    def test_check_trace_id_not_match(self):
+    def test_check_trace_id_invalid_format(self):
         trace_id_test = 'test_trace_id'
-
-        span_context = self._make_one(from_header=True)
-        trace_id_checked = span_context.check_trace_id(trace_id_test)
+        span_context = self._make_one(
+            from_header=True,
+            trace_id=trace_id_test,
+            span_id=self.span_id
+        )
 
         self.assertFalse(span_context.from_header)
-        self.assertNotEqual(trace_id_checked, trace_id_test)
+        self.assertNotEqual(span_context.trace_id, trace_id_test)
 
-    def test_check_trace_id_match(self):
-        trace_id = '6e0c63257de34c92bf9efcd03927272e'
+    def test_check_trace_id_valid_format(self):
+        span_context = self._make_one(
+            from_header=True,
+            trace_id=self.trace_id,
+            span_id=self.span_id
+        )
 
-        span_context = self._make_one(from_header=True)
-        trace_id_checked = span_context.check_trace_id(trace_id)
-
-        self.assertEqual(trace_id, trace_id_checked)
+        self.assertEqual(span_context.trace_id, self.trace_id)
         self.assertTrue(span_context.from_header)
+
+    def test_check_span_id_invalid_format(self):
+        span_id_test = 'test_trace_id'
+        span_context = self._make_one(
+            from_header=True,
+            trace_id=self.trace_id,
+            span_id=span_id_test
+        )
+
+        self.assertFalse(span_context.from_header)
+        self.assertIsNone(span_context.span_id)

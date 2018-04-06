@@ -39,12 +39,11 @@ class TestBinaryFormat(unittest.TestCase):
         self.assertFalse(span_context.from_header)
 
     def test_from_header(self):
-        binary_header = b'\x00\x00\xa0\xb7,\xa1\\\x1aK\xd1\x89b\xd0' \
-                        b'\xacY\xdc\x90\xb9\x01g)U\xf6\xf5\x01\x12' \
-                        b'\xb6\x02\x01'
+        binary_header = b'\x00\x00\xa0\xb7,\xa1\\\x1aK\xd1\x89b\xd0\xacY\xdc' \
+                        b'\x90\xb9\x01\xa0\xb7,\xa1\\\x1aK\xd1\x02\x01'
 
         expected_trace_id = 'a0b72ca15c1a4bd18962d0ac59dc90b9'
-        expected_span_id = 7433567179112518326
+        expected_span_id = 'a0b72ca15c1a4bd1'
         expected_trace_option = True
 
         propagator = binary_format.BinaryFormatPropagator()
@@ -74,8 +73,8 @@ class TestBinaryFormat(unittest.TestCase):
         binary_header = propagator.to_header(span_context)
 
         expected_binary_header = b'\x00\x00\xa0\xb7,\xa1\\\x1aK\xd1\x89b\xd0' \
-                                 b'\xacY\xdc\x90\xb9\x01\x00\x00\x00\x00\x00' \
-                                 b'\x00\x00\x00\x02\x01'
+                                 b'\xacY\xdc\x90\xb9\x01\x00\x00\x00\x00' \
+                                 b'\x00\x00\x00\x00\x02\x01'
 
         self.assertEqual(expected_binary_header, binary_header)
 
@@ -85,7 +84,7 @@ class TestBinaryFormat(unittest.TestCase):
 
         span_context = mock.Mock(spec=SpanContext)
         trace_id = 'a0b72ca15c1a4bd18962d0ac59dc90b9'
-        span_id = 7433567179112518326
+        span_id = 'a0b72ca15c1a4bd1'
         trace_options = '1'
         span_context.trace_id = trace_id
         span_context.span_id = span_id
@@ -95,8 +94,8 @@ class TestBinaryFormat(unittest.TestCase):
 
         binary_header = propagator.to_header(span_context)
 
-        expected_binary_header = b'\x00\x00\xa0\xb7,\xa1\\\x1aK\xd1\x89b\xd0' \
-                                 b'\xacY\xdc\x90\xb9\x01g)U\xf6\xf5\x01\x12' \
-                                 b'\xb6\x02\x01'
+        expected_binary_header = b'\x00\x00\xa0\xb7,\xa1\\\x1aK' \
+                                 b'\xd1\x89b\xd0\xacY\xdc' \
+                                 b'\x90\xb9\x01\xa0\xb7,\xa1\\\x1aK\xd1\x02\x01'
 
         self.assertEqual(expected_binary_header, binary_header)

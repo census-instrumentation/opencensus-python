@@ -20,7 +20,6 @@ from opencensus.trace.tracers import context_tracer
 
 
 class TestContextTracer(unittest.TestCase):
-
     def test_constructor_defaults(self):
         from opencensus.trace import span_context
         from opencensus.trace.exporters import print_exporter
@@ -68,7 +67,7 @@ class TestContextTracer(unittest.TestCase):
     def test_start_span(self, current_span_mock):
         from opencensus.trace import span_context
 
-        span_id = 1234
+        span_id = '6e0c63257de34c92'
         span_name = 'test_span'
         mock_span = mock.Mock()
         mock_span.span_id = span_id
@@ -87,7 +86,7 @@ class TestContextTracer(unittest.TestCase):
     def test_span(self, current_span_mock):
         from opencensus.trace import span_context
 
-        span_id = 1234
+        span_id = '6e0c63257de34c92'
         span_name = 'test_span'
         mock_span = mock.Mock()
         mock_span.span_id = span_id
@@ -118,7 +117,7 @@ class TestContextTracer(unittest.TestCase):
         tracer = context_tracer.ContextTracer(exporter=exporter)
         mock_span = mock.Mock()
         mock_span.name = 'span'
-        mock_span._child_spans = []
+        mock_span.children = []
         mock_span.status = None
         mock_span.links = None
         mock_span.stack_trace = None
@@ -126,7 +125,7 @@ class TestContextTracer(unittest.TestCase):
         mock_span.attributes = {}
         mock_span.__iter__ = mock.Mock(
             return_value=iter([mock_span]))
-        parent_span_id = 1234
+        parent_span_id = '6e0c63257de34c92'
         mock_span.parent_span.span_id = parent_span_id
         mock_current_span.return_value = mock_span
         tracer.end_span()
@@ -142,7 +141,7 @@ class TestContextTracer(unittest.TestCase):
         tracer = context_tracer.ContextTracer()
         mock_span = mock.Mock()
         mock_span.name = 'span'
-        mock_span._child_spans = []
+        mock_span.children = []
         mock_span.status = None
         mock_span.links = None
         mock_span.stack_trace = None
@@ -166,7 +165,7 @@ class TestContextTracer(unittest.TestCase):
         tracer._spans_list = [span]
         mock_span = mock.Mock()
         mock_span.name = 'span'
-        mock_span._child_spans = []
+        mock_span.children = []
         mock_span.status = None
         mock_span.links = None
         mock_span.stack_trace = None
@@ -174,7 +173,7 @@ class TestContextTracer(unittest.TestCase):
         mock_span.attributes = {}
         mock_span.__iter__ = mock.Mock(
             return_value=iter([mock_span]))
-        parent_span_id = 1234
+        parent_span_id = '6e0c63257de34c92'
         mock_span.parent_span.span_id = parent_span_id
         mock_current_span.return_value = mock_span
         tracer.end_span()

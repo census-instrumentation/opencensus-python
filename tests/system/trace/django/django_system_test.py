@@ -43,7 +43,7 @@ def wait_app_to_start():
 def generate_header():
     """Generate a trace header."""
     trace_id = uuid.uuid4().hex
-    span_id = random.randint(10**15, 10**16 - 1)
+    span_id = uuid.uuid4().hex[:16]
     trace_option = 1
 
     header = '{}/{};o={}'.format(trace_id, span_id, trace_option)

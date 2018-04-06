@@ -27,7 +27,7 @@ from opencensus.trace.exporters import stackdriver_exporter
 _ONE_DAY_IN_SECONDS = 60 * 60 * 24
 
 
-class HelloWorld(hello_world_pb2_grpc.HelloWorldServicer):
+class HelloWorld(hello_world_pb2_grpc.GreeterServicer):
 
     def SayHello(self, request, context):
         return hello_world_pb2.HelloReply(message='Hello, %s!' % request.name)
@@ -41,7 +41,7 @@ def serve():
     server = grpc.server(
         futures.ThreadPoolExecutor(max_workers=10),
         interceptors=(tracer_interceptor,))
-    hello_world_pb2_grpc.add_HelloWorldServicer_to_server(HelloWorld(), server)
+    hello_world_pb2_grpc.add_GreeterServicer_to_server(HelloWorld(), server)
     server.add_insecure_port('[::]:50051')
     server.start()
     try:

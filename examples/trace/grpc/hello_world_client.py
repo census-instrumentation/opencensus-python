@@ -34,7 +34,7 @@ def main():
         host_port=HOST_PORT)
     channel = grpc.insecure_channel(HOST_PORT)
     channel = grpc.intercept_channel(channel, tracer_interceptor)
-    stub = hello_world_pb2_grpc.HelloWorldStub(channel)
+    stub = hello_world_pb2_grpc.GreeterStub(channel)
     response = stub.SayHello(hello_world_pb2.HelloRequest(name='you'))
     print("Message received: " + response.message)
 
