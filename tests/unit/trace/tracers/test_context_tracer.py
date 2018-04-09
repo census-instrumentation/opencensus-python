@@ -17,9 +17,15 @@ import unittest
 import mock
 
 from opencensus.trace.tracers import context_tracer
+from opencensus.trace import span
+from opencensus.trace import execution_context
 
 
 class TestContextTracer(unittest.TestCase):
+
+    def tearDown(self):
+        execution_context.clear()
+
     def test_constructor_defaults(self):
         from opencensus.trace import span_context
         from opencensus.trace.exporters import print_exporter
@@ -59,6 +65,13 @@ class TestContextTracer(unittest.TestCase):
     def test_finish_with_spans(self):
         tracer = context_tracer.ContextTracer()
         tracer.start_span('span')
+        tracer.finish()
+
+        self.assertEqual(tracer._spans_list, [])
+
+    def test_end_leftover_spans(self):
+        tracer = context_tracer.ContextTracer()
+        tracer._spans_list = [span.Span(name='span')]
         tracer.finish()
 
         self.assertEqual(tracer._spans_list, [])

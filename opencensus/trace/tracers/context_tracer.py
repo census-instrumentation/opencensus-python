@@ -109,7 +109,8 @@ class ContextTracer(base.Tracer):
             return
 
         cur_span.finish()
-        self.span_context.span_id = cur_span.parent_span.span_id
+        self.span_context.span_id = cur_span.parent_span.span_id if \
+            cur_span.parent_span else None
 
         if isinstance(cur_span.parent_span, trace_span.Span):
             execution_context.set_current_span(cur_span.parent_span)
@@ -157,7 +158,8 @@ class ContextTracer(base.Tracer):
                 name=span.name,
                 context=self.span_context,
                 span_id=span.span_id,
-                parent_span_id=span.parent_span.span_id,
+                parent_span_id=span.parent_span.span_id if
+                span.parent_span else None,
                 attributes=span.attributes,
                 start_time=span.start_time,
                 end_time=span.end_time,
