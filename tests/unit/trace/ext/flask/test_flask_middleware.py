@@ -19,8 +19,12 @@ import unittest
 
 import flask
 import mock
+from google.rpc import code_pb2
 
 from opencensus.trace import execution_context
+from opencensus.trace import span_data
+from opencensus.trace import stack_trace
+from opencensus.trace import status
 from opencensus.trace.exporters import print_exporter
 from opencensus.trace.ext.flask import flask_middleware
 from opencensus.trace.propagation import google_cloud_format
@@ -43,6 +47,10 @@ class TestFlaskMiddleware(unittest.TestCase):
         @app.route('/_ah/health')
         def health_check():
             return 'test health check'  # pragma: NO COVER
+
+        @app.route('/error')
+        def error():
+            raise Exception('error')
 
         return app
 
@@ -241,3 +249,36 @@ class TestFlaskMiddleware(unittest.TestCase):
 
         self.assertEqual(response.status_code, 200)
         assert isinstance(tracer, noop_tracer.NoopTracer)
+
+    def test_teardown_include_exception(self):
+        mock_exporter = mock.MagicMock()
+        app = self.create_app()
+        flask_middleware.FlaskMiddleware(app=app, exporter=mock_exporter)
+        response = app.test_client().get('/error')
+
+        self.assertEqual(response.status_code, 500)
+
+        exported_spandata = mock_exporter.export.call_args[0][0][0]
+        self.assertIsInstance(exported_spandata, span_data.SpanData)
+        self.assertIsInstance(exported_spandata.status, status.Status)
+        self.assertEqual(exported_spandata.status.code, code_pb2.UNKNOWN)
+        self.assertEqual(exported_spandata.status.message, 'error')
+
+    def test_teardown_include_exception_and_traceback(self):
+        mock_exporter = mock.MagicMock()
+        app = self.create_app()
+        app.config['TESTING'] = True
+        flask_middleware.FlaskMiddleware(app=app, exporter=mock_exporter)
+        with self.assertRaises(Exception):
+            app.test_client().get('/error')
+
+        exported_spandata = mock_exporter.export.call_args[0][0][0]
+        self.assertIsInstance(exported_spandata, span_data.SpanData)
+        self.assertIsInstance(exported_spandata.status, status.Status)
+        self.assertEqual(exported_spandata.status.code, code_pb2.UNKNOWN)
+        self.assertEqual(exported_spandata.status.message, 'error')
+        self.assertIsInstance(
+            exported_spandata.stack_trace, stack_trace.StackTrace
+        )
+        self.assertIsNotNone(exported_spandata.stack_trace.stack_trace_hash_id)
+        self.assertNotEqual(exported_spandata.stack_trace.stack_frames, [])
