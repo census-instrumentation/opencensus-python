@@ -17,6 +17,7 @@ import unittest
 import mock
 
 from opencensus.trace import tracer as tracer_module
+from opencensus.trace import span_data
 
 
 class TestTracer(unittest.TestCase):
@@ -246,7 +247,8 @@ class TestTracer(unittest.TestCase):
         assert isinstance(span, base.NullContextManager)
 
     def test_trace_decorator(self):
-        tracer = tracer_module.Tracer()
+        mock_exporter = mock.MagicMock()
+        tracer = tracer_module.Tracer(exporter=mock_exporter)
 
         return_value = "test"
 
@@ -256,6 +258,8 @@ class TestTracer(unittest.TestCase):
 
         returned = test_decorator()
 
-        self.assertEqual(len(tracer.tracer._spans_list), 1)
-        self.assertEqual(tracer.tracer._spans_list[0].name, 'test_decorator')
         self.assertEqual(returned, return_value)
+        self.assertEqual(mock_exporter.export.call_count, 1)
+        exported_spandata = mock_exporter.export.call_args[0][0][0]
+        self.assertIsInstance(exported_spandata, span_data.SpanData)
+        self.assertEqual(exported_spandata.name, 'test_decorator')
