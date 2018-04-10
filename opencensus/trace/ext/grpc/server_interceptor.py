@@ -29,6 +29,7 @@ from opencensus.trace.propagation import binary_format
 ATTRIBUTE_COMPONENT = 'COMPONENT'
 ATTRIBUTE_ERROR_NAME = 'ERROR_NAME'
 ATTRIBUTE_ERROR_MESSAGE = 'ERROR_MESSAGE'
+RECV_PREFIX = 'Recv'
 
 RpcRequestInfo = collections.namedtuple(
     'RPCRequestInfo', ('request', 'context')
@@ -113,7 +114,7 @@ class OpenCensusServerInterceptor(grpc.ServerInterceptor):
                                       sampler=self.sampler,
                                       exporter=self.exporter)
 
-        span = tracer.start_span(name='grpc_server')
+        span = tracer.start_span(name=_get_span_name(rpc_request_info))
         tracer.add_attribute_to_current_span(
             attribute_key=attributes_helper.COMMON_ATTRIBUTES.get(
                 ATTRIBUTE_COMPONENT),
@@ -151,3 +152,12 @@ class OpenCensusServerInterceptor(grpc.ServerInterceptor):
 
     def intercept_service(self, continuation, handler_call_details):
         return self.intercept_handler(continuation, handler_call_details)
+
+
+def _get_span_name(rpc_request_info):
+    """Generates a span name based off of the gRPC server rpc_request_info"""
+    method_name = rpc_request_info.context._rpc_event.call_details.method[1:]
+    if isinstance(method_name, bytes):
+        method_name = method_name.decode('utf-8')
+    method_name = method_name.replace('/', '.')
+    return '{}.{}'.format(RECV_PREFIX, method_name)

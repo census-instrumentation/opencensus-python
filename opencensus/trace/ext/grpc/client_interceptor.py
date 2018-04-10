@@ -29,6 +29,7 @@ ATTRIBUTE_ERROR_NAME = 'ERROR_NAME'
 ATTRIBUTE_ERROR_MESSAGE = 'ERROR_MESSAGE'
 GRPC_HOST_PORT = 'GRPC_HOST_PORT'
 GRPC_METHOD = 'GRPC_METHOD'
+SENT_PREFIX = 'Sent'
 
 TIMEOUT = 3
 
@@ -57,9 +58,10 @@ class OpenCensusClientInterceptor(grpc.UnaryUnaryClientInterceptor,
         self.host_port = host_port
         self._propagator = binary_format.BinaryFormatPropagator()
 
-    def _start_client_span(self, method, grpc_type):
+    def _start_client_span(self, client_call_details):
         span = self._tracer.start_span(
-            name='[gRPC_client][{}]{}'.format(grpc_type, str(method)))
+            name=_get_span_name(client_call_details)
+        )
 
         # Add the component grpc to span attribute
         self._tracer.add_attribute_to_current_span(
@@ -76,7 +78,7 @@ class OpenCensusClientInterceptor(grpc.UnaryUnaryClientInterceptor,
         # Add the method to span attribute
         self._tracer.add_attribute_to_current_span(
             attribute_key=attributes_helper.GRPC_ATTRIBUTES.get(GRPC_METHOD),
-            attribute_value=str(method))
+            attribute_value=str(client_call_details.method))
 
         return span
 
@@ -91,9 +93,7 @@ class OpenCensusClientInterceptor(grpc.UnaryUnaryClientInterceptor,
             metadata = client_call_details.metadata
 
         # Start a span
-        current_span = self._start_client_span(
-            client_call_details.method,
-            grpc_type)
+        current_span = self._start_client_span(client_call_details)
 
         span_context = self._tracer.span_context
         header = self._propagator.to_header(span_context)
@@ -211,3 +211,9 @@ class OpenCensusClientInterceptor(grpc.UnaryUnaryClientInterceptor,
         self._end_span_between_context(current_span)
 
         return response_it
+
+
+def _get_span_name(client_call_details):
+    """Generates a span name based off of the gRPC client call details"""
+    method_name = client_call_details.method[1:].replace('/', '.')
+    return '{}.{}'.format(SENT_PREFIX, method_name)
