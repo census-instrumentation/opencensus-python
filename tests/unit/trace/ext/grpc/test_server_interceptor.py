@@ -44,6 +44,7 @@ class TestOpenCensusServerInterceptor(unittest.TestCase):
             MockTracer)
         mock_context = mock.Mock()
         mock_context.invocation_metadata = mock.Mock(return_value=None)
+        mock_context._rpc_event.call_details.method = 'hello'
         interceptor = server_interceptor.OpenCensusServerInterceptor(
             None, None)
 
@@ -68,6 +69,7 @@ class TestOpenCensusServerInterceptor(unittest.TestCase):
         mock_context.invocation_metadata = mock.Mock(
             return_value=(('test_key', b'test_value'),)
         )
+        mock_context._rpc_event.call_details.method = 'hello'
         interceptor = server_interceptor.OpenCensusServerInterceptor(
             None, None)
 
@@ -100,6 +102,7 @@ class TestOpenCensusServerInterceptor(unittest.TestCase):
             None, None)
         mock_context = mock.Mock()
         mock_context.invocation_metadata = mock.Mock(return_value=None)
+        mock_context._rpc_event.call_details.method = 'hello'
         mock_continuation = mock.Mock()
         mock_continuation.unary_unary = mock.Mock(side_effect=Exception('Test'))
         with patch:
