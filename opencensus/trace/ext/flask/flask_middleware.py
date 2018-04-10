@@ -12,16 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import flask
 import logging
+import sys
+
+import flask
+from google.rpc import code_pb2
 
 from opencensus.trace import attributes_helper
 from opencensus.trace import execution_context
-from opencensus.trace.propagation import google_cloud_format
+from opencensus.trace import stack_trace
+from opencensus.trace import status
+from opencensus.trace import tracer as tracer_module
 from opencensus.trace.exporters import print_exporter
 from opencensus.trace.ext import utils
+from opencensus.trace.propagation import google_cloud_format
 from opencensus.trace.samplers import always_on
-from opencensus.trace import tracer as tracer_module
 
 _FLASK_TRACE_HEADER = 'X_CLOUD_TRACE_CONTEXT'
 
@@ -81,6 +86,7 @@ class FlaskMiddleware(object):
     def setup_trace(self):
         self.app.before_request(self._before_request)
         self.app.after_request(self._after_request)
+        self.app.teardown_request(self._teardown_request)
 
     def _before_request(self):
         """A function to be run before each request.
@@ -127,13 +133,38 @@ class FlaskMiddleware(object):
             tracer.add_attribute_to_current_span(
                 HTTP_STATUS_CODE,
                 str(response.status_code))
+        except Exception:  # pragma: NO COVER
+            log.error('Failed to trace request', exc_info=True)
+        finally:
+            return response
+
+    def _teardown_request(self, exception):
+        # Do not trace if the url is blacklisted
+        if utils.disable_tracing_url(flask.request.url, self.blacklist_paths):
+            return
+
+        try:
+            tracer = execution_context.get_opencensus_tracer()
+
+            if exception is not None:
+                span = execution_context.get_current_span()
+                span.status = status.Status(
+                    code=code_pb2.UNKNOWN,
+                    message=str(exception)
+                )
+                # try attaching the stack trace to the span, only populated if
+                # the app has 'PROPAGATE_EXCEPTIONS', 'DEBUG', or 'TESTING'
+                # enabled
+                exc_type, _, exc_traceback = sys.exc_info()
+                if exc_traceback is not None:
+                    span.stack_trace = stack_trace.StackTrace.from_traceback(
+                        exc_traceback
+                    )
 
             tracer.end_span()
             tracer.finish()
         except Exception:  # pragma: NO COVER
             log.error('Failed to trace request', exc_info=True)
-        finally:
-            return response
 
 
 def get_flask_header():
