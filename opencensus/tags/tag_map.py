@@ -1,3 +1,17 @@
+# Copyright 2018, OpenCensus Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 from opencensus.tags import tag
 from opencensus.tags import tag_key
 from opencensus.tags import tag_value
@@ -10,9 +24,13 @@ class TagMap(object):
         else:
             self.map = map
         if tags is not None:
-            self.tags = {}
-            for tag.Tag in tags:
-                self.tags[] = tag.tag_value
+            self.tags = tags
+            print(self.tags)
+            for tag in self.tags:
+                print(tag)
+                for tag_key, tag_value in tag.items():
+                    self.map[tag_key] = tag_value
+
         else:
             self.tags = {}
 
@@ -29,7 +47,7 @@ class TagMap(object):
         if key in self.map:
             self.map[key] = value
 
-    def tag_key_exits(self, key):
+    def tag_key_exists(self, key):
         if key in self.map:
             return True
         else:
@@ -40,5 +58,3 @@ class TagMap(object):
             return self.map[key]
         else:
             return "key is not in map"
-
-

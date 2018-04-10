@@ -12,3 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import unittest
+from opencensus.tags import tag as tag_module
+
+class TestTag(unittest.TestCase):
+
+    def test_constructor(self):
+        key = 'key1'
+        value = 'value1'
+        tag = tag_module.Tag(key=key, value=value)
+
+        self.assertEqual(tag.key.name, key)
+        self.assertEqual(tag.value.value, value)

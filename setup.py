@@ -19,8 +19,8 @@ from setuptools import setup, find_packages
 
 install_requires = [
     'google-cloud-trace>=0.17.0, <0.18dev',
-    'google-cloud-monitoring>=0.28.1'
-]
+    'google-cloud-monitoring>=0.28.1, <0.29'
+    ]
 
 setup(
     name='opencensus',
