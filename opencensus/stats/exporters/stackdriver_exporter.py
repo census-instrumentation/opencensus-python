@@ -1,3 +1,17 @@
+# Copyright 2018, OpenCensus Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import os
 from google.cloud import monitoring
 from google.cloud.monitoring import Client
@@ -19,10 +33,9 @@ class StackDriverExporter(object):
         self.client = client
         self.project_id = client.project
         self.resource = client.resource('global', {})
+        name = 'projects/{}'.format(self.project_id)
 
     def emit(self, views, datapoint=None):
-        name = 'projects/{}'.format(self.project_id)
-        '''metric = {}'''
         metrics = self.translate_to_stackdriver(views)
         for metric_type, metric_label in metrics.items():
             metric = self.client.metric(metric_type, metric_label)
@@ -33,25 +46,13 @@ class StackDriverExporter(object):
             self.client.time_series(metric, self.client.resource, datapoint, datetime.utcnow() + timedelta(seconds=60), datetime.utcnow())
             return 'Successfully wrote time series.'
 
-    def set_resource(self, type_, labels):
+    def set_resource(self, type_='global', labels={}):
         return self.client.resource(type_, labels)
 
     def translate_to_stackdriver(self, views):
         metrics = {}
-        labels = []
         for v in views or []:
             metric_type = v.View.name
             metric_label = v.view.get_description()
             metrics[metric_type] = metric_label
-            labels.append(metric_label)
         return metrics
-
-
-
-
-
-
-
-
-
-

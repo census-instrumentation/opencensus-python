@@ -1,75 +1,102 @@
+# Copyright 2018, OpenCensus Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 from opencensus.stats import bucket_boundaries
 from opencensus.stats import aggregation_data
 
 class BaseAggregation(object):
     def __init__(self, aggregation_type=None, buckets=None):
         if aggregation_type is not None:
-            self.aggregation_type = aggregation_type
+            self._aggregation_type = aggregation_type
 
         if buckets is not None:
             self.buckets = buckets
 
-    def get_aggregation(self):
-        return self.aggregation_type
+    @property
+    def aggregation_type(self):
+        return self._aggregation_type
 
 class SumAggregation(BaseAggregation):
     def __init__(self, sum=None, aggregation_type="sum"):
         super().__init__(aggregation_type)
-        self.aggregation_type = aggregation_type
+        self._aggregation_type = aggregation_type
         if sum is not None:
-            self.sum = aggregation_data.SumAggregationDataFloat(sum)
+            self._sum = aggregation_data.SumAggregationDataFloat(sum)
         else:
-            self.sum = aggregation_data.SumAggregationDataFloat(0)
+            self._sum = aggregation_data.SumAggregationDataFloat(0)
 
-    def get_aggregation(self):
-        return self.aggregation_type
+    @property
+    def aggregation_type(self):
+        return self._aggregation_type
 
-    def get_sum(self):
-        return self.sum
+    @property
+    def sum(self):
+        return self._sum
 
 class CountAggregation(BaseAggregation):
     def __init__(self, count=None, aggregation_type="count"):
         super().__init__(aggregation_type)
-        self.aggregation_type = aggregation_type
+        self._aggregation_type = aggregation_type
         if count is not None:
-            self.count = aggregation_data.CountAggregationData(count)
+            self._count = aggregation_data.CountAggregationData(count)
         else:
-            self.count = aggregation_data.CountAggregationData(0)
+            self._count = aggregation_data.CountAggregationData(0)
 
-    def get_aggregation(self):
-        return self.aggregation_type
+    @property
+    def aggregation_type(self):
+        return self._aggregation_type
 
-    def get_count(self):
-        return self.count
+    @property
+    def count(self):
+        return self._count
 
 class MeanAggregation(BaseAggregation):
-    def __init__(self, mean=None, aggregation_type="mean"):
+    def __init__(self, mean=None, count=None, aggregation_type="mean"):
         super().__init__(aggregation_type)
-        self.aggregation_type = aggregation_type
-        if mean is not None:
-            self.mean = aggregation_data.MeanAggregationData(mean)
+        self._aggregation_type = aggregation_type
+        if count is not None:
+            self.count = count
         else:
-            self.mean = aggregation_data.MeanAggregationData(0)
+            self.count = 0
+        if mean is not None:
+            self._mean = aggregation_data.MeanAggregationData(mean, count)
+        else:
+            self._mean = aggregation_data.MeanAggregationData(0, count)
 
-    def get_aggregation(self):
-        return self.aggregation_type
+    @property
+    def aggregation_type(self):
+        return self._aggregation_type
 
+    @property
     def get_mean(self):
-        return self.mean
+        return self._mean
 
 class DistributionAggregation(BaseAggregation):
     def __init__(self, boundaries=None, distribution=None, aggregation_type="distribution"):
         super().__init__(aggregation_type, boundaries)
-        self.aggregation_type = aggregation_type
-        '''self.boundaries = list(bucket_boundaries.BucketBoundaries(boundaries) or [])'''
-        self.boundaries = bucket_boundaries.BucketBoundaries(boundaries)
-        self.distribution = dict(distribution or {})
+        self._aggregation_type = aggregation_type
+        self._boundaries = bucket_boundaries.BucketBoundaries(boundaries)
+        self._distribution = dict(distribution or {})
 
-    def get_aggregation(self):
-        return self.aggregation_type
+    @property
+    def aggregation_type(self):
+        return self._aggregation_type
 
-    def get_boundaries(self):
-        return bucket_boundaries.BucketBoundaries.get_boundaries(self.boundaries)
+    @property
+    def boundaries(self):
+        return self._boundaries
 
-    def get_distribution(self):
-        return self.distribution
+    @property
+    def distribution(self):
+        return self._distribution
