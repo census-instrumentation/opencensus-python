@@ -55,7 +55,9 @@ class TestOpenCensusClientInterceptor(unittest.TestCase):
         tracer = mock.Mock()
         interceptor = client_interceptor.OpenCensusClientInterceptor(
             tracer=tracer, host_port='test')
-        interceptor._start_client_span('test_method', 'unary_unary')
+        mock_client_call_details = mock.Mock()
+        mock_client_call_details.method = '/hello'
+        interceptor._start_client_span(mock_client_call_details)
 
         self.assertTrue(tracer.start_span.called)
         self.assertTrue(tracer.add_attribute_to_current_span.called)
@@ -86,6 +88,7 @@ class TestOpenCensusClientInterceptor(unittest.TestCase):
         interceptor._propagator = mock_propagator
         mock_client_call_details = mock.Mock()
         mock_client_call_details.metadata = None
+        mock_client_call_details.method = '/hello'
 
         client_call_details, request_iterator, current_span = interceptor._intercept_call(
             mock_client_call_details,
@@ -108,6 +111,7 @@ class TestOpenCensusClientInterceptor(unittest.TestCase):
         interceptor._propagator = mock_propagator
         mock_client_call_details = mock.Mock()
         mock_client_call_details.metadata = [('test_key', 'test_value'),]
+        mock_client_call_details.method = '/hello'
 
         client_call_details, request_iterator, current_span = interceptor._intercept_call(
             mock_client_call_details,
@@ -130,6 +134,7 @@ class TestOpenCensusClientInterceptor(unittest.TestCase):
         interceptor._propagator = mock_propagator
         mock_client_call_details = mock.Mock()
         mock_client_call_details.metadata = (('test_key', 'test_value'),)
+        mock_client_call_details.method = '/hello'
 
         client_call_details, request_iterator, current_span = interceptor._intercept_call(
             mock_client_call_details,
