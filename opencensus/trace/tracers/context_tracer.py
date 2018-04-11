@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import logging
+import threading
 
 from opencensus.trace import execution_context
 from opencensus.trace.span_context import SpanContext
@@ -42,6 +43,7 @@ class ContextTracer(base.Tracer):
         self.trace_id = span_context.trace_id
         self.root_span_id = span_context.span_id
 
+        self._spans_list_condition = threading.Condition()
         # List of spans to report
         self._spans_list = []
 
@@ -51,7 +53,8 @@ class ContextTracer(base.Tracer):
         :rtype: dict
         :returns: JSON format trace.
         """
-        self._spans_list = []
+        while self._spans_list:
+            self.end_span()
 
     def span(self, name='span'):
         """Create a new span with the trace using the context information.
@@ -86,7 +89,8 @@ class ContextTracer(base.Tracer):
             name,
             parent_span=parent_span,
             context_tracer=self)
-        self._spans_list.append(span)
+        with self._spans_list_condition:
+            self._spans_list.append(span)
         self.span_context.span_id = span.span_id
         execution_context.set_current_span(span)
         span.start()
@@ -97,21 +101,27 @@ class ContextTracer(base.Tracer):
         parent span id; Update the current span.
         """
         cur_span = self.current_span()
+        if cur_span is None and self._spans_list:
+            cur_span = self._spans_list[-1]
 
         if cur_span is None:
             logging.warning('No active span, cannot do end_span.')
             return
 
         cur_span.finish()
-        self.span_context.span_id = cur_span.parent_span.span_id
+        self.span_context.span_id = cur_span.parent_span.span_id if \
+            cur_span.parent_span else None
 
         if isinstance(cur_span.parent_span, trace_span.Span):
             execution_context.set_current_span(cur_span.parent_span)
         else:
             execution_context.set_current_span(None)
 
-        span_datas = self.get_span_datas(cur_span)
-        self.exporter.export(span_datas)
+        with self._spans_list_condition:
+            if cur_span in self._spans_list:
+                span_datas = self.get_span_datas(cur_span)
+                self.exporter.export(span_datas)
+                self._spans_list.remove(cur_span)
 
         return cur_span
 
@@ -148,7 +158,8 @@ class ContextTracer(base.Tracer):
                 name=span.name,
                 context=self.span_context,
                 span_id=span.span_id,
-                parent_span_id=span.parent_span.span_id,
+                parent_span_id=span.parent_span.span_id if
+                span.parent_span else None,
                 attributes=span.attributes,
                 start_time=span.start_time,
                 end_time=span.end_time,
