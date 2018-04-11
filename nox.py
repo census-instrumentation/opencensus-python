@@ -35,7 +35,7 @@ def unit(session, py):
     session.run(
         'py.test',
         '--quiet',
-        '--cov=opencensus.trace',
+        '--cov=opencensus',
         '--cov-append',
         '--cov-config=.coveragerc',
         '--cov-report=',
@@ -83,7 +83,7 @@ def lint(session):
     session.interpreter = 'python3.6'
     session.install('flake8')
     session.install('.')
-    session.run('flake8', 'opencensus/trace')
+    session.run('flake8', 'opencensus/')
 
 
 @nox.session
