@@ -16,7 +16,7 @@ from opencensus.stats import measure
 
 class Measurement(object):
     def __init__(self, measure, value):
-        self._measure = measure.Measure(measure)
+        self._measure = measure
         self._value = value
 
     @property

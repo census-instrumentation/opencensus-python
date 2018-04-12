@@ -15,7 +15,11 @@ from opencensus.stats import bucket_boundaries
 
 class BaseAggregationData(object):
     def __init__(self, aggregation_data):
-        self.aggregation_data = aggregation_data
+        self._aggregation_data = aggregation_data
+
+    @property
+    def aggregation_data(self):
+        return self._aggregation_data
 
 class SumAggregationDataFloat(BaseAggregationData):
     def __init__(self, sum_data):

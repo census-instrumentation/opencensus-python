@@ -12,23 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from opencensus.tags import tag_key
-from opencensus.tags import tag_value
+import unittest
+import mock
+from opencensus.stats import bucket_boundaries as bucket_boundaries_module
 
-class TagContext(object):
+class TestBucketBoundaries(unittest.TestCase):
 
-    def __init__(self, tags=None):
-        self._tags = dict(tags or {})
+    def test_constructor_defaults(self):
+        bucket_boundaries = bucket_boundaries_module.BucketBoundaries()
+        self.assertEqual([], bucket_boundaries.boundaries)
 
-    def put(self, key, value):
-        self._tags[key] = value
-
-    def remove(self, key):
-        self._tags.pop(key, None)
-
-    @property
-    def tags(self):
-        return self._tags
-
-    def get_tag_value(self, key):
-        return self._tags.get(key, None)
+    def test_constructor_explicit(self):
+        boundaries = ["test"]
+        bucket_boundaries = bucket_boundaries_module.BucketBoundaries(boundaries=boundaries)
+        self.assertEqual(boundaries, bucket_boundaries.boundaries)

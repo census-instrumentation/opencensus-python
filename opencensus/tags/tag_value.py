@@ -21,7 +21,7 @@ class TagValue(object):
     def value(self):
         return self._value
 
-    def is_value(self, value):
+    def check_value(self, value):
         if len(value) <= 255:
             return True
         else:
