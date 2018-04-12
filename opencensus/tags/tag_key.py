@@ -21,7 +21,7 @@ class TagKey(object):
     def name(self):
         return self._name
 
-    def is_valid(self, name):
+    def check_name(self, name):
         if (len(name) > 0) and (len(name) <= 255):
             return True
         else:

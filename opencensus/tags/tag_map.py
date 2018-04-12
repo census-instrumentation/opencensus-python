@@ -19,15 +19,10 @@ from opencensus.tags import tag_value
 class TagMap(object):
 
     def __init__(self, tags=None, map=None):
-        if map is None:
-            self.map = {}
-        else:
-            self.map = map
+        self.map = map if map is not None else {}
         if tags is not None:
             self.tags = tags
-            print(self.tags)
             for tag in self.tags:
-                print(tag)
                 for tag_key, tag_value in tag.items():
                     self.map[tag_key] = tag_value
 
@@ -48,13 +43,11 @@ class TagMap(object):
             self.map[key] = value
 
     def tag_key_exists(self, key):
-        if key in self.map:
-            return True
-        else:
-            return False
+        return key in self.map
 
     def get_value(self, key):
-        if key in self.map:
-            return self.map[key]
-        else:
-            return "key is not in map"
+        value = self.map.get(key, None)
+        if value is None:
+            raise KeyError('Key is not in map.')
+
+        return value

@@ -15,26 +15,37 @@
 from opencensus.stats import bucket_boundaries
 from opencensus.stats import aggregation_data
 
+
 class BaseAggregation(object):
+
     def __init__(self, aggregation_type=None, buckets=None):
         if aggregation_type is not None:
             self._aggregation_type = aggregation_type
+        else:
+            self._aggregation_type = "none"
 
         if buckets is not None:
-            self.buckets = buckets
+            self._buckets = buckets
+        else:
+            self._buckets = []
 
     @property
     def aggregation_type(self):
         return self._aggregation_type
+
+    @property
+    def buckets(self):
+        return self._buckets
+
 
 class SumAggregation(BaseAggregation):
     def __init__(self, sum=None, aggregation_type="sum"):
         super().__init__(aggregation_type)
         self._aggregation_type = aggregation_type
         if sum is not None:
-            self._sum = aggregation_data.SumAggregationDataFloat(sum)
+            self._sum = aggregation_data.SumAggregationDataFloat(sum_data=sum)
         else:
-            self._sum = aggregation_data.SumAggregationDataFloat(0)
+            self._sum = aggregation_data.SumAggregationDataFloat(sum_data=0)
 
     @property
     def aggregation_type(self):
@@ -66,20 +77,24 @@ class MeanAggregation(BaseAggregation):
         super().__init__(aggregation_type)
         self._aggregation_type = aggregation_type
         if count is not None:
-            self.count = count
+            self._count = count
         else:
-            self.count = 0
+            self._count = 0
         if mean is not None:
-            self._mean = aggregation_data.MeanAggregationData(mean, count)
+            self._mean = aggregation_data.MeanAggregationData(mean, self._count)
         else:
-            self._mean = aggregation_data.MeanAggregationData(0, count)
+            self._mean = aggregation_data.MeanAggregationData(0, self._count)
 
     @property
     def aggregation_type(self):
         return self._aggregation_type
 
     @property
-    def get_mean(self):
+    def count(self):
+        return self._count
+
+    @property
+    def mean(self):
         return self._mean
 
 class DistributionAggregation(BaseAggregation):

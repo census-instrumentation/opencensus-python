@@ -41,6 +41,7 @@ class MeasureFloat(BaseMeasure):
     def __init__(self, name, description, unit=None):
         super().__init__(name, description, unit)
 
+
 class MeasureDescriptor(BaseMeasure):
     def __init__(self, name, description, unit=None):
         super().__init__(name, description, unit)
