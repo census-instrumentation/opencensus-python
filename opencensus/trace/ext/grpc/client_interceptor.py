@@ -50,39 +50,45 @@ class OpenCensusClientInterceptor(grpc.UnaryUnaryClientInterceptor,
                                   grpc.StreamUnaryClientInterceptor,
                                   grpc.StreamStreamClientInterceptor):
 
-    def __init__(self, host_port=None):
+    def __init__(self, tracer=None, host_port=None):
+        self._tracer = tracer
         self.host_port = host_port
         self._propagator = binary_format.BinaryFormatPropagator()
 
+    @property
+    def tracer(self):
+        return self._tracer or execution_context.get_opencensus_tracer()
+
     def _start_client_span(self, client_call_details):
-        tracer = execution_context.get_opencensus_tracer()
-        span = tracer.start_span(
+        span = self.tracer.start_span(
             name=_get_span_name(client_call_details)
         )
 
         # Add the component grpc to span attribute
-        tracer.add_attribute_to_current_span(
+        self.tracer.add_attribute_to_current_span(
             attribute_key=attributes_helper.COMMON_ATTRIBUTES.get(
                 ATTRIBUTE_COMPONENT),
             attribute_value='grpc')
 
         # Add the host:port info to span attribute
-        tracer.add_attribute_to_current_span(
+        self.tracer.add_attribute_to_current_span(
             attribute_key=attributes_helper.GRPC_ATTRIBUTES.get(
                 GRPC_HOST_PORT),
             attribute_value=self.host_port)
 
         # Add the method to span attribute
-        tracer.add_attribute_to_current_span(
+        self.tracer.add_attribute_to_current_span(
             attribute_key=attributes_helper.GRPC_ATTRIBUTES.get(GRPC_METHOD),
             attribute_value=str(client_call_details.method))
+
+        execution_context.set_opencensus_tracer(self.tracer)
+        execution_context.set_current_span(span)
 
         return span
 
     def _end_span_between_context(self, current_span):
         execution_context.set_current_span(current_span)
-        tracer = execution_context.get_opencensus_tracer()
-        tracer.end_span()
+        self.tracer.end_span()
 
     def _intercept_call(
             self, client_call_details, request_iterator, grpc_type):
@@ -116,10 +122,9 @@ class OpenCensusClientInterceptor(grpc.UnaryUnaryClientInterceptor,
 
     def _callback(self, current_span):
         def callback(future_response):
-            tracer = execution_context.get_opencensus_tracer()
             execution_context.set_current_span(current_span)
             self._trace_future_exception(future_response)
-            tracer.end_span()
+            self.tracer.end_span()
 
         return callback
 
@@ -130,8 +135,7 @@ class OpenCensusClientInterceptor(grpc.UnaryUnaryClientInterceptor,
         if exception is not None:
             exception = str(exception)
 
-        tracer = execution_context.get_opencensus_tracer()
-        tracer.add_attribute_to_current_span(
+        self.tracer.add_attribute_to_current_span(
             attribute_key=attributes_helper.COMMON_ATTRIBUTES.get(
                 ATTRIBUTE_ERROR_MESSAGE),
             attribute_value=exception)
