@@ -209,6 +209,41 @@ requests will be automatically traced.
     # `GoogleCloudFormatPropagator` as propagator.
     middleware = FlaskMiddleware(app)
 
+The middleware also supports the factory pattern.
+
+.. code:: python
+
+    from opencensus.trace.ext.flask.flask_middleware import FlaskMiddleware
+    middleware = FlaskMiddleware()
+    app = flask.Flask(__name__)
+    middleware.init_app(app)
+
+The Flask application configuration can also be used to specify the sampler,
+exporter, propagator in the middleware.
+
+.. code:: python
+
+    OPENCENSUS_TRACE = {
+        'SAMPLER': opencensus.trace.samplers.probability.ProbabilitySampler,
+        'REPORTER': opencensus.trace.exporters.print_exporter.PrintExporter,
+        'PROPAGATOR': opencensus.trace.propagation.google_cloud_format.
+                      GoogleCloudFormatPropagator,
+    }
+
+You can configure the sampling rate and other parameters using the ``OPENCENSUS_TRACE_PARAMS``
+key in the app configuration:
+
+.. code:: python
+
+    OPENCENSUS_TRACE_PARAMS = {
+        'BLACKLIST_PATHS': ['/_ah/health'],
+        'GCP_EXPORTER_PROJECT': None,
+        'SAMPLING_RATE': 0.5,
+        'ZIPKIN_EXPORTER_SERVICE_NAME': 'my_service',
+        'ZIPKIN_EXPORTER_HOST_NAME': 'localhost',
+        'ZIPKIN_EXPORTER_PORT': 9411,
+    }
+
 Django
 ~~~~~~
 
