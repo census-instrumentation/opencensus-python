@@ -26,6 +26,10 @@ Installation & basic usage
         pip install opencensus-trace
         pipenv install opencensus-trace
 
+        # install the Stackdriver exporter by including the extras package
+        pip install opencensus-trace[stackdriver]
+        pipenv install opencensus-trace[stackdriver]
+
 2. Initialize a tracer for application:
 
     .. code:: python
