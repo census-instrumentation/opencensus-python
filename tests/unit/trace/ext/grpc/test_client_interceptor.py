@@ -27,13 +27,11 @@ class TestOpenCensusClientInterceptor(unittest.TestCase):
         execution_context.clear()
 
     def test_constructor_default(self):
-        from opencensus.trace.tracers import noop_tracer
         from opencensus.trace.propagation import binary_format
 
         interceptor = client_interceptor.OpenCensusClientInterceptor()
 
-        self.assertTrue(isinstance(
-            interceptor._tracer, noop_tracer.NoopTracer))
+        self.assertIsNone(interceptor._tracer)
         self.assertIsNone(interceptor.host_port)
         self.assertTrue(isinstance(
             interceptor._propagator, binary_format.BinaryFormatPropagator))
