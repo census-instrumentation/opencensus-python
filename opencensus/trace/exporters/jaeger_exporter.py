@@ -14,23 +14,22 @@
 
 """Export the spans data to Jaeger."""
 
-import logging
-import socket
 import calendar
 import datetime
+import logging
+import socket
 
-from thrift.transport import TTransport, THttpClient
-from thrift.protocol import TCompactProtocol, TBinaryProtocol
+from thrift.protocol import TBinaryProtocol, TCompactProtocol
+from thrift.transport import THttpClient, TTransport
 
-from opencensus.trace import span_data, link
+from opencensus.trace import link as link_module
 from opencensus.trace.exporters import base
+from opencensus.trace.exporters.gen.jaeger import agent, jaeger
 from opencensus.trace.exporters.transports import sync
-from opencensus.trace.exporters.gen.jaeger import jaeger
-from opencensus.trace.exporters.gen.jaeger import agent
 
 DEFAULT_HOST_NAME = 'localhost'
 DEFAULT_AGENT_PORT = 6931
-DEFAULT_ENDPOINT = '/api/traces'
+DEFAULT_ENDPOINT = '/api/traces?format=jaeger.thrift'
 
 ISO_DATETIME_REGEX = '%Y-%m-%dT%H:%M:%S.%fZ'
 UDP_PACKET_MAX_LENGTH = 65000
@@ -51,6 +50,14 @@ class JaegerExporter(base.Exporter):
     :type port: int
     :param port: (Optional) The port of the Jaeger HTTP Thrift.
 
+    :type username: str
+    :param username: (Optional) The user name of the Basic Auth
+                     if authentication is required.
+
+    :type password: str
+    :param password: (Optional) The password of the Basic Auth
+                     if authentication is required.
+
     :type endpoint: str
     :param port: (Optional) The endpoint of the Jaeger HTTP Thrift .
 
@@ -60,13 +67,6 @@ class JaegerExporter(base.Exporter):
     :type agent_port: int
     :param agent_port: (Optional) The port of the Jaeger-Agent.
 
-    :type username: str
-    :param username: (Optional) The user name of the Basic Auth
-                     if authentication is required.
-
-    :type password: str
-    :param password: (Optional) The password of the Basic Auth
-                     if authentication is required.
 
     :type transport: :class:`type`
     :param transport: Class for creating new transport objects. It should
@@ -81,12 +81,12 @@ class JaegerExporter(base.Exporter):
             service_name='my_service',
             host_name=None,
             port=None,
+            username=None,
+            password=None,
             endpoint='',
             agent_host_name=DEFAULT_HOST_NAME,
             agent_port=DEFAULT_AGENT_PORT,
             agent_endpoint=DEFAULT_ENDPOINT,
-            username='',
-            password='',
             transport=sync.SyncTransport):
         self.transport = transport(self)
         self.service_name = service_name
@@ -97,17 +97,22 @@ class JaegerExporter(base.Exporter):
         self.endpoint = endpoint
         self.username = username
         self.password = password
-        self.agent_client = self._agent_client
-        self.collector = self._collector
+        self._agent_client = None
+        self._collector = None
 
     @property
-    def _agent_client(self):
-        return AgentClientUDP(
-            host_name=self.agent_host_name,
-            port=self.agent_port)
+    def agent_client(self):
+        if self._agent_client is None:
+            self._agent_client = AgentClientUDP(
+                host_name=self.agent_host_name,
+                port=self.agent_port)
+        return self._agent_client
 
     @property
-    def _collector(self):
+    def collector(self):
+        if self._collector is not None:
+            return self._collector
+
         if self.host_name is None or self.port is None:
             return None
 
@@ -118,21 +123,21 @@ class JaegerExporter(base.Exporter):
             DEFAULT_ENDPOINT)
 
         auth = None
-        if self.username != '' and self.password != '':
+        if self.username is not None and self.password is not None:
             auth = (self.username, self.password)
 
-        return Collector(thrift_url=thrift_url, auth=auth)
+        self._collector = Collector(
+            thrift_url=thrift_url, auth=auth)
+        return self._collector
 
     def emit(self, span_datas):
         """
         :type span_datas: list of :class:
             `~opencensus.trace.span_data.SpanData`
-        :param list of opencensus.trace.span_data.SpanData span_datas:
+        :param span_datas:
             SpanData tuples to emit
         """
-        trace = span_data.format_legacy_trace_json(span_datas)
-
-        jaeger_spans = self.translate_to_jaeger(trace)
+        jaeger_spans = self.translate_to_jaeger(span_datas)
 
         batch = jaeger.Batch(
             spans=jaeger_spans,
@@ -149,66 +154,68 @@ class JaegerExporter(base.Exporter):
 
         :type span_datas: list of :class:
             `~opencensus.trace.span_data.SpanData`
-        :param list of opencensus.trace.span_data.SpanData span_datas:
+        :param span_datas:
             SpanData tuples to export
         """
         self.transport.export(span_datas)
 
-    def translate_to_jaeger(self, trace):
-        """Translate the spans json to Jaeger format.
+    def translate_to_jaeger(self, span_datas):
+        """Translate the spans to Jaeger format.
 
-        :type trace: dict
-        :param trace: Trace dictionary
-
-        :rtype: list
-        :returns: List of jaeger.Span objects generated by Thrift.
+        :type span_datas: list of :class:
+            `~opencensus.trace.span_data.SpanData`
+        :param span_datas:
+            SpanData tuples to emit
         """
 
-        trace_id = trace.get('traceId', '')
-        spans = trace.get('spans')
+        top_span = span_datas[0]
+
+        trace_id = top_span.context.trace_id if top_span.context is not None \
+            else None
+
         jaeger_spans = []
 
-        for span in spans:
+        for span in span_datas:
             start_datetime = datetime.datetime.strptime(
-                span.get('startTime'), ISO_DATETIME_REGEX)
+                span.start_time, ISO_DATETIME_REGEX)
             start_microsec = calendar.timegm(start_datetime.timetuple()) * 1000
 
             end_datetime = datetime.datetime.strptime(
-                span.get('endTime'), ISO_DATETIME_REGEX)
+                span.end_time, ISO_DATETIME_REGEX)
             end_microsec = calendar.timegm(end_datetime.timetuple()) * 1000
 
             duration_microsec = end_microsec - start_microsec
 
-            tags = _extract_tags(span)
+            tags = _extract_tags(span.attributes)
 
-            status = span.get('status', None)
+            status = span.status
             if status is not None:
                 tags.append(jaeger.Tag(
                     key='status.code',
                     vType=jaeger.TagType.LONG,
-                    vLong=status.get('code')))
+                    vLong=status.code))
 
                 tags.append(jaeger.Tag(
                     key='status.message',
                     vType=jaeger.TagType.STRING,
-                    vStr=status.get('message')))
+                    vStr=status.message))
 
             refs = _extract_refs_from_span(span)
             logs = _extract_logs_from_span(span)
 
-            context = span.get('context')
+            context = span.context
             flags = None
-            if context is not None and context.get('traceOptions') is not None:
-                flags = int(context.get('traceOptions'))
+            if context is not None:
+                flags = int(context.trace_options.trace_options_byte)
 
-            span_id = span.get('spanId', '')
-            parent_span_id = span.get('parentSpanId', '')
+            span_id = span.span_id
+            parent_span_id = span.parent_span_id
 
             jaeger_span = jaeger.Span(
                 traceIdHigh=_convert_hex_str_to_int(trace_id[0:8]),
                 traceIdLow=_convert_hex_str_to_int(trace_id[8:16]),
                 spanId=_convert_hex_str_to_int(span_id),
-                operationName=span.get('name'),
+                operationName=span.name,
                 startTime=int(round(start_microsec)),
                 duration=int(round(duration_microsec)),
                 tags=tags,
@@ -223,51 +230,59 @@ class JaegerExporter(base.Exporter):
 
 
 def _extract_refs_from_span(span):
+    if span.links is None:
+        return None
+
     refs = []
-    for link_el in span.get('links', {}).get('link', []):
-        if not isinstance(link_el, dict):
-            continue
-
-        trace_id = link_el.get('trace_id', '')
-        span_id = link_el.get('span_id', '')
-
+    for link in span.links:
+        trace_id = link.trace_id
         refs.append(jaeger.SpanRef(
-            refType=_convert_reftype_to_jaeger_reftype(link_el.get('type')),
+            refType=_convert_reftype_to_jaeger_reftype(link.type),
             traceIdHigh=_convert_hex_str_to_int(trace_id[0:8]),
             traceIdLow=_convert_hex_str_to_int(trace_id[8:16]),
-            spanId=_convert_hex_str_to_int(span_id)))
+            spanId=_convert_hex_str_to_int(link.span_id)))
     return refs
 
 
 def _convert_reftype_to_jaeger_reftype(ref):
     """Convert opencensus reference types to jaeger reference types."""
-    if ref == link.Type.CHILD_LINKED_SPAN:
+    if ref == link_module.Type.CHILD_LINKED_SPAN:
         return jaeger.SpanRefType.CHILD_OF
-    if ref == link.Type.PARENT_LINKED_SPAN:
+    if ref == link_module.Type.PARENT_LINKED_SPAN:
         return jaeger.SpanRefType.FOLLOWS_FROM
     return None
 
 
 def _convert_hex_str_to_int(val):
-    return int(val, 16) if val else None
+    """Convert hexadecimal formatted ids to signed int64"""
+    if val is None:
+        return None
+
+    hex_num = int(val, 16)
+    #  ensure it fits into 64-bit
+    if hex_num > 0x7FFFFFFFFFFFFFFF:
+        hex_num -= 0x10000000000000000
+
+    assert -9223372036854775808 <= hex_num <= 9223372036854775807
+    return hex_num
 
 
 def _extract_logs_from_span(span):
-    logs = []
-    for time_event in span.get('timeEvents', {}).get('timeEvent', []):
-        annotation = time_event.get('annotation')
-        if not isinstance(annotation, dict):
-            continue
+    if span.time_events is None:
+        return None
 
-        fields = _extract_tags(annotation)
+    logs = []
+    for time_event in span.time_events:
+        annotation = time_event.annotation
+        fields = _extract_tags(annotation.attributes)
 
         fields.append(jaeger.Tag(
             key='message',
             vType=jaeger.TagType.STRING,
-            vStr=annotation.get('description')))
+            vStr=annotation.description))
 
         event_time = datetime.datetime.strptime(
-            time_event.get('time'), ISO_DATETIME_REGEX)
+            time_event.timestamp, ISO_DATETIME_REGEX)
         timestamp = calendar.timegm(event_time.timetuple()) * 1000
 
         logs.append(jaeger.Log(timestamp=timestamp, fields=fields))
@@ -275,35 +290,36 @@ def _extract_logs_from_span(span):
 
 
 def _extract_tags(attr):
+    if attr is None:
+        return None
     tags = []
-    for attribute_key, attribute_value in attr.get('attributes', {}).get(
-            'attributeMap', {}).items():
-        if not isinstance(attribute_value, dict):
-            continue
+    for attribute_key, attribute_value in attr.items():
         tag = _convert_attribute_to_tag(attribute_key, attribute_value)
-        if tag is not None:
-            tags.append(tag)
+        if tag is None:
+            continue
+        tags.append(tag)
     return tags
 
 
 def _convert_attribute_to_tag(key, attr):
     """Convert the attributes to jaeger tags."""
-    if attr.get('string_value') is not None:
+    if isinstance(attr, bool):
         return jaeger.Tag(
             key=key,
-            vStr=attr.get('string_value').get('value'),
-            vType=jaeger.TagType.STRING)
-    if attr.get('int_value') is not None:
-        return jaeger.Tag(
-            key=key,
-            vLong=attr.get('int_value'),
-            vType=jaeger.TagType.LONG)
-    if attr.get('bool_value') is not None:
-        return jaeger.Tag(
-            key=key,
-            vBool=attr.get('bool_value'),
+            vBool=attr,
             vType=jaeger.TagType.BOOL)
-    logging.warn('Could not serialize attribute to tag {}'.format(attr))
+    if isinstance(attr, str):
+        return jaeger.Tag(
+            key=key,
+            vStr=attr,
+            vType=jaeger.TagType.STRING)
+    if isinstance(attr, int):
+        return jaeger.Tag(
+            key=key,
+            vLong=attr,
+            vType=jaeger.TagType.LONG)
+    logging.warn('Could not serialize attribute \
+            {}:{} to tag'.format(key, attr))
     return None
 
 
@@ -343,6 +359,14 @@ class Collector(base.Exporter):
         self.client = client(
             iprot=TBinaryProtocol.TBinaryProtocol(trans=self.http_transport))
 
+        # set basic auth header
+        if auth is not None:
+            import base64
+            auth_header = '{}:{}'.format(*auth)
+            decoded = base64.b64encode(auth_header.encode()).decode('ascii')
+            basic_auth = dict(Authorization='Basic {}'.format(decoded))
+            self.http_transport.setCustomHeaders(basic_auth)
+
     def emit(self, batch):
         """Submits batches to Thrift HTTP Server through Binary Protocol.
 
@@ -362,7 +386,8 @@ class Collector(base.Exporter):
             logging.error(getattr(e, 'message', e))
 
         finally:
-            self.http_transport.close()
+            if self.http_transport.isOpen():
+                self.http_transport.close()
 
     def export(self, batch):
         """
@@ -408,13 +433,9 @@ class AgentClientUDP(base.Exporter):
         self.transport = transport(self)
         self.address = (host_name, port)
         self.max_packet_size = max_packet_size
-        self.buffer = self._memory_buffer
+        self.buffer = TTransport.TMemoryBuffer()
         self.client = client(
             iprot=TCompactProtocol.TCompactProtocol(trans=self.buffer))
-
-    @property
-    def _memory_buffer(self):
-        return TTransport.TMemoryBuffer()
 
     def emit(self, batch):
         """

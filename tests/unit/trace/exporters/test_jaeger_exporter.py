@@ -16,7 +16,8 @@ import unittest
 
 import mock
 
-from opencensus.trace import link as link_module
+from opencensus.trace import (link, span_context, span_data, status,
+                              time_event, trace_options)
 from opencensus.trace.exporters import jaeger_exporter
 from opencensus.trace.exporters.gen.jaeger import jaeger
 
@@ -38,11 +39,14 @@ class TestJaegerExporter(unittest.TestCase):
         self.assertEqual(exporter.agent_port, agent_port)
         self.assertEqual(exporter.port, thrift_port)
         self.assertEqual(exporter.endpoint, '')
-        self.assertEqual(exporter.username, '')
-        self.assertEqual(exporter.password, '')
+        self.assertEqual(exporter.username, None)
+        self.assertEqual(exporter.password, None)
         self.assertTrue(exporter.collector is None)
         self.assertTupleEqual(agent_client.address, agent_address)
         self.assertEqual(agent_client.max_packet_size, max_packet_size)
+        # property should not construct new object
+        client = exporter.agent_client
+        self.assertEqual(agent_client, client)
 
     def test_constructor_explicit(self):
         service = 'opencensus-jaeger'
@@ -52,8 +56,8 @@ class TestJaegerExporter(unittest.TestCase):
         password = 'password'
         port = 14268
         host_name = 'localhost'
-        thrift_url = 'http://localhost:14268/api/traces'
-        auth = ('username', 'password')
+        thrift_url = 'http://localhost:14268/api/traces?format=jaeger.thrift'
+        auth = (username, password)
 
         exporter = jaeger_exporter.JaegerExporter(
             service_name=service,
@@ -61,20 +65,22 @@ class TestJaegerExporter(unittest.TestCase):
             agent_host_name=agent_host_name,
             username=username,
             password=password,
-            port=port,
-        )
+            port=port)
         self.assertEqual(exporter.service_name, service)
         self.assertEqual(exporter.agent_host_name, agent_host_name)
         self.assertEqual(exporter.host_name, host_name)
         self.assertFalse(exporter.collector is None)
-        self.assertFalse(exporter.collector.auth is None)
         self.assertEqual(exporter.collector.thrift_url, thrift_url)
-        self.assertTupleEqual(exporter.collector.auth, auth)
-
-        exporter.username = ''
-        exporter.password = ''
-        collector = exporter._collector
-        self.assertTrue(collector.auth is None)
+        self.assertEqual(exporter.collector.auth, auth)
+        # property should not construct new object
+        collector = exporter.collector
+        self.assertEqual(exporter.collector, collector)
+        # property should construct new object
+        exporter._collector = None
+        exporter.username = None
+        exporter.password = None
+        self.assertNotEqual(exporter.collector, collector)
+        self.assertTrue(exporter.collector.auth is None)
 
     def test_export(self):
         exporter = jaeger_exporter.JaegerExporter(
@@ -113,28 +119,40 @@ class TestJaegerExporter(unittest.TestCase):
         http_transport = MockTransport()
         collector = jaeger_exporter.Collector(
             thrift_url=url, http_transport=MockTransport, client=MockClient)
+        collector.http_transport.is_open = False
         collector.http_transport.code = 400
         collector.http_transport.message = 'failure'
         collector.emit(MockBatch())
         self.assertTrue(mock_logging.error.called)
+        self.assertFalse(collector.http_transport.is_closed)
 
     @mock.patch('opencensus.trace.exporters.jaeger_exporter.logging')
     def test_collector_emit_succeeded(self, mock_logging):
         url = 'http://localhost:14268/api/traces?format=jaeger.thrift'
         collector = jaeger_exporter.Collector(
             thrift_url=url, http_transport=MockTransport, client=MockClient)
+        collector.http_transport.is_open = True
         collector.http_transport.code = 200
         collector.http_transport.message = 'success'
         collector.emit(MockBatch())
         self.assertFalse(mock_logging.error.called)
+        self.assertTrue(collector.http_transport.is_closed)
+
+    def test_collector_auth_headers(self):
+        collector = jaeger_exporter.Collector(
+            http_transport=MockTransport, auth=('user', 'pass'))
+        self.assertTrue(collector.http_transport.headers_set)
+
+        collector = jaeger_exporter.Collector(http_transport=MockTransport)
+        self.assertFalse(collector.http_transport.headers_set)
 
     @mock.patch.object(
         jaeger_exporter.JaegerExporter,
-        '_agent_client',
+        'agent_client',
         new_callable=mock.PropertyMock)
     @mock.patch.object(
         jaeger_exporter.JaegerExporter,
-        '_collector',
+        'collector',
         new_callable=mock.PropertyMock)
     @mock.patch.object(jaeger_exporter.JaegerExporter, 'translate_to_jaeger')
     def test_emit_succeeded(self, translate_mock, collector_mock, agent_mock):
@@ -159,107 +177,91 @@ class TestJaegerExporter(unittest.TestCase):
         parent_span_id = '1111111111111111'
 
         attributes = {
-            'attributeMap': {
-                'key_bool': {
-                    'bool_value': False
-                },
-                'key_string': {
-                    'string_value': {
-                        'truncated_byte_count': 0,
-                        'value': 'hello_world'
-                    }
-                },
-                'key_int': {
-                    'int_value': 3
-                }
-            }
+            'key_bool': False,
+            'key_string': 'hello_world',
+            'key_int': 3
         }
 
         annotation_attributes = {
-            'attributeMap': {
-                'annotation_bool': {
-                    'bool_value': True
-                },
-                'annotation_string': {
-                    'string_value': {
-                        'truncated_byte_count': 0,
-                        'value': 'annotation_test'
-                    },
-                },
-                'key_float': {
-                    'float_value': .3  #omit
-                }
-            }
+            'annotation_bool': True,
+            'annotation_string': 'annotation_test',
+            'key_float': .3
         }
 
-        link_attributes = {'key_bool': {'bool_value': True}}
+        link_attributes = {'key_bool': True}
 
-        time_events = {
-            'timeEvent': [{
-                'time': '2017-08-15T18:02:26.071158Z',
-                'annotation': {
-                    'description': 'First annotation',
-                    'attributes': annotation_attributes
-                },
-                'message_event': {
-                    'type': 'new_event',
-                    'id': 23232
-                }
-            }]
-        }
+        import datetime
+        s = '2017-08-15T18:02:26.071158'
+        time = datetime.datetime.strptime(s, '%Y-%m-%dT%H:%M:%S.%f')
+        time_events = [
+            time_event.TimeEvent(
+                timestamp=time,
+                annotation=time_event.Annotation(
+                    description='First Annotation',
+                    attributes=annotation_attributes))
+        ]
 
-        links = {
-            'link': [{
-                'trace_id': trace_id,
-                'span_id': span_id,
-                'type': link_module.Type.CHILD_LINKED_SPAN,
-                'attributes': link_attributes
-            }, {
-                'trace_id': trace_id,
-                'span_id': span_id,
-                'type': link_module.Type.PARENT_LINKED_SPAN,
-                'attributes': link_attributes
-            }, {
-                'trace_id': trace_id,
-                'span_id': span_id,
-                'type': link_module.Type.TYPE_UNSPECIFIED,
-                'attributes': link_attributes
-            }]
-        }
+        links = [
+            link.Link(
+                trace_id=trace_id,
+                span_id=span_id,
+                type=link.Type.CHILD_LINKED_SPAN,
+                attributes=link_attributes),
+            link.Link(
+                trace_id=trace_id,
+                span_id=span_id,
+                type=link.Type.PARENT_LINKED_SPAN,
+                attributes=link_attributes),
+            link.Link(
+                trace_id=trace_id,
+                span_id=span_id,
+                type=link.Type.TYPE_UNSPECIFIED,
+                attributes=link_attributes)
+        ]
 
-        status = {'code': 200, 'message': 'success'}
+        span_status = status.Status(code=200, message='success')
 
         start_time = '2017-08-15T18:02:26.071158Z'
         end_time = '2017-08-15T18:02:36.071158Z'
 
-        trace = {
-            'spans': [{
-                'name': 'test1',
-                'spanId': span_id,
-                'startTime': start_time,
-                'endTime': end_time,
-                'parentSpanId': parent_span_id,
-                'attributes': attributes,
-                'childSpanCount': 0,
-                'spanKind': 0,
-                'timeEvents': time_events,
-                'links': links,
-                'status': status,
-                'context': None
-            }, {
-                'status': None,
-                'startTime': start_time,
-                'endTime': end_time,
-                'context': {
-                    'traceOptions': '1'
-                }
-            }],
-            'traceId': trace_id
-        }
+        span_datas = [
+            span_data.SpanData(
+                name='test1',
+                context=span_context.SpanContext(trace_id=trace_id),
+                span_id=span_id,
+                parent_span_id=parent_span_id,
+                attributes=attributes,
+                start_time=start_time,
+                end_time=end_time,
+                child_span_count=0,
+                stack_trace=None,
+                time_events=time_events,
+                links=links,
+                status=span_status,
+                same_process_as_parent_span=None,
+                span_kind=0,
+            ),
+            span_data.SpanData(
+                name='test2',
+                context=None,
+                span_id=span_id,
+                parent_span_id=None,
+                attributes=None,
+                start_time=start_time,
+                end_time=end_time,
+                child_span_count=None,
+                stack_trace=None,
+                time_events=None,
+                links=None,
+                status=None,
+                same_process_as_parent_span=None,
+                span_kind=None,
+            )
+        ]
 
         exporter = jaeger_exporter.JaegerExporter()
 
-        spans = exporter.translate_to_jaeger(trace)
+        spans = exporter.translate_to_jaeger(span_datas)
         expected_spans = [
             jaeger.Span(
                 traceIdHigh=1846305573,
@@ -269,19 +271,17 @@ class TestJaegerExporter(unittest.TestCase):
                 operationName='test1',
                 startTime=1502820146000,
                 duration=10000,
+                flags=1,
                 tags=[
                     jaeger.Tag(
-                        key='key_bool',
-                        vType=jaeger.TagType.BOOL,
+                        key='key_bool', vType=jaeger.TagType.BOOL,
                         vBool=False),
                     jaeger.Tag(
                         key='key_string',
                         vType=jaeger.TagType.STRING,
                         vStr='hello_world'),
                     jaeger.Tag(
-                        key='key_int',
-                        vType=jaeger.TagType.LONG,
-                        vLong=3),
+                        key='key_int', vType=jaeger.TagType.LONG, vLong=3),
                     jaeger.Tag(
                         key='status.code',
                         vType=jaeger.TagType.LONG,
@@ -323,15 +323,16 @@ class TestJaegerExporter(unittest.TestCase):
                             jaeger.Tag(
                                 key='message',
                                 vType=jaeger.TagType.STRING,
-                                vStr='First annotation')
+                                vStr='First Annotation')
                         ])
                 ]),
             jaeger.Span(
+                operationName="test2",
                 traceIdHigh=1846305573,
                 traceIdLow=2112048274,
+                spanId=7929822056569588882,
                 startTime=1502820146000,
-                duration=10000,
-                flags=1)
+                duration=10000)
         ]
 
         spans_json = [span.format_span_json() for span in spans]
@@ -351,8 +352,7 @@ class TestJaegerExporter(unittest.TestCase):
         self.assertEqual(log.get('timestamp'), expected_log.get('timestamp'))
         listsEqual(log.get('fields'), expected_log.get('fields'))
         listsEqual(span.get('tags'), expected_span.get('tags'))
-        listsEqual(
-            span.get('references'), expected_span.get('references'))
+        listsEqual(span.get('references'), expected_span.get('references'))
         self.assertEqual(
             span.get('traceIdHigh'), expected_span.get('traceIdHigh'))
         self.assertEqual(
@@ -367,37 +367,11 @@ class TestJaegerExporter(unittest.TestCase):
         self.assertEqual(span.get('flags'), expected_span.get('flags'))
         self.assertEqual(spans_json[1], expected_spans_json[1])
 
-    def test_ignore_incorrect_spans(self):
-        exporter = jaeger_exporter
-        span1 = {
-            'attributes': {
-                'attributeMap': {
-                    'string_value': {
-                        'truncated_byte_count': 0,
-                        'value': 'hello_world'
-                    },
-                    'bool': False
-                }
-            }
-        }
-        self.assertEqual(exporter._extract_tags(span1), [])
-
-        span2 = {
-            'timeEvents': {
-                'timeEvent': [{
-                    'time': '2017-08-15T18:02:26.071158Z',
-                    'annotation': None,
-                    'message_event': {
-                        'type': 'new_event',
-                        'id': 23232
-                    }
-                }]
-            }
-        }
-        self.assertEqual(exporter._extract_logs_from_span(span2), [])
-
-        span3 = {'links': {'link': ['link1', 'link2']}}
-        self.assertEqual(exporter._extract_refs_from_span(span3), [])
+    def test_convert_hex_str_to_int(self):
+        invalid_id = '990c63257de34c92'
+        jaeger_exporter._convert_hex_str_to_int(invalid_id)
+        valid_id = '290c63257de34c92'
+        jaeger_exporter._convert_hex_str_to_int(valid_id)
 
 
 class MockBatch(object):
@@ -408,17 +382,26 @@ class MockBatch(object):
 class MockTransport(object):
     def __init__(self, exporter=None, uri_or_host=None):
         self.export_called = False
+        self.headers_set = False
         self.exporter = exporter
         self.code = 200
         self.message = 'success'
         self.uri_or_host = uri_or_host
         self.scheme = 'http'
+        self.is_open = True
+        self.is_closed = False
 
     def export(self, trace):
         self.export_called = True
 
+    def setCustomHeaders(self, headers):
+        self.headers_set = True
+
     def close(self):
-        return None
+        self.is_closed = True
+
+    def isOpen(self):
+        return self.is_open
 
 
 class MockClient(object):
