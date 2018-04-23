@@ -156,6 +156,7 @@ class TestTracer(unittest.TestCase):
 
         # Test nested span not sampled
         child_span = span.span()
+        tracer.finish()
 
         assert isinstance(span, base.NullContextManager)
         assert isinstance(child_span, base.NullContextManager)
@@ -199,6 +200,7 @@ class TestTracer(unittest.TestCase):
         sampler = mock.Mock()
         sampler.should_sample.return_value = False
         span_context = mock.Mock()
+        span_context.trace_options.enabled = False
         tracer = tracer_module.Tracer(
             sampler=sampler,
             span_context=span_context)
