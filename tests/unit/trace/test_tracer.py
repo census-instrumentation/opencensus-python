@@ -48,6 +48,7 @@ class TestTracer(unittest.TestCase):
         exporter = mock.Mock()
         propagator = mock.Mock()
         span_context = mock.Mock()
+        span_context.trace_options.enabled = False
 
         tracer = tracer_module.Tracer(
             span_context=span_context,
@@ -65,8 +66,10 @@ class TestTracer(unittest.TestCase):
 
         span_context = mock.Mock()
         span_context.trace_options.enabled = False
+        sampler = mock.Mock()
+        sampler.should_sample.return_value = False
         tracer = tracer_module.Tracer(
-            span_context=span_context)
+            span_context=span_context, sampler=sampler)
         sampled = tracer.should_sample()
 
         self.assertFalse(sampled)
@@ -82,7 +85,10 @@ class TestTracer(unittest.TestCase):
     def test_should_sample_not_sampled(self):
         sampler = mock.Mock()
         sampler.should_sample.return_value = False
-        tracer = tracer_module.Tracer(sampler=sampler)
+        span_context = mock.Mock()
+        span_context.trace_options.enabled = False
+        tracer = tracer_module.Tracer(
+            span_context=span_context, sampler=sampler)
         sampled = tracer.should_sample()
 
         self.assertFalse(sampled)
@@ -114,7 +120,10 @@ class TestTracer(unittest.TestCase):
 
         sampler = mock.Mock()
         sampler.should_sample.return_value = False
-        tracer = tracer_module.Tracer(sampler=sampler)
+        span_context = mock.Mock()
+        span_context.trace_options.enabled = False
+        tracer = tracer_module.Tracer(
+            span_context=span_context, sampler=sampler)
         assert isinstance(tracer.tracer, noop_tracer.NoopTracer)
         mock_tracer = mock.Mock()
         tracer.tracer = mock_tracer
@@ -138,7 +147,10 @@ class TestTracer(unittest.TestCase):
 
         sampler = mock.Mock()
         sampler.should_sample.return_value = False
-        tracer = tracer_module.Tracer(sampler=sampler)
+        span_context = mock.Mock()
+        span_context.trace_options.enabled = False
+        tracer = tracer_module.Tracer(
+            span_context=span_context, sampler=sampler)
 
         span = tracer.span()
 
@@ -164,7 +176,10 @@ class TestTracer(unittest.TestCase):
 
         sampler = mock.Mock()
         sampler.should_sample.return_value = False
-        tracer = tracer_module.Tracer(sampler=sampler)
+        span_context = mock.Mock()
+        span_context.trace_options.enabled = False
+        tracer = tracer_module.Tracer(
+            span_context=span_context, sampler=sampler)
 
         span = tracer.start_span()
 
@@ -220,7 +235,10 @@ class TestTracer(unittest.TestCase):
 
         sampler = mock.Mock()
         sampler.should_sample.return_value = False
-        tracer = tracer_module.Tracer(sampler=sampler)
+        span_context = mock.Mock()
+        span_context.trace_options.enabled = False
+        tracer = tracer_module.Tracer(
+            sampler=sampler, span_context=span_context)
 
         span = tracer.current_span()
 
@@ -244,7 +262,10 @@ class TestTracer(unittest.TestCase):
 
         sampler = mock.Mock()
         sampler.should_sample.return_value = False
-        tracer = tracer_module.Tracer(sampler=sampler)
+        span_context = mock.Mock()
+        span_context.trace_options.enabled = False
+        tracer = tracer_module.Tracer(
+            span_context=span_context, sampler=sampler)
         tracer.add_attribute_to_current_span('key', 'value')
 
         span = tracer.current_span()
