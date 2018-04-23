@@ -12,24 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from opencensus.tags import tag_key
-from opencensus.tags import tag_value
+import unittest
+from opencensus.stats.exporters import stackdriver_exporter as stackdriver_exporter_module
 
+class TestStackDriverExporter(unittest.TestCase):
 
-class TagContext(object):
+    def test_constructor_defaults(self):
+        ''' finish me '''
 
-    def __init__(self, tags=None):
-        self._tags = tags if tags is not None else {}
+    def test_constructor_explicit(self):
+        ''' finish me '''
 
-    def put(self, key, value):
-        self._tags[key] = value
+    def test_emit(self):
+        ''' finish me '''
 
-    def remove(self, key):
-        self._tags.pop(key, None)
+    def test_set_resource(self):
+        ''' finish me'''
 
-    @property
-    def tags(self):
-        return self._tags
-
-    def get_tag_value(self, key):
-        return self._tags.get(key, None)
+    def test_translate_to_stackdriver(self):
+        ''' finish me '''

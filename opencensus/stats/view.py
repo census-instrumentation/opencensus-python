@@ -14,14 +14,22 @@
 
 from opencensus.stats.measure import BaseMeasure
 from opencensus.stats.aggregation import DistributionAggregation
-
+from opencensus.tags.tag import Tag
+from opencensus.tags import tag_key
 
 class View(object):
-    def __init__(self, name, description, measure, aggregation):
+    def __init__(self, name, description, columns, measure, aggregation):
         self._name = name
         self._description = description
-        self._measure = BaseMeasure(measure.get_name(), measure.get_description(), measure.get_unit())
-        self._aggregation = DistributionAggregation(aggregation.get_boundaries(), aggregation.get_distribution())
+
+        column_list = []
+        for tag_key in columns:
+            column_list.append(tag_key)
+
+        self._columns = column_list
+
+        self._measure = measure
+        self._aggregation = aggregation
 
     @property
     def name(self):
@@ -30,6 +38,10 @@ class View(object):
     @property
     def description(self):
         return self._description
+
+    @property
+    def columns(self):
+        return self._columns
 
     @property
     def measure(self):

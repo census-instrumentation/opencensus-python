@@ -25,7 +25,7 @@ class TestTagMap(unittest.TestCase):
 
     def test_constructor_explicit(self):
         tags = [{'key1': 'value1'}]
-        map = {}
+        map = {'key2': 'value2'}
 
         tag_map = tag_map_module.TagMap(tags=tags, map=map)
         self.assertEqual(tag_map.tags, tags)

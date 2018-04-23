@@ -14,10 +14,13 @@
 
 from opencensus.stats import measure
 from opencensus.tags import tag_context
+from opencensus.stats import measurement
 
-class MeasureMap(object):
-    def __init__(self):
-        ''' finish this '''
+
+class MeasurementMap(object):
+
+    def __init__(self, meausrement_map=None):
+        self._measurement_map = meausrement_map or {}
 
     def measure_int_put(self, key, value):
         tag_context.TagContext.put(tag_context.TagContext(measure.MeasureInt), key, value)
@@ -25,5 +28,14 @@ class MeasureMap(object):
     def measure_float_put(self, key, value):
         tag_context.TagContext.put(tag_context.TagContext(measure.MeasureFloat), key, value)
 
-    def record(self):
-        ''' Finish This '''
+    def record(self, tag_context_tags):
+        if len(self._measurement_map) == 0:
+            return
+
+        record_bool = True
+        for measurement.Measurement in self._measurement_map:
+            if measurement != {}:
+                record_bool = True
+
+        if record_bool is False:
+            return

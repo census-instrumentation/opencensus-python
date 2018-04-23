@@ -12,16 +12,32 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-class TagValue(object):
 
+class TagValue(object):
+    """ The value of a tag
+
+    :type value: str
+    :param value: A string representing the value of a key in a tag
+
+    """
     def __init__(self, value):
         self._value = value
 
     @property
     def value(self):
+        """The current value"""
         return self._value
 
     def check_value(self, value):
+        """ Checks if the value if valid
+
+        :type value: str
+        :param value: the value to be checked
+
+        :rtype: bool
+        :returns: True if valid, if not, False.
+
+        """
         if len(value) <= 255:
             return True
         else:

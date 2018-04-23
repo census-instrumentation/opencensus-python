@@ -12,16 +12,31 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-class TagKey(object):
 
+class TagKey(object):
+    """ A tag key with a property name
+
+    :type name: str
+    :param name: The name of the key
+
+    """
     def __init__(self, name):
         self._name = name
 
     @property
     def name(self):
+        """The name of the current key"""
         return self._name
 
     def check_name(self, name):
+        """Checks if the name of the key is valid
+
+        :type name: str
+        :param name: name to check
+
+        :rtype: bool
+        :returns: True if it valid, else returns False
+        """
         if (len(name) > 0) and (len(name) <= 255):
             return True
         else:

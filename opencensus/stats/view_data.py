@@ -21,7 +21,23 @@ import time
 
 class ViewData(object):
     def __init__(self, view, start, end, rows=None):
-        self.view = view.view
-        self.start = start
-        self.end = end
-        self.rows = dict({tag_value : aggregation_data} or {})
+        self._view = view
+        self._start = start
+        self._end = end
+        self._rows = rows if rows is not None else {}
+
+    @property
+    def view(self):
+        return self._view
+
+    @property
+    def start(self):
+        return self._start
+
+    @property
+    def end(self):
+        return self._end
+
+    @property
+    def rows(self):
+        return self._rows
