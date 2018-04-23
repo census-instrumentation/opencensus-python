@@ -180,6 +180,10 @@ class Span(object):
         """Add an annotation to span.
 
         :type description: str
+        :param description: A user-supplied message describing the event.
+                        The maximum length for the description is 256 bytes.
+
+        :type attrs: kwargs
         :param attrs: keyworded arguments e.g. failed=True, name='Caching'
         """
         at = attributes.Attributes(attrs)
