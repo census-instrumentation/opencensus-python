@@ -14,3 +14,4 @@ SQLAlchemy==1.1.14
 webapp2==2.5.2
 WebOb==1.7.3
 wrapt==1.10.11
+thrift==0.10.0
