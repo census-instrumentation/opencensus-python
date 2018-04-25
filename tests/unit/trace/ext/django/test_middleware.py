@@ -23,7 +23,7 @@ from opencensus.trace.exporters import print_exporter
 from opencensus.trace.exporters import zipkin_exporter
 from opencensus.trace.exporters.transports import sync
 from opencensus.trace.ext import utils
-from opencensus.trace.propagation import google_cloud_format
+from opencensus.trace.propagation import google_cloud_format, zipkin_b3_format
 from opencensus.trace.samplers import always_on
 from opencensus.trace.samplers import probability
 from opencensus.trace.tracers import base
@@ -180,6 +180,50 @@ class TestOpencensusMiddleware(unittest.TestCase):
             middleware._DJANGO_TRACE_HEADER: django_trace_id})
 
         middleware_obj = middleware.OpencensusMiddleware()
+
+        # test process_request
+        middleware_obj.process_request(django_request)
+
+        tracer = middleware._get_current_tracer()
+
+        span = tracer.current_span()
+
+        expected_attributes = {
+            '/http/url': u'/',
+            '/http/method': 'GET',
+        }
+        self.assertEqual(span.attributes, expected_attributes)
+        self.assertEqual(span.parent_span.span_id, span_id)
+
+        span_context = tracer.span_context
+        self.assertEqual(span_context.trace_id, trace_id)
+
+        # test process_view
+        view_func = mock.Mock()
+        middleware_obj.process_view(django_request, view_func)
+
+        self.assertEqual(span.name, 'mock.mock.Mock')
+
+    def test_process_request_multiple_headers(self):
+        from opencensus.trace.ext.django import middleware
+
+        trace_id = '2dd43a1d6b2549c6bc2a1a54c2fc0b05'
+        span_id = '6e0c63257de34c92'
+        trace_options = '1'
+
+        propagator = zipkin_b3_format.ZipkinB3FormatPropagator()
+
+        headers = {"HTTP_{}".format(k.upper().replace("-", "_")): v for k, v in
+                   {
+                       propagator._TRACE_ID_KEY: trace_id,
+                       propagator._SPAN_ID_KEY: span_id,
+                       propagator._TRACE_OPTIONS_KEY: trace_options
+                   }.items()}
+
+        django_request = RequestFactory().get('/', **headers)
+
+        middleware_obj = middleware.OpencensusMiddleware()
+        middleware_obj.propagator = propagator
 
         # test process_request
         middleware_obj.process_request(django_request)

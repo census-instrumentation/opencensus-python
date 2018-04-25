@@ -14,6 +14,7 @@
 
 import inspect
 import logging
+import six
 import sys
 
 import flask
@@ -27,7 +28,7 @@ from opencensus.trace import tracer as tracer_module
 from opencensus.trace.exporters import print_exporter
 from opencensus.trace.exporters.transports import sync
 from opencensus.trace.ext import utils
-from opencensus.trace.propagation import google_cloud_format
+from opencensus.trace.propagation import google_cloud_format, zipkin_b3_format
 from opencensus.trace.samplers import always_on, probability
 
 
@@ -169,8 +170,13 @@ class FlaskMiddleware(object):
             return
 
         try:
-            header = get_flask_header()
-            span_context = self.propagator.from_header(header)
+            if isinstance(self.propagator,
+                          zipkin_b3_format.ZipkinB3FormatPropagator):
+                headers = get_flask_headers(self.propagator.HEADERS)
+                span_context = self.propagator.from_carrier(headers)
+            else:
+                header = get_flask_header()
+                span_context = self.propagator.from_header(header)
 
             tracer = tracer_module.Tracer(
                 span_context=span_context,
@@ -244,10 +250,28 @@ def get_flask_header():
     :rtype: str
     :returns: Trace context header in HTTP request headers.
     """
-    header = flask.request.headers.get(_FLASK_TRACE_HEADER)
+    return get_flask_headers([_FLASK_TRACE_HEADER]).get(_FLASK_TRACE_HEADER)
 
-    # In case the header is unicode, convert it to string.
-    if header is not None:
-        header = str(header.encode('utf-8'))
 
-    return header
+def get_flask_headers(header_names):
+    """Get multiple trace context header from flask request headers.
+
+    :type header_names: list
+    :param header_names: Names of headers to return.
+
+    :rtype: dict
+    :returns: Trace context headers.
+    """
+
+    headers = {}
+    for name in header_names:
+        header = flask.request.headers.get(name)
+
+        # In case the header is unicode, convert it to string.
+        if header is not None \
+                and not isinstance(header, six.text_type):  # pragma: NO COVER
+            header = header.decode('utf-8')
+
+        headers[name] = header
+
+    return headers

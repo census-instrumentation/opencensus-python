@@ -14,12 +14,12 @@
 
 import logging
 
-from opencensus.trace.ext import utils
-from opencensus.trace.ext.pyramid.config import PyramidTraceSettings
-
 from opencensus.trace import attributes_helper
 from opencensus.trace import execution_context
 from opencensus.trace import tracer as tracer_module
+from opencensus.trace.ext import utils
+from opencensus.trace.ext.pyramid.config import PyramidTraceSettings
+from opencensus.trace.propagation import zipkin_b3_format
 
 
 HTTP_METHOD = attributes_helper.COMMON_ATTRIBUTES['HTTP_METHOD']
@@ -78,8 +78,14 @@ class OpenCensusTweenFactory(object):
             return
 
         try:
-            header = get_context_header(request)
-            span_context = self.propagator.from_header(header)
+            if isinstance(self.propagator,
+                          zipkin_b3_format.ZipkinB3FormatPropagator):
+                headers = get_context_headers(request,
+                                              self.propagator.HEADERS)
+                span_context = self.propagator.from_carrier(headers)
+            else:
+                header = get_context_header(request)
+                span_context = self.propagator.from_header(header)
 
             tracer = tracer_module.Tracer(
                 span_context=span_context,
@@ -121,4 +127,17 @@ class OpenCensusTweenFactory(object):
 
 def get_context_header(request):
     """Get trace context header from pyramid request headers."""
-    return request.headers.get(_PYRAMID_TRACE_HEADER)
+    headers = get_context_headers(request, [_PYRAMID_TRACE_HEADER])
+
+    return headers.get(_PYRAMID_TRACE_HEADER)
+
+
+def get_context_headers(request, header_names):
+    """Get trace context headers from pyramid request headers."""
+    headers = {}
+    for name in header_names:
+        header = request.headers.get(name)
+
+        headers[name] = header
+
+    return headers

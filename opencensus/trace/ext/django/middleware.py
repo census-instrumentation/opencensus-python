@@ -20,6 +20,7 @@ from opencensus.trace.ext.django.config import (settings, convert_to_import)
 from opencensus.trace import attributes_helper
 from opencensus.trace import tracer as tracer_module
 from opencensus.trace import execution_context
+from opencensus.trace.propagation import zipkin_b3_format
 from opencensus.trace.samplers import probability
 
 try:
@@ -85,11 +86,28 @@ def get_django_header():
     :rtype: str
     :returns: Trace context header in HTTP request headers.
     """
+    headers = get_django_headers([_DJANGO_TRACE_HEADER])
+
+    return headers.get(_DJANGO_TRACE_HEADER)
+
+
+def get_django_headers(header_names):
+    """Get trace context headers from django request headers."""
     request = _get_django_request()
 
-    header = request.META.get(_DJANGO_TRACE_HEADER)
+    headers = {}
+    for name in header_names:
+        django_name = name
+        if not django_name.startswith("HTTP_"):
+            django_name = "HTTP_{}".format(django_name)
 
-    return header
+        django_name = django_name.replace("-", "_").upper()
+
+        header = request.META.get(django_name)
+
+        headers[name] = header
+
+    return headers
 
 
 class OpencensusMiddleware(MiddlewareMixin):
@@ -155,8 +173,13 @@ class OpencensusMiddleware(MiddlewareMixin):
 
         try:
             # Start tracing this request
-            header = get_django_header()
-            span_context = self.propagator.from_header(header)
+            if isinstance(self.propagator,
+                          zipkin_b3_format.ZipkinB3FormatPropagator):
+                headers = get_django_headers(self.propagator.HEADERS)
+                span_context = self.propagator.from_carrier(headers)
+            else:
+                header = get_django_header()
+                span_context = self.propagator.from_header(header)
 
             # Reload the tracer with the new span context
             tracer = tracer_module.Tracer(

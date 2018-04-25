@@ -28,6 +28,11 @@ class TextFormatPropagator(object):
     information from a carrier which is a dict to form a SpanContext. And
     generating a dict using the provided SpanContext.
     """
+    _TRACE_ID_KEY = _TRACE_ID_KEY
+    _SPAN_ID_KEY = _SPAN_ID_KEY
+    _TRACE_OPTIONS_KEY = _TRACE_OPTIONS_KEY
+    DEFAULT_TRACE_OPTIONS = DEFAULT_TRACE_OPTIONS
+
     def from_carrier(self, carrier):
         """Generate a SpanContext object using the information in the carrier.
 
@@ -44,15 +49,15 @@ class TextFormatPropagator(object):
 
         for key in carrier:
             key = key.lower()
-            if key == _TRACE_ID_KEY:
+            if key == self._TRACE_ID_KEY:
                 trace_id = carrier[key]
-            if key == _SPAN_ID_KEY:
+            if key == self._SPAN_ID_KEY:
                 span_id = carrier[key]
-            if key == _TRACE_OPTIONS_KEY:
-                trace_options = bool(carrier[key])
+            if key == self._TRACE_OPTIONS_KEY:
+                trace_options = carrier[key]
 
         if trace_options is None:
-            trace_options = DEFAULT_TRACE_OPTIONS
+            trace_options = self.DEFAULT_TRACE_OPTIONS
 
         return SpanContext(
             trace_id=trace_id,
@@ -74,12 +79,12 @@ class TextFormatPropagator(object):
         :rtype: dict
         :returns: The carrier which holds the span context information.
         """
-        carrier[_TRACE_ID_KEY] = str(span_context.trace_id)
+        carrier[self._TRACE_ID_KEY] = str(span_context.trace_id)
 
         if span_context.span_id is not None:
-            carrier[_SPAN_ID_KEY] = str(span_context.span_id)
+            carrier[self._SPAN_ID_KEY] = str(span_context.span_id)
 
-        carrier[_TRACE_OPTIONS_KEY] = str(
+        carrier[self._TRACE_OPTIONS_KEY] = str(
             span_context.trace_options.trace_options_byte)
 
         return carrier

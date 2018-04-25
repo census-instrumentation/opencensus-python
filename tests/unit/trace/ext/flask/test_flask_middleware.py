@@ -28,7 +28,7 @@ from opencensus.trace import status
 from opencensus.trace.exporters import print_exporter, stackdriver_exporter, \
     zipkin_exporter
 from opencensus.trace.ext.flask import flask_middleware
-from opencensus.trace.propagation import google_cloud_format
+from opencensus.trace.propagation import google_cloud_format, zipkin_b3_format
 from opencensus.trace.samplers import always_off, always_on, ProbabilitySampler
 from opencensus.trace.tracers import base
 from opencensus.trace.tracers import noop_tracer
@@ -206,6 +206,43 @@ class TestFlaskMiddleware(unittest.TestCase):
             span = tracer.current_span()
 
             assert isinstance(span, base.NullContextManager)
+
+    def test__before_request_multiple_headers(self):
+        from opencensus.trace import execution_context
+
+        trace_id = '2dd43a1d6b2549c6bc2a1a54c2fc0b05'
+        span_id = '6e0c63257de34c92'
+        trace_options = '1'
+
+        app = self.create_app()
+        propagator = zipkin_b3_format.ZipkinB3FormatPropagator()
+        flask_middleware.FlaskMiddleware(app=app,
+                                         propagator=propagator)
+        context = app.test_request_context(
+            path='/',
+            headers={
+                propagator._TRACE_ID_KEY: trace_id,
+                propagator._SPAN_ID_KEY: span_id,
+                propagator._TRACE_OPTIONS_KEY: trace_options,
+            })
+
+        with context:
+            app.preprocess_request()
+            tracer = execution_context.get_opencensus_tracer()
+            self.assertIsNotNone(tracer)
+
+            span = tracer.current_span()
+
+            expected_attributes = {
+                '/http/url': u'http://localhost/',
+                '/http/method': 'GET',
+            }
+
+            self.assertEqual(span.attributes, expected_attributes)
+            self.assertEqual(span.parent_span.span_id, span_id)
+
+            span_context = tracer.span_context
+            self.assertEqual(span_context.trace_id, trace_id)
 
     def test_header_encoding(self):
         # The test is for detecting the encoding compatibility issue in

@@ -70,7 +70,7 @@ class GoogleCloudFormatPropagator(object):
         else:
             logging.warning(
                 'Cannot parse the header {}, generate a new context instead.'
-                .format(header))
+                .format(header.encode('utf-8', errors='ignore')))
             return SpanContext()
 
     def to_header(self, span_context):

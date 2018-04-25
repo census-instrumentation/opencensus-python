@@ -27,7 +27,7 @@ from opencensus.trace.exporters import print_exporter
 from opencensus.trace.exporters import zipkin_exporter
 from opencensus.trace.exporters.transports import sync
 from opencensus.trace.ext.pyramid import pyramid_middleware
-from opencensus.trace.propagation import google_cloud_format
+from opencensus.trace.propagation import google_cloud_format, zipkin_b3_format
 from opencensus.trace.samplers import always_on
 from opencensus.trace.tracers import base
 from opencensus.trace.tracers import noop_tracer
@@ -138,6 +138,54 @@ class TestPyramidMiddleware(unittest.TestCase):
             registry=mock_registry,
             path='/',
             headers={pyramid_trace_header: pyramid_trace_id},
+        )
+
+        middleware._before_request(request)
+        tracer = execution_context.get_opencensus_tracer()
+        self.assertIsNotNone(tracer)
+
+        span = tracer.current_span()
+
+        expected_attributes = {
+            '/http/url': u'/',
+            '/http/method': 'GET',
+        }
+
+        self.assertEqual(span.attributes, expected_attributes)
+        self.assertEqual(span.parent_span.span_id, span_id)
+
+        span_context = tracer.span_context
+        self.assertEqual(span_context.trace_id, trace_id)
+
+    def test__before_request_multiple_headers(self):
+        trace_id = '2dd43a1d6b2549c6bc2a1a54c2fc0b05'
+        span_id = '6e0c63257de34c92'
+        trace_options = '1'
+
+        response = Response()
+        propagator = zipkin_b3_format.ZipkinB3FormatPropagator()
+
+        def dummy_handler(request):
+            return response
+
+        mock_registry = mock.Mock(spec=Registry)
+        mock_registry.settings = {}
+        mock_registry.settings['OPENCENSUS_TRACE'] = {
+            'PROPAGATOR': propagator,
+        }
+        middleware = pyramid_middleware.OpenCensusTweenFactory(
+            dummy_handler,
+            mock_registry,
+        )
+
+        request = DummyRequest(
+            registry=mock_registry,
+            path='/',
+            headers={
+                propagator._TRACE_ID_KEY: trace_id,
+                propagator._SPAN_ID_KEY: span_id,
+                propagator._TRACE_OPTIONS_KEY: trace_options,
+            },
         )
 
         middleware._before_request(request)
