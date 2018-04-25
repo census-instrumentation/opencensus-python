@@ -114,6 +114,7 @@ class TestTracer(unittest.TestCase):
         result = tracer.get_tracer()
 
         assert isinstance(result, context_tracer.ContextTracer)
+        self.assertTrue(tracer.span_context.trace_options.enabled)
 
     def test_finish_not_sampled(self):
         from opencensus.trace.tracers import noop_tracer

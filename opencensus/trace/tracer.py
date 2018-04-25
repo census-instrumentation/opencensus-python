@@ -67,8 +67,8 @@ class Tracer(object):
 
     def should_sample(self):
         """Determine whether to sample this request or not.
-        If the context forces not tracing, just set enabled to False.
-        Else follow the sampler.
+        If the context enables tracing, return True.
+        Else follow the decision of the sampler.
 
         :rtype: bool
         :returns: Whether to trace the request or not.
@@ -81,6 +81,7 @@ class Tracer(object):
         sampled = self.should_sample()
 
         if sampled:
+            self.span_context.trace_options.set_enabled(True)
             return context_tracer.ContextTracer(
                 exporter=self.exporter,
                 span_context=self.span_context)
