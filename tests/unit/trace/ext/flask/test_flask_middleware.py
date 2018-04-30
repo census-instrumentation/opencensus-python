@@ -119,7 +119,7 @@ class TestFlaskMiddleware(unittest.TestCase):
             },
         }
 
-        middleware = flask_middleware.FlaskMiddleware()
+        middleware = flask_middleware.FlaskMiddleware(exporter=mock.Mock())
         middleware.init_app(app)
 
         self.assertIs(middleware.app, app)
