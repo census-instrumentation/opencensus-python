@@ -19,19 +19,12 @@ from opencensus.stats import aggregation_data
 class BaseAggregation(object):
     """An aggregation describes how the data collected is aggregated by type of aggregation and buckets
 
-    :type aggregation_type: str
-    :param aggregation_type: describes the type of aggregation desired
-
     :type buckets: list :class: '~opencensus.stats.bucket_boundaries.BucketBoundaries'
     :param buckets: list of endpoints if the aggregation represents a distribution
 
     """
-    def __init__(self, aggregation_type=None, buckets=None):
-        if aggregation_type is not None:
-            self._aggregation_type = aggregation_type
-        else:
-            self._aggregation_type = "none"
-
+    def __init__(self, buckets=None):
+        self._aggregation_type = "none"
         self._buckets = buckets or []
 
     @property
@@ -51,13 +44,10 @@ class SumAggregation(BaseAggregation):
     :type sum: int or float
     :param sum: int or float representing the sum of the data collected and aggregated
 
-    :type aggregation_type: str
-    :param aggregation_type: defaults to "sum", represents the aggregation type
-
     """
-    def __init__(self, sum=None, aggregation_type="sum"):
-        super().__init__(aggregation_type)
-        self._aggregation_type = aggregation_type
+    def __init__(self, sum=None):
+        super().__init__()
+        self._aggregation_type = "sum"
         if sum is not None:
             self._sum = aggregation_data.SumAggregationDataFloat(sum_data=sum)
         else:
@@ -80,13 +70,10 @@ class CountAggregation(BaseAggregation):
     :type count: int
     :param count: represents the count of this aggregation
 
-    :type aggregation_type: str
-    :param aggregation_type: defaults to "count", represents the aggregation type
-
     """
-    def __init__(self, count=0, aggregation_type="count"):
-        super().__init__(aggregation_type)
-        self._aggregation_type = aggregation_type
+    def __init__(self, count=0):
+        super().__init__()
+        self._aggregation_type = "count"
         self._count = aggregation_data.CountAggregationData(count)
 
     @property
@@ -109,13 +96,10 @@ class MeanAggregation(BaseAggregation):
     :type count: int
     :param count: the count of the aggregation
 
-    :type aggregation_type: str
-    :param aggregation_type: defaults to "mean", represents the aggregation type
-
     """
-    def __init__(self, mean=None, count=None, aggregation_type="mean"):
-        super().__init__(aggregation_type)
-        self._aggregation_type = aggregation_type
+    def __init__(self, mean=None, count=None):
+        super().__init__()
+        self._aggregation_type = "mean"
         if count is not None:
             self._count = count
         else:
@@ -150,13 +134,10 @@ class DistributionAggregation(BaseAggregation):
     :type distribution: histogram
     :param distribution: histogram of the values of the population
 
-    :type aggregation_type: str
-    :param aggregation_type: defaults to "distribution", represents the aggregation type
-
     """
-    def __init__(self, boundaries=None, distribution=None, aggregation_type="distribution"):
-        super().__init__(aggregation_type, boundaries)
-        self._aggregation_type = aggregation_type
+    def __init__(self, boundaries=None, distribution=None):
+        super().__init__(boundaries)
+        self._aggregation_type = "distribution"
         self._boundaries = bucket_boundaries.BucketBoundaries(boundaries)
         self._distribution = distribution if distribution is not None else {}
 

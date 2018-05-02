@@ -15,6 +15,7 @@
 import unittest
 from opencensus.tags import tag_value as tag_value_module
 
+
 class TestTagValue(unittest.TestCase):
 
     def test_constructor(self):
@@ -26,7 +27,7 @@ class TestTagValue(unittest.TestCase):
     def test_check_value(self):
         test_val1 = 'e9nnb1ixRnvzBH1TUonCG5IsV3ba2PMKjAbSxdLFFpgxFKhZHfi92ajNH6EARaK9FGGShk2EeZ4XObwqIPBwi7j4ZSRR1ZWXtS15keA1h4c9CxeAdakcxxUN0YH6mLJ0BygwRbdbMSeOIPWLo7iyGCil4njKOxH6HF7k0aN4BQl03HQZoXe0t0gd5xKQW37ePNA4FRVZlbLbib3GCF7BeKeA0DKMtuRu27r2hDGEFAmvqh3JEnqOy4gDbhFubaLblr4R4GOHo'
         tag_val1 = tag_value_module.TagValue(test_val1)
-        self.assertFalse(tag_val1.check_value(tag_val1.value))
+        self.assertFalse(tag_val1.is_valid_value(tag_val1.value))
 
         tag_val2 = tag_value_module.TagValue('testVal')
-        self.assertTrue(tag_val2.check_value(tag_val2.value))
+        self.assertTrue(tag_val2.is_valid_value(tag_val2.value))

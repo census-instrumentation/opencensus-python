@@ -23,20 +23,22 @@ class TagMap(object):
     :type tags: list(:class: '~opencensus.tags.tag.Tag')
     :param tags: a list of tags
 
-    :type map: dict
-    :param map: a map of the tags
-
     """
-    def __init__(self, tags=None, map=None):
-        self.map = map or {}
+    def __init__(self, tags=None):
+        self._map = {}
         if tags is not None:
             self.tags = tags
             for tag in self.tags:
                 for tag_key, tag_value in tag.items():
-                    self.map[tag_key] = tag_value
+                    self._map[tag_key] = tag_value
 
         else:
             self.tags = {}
+
+    @property
+    def map(self):
+        """The current map of tags"""
+        return self._map
 
     def insert(self, key, value):
         """Inserts a key and value in the map if the map does not already contain the key.
@@ -48,10 +50,10 @@ class TagMap(object):
         :param value: a tag value to insert into the tag map and associated with the tag key
 
         """
-        if key in self.map:
+        if key in self._map:
             return
         else:
-            self.map[key] = value
+            self._map[key] = value
 
     def delete(self, key):
         """ Deletes a tag from the map if the key is in the map
@@ -61,7 +63,7 @@ class TagMap(object):
 
         :returns: the value of the key in the dictionary if it is in there, or None if it is not.
         """
-        self.map.pop(key, None)
+        self._map.pop(key, None)
 
     def update(self, key, value):
         """ Updates the map by updating the value of a key
@@ -73,8 +75,8 @@ class TagMap(object):
         :param value: The value to update the key to in the map
 
         """
-        if key in self.map:
-            self.map[key] = value
+        if key in self._map:
+            self._map[key] = value
 
     def tag_key_exists(self, key):
         """ Checking if the tag key exists in the map
@@ -85,7 +87,7 @@ class TagMap(object):
         :returns: True if the key is in map, False is it is not
 
         """
-        return key in self.map
+        return key in self._map
 
     def get_value(self, key):
         """ Gets the value of the key passed in if the key exists in the map
@@ -95,7 +97,7 @@ class TagMap(object):
 
         :returns: A KeyError if the value is None, else returns the value
         """
-        value = self.map.get(key, None)
+        value = self._map.get(key, None)
         if value is None:
             raise KeyError('Key is not in map.')
 

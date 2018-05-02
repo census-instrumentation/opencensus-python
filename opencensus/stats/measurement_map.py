@@ -13,29 +13,31 @@
 # limitations under the License.
 
 from opencensus.stats import measure
-from opencensus.tags import tag_context
+from opencensus.tags import tag_map
+from opencensus.stats.measure_to_view_map import MeasureToViewMap
 from opencensus.stats import measurement
+from datetime import datetime
 
 
 class MeasurementMap(object):
 
-    def __init__(self, meausrement_map=None):
-        self._measurement_map = meausrement_map or {}
+    def __init__(self, measure_to_view_map):
+        self._measurement_map = {}
+        self._measure_to_view_map = measure_to_view_map
+
+    @property
+    def measurement_map(self):
+        return self._measurement_map
+
+    @property
+    def measure_to_view_map(self):
+        return self._measure_to_view_map
 
     def measure_int_put(self, key, value):
-        tag_context.TagContext.put(tag_context.TagContext(measure.MeasureInt), key, value)
+        self._measurement_map[key] = value
 
     def measure_float_put(self, key, value):
-        tag_context.TagContext.put(tag_context.TagContext(measure.MeasureFloat), key, value)
+        self._measurement_map[key] = value
 
-    def record(self, tag_context_tags):
-        if len(self._measurement_map) == 0:
-            return
-
-        record_bool = True
-        for measurement.Measurement in self._measurement_map:
-            if measurement != {}:
-                record_bool = True
-
-        if record_bool is False:
-            return
+    def record(self, tag_map_tags):
+        self.measure_to_view_map.MeasureToViewMap.record(self._measure_to_view_map, tags=tag_map_tags, stats=self.measurement_map, timestamp=datetime.utcnow().isoformat() + 'Z')

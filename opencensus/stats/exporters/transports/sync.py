@@ -12,24 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from opencensus.tags import tag_key
-from opencensus.tags import tag_value
+from opencensus.stats.exporters.transports import base
 
 
-class TagContext(object):
+class SyncTransport(base.Transport):
+    def __init__(self, exporter):
+        self.exporter = exporter
 
-    def __init__(self, tags=None):
-        self._tags = tags if tags is not None else {}
-
-    def put(self, key, value):
-        self._tags[key] = value
-
-    def remove(self, key):
-        self._tags.pop(key, None)
-
-    @property
-    def tags(self):
-        return self._tags
-
-    def get_tag_value(self, key):
-        return self._tags.get(key, None)
+    def export(self, views):
+        self.exporter.emit(views)

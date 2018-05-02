@@ -13,12 +13,35 @@
 # limitations under the License.
 
 import unittest
+import mock
 from opencensus.stats.exporters import stackdriver_exporter as stackdriver_exporter_module
+
+
+class _Client(object):
+    '''
+    def __init__(self, project=None, resource=None):
+        if project is None:
+            project = 'PROJECT'
+
+        self.project = project
+        self.resource = ('global', {})
+    '''
 
 class TestStackDriverExporter(unittest.TestCase):
 
     def test_constructor_defaults(self):
-        ''' finish me '''
+        '''
+        patch = mock.patch(
+            'opencensus.stats.exporters.stackdriver_exporter.Client',
+            new=_Client)
+
+        with patch:
+            exporter = stackdriver_exporter_module.StackDriverExporter()
+
+        project_id = 'PROJECT'
+        self.assertEqual(exporter.project_id, project_id)
+        self.assertEqual(_Client(project='PROJECT'), exporter.client)
+        '''
 
     def test_constructor_explicit(self):
         ''' finish me '''

@@ -18,21 +18,30 @@ from opencensus.stats.exporters import stackdriver_exporter
 from opencensus.stats import measure
 from opencensus.stats import view
 from opencensus.stats import aggregation
+from opencensus.stats import stats_recorder
+from opencensus.stats import view_manager
+from opencensus.stats import stats
 
 
 def main():
     views = []
 
-    client = monitoring.Client(project='opencensus-python')
-    exporter = stackdriver_exporter.StackDriverExporter(client, "opencensus-python")
+    client = monitoring.Client()
+    exporter = stackdriver_exporter.StackDriverExporter(client, "opencensus-python-202919", resource="global")
 
     boundaries = [0, 1/16, 1/32]
 
     video_size = measure.BaseMeasure("my.org/measure/video_size", "size of processed videos", "MBy")
-    my_view = view.View("my.org/views/video_size_cum", "processed video size over time", video_size, aggregation.DistributionAggregation(boundaries))
+    my_view = view.View("my.org/views/video_size_cum", "processed video size over time", [], video_size, aggregation.DistributionAggregation(boundaries))
     views = views.append(my_view)
 
+    my_stats_recorder = stats.Stats().stats_recorder
+    my_stats_recorder.new_measurement_map().measure_int_put(video_size, 25648)
+
     exporter.emit(views, datapoint=25648)
+    exporter.export(views)
+
+
 
 if __name__ == '__main__':
     main()

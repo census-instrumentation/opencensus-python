@@ -1,0 +1,155 @@
+# Copyright 2018, OpenCensus Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import unittest
+import mock
+import logging
+from datetime import datetime
+from opencensus.stats.view import View
+from opencensus.stats.view_data import ViewData
+from opencensus.stats.measurement import Measurement
+from opencensus.stats.measure import BaseMeasure
+from opencensus.stats import measure_to_view_map as measure_to_view_map_module
+
+
+class TestMeasureToViewMap(unittest.TestCase):
+
+    def test_constructor(self):
+        measure_to_view_map = measure_to_view_map_module.MeasureToViewMap()
+
+        self.assertEqual({}, measure_to_view_map._map)
+        self.assertEqual({}, measure_to_view_map._registered_views)
+        self.assertEqual({}, measure_to_view_map._registered_measures)
+        self.assertEqual(set(), measure_to_view_map._exported_views)
+
+    def test_get_view(self):
+        name = "testView"
+        description = "testDescription"
+        columns = mock.Mock()
+        measure = mock.Mock()
+        aggregation = mock.Mock()
+        view = View(name=name, description=description, columns=columns, measure=measure, aggregation=aggregation)
+        timestamp = mock.Mock()
+        measure_to_view_map = measure_to_view_map_module.MeasureToViewMap()
+
+        measure_to_view_map._registered_views = {}
+        no_registered_views = measure_to_view_map.get_view(view_name=name, timestamp=timestamp)
+        self.assertEqual(None, no_registered_views)
+
+        measure_to_view_map._registered_views = {name: view}
+        measure_to_view_map._map = {view.measure.name: ViewData(view=view, start_time=timestamp, end_time=timestamp)}
+        print(measure_to_view_map._map)
+        view_data = measure_to_view_map.get_view(view_name=name, timestamp=timestamp)
+        self.assertIsNotNone(view_data)
+
+    def test_get_view_data(self):
+        name = "testView"
+        description = "testDescription"
+        columns = mock.Mock()
+        measure = mock.Mock()
+        aggregation = mock.Mock()
+        view = View(name=name, description=description, columns=columns, measure=measure, aggregation=aggregation)
+        timestamp = mock.Mock()
+        measure_to_view_map = measure_to_view_map_module.MeasureToViewMap()
+        measure_to_view_map._registered_views = {name: view}
+        measure_to_view_map._map = {view.measure.name: ViewData(view=view, start_time=timestamp, end_time=timestamp)}
+        view_for_view_data = measure_to_view_map.get_view_data(view_name=name)
+        self.assertIsNotNone(view_for_view_data)
+
+        measure_to_view_map._registered_views = {}
+        no_registered_views = measure_to_view_map.get_view_data(view_name=name)
+        self.assertIsNone(no_registered_views)
+
+    def test_get_exported_views(self):
+        measure_to_view_map = measure_to_view_map_module.MeasureToViewMap()
+        self.assertEqual(measure_to_view_map._exported_views, set())
+        measure_to_view_map._exported_views = mock.Mock()
+        exported_views = measure_to_view_map.get_exported_views()
+        self.assertEqual(exported_views, measure_to_view_map._exported_views)
+
+    def test_filter_exported_views(self):
+        test_view_1_name = "testView1"
+        description = "testDescription"
+        columns = mock.Mock()
+        measure = mock.Mock()
+        aggregation = mock.Mock()
+        test_view_1 = View(name=test_view_1_name, description=description, columns=columns, measure=measure, aggregation=aggregation)
+        print("test view 1", test_view_1)
+
+        test_view_2_name = "testView2"
+        test_view_2 = View(name=test_view_2_name, description=description, columns=columns, measure=measure, aggregation=aggregation)
+        print("test view 2", test_view_2)
+        all_the_views = {test_view_1, test_view_2}
+        print("all the views", all_the_views)
+        measure_to_view_map = measure_to_view_map_module.MeasureToViewMap()
+        views = measure_to_view_map.filter_exported_views(all_views=all_the_views)
+        print("filtered views", views)
+        self.assertEqual(views, all_the_views)
+
+    def test_register_view(self):
+        name = "testView"
+        description = "testDescription"
+        columns = mock.Mock()
+        measure = mock.Mock()
+        aggregation = mock.Mock()
+        view = View(name=name, description=description, columns=columns, measure=measure, aggregation=aggregation)
+        timestamp = mock.Mock()
+        measure_to_view_map = measure_to_view_map_module.MeasureToViewMap()
+
+        measure_to_view_map._registered_views = {}
+        measure_to_view_map._registered_measures = {}
+        measure_to_view_map.register_view(view=view, timestamp=timestamp)
+        self.assertEqual(measure_to_view_map._registered_views[measure.name], view)
+        self.assertEqual(measure_to_view_map._registered_measures[measure.name], measure)
+        self.assertIsNotNone(measure_to_view_map._map[view.measure.name])
+
+        test_measure = mock.Mock()
+        measure_to_view_map._registered_measures = {measure.name: test_measure}
+        print(measure_to_view_map.register_view(view=view, timestamp=timestamp))
+        test_with_registered_measures = measure_to_view_map.register_view(view=view, timestamp=timestamp)
+        self.assertIsNone(test_with_registered_measures)
+
+        measure_to_view_map._registered_views = {name: view}
+        test_result_1 = measure_to_view_map.register_view(view=view, timestamp=timestamp)
+        self.assertIsNone(test_result_1)
+
+    def test_record(self):
+        measure_name = "test_measure"
+        measure_description = "test_description"
+        measure = BaseMeasure(name=measure_name, description=measure_description)
+
+        view_name = "test_view"
+        view_description = "test_description"
+        view_columns = ["testTag1", "testColumn2"]
+        view_measure = measure
+        view_aggregation = mock.Mock()
+        view = View(name=view_name, description=view_description, columns=view_columns, measure=view_measure, aggregation=view_aggregation)
+
+        measure_value = 5
+        measurement = Measurement(measure=measure, value=measure_value)
+        value = "testValue"
+        tags = {"testTag1": "testTag1Value"}
+        stats = {Measurement(measure=measure, value=measure_value): value}
+        timestamp = mock.Mock()
+
+        measure_to_view_map = measure_to_view_map_module.MeasureToViewMap()
+        measure_to_view_map._registered_measures = {}
+        record = measure_to_view_map.record(tags=tags, stats=stats, timestamp=timestamp)
+        self.assertIsNone(record)
+
+        measure_to_view_map._registered_measures = {measurement.measure.name: measurement.measure}
+        measure_to_view_map._map = {measurement.measure.name: ViewData(view=view, start_time=timestamp, end_time=timestamp)}
+        measure_to_view_map.record(tags=tags, stats=stats, timestamp=timestamp)
+        self.assertTrue(measure_to_view_map.record.called)
+
