@@ -16,6 +16,7 @@ import unittest
 import mock
 from opencensus.stats import measure as measure_module
 
+
 class TestBaseMeasure(unittest.TestCase):
 
     def test_constructor_defaults(self):
@@ -37,4 +38,46 @@ class TestBaseMeasure(unittest.TestCase):
         self.assertEqual("testMeasure", measure.description)
         self.assertEqual("testUnit", measure.unit)
 
-''' finish this '''
+
+class TestMeasureInt(unittest.TestCase):
+
+    def test_constructor_defaults(self):
+        name = "testName"
+        description = "testMeasure"
+
+        measure = measure_module.MeasureInt(name=name, description=description)
+
+        self.assertEqual(None, measure.unit)
+
+    def test_constructor(self):
+        name = "testName"
+        description = "testMeasure"
+        unit = "testUnit"
+
+        measure = measure_module.MeasureInt(name=name, description=description, unit=unit)
+
+        self.assertEqual("testName", measure.name)
+        self.assertEqual("testMeasure", measure.description)
+        self.assertEqual("testUnit", measure.unit)
+
+
+class TestMeasureFloat(unittest.TestCase):
+
+    def test_constructor_defaults(self):
+        name = "testName"
+        description = "testMeasure"
+
+        measure = measure_module.MeasureFloat(name=name, description=description)
+
+        self.assertEqual(None, measure.unit)
+
+    def test_constructor(self):
+        name = "testName"
+        description = "testMeasure"
+        unit = "testUnit"
+
+        measure = measure_module.MeasureFloat(name=name, description=description, unit=unit)
+
+        self.assertEqual("testName", measure.name)
+        self.assertEqual("testMeasure", measure.description)
+        self.assertEqual("testUnit", measure.unit)

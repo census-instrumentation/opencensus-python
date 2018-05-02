@@ -1,0 +1,38 @@
+# Copyright 2018, OpenCensus Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+from opencensus.stats.measure_to_view_map import MeasureToViewMap
+from opencensus.stats.view import View
+from opencensus.stats.view_data import ViewData
+from datetime import datetime
+
+
+class ViewManager(object):
+
+    def __init__(self):
+        self.time = datetime.utcnow().isoformat() + 'Z'
+        self._measure_view_map = MeasureToViewMap()
+
+    @property
+    def measure_to_view_map(self):
+        return self._measure_view_map
+
+    def register_view(self, view):
+        self._measure_view_map.register_view(view=view, timestamp=self.time)
+
+    def get_view(self, view_name):
+        self._measure_view_map.get_view(view_name=view_name, timestamp=self.time)
+
+    def get_all_exported_views(self):
+        self._measure_view_map.get_exported_views()

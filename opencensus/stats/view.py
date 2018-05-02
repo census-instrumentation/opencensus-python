@@ -17,36 +17,54 @@ from opencensus.stats.aggregation import DistributionAggregation
 from opencensus.tags.tag import Tag
 from opencensus.tags import tag_key
 
+
 class View(object):
+    """A view defines a specific aggregation and a set of tag keys
+
+    :type name: str
+    :param name: name of the view
+
+    :type description: str
+    :param description: description of the view
+
+    :type columns: (:class: '~opencensus.tags.tag_key.TagKey')
+    :param columns: the columns that the tagkeys will aggregate on for this view
+
+    :type measure: :class: '~opencensus.stats.measure.Measure'
+    :param measure: the measure to be aggregated by the view
+
+    :type aggregation: :class: '~opencensus.stats.aggregation.BaseAggregation'
+    :param aggregation: the aggregation the view will support
+
+    """
     def __init__(self, name, description, columns, measure, aggregation):
         self._name = name
         self._description = description
-
-        column_list = []
-        for tag_key in columns:
-            column_list.append(tag_key)
-
-        self._columns = column_list
-
+        self._columns = columns
         self._measure = measure
         self._aggregation = aggregation
 
     @property
     def name(self):
+        """the name of the current view"""
         return self._name
 
     @property
     def description(self):
+        """the description of the current view"""
         return self._description
 
     @property
     def columns(self):
+        """the columns of the current view"""
         return self._columns
 
     @property
     def measure(self):
+        """the measure of the current view"""
         return self._measure
 
     @property
     def aggregation(self):
+        """the aggregation of the current view"""
         return self._aggregation

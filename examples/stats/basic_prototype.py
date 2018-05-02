@@ -29,10 +29,11 @@ def main():
     boundaries = [0, 1/16, 1/32]
 
     video_size = measure.BaseMeasure("my.org/measure/video_size", "size of processed videos", "MBy")
-    my_view = view.View("my.org/views/video_size_cum", "processed video size over time", video_size, aggregation.DistributionAggregation(boundaries))
+    my_view = view.View("my.org/views/video_size_cum", "processed video size over time", [], video_size, aggregation.DistributionAggregation(boundaries))
     views = views.append(my_view)
 
     exporter.emit(views, datapoint=25648)
+
 
 if __name__ == '__main__':
     main()

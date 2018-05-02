@@ -16,6 +16,7 @@ import unittest
 import mock
 from opencensus.tags import tag_map as tag_map_module
 
+
 class TestTagMap(unittest.TestCase):
 
     def test_constructor_defaults(self):
@@ -25,11 +26,9 @@ class TestTagMap(unittest.TestCase):
 
     def test_constructor_explicit(self):
         tags = [{'key1': 'value1'}]
-        map = {'key2': 'value2'}
 
-        tag_map = tag_map_module.TagMap(tags=tags, map=map)
+        tag_map = tag_map_module.TagMap(tags=tags)
         self.assertEqual(tag_map.tags, tags)
-        self.assertEqual(tag_map.map, map)
 
     def test_insert(self):
         test_key = 'key1'
@@ -41,7 +40,7 @@ class TestTagMap(unittest.TestCase):
     def test_delete(self):
         key = 'key1'
         tag_map = tag_map_module.TagMap(tags=[{'key1': 'value1', 'key2': 'value2'}])
-        tag_map.delete('key1')
+        tag_map.delete(key=key)
         self.assertEqual(tag_map.map, {'key2': 'value2'})
 
     def test_update(self):

@@ -12,33 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Module containing base class for transport."""
 
-class TagValue(object):
-    """ The value of a tag
 
-    :type value: str
-    :param value: A string representing the value of a key in a tag
+class Transport(object):
+    """Base class for transport.
 
+    Subclasses of :class:`Transport` must override :meth:`export`.
     """
-    def __init__(self, value):
-        self._value = value
+    def export(self, views):
+        """Export the SpanData tuples by calling exporter.emit()."""
+        raise NotImplementedError
 
-    @property
-    def value(self):
-        """The current value"""
-        return self._value
+    def flush(self):
+        """Submit any pending metrics.
 
-    def is_valid_value(self, value):
-        """ Checks if the value if valid
-
-        :type value: str
-        :param value: the value to be checked
-
-        :rtype: bool
-        :returns: True if valid, if not, False.
-
+        For blocking/sync transports, this is a no-op.
         """
-        if len(value) <= 255:
-            return True
-        else:
-            return False

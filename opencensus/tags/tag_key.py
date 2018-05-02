@@ -28,7 +28,7 @@ class TagKey(object):
         """The name of the current key"""
         return self._name
 
-    def check_name(self, name):
+    def is_valid_name(self, name):
         """Checks if the name of the key is valid
 
         :type name: str
