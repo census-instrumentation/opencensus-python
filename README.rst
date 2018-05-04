@@ -14,7 +14,7 @@ OpenCensus for Python - A stats collection and distributed tracing framework
 
 -  `API Documentation`_
 
-.. _API Documentation: http://census-instrumentation.github.io/opencensus-python/trace/usage.html
+.. _API Documentation: https://opencensus.io/api/python/trace/usage.html
 
 Installation & basic usage
 --------------------------
