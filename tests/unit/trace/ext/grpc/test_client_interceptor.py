@@ -15,15 +15,13 @@
 import unittest
 
 import mock
-
+from opencensus.trace import execution_context
 from opencensus.trace.ext.grpc import client_interceptor
 
 
 class TestOpenCensusClientInterceptor(unittest.TestCase):
 
     def setUp(self):
-        from opencensus.trace import execution_context
-
         execution_context.clear()
 
     def test_constructor_default(self):
@@ -183,11 +181,11 @@ class TestOpenCensusClientInterceptor(unittest.TestCase):
 
     def _stream_helper(self):
         continuation = mock.Mock()
-        mock_response = mock.Mock()
+        mock_response = iter([mock.Mock()])
         continuation.return_value = mock_response
         mock_tracer = mock.Mock()
         interceptor = client_interceptor.OpenCensusClientInterceptor(tracer=mock_tracer)
-        interceptor._intercept_call = mock.Mock(return_value=(None, iter([mock.Mock()]), None))
+        interceptor._intercept_call = mock.Mock(return_value=(None, iter([mock.Mock()]), mock.Mock()))
         return interceptor, continuation, mock_tracer
 
     def test_intercept_unary_unary_trace(self):
@@ -207,9 +205,14 @@ class TestOpenCensusClientInterceptor(unittest.TestCase):
 
     def test_intercept_unary_stream_trace(self):
         interceptor, continuation, mock_tracer = self._stream_helper()
+        execution_context.set_opencensus_tracer(mock_tracer)
         client_call_details = mock.Mock()
         client_call_details.method = 'test'
-        interceptor.intercept_unary_stream(continuation, client_call_details, [])
+        response_iter = interceptor.intercept_unary_stream(
+            continuation, client_call_details, []
+        )
+        for _ in response_iter:
+            pass
         self.assertTrue(mock_tracer.end_span.called)
 
     def test_intercept_unary_stream_not_trace(self):
@@ -237,9 +240,15 @@ class TestOpenCensusClientInterceptor(unittest.TestCase):
 
     def test_intercept_stream_stream_trace(self):
         interceptor, continuation, mock_tracer = self._stream_helper()
+        execution_context.set_opencensus_tracer(mock_tracer)
         client_call_details = mock.Mock()
         client_call_details.method = 'test'
-        interceptor.intercept_stream_stream(continuation, client_call_details, [])
+        response_iter = interceptor.intercept_stream_stream(
+            continuation, client_call_details, []
+        )
+        for _ in response_iter:
+            pass
+
         self.assertTrue(mock_tracer.end_span.called)
 
     def test_intercept_stream_stream_not_trace(self):

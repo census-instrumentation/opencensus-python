@@ -14,12 +14,15 @@
 
 import collections
 import logging
+
 import grpc
 import six
 
-from opencensus.trace import execution_context
 from opencensus.trace import attributes_helper
+from opencensus.trace import execution_context
+from opencensus.trace import time_event
 from opencensus.trace.ext import grpc as oc_grpc
+from opencensus.trace.ext.grpc import utils as grpc_utils
 from opencensus.trace.propagation import binary_format
 
 log = logging.getLogger(__name__)
@@ -91,7 +94,8 @@ class OpenCensusClientInterceptor(grpc.UnaryUnaryClientInterceptor,
         self.tracer.end_span()
 
     def _intercept_call(
-            self, client_call_details, request_iterator, grpc_type):
+        self, client_call_details, request_iterator, grpc_type
+    ):
         metadata = ()
         if client_call_details.metadata is not None:
             metadata = client_call_details.metadata
@@ -118,10 +122,21 @@ class OpenCensusClientInterceptor(grpc.UnaryUnaryClientInterceptor,
             metadata,
             client_call_details.credentials)
 
+        request_iterator = grpc_utils.wrap_iter_with_message_events(
+            request_or_response_iter=request_iterator,
+            span=current_span,
+            message_event_type=time_event.Type.SENT
+        )
+
         return client_call_details, request_iterator, current_span
 
     def _callback(self, current_span):
         def callback(future_response):
+            grpc_utils.add_message_event(
+                proto_message=future_response.result(),
+                span=current_span,
+                message_event_type=time_event.Type.RECEIVED,
+            )
             execution_context.set_current_span(current_span)
             self._trace_future_exception(future_response)
             self.tracer.end_span()
@@ -141,7 +156,8 @@ class OpenCensusClientInterceptor(grpc.UnaryUnaryClientInterceptor,
             attribute_value=exception)
 
     def intercept_unary_unary(
-            self, continuation, client_call_details, request):
+        self, continuation, client_call_details, request
+    ):
         if CLOUD_TRACE in client_call_details.method:
             response = continuation(client_call_details, request)
             return response
@@ -159,8 +175,9 @@ class OpenCensusClientInterceptor(grpc.UnaryUnaryClientInterceptor,
 
         return response
 
-    def intercept_unary_stream(self, continuation, client_call_details,
-                               request):
+    def intercept_unary_stream(
+        self, continuation, client_call_details, request
+    ):
         if CLOUD_TRACE in client_call_details.method:
             response = continuation(client_call_details, request)
             return response
@@ -173,12 +190,18 @@ class OpenCensusClientInterceptor(grpc.UnaryUnaryClientInterceptor,
         response_it = continuation(
             new_details,
             next(new_request_iterator))
-        self._end_span_between_context(current_span)
+        response_it = grpc_utils.wrap_iter_with_message_events(
+            request_or_response_iter=response_it,
+            span=current_span,
+            message_event_type=time_event.Type.RECEIVED
+        )
+        response_it = grpc_utils.wrap_iter_with_end_span(response_it)
 
         return response_it
 
-    def intercept_stream_unary(self, continuation, client_call_details,
-                               request_iterator):
+    def intercept_stream_unary(
+        self, continuation, client_call_details, request_iterator
+    ):
         if CLOUD_TRACE in client_call_details.method:
             response = continuation(client_call_details, request_iterator)
             return response
@@ -196,8 +219,9 @@ class OpenCensusClientInterceptor(grpc.UnaryUnaryClientInterceptor,
 
         return response
 
-    def intercept_stream_stream(self, continuation, client_call_details,
-                                request_iterator):
+    def intercept_stream_stream(
+        self, continuation, client_call_details, request_iterator
+    ):
         if CLOUD_TRACE in client_call_details.method:
             response = continuation(client_call_details, request_iterator)
             return response
@@ -210,7 +234,12 @@ class OpenCensusClientInterceptor(grpc.UnaryUnaryClientInterceptor,
         response_it = continuation(
             new_details,
             new_request_iterator)
-        self._end_span_between_context(current_span)
+        response_it = grpc_utils.wrap_iter_with_message_events(
+            request_or_response_iter=response_it,
+            span=current_span,
+            message_event_type=time_event.Type.RECEIVED
+        )
+        response_it = grpc_utils.wrap_iter_with_end_span(response_it)
 
         return response_it
 
