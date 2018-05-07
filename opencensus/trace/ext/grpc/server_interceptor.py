@@ -39,7 +39,7 @@ class OpenCensusServerInterceptor(grpc.ServerInterceptor):
         self.exporter = exporter
 
     def intercept_service(self, continuation, handler_call_details):
-        def latency_wrapper(behavior, request_streaming, response_streaming):
+        def trace_wrapper(behavior, request_streaming, response_streaming):
             def new_behavior(request_or_iterator, servicer_context):
                 span = self._start_server_span(servicer_context)
                 try:
@@ -87,7 +87,7 @@ class OpenCensusServerInterceptor(grpc.ServerInterceptor):
 
         return _wrap_rpc_behavior(
             continuation(handler_call_details),
-            latency_wrapper
+            trace_wrapper
         )
 
     def _start_server_span(self, servicer_context):
