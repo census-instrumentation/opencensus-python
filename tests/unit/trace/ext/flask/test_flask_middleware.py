@@ -119,7 +119,13 @@ class TestFlaskMiddleware(unittest.TestCase):
             },
         }
 
-        middleware = flask_middleware.FlaskMiddleware()
+        class StackdriverExporter(object):
+            def __init__(self, *args, **kwargs):
+                pass
+
+        middleware = flask_middleware.FlaskMiddleware(
+            exporter=StackdriverExporter
+        )
         middleware.init_app(app)
 
         self.assertIs(middleware.app, app)
