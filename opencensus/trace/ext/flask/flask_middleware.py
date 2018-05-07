@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import inspect
 import logging
 import sys
 
@@ -24,9 +25,11 @@ from opencensus.trace import stack_trace
 from opencensus.trace import status
 from opencensus.trace import tracer as tracer_module
 from opencensus.trace.exporters import print_exporter
+from opencensus.trace.exporters.transports import sync
 from opencensus.trace.ext import utils
 from opencensus.trace.propagation import google_cloud_format
-from opencensus.trace.samplers import always_on
+from opencensus.trace.samplers import always_on, probability
+
 
 _FLASK_TRACE_HEADER = 'X_CLOUD_TRACE_CONTEXT'
 
@@ -34,10 +37,22 @@ HTTP_METHOD = attributes_helper.COMMON_ATTRIBUTES['HTTP_METHOD']
 HTTP_URL = attributes_helper.COMMON_ATTRIBUTES['HTTP_URL']
 HTTP_STATUS_CODE = attributes_helper.COMMON_ATTRIBUTES['HTTP_STATUS_CODE']
 
+BLACKLIST_PATHS = 'BLACKLIST_PATHS'
+GCP_EXPORTER_PROJECT = 'GCP_EXPORTER_PROJECT'
+SAMPLING_RATE = 'SAMPLING_RATE'
+TRANSPORT = 'TRANSPORT'
+ZIPKIN_EXPORTER_SERVICE_NAME = 'ZIPKIN_EXPORTER_SERVICE_NAME'
+ZIPKIN_EXPORTER_HOST_NAME = 'ZIPKIN_EXPORTER_HOST_NAME'
+ZIPKIN_EXPORTER_PORT = 'ZIPKIN_EXPORTER_PORT'
+
 log = logging.getLogger(__name__)
 
 
 class FlaskMiddleware(object):
+    DEFAULT_SAMPLER = always_on.AlwaysOnSampler
+    DEFAULT_EXPORTER = print_exporter.PrintExporter
+    DEFAULT_PROPAGATOR = google_cloud_format.GoogleCloudFormatPropagator
+
     """Flask middleware to automatically trace requests.
 
     :type app: :class: `~flask.Flask`
@@ -65,22 +80,78 @@ class FlaskMiddleware(object):
                        :class:`.TextFormatPropagator` and
                        :class:`.TraceContextPropagator`.
     """
-    def __init__(self, app, blacklist_paths=None, sampler=None, exporter=None,
-                 propagator=None):
-        if sampler is None:
-            sampler = always_on.AlwaysOnSampler()
-
-        if exporter is None:
-            exporter = print_exporter.PrintExporter()
-
-        if propagator is None:
-            propagator = google_cloud_format.GoogleCloudFormatPropagator()
-
+    def __init__(self, app=None, blacklist_paths=None, sampler=None,
+                 exporter=None, propagator=None):
         self.app = app
         self.blacklist_paths = blacklist_paths
         self.sampler = sampler
         self.exporter = exporter
         self.propagator = propagator
+
+        if self.app is not None:
+            self.init_app(app)
+
+    def init_app(self, app):
+        self.app = app
+
+        # get settings from app config
+        settings = self.app.config.get('OPENCENSUS_TRACE', {})
+
+        self.sampler = (self.sampler
+                        or settings.get('SAMPLER',
+                                        self.DEFAULT_SAMPLER))
+        self.exporter = (self.exporter
+                         or settings.get('EXPORTER',
+                                         self.DEFAULT_EXPORTER))
+        self.propagator = (self.propagator
+                           or settings.get('PROPAGATOR',
+                                           self.DEFAULT_PROPAGATOR))
+
+        # get params from app config
+        params = self.app.config.get('OPENCENSUS_TRACE_PARAMS', {})
+
+        self.blacklist_paths = params.get(BLACKLIST_PATHS,
+                                          self.blacklist_paths)
+
+        # Initialize the sampler
+        if not inspect.isclass(self.sampler):
+            pass  # handling of instantiated sampler
+        elif self.sampler.__name__ == 'ProbabilitySampler':
+            _rate = params.get(SAMPLING_RATE,
+                               probability.DEFAULT_SAMPLING_RATE)
+            self.sampler = self.sampler(_rate)
+        else:
+            self.sampler = self.sampler()
+
+        transport = params.get(TRANSPORT, sync.SyncTransport)
+
+        # Initialize the exporter
+        if not inspect.isclass(self.exporter):
+            pass  # handling of instantiated exporter
+        elif self.exporter.__name__ == 'StackdriverExporter':
+            _project_id = params.get(GCP_EXPORTER_PROJECT, None)
+            self.exporter = self.exporter(
+                project_id=_project_id,
+                transport=transport)
+        elif self.exporter.__name__ == 'ZipkinExporter':
+            _zipkin_service_name = params.get(
+                ZIPKIN_EXPORTER_SERVICE_NAME, 'my_service')
+            _zipkin_host_name = params.get(
+                ZIPKIN_EXPORTER_HOST_NAME, 'localhost')
+            _zipkin_port = params.get(
+                ZIPKIN_EXPORTER_PORT, 9411)
+            self.exporter = self.exporter(
+                service_name=_zipkin_service_name,
+                host_name=_zipkin_host_name,
+                port=_zipkin_port,
+                transport=transport)
+        else:
+            self.exporter = self.exporter(transport=transport)
+
+        # Initialize the propagator
+        if inspect.isclass(self.propagator):
+            self.propagator = self.propagator()
+
         self.setup_trace()
 
     def setup_trace(self):

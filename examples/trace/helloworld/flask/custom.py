@@ -13,17 +13,20 @@
 # limitations under the License.
 
 import os
-import requests
-import sys
 
 import flask
+import grpc
 import mysql.connector
 import psycopg2
+import requests
 import sqlalchemy
 
-from opencensus.trace.ext.flask.flask_middleware import FlaskMiddleware
+import hello_world_pb2
+import hello_world_pb2_grpc
 from opencensus.trace import config_integration
 from opencensus.trace.exporters import stackdriver_exporter
+from opencensus.trace.ext.flask.flask_middleware import FlaskMiddleware
+from opencensus.trace.ext.grpc import client_interceptor
 from opencensus.trace.samplers import probability
 
 INTEGRATIONS = ['mysql', 'postgresql', 'sqlalchemy', 'requests']
@@ -38,13 +41,19 @@ MYSQL_PASSWORD = os.environ.get('SYSTEST_MYSQL_PASSWORD')
 # PostgreSQL settings
 POSTGRES_PASSWORD = os.environ.get('SYSTEST_POSTGRES_PASSWORD')
 
+# hello_world_server location
+HELLO_WORLD_HOST_PORT = 'localhost:50051'
+
 app = flask.Flask(__name__)
 
 # Enable tracing, configure the trace params, send traces to Stackdriver Trace
-exporter = stackdriver_exporter.StackdriverExporter(project_id='yanhuili-sandbox')
+exporter = stackdriver_exporter.StackdriverExporter()
 sampler = probability.ProbabilitySampler(rate=1)
 middleware = FlaskMiddleware(app, exporter=exporter, sampler=sampler)
 config_integration.trace_integrations(INTEGRATIONS)
+
+# cache of (stub_cls, hostport) -> grpc stub
+_stub_cache = {}
 
 
 @app.route('/')
@@ -160,6 +169,30 @@ def sqlalchemy_postgresql_query():
     except Exception:
         msg = "Query failed. Check your env vars for connection settings."
         return msg, 500
+
+
+@app.route('/greet/<name>')
+def greet(name):
+    stub = _get_grpc_stub(
+        hello_world_pb2_grpc.GreeterStub, HELLO_WORLD_HOST_PORT
+    )
+    response = stub.SayHello(hello_world_pb2.HelloRequest(name=name))
+    return str(response)
+
+
+def _get_grpc_stub(stub_cls, host_port):
+    stub = _stub_cache.get((stub_cls, host_port))
+    if stub is not None:
+        return stub
+
+    channel = grpc.insecure_channel(host_port)
+    tracer_interceptor = client_interceptor.OpenCensusClientInterceptor(
+        host_port=HELLO_WORLD_HOST_PORT
+    )
+    channel = grpc.intercept_channel(channel, tracer_interceptor)
+    stub = stub_cls(channel)
+    _stub_cache[(stub_cls, host_port)] = stub
+    return stub
 
 
 if __name__ == '__main__':

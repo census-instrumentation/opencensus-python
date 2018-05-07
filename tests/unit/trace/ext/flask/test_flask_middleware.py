@@ -25,11 +25,11 @@ from opencensus.trace import execution_context
 from opencensus.trace import span_data
 from opencensus.trace import stack_trace
 from opencensus.trace import status
-from opencensus.trace.exporters import print_exporter
+from opencensus.trace.exporters import print_exporter, stackdriver_exporter, \
+    zipkin_exporter
 from opencensus.trace.ext.flask import flask_middleware
 from opencensus.trace.propagation import google_cloud_format
-from opencensus.trace.samplers import always_off
-from opencensus.trace.samplers import always_on
+from opencensus.trace.samplers import always_off, always_on, ProbabilitySampler
 from opencensus.trace.tracers import base
 from opencensus.trace.tracers import noop_tracer
 
@@ -60,7 +60,7 @@ class TestFlaskMiddleware(unittest.TestCase):
         execution_context.clear()
 
     def test_constructor_default(self):
-        app = mock.Mock()
+        app = mock.Mock(config={})
         middleware = flask_middleware.FlaskMiddleware(app=app)
 
         self.assertIs(app, middleware.app)
@@ -73,7 +73,7 @@ class TestFlaskMiddleware(unittest.TestCase):
             google_cloud_format.GoogleCloudFormatPropagator)
 
     def test_constructor_explicit(self):
-        app = mock.Mock()
+        app = mock.Mock(config={})
         sampler = mock.Mock()
         exporter = mock.Mock()
         propagator = mock.Mock()
@@ -88,6 +88,69 @@ class TestFlaskMiddleware(unittest.TestCase):
         self.assertIs(middleware.sampler, sampler)
         self.assertIs(middleware.exporter, exporter)
         self.assertIs(middleware.propagator, propagator)
+        self.assertTrue(app.before_request.called)
+        self.assertTrue(app.after_request.called)
+
+    def test_init_app(self):
+        app = mock.Mock()
+
+        middleware = flask_middleware.FlaskMiddleware()
+        middleware.init_app(app)
+
+        self.assertIs(middleware.app, app)
+        self.assertTrue(app.before_request.called)
+        self.assertTrue(app.after_request.called)
+
+    def test_init_app_config_stackdriver_exporter(self):
+        app = mock.Mock()
+        app.config = {
+            'OPENCENSUS_TRACE': {
+                'SAMPLER': ProbabilitySampler,
+                'EXPORTER': stackdriver_exporter.StackdriverExporter,
+                'PROPAGATOR': google_cloud_format.GoogleCloudFormatPropagator,
+            },
+            'OPENCENSUS_TRACE_PARAMS': {
+                'BLACKLIST_PATHS': ['/_ah/health'],
+                'GCP_EXPORTER_PROJECT': None,
+                'SAMPLING_RATE': 0.5,
+                'ZIPKIN_EXPORTER_SERVICE_NAME': 'my_service',
+                'ZIPKIN_EXPORTER_HOST_NAME': 'localhost',
+                'ZIPKIN_EXPORTER_PORT': 9411,
+            },
+        }
+
+        class StackdriverExporter(object):
+            def __init__(self, *args, **kwargs):
+                pass
+
+        middleware = flask_middleware.FlaskMiddleware(
+            exporter=StackdriverExporter
+        )
+        middleware.init_app(app)
+
+        self.assertIs(middleware.app, app)
+        self.assertTrue(app.before_request.called)
+        self.assertTrue(app.after_request.called)
+
+    def test_init_app_config_zipkin_exporter(self):
+        app = mock.Mock()
+        app.config = {
+            'OPENCENSUS_TRACE': {
+                'SAMPLER': ProbabilitySampler,
+                'EXPORTER': zipkin_exporter.ZipkinExporter,
+                'PROPAGATOR': google_cloud_format.GoogleCloudFormatPropagator,
+            },
+            'OPENCENSUS_TRACE_PARAMS': {
+                'ZIPKIN_EXPORTER_SERVICE_NAME': 'my_service',
+                'ZIPKIN_EXPORTER_HOST_NAME': 'localhost',
+                'ZIPKIN_EXPORTER_PORT': 9411,
+            },
+        }
+
+        middleware = flask_middleware.FlaskMiddleware()
+        middleware.init_app(app)
+
+        self.assertIs(middleware.app, app)
         self.assertTrue(app.before_request.called)
         self.assertTrue(app.after_request.called)
 
