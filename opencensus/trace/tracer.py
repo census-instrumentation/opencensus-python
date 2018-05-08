@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from opencensus.trace.propagation import google_cloud_format
 from opencensus.trace.exporters import print_exporter
 from opencensus.trace.samplers import always_on
 from opencensus.trace.span_context import SpanContext
@@ -44,8 +43,7 @@ class Tracer(object):
             self,
             span_context=None,
             sampler=None,
-            exporter=None,
-            propagator=None):
+            exporter=None):
         if span_context is None:
             span_context = SpanContext()
 
@@ -55,13 +53,9 @@ class Tracer(object):
         if exporter is None:
             exporter = print_exporter.PrintExporter()
 
-        if propagator is None:
-            propagator = google_cloud_format.GoogleCloudFormatPropagator()
-
         self.span_context = span_context
         self.sampler = sampler
         self.exporter = exporter
-        self.propagator = propagator
         self.tracer = self.get_tracer()
         self.store_tracer()
 

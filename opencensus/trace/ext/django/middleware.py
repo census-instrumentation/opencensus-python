@@ -162,8 +162,7 @@ class OpencensusMiddleware(MiddlewareMixin):
             tracer = tracer_module.Tracer(
                 span_context=span_context,
                 sampler=self.sampler,
-                exporter=self.exporter,
-                propagator=self.propagator)
+                exporter=self.exporter)
 
             # Span name is being set at process_view
             tracer.start_span()

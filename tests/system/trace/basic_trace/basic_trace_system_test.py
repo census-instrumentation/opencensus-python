@@ -45,8 +45,7 @@ class TestBasicTrace(unittest.TestCase):
         tracer = tracer_module.Tracer(
             span_context=span_context,
             sampler=sampler,
-            exporter=exporter,
-            propagator=propagator
+            exporter=exporter
         )
 
         with tracer.span(name='root_span') as root:

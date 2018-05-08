@@ -84,8 +84,7 @@ class OpenCensusTweenFactory(object):
             tracer = tracer_module.Tracer(
                 span_context=span_context,
                 sampler=self.sampler,
-                exporter=self.exporter,
-                propagator=self.propagator)
+                exporter=self.exporter)
 
             span = tracer.start_span()
 

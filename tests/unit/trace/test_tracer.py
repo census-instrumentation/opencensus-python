@@ -23,7 +23,6 @@ from opencensus.trace import span_data
 class TestTracer(unittest.TestCase):
 
     def test_constructor_default(self):
-        from opencensus.trace.propagation import google_cloud_format
         from opencensus.trace.exporters import print_exporter
         from opencensus.trace.samplers.always_on import AlwaysOnSampler
         from opencensus.trace.span_context import SpanContext
@@ -34,9 +33,6 @@ class TestTracer(unittest.TestCase):
         assert isinstance(tracer.span_context, SpanContext)
         assert isinstance(tracer.sampler, AlwaysOnSampler)
         assert isinstance(tracer.exporter, print_exporter.PrintExporter)
-        assert isinstance(
-            tracer.propagator,
-            google_cloud_format.GoogleCloudFormatPropagator)
         assert isinstance(tracer.tracer, context_tracer.ContextTracer)
 
     def test_constructor_explicit(self):
@@ -46,20 +42,17 @@ class TestTracer(unittest.TestCase):
         sampler.should_sample.return_value = False
 
         exporter = mock.Mock()
-        propagator = mock.Mock()
         span_context = mock.Mock()
         span_context.trace_options.enabled = False
 
         tracer = tracer_module.Tracer(
             span_context=span_context,
             sampler=sampler,
-            exporter=exporter,
-            propagator=propagator)
+            exporter=exporter)
 
         self.assertIs(tracer.span_context, span_context)
         self.assertIs(tracer.sampler, sampler)
         self.assertIs(tracer.exporter, exporter)
-        self.assertIs(tracer.propagator, propagator)
         assert isinstance(tracer.tracer, noop_tracer.NoopTracer)
 
     def test_should_sample_force_not_trace(self):
