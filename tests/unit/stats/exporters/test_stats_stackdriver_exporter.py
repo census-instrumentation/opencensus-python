@@ -27,6 +27,7 @@ class _Client(object):
         self.resource = ('global', {})
     '''
 
+
 class TestStackDriverExporter(unittest.TestCase):
 
     def test_constructor_defaults(self):
@@ -42,6 +43,7 @@ class TestStackDriverExporter(unittest.TestCase):
         self.assertEqual(exporter.project_id, project_id)
         self.assertEqual(_Client(project='PROJECT'), exporter.client)
         '''
+
 
     def test_constructor_explicit(self):
         ''' finish me '''

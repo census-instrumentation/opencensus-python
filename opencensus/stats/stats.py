@@ -17,15 +17,17 @@ from opencensus.stats.view_manager import ViewManager
 
 
 class Stats(object):
-
+    """Stats defines a View Manager and a Stats Recorder for collecting Stats"""
     def __init__(self):
         self._stats_recorder = StatsRecorder()
         self._view_manager = ViewManager()
 
     @property
     def stats_recorder(self):
+        """the current stats recorder for Stats"""
         return self._stats_recorder
 
     @property
     def view_manager(self):
+        """the current view manager for Stats"""
         return self._view_manager

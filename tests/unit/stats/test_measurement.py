@@ -16,6 +16,7 @@ import unittest
 import mock
 from opencensus.stats import measurement as measurement_module
 
+
 class TestMeasurement(unittest.TestCase):
 
     def test_constructor(self):

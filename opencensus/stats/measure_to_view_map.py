@@ -18,20 +18,26 @@ from opencensus.stats import measurement
 from opencensus.stats.view import View
 from opencensus.stats.view_data import ViewData
 from datetime import datetime
+from collections import defaultdict
 import logging
 
 
 class MeasureToViewMap(object):
-
+    """Measure To View Map stores a map from names of Measures to specific View Datas"""
     def __init__(self):
-        self._map = {}
-        self._registered_views = {}
-        self._registered_measures = {}
-        self._exported_views = set()
+        self._map = defaultdict(list)  # stores the one-to-many mapping from Measures to View Datas
+        self._registered_views = {}  # stores a map from the registered View names to the Views
+        self._registered_measures = {}  # stores a map from the registered Measure names to the Measures
+        self._exported_views = set()  # stores the set of the exported views
+
+    @property
+    def exported_views(self):
+        """the current exported views"""
+        return self._exported_views
 
     def get_view(self, view_name, timestamp):
+        """get the View Data from the given View name"""
         view = self.get_view_data(view_name)
-        print("view", view)
         if view is None:
             return None
 
@@ -39,22 +45,15 @@ class MeasureToViewMap(object):
         return view_data
 
     def get_view_data(self, view_name):
+        """given a view name, obtains the View Datas for the measure of that view"""
         view = self._registered_views.get(view_name)
         if view is None:
             return None
 
-        views = []
-        for key, value in self._map.items():
-            if key == view.measure.name:
-                views.append(self._map[key])
-
+        views = self._map.get(view.measure.name)
         for view_data in views:
             if view_data.view.name == view_name:
-                print("view data", view_data)
                 return view_data
-
-    def get_exported_views(self):
-        return self._exported_views
 
     def filter_exported_views(self, all_views):
         """returns the subset of the given view that should be exported"""
@@ -62,6 +61,7 @@ class MeasureToViewMap(object):
         return views
 
     def register_view(self, view, timestamp):
+        """registers the view's measure name to View Datas given a view"""
         self._exported_views = None
         existing_view = self._registered_views.get(view.name)
         if existing_view is not None:
@@ -79,11 +79,11 @@ class MeasureToViewMap(object):
         self._registered_views[measure.name] = view
         if registered_measure is None:
             self._registered_measures[measure.name] = measure
-        self._map[view.measure.name] = ViewData(view=view, start_time=timestamp, end_time=timestamp)
+        self._map[view.measure.name].append(ViewData(view=view, start_time=timestamp, end_time=timestamp))
 
     def record(self, tags, stats, timestamp):
+        """records stats with a set of tags"""
         for measurement, value in stats.items():
-            # measurement = measurement
             measure = measurement.measure
             if measure != self._registered_measures.get(measure.name):
                 return
@@ -92,4 +92,4 @@ class MeasureToViewMap(object):
                 if key == measure.name:
                     view_datas.append(self._map[key])
             for view_data in view_datas:
-                ViewData.record(view_data, context=tags, value=view_data.view.measure, timestamp=timestamp)
+                view_data.record(context=tags, value=view_data.view.measure, timestamp=timestamp)

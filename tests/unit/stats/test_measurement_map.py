@@ -52,5 +52,3 @@ class TestMeasurementMap(unittest.TestCase):
         tags = {'testtag1': 'testtag1val'}
         measurement_map.record(tag_map_tags=tags)
         self.assertTrue(measure_to_view_map.MeasureToViewMap.record.called)
-
-

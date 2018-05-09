@@ -19,20 +19,24 @@ from datetime import datetime
 
 
 class ViewManager(object):
-
+    """View Manager allows the registering of Views for collecting stats and receiving stats data as View Data"""
     def __init__(self):
         self.time = datetime.utcnow().isoformat() + 'Z'
         self._measure_view_map = MeasureToViewMap()
 
     @property
     def measure_to_view_map(self):
+        """the current measure to view map for the View Manager"""
         return self._measure_view_map
 
     def register_view(self, view):
+        """registers the given view"""
         self._measure_view_map.register_view(view=view, timestamp=self.time)
 
     def get_view(self, view_name):
-        self._measure_view_map.get_view(view_name=view_name, timestamp=self.time)
+        """gets the view given the view name """
+        return self._measure_view_map.get_view(view_name=view_name, timestamp=self.time)
 
     def get_all_exported_views(self):
-        self._measure_view_map.get_exported_views()
+        """gets all of the exported views for the current measure to view map"""
+        return self._measure_view_map.exported_views

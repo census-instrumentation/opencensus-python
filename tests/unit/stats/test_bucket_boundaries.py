@@ -16,6 +16,7 @@ import unittest
 import mock
 from opencensus.stats import bucket_boundaries as bucket_boundaries_module
 
+
 class TestBucketBoundaries(unittest.TestCase):
 
     def test_constructor_defaults(self):
@@ -23,6 +24,11 @@ class TestBucketBoundaries(unittest.TestCase):
         self.assertEqual([], bucket_boundaries.boundaries)
 
     def test_constructor_explicit(self):
-        boundaries = ["test"]
+        boundaries = [1/4]
         bucket_boundaries = bucket_boundaries_module.BucketBoundaries(boundaries=boundaries)
         self.assertEqual(boundaries, bucket_boundaries.boundaries)
+
+    def test_is_valid_boundaries(self):
+        boundaries = [0, 1/4, 1/2]
+        bucket_boundaries = bucket_boundaries_module.BucketBoundaries(boundaries=boundaries)
+        self.assertTrue(bucket_boundaries.is_valid_boundaries(boundaries=boundaries))

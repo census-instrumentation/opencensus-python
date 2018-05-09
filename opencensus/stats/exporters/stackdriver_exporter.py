@@ -13,30 +13,23 @@
 # limitations under the License.
 
 import os
-from google.cloud import monitoring
-from google.cloud.monitoring import Client
-from google.cloud.monitoring import Metric
-from google.cloud.monitoring import MetricDescriptor
-from google.cloud.monitoring import MetricKind, ValueType
-from google.cloud.monitoring import LabelValueType
-from google.cloud.monitoring import LabelDescriptor
-from google.cloud.monitoring import Resource
+from google.cloud import monitoring_v3
 from opencensus.stats import view
 from opencensus.stats.exporters.transports import sync
 from datetime import datetime
 from datetime import timedelta
 
-class StackDriverExporter(object):
 
+class StackDriverExporter(object):
     def __init__(self, client=None, project_id=None, resource=None, transport=sync.SyncTransport):
         if client is None:
-            client = Client(project=project_id)
+            client = monitoring_v3.MetricServiceClient()
 
         self.client = client
         self.project_id = client.project
         self.resource = client.resource('global', {'project_id': self.project_id})
         self.transport = transport(self)
-        self.name = 'projects/{}'.format(self.project_id)
+        self.name = client.project_path('projects/{}'.format(self.project_id))
 
     def export(self, views):
         self.transport.export(views)
@@ -45,7 +38,7 @@ class StackDriverExporter(object):
         metrics = self.translate_to_stackdriver(views)
         for metric_type, metric_label in metrics.items():
             metric = self.client.metric(metric_type, metric_label)
-            descriptor = self.client.metric_descriptor(self.name, metric_type, monitoring.MetricKind.CUMULATIVE, monitoring.ValueType.INT64, description=metric_label)
+            descriptor = self.client.metric_descriptor(self.name, metric_type, monitoring_v3.MetricKind.CUMULATIVE, monitoring_v3.ValueType.INT64, description=metric_label)
             descriptor.create()
             self.client.resource = self.set_resource(type_='global', labels= {'project_id': self.project_id})
             self.client.write_point(metric, self.client.resource, datapoint, datetime.utcnow() + timedelta(seconds=60), datetime.utcnow())

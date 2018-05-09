@@ -12,11 +12,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-class BucketBoundaries(object):
 
+class BucketBoundaries(object):
+    """The bucket boundaries for a histogram
+
+    :type boundaries: list(float)
+    :param boundaries: the boundaries for the buckets in the underlying histogram
+
+    """
     def __init__(self, boundaries=None):
         self._boundaries = list(boundaries or [])
 
     @property
     def boundaries(self):
+        """the current boundaries"""
         return self._boundaries
+
+    def is_valid_boundaries(self, boundaries):
+        """checks if the boundaries are in ascending order"""
+        min_ = 0
+        for value in boundaries:
+            if value < min_:
+                return False
+            min_ = value
+        return True

@@ -22,8 +22,8 @@ class TestViewData(unittest.TestCase):
 
     def test_constructor_defaults(self):
         view = mock.Mock()
-        start_time = datetime.utcnow().isoformat() + 'Z'
-        end_time = datetime.utcnow().isoformat() + 'Z'
+        start_time = datetime.utcnow()
+        end_time = datetime.utcnow()
         view_data = view_data_module.ViewData(view=view, start_time=start_time, end_time=end_time)
 
         self.assertEqual(view, view_data.view)
@@ -33,8 +33,8 @@ class TestViewData(unittest.TestCase):
 
     def test_constructor_explicit(self):
         view = mock.Mock()
-        start_time = datetime.utcnow().isoformat() + 'Z'
-        end_time = datetime.utcnow().isoformat() + 'Z'
+        start_time = datetime.utcnow()
+        end_time = datetime.utcnow()
         rows = mock.Mock()
         view_data = view_data_module.ViewData(view=view, start_time=start_time, end_time=end_time, rows=rows)
 
@@ -46,7 +46,7 @@ class TestViewData(unittest.TestCase):
     def test_start(self):
         view = mock.Mock()
         start_time = mock.Mock()
-        end_time = datetime.utcnow().isoformat() + 'Z'
+        end_time = datetime.utcnow()
         rows = mock.Mock()
         view_data = view_data_module.ViewData(view=view, start_time=start_time, end_time=end_time, rows=rows)
         view_data.start()
@@ -55,7 +55,7 @@ class TestViewData(unittest.TestCase):
 
     def test_end(self):
         view = mock.Mock()
-        start_time = datetime.utcnow().isoformat() + 'Z'
+        start_time = datetime.utcnow()
         end_time = mock.Mock()
         rows = mock.Mock()
         view_data = view_data_module.ViewData(view=view, start_time=start_time, end_time=end_time, rows=rows)
@@ -65,8 +65,8 @@ class TestViewData(unittest.TestCase):
 
     def test_get_tag_map(self):
         view = mock.Mock()
-        start_time = datetime.utcnow().isoformat() + 'Z'
-        end_time = datetime.utcnow().isoformat() + 'Z'
+        start_time = datetime.utcnow()
+        end_time = datetime.utcnow()
         rows = mock.Mock()
         context = {'key1': 'val2'}
         context_2 = {'key1': 'val1'}
@@ -79,8 +79,8 @@ class TestViewData(unittest.TestCase):
 
     def test_get_tag_values(self):
         view = mock.Mock()
-        start_time = datetime.utcnow().isoformat() + 'Z'
-        end_time = datetime.utcnow().isoformat() + 'Z'
+        start_time = datetime.utcnow()
+        end_time = datetime.utcnow()
         rows = mock.Mock()
         view_data = view_data_module.ViewData(view=view, start_time=start_time, end_time=end_time, rows=rows)
 
@@ -93,8 +93,8 @@ class TestViewData(unittest.TestCase):
     def test_record(self):
         view = mock.Mock()
         view.columns = ['testKey']
-        start_time = datetime.utcnow().isoformat() + 'Z'
-        end_time = datetime.utcnow().isoformat() + 'Z'
+        start_time = datetime.utcnow()
+        end_time = datetime.utcnow()
         rows = mock.Mock()
         view_data = view_data_module.ViewData(view=view, start_time=start_time, end_time=end_time, rows=rows)
 

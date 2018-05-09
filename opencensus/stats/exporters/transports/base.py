@@ -21,7 +21,7 @@ class Transport(object):
     Subclasses of :class:`Transport` must override :meth:`export`.
     """
     def export(self, views):
-        """Export the SpanData tuples by calling exporter.emit()."""
+        """Export the ViewData tuples by calling exporter.emit()."""
         raise NotImplementedError
 
     def flush(self):

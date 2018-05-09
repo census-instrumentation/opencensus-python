@@ -68,26 +68,6 @@ class TestCountAggregation(unittest.TestCase):
         self.assertEqual("count", count_aggregation.aggregation_type)
 
 
-class TestMeanAggregation(unittest.TestCase):
-
-    def test_constructor_defaults(self):
-        mean_aggregation = aggregation_module.MeanAggregation()
-
-        self.assertEqual(0, mean_aggregation.mean.mean_data)
-        self.assertEqual(0, mean_aggregation.count)
-        self.assertEqual("mean", mean_aggregation.aggregation_type)
-
-    def test_constructor_explicit(self):
-        mean = 2
-        count = 1
-
-        mean_aggregation = aggregation_module.MeanAggregation(mean=mean, count=count)
-
-        self.assertEqual(2, mean_aggregation.mean.mean_data)
-        self.assertEqual(1, mean_aggregation.count)
-        self.assertEqual("mean", mean_aggregation.aggregation_type)
-
-
 class TestDistributionAggregation(unittest.TestCase):
 
     def test_constructor_defaults(self):

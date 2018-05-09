@@ -96,6 +96,7 @@ class TagMap(object):
         :param key: A string representing a key to get the value of in the map
 
         :returns: A KeyError if the value is None, else returns the value
+
         """
         value = self._map.get(key, None)
         if value is None:

@@ -14,6 +14,7 @@
 
 from opencensus.stats import measure
 
+
 class Measurement(object):
     """ A measurement is an object with a measure and a value attached to it
 

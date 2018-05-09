@@ -29,16 +29,13 @@ _WORKER_TERMINATOR = object()
 
 
 class _Worker(object):
-    """A background thread that exports batches of spans.
+    """A background thread that exports batches of views.
 
-    :type exporter: :class:`~opencensus.stats.exporters.base.Exporter`
-    :param exporter: Instances of Exporter objects. Defaults to
-                    :class:`.PrintExporter`. The rest options are
-                    :class:`.ZipkinExporter`, :class:`.StackdriverExporter`,
-                    :class:`.LoggingExporter`, :class:`.FileExporter`.
+    :type exporter: :class:`~opencensus.stats.exporters.StackDriverExporter`
+    :param exporter: The exporter to send the exported data to. Defaults to :class:`.StackDriverExporter`
 
     :type grace_period: float
-    :param grace_period: The amount of time to wait for pending spans to
+    :param grace_period: The amount of time to wait for pending views to
                          be submitted when the process is shutting down.
 
     :type max_batch_size: int
@@ -81,8 +78,8 @@ class _Worker(object):
     def _thread_main(self):
         """The entry point for the worker thread.
 
-        Pulls pending SpanData tuples off the queue and writes them in
-        batches to the specified tracing backend using the exporter.
+        Pulls pending ViewData tuples off the queue and writes them in
+        batches to the specified monitoring backend using the exporter.
         """
         print('Background thread started.')
 
@@ -118,7 +115,7 @@ class _Worker(object):
         """Starts the background thread.
 
         Additionally, this registers a handler for process exit to attempt
-        to send any pending spans before shutdown.
+        to send any pending views before shutdown.
         """
         with self._lock:
             if self.is_alive:
@@ -161,7 +158,7 @@ class _Worker(object):
             return success
 
     def _export_pending_views(self):
-        """Callback that attempts to send pending spans before termination."""
+        """Callback that attempts to send pending views before termination."""
 
         if not self.is_alive:
             return
@@ -175,25 +172,22 @@ class _Worker(object):
             print('Failed to send pending metrics.')
 
     def enqueue(self, views):
-        """Queues span_datas to be written by the background thread."""
+        """Queues view_datas to be written by the background thread."""
         self._queue.put_nowait(views)
 
     def flush(self):
-        """Submit any pending spans."""
+        """Submit any pending views."""
         self._queue.join()
 
 
 class BackgroundThreadTransport(base.Transport):
     """Asynchronous transport that uses a background thread.
 
-    :type exporter: :class:`~opencensus.trace.exporters.base.Exporter`
-    :param exporter: Instances of Exporter objects. Defaults to
-                     :class:`.PrintExporter`. The rest options are
-                     :class:`.ZipkinExporter`, :class:`.StackdriverExporter`,
-                     :class:`.LoggingExporter`, :class:`.FileExporter`.
+    :type exporter: :class:`~opencensus.stats.exporters.StackDriverExporter`
+    :param exporter: The exporter to send the exported data to.
 
     :type grace_period: float
-    :param grace_period: The amount of time to wait for pending spans to
+    :param grace_period: The amount of time to wait for pending views to
                          be submitted when the process is shutting down.
 
     :type max_batch_size: int
@@ -208,9 +202,9 @@ class BackgroundThreadTransport(base.Transport):
         self.worker.start()
 
     def export(self, views):
-        """Put the trace to be exported into queue."""
+        """Put the stats to be exported into queue."""
         self.worker.enqueue(views)
 
     def flush(self):
-        """Submit any pending traces."""
+        """Submit any pending stats."""
         self.worker.flush()

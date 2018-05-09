@@ -25,4 +25,27 @@ class TestViewManager(unittest.TestCase):
         self.assertIsNotNone(view_manager.measure_to_view_map)
 
     def test_register_view(self):
-        '''finish'''
+        view_manager = view_manager_module.ViewManager()
+        view_manager_mock = mock.Mock()
+        view_manager = view_manager_mock
+        view = mock.Mock()
+
+        view_manager.register_view(view=view)
+        self.assertTrue(view_manager_mock.register_view.called)
+
+    def test_get_view(self):
+        view_manager = view_manager_module.ViewManager()
+        view_manager_mock = mock.Mock()
+        view_manager = view_manager_mock
+        view_name = mock.Mock()
+
+        view_manager.get_view(view_name=view_name)
+        self.assertTrue(view_manager_mock.get_view.called)
+
+    def test_get_all_exported_views(self):
+        view_manager = view_manager_module.ViewManager()
+        view_manager_mock = mock.Mock()
+        view_manager = view_manager_mock
+
+        view_manager.get_all_exported_views()
+        self.assertTrue(view_manager_mock.get_all_exported_views.called)

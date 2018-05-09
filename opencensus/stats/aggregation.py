@@ -87,44 +87,6 @@ class CountAggregation(BaseAggregation):
         return self._count
 
 
-class MeanAggregation(BaseAggregation):
-    """Mean Aggregation refers to the idea that the data collected and aggregated with this method will be turned into a mean value
-
-    :type mean: int
-    :param mean: the mean of the aggregation
-
-    :type count: int
-    :param count: the count of the aggregation
-
-    """
-    def __init__(self, mean=None, count=None):
-        super().__init__()
-        self._aggregation_type = "mean"
-        if count is not None:
-            self._count = count
-        else:
-            self._count = 0
-        if mean is not None:
-            self._mean = aggregation_data.MeanAggregationData(mean, self._count)
-        else:
-            self._mean = aggregation_data.MeanAggregationData(0, self._count)
-
-    @property
-    def aggregation_type(self):
-        """The aggregation type of the current aggregation"""
-        return self._aggregation_type
-
-    @property
-    def count(self):
-        """The count value of the current aggregation"""
-        return self._count
-
-    @property
-    def mean(self):
-        """The mean of the current aggregation"""
-        return self._mean
-
-
 class DistributionAggregation(BaseAggregation):
     """Distribution Aggregation indicates that the desired aggregation is a histogram distribution
 

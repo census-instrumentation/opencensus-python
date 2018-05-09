@@ -27,7 +27,7 @@ class TestBaseMeasure(unittest.TestCase):
 
         self.assertEqual(None, measure.unit)
 
-    def test_constructor(self):
+    def test_constructor_explicit(self):
         name = "testName"
         description = "testMeasure"
         unit = "testUnit"
@@ -49,7 +49,7 @@ class TestMeasureInt(unittest.TestCase):
 
         self.assertEqual(None, measure.unit)
 
-    def test_constructor(self):
+    def test_constructor_explicit(self):
         name = "testName"
         description = "testMeasure"
         unit = "testUnit"
@@ -71,7 +71,7 @@ class TestMeasureFloat(unittest.TestCase):
 
         self.assertEqual(None, measure.unit)
 
-    def test_constructor(self):
+    def test_constructor_explicit(self):
         name = "testName"
         description = "testMeasure"
         unit = "testUnit"

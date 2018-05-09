@@ -15,6 +15,7 @@
 import unittest
 from opencensus.tags import tag as tag_module
 
+
 class TestTag(unittest.TestCase):
 
     def test_constructor(self):

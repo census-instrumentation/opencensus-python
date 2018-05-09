@@ -74,37 +74,6 @@ class CountAggregationData(BaseAggregationData):
         return self._count_data
 
 
-class MeanAggregationData(BaseAggregationData):
-    """Mean Aggregation Data is the mean value of aggregated data
-
-    :type mean_data: float
-    :param mean_data: the aggregated mean
-
-    :type count_data: long
-    :param count_data: the aggregated count
-
-    """
-    def __init__(self, mean_data, count_data):
-        super().__init__(mean_data)
-        self._mean_data = mean_data
-        self._count_data = count_data
-
-    def add_sample(self, value):
-        """Allows the user to add a sample to the current Mean Data"""
-        self._count_data += 1
-        self._mean_data = (self._mean_data + (value - self._mean_data)) / self._count_data
-
-    @property
-    def mean_data(self):
-        """The current mean data"""
-        return self._mean_data
-
-    @property
-    def count_data(self):
-        """The current count data"""
-        return self._count_data
-
-
 class DistributionAggregationData(BaseAggregationData):
     """Distribution Aggregation Data refers to the distribution stats of aggregated data
 
@@ -210,9 +179,11 @@ class DistributionAggregationData(BaseAggregationData):
             self._counts_per_bucket[0] += 1
             return
 
+        i = 0
         for b in self._bounds:
             if value < b:
-                self._counts_per_bucket[b] += 1
+                self._counts_per_bucket[i] += 1
                 return
+            i += 1
 
-        self._counts_per_bucket[(len(self._bounds))] += 1
+        self._counts_per_bucket[(len(self._bounds))-1] += 1

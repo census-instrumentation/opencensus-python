@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from google.cloud import monitoring
-from google.cloud.monitoring import MetricDescriptor
+from google.cloud import monitoring_v3
 from opencensus.stats.exporters import stackdriver_exporter
 from opencensus.stats import measure
 from opencensus.stats import view
@@ -26,7 +25,7 @@ from opencensus.stats import stats
 def main():
     views = []
 
-    client = monitoring.Client()
+    client = monitoring_v3.MetricServiceClient()
     exporter = stackdriver_exporter.StackDriverExporter(client, "opencensus-python-202919", resource="global")
 
     boundaries = [0, 1/16, 1/32]
