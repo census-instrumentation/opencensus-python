@@ -22,7 +22,7 @@ extras = {
 }
 
 install_requires = [
-    'google-api-core >= 0.1.1, < 0.2.0dev',
+    'google-api-core >= 0.1.1, < 2.0.0dev',
 ]
 
 setup(
