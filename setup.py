@@ -18,7 +18,7 @@ import io
 from setuptools import setup, find_packages
 
 extras = {
-    "stackdriver": ['google-cloud-trace>=0.17.0, <0.18dev']
+    "stackdriver": ['google-cloud-trace>=0.17.0, <0.20dev']
 }
 
 install_requires = [
