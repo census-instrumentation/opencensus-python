@@ -18,11 +18,11 @@ import io
 from setuptools import setup, find_packages
 
 extras = {
-    "stackdriver": ['google-cloud-trace>=0.17.0, <0.18dev']
+    "stackdriver": ['google-cloud-trace>=0.17.0, <0.20dev']
 }
 
 install_requires = [
-    'google-api-core >= 0.1.1, < 0.2.0dev',
+    'google-api-core >= 0.1.1, < 2.0.0dev',
 ]
 
 setup(
