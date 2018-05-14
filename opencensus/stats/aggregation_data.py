@@ -38,7 +38,7 @@ class SumAggregationDataFloat(BaseAggregationData):
 
     """
     def __init__(self, sum_data):
-        super().__init__(sum_data)
+        super(SumAggregationDataFloat, self).__init__(sum_data)
         self._sum_data = sum_data
 
     def add_sample(self, value):
@@ -61,11 +61,12 @@ class CountAggregationData(BaseAggregationData):
 
     """
     def __init__(self, count_data):
-        super().__init__(count_data)
+        super(CountAggregationData, self).__init__(count_data)
         self._count_data = count_data
 
     def add_sample(self, value):
-        """Allows the user to add a sample to the current Count Aggregation Data and adds 1 to the count data"""
+        """Adds a sample to the current Count Aggregation Data and adds 1 to
+        the count data"""
         self._count_data = self._count_data + 1
 
     @property
@@ -75,7 +76,8 @@ class CountAggregationData(BaseAggregationData):
 
 
 class DistributionAggregationData(BaseAggregationData):
-    """Distribution Aggregation Data refers to the distribution stats of aggregated data
+    """Distribution Aggregation Data refers to the distribution stats of
+    aggregated data
 
     :type mean_data: float
     :param mean_data: the mean value of the distribution
@@ -90,7 +92,7 @@ class DistributionAggregationData(BaseAggregationData):
     :param max_: the maximum value of the distribution
 
     :type sum_of_sqd_deviations: float
-    :param sum_of_sqd_deviations: the sum of the squared deviations from the mean
+    :param sum_of_sqd_deviations: the sum of the sqd deviations from the mean
 
     :type counts_per_bucket: list(int)
     :param counts_per_bucket: the number of occurrences per bucket
@@ -99,15 +101,23 @@ class DistributionAggregationData(BaseAggregationData):
     :param bounds: the histogram distribution of the values
 
     """
-    def __init__(self, mean_data, count_data, min_, max_, sum_of_sqd_deviations, counts_per_bucket, bounds):
-        super().__init__(mean_data)
+    def __init__(self,
+                 mean_data,
+                 count_data,
+                 min_,
+                 max_,
+                 sum_of_sqd_deviations,
+                 counts_per_bucket,
+                 bounds):
+        super(DistributionAggregationData, self).__init__(mean_data)
         self._mean_data = mean_data
         self._count_data = count_data
         self._min = min_
         self._max = max_
         self._sum_of_sqd_deviations = sum_of_sqd_deviations
         self._counts_per_bucket = counts_per_bucket
-        self._bounds = bucket_boundaries.BucketBoundaries(boundaries=bounds).boundaries
+        self._bounds = bucket_boundaries.BucketBoundaries(
+                                            boundaries=bounds).boundaries
 
     @property
     def mean_data(self):
@@ -170,8 +180,11 @@ class DistributionAggregationData(BaseAggregationData):
             return
 
         old_mean = self._mean_data
-        self._mean_data = self._mean_data + (value - self._mean_data) / self._count_data
-        self._sum_of_sqd_deviations = self._sum_of_sqd_deviations + (value - old_mean) * (value - self._mean_data)
+        self._mean_data = self._mean_data + (
+                          (value - self._mean_data) / self._count_data)
+        self._sum_of_sqd_deviations = self._sum_of_sqd_deviations + (
+                                      (value - old_mean) *
+                                      (value - self._mean_data))
 
     def increment_bucket_count(self, value):
         """Increment the bucket count based on a given value from the user"""

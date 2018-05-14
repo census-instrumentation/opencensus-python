@@ -36,6 +36,8 @@ class TestTagMap(unittest.TestCase):
         tag_map = tag_map_module.TagMap()
         tag_map.insert(key=test_key, value=test_value)
         self.assertEqual({'key1': 'value1'}, tag_map.map)
+        tag_map.insert(key=test_key, value=test_value)
+        self.assertEqual({'key1': 'value1'}, tag_map.map)
 
     def test_delete(self):
         key = 'key1'
@@ -48,6 +50,9 @@ class TestTagMap(unittest.TestCase):
         value = 'value1'
         tag_map = tag_map_module.TagMap(tags=[{'key1': 'value2'}])
         tag_map.update(key=key, value=value)
+        self.assertEqual({'key1': 'value1'}, tag_map.map)
+        key_2 = 'key2'
+        tag_map.update(key=key_2, value=value)
         self.assertEqual({'key1': 'value1'}, tag_map.map)
 
     def test_tag_key_exists(self):
@@ -63,3 +68,8 @@ class TestTagMap(unittest.TestCase):
         tag_map = tag_map_module.TagMap(tags=[{key: value}])
         test_val = tag_map.get_value(key)
         self.assertEqual(test_val, value)
+
+        value_1 = None
+        tag_map = tag_map_module.TagMap(tags=[{key: value_1}])
+        with self.assertRaises(KeyError):
+            tag_map.get_value(key=key)

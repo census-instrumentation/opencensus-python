@@ -12,10 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from opencensus.tags import tag
-from opencensus.tags import tag_key
-from opencensus.tags import tag_value
-
 
 class TagMap(object):
     """ A tag map is a map of tags from key to value
@@ -41,18 +37,18 @@ class TagMap(object):
         return self._map
 
     def insert(self, key, value):
-        """Inserts a key and value in the map if the map does not already contain the key.
+        """Inserts a key and value in the map if the map does not already
+        contain the key.
 
         :type key: :class: '~opencensus.tags.tag_key.TagKey'
         :param key: a tag key to insert into the map
 
         :type value: :class: '~opencensus.tags.tag_value.TagValue'
-        :param value: a tag value to insert into the tag map and associated with the tag key
+        :param value: a tag value that is associated with the tag key and
+        the value to insert into the tag map
 
         """
-        if key in self._map:
-            return
-        else:
+        if key not in self._map:
             self._map[key] = value
 
     def delete(self, key):
@@ -61,7 +57,8 @@ class TagMap(object):
         :type key: str
         :param key: A string representing a possible tag key
 
-        :returns: the value of the key in the dictionary if it is in there, or None if it is not.
+        :returns: the value of the key in the dictionary if it is in there,
+                  or None if it is not.
         """
         self._map.pop(key, None)
 

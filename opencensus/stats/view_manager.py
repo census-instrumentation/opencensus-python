@@ -13,13 +13,12 @@
 # limitations under the License.
 
 from opencensus.stats.measure_to_view_map import MeasureToViewMap
-from opencensus.stats.view import View
-from opencensus.stats.view_data import ViewData
 from datetime import datetime
 
 
 class ViewManager(object):
-    """View Manager allows the registering of Views for collecting stats and receiving stats data as View Data"""
+    """View Manager allows the registering of Views for collecting stats
+    and receiving stats data as View Data"""
     def __init__(self):
         self.time = datetime.utcnow().isoformat() + 'Z'
         self._measure_view_map = MeasureToViewMap()
@@ -35,8 +34,10 @@ class ViewManager(object):
 
     def get_view(self, view_name):
         """gets the view given the view name """
-        return self._measure_view_map.get_view(view_name=view_name, timestamp=self.time)
+        return self._measure_view_map.get_view(view_name=view_name,
+                                               timestamp=self.time)
 
     def get_all_exported_views(self):
-        """gets all of the exported views for the current measure to view map"""
+        """returns all of the exported views for the current measure to view
+        map"""
         return self._measure_view_map.exported_views

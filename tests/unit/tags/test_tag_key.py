@@ -32,3 +32,5 @@ class TestTagKey(unittest.TestCase):
         self.assertTrue(tag_key2.is_valid_name(tag_key2.name))
         tag_key3 = tag_key_module.TagKey(test_key3)
         self.assertFalse(tag_key3.is_valid_name(tag_key3.name))
+        tag_key4 = tag_key_module.TagKey('Æ!01kr')
+        self.assertFalse(tag_key3.is_valid_name(tag_key4.name))

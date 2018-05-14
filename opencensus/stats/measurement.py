@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from opencensus.stats import measure
-
 
 class Measurement(object):
     """ A measurement is an object with a measure and a value attached to it
@@ -43,10 +41,10 @@ class Measurement(object):
 class MeasurementInt(Measurement):
     """ Creates a new Integer Measurement """
     def __init__(self, measure, value):
-        super().__init__(measure, value)
+        super(MeasurementInt, self).__init__(measure, value)
 
 
 class MeasurementFloat(Measurement):
     """ Creates a new Float Measurement """
     def __init__(self, measure, value):
-        super().__init__(measure, value)
+        super(MeasurementFloat, self).__init__(measure, value)

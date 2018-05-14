@@ -38,6 +38,10 @@ class TagKey(object):
         :returns: True if it valid, else returns False
         """
         if (len(name) > 0) and (len(name) <= 255):
-            return True
+            if (all(ord(char) < 126 for char in name) and
+                    all(ord(char) > 32 for char in name)):
+                return True
+            else:
+                return False
         else:
             return False

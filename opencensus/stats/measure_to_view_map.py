@@ -12,23 +12,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from opencensus.tags import tag_map
-from opencensus.stats.measurement import Measurement
-from opencensus.stats import measurement
-from opencensus.stats.view import View
 from opencensus.stats.view_data import ViewData
-from datetime import datetime
 from collections import defaultdict
 import logging
+import copy
 
 
 class MeasureToViewMap(object):
-    """Measure To View Map stores a map from names of Measures to specific View Datas"""
+    """Measure To View Map stores a map from names of Measures to
+    specific View Datas
+
+    """
     def __init__(self):
-        self._map = defaultdict(list)  # stores the one-to-many mapping from Measures to View Datas
-        self._registered_views = {}  # stores a map from the registered View names to the Views
-        self._registered_measures = {}  # stores a map from the registered Measure names to the Measures
-        self._exported_views = set()  # stores the set of the exported views
+        # stores the one-to-many mapping from Measures to View Datas
+        self._map = defaultdict(list)
+        # stores a map from the registered View names to the Views
+        self._registered_views = {}
+        # stores a map from the registered Measure names to the Measures
+        self._registered_measures = {}
+        # stores the set of the exported views
+        self._exported_views = set()
 
     @property
     def exported_views(self):
@@ -37,15 +40,6 @@ class MeasureToViewMap(object):
 
     def get_view(self, view_name, timestamp):
         """get the View Data from the given View name"""
-        view = self.get_view_data(view_name)
-        if view is None:
-            return None
-
-        view_data = ViewData(view=view, start_time=timestamp, end_time=timestamp)
-        return view_data
-
-    def get_view_data(self, view_name):
-        """given a view name, obtains the View Datas for the measure of that view"""
         view = self._registered_views.get(view_name)
         if view is None:
             return None
@@ -53,7 +47,7 @@ class MeasureToViewMap(object):
         views = self._map.get(view.measure.name)
         for view_data in views:
             if view_data.view.name == view_name:
-                return view_data
+                return copy.deepcopy(view_data)
 
     def filter_exported_views(self, all_views):
         """returns the subset of the given view that should be exported"""
@@ -69,17 +63,22 @@ class MeasureToViewMap(object):
                 # ignore the views that are already registered
                 return
             else:
-                logging.warning("A different view with the same name is already registered")
+                logging.warning(
+                    "A different view with the same name is already registered"
+                )
                 return
         measure = view.measure
         registered_measure = self._registered_measures.get(measure.name)
         if registered_measure is not None and registered_measure != measure:
-            logging.warning("A different measure with the same name is already registered")
+            logging.warning(
+                "A different measure with the same name is already registered")
             return
         self._registered_views[measure.name] = view
         if registered_measure is None:
             self._registered_measures[measure.name] = measure
-        self._map[view.measure.name].append(ViewData(view=view, start_time=timestamp, end_time=timestamp))
+        self._map[view.measure.name].append(ViewData(view=view,
+                                                     start_time=timestamp,
+                                                     end_time=timestamp))
 
     def record(self, tags, stats, timestamp):
         """records stats with a set of tags"""
@@ -92,4 +91,6 @@ class MeasureToViewMap(object):
                 if key == measure.name:
                     view_datas.append(self._map[key])
             for view_data in view_datas:
-                view_data.record(context=tags, value=view_data.view.measure, timestamp=timestamp)
+                view_data.record(context=tags,
+                                 value=view_data.view.measure,
+                                 timestamp=timestamp)

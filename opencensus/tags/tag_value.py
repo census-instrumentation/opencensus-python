@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# -*- coding: ascii -*-
+
 
 class TagValue(object):
     """ The value of a tag
@@ -39,6 +41,10 @@ class TagValue(object):
 
         """
         if len(value) <= 255:
-            return True
+            if (all(ord(char) < 126 for char in value) and
+                    all(ord(char) > 32 for char in value)):
+                return True
+            else:
+                return False
         else:
             return False

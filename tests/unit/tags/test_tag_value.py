@@ -31,3 +31,6 @@ class TestTagValue(unittest.TestCase):
 
         tag_val2 = tag_value_module.TagValue('testVal')
         self.assertTrue(tag_val2.is_valid_value(tag_val2.value))
+
+        tag_val3 = tag_value_module.TagValue('Æ!01kr')
+        self.assertFalse(tag_val3.is_valid_value(tag_val3.value))

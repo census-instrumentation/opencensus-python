@@ -17,10 +17,13 @@ from opencensus.stats import aggregation_data
 
 
 class BaseAggregation(object):
-    """An aggregation describes how the data collected is aggregated by type of aggregation and buckets
+    """Aggregation describes how the data collected is aggregated by type of
+    aggregation and buckets
 
-    :type buckets: list :class: '~opencensus.stats.bucket_boundaries.BucketBoundaries'
-    :param buckets: list of endpoints if the aggregation represents a distribution
+    :type buckets: list(:class: '~opencensus.stats.bucket_boundaries.
+                                BucketBoundaries')
+    :param buckets: list of endpoints if the aggregation represents a
+                    distribution
 
     """
     def __init__(self, buckets=None):
@@ -39,14 +42,15 @@ class BaseAggregation(object):
 
 
 class SumAggregation(BaseAggregation):
-    """Sum Aggregation describes that data collected and aggregated with this method will be summed
+    """Sum Aggregation escribes that data collected and aggregated with this
+    method will be summed
 
     :type sum: int or float
-    :param sum: int or float representing the sum of the data collected and aggregated
+    :param sum: the sum of the data collected and aggregated
 
     """
     def __init__(self, sum=None):
-        super().__init__()
+        super(SumAggregation, self).__init__()
         self._aggregation_type = "sum"
         if sum is not None:
             self._sum = aggregation_data.SumAggregationDataFloat(sum_data=sum)
@@ -65,14 +69,15 @@ class SumAggregation(BaseAggregation):
 
 
 class CountAggregation(BaseAggregation):
-    """Count Aggregation describes that the data collected and aggregated with this method will be turned into a count value
+    """Describes that the data collected and aggregated with this method will
+    be turned into a count value
 
     :type count: int
     :param count: represents the count of this aggregation
 
     """
     def __init__(self, count=0):
-        super().__init__()
+        super(CountAggregation, self).__init__()
         self._aggregation_type = "count"
         self._count = aggregation_data.CountAggregationData(count)
 
@@ -88,9 +93,11 @@ class CountAggregation(BaseAggregation):
 
 
 class DistributionAggregation(BaseAggregation):
-    """Distribution Aggregation indicates that the desired aggregation is a histogram distribution
+    """Distribution Aggregation indicates that the desired aggregation is a
+    histogram distribution
 
-    :type boundaries: list of :class: '~opencensus.stats.bucket_boundaries.BucketBoundaries'
+    :type boundaries: list(:class:'~opencensus.stats.bucket_boundaries.
+                            BucketBoundaries')
     :param boundaries: the bucket endpoints
 
     :type distribution: histogram
@@ -98,7 +105,7 @@ class DistributionAggregation(BaseAggregation):
 
     """
     def __init__(self, boundaries=None, distribution=None):
-        super().__init__(boundaries)
+        super(DistributionAggregation, self).__init__(boundaries)
         self._aggregation_type = "distribution"
         self._boundaries = bucket_boundaries.BucketBoundaries(boundaries)
         self._distribution = distribution if distribution is not None else {}

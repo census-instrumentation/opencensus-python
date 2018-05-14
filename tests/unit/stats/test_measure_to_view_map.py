@@ -60,24 +60,6 @@ class TestMeasureToViewMap(unittest.TestCase):
         view_data = measure_to_view_map.get_view(view_name=name, timestamp=timestamp)
         self.assertIsNotNone(view_data)
 
-    def test_get_view_data(self):
-        name = "testView"
-        description = "testDescription"
-        columns = mock.Mock()
-        measure = mock.Mock()
-        aggregation = mock.Mock()
-        view = View(name=name, description=description, columns=columns, measure=measure, aggregation=aggregation)
-        timestamp = mock.Mock()
-        measure_to_view_map = measure_to_view_map_module.MeasureToViewMap()
-        measure_to_view_map._registered_views = {name: view}
-        measure_to_view_map._map = {view.measure.name: [ViewData(view=view, start_time=timestamp, end_time=timestamp)]}
-        view_for_view_data = measure_to_view_map.get_view_data(view_name=name)
-        self.assertIsNotNone(view_for_view_data)
-
-        measure_to_view_map._registered_views = {}
-        no_registered_views = measure_to_view_map.get_view_data(view_name=name)
-        self.assertIsNone(no_registered_views)
-
     def test_filter_exported_views(self):
         test_view_1_name = "testView1"
         description = "testDescription"

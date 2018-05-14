@@ -12,22 +12,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
 from google.cloud import monitoring_v3
-from opencensus.stats import view
 from opencensus.stats.exporters.transports import sync
 from datetime import datetime
 from datetime import timedelta
 
 
 class StackDriverExporter(object):
-    def __init__(self, client=None, project_id=None, resource=None, transport=sync.SyncTransport):
+    def __init__(self,
+                 client=None,
+                 project_id=None,
+                 resource=None,
+                 transport=sync.SyncTransport):
         if client is None:
             client = monitoring_v3.MetricServiceClient()
 
         self.client = client
         self.project_id = client.project
-        self.resource = client.resource('global', {'project_id': self.project_id})
+        self.resource = client.resource('global',
+                                        {'project_id': self.project_id})
         self.transport = transport(self)
         self.name = client.project_path('projects/{}'.format(self.project_id))
 
@@ -38,11 +41,28 @@ class StackDriverExporter(object):
         metrics = self.translate_to_stackdriver(views)
         for metric_type, metric_label in metrics.items():
             metric = self.client.metric(metric_type, metric_label)
-            descriptor = self.client.metric_descriptor(self.name, metric_type, monitoring_v3.MetricKind.CUMULATIVE, monitoring_v3.ValueType.INT64, description=metric_label)
+            descriptor = self.client.metric_descriptor(self.name,
+                                                       metric_type,
+                                                       monitoring_v3.
+                                                       MetricKind.CUMULATIVE,
+                                                       monitoring_v3.
+                                                       ValueType.INT64,
+                                                       description=metric_label
+                                                       )
             descriptor.create()
-            self.client.resource = self.set_resource(type_='global', labels= {'project_id': self.project_id})
-            self.client.write_point(metric, self.client.resource, datapoint, datetime.utcnow() + timedelta(seconds=60), datetime.utcnow())
-            self.client.time_series(metric, self.client.resource, datapoint, datetime.utcnow() + timedelta(seconds=60), datetime.utcnow())
+            self.client.resource = self.set_resource(
+                type_='global',
+                labels={'project_id': self.project_id})
+            self.client.write_point(metric,
+                                    self.client.resource,
+                                    datapoint,
+                                    datetime.utcnow() + timedelta(seconds=60),
+                                    datetime.utcnow())
+            self.client.time_series(metric,
+                                    self.client.resource,
+                                    datapoint,
+                                    datetime.utcnow() + timedelta(seconds=60),
+                                    datetime.utcnow())
             return 'Successfully wrote time series.'
 
     def set_resource(self, type_='global', labels=None):

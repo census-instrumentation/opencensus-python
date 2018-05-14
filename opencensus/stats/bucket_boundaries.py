@@ -17,7 +17,7 @@ class BucketBoundaries(object):
     """The bucket boundaries for a histogram
 
     :type boundaries: list(float)
-    :param boundaries: the boundaries for the buckets in the underlying histogram
+    :param boundaries: boundaries for the buckets in the underlying histogram
 
     """
     def __init__(self, boundaries=None):
@@ -30,9 +30,12 @@ class BucketBoundaries(object):
 
     def is_valid_boundaries(self, boundaries):
         """checks if the boundaries are in ascending order"""
-        min_ = 0
-        for value in boundaries:
-            if value < min_:
-                return False
-            min_ = value
-        return True
+        if boundaries is not None:
+            min_ = boundaries[0]
+            for value in boundaries:
+                if value < min_:
+                    return False
+                else:
+                    min_ = value
+            return True
+        return False

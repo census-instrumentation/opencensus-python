@@ -22,16 +22,19 @@ class TestMeasurementMap(unittest.TestCase):
 
     def test_constructor_explicit(self):
         measure_to_view_map = {'testMeasure1': 'testVal1'}
-        measurement_map = measurement_map_module.MeasurementMap(measure_to_view_map=measure_to_view_map)
+        measurement_map = measurement_map_module.MeasurementMap(
+            measure_to_view_map=measure_to_view_map)
 
-        self.assertEqual(measure_to_view_map, measurement_map.measure_to_view_map)
+        self.assertEqual(measure_to_view_map,
+                         measurement_map.measure_to_view_map)
         self.assertEqual({}, measurement_map.measurement_map)
 
     def test_measure_int_put(self):
         measure_to_view_map = mock.Mock()
         test_key = 'testKey'
         test_value = 1
-        measurement_map = measurement_map_module.MeasurementMap(measure_to_view_map=measure_to_view_map)
+        measurement_map = measurement_map_module.MeasurementMap(
+            measure_to_view_map=measure_to_view_map)
         measurement_map.measure_int_put(test_key, test_value)
 
         self.assertEqual({'testKey': 1}, measurement_map.measurement_map)
@@ -40,14 +43,16 @@ class TestMeasurementMap(unittest.TestCase):
         measure_to_view_map = mock.Mock()
         test_key = 'testKey'
         test_value = 1.0
-        measurement_map = measurement_map_module.MeasurementMap(measure_to_view_map=measure_to_view_map)
-        measurement_map.measure_int_put(test_key, test_value)
+        measurement_map = measurement_map_module.MeasurementMap(
+            measure_to_view_map=measure_to_view_map)
+        measurement_map.measure_float_put(test_key, test_value)
 
         self.assertEqual({'testKey': 1.0}, measurement_map.measurement_map)
 
     def test_record(self):
         measure_to_view_map = mock.Mock()
-        measurement_map = measurement_map_module.MeasurementMap(measure_to_view_map=measure_to_view_map)
+        measurement_map = measurement_map_module.MeasurementMap(
+            measure_to_view_map=measure_to_view_map)
 
         tags = {'testtag1': 'testtag1val'}
         measurement_map.record(tag_map_tags=tags)
