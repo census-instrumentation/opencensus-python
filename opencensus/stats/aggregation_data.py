@@ -85,10 +85,10 @@ class DistributionAggregationData(BaseAggregationData):
     :type count_data: int
     :param count_data: the count value of the distribution
 
-    :type min_: double
+    :type min_: min
     :param min_: the minimum value of the distribution
 
-    :type max_: double
+    :type max_: max
     :param max_: the maximum value of the distribution
 
     :type sum_of_sqd_deviations: float

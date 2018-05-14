@@ -101,3 +101,4 @@ class TestViewData(unittest.TestCase):
         value = 1
         view_data.record(context, value, time)
         self.assertIsNotNone(view_data.tag_value_aggregation_map)
+
