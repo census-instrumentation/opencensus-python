@@ -12,18 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from opencensus.stats import measure
-from opencensus.tags import tag_map
-from opencensus.stats.measure_to_view_map import MeasureToViewMap
-from opencensus.stats import measurement
 from datetime import datetime
 
 
 class MeasurementMap(object):
-    """Measurement Map is a map from Measures to measured values to be recorded at the same time
+    """Measurement Map is a map from Measures to measured values
+    to be recorded at the same time
 
-    :type measure_to_view_map: :class: '~opencensus.stats.measure_to_view_map.MeasureToViewMap'
-    :param measure_to_view_map: the measure to view map that will store the recorded stats with tags
+    :type measure_to_view_map: :class: '~opencensus.stats.measure_to_view_map.
+                                        MeasureToViewMap'
+    :param measure_to_view_map: the measure to view map that will store the
+                                recorded stats with tags
 
     """
     def __init__(self, measure_to_view_map):
@@ -49,8 +48,10 @@ class MeasurementMap(object):
         self._measurement_map[measure] = value
 
     def record(self, tag_map_tags):
-        """records all of the measures at the same time with an explicit tag_map"""
-        self.measure_to_view_map.MeasureToViewMap.record(self._measure_to_view_map,
-                                                         tags=tag_map_tags,
-                                                         stats=self.measurement_map,
-                                                         timestamp=datetime.utcnow().isoformat() + 'Z')
+        """records all the measures at the same time with an explicit tag_map
+        """
+        self.measure_to_view_map.MeasureToViewMap.record(
+                tags=tag_map_tags,
+                stats=self.measurement_map,
+                timestamp=datetime.utcnow().isoformat() + 'Z'
+        )

@@ -32,3 +32,9 @@ class TestBucketBoundaries(unittest.TestCase):
         boundaries = [0, 1/4, 1/2]
         bucket_boundaries = bucket_boundaries_module.BucketBoundaries(boundaries=boundaries)
         self.assertTrue(bucket_boundaries.is_valid_boundaries(boundaries=boundaries))
+
+        boundaries = [2, 1, 0]
+        bucket_boundaries = bucket_boundaries_module.BucketBoundaries(
+            boundaries=boundaries)
+        self.assertFalse(bucket_boundaries.is_valid_boundaries(
+            boundaries=boundaries))

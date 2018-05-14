@@ -12,11 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from opencensus.stats.measure import BaseMeasure
-from opencensus.stats.aggregation import DistributionAggregation
-from opencensus.tags.tag import Tag
-from opencensus.tags import tag_key
-
 
 class View(object):
     """A view defines a specific aggregation and a set of tag keys
@@ -28,7 +23,8 @@ class View(object):
     :param description: description of the view
 
     :type columns: (:class: '~opencensus.tags.tag_key.TagKey')
-    :param columns: the columns that the tagkeys will aggregate on for this view
+    :param columns: the columns that the tag keys will aggregate on for this
+                    view
 
     :type measure: :class: '~opencensus.stats.measure.Measure'
     :param measure: the measure to be aggregated by the view

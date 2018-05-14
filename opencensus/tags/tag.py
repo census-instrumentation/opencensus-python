@@ -15,6 +15,7 @@
 from opencensus.tags import tag_key
 from opencensus.tags import tag_value
 
+
 class Tag(object):
     """ A tag, in the format [KEY]:[VALUE].
 

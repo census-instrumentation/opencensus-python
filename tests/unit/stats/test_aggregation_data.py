@@ -21,7 +21,8 @@ class TestBaseAggregationData(unittest.TestCase):
 
     def test_constructor(self):
         aggregation_data = 0
-        base_aggregation_data = aggregation_data_module.BaseAggregationData(aggregation_data=aggregation_data)
+        base_aggregation_data = aggregation_data_module.BaseAggregationData(
+            aggregation_data=aggregation_data)
 
         self.assertEqual(0, base_aggregation_data.aggregation_data)
 
@@ -30,14 +31,16 @@ class TestSumAggregationData(unittest.TestCase):
 
     def test_constructor(self):
         sum_data = 1
-        sum_aggregation_data = aggregation_data_module.SumAggregationDataFloat(sum_data=sum_data)
+        sum_aggregation_data = aggregation_data_module.SumAggregationDataFloat(
+            sum_data=sum_data)
 
         self.assertEqual(1, sum_aggregation_data.sum_data)
 
     def test_add_sample(self):
         sum_data = 1
         value = 3
-        sum_aggregation_data = aggregation_data_module.SumAggregationDataFloat(sum_data=sum_data)
+        sum_aggregation_data = aggregation_data_module.SumAggregationDataFloat(
+            sum_data=sum_data)
         sum_aggregation_data.add_sample(value=value)
 
         self.assertEqual(4, sum_aggregation_data.sum_data)
@@ -47,13 +50,15 @@ class TestCountAggregationData(unittest.TestCase):
 
     def test_constructor(self):
         count_data = 0
-        count_aggregation_data = aggregation_data_module.CountAggregationData(count_data=count_data)
+        count_aggregation_data = aggregation_data_module.CountAggregationData(
+            count_data=count_data)
 
         self.assertEqual(0, count_aggregation_data.count_data)
 
     def test_add_sample(self):
         count_data = 0
-        count_aggregation_data = aggregation_data_module.CountAggregationData(count_data=count_data)
+        count_aggregation_data = aggregation_data_module.CountAggregationData(
+            count_data=count_data)
         count_aggregation_data.add_sample(10)
 
         self.assertEqual(1, count_aggregation_data.count_data)
@@ -70,23 +75,28 @@ class TestDistributionAggregationData(unittest.TestCase):
         counts_per_bucket = [1, 1, 1]
         bounds = [0, 1/2, 1]
 
-        distribution_aggregation_data = aggregation_data_module.DistributionAggregationData(
-            mean_data=mean_data,
-            count_data=count_data,
-            min_= _min,
-            max_ = _max,
-            sum_of_sqd_deviations=sum_of_sqd_deviations,
-            counts_per_bucket=counts_per_bucket,
-            bounds=bounds
-        )
+        dist_agg_data = aggregation_data_module.DistributionAggregationData(
+                mean_data=mean_data,
+                count_data=count_data,
+                min_= _min,
+                max_ = _max,
+                sum_of_sqd_deviations=sum_of_sqd_deviations,
+                counts_per_bucket=counts_per_bucket,
+                bounds=bounds
+            )
 
-        self.assertEqual(1, distribution_aggregation_data.mean_data)
-        self.assertEqual(0, distribution_aggregation_data.count_data)
-        self.assertEqual(0, distribution_aggregation_data.min)
-        self.assertEqual(1, distribution_aggregation_data.max)
-        self.assertEqual(sum_of_sqd_deviations, distribution_aggregation_data.sum_of_sqd_deviations)
-        self.assertEqual([1, 1, 1], distribution_aggregation_data.counts_per_bucket)
-        self.assertEqual([0, 1/2, 1], distribution_aggregation_data.bounds)
+        self.assertEqual(1, dist_agg_data.mean_data)
+        self.assertEqual(0, dist_agg_data.count_data)
+        self.assertEqual(0, dist_agg_data.min)
+        self.assertEqual(1, dist_agg_data.max)
+        self.assertEqual(sum_of_sqd_deviations,
+                         dist_agg_data.sum_of_sqd_deviations)
+        self.assertEqual([1, 1, 1], dist_agg_data.counts_per_bucket)
+        self.assertEqual([0, 1/2, 1], dist_agg_data.bounds)
+
+        self.assertIsNotNone(dist_agg_data.sum)
+        self.assertEqual(0, dist_agg_data.variance)
+
 
     def test_add_sample(self):
         mean_data = 1.0
@@ -99,7 +109,7 @@ class TestDistributionAggregationData(unittest.TestCase):
 
         value = 3
 
-        distribution_aggregation_data = aggregation_data_module.DistributionAggregationData(
+        dist_agg_data = aggregation_data_module.DistributionAggregationData(
             mean_data=mean_data,
             count_data=count_data,
             min_= _min,
@@ -109,14 +119,14 @@ class TestDistributionAggregationData(unittest.TestCase):
             bounds=bounds
         )
 
-        distribution_aggregation_data.add_sample(value=value)
-        self.assertEqual(0, distribution_aggregation_data.min)
-        self.assertEqual(3, distribution_aggregation_data.max)
-        self.assertEqual(1, distribution_aggregation_data.count_data)
-        self.assertEqual(value, distribution_aggregation_data.mean_data)
+        dist_agg_data.add_sample(value=value)
+        self.assertEqual(0, dist_agg_data.min)
+        self.assertEqual(3, dist_agg_data.max)
+        self.assertEqual(1, dist_agg_data.count_data)
+        self.assertEqual(value, dist_agg_data.mean_data)
 
         count_data = 1
-        distribution_aggregation_data = aggregation_data_module.DistributionAggregationData(
+        dist_agg_data = aggregation_data_module.DistributionAggregationData(
             mean_data=mean_data,
             count_data=count_data,
             min_= _min,
@@ -126,10 +136,11 @@ class TestDistributionAggregationData(unittest.TestCase):
             bounds=bounds
         )
 
-        distribution_aggregation_data.add_sample(value=value)
-        self.assertEqual(2, distribution_aggregation_data.count_data)
-        self.assertEqual(2.0, distribution_aggregation_data.mean_data)
-        self.assertEqual(4.0, distribution_aggregation_data.sum_of_sqd_deviations)
+        dist_agg_data.add_sample(value=value)
+        self.assertEqual(2, dist_agg_data.count_data)
+        self.assertEqual(2.0, dist_agg_data.mean_data)
+        self.assertEqual(4.0, dist_agg_data.sum_of_sqd_deviations)
+        self.assertIsNot(0, dist_agg_data.count_data)
 
     def test_increment_bucket_count(self):
         mean_data = mock.Mock()
@@ -142,7 +153,7 @@ class TestDistributionAggregationData(unittest.TestCase):
 
         value = 1
 
-        distribution_aggregation_data = aggregation_data_module.DistributionAggregationData(
+        dist_agg_data = aggregation_data_module.DistributionAggregationData(
             mean_data=mean_data,
             count_data=count_data,
             min_= _min,
@@ -152,13 +163,13 @@ class TestDistributionAggregationData(unittest.TestCase):
             bounds=bounds
         )
 
-        distribution_aggregation_data.increment_bucket_count(value=value)
-        self.assertEqual([1], distribution_aggregation_data.counts_per_bucket)
+        dist_agg_data.increment_bucket_count(value=value)
+        self.assertEqual([1], dist_agg_data.counts_per_bucket)
 
         counts_per_bucket = [1, 1]
         bounds = [1/4, 3/2]
 
-        distribution_aggregation_data = aggregation_data_module.DistributionAggregationData(
+        dist_agg_data = aggregation_data_module.DistributionAggregationData(
             mean_data=mean_data,
             count_data=count_data,
             min_= _min,
@@ -168,12 +179,12 @@ class TestDistributionAggregationData(unittest.TestCase):
             bounds=bounds
         )
 
-        distribution_aggregation_data.increment_bucket_count(value=value)
-        self.assertEqual([1, 2], distribution_aggregation_data.counts_per_bucket)
+        dist_agg_data.increment_bucket_count(value=value)
+        self.assertEqual([1, 2], dist_agg_data.counts_per_bucket)
 
         bounds = [1/4, 1/2]
 
-        distribution_aggregation_data = aggregation_data_module.DistributionAggregationData(
+        dist_agg_data = aggregation_data_module.DistributionAggregationData(
             mean_data=mean_data,
             count_data=count_data,
             min_= _min,
@@ -183,5 +194,5 @@ class TestDistributionAggregationData(unittest.TestCase):
             bounds=bounds
         )
 
-        distribution_aggregation_data.increment_bucket_count(value=value)
-        self.assertEqual([1, 3], distribution_aggregation_data.counts_per_bucket)
+        dist_agg_data.increment_bucket_count(value=value)
+        self.assertEqual([1, 3], dist_agg_data.counts_per_bucket)

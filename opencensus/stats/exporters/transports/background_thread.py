@@ -32,7 +32,8 @@ class _Worker(object):
     """A background thread that exports batches of views.
 
     :type exporter: :class:`~opencensus.stats.exporters.StackDriverExporter`
-    :param exporter: The exporter to send the exported data to. Defaults to :class:`.StackDriverExporter`
+    :param exporter: The exporter to send the exported data to.
+                    Defaults to :class:`.StackDriverExporter`
 
     :type grace_period: float
     :param grace_period: The amount of time to wait for pending views to

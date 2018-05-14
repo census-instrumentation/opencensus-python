@@ -12,14 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from opencensus.stats.measure_to_view_map import MeasureToViewMap
 from opencensus.stats.measurement_map import MeasurementMap
 
 
 class StatsRecorder(object):
     """Stats Recorder provides methods to record stats against tags
 
-    :type measure_to_view_map: :class: '~opencensus.stats.measure_to_view_map.MeasureToViewMap'
+    :type measure_to_view_map: :class: '~opencensus.stats.measure_to_view_map.
+                                        MeasureToViewMap'
     :param measure_to_view_map: the measure to view map for the stats recorder
 
     """

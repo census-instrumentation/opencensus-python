@@ -20,7 +20,7 @@ from opencensus.stats import view_data as view_data_module
 
 class TestViewData(unittest.TestCase):
 
-    def test_constructor_defaults(self):
+    def test_constructor(self):
         view = mock.Mock()
         start_time = datetime.utcnow()
         end_time = datetime.utcnow()
@@ -29,26 +29,15 @@ class TestViewData(unittest.TestCase):
         self.assertEqual(view, view_data.view)
         self.assertEqual(start_time, view_data.start_time)
         self.assertEqual(end_time, view_data.end_time)
-        self.assertEqual({}, view_data.rows)
-
-    def test_constructor_explicit(self):
-        view = mock.Mock()
-        start_time = datetime.utcnow()
-        end_time = datetime.utcnow()
-        rows = mock.Mock()
-        view_data = view_data_module.ViewData(view=view, start_time=start_time, end_time=end_time, rows=rows)
-
-        self.assertEqual(view, view_data.view)
-        self.assertEqual(start_time, view_data.start_time)
-        self.assertEqual(end_time, view_data.end_time)
-        self.assertEqual(rows, view_data.rows)
+        self.assertEqual({}, view_data.tag_value_aggregation_map)
 
     def test_start(self):
         view = mock.Mock()
         start_time = mock.Mock()
         end_time = datetime.utcnow()
-        rows = mock.Mock()
-        view_data = view_data_module.ViewData(view=view, start_time=start_time, end_time=end_time, rows=rows)
+        view_data = view_data_module.ViewData(view=view,
+                                              start_time=start_time,
+                                              end_time=end_time)
         view_data.start()
 
         self.assertIsNotNone(view_data.start_time)
@@ -57,8 +46,9 @@ class TestViewData(unittest.TestCase):
         view = mock.Mock()
         start_time = datetime.utcnow()
         end_time = mock.Mock()
-        rows = mock.Mock()
-        view_data = view_data_module.ViewData(view=view, start_time=start_time, end_time=end_time, rows=rows)
+        view_data = view_data_module.ViewData(view=view,
+                                              start_time=start_time,
+                                              end_time=end_time)
         view_data.end()
 
         self.assertIsNotNone(view_data.end_time)
@@ -67,22 +57,24 @@ class TestViewData(unittest.TestCase):
         view = mock.Mock()
         start_time = datetime.utcnow()
         end_time = datetime.utcnow()
-        rows = mock.Mock()
-        context = {'key1': 'val2'}
-        context_2 = {'key1': 'val1'}
-        view_data = view_data_module.ViewData(view=view, start_time=start_time, end_time=end_time, rows=rows)
-        view_data.get_tag_map(context=context)
-        view_data.get_tag_map(context=context_2)
+        view_data = view_data_module.ViewData(view=view,
+                                              start_time=start_time,
+                                              end_time=end_time)
+        test_context_1 = {'key1': 'val1'}
+        context_map_1 = view_data.get_tag_map(context=test_context_1)
+        self.assertEqual(test_context_1, context_map_1)
 
-        self.assertEqual(context, view_data.get_tag_map(context=context))
-        self.assertEqual(context_2, view_data.get_tag_map(context=context_2))
+        test_context_2 = {'key1': 'val2'}
+        context_map_2 = view_data.get_tag_map(context=test_context_2)
+        self.assertEqual(test_context_2, context_map_2)
 
     def test_get_tag_values(self):
         view = mock.Mock()
         start_time = datetime.utcnow()
         end_time = datetime.utcnow()
-        rows = mock.Mock()
-        view_data = view_data_module.ViewData(view=view, start_time=start_time, end_time=end_time, rows=rows)
+        view_data = view_data_module.ViewData(view=view,
+                                              start_time=start_time,
+                                              end_time=end_time)
 
         tags = {'testTag1': 'testVal1'}
         columns = ['testTag1']
@@ -95,12 +87,12 @@ class TestViewData(unittest.TestCase):
         view.columns = ['testKey']
         start_time = datetime.utcnow()
         end_time = datetime.utcnow()
-        rows = mock.Mock()
-        view_data = view_data_module.ViewData(view=view, start_time=start_time, end_time=end_time, rows=rows)
+        view_data = view_data_module.ViewData(view=view,
+                                              start_time=start_time,
+                                              end_time=end_time)
 
         context = {'key1': 'val2'}
         time = datetime.utcnow().isoformat() + 'Z'
         value = 1
         view_data.record(context, value, time)
         self.assertIsNotNone(view_data.tag_value_aggregation_map)
-
