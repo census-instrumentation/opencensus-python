@@ -35,7 +35,6 @@ class ViewData(object):
         self._view = view
         self._start_time = start_time
         self._end_time = end_time
-        self._rows = rows if rows is not None else {}
         self._tag_value_aggregation_map = {}
         self._tag_map = {}
 
@@ -53,11 +52,6 @@ class ViewData(object):
     def end_time(self):
         """the current end time in the view data"""
         return self._end_time
-
-    @property
-    def rows(self):
-        """the current rows in the view data"""
-        return self._rows
 
     @property
     def tag_value_aggregation_map(self):
