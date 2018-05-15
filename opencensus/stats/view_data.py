@@ -95,13 +95,10 @@ class ViewData(object):
 
     def record(self, context, value, timestamp):
         """records the view data against context"""
-        in_map = False
         tag_values = self.get_tag_values(tags=self.get_tag_map(context),
                                          columns=self.view.columns)
-        for key in self.tag_value_aggregation_map:
-            if key in tag_values:
-                in_map = True
         tuple_vals = tuple(tag_values)
-        if in_map is not True:
-            self.tag_value_aggregation_map[tuple_vals] = self.view.aggregation
-        self.tag_value_aggregation_map.get(tag_values.append(value))
+        for val in tuple_vals:
+            if val not in self.tag_value_aggregation_map:
+                self.tag_value_aggregation_map[val] = self.view.aggregation
+            self.tag_value_aggregation_map.get(val).add(value)

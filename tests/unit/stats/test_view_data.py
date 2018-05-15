@@ -89,16 +89,37 @@ class TestViewData(unittest.TestCase):
 
     def test_record(self):
         view = mock.Mock()
-        view.columns = ['testKey']
+        view.columns = ['key1']
+        view.aggregation = mock.Mock()
         start_time = datetime.utcnow()
         end_time = datetime.utcnow()
         view_data = view_data_module.ViewData(view=view,
                                               start_time=start_time,
                                               end_time=end_time)
 
-        context = {'key1': 'val2'}
+        context = {'key1': 'val1', 'key2': 'val2'}
         time = datetime.utcnow().isoformat() + 'Z'
         value = 1
-        view_data.record(context, value, time)
+        self.assertEqual({}, view_data.tag_value_aggregation_map)
+
+        view_data.record(context=context, value=value, timestamp=time)
+        tag_values = view_data.get_tag_values(
+            tags=view_data.get_tag_map(context=context), columns=view.columns)
+        tuple_vals = tuple(tag_values)
+        self.assertEqual(['val1'], tag_values)
         self.assertIsNotNone(view_data.tag_value_aggregation_map)
 
+        self.assertTrue('val1' in view_data.tag_value_aggregation_map)
+        self.assertTrue('val1' in tag_values)
+        self.assertIsNotNone(view_data.tag_value_aggregation_map['val1'])
+        self.assertIsNotNone(view_data.tag_value_aggregation_map.get(
+            'val1').add(value))
+
+        view_data.record(context=context, value=value, timestamp=time)
+        tag_values.append('val2')
+        self.assertFalse('val2' in view_data.tag_value_aggregation_map)
+        view_data.tag_value_aggregation_map['val2'] = view.aggregation
+        self.assertEqual(view_data.tag_value_aggregation_map.get('val2'),
+                         view_data.view.aggregation)
+        self.assertIsNotNone(view_data.tag_value_aggregation_map.get(
+            'val2').add(value))

@@ -45,9 +45,10 @@ class MeasureToViewMap(object):
             return None
 
         views = self._map.get(view.measure.name)
-        for view_data in views:
-            if view_data.view.name == view_name:
-                return copy.deepcopy(view_data)
+        if views is not None:
+            for view_data in views:
+                if view_data.view.name == view_name:
+                    return copy.deepcopy(view_data)
 
     def filter_exported_views(self, all_views):
         """returns the subset of the given view that should be exported"""

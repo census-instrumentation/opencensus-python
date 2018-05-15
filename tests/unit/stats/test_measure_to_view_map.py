@@ -60,6 +60,17 @@ class TestMeasureToViewMap(unittest.TestCase):
         view_data = measure_to_view_map.get_view(view_name=name, timestamp=timestamp)
         self.assertIsNotNone(view_data)
 
+        measure_to_view_map._map = {}
+        view_data = measure_to_view_map.get_view(view_name=name,
+                                                 timestamp=timestamp)
+        self.assertIsNone(view_data)
+
+        measure_to_view_map._map = {view.measure.name: [ViewData(
+            view=mock.Mock(), start_time=timestamp, end_time=timestamp)]}
+        view_data = measure_to_view_map.get_view(view_name=name,
+                                                 timestamp=timestamp)
+        self.assertIsNone(view_data)
+
     def test_filter_exported_views(self):
         test_view_1_name = "testView1"
         description = "testDescription"
@@ -98,13 +109,22 @@ class TestMeasureToViewMap(unittest.TestCase):
 
         test_measure = mock.Mock()
         measure_to_view_map._registered_measures = {measure.name: test_measure}
-        print(measure_to_view_map.register_view(view=view, timestamp=timestamp))
         test_with_registered_measures = measure_to_view_map.register_view(view=view, timestamp=timestamp)
         self.assertIsNone(test_with_registered_measures)
+        self.assertIsNotNone(measure_to_view_map._map[view.measure.name])
+
+        measure_to_view_map._registered_measures = {measure.name: None}
+        self.assertIsNone(measure_to_view_map._registered_measures.get(
+            measure.name))
+        measure_to_view_map.register_view(view=view, timestamp=timestamp)
+        self.assertEqual(measure_to_view_map._registered_measures[
+                             measure.name], measure)
+        self.assertIsNotNone(measure_to_view_map._map[view.measure.name])
 
         measure_to_view_map._registered_views = {name: view}
         test_result_1 = measure_to_view_map.register_view(view=view, timestamp=timestamp)
         self.assertIsNone(test_result_1)
+        self.assertIsNotNone(measure_to_view_map._map[view.measure.name])
 
     def test_record(self):
         measure_name = "test_measure"
@@ -119,7 +139,6 @@ class TestMeasureToViewMap(unittest.TestCase):
         view = View(name=view_name, description=view_description, columns=view_columns, measure=view_measure, aggregation=view_aggregation)
 
         measure_value = 5
-        measurement = Measurement(measure=measure, value=measure_value)
         value = "testValue"
         tags = {"testTag1": "testTag1Value"}
         stats = {Measurement(measure=measure, value=measure_value): value}
@@ -128,11 +147,46 @@ class TestMeasureToViewMap(unittest.TestCase):
         measure_to_view_map = measure_to_view_map_module.MeasureToViewMap()
         measure_to_view_map._registered_measures = {}
         record = measure_to_view_map.record(tags=tags, stats=stats, timestamp=timestamp)
+        self.assertNotEqual(measure,
+                            measure_to_view_map._registered_measures.get(
+                                measure.name))
         self.assertIsNone(record)
+
+        measure_to_view_map._registered_measures = {measure.name: measure}
+        measure_to_view_map._map = {}
+        record = measure_to_view_map.record(tags=tags, stats=stats,
+                                   timestamp=timestamp)
+        self.assertEqual(measure,
+                         measure_to_view_map._registered_measures.get(
+                             measure.name))
+        self.assertIsNone(record)
+
+        measure_to_view_map._map = {measure.name: mock.Mock()}
+        measure_to_view_map.record(tags=tags, stats=stats,
+                                   timestamp=timestamp)
+        self.assertEqual(measure,
+                         measure_to_view_map._registered_measures.get(
+                             measure.name))
+        self.assertTrue(measure.name in measure_to_view_map._map)
+
+        measure_to_view_map._map = {"testing": mock.Mock()}
+        measure_to_view_map.record(tags=tags, stats=stats,
+                                   timestamp=timestamp)
+        self.assertTrue(measure.name not in measure_to_view_map._map)
 
         measure_to_view_map_mock = mock.Mock()
         measure_to_view_map = measure_to_view_map_mock
-        measure_to_view_map._registered_measures = mock.Mock()
+        measure_to_view_map._registered_measures = {measure.name: measure}
         measure_to_view_map._map = mock.Mock()
         measure_to_view_map.record(tags=mock.Mock(), stats=mock.Mock(), timestamp=mock.Mock())
+        self.assertEqual(measure,
+                         measure_to_view_map._registered_measures.get(
+                             measure.name))
+        self.assertIsNotNone(measure_to_view_map.view_datas)
         self.assertTrue(measure_to_view_map_mock.record.called)
+
+        tags = {"testTag1": "testTag1Value"}
+        stats = {}
+        measure_to_view_map = measure_to_view_map_module.MeasureToViewMap()
+        record = measure_to_view_map.record(tags=tags, stats=stats, timestamp=timestamp)
+        self.assertIsNone(record)

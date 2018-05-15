@@ -97,6 +97,37 @@ class TestDistributionAggregationData(unittest.TestCase):
         self.assertIsNotNone(dist_agg_data.sum)
         self.assertEqual(0, dist_agg_data.variance)
 
+    def test_variance(self):
+        mean_data = mock.Mock()
+        count_data = 0
+        _min = mock.Mock()
+        _max = mock.Mock()
+        sum_of_sqd_deviations = mock.Mock()
+        counts_per_bucket = [1, 1, 1]
+        bounds = [0, 1/2, 1]
+        dist_agg_data = aggregation_data_module.DistributionAggregationData(
+            mean_data=mean_data,
+            count_data=count_data,
+            min_= _min,
+            max_ = _max,
+            sum_of_sqd_deviations=sum_of_sqd_deviations,
+            counts_per_bucket=counts_per_bucket,
+            bounds=bounds
+        )
+        self.assertEqual(0, dist_agg_data.variance)
+
+        count_data = 2
+        sum_of_sqd_deviations = 2
+        dist_agg_data = aggregation_data_module.DistributionAggregationData(
+            mean_data=mean_data,
+            count_data=count_data,
+            min_= _min,
+            max_ = _max,
+            sum_of_sqd_deviations=sum_of_sqd_deviations,
+            counts_per_bucket=counts_per_bucket,
+            bounds=bounds
+        )
+        self.assertEqual(2.0, dist_agg_data.variance)
 
     def test_add_sample(self):
         mean_data = 1.0
@@ -141,6 +172,10 @@ class TestDistributionAggregationData(unittest.TestCase):
         self.assertEqual(2.0, dist_agg_data.mean_data)
         self.assertEqual(4.0, dist_agg_data.sum_of_sqd_deviations)
         self.assertIsNot(0, dist_agg_data.count_data)
+
+        value_2 = -1
+        dist_agg_data.add_sample(value=value_2)
+        self.assertEqual(value_2, dist_agg_data.min)
 
     def test_increment_bucket_count(self):
         mean_data = mock.Mock()

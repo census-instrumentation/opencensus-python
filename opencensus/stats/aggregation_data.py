@@ -168,14 +168,14 @@ class DistributionAggregationData(BaseAggregationData):
 
     def add_sample(self, value):
         """Adding a sample to Distribution Aggregation Data"""
-        if value < self._min:
+        if value < self.min:
             self._min = value
-        if value > self._max:
+        if value > self.max:
             self._max = value
         self._count_data += 1
         self.increment_bucket_count(value)
 
-        if self._count_data == 1:
+        if self.count_data == 1:
             self._mean_data = value
             return
 
