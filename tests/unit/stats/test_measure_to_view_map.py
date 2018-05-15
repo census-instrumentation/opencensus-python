@@ -38,7 +38,7 @@ class TestMeasureToViewMap(unittest.TestCase):
         self.assertEqual({}, measure_to_view_map._map)
         self.assertEqual({}, measure_to_view_map._registered_views)
         self.assertEqual({}, measure_to_view_map._registered_measures)
-        self.assertEqual(set(), measure_to_view_map._exported_views)
+        self.assertEqual(set(), measure_to_view_map.exported_views)
 
     def test_get_view(self):
         name = "testView"
@@ -103,6 +103,7 @@ class TestMeasureToViewMap(unittest.TestCase):
         measure_to_view_map._registered_views = {}
         measure_to_view_map._registered_measures = {}
         measure_to_view_map.register_view(view=view, timestamp=timestamp)
+        self.assertIsNone(measure_to_view_map.exported_views)
         self.assertEqual(measure_to_view_map._registered_views[measure.name], view)
         self.assertEqual(measure_to_view_map._registered_measures[measure.name], measure)
         self.assertIsNotNone(measure_to_view_map._map[view.measure.name])
@@ -117,8 +118,9 @@ class TestMeasureToViewMap(unittest.TestCase):
         self.assertIsNone(measure_to_view_map._registered_measures.get(
             measure.name))
         measure_to_view_map.register_view(view=view, timestamp=timestamp)
-        self.assertEqual(measure_to_view_map._registered_measures[
-                             measure.name], measure)
+        self.assertEqual(measure,
+                         measure_to_view_map._registered_measures[measure.name]
+                         )
         self.assertIsNotNone(measure_to_view_map._map[view.measure.name])
 
         measure_to_view_map._registered_views = {name: view}

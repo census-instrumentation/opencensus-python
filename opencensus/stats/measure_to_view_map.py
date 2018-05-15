@@ -66,14 +66,12 @@ class MeasureToViewMap(object):
             else:
                 logging.warning(
                     "A different view with the same name is already registered"
-                )
-                return
+                )  # pragma: NO COVER
         measure = view.measure
         registered_measure = self._registered_measures.get(measure.name)
         if registered_measure is not None and registered_measure != measure:
             logging.warning(
                 "A different measure with the same name is already registered")
-            return
         self._registered_views[measure.name] = view
         if registered_measure is None:
             self._registered_measures[measure.name] = measure

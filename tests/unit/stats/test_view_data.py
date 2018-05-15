@@ -83,9 +83,13 @@ class TestViewData(unittest.TestCase):
 
         tags = {'testTag1': 'testVal1'}
         columns = ['testTag1']
-        view_data.get_tag_values(tags, columns)
+        tag_values = view_data.get_tag_values(tags, columns)
+        self.assertEqual(['testVal1'], tag_values)
 
-        self.assertEqual(['testVal1'], view_data.get_tag_values(tags, columns))
+        tags = {'testTag1': 'testVal1'}
+        columns = ['testTag2']
+        tag_values = view_data.get_tag_values(tags, columns)
+        self.assertEqual([None], tag_values)
 
     def test_record(self):
         view = mock.Mock()

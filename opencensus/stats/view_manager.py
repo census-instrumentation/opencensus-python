@@ -30,14 +30,14 @@ class ViewManager(object):
 
     def register_view(self, view):
         """registers the given view"""
-        self._measure_view_map.register_view(view=view, timestamp=self.time)
+        self.measure_to_view_map.register_view(view=view, timestamp=self.time)
 
     def get_view(self, view_name):
         """gets the view given the view name """
-        return self._measure_view_map.get_view(view_name=view_name,
-                                               timestamp=self.time)
+        return self.measure_to_view_map.get_view(view_name=view_name,
+                                                 timestamp=self.time)
 
     def get_all_exported_views(self):
         """returns all of the exported views for the current measure to view
         map"""
-        return self._measure_view_map.exported_views
+        return self.measure_to_view_map.exported_views
