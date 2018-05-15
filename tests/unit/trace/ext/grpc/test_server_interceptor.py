@@ -31,49 +31,23 @@ class TestOpenCensusServerInterceptor(unittest.TestCase):
         self.assertEqual(interceptor.sampler, sampler)
         self.assertEqual(interceptor.exporter, exporter)
 
-    def test_rpc_handler_wrapper(self):
-        """Ensure that RPCHandlerWrapper proxies to the unerlying handler"""
-        mock_handler = mock.Mock()
-        mock_handler.response_streaming = False
-        wrapper = server_interceptor.RpcMethodHandlerWrapper(mock_handler)
-        self.assertEqual(wrapper.response_streaming, False)
-
-    def test_intercept_handler_no_metadata(self):
+    def test_intercept_service_no_metadata(self):
         patch = mock.patch(
             'opencensus.trace.ext.grpc.server_interceptor.tracer_module.Tracer',
             MockTracer)
         mock_context = mock.Mock()
         mock_context.invocation_metadata = mock.Mock(return_value=None)
+        mock_context._rpc_event.call_details.method = 'hello'
         interceptor = server_interceptor.OpenCensusServerInterceptor(
             None, None)
+        mock_handler = mock.Mock()
+        mock_handler.request_streaming = False
+        mock_handler.response_streaming = False
+        mock_continuation = mock.Mock(return_value=mock_handler)
 
         with patch:
-            interceptor.intercept_handler(
-                mock.Mock(), mock.Mock()
-            ).unary_unary(mock.Mock(), mock_context)
-
-        expected_attributes = {
-            '/component': 'grpc',
-        }
-
-        self.assertEqual(
-            execution_context.get_opencensus_tracer().current_span().attributes,
-            expected_attributes)
-
-    def test_intercept_handler(self):
-        patch = mock.patch(
-            'opencensus.trace.ext.grpc.server_interceptor.tracer_module.Tracer',
-            MockTracer)
-        mock_context = mock.Mock()
-        mock_context.invocation_metadata = mock.Mock(
-            return_value=(('test_key', b'test_value'),)
-        )
-        interceptor = server_interceptor.OpenCensusServerInterceptor(
-            None, None)
-
-        with patch:
-            interceptor.intercept_handler(
-                mock.Mock(), mock.Mock()
+            interceptor.intercept_service(
+                mock_continuation, mock.Mock()
             ).unary_unary(mock.Mock(), mock_context)
 
         expected_attributes = {
@@ -85,51 +59,97 @@ class TestOpenCensusServerInterceptor(unittest.TestCase):
             expected_attributes)
 
     def test_intercept_service(self):
-        interceptor = server_interceptor.OpenCensusServerInterceptor(
-            None, None)
-        mock_handler = mock.Mock()
-        interceptor.intercept_handler = mock_handler
-        interceptor.intercept_service(None, None)
-        self.assertTrue(mock_handler.called)
+        test_dimensions = [
+            ['unary_unary', False, False],
+            ['unary_stream', False, True],
+            ['stream_unary', True, False],
+            ['stream_stream', True, True],
+        ]
+        for rpc_fn_name, request_streaming, response_streaming in test_dimensions:
+            patch = mock.patch(
+                'opencensus.trace.ext.grpc.server_interceptor.tracer_module.Tracer',
+                MockTracer)
+            mock_context = mock.Mock()
+            mock_context.invocation_metadata = mock.Mock(
+                return_value=(('test_key', b'test_value'),)
+            )
+            mock_handler = mock.Mock()
+            mock_handler.request_streaming = request_streaming
+            mock_handler.response_streaming = response_streaming
+            mock_continuation = mock.Mock(return_value=mock_handler)
+
+            mock_context._rpc_event.call_details.method = 'hello'
+            interceptor = server_interceptor.OpenCensusServerInterceptor(
+                None, None)
+
+            with patch:
+                handler = interceptor.intercept_service(
+                    mock_continuation, mock.Mock()
+                )
+                getattr(handler, rpc_fn_name)(mock.Mock(), mock_context)
+
+            expected_attributes = {
+                '/component': 'grpc',
+            }
+
+            self.assertEqual(
+                execution_context.get_opencensus_tracer().current_span().attributes,
+                expected_attributes)
 
     def test_intercept_handler_exception(self):
-        patch = mock.patch(
-            'opencensus.trace.ext.grpc.server_interceptor.tracer_module.Tracer',
-            MockTracer)
-        interceptor = server_interceptor.OpenCensusServerInterceptor(
-            None, None)
-        mock_context = mock.Mock()
-        mock_context.invocation_metadata = mock.Mock(return_value=None)
-        mock_continuation = mock.Mock()
-        mock_continuation.unary_unary = mock.Mock(side_effect=Exception('Test'))
-        with patch:
-            # patch the wrapper's handler to return an exception
-            rpc_wrapper = interceptor.intercept_handler(
-                mock.Mock(), mock.Mock())
-            rpc_wrapper.handler.unary_unary = mock.Mock(
-                side_effect=Exception('Test'))
-            with self.assertRaises(Exception):
-                rpc_wrapper.unary_unary(mock.Mock(), mock_context)
+        test_dimensions = [
+            ['unary_unary', False, False],
+            ['unary_stream', False, True],
+            ['stream_unary', True, False],
+            ['stream_stream', True, True],
+        ]
+        for rpc_fn_name, request_streaming, response_streaming in test_dimensions:
+            patch = mock.patch(
+                'opencensus.trace.ext.grpc.server_interceptor.tracer_module.Tracer',
+                MockTracer)
+            interceptor = server_interceptor.OpenCensusServerInterceptor(
+                None, None)
+            mock_context = mock.Mock()
+            mock_context.invocation_metadata = mock.Mock(return_value=None)
+            mock_context._rpc_event.call_details.method = 'hello'
+            mock_handler = mock.Mock()
+            mock_handler.request_streaming = request_streaming
+            mock_handler.response_streaming = response_streaming
+            setattr(mock_handler, rpc_fn_name,
+                    mock.Mock(side_effect=Exception('Test')))
+            mock_continuation = mock.Mock(return_value=mock_handler)
 
-        expected_attributes = {
-            '/component': 'grpc',
-            '/error/message': 'Test'
-        }
+            # mock_continuation.unary_unary = mock.Mock())
+            with patch:
+                # patch the wrapper's handler to return an exception
+                handler = interceptor.intercept_service(
+                    mock_continuation, mock.Mock())
+                with self.assertRaises(Exception):
+                    getattr(handler, rpc_fn_name)(mock.Mock(), mock_context)
 
-        current_span = execution_context.get_opencensus_tracer().current_span()
-        self.assertEqual(
-            execution_context.get_opencensus_tracer().current_span().attributes,
-            expected_attributes)
+            expected_attributes = {
+                '/component': 'grpc',
+                '/error/message': 'Test'
+            }
 
-        # check that the stack trace is attached to the current span
-        self.assertIsNotNone(current_span.stack_trace)
-        self.assertIsNotNone(current_span.stack_trace.stack_trace_hash_id)
-        self.assertNotEqual(current_span.stack_trace.stack_frames, [])
+            current_span = execution_context.get_opencensus_tracer().current_span()
+            self.assertEqual(
+                execution_context.get_opencensus_tracer().current_span().attributes,
+                expected_attributes)
 
-        # check that the status obj is attached to the current span
-        self.assertIsNotNone(current_span.status)
-        self.assertEqual(current_span.status.code, code_pb2.UNKNOWN)
-        self.assertEqual(current_span.status.message, 'Test')
+            # check that the stack trace is attached to the current span
+            self.assertIsNotNone(current_span.stack_trace)
+            self.assertIsNotNone(current_span.stack_trace.stack_trace_hash_id)
+            self.assertNotEqual(current_span.stack_trace.stack_frames, [])
+
+            # check that the status obj is attached to the current span
+            self.assertIsNotNone(current_span.status)
+            self.assertEqual(current_span.status.code, code_pb2.UNKNOWN)
+            self.assertEqual(current_span.status.message, 'Test')
+
+    def test__wrap_rpc_behavior_none(self):
+        new_handler = server_interceptor._wrap_rpc_behavior(None, lambda: None)
+        self.assertEqual(new_handler, None)
 
 
 class MockTracer(object):

@@ -1,5 +1,6 @@
 [run]
 branch = True
+omit = *gen/jaeger*
 
 [report]
 fail_under = 100
@@ -9,3 +10,4 @@ exclude_lines =
     pragma: NO COVER
     # Ignore debug-only repr
     def __repr__
+omit = *gen/jaeger*

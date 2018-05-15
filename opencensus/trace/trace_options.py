@@ -59,3 +59,14 @@ class TraceOptions(object):
         enabled = bool(int(self.trace_options_byte) & _ENABLED_BITMASK)
 
         return enabled
+
+    def set_enabled(self, enabled):
+        """Update the last bit of the trace options byte str.
+
+        :type enabled: bool
+        :param enabled: Whether enable tracing in this span context or not.
+        """
+        enabled_bit = '1' if enabled else '0'
+        self.trace_options_byte = str(
+            self.trace_options_byte)[:-1] + enabled_bit
+        self.enabled = self.get_enabled

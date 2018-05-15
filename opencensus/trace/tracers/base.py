@@ -72,7 +72,10 @@ class NullContextManager(object):
         self.span_id = span_id
 
     def __enter__(self):
-        pass  # pragma: NO COVER
+        return self  # pragma: NO COVER
 
     def __exit__(self, exc_type, exc_value, traceback):
         pass  # pragma: NO COVER
+
+    def span(self, name='span'):
+        return NullContextManager()
