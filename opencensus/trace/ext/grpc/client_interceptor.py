@@ -14,12 +14,15 @@
 
 import collections
 import logging
+
 import grpc
 import six
 
-from opencensus.trace import execution_context
 from opencensus.trace import attributes_helper
+from opencensus.trace import execution_context
+from opencensus.trace import time_event
 from opencensus.trace.ext import grpc as oc_grpc
+from opencensus.trace.ext.grpc import utils as grpc_utils
 from opencensus.trace.propagation import binary_format
 
 log = logging.getLogger(__name__)
@@ -29,6 +32,7 @@ ATTRIBUTE_ERROR_NAME = 'ERROR_NAME'
 ATTRIBUTE_ERROR_MESSAGE = 'ERROR_MESSAGE'
 GRPC_HOST_PORT = 'GRPC_HOST_PORT'
 GRPC_METHOD = 'GRPC_METHOD'
+SENT_PREFIX = 'Sent'
 
 TIMEOUT = 3
 
@@ -50,58 +54,60 @@ class OpenCensusClientInterceptor(grpc.UnaryUnaryClientInterceptor,
                                   grpc.StreamStreamClientInterceptor):
 
     def __init__(self, tracer=None, host_port=None):
-        if tracer is None:
-            tracer = execution_context.get_opencensus_tracer()
-
         self._tracer = tracer
         self.host_port = host_port
         self._propagator = binary_format.BinaryFormatPropagator()
 
-    def _start_client_span(self, method, grpc_type):
-        span = self._tracer.start_span(
-            name='[gRPC_client][{}]{}'.format(grpc_type, str(method)))
+    @property
+    def tracer(self):
+        return self._tracer or execution_context.get_opencensus_tracer()
+
+    def _start_client_span(self, client_call_details):
+        span = self.tracer.start_span(
+            name=_get_span_name(client_call_details)
+        )
 
         # Add the component grpc to span attribute
-        self._tracer.add_attribute_to_current_span(
+        self.tracer.add_attribute_to_current_span(
             attribute_key=attributes_helper.COMMON_ATTRIBUTES.get(
                 ATTRIBUTE_COMPONENT),
             attribute_value='grpc')
 
         # Add the host:port info to span attribute
-        self._tracer.add_attribute_to_current_span(
+        self.tracer.add_attribute_to_current_span(
             attribute_key=attributes_helper.GRPC_ATTRIBUTES.get(
                 GRPC_HOST_PORT),
             attribute_value=self.host_port)
 
         # Add the method to span attribute
-        self._tracer.add_attribute_to_current_span(
+        self.tracer.add_attribute_to_current_span(
             attribute_key=attributes_helper.GRPC_ATTRIBUTES.get(GRPC_METHOD),
-            attribute_value=str(method))
+            attribute_value=str(client_call_details.method))
+
+        execution_context.set_opencensus_tracer(self.tracer)
+        execution_context.set_current_span(span)
 
         return span
 
     def _end_span_between_context(self, current_span):
         execution_context.set_current_span(current_span)
-        self._tracer.end_span()
+        self.tracer.end_span()
 
     def _intercept_call(
-            self, client_call_details, request_iterator, grpc_type):
+        self, client_call_details, request_iterator, grpc_type
+    ):
         metadata = ()
         if client_call_details.metadata is not None:
             metadata = client_call_details.metadata
 
         # Start a span
-        current_span = self._start_client_span(
-            client_call_details.method,
-            grpc_type)
+        current_span = self._start_client_span(client_call_details)
 
-        span_context = self._tracer.span_context
+        span_context = current_span.context_tracer.span_context
         header = self._propagator.to_header(span_context)
         grpc_trace_metadata = {
             oc_grpc.GRPC_TRACE_KEY: header,
         }
-
-        metadata_to_append = None
 
         if isinstance(metadata, list):
             metadata_to_append = list(six.iteritems(grpc_trace_metadata))
@@ -116,13 +122,24 @@ class OpenCensusClientInterceptor(grpc.UnaryUnaryClientInterceptor,
             metadata,
             client_call_details.credentials)
 
+        request_iterator = grpc_utils.wrap_iter_with_message_events(
+            request_or_response_iter=request_iterator,
+            span=current_span,
+            message_event_type=time_event.Type.SENT
+        )
+
         return client_call_details, request_iterator, current_span
 
     def _callback(self, current_span):
         def callback(future_response):
+            grpc_utils.add_message_event(
+                proto_message=future_response.result(),
+                span=current_span,
+                message_event_type=time_event.Type.RECEIVED,
+            )
             execution_context.set_current_span(current_span)
             self._trace_future_exception(future_response)
-            self._tracer.end_span()
+            self.tracer.end_span()
 
         return callback
 
@@ -133,13 +150,14 @@ class OpenCensusClientInterceptor(grpc.UnaryUnaryClientInterceptor,
         if exception is not None:
             exception = str(exception)
 
-        self._tracer.add_attribute_to_current_span(
+        self.tracer.add_attribute_to_current_span(
             attribute_key=attributes_helper.COMMON_ATTRIBUTES.get(
                 ATTRIBUTE_ERROR_MESSAGE),
             attribute_value=exception)
 
     def intercept_unary_unary(
-            self, continuation, client_call_details, request):
+        self, continuation, client_call_details, request
+    ):
         if CLOUD_TRACE in client_call_details.method:
             response = continuation(client_call_details, request)
             return response
@@ -157,8 +175,9 @@ class OpenCensusClientInterceptor(grpc.UnaryUnaryClientInterceptor,
 
         return response
 
-    def intercept_unary_stream(self, continuation, client_call_details,
-                               request):
+    def intercept_unary_stream(
+        self, continuation, client_call_details, request
+    ):
         if CLOUD_TRACE in client_call_details.method:
             response = continuation(client_call_details, request)
             return response
@@ -171,12 +190,18 @@ class OpenCensusClientInterceptor(grpc.UnaryUnaryClientInterceptor,
         response_it = continuation(
             new_details,
             next(new_request_iterator))
-        self._end_span_between_context(current_span)
+        response_it = grpc_utils.wrap_iter_with_message_events(
+            request_or_response_iter=response_it,
+            span=current_span,
+            message_event_type=time_event.Type.RECEIVED
+        )
+        response_it = grpc_utils.wrap_iter_with_end_span(response_it)
 
         return response_it
 
-    def intercept_stream_unary(self, continuation, client_call_details,
-                               request_iterator):
+    def intercept_stream_unary(
+        self, continuation, client_call_details, request_iterator
+    ):
         if CLOUD_TRACE in client_call_details.method:
             response = continuation(client_call_details, request_iterator)
             return response
@@ -194,8 +219,9 @@ class OpenCensusClientInterceptor(grpc.UnaryUnaryClientInterceptor,
 
         return response
 
-    def intercept_stream_stream(self, continuation, client_call_details,
-                                request_iterator):
+    def intercept_stream_stream(
+        self, continuation, client_call_details, request_iterator
+    ):
         if CLOUD_TRACE in client_call_details.method:
             response = continuation(client_call_details, request_iterator)
             return response
@@ -208,6 +234,17 @@ class OpenCensusClientInterceptor(grpc.UnaryUnaryClientInterceptor,
         response_it = continuation(
             new_details,
             new_request_iterator)
-        self._end_span_between_context(current_span)
+        response_it = grpc_utils.wrap_iter_with_message_events(
+            request_or_response_iter=response_it,
+            span=current_span,
+            message_event_type=time_event.Type.RECEIVED
+        )
+        response_it = grpc_utils.wrap_iter_with_end_span(response_it)
 
         return response_it
+
+
+def _get_span_name(client_call_details):
+    """Generates a span name based off of the gRPC client call details"""
+    method_name = client_call_details.method[1:].replace('/', '.')
+    return '{}.{}'.format(SENT_PREFIX, method_name)

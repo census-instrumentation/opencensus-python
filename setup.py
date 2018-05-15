@@ -17,13 +17,17 @@
 import io
 from setuptools import setup, find_packages
 
+extras = {
+    "stackdriver": ['google-cloud-trace>=0.17.0, <0.20dev']
+}
+
 install_requires = [
-    'google-cloud-trace>=0.17.0, <0.18dev',
+    'google-api-core >= 0.1.1, < 2.0.0dev',
 ]
 
 setup(
     name='opencensus',
-    version='0.1.3',
+    version='0.1.4',
     author='OpenCensus Authors',
     author_email='census-developers@googlegroups.com',
     classifiers=[
@@ -43,6 +47,7 @@ setup(
     include_package_data=True,
     long_description=open('README.rst').read(),
     install_requires=install_requires,
+    extras_require=extras,
     license='Apache-2.0',
     packages=find_packages(),
     namespace_packages=[],

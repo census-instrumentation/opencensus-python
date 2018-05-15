@@ -17,9 +17,15 @@ import unittest
 import mock
 
 from opencensus.trace.tracers import context_tracer
+from opencensus.trace import span
+from opencensus.trace import execution_context
 
 
 class TestContextTracer(unittest.TestCase):
+
+    def tearDown(self):
+        execution_context.clear()
+
     def test_constructor_defaults(self):
         from opencensus.trace import span_context
         from opencensus.trace.exporters import print_exporter
@@ -58,7 +64,14 @@ class TestContextTracer(unittest.TestCase):
 
     def test_finish_with_spans(self):
         tracer = context_tracer.ContextTracer()
-        tracer._spans_list = [mock.Mock()]
+        tracer.start_span('span')
+        tracer.finish()
+
+        self.assertEqual(tracer._spans_list, [])
+
+    def test_end_leftover_spans(self):
+        tracer = context_tracer.ContextTracer()
+        tracer._spans_list = [span.Span(name='span')]
         tracer.finish()
 
         self.assertEqual(tracer._spans_list, [])
@@ -132,7 +145,7 @@ class TestContextTracer(unittest.TestCase):
 
         self.assertTrue(mock_span.finish.called)
         self.assertEqual(tracer.span_context.span_id, parent_span_id)
-        self.assertTrue(tracer.exporter.export.called)
+        self.assertFalse(tracer.exporter.export.called)
 
     @mock.patch.object(context_tracer.ContextTracer, 'current_span')
     def test_end_span_without_parent(self, mock_current_span):
@@ -155,30 +168,16 @@ class TestContextTracer(unittest.TestCase):
         cur_span = get_current_span()
         self.assertIsNone(cur_span)
 
-    @mock.patch.object(context_tracer.ContextTracer, 'current_span')
-    def test_end_span_batch_export(self, mock_current_span):
-        from opencensus.trace import span
-
-        span = span.Span(name='test')
+    def test_end_span_batch_export(self):
         exporter = mock.Mock()
         tracer = context_tracer.ContextTracer(exporter=exporter)
-        tracer._spans_list = [span]
-        mock_span = mock.Mock()
-        mock_span.name = 'span'
-        mock_span.children = []
-        mock_span.status = None
-        mock_span.links = None
-        mock_span.stack_trace = None
-        mock_span.time_events = None
-        mock_span.attributes = {}
-        mock_span.__iter__ = mock.Mock(
-            return_value=iter([mock_span]))
+        span = tracer.start_span('test')
         parent_span_id = '6e0c63257de34c92'
-        mock_span.parent_span.span_id = parent_span_id
-        mock_current_span.return_value = mock_span
+        span.parent_span.span_id = parent_span_id
+        span.finish = mock.Mock()
         tracer.end_span()
 
-        self.assertTrue(mock_span.finish.called)
+        self.assertTrue(span.finish.called)
         self.assertEqual(tracer.span_context.span_id, parent_span_id)
         self.assertTrue(tracer.exporter.export.called)
 
@@ -208,4 +207,5 @@ class TestContextTracer(unittest.TestCase):
 
         tracer.add_attribute_to_current_span(attribute_key, attribute_value)
 
-        span1.add_attribute.assert_called_once_with(attribute_key, attribute_value)
+        span1.add_attribute.assert_called_once_with(attribute_key,
+                                                    attribute_value)

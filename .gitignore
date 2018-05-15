@@ -19,6 +19,7 @@ develop-eggs
 lib
 lib64
 __pycache__
+venv/
 
 # Installer logs
 pip-log.txt
@@ -44,12 +45,16 @@ htmlcov
 # JetBrains
 .idea
 
+# VSCode
+.vscode
+
 # Built documentation
 docs/_build
 docs/_build_doc2dash
 
 # Virtual environment
 env/
+venv/
 coverage.xml
 
 # System test environment variables.

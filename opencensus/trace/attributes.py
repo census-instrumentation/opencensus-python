@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import six
 
 from opencensus.trace import utils
 
@@ -20,7 +21,7 @@ def _format_attribute_value(value):
         value_type = 'bool_value'
     elif isinstance(value, int):
         value_type = 'int_value'
-    elif isinstance(value, str):
+    elif isinstance(value, six.string_types):
         value_type = 'string_value'
         value = utils._get_truncatable_str(value)
     else:
@@ -38,7 +39,7 @@ class Attributes(object):
                        bytes, an integer, or the Boolean values true and false.
     """
     def __init__(self, attributes=None):
-        self.attributes = dict(attributes or {})
+        self.attributes = attributes or {}
 
     def set_attribute(self, key, value):
         """Set a key value pair."""
@@ -54,11 +55,6 @@ class Attributes(object):
 
     def format_attributes_json(self):
         """Convert the Attributes object to json format."""
-        attributes_json = {
-            utils.check_str_length(key)[0]: _format_attribute_value(value)
-            for key, value in self.attributes.items()
-        }
-
         attributes_json = {}
 
         for key, value in self.attributes.items():
