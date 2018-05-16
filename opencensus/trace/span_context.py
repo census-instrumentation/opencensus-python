@@ -63,13 +63,10 @@ class SpanContext(object):
         if trace_id is None:
             trace_id = generate_trace_id()
 
-        if trace_options is None:
-            trace_options = DEFAULT
-
         self.from_header = from_header
         self.trace_id = self._check_trace_id(trace_id)
         self.span_id = self._check_span_id(span_id)
-        self.trace_options = trace_options
+        self.trace_options = trace_options or DEFAULT
 
     def __str__(self):
         """Returns a string form of the SpanContext. This is the format of
@@ -111,12 +108,12 @@ class SpanContext(object):
 
         if match:
             return span_id
-        else:
-            logging.warning(
-                'Span_id {} does not the match the '
-                'required format'.format(span_id))
-            self.from_header = False
-            return None
+
+        logging.warning(
+            'Span_id {} does not the match the '
+            'required format'.format(span_id))
+        self.from_header = False
+        return None
 
     def _check_trace_id(self, trace_id):
         """Check the format of the trace_id to ensure it is 32-character hex
@@ -142,12 +139,12 @@ class SpanContext(object):
 
         if match:
             return trace_id
-        else:
-            logging.warning(
-                'Trace_id {} does not the match the required format,'
-                'generating a new one instead.'.format(trace_id))
-            self.from_header = False
-            return generate_trace_id()
+
+        logging.warning(
+            'Trace_id {} does not the match the required format,'
+            'generating a new one instead.'.format(trace_id))
+        self.from_header = False
+        return generate_trace_id()
 
 
 def generate_span_id():

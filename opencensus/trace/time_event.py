@@ -78,15 +78,13 @@ class MessageEvent(object):
     """
     def __init__(self, id, type=None, uncompressed_size_bytes=None,
                  compressed_size_bytes=None):
-        if type is None:
-            type = Type.TYPE_UNSPECIFIED
 
         if compressed_size_bytes is None and \
                 uncompressed_size_bytes is not None:
             compressed_size_bytes = uncompressed_size_bytes
 
         self.id = id
-        self.type = type
+        self.type = type or Type.TYPE_UNSPECIFIED
         self.uncompressed_size_bytes = uncompressed_size_bytes
         self.compressed_size_bytes = compressed_size_bytes
 

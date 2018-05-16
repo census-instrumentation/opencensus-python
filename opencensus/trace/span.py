@@ -114,32 +114,16 @@ class Span(object):
             context_tracer=None,
             span_kind=SpanKind.UNSPECIFIED):
         self.name = name
-        self.parent_span = parent_span
-        self.start_time = start_time
-        self.end_time = end_time
-
-        if span_id is None:
-            span_id = generate_span_id()
-
-        if attributes is None:
-            attributes = {}
-
         # Do not manipulate spans directly using the methods in Span Class,
         # make sure to use the Tracer.
-        if parent_span is None:
-            parent_span = base.NullContextManager()
-
-        if time_events is None:
-            time_events = []
-
-        if links is None:
-            links = []
-
-        self.attributes = attributes
-        self.span_id = span_id
+        self.parent_span = parent_span or base.NullContextManager()
+        self.attributes = attributes or {}
+        self.start_time = start_time
+        self.end_time = end_time
+        self.span_id = span_id or generate_span_id()
         self.stack_trace = stack_trace
-        self.time_events = time_events
-        self.links = links
+        self.time_events = time_events or []
+        self.links = links or []
         self.status = status
         self.same_process_as_parent_span = same_process_as_parent_span
         self._child_spans = []

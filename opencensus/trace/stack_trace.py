@@ -116,19 +116,14 @@ class StackTrace(object):
                                 single trace.
     """
     def __init__(self, stack_frames=None, stack_trace_hash_id=None):
-        if stack_frames is None:
-            stack_frames = []
         if len(stack_frames) > MAX_FRAMES:
             self.dropped_frames_count = len(stack_frames) - MAX_FRAMES
             stack_frames = stack_frames[-MAX_FRAMES:]
         else:
             self.dropped_frames_count = 0
 
-        if stack_trace_hash_id is None:
-            stack_trace_hash_id = generate_hash_id()
-
-        self.stack_frames = stack_frames
-        self.stack_trace_hash_id = stack_trace_hash_id
+        self.stack_frames = stack_frames or []
+        self.stack_trace_hash_id = stack_trace_hash_id or generate_hash_id()
 
     @classmethod
     def from_traceback(cls, tb):

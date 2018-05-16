@@ -32,14 +32,8 @@ class ContextTracer(base.Tracer):
     """
 
     def __init__(self, exporter=None, span_context=None):
-        if exporter is None:
-            exporter = print_exporter.PrintExporter()
-
-        if span_context is None:
-            span_context = SpanContext()
-
-        self.exporter = exporter
-        self.span_context = span_context
+        self.exporter = exporter or exporter.PrintExporter()
+        self.span_context = span_context or SpanContext()
         self.trace_id = span_context.trace_id
         self.root_span_id = span_context.span_id
 
@@ -127,9 +121,7 @@ class ContextTracer(base.Tracer):
 
     def current_span(self):
         """Return the current span."""
-        current_span = execution_context.get_current_span()
-
-        return current_span
+        return execution_context.get_current_span()
 
     def list_collected_spans(self):
         return self._spans_list

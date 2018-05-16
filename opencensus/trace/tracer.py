@@ -46,22 +46,11 @@ class Tracer(object):
             sampler=None,
             exporter=None,
             propagator=None):
-        if span_context is None:
-            span_context = SpanContext()
 
-        if sampler is None:
-            sampler = always_on.AlwaysOnSampler()
-
-        if exporter is None:
-            exporter = print_exporter.PrintExporter()
-
-        if propagator is None:
-            propagator = google_cloud_format.GoogleCloudFormatPropagator()
-
-        self.span_context = span_context
-        self.sampler = sampler
-        self.exporter = exporter
-        self.propagator = propagator
+        self.span_context = span_context or SpanContext()
+        self.sampler = sampler or always_on.AlwaysOnSampler()
+        self.exporter = exporter or print_exporter.PrintExporter()
+        self.propagator = propagator or google_cloud_format.GoogleCloudFormatPropagator()
         self.tracer = self.get_tracer()
         self.store_tracer()
 
@@ -85,8 +74,7 @@ class Tracer(object):
             return context_tracer.ContextTracer(
                 exporter=self.exporter,
                 span_context=self.span_context)
-        else:
-            return noop_tracer.NoopTracer()
+        return noop_tracer.NoopTracer()
 
     def store_tracer(self):
         """Add the current tracer to thread_local"""

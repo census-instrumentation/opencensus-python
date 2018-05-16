@@ -29,10 +29,7 @@ class TraceOptions(object):
     """
 
     def __init__(self, trace_options_byte=None):
-        if trace_options_byte is None:
-            trace_options_byte = DEFAULT
-
-        self.trace_options_byte = self.check_trace_options(trace_options_byte)
+        self.trace_options_byte = self.check_trace_options(trace_options_byte) or DEFAULT
         self.enabled = self.get_enabled
 
     def check_trace_options(self, trace_options_byte):

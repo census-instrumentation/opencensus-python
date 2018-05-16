@@ -26,13 +26,10 @@ class ProbabilitySampler(Sampler):
     :param rate: The rate of sampling.
     """
     def __init__(self, rate=None):
-        if rate is None:
-            rate = DEFAULT_SAMPLING_RATE
-
         if rate > 1 or rate < 0:
-            raise ValueError('Rate must between 0 and 1.')
+            raise ValueError('Rate must be between 0 and 1.')
 
-        self.rate = rate
+        self.rate = rate or DEFAULT_SAMPLING_RATE
 
     def should_sample(self, trace_id):
         """Make the sampling decision based on the lower 8 bytes of the trace
@@ -49,8 +46,8 @@ class ProbabilitySampler(Sampler):
 
         if lower_long <= bound:
             return True
-        else:
-            return False
+
+        return False
 
 
 def get_lower_long_from_trace_id(trace_id):

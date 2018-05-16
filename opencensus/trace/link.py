@@ -51,11 +51,7 @@ class Link(object):
     def __init__(self, trace_id, span_id, type=None, attributes=None):
         self.trace_id = trace_id
         self.span_id = span_id
-
-        if type is None:
-            type = Type.TYPE_UNSPECIFIED
-
-        self.type = type
+        self.type = type or Type.TYPE_UNSPECIFIED
         self.attributes = attributes
 
     def format_link_json(self):

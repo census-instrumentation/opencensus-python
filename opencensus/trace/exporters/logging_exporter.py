@@ -55,11 +55,7 @@ class LoggingExporter(base.Exporter):
 
     def __init__(self, handler=None, transport=sync.SyncTransport):
         self.logger = logging.getLogger()
-
-        if handler is None:
-            handler = logging.StreamHandler()
-
-        self.handler = handler
+        self.handler = handler or logging.StreamHandler()
         self.logger.addHandler(handler)
         self.logger.setLevel(logging.INFO)
         self.transport = transport(self)

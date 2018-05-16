@@ -35,7 +35,6 @@ class BucketBoundaries(object):
             for value in boundaries:
                 if value < min_:
                     return False
-                else:
-                    min_ = value
+                min_ = value
             return True
         return False

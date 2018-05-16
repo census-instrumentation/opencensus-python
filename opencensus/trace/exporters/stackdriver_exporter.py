@@ -125,10 +125,7 @@ class StackdriverExporter(base.Exporter):
     def __init__(self, client=None, project_id=None,
                  transport=sync.SyncTransport):
         # The client will handle the case when project_id is None
-        if client is None:
-            client = Client(project=project_id)
-
-        self.client = client
+        self.client = client or Client(project=project_id)
         self.project_id = client.project
         self.transport = transport(self)
 
