@@ -16,6 +16,21 @@ from opencensus.stats import bucket_boundaries
 from opencensus.stats import aggregation_data
 
 
+class Type(object):
+    """ The type of aggreation function used on a View.
+
+    Attributes:
+      NONE (int): The aggreation type of the view is 'unknown'.
+      SUM (int): The aggreation type of the view is 'sum'.
+      COUNT (int): The aggreation type of the view is 'count'.
+      DISTRIBUTION (int): The aggreation type of the view is 'distribution'.
+    """
+    NONE = 0
+    SUM = 1
+    COUNT = 2
+    DISTRIBUTION = 3
+
+
 class BaseAggregation(object):
     """Aggregation describes how the data collected is aggregated by type of
     aggregation and buckets
@@ -25,9 +40,12 @@ class BaseAggregation(object):
     :param buckets: list of endpoints if the aggregation represents a
                     distribution
 
+    :type aggregation_type: :class:`~opencensus.stats.aggregation.Type`
+    :param aggregation_type: represents the type of this aggregation
+
     """
-    def __init__(self, buckets=None):
-        self._aggregation_type = "none"
+    def __init__(self, buckets=None, aggregation_type=Type.NONE):
+        self._aggregation_type = aggregation_type
         self._buckets = buckets or []
 
     @property
@@ -48,19 +66,17 @@ class SumAggregation(BaseAggregation):
     :type sum: int or float
     :param sum: the sum of the data collected and aggregated
 
+
+    :type aggregation_type: :class:`~opencensus.stats.aggregation.Type`
+    :param aggregation_type: represents the type of this aggregation
+
     """
-    def __init__(self, sum=None):
-        super(SumAggregation, self).__init__()
-        self._aggregation_type = "sum"
+    def __init__(self, sum=None, aggregation_type=Type.SUM):
+        super(SumAggregation, self).__init__(aggregation_type=aggregation_type)
         if sum is not None:
             self._sum = aggregation_data.SumAggregationDataFloat(sum_data=sum)
         else:
             self._sum = aggregation_data.SumAggregationDataFloat(sum_data=0)
-
-    @property
-    def aggregation_type(self):
-        """The aggregation type of the current aggregation"""
-        return self._aggregation_type
 
     @property
     def sum(self):
@@ -75,16 +91,14 @@ class CountAggregation(BaseAggregation):
     :type count: int
     :param count: represents the count of this aggregation
 
-    """
-    def __init__(self, count=0):
-        super(CountAggregation, self).__init__()
-        self._aggregation_type = "count"
-        self._count = aggregation_data.CountAggregationData(count)
+    :type aggregation_type: :class:`~opencensus.stats.aggregation.Type`
+    :param aggregation_type: represents the type of this aggregation
 
-    @property
-    def aggregation_type(self):
-        """The aggregation type of the current aggregation"""
-        return self._aggregation_type
+    """
+    def __init__(self, count=0, aggregation_type=Type.COUNT):
+        super(CountAggregation, self).__init__(
+            aggregation_type=aggregation_type)
+        self._count = aggregation_data.CountAggregationData(count)
 
     @property
     def count(self):
@@ -103,17 +117,19 @@ class DistributionAggregation(BaseAggregation):
     :type distribution: histogram
     :param distribution: histogram of the values of the population
 
-    """
-    def __init__(self, boundaries=None, distribution=None):
-        super(DistributionAggregation, self).__init__(boundaries)
-        self._aggregation_type = "distribution"
-        self._boundaries = bucket_boundaries.BucketBoundaries(boundaries)
-        self._distribution = distribution if distribution is not None else {}
+    :type aggregation_type: :class:`~opencensus.stats.aggregation.Type`
+    :param aggregation_type: represents the type of this aggregation
 
-    @property
-    def aggregation_type(self):
-        """The aggregation type of the current aggregation"""
-        return self._aggregation_type
+    """
+    def __init__(
+            self,
+            boundaries=None,
+            distribution=None,
+            aggregation_type=Type.DISTRIBUTION):
+        super(DistributionAggregation, self).__init__(
+            buckets=boundaries, aggregation_type=aggregation_type)
+        self._boundaries = bucket_boundaries.BucketBoundaries(boundaries)
+        self._distribution = distribution or {}
 
     @property
     def boundaries(self):
