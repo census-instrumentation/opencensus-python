@@ -73,10 +73,7 @@ class SumAggregation(BaseAggregation):
     """
     def __init__(self, sum=None, aggregation_type=Type.SUM):
         super(SumAggregation, self).__init__(aggregation_type=aggregation_type)
-        if sum is not None:
-            self._sum = aggregation_data.SumAggregationDataFloat(sum_data=sum)
-        else:
-            self._sum = aggregation_data.SumAggregationDataFloat(sum_data=0)
+        self._sum = aggregation_data.SumAggregationDataFloat(sum_data=float(sum or 0))
 
     @property
     def sum(self):
