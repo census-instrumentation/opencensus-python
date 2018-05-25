@@ -22,7 +22,7 @@ class TestBaseAggregation(unittest.TestCase):
     def test_constructor_defaults(self):
         base_aggregation = aggregation_module.BaseAggregation()
 
-        self.assertEqual("none", base_aggregation.aggregation_type)
+        self.assertEqual(aggregation_module.Type.NONE, base_aggregation.aggregation_type)
         self.assertEqual([], base_aggregation.buckets)
 
     def test_constructor_explicit(self):
@@ -30,7 +30,7 @@ class TestBaseAggregation(unittest.TestCase):
         buckets = ["test"]
         base_aggregation = aggregation_module.BaseAggregation(buckets=buckets)
 
-        self.assertEqual("none", base_aggregation.aggregation_type)
+        self.assertEqual(aggregation_module.Type.NONE, base_aggregation.aggregation_type)
         self.assertEqual(["test"], base_aggregation.buckets)
 
 
@@ -40,7 +40,7 @@ class TestSumAggregation(unittest.TestCase):
         sum_aggregation = aggregation_module.SumAggregation()
 
         self.assertEqual(0, sum_aggregation.sum.sum_data)
-        self.assertEqual("sum", sum_aggregation.aggregation_type)
+        self.assertEqual(aggregation_module.Type.SUM, sum_aggregation.aggregation_type)
 
     def test_constructor_explicit(self):
         sum = 1
@@ -48,7 +48,7 @@ class TestSumAggregation(unittest.TestCase):
         sum_aggregation = aggregation_module.SumAggregation(sum=sum)
 
         self.assertEqual(1, sum_aggregation.sum.sum_data)
-        self.assertEqual("sum", sum_aggregation.aggregation_type)
+        self.assertEqual(aggregation_module.Type.SUM, sum_aggregation.aggregation_type)
 
 
 class TestCountAggregation(unittest.TestCase):
@@ -57,7 +57,7 @@ class TestCountAggregation(unittest.TestCase):
         count_aggregation = aggregation_module.CountAggregation()
 
         self.assertEqual(0, count_aggregation.count.count_data)
-        self.assertEqual("count", count_aggregation.aggregation_type)
+        self.assertEqual(aggregation_module.Type.COUNT, count_aggregation.aggregation_type)
 
     def test_constructor_explicit(self):
         count = 4
@@ -65,7 +65,7 @@ class TestCountAggregation(unittest.TestCase):
         count_aggregation = aggregation_module.CountAggregation(count=count)
 
         self.assertEqual(4, count_aggregation.count.count_data)
-        self.assertEqual("count", count_aggregation.aggregation_type)
+        self.assertEqual(aggregation_module.Type.COUNT, count_aggregation.aggregation_type)
 
 
 class TestDistributionAggregation(unittest.TestCase):
@@ -75,7 +75,7 @@ class TestDistributionAggregation(unittest.TestCase):
 
         self.assertEqual([], distribution_aggregation.boundaries.boundaries)
         self.assertEqual({}, distribution_aggregation.distribution)
-        self.assertEqual("distribution", distribution_aggregation.aggregation_type)
+        self.assertEqual(aggregation_module.Type.DISTRIBUTION, distribution_aggregation.aggregation_type)
 
     def test_constructor_explicit(self):
         boundaries = ["test"]
@@ -84,4 +84,4 @@ class TestDistributionAggregation(unittest.TestCase):
 
         self.assertEqual(["test"], distribution_aggregation.boundaries.boundaries)
         self.assertEqual({1: "test"}, distribution_aggregation.distribution)
-        self.assertEqual("distribution", distribution_aggregation.aggregation_type)
+        self.assertEqual(aggregation_module.Type.DISTRIBUTION, distribution_aggregation.aggregation_type)
