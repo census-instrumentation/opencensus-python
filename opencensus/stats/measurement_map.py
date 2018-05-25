@@ -50,7 +50,7 @@ class MeasurementMap(object):
     def record(self, tag_map_tags):
         """records all the measures at the same time with an explicit tag_map
         """
-        self.measure_to_view_map.MeasureToViewMap.record(
+        self.measure_to_view_map.record(
                 tags=tag_map_tags,
                 stats=self.measurement_map,
                 timestamp=datetime.utcnow().isoformat() + 'Z'
