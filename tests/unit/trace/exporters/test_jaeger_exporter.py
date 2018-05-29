@@ -27,8 +27,8 @@ class TestJaegerExporter(unittest.TestCase):
         service_name = 'my_service'
         host_name = 'localhost'
         thrift_port = None
-        agent_port = 6931
-        agent_address = ('localhost', 6931)
+        agent_port = 6831
+        agent_address = ('localhost', 6831)
         max_packet_size = 65000
         exporter = jaeger_exporter.JaegerExporter()
         agent_client = exporter.agent_client
