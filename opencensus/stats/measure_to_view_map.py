@@ -79,16 +79,16 @@ class MeasureToViewMap(object):
                                                      start_time=timestamp,
                                                      end_time=timestamp))
 
-    def record(self, tags, stats, timestamp):
+    def record(self, tags, measurement_map, timestamp):
         """records stats with a set of tags"""
-        for measurement, value in stats.items():
-            measure = measurement.measure
+        for measure, value in measurement_map.items():
             if measure != self._registered_measures.get(measure.name):
                 return
             view_datas = []
             for key, value in self._map.items():
                 if key == measure.name:
-                    view_datas.append(self._map[key])
+                    # note that self._map is a multi-map.
+                    view_datas.extend(self._map[key])
             for view_data in view_datas:
                 view_data.record(context=tags,
                                  value=view_data.view.measure,
