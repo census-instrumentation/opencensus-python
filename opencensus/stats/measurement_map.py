@@ -52,6 +52,6 @@ class MeasurementMap(object):
         """
         self.measure_to_view_map.record(
                 tags=tag_map_tags,
-                stats=self.measurement_map,
+                measurement_map=self.measurement_map,
                 timestamp=datetime.utcnow().isoformat() + 'Z'
         )
