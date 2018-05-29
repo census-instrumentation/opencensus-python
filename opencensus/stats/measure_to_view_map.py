@@ -87,7 +87,8 @@ class MeasureToViewMap(object):
             view_datas = []
             for key, value in self._map.items():
                 if key == measure.name:
-                    view_datas.extend(self._map[key])  # self._map is a multi-map
+                    # note that self._map is a multi-map.
+                    view_datas.extend(self._map[key])
             for view_data in view_datas:
                 view_data.record(context=tags,
                                  value=view_data.view.measure,
