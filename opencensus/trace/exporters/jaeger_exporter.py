@@ -28,7 +28,7 @@ from opencensus.trace.exporters.gen.jaeger import agent, jaeger
 from opencensus.trace.exporters.transports import sync
 
 DEFAULT_HOST_NAME = 'localhost'
-DEFAULT_AGENT_PORT = 6931
+DEFAULT_AGENT_PORT = 6831
 DEFAULT_ENDPOINT = '/api/traces?format=jaeger.thrift'
 
 ISO_DATETIME_REGEX = '%Y-%m-%dT%H:%M:%S.%fZ'
