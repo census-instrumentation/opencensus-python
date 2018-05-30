@@ -43,6 +43,13 @@ class TestFileExporter(unittest.TestCase):
         assert os.path.exists(file_name) == 1
         os.remove(file_name)
 
+        # object serialization
+        file_name = 'opencensus-traces.pkl'
+        exporter = self._make_one(file_format='pkl')
+        exporter.emit(object())
+        assert os.path.exists(file_name) == 1
+        os.remove(file_name)
+
     def test_export(self):
         file_name = 'file_name'
         exporter = self._make_one(file_name=file_name, transport=MockTransport)

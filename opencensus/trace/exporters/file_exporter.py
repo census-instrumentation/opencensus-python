@@ -15,12 +15,13 @@
 """Export the trace spans to a local file."""
 
 import json
+import pickle
 
 from opencensus.trace import span_data
 from opencensus.trace.exporters import base
 from opencensus.trace.exporters.transports import sync
 
-DEFAULT_FILENAME = 'opencensus-traces.json'
+DEFAULT_FILENAME = 'opencensus-traces'
 
 
 class FileExporter(base.Exporter):
@@ -39,12 +40,28 @@ class FileExporter(base.Exporter):
     :param file_mode: The file mode to open the output file with.
                       Defaults to w+
 
+    :type file_format: str
+    :param file_format: The file format of output file. Defaults to 'json'.
+                        Another option is 'pkl' which is a serialized binary
+                        pickle file and it can be unpacked with pickle.load().
     """
 
     def __init__(self, file_name=DEFAULT_FILENAME,
                  transport=sync.SyncTransport,
-                 file_mode='w+'):
+                 file_mode='w+',
+                 file_format='json'):
+
+        if not (file_format in ['json', 'pkl']):  # pragma: NO COVER
+            raise Exception('Unsupported file format')
+
+        if file_format == 'pkl':
+            file_mode = 'wb'
+
+        if file_name == DEFAULT_FILENAME:
+            file_name = '{}.{}'.format(file_name, file_format)
+
         self.file_name = file_name
+        self.file_format = file_format
         self.transport = transport(self)
         self.file_mode = file_mode
 
@@ -55,12 +72,12 @@ class FileExporter(base.Exporter):
         :param list of opencensus.trace.span_data.SpanData span_datas:
             SpanData tuples to emit
         """
-        with open(self.file_name, self.file_mode) as file:
-            # convert to the legacy trace json for easier refactoring
-            # TODO: refactor this to use the span data directly
-            legacy_trace_json = span_data.format_legacy_trace_json(span_datas)
-            trace_str = json.dumps(legacy_trace_json)
-            file.write(trace_str)
+        with open(self.file_name, self.file_mode) as f:
+            if self.file_format == 'json':
+                trace_json = span_data.format_legacy_trace_json(span_datas)
+                f.write(json.dumps(trace_json))
+            else:
+                pickle.dump(span_datas, f)
 
     def export(self, span_datas):
         """

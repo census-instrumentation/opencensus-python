@@ -16,7 +16,6 @@
 
 import logging
 
-from opencensus.trace import span_data
 from opencensus.trace.exporters import base
 from opencensus.trace.exporters.transports import sync
 
@@ -71,10 +70,7 @@ class LoggingExporter(base.Exporter):
         :param list of opencensus.trace.span_data.SpanData span_datas:
             SpanData tuples to emit
         """
-        # convert to the legacy trace json for easier refactoring
-        # TODO: refactor this to use the span data directly
-        legacy_trace_json = span_data.format_legacy_trace_json(span_datas)
-        self.logger.info(legacy_trace_json)
+        self.logger.info(span_datas)
 
     def export(self, span_datas):
         """

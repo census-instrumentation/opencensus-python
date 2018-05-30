@@ -166,6 +166,9 @@ class JaegerExporter(base.Exporter):
             `~opencensus.trace.span_data.SpanData`
         :param span_datas:
             SpanData tuples to emit
+
+        :rtype: list
+        :returns: List of :class: `~opencensus.trace.exporters.gen.jaeger.Span`
         """
 
         top_span = span_datas[0]
@@ -375,7 +378,7 @@ class Collector(base.Exporter):
         """
         try:
             self.client.submitBatches([batch])
-            # it will call http_transport.flush() and
+            # it will call http_transport.flush(), then
             # status code and message will be updated
             code = self.http_transport.code
             msg = self.http_transport.message

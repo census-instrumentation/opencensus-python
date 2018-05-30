@@ -57,7 +57,8 @@ class TestBasicTrace(unittest.TestCase):
 
         tracer.finish()
 
-        file = open(file_exporter.DEFAULT_FILENAME, 'r')
+        file_name = '{}.{}'.format(file_exporter.DEFAULT_FILENAME, exporter.file_format)
+        file = open(file_name, 'r')
         trace_json = json.loads(file.read())
 
         spans = trace_json.get('spans')
