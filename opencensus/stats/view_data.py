@@ -82,8 +82,7 @@ class ViewData(object):
                     tags[tag_key] = tag_value
                 return tags
         else:  # pragma: NO COVER
-            logging.warning("Tag Map cannot be none",
-                            self.tag_map)
+            logging.warning("Tag Map cannot be none")
 
     def get_tag_values(self, tags, columns):
         """function to get the tag values from tags and columns"""
