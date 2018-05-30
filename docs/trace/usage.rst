@@ -1,5 +1,5 @@
-OpenCensus Trace for Python
-===========================
+OpenCensus for Python - A stats collection and distributed tracing framework
+============================================================================
 
     `Census`_ for Python. Census provides a framework to measure a server's resource
     usage and collect performance stats. This repository contains Python related
@@ -14,7 +14,7 @@ OpenCensus Trace for Python
 
 -  `API Documentation`_
 
-.. _API Documentation: http://opencensus.io/opencensus-python/trace/usage.html
+.. _API Documentation: https://opencensus.io/api/python/trace/usage.html
 
 Installation & basic usage
 --------------------------
@@ -23,10 +23,10 @@ Installation & basic usage
 
     ::
 
-        pip install opencensus-trace
-        pipenv install opencensus-trace
+        pip install opencensus
+        pipenv install opencensus
 
-2. Initialize a tracer for application:
+2. Initialize a tracer for your application:
 
     .. code:: python
 
@@ -131,7 +131,7 @@ Propagators
 ~~~~~~~~~~~
 
 You can specify the propagator type for serializing and deserializing the
-``SpanContex`` and its headers. There are currently two built in propagators:
+``SpanContext`` and its headers. There are currently two built in propagators:
 ``GoogleCloudFormatPropagator`` and ``TextFormatPropagator``.
 
 This example shows how to use the ``GoogleCloudFormatPropagator``:
@@ -182,8 +182,8 @@ For Django, you can configure the blacklist in the ``OPENCENSUS_PARAMS`` in ``se
 Framework Integration
 ---------------------
 
-Opencensus supports integration with popular web frameworks including
-Django, Flask, and Webapp2. When the application receives a HTTP request,
+Census supports integration with popular web frameworks including
+Django, Flask, Pyramid, and Webapp2. When the application receives a HTTP request,
 the tracer will automatically generate a span context using the trace
 information extracted from the request headers, and propagated to the
 child spans.
@@ -227,7 +227,7 @@ And add this line to the ``INSTALLED_APPS`` section:
         'opencensus.trace.ext.django',
     ]
 
-You can configure the the sampler, exporter, propagator using the ``OPENCENSUS_TRACE`` setting in
+You can configure the sampler, exporter, propagator using the ``OPENCENSUS_TRACE`` setting in
 ``settings.py``:
 
 .. code:: python
@@ -253,18 +253,56 @@ setting in ``settings.py``:
         'ZIPKIN_EXPORTER_PORT': 9411,
     }
 
-Webapp2
+
+Pyramid
 ~~~~~~~
+
+In your application, add the pyramid tween and your requests will be
+traced.
 
 .. code:: python
 
-    from opencensus.trace.tracers import webapp2_tracer
+    def main(global_config, **settings):
+        config = Configurator(settings=settings)
 
-    tracer = webapp2_tracer.WebApp2Tracer()
+        config.add_tween('opencensus.trace.ext.pyramid'
+                         '.pyramid_middleware.OpenCensusTweenFactory')
 
-    with tracer.span(name='span1'):
-        do_something_to_trace()
+To configure the sampler, exporter, and propagator, pass the instances
+into the pyramid settings
 
+.. code:: python
+
+    from opencensus.trace.exporters import print_exporter
+    from opencensus.trace.propagation import google_cloud_format
+    from opencensus.trace.samplers import probability
+
+    settings = {}
+    settings['OPENCENSUS_TRACE'] = {
+        'EXPORTER': print_exporter.PrintExporter(),
+        'SAMPLER': probability.ProbabilitySampler(rate=0.5),
+        'PROPAGATOR': google_cloud_format.GoogleCloudFormatPropagator(),
+    }
+
+    config = Configurator(settings=settings)
+
+gRPC Integration
+----------------
+
+OpenCensus provides the implementation of interceptors for both the client side
+and server side to instrument the gRPC requests and responses. The client
+interceptors are used to create a decorated channel that intercepts client
+gRPC calls and server interceptors act as decorators over handlers.
+
+gRPC interceptor is a new feature in the grpcio1.8.0 release, please upgrade
+your grpcio to the latest version to use this feature.
+
+For sample usage, please refer to the hello world example in the examples
+directory.
+
+More information about the gRPC interceptors please see the `proposal`_.
+
+.. _proposal: https://github.com/mehrdada/proposal/blob/python-interceptors/L13-Python-Interceptors.md
 
 Service Integration
 -------------------
@@ -306,21 +344,23 @@ to ``trace_integrations`` using ``'postgresql'``.
 SQLAlchemy
 ~~~~~~~~~~
 
-You can trace usage of `sqlalchemy package`_, regardless of the underlying database, by
-specifying ``'sqlalchemy'`` to ``trace_integrations``.
+You can trace usage of the `sqlalchemy package`_, regardless of the underlying
+database, by specifying ``'sqlalchemy'`` to ``trace_integrations``.
 
 .. _SQLAlchemy package: https://pypi.org/project/SQLAlchemy
 
-.. note:: If you enable tracing of SQLAlchemy and the underlying database
+.. note:: If you enable tracing of SQLAlchemy as well as the underlying database
     driver, you will get duplicate spans. Instead, just trace SQLAlchemy.
 
 Requests
 ~~~~~~~~
 
-Census can trace HTTP requests made with the `Requests`_ library. The request URL,
+Census can trace HTTP requests made with the `Requests package`_. The request URL,
 method, and status will be collected.
 
 You can enable Requests integration by specifying ``'requests'`` to ``trace_integrations``.
+
+.. _Requests package: https://pypi.python.org/pypi/requests
 
 
 Contributing

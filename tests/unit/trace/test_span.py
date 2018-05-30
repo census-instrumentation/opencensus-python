@@ -152,6 +152,17 @@ class TestSpan(unittest.TestCase):
 
         self.assertEqual(len(span.time_events), 1)
 
+    def test_add_annotation(self):
+        span_name = 'test_span_name'
+        span = self._make_one(span_name)
+
+        span.add_annotation('This is a test', name='octo-span', age=98)
+
+        self.assertEqual(len(span.time_events), 1)
+        a0 = span.time_events[0].annotation
+        self.assertEqual(a0.description, 'This is a test')
+        self.assertEqual(a0.attributes.attributes, dict(name='octo-span', age=98))
+
     def test_add_link(self):
         from opencensus.trace.link import Link
 

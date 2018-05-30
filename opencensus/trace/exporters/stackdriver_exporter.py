@@ -23,7 +23,7 @@ from opencensus.trace.exporters import base
 from opencensus.trace.exporters.transports import sync
 
 # OpenCensus Version
-VERSION = '0.1.3'
+VERSION = '0.1.5'
 
 # Agent
 AGENT = 'opencensus-python [{}]'.format(VERSION)

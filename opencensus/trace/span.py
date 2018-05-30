@@ -176,6 +176,20 @@ class Span(object):
         """
         self.attributes[attribute_key] = attribute_value
 
+    def add_annotation(self, description, **attrs):
+        """Add an annotation to span.
+
+        :type description: str
+        :param description: A user-supplied message describing the event.
+                        The maximum length for the description is 256 bytes.
+
+        :type attrs: kwargs
+        :param attrs: keyworded arguments e.g. failed=True, name='Caching'
+        """
+        at = attributes.Attributes(attrs)
+        self.add_time_event(time_event_module.TimeEvent(datetime.utcnow(),
+                            time_event_module.Annotation(description, at)))
+
     def add_time_event(self, time_event):
         """Add a TimeEvent.
 
