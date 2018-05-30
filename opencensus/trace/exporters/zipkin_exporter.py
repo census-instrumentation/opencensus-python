@@ -14,12 +14,14 @@
 
 """Export the spans data to Zipkin Collector."""
 
+import calendar
 import datetime
 import json
 import logging
-import requests
-import calendar
 
+import requests
+
+from opencensus.trace import span_data
 from opencensus.trace.exporters import base
 from opencensus.trace.exporters.transports import sync
 
@@ -90,12 +92,18 @@ class ZipkinExporter(base.Exporter):
             self.port,
             self.endpoint)
 
-    def emit(self, trace):
-        """Send trace to Zipkin server, default using the v2 API.
+    def emit(self, span_datas):
+        """Send SpanData tuples to Zipkin server, default using the v2 API.
 
-        :type trace: dict
-        :param trace: Trace data in dictionary format.
+        :type span_datas: list of :class:
+            `~opencensus.trace.span_data.SpanData`
+        :param list of opencensus.trace.span_data.SpanData span_datas:
+            SpanData tuples to emit
         """
+        # convert to the legacy trace json for easier refactoring
+        # TODO: refactor this to use the span data directly
+        trace = span_data.format_legacy_trace_json(span_datas)
+
         trace_id = trace.get('traceId')
         spans = trace.get('spans')
 
@@ -113,8 +121,8 @@ class ZipkinExporter(base.Exporter):
         except Exception as e:  # pragma: NO COVER
             logging.error(getattr(e, 'message', e))
 
-    def export(self, trace):
-        self.transport.export(trace)
+    def export(self, span_datas):
+        self.transport.export(span_datas)
 
     def translate_to_zipkin(self, trace_id, spans):
         """Translate the opencensus spans to zipkin spans.

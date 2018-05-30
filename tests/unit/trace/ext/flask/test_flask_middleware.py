@@ -17,17 +17,27 @@
 
 import unittest
 
+import flask
 import mock
+from google.rpc import code_pb2
 
+from opencensus.trace import execution_context
+from opencensus.trace import span_data
+from opencensus.trace import stack_trace
+from opencensus.trace import status
+from opencensus.trace.exporters import print_exporter, stackdriver_exporter, \
+    zipkin_exporter
 from opencensus.trace.ext.flask import flask_middleware
+from opencensus.trace.propagation import google_cloud_format
+from opencensus.trace.samplers import always_off, always_on, ProbabilitySampler
+from opencensus.trace.tracers import base
+from opencensus.trace.tracers import noop_tracer
 
 
 class TestFlaskMiddleware(unittest.TestCase):
 
     @staticmethod
     def create_app():
-        import flask
-
         app = flask.Flask(__name__)
 
         @app.route('/')
@@ -38,6 +48,10 @@ class TestFlaskMiddleware(unittest.TestCase):
         def health_check():
             return 'test health check'  # pragma: NO COVER
 
+        @app.route('/error')
+        def error():
+            raise Exception('error')
+
         return app
 
     def tearDown(self):
@@ -46,11 +60,7 @@ class TestFlaskMiddleware(unittest.TestCase):
         execution_context.clear()
 
     def test_constructor_default(self):
-        from opencensus.trace.exporters import print_exporter
-        from opencensus.trace.samplers import always_on
-        from opencensus.trace.propagation import google_cloud_format
-
-        app = mock.Mock()
+        app = mock.Mock(config={})
         middleware = flask_middleware.FlaskMiddleware(app=app)
 
         self.assertIs(app, middleware.app)
@@ -63,7 +73,7 @@ class TestFlaskMiddleware(unittest.TestCase):
             google_cloud_format.GoogleCloudFormatPropagator)
 
     def test_constructor_explicit(self):
-        app = mock.Mock()
+        app = mock.Mock(config={})
         sampler = mock.Mock()
         exporter = mock.Mock()
         propagator = mock.Mock()
@@ -81,12 +91,75 @@ class TestFlaskMiddleware(unittest.TestCase):
         self.assertTrue(app.before_request.called)
         self.assertTrue(app.after_request.called)
 
+    def test_init_app(self):
+        app = mock.Mock()
+
+        middleware = flask_middleware.FlaskMiddleware()
+        middleware.init_app(app)
+
+        self.assertIs(middleware.app, app)
+        self.assertTrue(app.before_request.called)
+        self.assertTrue(app.after_request.called)
+
+    def test_init_app_config_stackdriver_exporter(self):
+        app = mock.Mock()
+        app.config = {
+            'OPENCENSUS_TRACE': {
+                'SAMPLER': ProbabilitySampler,
+                'EXPORTER': stackdriver_exporter.StackdriverExporter,
+                'PROPAGATOR': google_cloud_format.GoogleCloudFormatPropagator,
+            },
+            'OPENCENSUS_TRACE_PARAMS': {
+                'BLACKLIST_PATHS': ['/_ah/health'],
+                'GCP_EXPORTER_PROJECT': None,
+                'SAMPLING_RATE': 0.5,
+                'ZIPKIN_EXPORTER_SERVICE_NAME': 'my_service',
+                'ZIPKIN_EXPORTER_HOST_NAME': 'localhost',
+                'ZIPKIN_EXPORTER_PORT': 9411,
+            },
+        }
+
+        class StackdriverExporter(object):
+            def __init__(self, *args, **kwargs):
+                pass
+
+        middleware = flask_middleware.FlaskMiddleware(
+            exporter=StackdriverExporter
+        )
+        middleware.init_app(app)
+
+        self.assertIs(middleware.app, app)
+        self.assertTrue(app.before_request.called)
+        self.assertTrue(app.after_request.called)
+
+    def test_init_app_config_zipkin_exporter(self):
+        app = mock.Mock()
+        app.config = {
+            'OPENCENSUS_TRACE': {
+                'SAMPLER': ProbabilitySampler,
+                'EXPORTER': zipkin_exporter.ZipkinExporter,
+                'PROPAGATOR': google_cloud_format.GoogleCloudFormatPropagator,
+            },
+            'OPENCENSUS_TRACE_PARAMS': {
+                'ZIPKIN_EXPORTER_SERVICE_NAME': 'my_service',
+                'ZIPKIN_EXPORTER_HOST_NAME': 'localhost',
+                'ZIPKIN_EXPORTER_PORT': 9411,
+            },
+        }
+
+        middleware = flask_middleware.FlaskMiddleware()
+        middleware.init_app(app)
+
+        self.assertIs(middleware.app, app)
+        self.assertTrue(app.before_request.called)
+        self.assertTrue(app.after_request.called)
+
     def test__before_request(self):
         from opencensus.trace import execution_context
 
         flask_trace_header = 'X_CLOUD_TRACE_CONTEXT'
         trace_id = '2dd43a1d6b2549c6bc2a1a54c2fc0b05'
-        span_id = 1234
+        span_id = '6e0c63257de34c92'
         flask_trace_id = '{}/{}'.format(trace_id, span_id)
 
         app = self.create_app()
@@ -114,13 +187,9 @@ class TestFlaskMiddleware(unittest.TestCase):
             self.assertEqual(span_context.trace_id, trace_id)
 
     def test__before_request_blacklist(self):
-        from opencensus.trace import execution_context
-        from opencensus.trace.tracers import base
-        from opencensus.trace.tracers import noop_tracer
-
         flask_trace_header = 'X_CLOUD_TRACE_CONTEXT'
         trace_id = '2dd43a1d6b2549c6bc2a1a54c2fc0b05'
-        span_id = 1234
+        span_id = '6e0c63257de34c92'
         flask_trace_id = '{}/{}'.format(trace_id, span_id)
 
         app = self.create_app()
@@ -144,12 +213,10 @@ class TestFlaskMiddleware(unittest.TestCase):
         # This test case is expected to fail at the check_trace_id method
         # in SpanContext because it cannot match the pattern for trace_id,
         # And a new trace_id will generate for the context.
-        from opencensus.trace import execution_context
-        from opencensus.trace.tracers import base
 
         flask_trace_header = 'X_CLOUD_TRACE_CONTEXT'
         trace_id = "你好"
-        span_id = 1234
+        span_id = '6e0c63257de34c92'
         flask_trace_id = '{}/{}'.format(trace_id, span_id)
 
         app = self.create_app()
@@ -177,9 +244,6 @@ class TestFlaskMiddleware(unittest.TestCase):
             self.assertNotEqual(span_context.trace_id, trace_id)
 
     def test_header_is_none(self):
-        from opencensus.trace import execution_context
-        from opencensus.trace.tracers import base
-
         app = self.create_app()
         flask_middleware.FlaskMiddleware(app=app)
         context = app.test_request_context(
@@ -201,11 +265,9 @@ class TestFlaskMiddleware(unittest.TestCase):
             assert isinstance(span.parent_span, base.NullContextManager)
 
     def test__after_request_not_sampled(self):
-        from opencensus.trace.samplers import always_off
-
         flask_trace_header = 'X_CLOUD_TRACE_CONTEXT'
         trace_id = '2dd43a1d6b2549c6bc2a1a54c2fc0b05'
-        span_id = 1234
+        span_id = '6e0c63257de34c92'
         flask_trace_id = '{}/{}'.format(trace_id, span_id)
         sampler = always_off.AlwaysOffSampler()
 
@@ -221,7 +283,7 @@ class TestFlaskMiddleware(unittest.TestCase):
     def test__after_request_sampled(self):
         flask_trace_header = 'X_CLOUD_TRACE_CONTEXT'
         trace_id = '2dd43a1d6b2549c6bc2a1a54c2fc0b05'
-        span_id = 1234
+        span_id = '6e0c63257de34c92'
         flask_trace_id = '{}/{}'.format(trace_id, span_id)
 
         app = self.create_app()
@@ -234,12 +296,9 @@ class TestFlaskMiddleware(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test__after_request_blacklist(self):
-        from opencensus.trace import execution_context
-        from opencensus.trace.tracers import noop_tracer
-
         flask_trace_header = 'X_CLOUD_TRACE_CONTEXT'
         trace_id = '2dd43a1d6b2549c6bc2a1a54c2fc0b05'
-        span_id = 1234
+        span_id = '6e0c63257de34c92'
         flask_trace_id = '{}/{}'.format(trace_id, span_id)
 
         app = self.create_app()
@@ -253,3 +312,36 @@ class TestFlaskMiddleware(unittest.TestCase):
 
         self.assertEqual(response.status_code, 200)
         assert isinstance(tracer, noop_tracer.NoopTracer)
+
+    def test_teardown_include_exception(self):
+        mock_exporter = mock.MagicMock()
+        app = self.create_app()
+        flask_middleware.FlaskMiddleware(app=app, exporter=mock_exporter)
+        response = app.test_client().get('/error')
+
+        self.assertEqual(response.status_code, 500)
+
+        exported_spandata = mock_exporter.export.call_args[0][0][0]
+        self.assertIsInstance(exported_spandata, span_data.SpanData)
+        self.assertIsInstance(exported_spandata.status, status.Status)
+        self.assertEqual(exported_spandata.status.code, code_pb2.UNKNOWN)
+        self.assertEqual(exported_spandata.status.message, 'error')
+
+    def test_teardown_include_exception_and_traceback(self):
+        mock_exporter = mock.MagicMock()
+        app = self.create_app()
+        app.config['TESTING'] = True
+        flask_middleware.FlaskMiddleware(app=app, exporter=mock_exporter)
+        with self.assertRaises(Exception):
+            app.test_client().get('/error')
+
+        exported_spandata = mock_exporter.export.call_args[0][0][0]
+        self.assertIsInstance(exported_spandata, span_data.SpanData)
+        self.assertIsInstance(exported_spandata.status, status.Status)
+        self.assertEqual(exported_spandata.status.code, code_pb2.UNKNOWN)
+        self.assertEqual(exported_spandata.status.message, 'error')
+        self.assertIsInstance(
+            exported_spandata.stack_trace, stack_trace.StackTrace
+        )
+        self.assertIsNotNone(exported_spandata.stack_trace.stack_trace_hash_id)
+        self.assertNotEqual(exported_spandata.stack_trace.stack_frames, [])

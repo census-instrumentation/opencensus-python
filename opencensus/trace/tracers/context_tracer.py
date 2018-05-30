@@ -13,10 +13,12 @@
 # limitations under the License.
 
 import logging
+import threading
 
 from opencensus.trace import execution_context
 from opencensus.trace.span_context import SpanContext
 from opencensus.trace import span as trace_span
+from opencensus.trace import span_data as span_data_module
 from opencensus.trace.exporters import print_exporter
 from opencensus.trace.tracers import base
 
@@ -28,6 +30,7 @@ class ContextTracer(base.Tracer):
     :param span_context: SpanContext encapsulates the current context within
                          the request's trace.
     """
+
     def __init__(self, exporter=None, span_context=None):
         if exporter is None:
             exporter = print_exporter.PrintExporter()
@@ -40,6 +43,7 @@ class ContextTracer(base.Tracer):
         self.trace_id = span_context.trace_id
         self.root_span_id = span_context.span_id
 
+        self._spans_list_condition = threading.Condition()
         # List of spans to report
         self._spans_list = []
 
@@ -49,7 +53,8 @@ class ContextTracer(base.Tracer):
         :rtype: dict
         :returns: JSON format trace.
         """
-        self._spans_list = []
+        while self._spans_list:
+            self.end_span()
 
     def span(self, name='span'):
         """Create a new span with the trace using the context information.
@@ -84,7 +89,8 @@ class ContextTracer(base.Tracer):
             name,
             parent_span=parent_span,
             context_tracer=self)
-        self._spans_list.append(span)
+        with self._spans_list_condition:
+            self._spans_list.append(span)
         self.span_context.span_id = span.span_id
         execution_context.set_current_span(span)
         span.start()
@@ -95,21 +101,27 @@ class ContextTracer(base.Tracer):
         parent span id; Update the current span.
         """
         cur_span = self.current_span()
+        if cur_span is None and self._spans_list:
+            cur_span = self._spans_list[-1]
 
         if cur_span is None:
             logging.warning('No active span, cannot do end_span.')
             return
 
         cur_span.finish()
-        self.span_context.span_id = cur_span.parent_span.span_id
+        self.span_context.span_id = cur_span.parent_span.span_id if \
+            cur_span.parent_span else None
 
         if isinstance(cur_span.parent_span, trace_span.Span):
             execution_context.set_current_span(cur_span.parent_span)
         else:
             execution_context.set_current_span(None)
 
-        span_json = self.get_trace_json(cur_span)
-        self.exporter.export(span_json)
+        with self._spans_list_condition:
+            if cur_span in self._spans_list:
+                span_datas = self.get_span_datas(cur_span)
+                self.exporter.export(span_datas)
+                self._spans_list.remove(cur_span)
 
         return cur_span
 
@@ -134,15 +146,33 @@ class ContextTracer(base.Tracer):
         current_span = self.current_span()
         current_span.add_attribute(attribute_key, attribute_value)
 
-    def get_trace_json(self, span):
-        """Get the JSON format trace."""
+    def get_span_datas(self, span):
+        """Extracts a list of SpanData tuples from a span
+
+        :rtype: list of opencensus.trace.span_data.SpanData
+        :return list of SpanData tuples
+        """
         span_tree = list(iter(span))
-        span_tree_list = [trace_span.format_span_json(span)
-                          for span in span_tree]
+        span_datas = [
+            span_data_module.SpanData(
+                name=span.name,
+                context=self.span_context,
+                span_id=span.span_id,
+                parent_span_id=span.parent_span.span_id if
+                span.parent_span else None,
+                attributes=span.attributes,
+                start_time=span.start_time,
+                end_time=span.end_time,
+                child_span_count=len(span.children),
+                stack_trace=span.stack_trace,
+                time_events=span.time_events,
+                links=span.links,
+                status=span.status,
+                same_process_as_parent_span=span.same_process_as_parent_span,
+                span_kind=span.span_kind
 
-        trace = {
-            'traceId': self.trace_id,
-            'spans': span_tree_list,
-        }
+            )
+            for span in span_tree
+        ]
 
-        return trace
+        return span_datas

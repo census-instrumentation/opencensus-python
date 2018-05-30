@@ -25,6 +25,12 @@ from opencensus.trace.tracers import base
 from opencensus.trace.utils import _get_truncatable_str
 
 
+class SpanKind(object):
+    UNSPECIFIED = 0
+    SERVER = 1
+    CLIENT = 2
+
+
 class Span(object):
     """A span is an individual timed event which forms a node of the trace
     tree. Each span has its name, span id and parent id. The parent id
@@ -85,6 +91,11 @@ class Span(object):
                            method in the tracer class to finish a span. If no
                            tracer is passed in, then just finish the span using
                            the finish method in the Span class.
+
+    :type span_kind: int
+    :param span_kind: (Optional) Highly recommended flag that denotes the type
+                        of span (valid values defined by :class:
+                        `opencensus.trace.span.SpanKind`)
     """
 
     def __init__(
@@ -100,7 +111,8 @@ class Span(object):
             links=None,
             status=None,
             same_process_as_parent_span=None,
-            context_tracer=None):
+            context_tracer=None,
+            span_kind=SpanKind.UNSPECIFIED):
         self.name = name
         self.parent_span = parent_span
         self.start_time = start_time
@@ -132,6 +144,7 @@ class Span(object):
         self.same_process_as_parent_span = same_process_as_parent_span
         self._child_spans = []
         self.context_tracer = context_tracer
+        self.span_kind = span_kind
 
     @property
     def children(self):
@@ -162,6 +175,20 @@ class Span(object):
         :param attribute_value: Attribute value.
         """
         self.attributes[attribute_key] = attribute_value
+
+    def add_annotation(self, description, **attrs):
+        """Add an annotation to span.
+
+        :type description: str
+        :param description: A user-supplied message describing the event.
+                        The maximum length for the description is 256 bytes.
+
+        :type attrs: kwargs
+        :param attrs: keyworded arguments e.g. failed=True, name='Caching'
+        """
+        at = attributes.Attributes(attrs)
+        self.add_time_event(time_event_module.TimeEvent(datetime.utcnow(),
+                            time_event_module.Annotation(description, at)))
 
     def add_time_event(self, time_event):
         """Add a TimeEvent.
