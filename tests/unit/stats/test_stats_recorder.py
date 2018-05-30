@@ -32,6 +32,13 @@ class TestStatsRecorder(unittest.TestCase):
                                execution_context.get_measure_to_view_map())
         self.assertIsNotNone(stats_recorder.measure_to_view_map)
 
+        execution_context.clear()
+        measure_to_view_map = {'key1', 'val1'}
+        execution_context.set_measure_to_view_map(
+            measure_to_view_map=measure_to_view_map)
+        stats_recorder = stats_recorder_module.StatsRecorder()
+        self.assertEqual(stats_recorder.measure_to_view_map, measure_to_view_map)
+
     def test_constructor_explicit(self):
         measure_to_view_map = mock.Mock()
         stats_recorder = stats_recorder_module.StatsRecorder(
