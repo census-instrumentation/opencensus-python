@@ -16,18 +16,33 @@ import unittest
 import mock
 from opencensus.stats import stats_recorder as stats_recorder_module
 from opencensus.stats.measurement_map import MeasurementMap
+from opencensus.stats import execution_context
 
 
 class TestStatsRecorder(unittest.TestCase):
 
     def test_constructor_defaults(self):
+        execution_context.clear()
+        self.assertEqual({}, execution_context.get_measure_to_view_map())
+
         stats_recorder = stats_recorder_module.StatsRecorder()
 
-        self.assertEqual({}, stats_recorder.measure_to_view_map)
+        self.assertIsNotNone(execution_context.get_measure_to_view_map())
+        self.assertIs(stats_recorder.measure_to_view_map,
+                               execution_context.get_measure_to_view_map())
+        self.assertIsNotNone(stats_recorder.measure_to_view_map)
+
+        execution_context.clear()
+        measure_to_view_map = {'key1', 'val1'}
+        execution_context.set_measure_to_view_map(
+            measure_to_view_map=measure_to_view_map)
+        stats_recorder = stats_recorder_module.StatsRecorder()
+        self.assertEqual(stats_recorder.measure_to_view_map, measure_to_view_map)
 
     def test_constructor_explicit(self):
         measure_to_view_map = mock.Mock()
-        stats_recorder = stats_recorder_module.StatsRecorder(measure_to_view_map=measure_to_view_map)
+        stats_recorder = stats_recorder_module.StatsRecorder(
+            measure_to_view_map=measure_to_view_map)
 
         self.assertEqual(measure_to_view_map, stats_recorder.measure_to_view_map)
 
