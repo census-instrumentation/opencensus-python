@@ -73,7 +73,7 @@ class ViewData(object):
 
     def get_tag_map(self, context):
         """function to return the tag map based on the context"""
-        try:
+        if self.tag_map is not None:
             if context.items() <= self.tag_map.items():
                 return self.tag_map
             else:
@@ -81,7 +81,7 @@ class ViewData(object):
                 for tag_key, tag_value in context.items():
                     tags[tag_key] = tag_value
                 return tags
-        except ValueError:  # pragma: NO COVER
+        else:  # pragma: NO COVER
             logging.warning("Tag Map cannot be none",
                             self.tag_map)
 
