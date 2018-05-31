@@ -18,8 +18,6 @@ import time
 from opencensus.stats import aggregation as aggregation_module
 from opencensus.stats import measure as measure_module
 from opencensus.stats import stats as stats_module
-# from opencensus.stats import view_manager as view_manager_module
-# from opencensus.stats import stats_recorder as stats_recorder_module
 from opencensus.stats import view as view_module
 from opencensus.tags import tag_key as tag_key_module
 from opencensus.tags import tag_map as tag_map_module
@@ -43,8 +41,6 @@ def main():
     stats = stats_module.Stats()
     view_manager = stats.view_manager
     stats_recorder = stats.stats_recorder
-    # view_manager = view_manager_module.ViewManager()
-    # stats_recorder = stats_recorder_module.StatsRecorder(view_manager.measure_to_view_map)
 
     # Register view.
     view_manager.register_view(VIDEO_SIZE_VIEW)
