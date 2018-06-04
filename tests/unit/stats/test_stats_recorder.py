@@ -23,7 +23,7 @@ class TestStatsRecorder(unittest.TestCase):
     def test_constructor_defaults(self):
         stats_recorder = stats_recorder_module.StatsRecorder()
 
-        self.assertEqual({}, stats_recorder.measure_to_view_map)
+        self.assertIsNotNone(stats_recorder.measure_to_view_map)
 
     def test_constructor_explicit(self):
         measure_to_view_map = mock.Mock()

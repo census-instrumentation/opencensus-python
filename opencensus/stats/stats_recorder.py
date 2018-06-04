@@ -13,6 +13,8 @@
 # limitations under the License.
 
 from opencensus.stats.measurement_map import MeasurementMap
+from opencensus.stats.measure_to_view_map import MeasureToViewMap
+from opencensus.stats import execution_context
 
 
 class StatsRecorder(object):
@@ -24,7 +26,16 @@ class StatsRecorder(object):
 
     """
     def __init__(self, measure_to_view_map=None):
-        self.measure_to_view_map = measure_to_view_map or {}
+        if measure_to_view_map is None:
+            if execution_context.get_measure_to_view_map() is None:
+                self.measure_to_view_map = MeasureToViewMap()
+                execution_context.set_measure_to_view_map(MeasureToViewMap())
+            else:
+                self.measure_to_view_map = \
+                    execution_context.get_measure_to_view_map()
+        else:
+            self.measure_to_view_map = measure_to_view_map
+            execution_context.set_measure_to_view_map(measure_to_view_map)
 
     def new_measurement_map(self):
         """Creates a new MeasurementMap in order to record stats
