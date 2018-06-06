@@ -155,13 +155,15 @@ class ZipkinExporter(base.Exporter):
                 span.get('startTime'),
                 ISO_DATETIME_REGEX)
             start_timestamp_ms = calendar.timegm(
-                start_datetime.timetuple()) * 1000 * 1000
+                start_datetime.timetuple()) * 1000 * 1000 \
+                + start_datetime.microsecond
 
             end_datetime = datetime.datetime.strptime(
                 span.get('endTime'),
                 ISO_DATETIME_REGEX)
             end_timestamp_ms = calendar.timegm(
-                end_datetime.timetuple()) * 1000 * 1000
+                end_datetime.timetuple()) * 1000 * 1000 \
+                + end_datetime.microsecond
 
             duration_ms = end_timestamp_ms - start_timestamp_ms
 
