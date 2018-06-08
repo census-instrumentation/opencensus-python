@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from datetime import datetime
+import logging
 
 
 class ViewData(object):
@@ -72,13 +73,16 @@ class ViewData(object):
 
     def get_tag_map(self, context):
         """function to return the tag map based on the context"""
-        if context.items() <= self.tag_map.items():
-            return self.tag_map
-        else:
-            tags = self.tag_map
-            for tag_key, tag_value in context.items():
-                tags[tag_key] = tag_value
-            return tags
+        if self.tag_map is not None:
+            if context.items() <= self.tag_map.items():
+                return self.tag_map
+            else:
+                tags = self.tag_map
+                for tag_key, tag_value in context.items():
+                    tags[tag_key] = tag_value
+                return tags
+        else:  # pragma: NO COVER
+            logging.warning("Tag Map cannot be none")
 
     def get_tag_values(self, tags, columns):
         """function to get the tag values from tags and columns"""
