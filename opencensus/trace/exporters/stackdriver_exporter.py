@@ -17,10 +17,10 @@ import os
 from google.cloud.trace.client import Client
 
 from opencensus.trace import attributes_helper
-from opencensus.trace import span_data
 from opencensus.trace.attributes import Attributes
 from opencensus.trace.exporters import base
 from opencensus.trace.exporters.transports import sync
+from opencensus.trace.utils import _get_truncatable_str
 
 # OpenCensus Version
 VERSION = '0.1.5'
@@ -53,49 +53,25 @@ GCE_ATTRIBUTES = {
 }
 
 
-def _update_attr_map(span, attrs):
-    attr_map = span.get('attributes', {}).get('attributeMap', {})
-    attr_map.update(attrs)
-    span['attributes']['attributeMap'] = attr_map
-
-
-def set_attributes(trace):
+def set_attributes(attr):
     """Automatically set attributes for Google Cloud environment."""
-    spans = trace.get('spans')
-    for span in spans:
-        if span.get('attributes') is None:
-            span['attributes'] = {}
-
-        if is_gae_environment():
-            set_gae_attributes(span)
-
-        set_common_attributes(span)
+    if is_gae_environment():
+        set_gae_attributes(attr)
+    set_common_attributes(attr)
 
 
-def set_common_attributes(span):
+def set_common_attributes(attr):
     """Set the common attributes."""
-    common = {
-        attributes_helper.COMMON_ATTRIBUTES.get('AGENT'): AGENT,
-    }
-    common_attrs = Attributes(common)\
-        .format_attributes_json()\
-        .get('attributeMap')
-
-    _update_attr_map(span, common_attrs)
+    attr.set_attribute(
+        attributes_helper.COMMON_ATTRIBUTES.get('AGENT'),
+        AGENT)
 
 
-def set_gae_attributes(span):
+def set_gae_attributes(attr):
     """Set the GAE environment common attributes."""
     for env_var, attribute_key in GAE_ATTRIBUTES.items():
         attribute_value = os.environ.get(env_var)
-
-        if attribute_value is not None:
-            pair = {attribute_key: attribute_value}
-            pair_attrs = Attributes(pair)\
-                .format_attributes_json()\
-                .get('attributeMap')
-
-            _update_attr_map(span, pair_attrs)
+        attr.set_attribute(attribute_key, attribute_value)
 
 
 def is_gae_environment():
@@ -141,11 +117,7 @@ class StackdriverExporter(base.Exporter):
         """
         name = 'projects/{}'.format(self.project_id)
 
-        # convert to the legacy trace json for easier refactoring
-        # TODO: refactor this to use the span data directly
-        trace = span_data.format_legacy_trace_json(span_datas)
-
-        stackdriver_spans = self.translate_to_stackdriver(trace)
+        stackdriver_spans = self.translate_to_stackdriver(span_datas)
         self.client.batch_write_spans(name, stackdriver_spans)
 
     def export(self, span_datas):
@@ -157,44 +129,69 @@ class StackdriverExporter(base.Exporter):
         """
         self.transport.export(span_datas)
 
-    def translate_to_stackdriver(self, trace):
+    def translate_to_stackdriver(self, span_datas):
         """Translate the spans json to Stackdriver format.
 
         See: https://cloud.google.com/trace/docs/reference/v2/rest/v2/
              projects.traces/batchWrite
 
-        :type trace: dict
-        :param trace: Trace dictionary
+        :type span_datas: list of :class:
+            `~opencensus.trace.span_data.SpanData`
+        :param span_datas:
+            SpanData tuples to emit
 
         :rtype: dict
         :returns: Spans in Google Cloud StackDriver Trace format.
         """
-        set_attributes(trace)
-        spans_json = trace.get('spans')
-        trace_id = trace.get('traceId')
+
+        top_span = span_datas[0]
+        trace_id = top_span.context.trace_id if top_span.context is not None \
+            else None
+
         spans_list = []
 
-        for span in spans_json:
+        for span in span_datas:
             span_name = 'projects/{}/traces/{}/spans/{}'.format(
-                self.project_id, trace_id, span.get('spanId'))
+                self.project_id, trace_id, span.span_id)
+
+            attributes = Attributes(span.attributes)
+            set_attributes(attributes)                
 
             span_json = {
                 'name': span_name,
-                'displayName': span.get('displayName'),
-                'startTime': span.get('startTime'),
-                'endTime': span.get('endTime'),
-                'spanId': str(span.get('spanId')),
-                'attributes': span.get('attributes'),
-                'links': span.get('links'),
-                'status': span.get('status'),
-                'stackTrace': span.get('stackTrace'),
-                'timeEvents': span.get('timeEvents'),
-                'sameProcessAsParentSpan': span.get('sameProcessAsParentSpan'),
-                'childSpanCount': span.get('childSpanCount')
+                'displayName': _get_truncatable_str(span.name),
+                'startTime': span.start_time,
+                'endTime': span.end_time,
+                'spanId': str(span.span_id),
+                'attributes': attributes.format_attributes_json(),
+                'links': None,
+                'status': span.status,
+                'stackTrace': None,
+                'timeEvents': None,
+                'sameProcessAsParentSpan': span.same_process_as_parent_span,
+                'childSpanCount': span.child_span_count
             }
+            
+            stack_trace = span.stack_trace
+            if stack_trace is not None:
+                span_json['stackTrace'] = stack_trace.format_stack_trace_json()
+            
+            if span.links is not None:
+                span_json['links'] = {
+                    'link': [
+                        link.format_link_json() for link in span.links
+                    ]
+                }
 
-            if span.get('parentSpanId') is not None:
-                parent_span_id = str(span.get('parentSpanId'))
+            if span.time_events is not None:
+                span_json['timeEvents'] =  {
+                    'timeEvent': [
+                        time_event.format_time_event_json()
+                          for time_event in span.time_events]
+                }
+
+            if span.parent_span_id is not None:
+                parent_span_id = str(span.parent_span_id)
                 span_json['parentSpanId'] = parent_span_id
 
             spans_list.append(span_json)

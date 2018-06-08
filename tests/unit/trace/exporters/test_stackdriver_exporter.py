@@ -17,7 +17,8 @@ import unittest
 import mock
 
 from opencensus.trace import span_context
-from opencensus.trace import span_data as span_data_module
+from opencensus.trace import attributes as attributes_module
+from opencensus.trace import link, span_data, stack_trace, time_event
 from opencensus.trace.exporters import stackdriver_exporter
 
 
@@ -71,7 +72,7 @@ class TestStackdriverExporter(unittest.TestCase):
     def test_emit(self):
         trace_id = '6e0c63257de34c92bf9efcd03927272e'
         span_datas = [
-            span_data_module.SpanData(
+            span_data.SpanData(
                 name='span',
                 context=span_context.SpanContext(trace_id=trace_id),
                 span_id='1111',
@@ -141,41 +142,54 @@ class TestStackdriverExporter(unittest.TestCase):
         self.assertTrue(client.batch_write_spans.called)
 
     def test_translate_to_stackdriver(self):
+        self.maxDiff = None
         project_id = 'PROJECT'
         trace_id = '6e0c63257de34c92bf9efcd03927272e'
         span_name = 'test span'
         span_id = '6e0c63257de34c92'
-        attributes = {
-            'attributeMap': {
-                'key': {
-                    'string_value': {
-                        'truncated_byte_count': 0,
-                        'value': 'value'
-                    }
-               }
-            }
-        }
+        attributes = {'key': 'value'}
+
         parent_span_id = '6e0c63257de34c93'
         start_time = 'test start time'
         end_time = 'test end time'
-        trace = {
-            'spans': [
-                {
-                    'displayName': {
-                        'value': span_name,
-                        'truncated_byte_count': 0
-                    },
-                    'spanId': span_id,
-                    'startTime': start_time,
-                    'endTime': end_time,
-                    'parentSpanId': parent_span_id,
-                    'attributes': attributes,
-                    'someRandomKey': 'this should not be included in result',
-                    'childSpanCount': 0
-                }
-            ],
-            'traceId': trace_id
-        }
+
+        import datetime
+        s = '2017-08-15T18:02:26.071158'
+        time = datetime.datetime.strptime(s, '%Y-%m-%dT%H:%M:%S.%f')
+
+        time_events = [
+            time_event.TimeEvent(
+                timestamp=time)
+        ]
+
+        links = [
+            link.Link(
+                trace_id=trace_id,
+                span_id=span_id,
+                type=link.Type.CHILD_LINKED_SPAN)
+        ]
+        
+        strace = stack_trace.StackTrace(
+            stack_trace_hash_id=1)
+        
+        span_datas = [
+            span_data.SpanData(
+                name=span_name,
+                context=span_context.SpanContext(trace_id=trace_id),
+                span_id=span_id,
+                parent_span_id=parent_span_id,
+                attributes=attributes,
+                start_time=start_time,
+                end_time=end_time,
+                child_span_count=0,
+                stack_trace=strace,
+                time_events=time_events,
+                links=links,
+                status=None,
+                same_process_as_parent_span=None,
+                span_kind=0
+            )
+        ]
 
         client = mock.Mock()
         client.project = project_id
@@ -183,7 +197,7 @@ class TestStackdriverExporter(unittest.TestCase):
             client=client,
             project_id=project_id)
 
-        spans = exporter.translate_to_stackdriver(trace)
+        spans = exporter.translate_to_stackdriver(span_datas)
 
         expected_traces = {
             'spans': [
@@ -217,15 +231,25 @@ class TestStackdriverExporter(unittest.TestCase):
                     'endTime': end_time,
                     'parentSpanId': str(parent_span_id),
                     'status': None,
-                    'links': None,
-                    'stackTrace': None,
-                    'timeEvents': None,
+                    'links': {
+                        'link': [{
+                                'trace_id': trace_id,
+                                'span_id': span_id,
+                                'type': link.Type.CHILD_LINKED_SPAN
+                            }
+                        ]
+                    },
+                    'stackTrace': {'stack_trace_hash_id': 1},
+                    'timeEvents': {
+                        'timeEvent': [{
+                            'time': time.isoformat() + 'Z'
+                        }]
+                    },
                     'childSpanCount': 0,
                     'sameProcessAsParentSpan': None
                 }
             ]
         }
-
         self.assertEqual(spans, expected_traces)
 
 
@@ -234,45 +258,16 @@ class Test_set_attributes_gae(unittest.TestCase):
     def test_set_attributes_gae(self):
         import os
 
-        trace = {'spans': [
-            {
-                'attributes': {}
-            }
-        ]}
-
-        expected = {
-            'attributes': {
-                'attributeMap': {
-                    'g.co/gae/app/service': {
-                        'string_value': {
-                            'truncated_byte_count': 0,
-                            'value': 'service'
-                        }
-                    },
-                    'g.co/gae/app/version': {
-                        'string_value': {
-                            'truncated_byte_count': 0,
-                            'value': 'version'
-                        }
-                    },
-                    'g.co/gae/app/project': {
-                        'string_value': {
-                            'truncated_byte_count': 0,
-                            'value': 'project'
-                        }
-                    },
-                    'g.co/agent': {
-                        'string_value': {
-                            'truncated_byte_count': 0,
-                            'value': 'opencensus-python [{}]'.format(
-                                stackdriver_exporter.VERSION
-                            )
-                        }
-                    },
-                }
-            }
+        attributes = attributes_module.Attributes()
+        attribute_map = {
+            'g.co/gae/app/service': 'service',
+            'g.co/gae/app/version': 'version',
+            'g.co/gae/app/project': 'project',
+            'g.co/agent': 'opencensus-python [{}]'.format(
+                stackdriver_exporter.VERSION)
         }
 
+        expected = attributes_module.Attributes(attribute_map)
         with mock.patch.dict(
                 os.environ,
                 {stackdriver_exporter._APPENGINE_FLEXIBLE_ENV_VM: 'vm',
@@ -281,10 +276,11 @@ class Test_set_attributes_gae(unittest.TestCase):
                  'GAE_FLEX_SERVICE': 'service',
                  'GAE_FLEX_VERSION': 'version'}):
             self.assertTrue(stackdriver_exporter.is_gae_environment())
-            stackdriver_exporter.set_attributes(trace)
+            stackdriver_exporter.set_attributes(attributes)
 
-        span = trace.get('spans')[0]
-        self.assertEqual(span, expected)
+        self.assertEqual(
+            attributes.format_attributes_json(), 
+            expected.format_attributes_json())
 
 
 class MockTransport(object):
