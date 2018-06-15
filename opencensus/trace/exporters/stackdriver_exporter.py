@@ -38,12 +38,15 @@ _APPENGINE_FLEXIBLE_ENV_FLEX = 'GAE_INSTANCE'
 # See: https://cloud.google.com/appengine/docs/flexible/python/runtime#
 #      environment_variables
 GAE_ATTRIBUTES = {
-    'GAE_FLEX_VERSION': 'g.co/gae/app/version',
-    'GAE_FLEX_SERVICE': 'g.co/gae/app/service',
-    'GAE_FLEX_PROJECT': 'g.co/gae/app/project',
-    'GAE_FLEX_INSTANCE': 'g.co/gae/app/instance',
-    'GAE_FLEX_MEMORY_MB': 'g.co/gae/app/memory_mb',
-    'GAE_FLEX_PORT': 'g.co/gae/app/port',
+    'GAE_VERSION': 'g.co/gae/app/version',
+    # Note that as of June 2018, the GAE_SERVICE variable needs to map
+    # to the g.co/gae/app/module attribute in order for the stackdriver
+    # UI to properly filter by 'service' - kinda inconsistent...
+    'GAE_SERVICE': 'g.co/gae/app/module',
+    'GOOGLE_CLOUD_PROJECT': 'g.co/gae/app/project',
+    'GAE_INSTANCE': 'g.co/gae/app/instance',
+    'GAE_MEMORY_MB': 'g.co/gae/app/memory_mb',
+    'PORT': 'g.co/gae/app/port',
 }
 
 # GCE common attributes
