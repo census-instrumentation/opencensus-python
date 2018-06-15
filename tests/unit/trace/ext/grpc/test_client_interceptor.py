@@ -17,6 +17,7 @@ import unittest
 import mock
 from opencensus.trace import execution_context
 from opencensus.trace.ext.grpc import client_interceptor
+from opencensus.trace.tracers.noop_tracer import NoopTracer
 
 
 class TestOpenCensusClientInterceptor(unittest.TestCase):
@@ -75,6 +76,28 @@ class TestOpenCensusClientInterceptor(unittest.TestCase):
     def test__intercept_call_metadata_none(self):
         tracer = mock.Mock()
         tracer.span_context = mock.Mock()
+        test_header = 'test header'
+        mock_propagator = mock.Mock()
+        mock_propagator.to_header.return_value = test_header
+
+        interceptor = client_interceptor.OpenCensusClientInterceptor(
+            tracer=tracer, host_port='test')
+        interceptor._propagator = mock_propagator
+        mock_client_call_details = mock.Mock()
+        mock_client_call_details.metadata = None
+        mock_client_call_details.method = '/hello'
+
+        client_call_details, request_iterator, current_span = interceptor._intercept_call(
+            mock_client_call_details,
+            mock.Mock(),
+            'unary_unary')
+
+        expected_metadata = (('grpc-trace-bin', test_header),)
+
+        self.assertEqual(expected_metadata, client_call_details.metadata)
+
+    def test__intercept_call_noop_tracer(self):
+        tracer = NoopTracer()
         test_header = 'test header'
         mock_propagator = mock.Mock()
         mock_propagator.to_header.return_value = test_header
