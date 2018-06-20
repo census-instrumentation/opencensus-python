@@ -12,6 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from opencensus.trace.ext.pymysql import trace
+from opencensus.trace.ext.mysqldb import trace
 
 __all__ = ['trace']
