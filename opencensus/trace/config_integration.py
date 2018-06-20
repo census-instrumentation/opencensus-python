@@ -42,6 +42,6 @@ def trace_integrations(integrations, tracer=None):
                 'Failed to integrate module: {}, supported integrations are {}'
                 .format(
                     item,
-                    ', '.join(str(x) for x in SUPPORTED_INTEGRATIONS)))
+                    ', '.join(str(x) for x in SUPPORTED_INTEGRATIONS)), exc_info=True)
 
     return integrated
