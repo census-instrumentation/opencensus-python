@@ -17,7 +17,7 @@ import logging
 
 log = logging.getLogger(__name__)
 
-SUPPORTED_INTEGRATIONS = ['httplib', 'mysql', 'postgresql', 'pymysql',
+SUPPORTED_INTEGRATIONS = ['httplib', 'mysql', 'postgresql', 'pymysql', 'mysqldb',
                           'requests', 'sqlalchemy', 'google_cloud_clientlibs',
                           'threading']
 
