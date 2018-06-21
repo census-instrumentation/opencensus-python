@@ -12,17 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# -*- coding: utf-8 -*-
+
 import binascii
 import collections
 import logging
+import io
 import struct
 import sys
-from google.protobuf.internal.encoder import _VarintEncoder
 from google.protobuf.internal.encoder import _VarintBytes
 from google.protobuf.internal.encoder import TagBytes
 from google.protobuf.internal.decoder import _DecodeVarint
+from google.protobuf.internal.decoder import BytesDecoder
 
 from opencensus.tags import tag_map as tag_map_module
+from opencensus.tags import tag
 from opencensus.tags.tag_key import TagKey
 from opencensus.tags.tag_value import TagValue
 
@@ -33,87 +37,76 @@ VERSION_ID = 0
 TAG_FIELD_ID = 0
 TAG_MAP_SERIALIZED_SIZE_LIMIT = 8192
 
-# See: https://docs.python.org/3/library/struct.html#format-characters
-BIG_ENDIAN = '>'
-CHAR_ARRAY_FORMAT = 's'
-UNSIGNED_CHAR = 'B'
-UNSIGNED_LONG_LONG = 'Q'
-
-# Adding big endian indicator at the beginning to avoid auto padding. This is
-# for ensuring the length of binary is not changed when propagating.
-BINARY_FORMAT = '{big_endian}{version_id}' \
-                '{tag_field_id}' \
-                '{tag_key_len}{tag_key}' \
-                '{tag_val_len}{tag_val}' \
-    .format(big_endian=BIG_ENDIAN,
-            version_id=UNSIGNED_CHAR,
-            tag_field_id=UNSIGNED_CHAR,
-            tag_key_len=UNSIGNED_CHAR,
-            tag_key='{}{}'.format(tag_key_len, CHAR_ARRAY_FORMAT),
-            tag_val_len=UNSIGNED_CHAR,
-            tag_val='{}{}'.format(tag_val_len, CHAR_ARRAY_FORMAT))
-
-Header = collections.namedtuple(
-    'Header',
-    'version_id '
-    'tag_field_id '
-    'tag_key_len '
-    'tag_key '
-    'tag_val_len '
-    'tal_val'
-)
-
 
 class BinarySerializer(object):
-    def from_header(self, binary):
-        if binary is None:
-            return tag_map_module.TagMap(from_header=False)
-        try:
-            data = Header._make(struct.unpack(BINARY_FORMAT, binary))
-        except struct.error:
-            logging.warning(
-                'Cannot parse the incoming binary data {}, '
-                'wrong format. Total bytes length should be {}.'.format(
-                    binary, TAG_MAP_SERIALIZED_SIZE_LIMIT
-                )
-            )
-            return tag_map_module.TagMap(from_header=False)
-        version_id = data.version_id
-        buffer = memoryview(bytearray(binary, 'UTF-8'))
+    def from_byte_array(self, binary):
+        if len(binary) <= 0:
+            logging.warning("Input byte[] cannot be empty/")
+        else:
+            buffer = memoryview(binary)
+            version_id = buffer[0]
+            print("version_id: ", buffer[0])
+            if version_id > VERSION_ID or version_id < 0:
+                raise Exception("Invalid version id.")
+            return self.parse_tags(buffer)
+
+    def to_byte_array(self, tag_context):
+        encoded_bytes = b''
+        encoded_bytes += _VarintBytes(VERSION_ID)
         total_chars = 0
-        if 0 < version_id < VERSION_ID:
-            tags = {}
-            length = len(buffer)
-            i = 0
-            while i < length:
-                if buffer[i] is not None:
-                    tag_id = buffer.__getitem__(TAG_FIELD_ID)
-                    if tag_id == TAG_FIELD_ID:
-                        key = _DecodeVarint(buffer, i)
-                        val = {key: _DecodeVarint(buffer, i)}
-                        total_chars += len(key)
-                        total_chars += len(val)
-                        tags[key] = val
+        for tag in tag_context.tags:
+            for tag_key, tag_value in tag.items():
+                total_chars += len(tag_key)
+                total_chars += len(tag_value)
+                encoded_bytes = self.encode_tag(tag_key, tag_value, encoded_bytes)
+        if total_chars <= TAG_MAP_SERIALIZED_SIZE_LIMIT:
+            return encoded_bytes
+        else:  # pragma: NO COVER
+            logging.warning("Size of the tag context exceeds the maximum size")
+
+    def parse_tags(self, buffer):
+        tag_list = []
+        tags = {}
+        limit = len(buffer)
+        total_chars = 0
+        i = 1
+        while i < limit:
+            field_id = buffer[i]
+            if field_id == TAG_FIELD_ID:
                 i += 1
-            tag_map = tag_map_module.TagMap(tags=tags, from_header=True)
-            return tag_map
+                key = self.decode_string(buffer, i)
+                i += len(key)
+                total_chars += len(key)
+                i += 1
+                val = self.decode_string(buffer, i)
+                i += len(val)
+                total_chars += len(val)
+                i += 1
+                tags[key] = val
+            else:
+                break
+        if total_chars <= TAG_MAP_SERIALIZED_SIZE_LIMIT:
+            tag_list.append(tags)
+            return tag_list
+        else:  # pragma: NO COVER
+            logging.warning("Size of the tag context exceeds maximum")
 
-    def to_header(self, tag_context):
-        total_chars = 0
-        for tag in tag_context:
-            total_chars += len(tag.key)
-            total_chars += len(tag.value)
-            if total_chars <= TAG_MAP_SERIALIZED_SIZE_LIMIT:
-                temp_tag_key_len = len(tag.key)
-                tag_key_len = _VarintBytes(temp_tag_key_len)
-                temp_tag_val_len = len(tag.value)
-                tag_val_len = _VarintBytes(temp_tag_val_len)
+    def encode_tag(self, tag_key, tag_value, encoded_bytes):
+        encoded_bytes += _VarintBytes(TAG_FIELD_ID)
+        encoded_bytes = self.encode_string(tag_key, encoded_bytes)
+        encoded_bytes = self.encode_string(tag_value, encoded_bytes)
+        return encoded_bytes
 
-                return struct.pack(
-                    BINARY_FORMAT,
-                    VERSION_ID,
-                    TAG_FIELD_ID,
-                    tag_key_len,
-                    binascii.unhexlify(tag.key),
-                    tag_val_len,
-                    binascii.unhexlify(tag.value))
+    def encode_string(self, input_str, encoded_bytes):
+        encoded_bytes += _VarintBytes(len(input_str))
+        encoded_bytes += input_str.encode(UTF8)
+        return encoded_bytes
+
+    def decode_string(self, buffer, pos):
+        length = buffer[pos]
+        builder = ""
+        i = 1
+        while i <= length:
+            builder += _VarintBytes(buffer[pos + i]).decode()
+            i += 1
+        return builder

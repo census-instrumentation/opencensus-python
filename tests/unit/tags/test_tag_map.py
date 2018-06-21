@@ -21,7 +21,7 @@ class TestTagMap(unittest.TestCase):
 
     def test_constructor_defaults(self):
         tag_map = tag_map_module.TagMap()
-        self.assertEqual(tag_map.tags, {})
+        self.assertEqual(tag_map.tags, [{}])
         self.assertEqual(tag_map.map, {})
 
     def test_constructor_explicit(self):
