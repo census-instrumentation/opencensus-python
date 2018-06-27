@@ -22,7 +22,6 @@ from opencensus.trace import trace_options
 
 _INVALID_TRACE_ID = '0' * 32
 INVALID_SPAN_ID = '0' * 16
-_TRACE_HEADER_KEY = 'X_CLOUD_TRACE_CONTEXT'
 
 TRACE_ID_PATTERN = re.compile('[0-9a-f]{32}?')
 SPAN_ID_PATTERN = re.compile('[0-9a-f]{16}?')
