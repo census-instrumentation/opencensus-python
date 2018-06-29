@@ -178,11 +178,15 @@ class JaegerExporter(base.Exporter):
         for span in span_datas:
             start_datetime = datetime.datetime.strptime(
                 span.start_time, ISO_DATETIME_REGEX)
-            start_microsec = calendar.timegm(start_datetime.timetuple()) * 1000
+            start_microsec = calendar.timegm(start_datetime.timetuple()) \
+                * 1e6 \
+                + start_datetime.microsecond
 
             end_datetime = datetime.datetime.strptime(
                 span.end_time, ISO_DATETIME_REGEX)
-            end_microsec = calendar.timegm(end_datetime.timetuple()) * 1000
+            end_microsec = calendar.timegm(end_datetime.timetuple()) \
+                * 1e6 \
+                + end_datetime.microsecond
 
             duration_microsec = end_microsec - start_microsec
 
@@ -222,7 +226,7 @@ class JaegerExporter(base.Exporter):
                 logs=logs,
                 references=refs,
                 flags=flags,
-                parentSpanId=_convert_hex_str_to_int(parent_span_id))
+                parentSpanId=_convert_hex_str_to_int(parent_span_id or '0'))
 
             jaeger_spans.append(jaeger_span)
 

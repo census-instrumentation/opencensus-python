@@ -269,8 +269,8 @@ class TestJaegerExporter(unittest.TestCase):
                 spanId=7929822056569588882,
                 parentSpanId=1229782938247303441,
                 operationName='test1',
-                startTime=1502820146000,
-                duration=10000,
+                startTime=1502820146071158,
+                duration=10000000,
                 flags=1,
                 tags=[
                     jaeger.Tag(
@@ -331,8 +331,9 @@ class TestJaegerExporter(unittest.TestCase):
                 traceIdHigh=1846305573,
                 traceIdLow=2112048274,
                 spanId=7929822056569588882,
-                startTime=1502820146000,
-                duration=10000)
+                parentSpanId=0,
+                startTime=1502820146071158,
+                duration=10000000)
         ]
 
         spans_json = [span.format_span_json() for span in spans]
@@ -372,6 +373,7 @@ class TestJaegerExporter(unittest.TestCase):
         jaeger_exporter._convert_hex_str_to_int(invalid_id)
         valid_id = '290c63257de34c92'
         jaeger_exporter._convert_hex_str_to_int(valid_id)
+        self.assertIsNone(jaeger_exporter._convert_hex_str_to_int(None))
 
 
 class MockBatch(object):
