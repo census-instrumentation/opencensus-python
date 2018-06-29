@@ -18,7 +18,7 @@ import re
 from opencensus.trace.span_context import SpanContext
 from opencensus.trace.trace_options import TraceOptions
 
-_TRACE_PARENT_HEADER_NAME = 'Trace-Parent'
+_TRACE_PARENT_HEADER_NAME = 'traceparent'
 _TRACE_CONTEXT_HEADER_FORMAT = \
     '([0-9a-f]{2})(-([0-9a-f]{32}))(-([0-9a-f]{16}))?(-([0-9a-f]{2}))?'
 _TRACE_CONTEXT_HEADER_RE = re.compile(_TRACE_CONTEXT_HEADER_FORMAT)
