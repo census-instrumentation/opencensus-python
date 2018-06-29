@@ -67,9 +67,10 @@ class NullContextManager(object):
     """Empty object as a helper for faking Trace and Span when tracing is
     disabled.
     """
-    def __init__(self, span_id=None):
+    def __init__(self, span_id=None, context_tracer=None):
         self.name = None
         self.span_id = span_id
+        self.context_tracer = context_tracer
 
     def __enter__(self):
         return self  # pragma: NO COVER
@@ -78,4 +79,4 @@ class NullContextManager(object):
         pass  # pragma: NO COVER
 
     def span(self, name='span'):
-        return NullContextManager()
+        return NullContextManager(context_tracer=self.context_tracer)
