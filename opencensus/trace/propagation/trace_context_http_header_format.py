@@ -116,7 +116,8 @@ class TraceContextPropagator(object):
         return header
 
     def to_headers(self, span_context):
-        """Convert a SpanContext object to W3C Distributed Tracing headers, using version 0.
+        """Convert a SpanContext object to W3C Distributed Tracing headers,
+        using version 0.
 
         :type span_context:
             :class:`~opencensus.trace.span_context.SpanContext`
