@@ -18,6 +18,7 @@ import re
 from opencensus.trace.span_context import SpanContext
 from opencensus.trace.trace_options import TraceOptions
 
+_TRACE_CONTEXT_HEADER_NAME = 'X_CLOUD_TRACE_CONTEXT'
 _TRACE_CONTEXT_HEADER_FORMAT = '([0-9a-f]{32})(\/([0-9a-f]{16}))?(;o=(\d+))?'
 _TRACE_CONTEXT_HEADER_RE = re.compile(_TRACE_CONTEXT_HEADER_FORMAT)
 _TRACE_ID_DELIMETER = '/'
@@ -73,6 +74,21 @@ class GoogleCloudFormatPropagator(object):
                 .format(header))
             return SpanContext()
 
+    def from_headers(self, headers):
+        """Generate a SpanContext object using the trace context header.
+
+        :type headers: dict
+        :param headers: HTTP request headers.
+
+        :rtype: :class:`~opencensus.trace.span_context.SpanContext`
+        :returns: SpanContext generated from the trace context header.
+        """
+        if headers is None:
+            return SpanContext()
+        if _TRACE_CONTEXT_HEADER_NAME not in headers:
+            return SpanContext()
+        return self.from_header(headers[_TRACE_CONTEXT_HEADER_NAME])
+
     def to_header(self, span_context):
         """Convert a SpanContext object to header string.
 
@@ -92,3 +108,17 @@ class GoogleCloudFormatPropagator(object):
             span_id,
             int(trace_options))
         return header
+
+    def to_headers(self, span_context):
+        """Convert a SpanContext object to HTTP request headers.
+
+        :type span_context:
+            :class:`~opencensus.trace.span_context.SpanContext`
+        :param span_context: SpanContext object.
+
+        :rtype: dict
+        :returns: Trace context headers in google cloud format.
+        """
+        return {
+            _TRACE_CONTEXT_HEADER_NAME: self.to_header(span_context),
+        }
