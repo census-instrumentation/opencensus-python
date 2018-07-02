@@ -33,8 +33,6 @@ HTTP_STATUS_CODE = attributes_helper.COMMON_ATTRIBUTES['HTTP_STATUS_CODE']
 
 REQUEST_THREAD_LOCAL_KEY = 'django_request'
 
-_DJANGO_TRACE_HEADER = 'HTTP_X_CLOUD_TRACE_CONTEXT'
-
 BLACKLIST_PATHS = 'BLACKLIST_PATHS'
 GCP_EXPORTER_PROJECT = 'GCP_EXPORTER_PROJECT'
 SAMPLING_RATE = 'SAMPLING_RATE'
@@ -77,19 +75,6 @@ def _set_django_attributes(tracer, request):
 
     if user_name is not None:
         tracer.add_attribute_to_current_span('/django/user/name', user_name)
-
-
-def get_django_header():
-    """Get trace context header from django request headers.
-
-    :rtype: str
-    :returns: Trace context header in HTTP request headers.
-    """
-    request = _get_django_request()
-
-    header = request.META.get(_DJANGO_TRACE_HEADER)
-
-    return header
 
 
 class OpencensusMiddleware(MiddlewareMixin):
@@ -155,8 +140,8 @@ class OpencensusMiddleware(MiddlewareMixin):
 
         try:
             # Start tracing this request
-            header = get_django_header()
-            span_context = self.propagator.from_header(header)
+            span_context = self.propagator.from_headers(
+                _get_django_request().META)
 
             # Reload the tracer with the new span context
             tracer = tracer_module.Tracer(

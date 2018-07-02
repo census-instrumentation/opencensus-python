@@ -85,9 +85,11 @@ class GoogleCloudFormatPropagator(object):
         """
         if headers is None:
             return SpanContext()
-        if _TRACE_CONTEXT_HEADER_NAME not in headers:
+        header = headers.get(_TRACE_CONTEXT_HEADER_NAME)
+        if header is None:
             return SpanContext()
-        return self.from_header(headers[_TRACE_CONTEXT_HEADER_NAME])
+        header = str(header.encode('utf-8'))
+        return self.from_header(header)
 
     def to_header(self, span_context):
         """Convert a SpanContext object to header string.
