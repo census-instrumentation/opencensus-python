@@ -16,9 +16,9 @@ from opencensus.trace.propagation import google_cloud_format
 from opencensus.trace.exporters import print_exporter
 from opencensus.trace.samplers import always_on
 from opencensus.trace.span_context import SpanContext
-from opencensus.trace.tracers import context_tracer
+from opencensus.trace.tracers import asyncio_context_tracer
 from opencensus.trace.tracers import noop_tracer
-from opencensus.trace import execution_context
+from opencensus.trace import asyncio_context
 
 
 class Tracer(object):
@@ -82,7 +82,7 @@ class Tracer(object):
 
         if sampled:
             self.span_context.trace_options.set_enabled(True)
-            return context_tracer.ContextTracer(
+            return asyncio_context_tracer.ContextTracer(
                 exporter=self.exporter,
                 span_context=self.span_context)
         else:
@@ -90,7 +90,7 @@ class Tracer(object):
 
     def store_tracer(self):
         """Add the current tracer to thread_local"""
-        execution_context.set_opencensus_tracer(self)
+        asyncio_context.set_opencensus_tracer(self)
 
     def finish(self):
         """End all spans."""

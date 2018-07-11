@@ -22,10 +22,10 @@ from sanic.exceptions import SanicException
 from google.rpc import code_pb2
 
 from opencensus.trace import attributes_helper
-from opencensus.trace import execution_context
+from opencensus.trace import asyncio_context
 from opencensus.trace import stack_trace
 from opencensus.trace import status
-from opencensus.trace import tracer as tracer_module
+from opencensus.trace.tracers import asyncio_context_tracer as tracer_module
 from opencensus.trace.exporters import print_exporter
 from opencensus.trace.exporters.transports import sync
 from opencensus.trace.ext import utils
@@ -173,11 +173,14 @@ class SanicMiddleware(object):
         try:
             span_context = self.propagator.from_headers(request.headers)
 
-            tracer = tracer_module.Tracer(
+#            tracer = tracer_module.ContextTracer(
+#                span_context=span_context,
+#                exporter=self.exporter,
+#                propagator=self.propagator)
+
+            tracer = tracer_module.ContextTracer(
                 span_context=span_context,
-                sampler=self.sampler,
-                exporter=self.exporter,
-                propagator=self.propagator)
+                exporter=self.exporter)
 
             span = tracer.start_span()
 
@@ -199,10 +202,12 @@ class SanicMiddleware(object):
             return response
 
         try:
-            tracer = execution_context.get_opencensus_tracer()
+            tracer = asyncio_context.get_opencensus_tracer()
             tracer.add_attribute_to_current_span(
                 HTTP_STATUS_CODE,
                 str(response.status))
+            tracer.end_span()
+            tracer.finish()
         except Exception:  # pragma: NO COVER
             log.error('Failed to trace request', exc_info=True)
 
@@ -212,10 +217,10 @@ class SanicMiddleware(object):
             return
 
         try:
-            tracer = execution_context.get_opencensus_tracer()
+            tracer = asyncio_context.get_opencensus_tracer()
 
             if exception is not None:
-                span = execution_context.get_current_span()
+                span = asyncio_context.get_current_span()
                 span.status = status.Status(
                     code=code_pb2.UNKNOWN,
                     message=str(exception)
