@@ -25,7 +25,7 @@ class MeasureToViewMap(object):
     """
     def __init__(self):
         # stores the one-to-many mapping from Measures to View Datas
-        self._map = defaultdict(list)
+        self._measure_to_view_data_list_map = defaultdict(list)
         # stores a map from the registered View names to the Views
         self._registered_views = {}
         # stores a map from the registered Measure names to the Measures
@@ -44,9 +44,9 @@ class MeasureToViewMap(object):
         if view is None:
             return None
 
-        views = self._map.get(view.measure.name)
-        if views is not None:
-            for view_data in views:
+        view_data_list = self._measure_to_view_data_list_map.get(view.measure.name)
+        if view_data_list is not None:
+            for view_data in view_data_list:
                 if view_data.view.name == view_name:
                     view_data_copy = copy.deepcopy(view_data)
                     view_data_copy.end()
@@ -77,9 +77,8 @@ class MeasureToViewMap(object):
         self._registered_views[view.name] = view
         if registered_measure is None:
             self._registered_measures[measure.name] = measure
-        self._map[view.measure.name].append(ViewData(view=view,
-                                                     start_time=timestamp,
-                                                     end_time=timestamp))
+        self._measure_to_view_data_list_map[view.measure.name].append(
+            ViewData(view=view, start_time=timestamp, end_time=timestamp))
 
     def record(self, tags, measurement_map, timestamp):
         """records stats with a set of tags"""
@@ -87,10 +86,9 @@ class MeasureToViewMap(object):
             if measure != self._registered_measures.get(measure.name):
                 return
             view_datas = []
-            for key, view in self._map.items():
-                if key == measure.name:
-                    # note that self._map is a multi-map.
-                    view_datas.extend(self._map[key])
+            for measure_name, view_data_list in self._measure_to_view_data_list_map.items():
+                if measure_name == measure.name:
+                    view_datas.extend(view_data_list)
             for view_data in view_datas:
                 view_data.record(context=tags,
                                  value=value,
