@@ -48,7 +48,9 @@ class MeasureToViewMap(object):
         if views is not None:
             for view_data in views:
                 if view_data.view.name == view_name:
-                    return copy.deepcopy(view_data)
+                    view_data_copy = copy.deepcopy(view_data)
+                    view_data_copy.end()
+                    return view_data_copy
 
     def filter_exported_views(self, all_views):
         """returns the subset of the given view that should be exported"""
@@ -72,7 +74,7 @@ class MeasureToViewMap(object):
         if registered_measure is not None and registered_measure != measure:
             logging.warning(
                 "A different measure with the same name is already registered")
-        self._registered_views[measure.name] = view
+        self._registered_views[view.name] = view
         if registered_measure is None:
             self._registered_measures[measure.name] = measure
         self._map[view.measure.name].append(ViewData(view=view,
@@ -85,11 +87,11 @@ class MeasureToViewMap(object):
             if measure != self._registered_measures.get(measure.name):
                 return
             view_datas = []
-            for key, value in self._map.items():
+            for key, view in self._map.items():
                 if key == measure.name:
                     # note that self._map is a multi-map.
                     view_datas.extend(self._map[key])
             for view_data in view_datas:
                 view_data.record(context=tags,
-                                 value=view_data.view.measure,
+                                 value=value,
                                  timestamp=timestamp)
