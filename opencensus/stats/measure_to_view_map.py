@@ -23,6 +23,7 @@ class MeasureToViewMap(object):
     specific View Datas
 
     """
+
     def __init__(self):
         # stores the one-to-many mapping from Measures to View Datas
         self._measure_to_view_data_list_map = defaultdict(list)
@@ -44,7 +45,8 @@ class MeasureToViewMap(object):
         if view is None:
             return None
 
-        view_data_list = self._measure_to_view_data_list_map.get(view.measure.name)
+        view_data_list = self._measure_to_view_data_list_map.get(
+            view.measure.name)
         if view_data_list is not None:
             for view_data in view_data_list:
                 if view_data.view.name == view_name:
@@ -86,10 +88,10 @@ class MeasureToViewMap(object):
             if measure != self._registered_measures.get(measure.name):
                 return
             view_datas = []
-            for measure_name, view_data_list in self._measure_to_view_data_list_map.items():
+            for measure_name, view_data_list in self._measure_to_view_data_list_map.items(
+            ):
                 if measure_name == measure.name:
                     view_datas.extend(view_data_list)
             for view_data in view_datas:
-                view_data.record(context=tags,
-                                 value=value,
-                                 timestamp=timestamp)
+                view_data.record(
+                    context=tags, value=value, timestamp=timestamp)
