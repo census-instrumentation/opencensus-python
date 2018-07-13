@@ -78,7 +78,7 @@ class TestFlaskTrace(unittest.TestCase):
         self.process = run_application()
 
         self.headers_trace = {
-            'X-Cloud-Trace-Context: '{}/{};o={}'.format(
+            'X-Cloud-Trace-Context': '{}/{};o={}'.format(
                 self.trace_id, self.span_id, 1)
         }
 
