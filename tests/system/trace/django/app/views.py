@@ -157,4 +157,4 @@ def health_check(request):
 
 
 def get_request_header(request):
-    return HttpResponse(request.META.get('X_CLOUD_TRACE_CONTEXT'))
+    return HttpResponse(request.META.get('HTTP_X_CLOUD_TRACE_CONTEXT'))

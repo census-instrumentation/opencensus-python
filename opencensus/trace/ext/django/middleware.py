@@ -45,6 +45,19 @@ ZIPKIN_EXPORTER_PORT = 'ZIPKIN_EXPORTER_PORT'
 log = logging.getLogger(__name__)
 
 
+class _DjangoMetaWrapper(object):
+    """
+    Wrapper class which takes HTTP header name and retrieve the value from
+    Django request.META
+    """
+
+    def __init__(self, meta=None):
+        self.meta = meta or _get_django_request().META
+
+    def get(self, key):
+        return self.meta.get('HTTP_' + key.upper().replace('-', '_'))
+
+
 def _get_django_request():
     """Get Django request from thread local.
 
@@ -141,7 +154,7 @@ class OpencensusMiddleware(MiddlewareMixin):
         try:
             # Start tracing this request
             span_context = self.propagator.from_headers(
-                _get_django_request().META)
+                _DjangoMetaWrapper(_get_django_request().META))
 
             # Reload the tracer with the new span context
             tracer = tracer_module.Tracer(

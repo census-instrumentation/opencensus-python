@@ -100,7 +100,7 @@ class TestGoogleCloudFormatPropagator(unittest.TestCase):
     def test_headers_match(self):
         # Trace option is enabled.
         headers = {
-            'X_CLOUD_TRACE_CONTEXT':
+            'X-Cloud-Trace-Context':
                 '6e0c63257de34c92bf9efcd03927272e/00f067aa0ba902b7;o=1',
         }
         expected_trace_id = '6e0c63257de34c92bf9efcd03927272e'
@@ -147,7 +147,7 @@ class TestGoogleCloudFormatPropagator(unittest.TestCase):
 
         headers = propagator.to_headers(span_context)
         expected_headers = {
-            'X_CLOUD_TRACE_CONTEXT': '{}/{};o={}'.format(trace_id, span_id, 1),
+            'X-Cloud-Trace-Context': '{}/{};o={}'.format(trace_id, span_id, 1),
         }
 
         self.assertEqual(headers, expected_headers)
