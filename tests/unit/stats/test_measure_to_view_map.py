@@ -20,6 +20,7 @@ from opencensus.stats.view import View
 from opencensus.stats.view_data import ViewData
 from opencensus.stats.measurement import Measurement
 from opencensus.stats.measure import BaseMeasure
+from opencensus.stats.measure import MeasureInt
 from opencensus.stats import measure_to_view_map as measure_to_view_map_module
 
 
@@ -119,7 +120,7 @@ class TestMeasureToViewMap(unittest.TestCase):
         name = "testView"
         description = "testDescription"
         columns = mock.Mock()
-        measure = mock.Mock()
+        measure = MeasureInt("measure", "description", "1")
         aggregation = mock.Mock()
         view = View(
             name=name,
@@ -142,14 +143,33 @@ class TestMeasureToViewMap(unittest.TestCase):
             measure_to_view_map._measure_to_view_data_list_map[
                 view.measure.name])
 
-        test_measure = mock.Mock()
-        measure_to_view_map._registered_measures = {measure.name: test_measure}
+        # Registers a view with an existing measure.
+        view2 = View(
+            name="testView2",
+            description=description,
+            columns=columns,
+            measure=measure,
+            aggregation=aggregation)
         test_with_registered_measures = measure_to_view_map.register_view(
-            view=view, timestamp=timestamp)
+            view=view2, timestamp=timestamp)
         self.assertIsNone(test_with_registered_measures)
-        self.assertIsNotNone(
-            measure_to_view_map._measure_to_view_data_list_map[
-                view.measure.name])
+        self.assertEqual(
+            measure_to_view_map._registered_measures[measure.name], measure)      
+
+        # Registers a view with a measure that has the same name as an existing measure,
+        # but with different schema. measure2 and view3 should be ignored.
+        measure2 = MeasureInt("measure", "another measure", "ms")
+        view3 = View(
+            name="testView3",
+            description=description,
+            columns=columns,
+            measure=measure2,
+            aggregation=aggregation)
+        test_with_registered_measures = measure_to_view_map.register_view(
+            view=view3, timestamp=timestamp)
+        self.assertIsNone(test_with_registered_measures)
+        self.assertEqual(
+            measure_to_view_map._registered_measures[measure2.name], measure) 
 
         measure_to_view_map._registered_measures = {measure.name: None}
         self.assertIsNone(
