@@ -22,11 +22,12 @@ from opencensus.stats import view as view_module
 from opencensus.tags import tag_key as tag_key_module
 from opencensus.tags import tag_map as tag_map_module
 from opencensus.tags import tag_value as tag_value_module
+from pprint import pprint
 
 MiB = 1 << 20
 FRONTEND_KEY = tag_key_module.TagKey("my.org/keys/frontend")
 VIDEO_SIZE_MEASURE = measure_module.MeasureInt(
-    "my.org/measure/video_size", "size of processed videos", "By")
+    "my.org/measures/video_size", "size of processed videos", "By")
 VIDEO_SIZE_VIEW_NAME = "my.org/views/video_size"
 VIDEO_SIZE_DISTRIBUTION = aggregation_module.DistributionAggregation(
     [0.0, 16.0 * MiB, 256.0 * MiB])
@@ -51,14 +52,15 @@ def main():
     # Process video.
     # Record the processed video size.
     tag_value = tag_value_module.TagValue("mobile-ios9.3.5")
-    tag_map = tag_map_module.TagMap().insert(FRONTEND_KEY, tag_value)
+    tag_map = tag_map_module.TagMap()
+    tag_map.insert(FRONTEND_KEY, tag_value)
     measure_map = stats_recorder.new_measurement_map()
     measure_map.measure_int_put(VIDEO_SIZE_MEASURE, 25 * MiB)
     measure_map.record(tag_map)
 
     # Get aggregated stats and print it to console.
     view_data = view_manager.get_view(VIDEO_SIZE_VIEW_NAME)
-    print(view_data)  # TODO: print more meaningful info for view_data
+    pprint(vars(view_data))   # TODO: print more meaningful info for view_data
 
 
 if __name__ == '__main__':
