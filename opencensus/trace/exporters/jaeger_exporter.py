@@ -216,8 +216,8 @@ class JaegerExporter(base.Exporter):
             parent_span_id = span.parent_span_id
 
             jaeger_span = jaeger.Span(
-                traceIdHigh=_convert_hex_str_to_int(trace_id[0:8]),
-                traceIdLow=_convert_hex_str_to_int(trace_id[8:16]),
+                traceIdHigh=_convert_hex_str_to_int(trace_id[0:16]),
+                traceIdLow=_convert_hex_str_to_int(trace_id[16:32]),
                 spanId=_convert_hex_str_to_int(span_id),
                 operationName=span.name,
                 startTime=int(round(start_microsec)),
@@ -242,8 +242,8 @@ def _extract_refs_from_span(span):
         trace_id = link.trace_id
         refs.append(jaeger.SpanRef(
             refType=_convert_reftype_to_jaeger_reftype(link.type),
-            traceIdHigh=_convert_hex_str_to_int(trace_id[0:8]),
-            traceIdLow=_convert_hex_str_to_int(trace_id[8:16]),
+            traceIdHigh=_convert_hex_str_to_int(trace_id[0:16]),
+            traceIdLow=_convert_hex_str_to_int(trace_id[16:32]),
             spanId=_convert_hex_str_to_int(link.span_id)))
     return refs
 
