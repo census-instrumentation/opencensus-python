@@ -16,22 +16,20 @@
 class TagMap(object):
     """ A tag map is a map of tags from key to value
 
-    :type tags: (list(:class: '~opencensus.tags.tag.Tag')
-    :param tags: (Optional) a list of tags
+    :type tags: list(:class: '~opencensus.tags.tag.Tag')
+    :param tags: a list of tags
 
     """
     def __init__(self, tags=None):
         self._map = {}
         if tags is not None:
             self.tags = tags
-            print("tags : ", tags)
             for tag in self.tags:
-                print("tag ", tag)
                 for tag_key, tag_value in tag.items():
                     self._map[tag_key] = tag_value
 
         else:
-            self.tags = [{}]
+            self.tags = {}
 
     @property
     def map(self):

@@ -28,10 +28,6 @@ class TagKey(object):
         """The name of the current key"""
         return self._name
 
-    @property
-    def length(self):
-        return len(self.name)
-
     def is_valid_name(self, name):
         """Checks if the name of the key is valid
 

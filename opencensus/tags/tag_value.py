@@ -28,10 +28,6 @@ class TagValue(object):
         """The current value"""
         return self._value
 
-    @property
-    def length(self):
-        return len(self.value)
-
     def is_valid_value(self, value):
         """ Checks if the value if valid
 
