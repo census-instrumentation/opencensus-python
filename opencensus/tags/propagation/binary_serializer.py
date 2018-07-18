@@ -14,21 +14,15 @@
 
 # -*- coding: utf-8 -*-
 
-import binascii
-import collections
 import logging
-import io
-import struct
-import sys
+import six
+
 from google.protobuf.internal.encoder import _VarintBytes
 from google.protobuf.internal.encoder import TagBytes
 from google.protobuf.internal.decoder import _DecodeVarint
 from google.protobuf.internal.decoder import BytesDecoder
 
 from opencensus.tags import tag_map as tag_map_module
-from opencensus.tags import tag
-from opencensus.tags.tag_key import TagKey
-from opencensus.tags.tag_value import TagValue
 
 # Used for decoding hex bytes to hex string.
 UTF8 = 'utf-8'
@@ -45,7 +39,8 @@ class BinarySerializer(object):
         else:
             buffer = memoryview(binary)
             version_id = buffer[0]
-            print("version_id: ", buffer[0])
+            if six.PY2:
+                version_id = ord(version_id)
             if version_id > VERSION_ID or version_id < 0:
                 raise Exception("Invalid version id.")
             return self.parse_tags(buffer)
@@ -65,13 +60,13 @@ class BinarySerializer(object):
             logging.warning("Size of the tag context exceeds the maximum size")
 
     def parse_tags(self, buffer):
-        tag_list = []
-        tags = {}
+        tag_context = tag_map_module.TagMap()
         limit = len(buffer)
+        print(limit)
         total_chars = 0
         i = 1
         while i < limit:
-            field_id = buffer[i]
+            field_id = buffer[i] if six.PY3 else ord(buffer[i])
             if field_id == TAG_FIELD_ID:
                 i += 1
                 key = self.decode_string(buffer, i)
@@ -82,12 +77,11 @@ class BinarySerializer(object):
                 i += len(val)
                 total_chars += len(val)
                 i += 1
-                tags[key] = val
+                tag_context.insert(str(key), str(val))
             else:
                 break
         if total_chars <= TAG_MAP_SERIALIZED_SIZE_LIMIT:
-            tag_list.append(tags)
-            return tag_list
+            return tag_context
         else:  # pragma: NO COVER
             logging.warning("Size of the tag context exceeds maximum")
 
@@ -103,10 +97,12 @@ class BinarySerializer(object):
         return encoded_bytes
 
     def decode_string(self, buffer, pos):
-        length = buffer[pos]
+        length = buffer[pos] if six.PY3 else ord(buffer[pos])
         builder = ""
         i = 1
         while i <= length:
-            builder += _VarintBytes(buffer[pos + i]).decode()
+            bytes_to_decode = buffer[pos + i] if six.PY3 \
+                else ord(buffer[pos + i])
+            builder += _VarintBytes(bytes_to_decode).decode()
             i += 1
         return builder
