@@ -29,7 +29,7 @@ class TagMap(object):
                     self._map[tag_key] = tag_value
 
         else:
-            self.tags = {}
+            self._map = {}
 
     @property
     def map(self):
