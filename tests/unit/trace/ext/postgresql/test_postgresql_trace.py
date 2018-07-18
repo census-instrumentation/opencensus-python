@@ -87,6 +87,29 @@ class Test_postgresql_trace(unittest.TestCase):
         self.assertTrue(mock_tracer.add_attribute_to_current_span.called)
         self.assertTrue(mock_tracer.end_span.called)
 
+    def test_trace_cursor_query_none_tracer(self):
+        return_value = 'trace test'
+        query = 'SELECT 1'
+        mock_func = mock.Mock()
+        mock_func.__name__ = 'execute'
+        mock_func.return_value = return_value
+        mock_tracer = mock.Mock()
+
+        patch = mock.patch(
+            'opencensus.trace.ext.postgresql.trace.execution_context.'
+            'get_opencensus_tracer',
+            return_value=None)
+
+        wrapped = trace.trace_cursor_query(mock_func)
+
+        with patch:
+            result = wrapped(query)
+
+        self.assertEqual(result, return_value)
+        self.assertFalse(mock_tracer.start_span.called)
+        self.assertFalse(mock_tracer.add_attribute_to_current_span.called)
+        self.assertFalse(mock_tracer.end_span.called)
+
 class TestTraceCursor(unittest.TestCase):
 
     def test_constructor(self):

@@ -48,17 +48,23 @@ def connect(*args, **kwargs):
 def trace_cursor_query(query_func):
     def call(query, *args, **kwargs):
         _tracer = execution_context.get_opencensus_tracer()
-        _span = _tracer.start_span()
-        _span.name = '{}.query'.format(MODULE_NAME)
-        _tracer.add_attribute_to_current_span(
-            '{}/query'.format(MODULE_NAME), query)
-        _tracer.add_attribute_to_current_span(
-            '{}/cursor/method/name'.format(MODULE_NAME),
-            query_func.__name__)
+        if _tracer is not None:
+            # Note that although get_opencensus_tracer() returns a NoopTracer
+            # if no thread local has been set, set_opencensus_tracer() does NOT
+            # protect against setting None to the thread local - be defensive
+            # here
+            _span = _tracer.start_span()
+            _span.name = '{}.query'.format(MODULE_NAME)
+            _tracer.add_attribute_to_current_span(
+                '{}/query'.format(MODULE_NAME), query)
+            _tracer.add_attribute_to_current_span(
+                '{}/cursor/method/name'.format(MODULE_NAME),
+                query_func.__name__)
 
         result = query_func(query, *args, **kwargs)
 
-        _tracer.end_span()
+        if _tracer is not None:
+            _tracer.end_span()
         return result
 
     return call

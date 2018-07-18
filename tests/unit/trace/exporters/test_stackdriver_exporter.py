@@ -243,10 +243,16 @@ class Test_set_attributes_gae(unittest.TestCase):
         expected = {
             'attributes': {
                 'attributeMap': {
-                    'g.co/gae/app/service': {
+                    'g.co/gae/app/module': {
                         'string_value': {
                             'truncated_byte_count': 0,
                             'value': 'service'
+                        }
+                    },
+                    'g.co/gae/app/instance': {
+                        'string_value': {
+                            'truncated_byte_count': 0,
+                            'value': 'flex'
                         }
                     },
                     'g.co/gae/app/version': {
@@ -277,9 +283,9 @@ class Test_set_attributes_gae(unittest.TestCase):
                 os.environ,
                 {stackdriver_exporter._APPENGINE_FLEXIBLE_ENV_VM: 'vm',
                  stackdriver_exporter._APPENGINE_FLEXIBLE_ENV_FLEX: 'flex',
-                 'GAE_FLEX_PROJECT': 'project',
-                 'GAE_FLEX_SERVICE': 'service',
-                 'GAE_FLEX_VERSION': 'version'}):
+                 'GOOGLE_CLOUD_PROJECT': 'project',
+                 'GAE_SERVICE': 'service',
+                 'GAE_VERSION': 'version'}):
             self.assertTrue(stackdriver_exporter.is_gae_environment())
             stackdriver_exporter.set_attributes(trace)
 

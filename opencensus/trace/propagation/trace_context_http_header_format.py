@@ -18,6 +18,7 @@ import re
 from opencensus.trace.span_context import SpanContext
 from opencensus.trace.trace_options import TraceOptions
 
+_TRACE_PARENT_HEADER_NAME = 'traceparent'
 _TRACE_CONTEXT_HEADER_FORMAT = \
     '([0-9a-f]{2})(-([0-9a-f]{32}))(-([0-9a-f]{16}))?(-([0-9a-f]{2}))?'
 _TRACE_CONTEXT_HEADER_RE = re.compile(_TRACE_CONTEXT_HEADER_FORMAT)
@@ -76,6 +77,23 @@ class TraceContextPropagator(object):
 
         return SpanContext()
 
+    def from_headers(self, headers):
+        """Generate a SpanContext object using the W3C Distributed Tracing headers.
+
+        :type headers: dict
+        :param headers: HTTP request headers.
+
+        :rtype: :class:`~opencensus.trace.span_context.SpanContext`
+        :returns: SpanContext generated from the trace context header.
+        """
+        if headers is None:
+            return SpanContext()
+        header = headers.get(_TRACE_PARENT_HEADER_NAME)
+        if header is None:
+            return SpanContext()
+        header = str(header.encode('utf-8'))
+        return self.from_header(header)
+
     def to_header(self, span_context):
         """Convert a SpanContext object to header string, using version 0.
 
@@ -98,3 +116,18 @@ class TraceContextPropagator(object):
             span_id,
             trace_options)
         return header
+
+    def to_headers(self, span_context):
+        """Convert a SpanContext object to W3C Distributed Tracing headers,
+        using version 0.
+
+        :type span_context:
+            :class:`~opencensus.trace.span_context.SpanContext`
+        :param span_context: SpanContext object.
+
+        :rtype: dict
+        :returns: W3C Distributed Tracing headers.
+        """
+        return {
+            _TRACE_PARENT_HEADER_NAME: self.to_header(span_context),
+        }

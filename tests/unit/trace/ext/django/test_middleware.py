@@ -177,7 +177,7 @@ class TestOpencensusMiddleware(unittest.TestCase):
         django_trace_id = '{}/{}'.format(trace_id, span_id)
 
         django_request = RequestFactory().get('/', **{
-            middleware._DJANGO_TRACE_HEADER: django_trace_id})
+            'HTTP_X_CLOUD_TRACE_CONTEXT': django_trace_id})
 
         middleware_obj = middleware.OpencensusMiddleware()
 
@@ -260,7 +260,7 @@ class TestOpencensusMiddleware(unittest.TestCase):
         django_trace_id = '{}/{}'.format(trace_id, span_id)
 
         django_request = RequestFactory().get('/', **{
-            middleware._DJANGO_TRACE_HEADER: django_trace_id})
+            google_cloud_format._TRACE_CONTEXT_HEADER_NAME: django_trace_id})
 
         middleware_obj = middleware.OpencensusMiddleware()
 
