@@ -40,7 +40,7 @@ class TestPyramidMiddleware(unittest.TestCase):
         execution_context.clear()
 
     def test_constructor(self):
-        pyramid_trace_header = 'X_CLOUD_TRACE_CONTEXT'
+        pyramid_trace_header = 'X-Cloud-Trace-Context'
         trace_id = '2dd43a1d6b2549c6bc2a1a54c2fc0b05'
         span_id = '6e0c63257de34c92'
         pyramid_trace_id = '{}/{}'.format(trace_id, span_id)
@@ -116,7 +116,7 @@ class TestPyramidMiddleware(unittest.TestCase):
         self.assertEqual(middleware.exporter.port, port)
 
     def test__before_request(self):
-        pyramid_trace_header = 'X_CLOUD_TRACE_CONTEXT'
+        pyramid_trace_header = 'X-Cloud-Trace-Context'
         trace_id = '2dd43a1d6b2549c6bc2a1a54c2fc0b05'
         span_id = '6e0c63257de34c92'
         pyramid_trace_id = '{}/{}'.format(trace_id, span_id)
@@ -158,7 +158,7 @@ class TestPyramidMiddleware(unittest.TestCase):
         self.assertEqual(span_context.trace_id, trace_id)
 
     def test__before_request_blacklist(self):
-        pyramid_trace_header = 'X_CLOUD_TRACE_CONTEXT'
+        pyramid_trace_header = 'X-Cloud-Trace-Context'
         trace_id = '2dd43a1d6b2549c6bc2a1a54c2fc0b05'
         span_id = '6e0c63257de34c92'
         pyramid_trace_id = '{}/{}'.format(trace_id, span_id)
@@ -192,7 +192,7 @@ class TestPyramidMiddleware(unittest.TestCase):
         assert isinstance(span, base.NullContextManager)
 
     def test__after_request(self):
-        pyramid_trace_header = 'X_CLOUD_TRACE_CONTEXT'
+        pyramid_trace_header = 'X-Cloud-Trace-Context'
         trace_id = '2dd43a1d6b2549c6bc2a1a54c2fc0b05'
         span_id = '6e0c63257de34c92'
         pyramid_trace_id = '{}/{}'.format(trace_id, span_id)
@@ -236,7 +236,7 @@ class TestPyramidMiddleware(unittest.TestCase):
         self.assertEqual(span.attributes, expected_attributes)
 
     def test__after_request_blacklist(self):
-        pyramid_trace_header = 'X_CLOUD_TRACE_CONTEXT'
+        pyramid_trace_header = 'X-Cloud-Trace-Context'
         trace_id = '2dd43a1d6b2549c6bc2a1a54c2fc0b05'
         span_id = '6e0c63257de34c92'
         pyramid_trace_id = '{}/{}'.format(trace_id, span_id)
