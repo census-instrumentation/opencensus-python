@@ -30,9 +30,6 @@ from opencensus.trace.ext import utils
 from opencensus.trace.propagation import google_cloud_format
 from opencensus.trace.samplers import always_on, probability
 
-
-_FLASK_TRACE_HEADER = 'X_CLOUD_TRACE_CONTEXT'
-
 HTTP_METHOD = attributes_helper.COMMON_ATTRIBUTES['HTTP_METHOD']
 HTTP_URL = attributes_helper.COMMON_ATTRIBUTES['HTTP_URL']
 HTTP_STATUS_CODE = attributes_helper.COMMON_ATTRIBUTES['HTTP_STATUS_CODE']
@@ -169,8 +166,7 @@ class FlaskMiddleware(object):
             return
 
         try:
-            header = get_flask_header()
-            span_context = self.propagator.from_header(header)
+            span_context = self.propagator.from_headers(flask.request.headers)
 
             tracer = tracer_module.Tracer(
                 span_context=span_context,
@@ -236,18 +232,3 @@ class FlaskMiddleware(object):
             tracer.finish()
         except Exception:  # pragma: NO COVER
             log.error('Failed to trace request', exc_info=True)
-
-
-def get_flask_header():
-    """Get trace context header from flask request headers.
-
-    :rtype: str
-    :returns: Trace context header in HTTP request headers.
-    """
-    header = flask.request.headers.get(_FLASK_TRACE_HEADER)
-
-    # In case the header is unicode, convert it to string.
-    if header is not None:
-        header = str(header.encode('utf-8'))
-
-    return header

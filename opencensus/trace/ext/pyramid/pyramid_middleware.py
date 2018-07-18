@@ -26,8 +26,6 @@ HTTP_METHOD = attributes_helper.COMMON_ATTRIBUTES['HTTP_METHOD']
 HTTP_URL = attributes_helper.COMMON_ATTRIBUTES['HTTP_URL']
 HTTP_STATUS_CODE = attributes_helper.COMMON_ATTRIBUTES['HTTP_STATUS_CODE']
 
-_PYRAMID_TRACE_HEADER = 'X_CLOUD_TRACE_CONTEXT'
-
 BLACKLIST_PATHS = 'BLACKLIST_PATHS'
 
 
@@ -78,8 +76,7 @@ class OpenCensusTweenFactory(object):
             return
 
         try:
-            header = get_context_header(request)
-            span_context = self.propagator.from_header(header)
+            span_context = self.propagator.from_headers(request.headers)
 
             tracer = tracer_module.Tracer(
                 span_context=span_context,
@@ -117,8 +114,3 @@ class OpenCensusTweenFactory(object):
             tracer.finish()
         except Exception:  # pragma: NO COVER
             log.error('Failed to trace request', exc_info=True)
-
-
-def get_context_header(request):
-    """Get trace context header from pyramid request headers."""
-    return request.headers.get(_PYRAMID_TRACE_HEADER)
