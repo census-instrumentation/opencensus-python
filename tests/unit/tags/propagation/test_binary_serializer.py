@@ -18,6 +18,20 @@ from opencensus.tags.propagation import binary_serializer
 
 
 class TestBinarySerializer(unittest.TestCase):
+    def test_from_byte_array_input_empty(self):
+        binary = bytearray(b'')
+        propagator = binary_serializer.BinarySerializer()
+        tag_context = propagator.from_byte_array(binary=binary)
+        expected_tags = {}
+
+        self.assertEqual(expected_tags, tag_context.map)
+
+    def test_from_byte_array_invalid_version_id(self):
+        binary = bytearray(b'\x04key1\x04val1')
+        propagator = binary_serializer.BinarySerializer()
+        with self.assertRaises(ValueError):
+            propagator.from_byte_array(binary=binary)
+
     def test_from_byte_array(self):
         binary = bytearray(b'\x00\x00\x04key1\x04val1\x00\x04key2\x04val2'
                            b'\x00\x04key3\x04val3')
@@ -41,19 +55,18 @@ class TestBinarySerializer(unittest.TestCase):
 
         expected_binary = b'\x00\x00\x04key1\x04val1\x00\x04key2\x04val2\x00' \
                           b'\x04key3\x04val3\x00\x04key4\x04val4'
-        print(binary)
-        print(expected_binary)
 
         self.assertEqual(binary, expected_binary)
 
-    def test_parse_tags(self):
-            '''finish'''
+    def test__parse_tags_invalid_field_id(self):
+        from collections import OrderedDict
 
-    def test_encode_tag(self):
-        '''finish'''
+        propagator = binary_serializer.BinarySerializer()
+        binary = bytearray(b'\x00\x00\x04key1\x04val1\x04key2\x04val2'
+                           b'\x00\x04key3\x04val3')
+        buffer = memoryview(binary)
+        tag_context = propagator._parse_tags(buffer)
+        expected_dict = OrderedDict(
+            [('key1', 'val1')])
 
-    def test_encode_string(self):
-        '''finish'''
-
-    def test_decode_string(self):
-        '''finish'''
+        self.assertEqual(frozenset(tag_context.map), frozenset(expected_dict))

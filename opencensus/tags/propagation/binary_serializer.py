@@ -18,9 +18,6 @@ import logging
 import six
 
 from google.protobuf.internal.encoder import _VarintBytes
-from google.protobuf.internal.encoder import TagBytes
-from google.protobuf.internal.decoder import _DecodeVarint
-from google.protobuf.internal.decoder import BytesDecoder
 
 from opencensus.tags import tag_map as tag_map_module
 
@@ -36,14 +33,15 @@ class BinarySerializer(object):
     def from_byte_array(self, binary):
         if len(binary) <= 0:
             logging.warning("Input byte[] cannot be empty/")
+            return tag_map_module.TagMap()
         else:
             buffer = memoryview(binary)
             version_id = buffer[0]
             if six.PY2:
                 version_id = ord(version_id)
-            if version_id > VERSION_ID or version_id < 0:
-                raise Exception("Invalid version id.")
-            return self.parse_tags(buffer)
+            if version_id != VERSION_ID:
+                raise ValueError("Invalid version id.")
+            return self._parse_tags(buffer)
 
     def to_byte_array(self, tag_context):
         encoded_bytes = b''
@@ -53,50 +51,52 @@ class BinarySerializer(object):
             for tag_key, tag_value in tag.items():
                 total_chars += len(tag_key)
                 total_chars += len(tag_value)
-                encoded_bytes = self.encode_tag(tag_key, tag_value, encoded_bytes)
+                encoded_bytes = self._encode_tag(
+                    tag_key, tag_value, encoded_bytes)
         if total_chars <= TAG_MAP_SERIALIZED_SIZE_LIMIT:
             return encoded_bytes
         else:  # pragma: NO COVER
             logging.warning("Size of the tag context exceeds the maximum size")
 
-    def parse_tags(self, buffer):
+    def _parse_tags(self, buffer):
         tag_context = tag_map_module.TagMap()
         limit = len(buffer)
-        print(limit)
         total_chars = 0
         i = 1
         while i < limit:
             field_id = buffer[i] if six.PY3 else ord(buffer[i])
             if field_id == TAG_FIELD_ID:
                 i += 1
-                key = self.decode_string(buffer, i)
+                key = self._decode_string(buffer, i)
                 i += len(key)
                 total_chars += len(key)
                 i += 1
-                val = self.decode_string(buffer, i)
+                val = self._decode_string(buffer, i)
                 i += len(val)
                 total_chars += len(val)
                 i += 1
-                tag_context.insert(str(key), str(val))
+                if total_chars > \
+                        TAG_MAP_SERIALIZED_SIZE_LIMIT:  # pragma: NO COVER
+                    logging.warning("Size of the tag context exceeds maximum")
+                    break
+                else:
+                    tag_context.insert(str(key), str(val))
             else:
                 break
-        if total_chars <= TAG_MAP_SERIALIZED_SIZE_LIMIT:
-            return tag_context
-        else:  # pragma: NO COVER
-            logging.warning("Size of the tag context exceeds maximum")
+        return tag_context
 
-    def encode_tag(self, tag_key, tag_value, encoded_bytes):
+    def _encode_tag(self, tag_key, tag_value, encoded_bytes):
         encoded_bytes += _VarintBytes(TAG_FIELD_ID)
-        encoded_bytes = self.encode_string(tag_key, encoded_bytes)
-        encoded_bytes = self.encode_string(tag_value, encoded_bytes)
+        encoded_bytes = self._encode_string(tag_key, encoded_bytes)
+        encoded_bytes = self._encode_string(tag_value, encoded_bytes)
         return encoded_bytes
 
-    def encode_string(self, input_str, encoded_bytes):
+    def _encode_string(self, input_str, encoded_bytes):
         encoded_bytes += _VarintBytes(len(input_str))
         encoded_bytes += input_str.encode(UTF8)
         return encoded_bytes
 
-    def decode_string(self, buffer, pos):
+    def _decode_string(self, buffer, pos):
         length = buffer[pos] if six.PY3 else ord(buffer[pos])
         builder = ""
         i = 1
