@@ -57,7 +57,7 @@ def wrap_httplib_request(request_func):
     """Wrap the httplib request function to trace. Create a new span and update
     and close the span in the response later.
     """
-    def call(self, method, url, *args, **kwargs):
+    def call(self, method, url, body, headers, *args, **kwargs):
         _tracer = execution_context.get_opencensus_tracer()
         _span = _tracer.start_span()
         _span.name = '[httplib]{}'.format(request_func.__name__)
@@ -71,8 +71,13 @@ def wrap_httplib_request(request_func):
         # Store the current span id to thread local.
         execution_context.set_opencensus_attr(
             'httplib/current_span_id', _span.span_id)
-
-        return request_func(self, method, url, *args, **kwargs)
+        try:
+            headers = headers.copy()
+            headers.update(_tracer.propagator.to_headers(
+                _span.context_tracer.span_context))
+        except Exception:  # pragma: NO COVER
+            pass
+        return request_func(self, method, url, body, headers, *args, **kwargs)
 
     return call
 
