@@ -172,7 +172,9 @@ class TestJaegerExporter(unittest.TestCase):
 
     def test_translate_to_jaeger(self):
         self.maxDiff = None
-        trace_id = '6e0c63257de34c92bf9efcd03927272e'
+        trace_id_high = '6e0c63257de34c92'
+        trace_id_low = 'bf9efcd03927272e'
+        trace_id= trace_id_high + trace_id_low
         span_id = '6e0c63257de34c92'
         parent_span_id = '1111111111111111'
 
@@ -264,8 +266,8 @@ class TestJaegerExporter(unittest.TestCase):
         spans = exporter.translate_to_jaeger(span_datas)
         expected_spans = [
             jaeger.Span(
-                traceIdHigh=1846305573,
-                traceIdLow=2112048274,
+                traceIdHigh=7929822056569588882,
+                traceIdLow=-4638992594902767826,
                 spanId=7929822056569588882,
                 parentSpanId=1229782938247303441,
                 operationName='test1',
@@ -294,18 +296,18 @@ class TestJaegerExporter(unittest.TestCase):
                 references=[
                     jaeger.SpanRef(
                         refType=jaeger.SpanRefType.CHILD_OF,
-                        traceIdHigh=1846305573,
-                        traceIdLow=2112048274,
+                        traceIdHigh=7929822056569588882,
+                        traceIdLow=-4638992594902767826,
                         spanId=7929822056569588882),
                     jaeger.SpanRef(
                         refType=jaeger.SpanRefType.FOLLOWS_FROM,
-                        traceIdHigh=1846305573,
-                        traceIdLow=2112048274,
+                        traceIdHigh=7929822056569588882,
+                        traceIdLow=-4638992594902767826,
                         spanId=7929822056569588882),
                     jaeger.SpanRef(
                         refType=None,
-                        traceIdHigh=1846305573,
-                        traceIdLow=2112048274,
+                        traceIdHigh=7929822056569588882,
+                        traceIdLow=-4638992594902767826,
                         spanId=7929822056569588882)
                 ],
                 logs=[
@@ -328,8 +330,8 @@ class TestJaegerExporter(unittest.TestCase):
                 ]),
             jaeger.Span(
                 operationName="test2",
-                traceIdHigh=1846305573,
-                traceIdLow=2112048274,
+                traceIdHigh=7929822056569588882,
+                traceIdLow=-4638992594902767826,
                 spanId=7929822056569588882,
                 parentSpanId=0,
                 startTime=1502820146071158,
