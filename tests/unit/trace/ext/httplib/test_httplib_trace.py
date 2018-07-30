@@ -17,6 +17,7 @@ import unittest
 import mock
 
 from opencensus.trace.ext.httplib import trace
+from opencensus.trace.propagation import trace_context_http_header_format
 
 
 class Test_httplib_trace(unittest.TestCase):
@@ -61,7 +62,10 @@ class Test_httplib_trace(unittest.TestCase):
                          wrap_response_result)
 
     def test_wrap_httplib_request(self):
-        mock_tracer = MockTracer()
+        mock_span = mock.Mock()
+        span_id = '1234'
+        mock_span.span_id = span_id
+        mock_tracer = MockTracer(mock_span)
         mock_request_func = mock.Mock()
         mock_request_func.__name__ = 'request'
 
@@ -72,17 +76,25 @@ class Test_httplib_trace(unittest.TestCase):
 
         wrapped = trace.wrap_httplib_request(mock_request_func)
 
-        url = 'http://localhost:8080'
+        mock_self = mock.Mock()
         method = 'GET'
+        url = 'http://localhost:8080'
+        body = None
+        headers = {}
 
         with patch:
-            wrapped(mock.Mock(), method, url)
+            wrapped(mock_self, method, url, body, headers)
 
         expected_attributes = {
             '/http/url': url,
             '/http/method': method}
         expected_name = '[httplib]request'
 
+        mock_request_func.assert_called_with(
+            mock_self, method, url, body, {
+                'traceparent': '00-123-456-01',
+            }
+        )
         self.assertEqual(expected_attributes,
                          mock_tracer.span.attributes)
         self.assertEqual(expected_name, mock_tracer.span.name)
@@ -151,6 +163,9 @@ class Test_httplib_trace(unittest.TestCase):
 class MockTracer(object):
     def __init__(self, span=None):
         self.span = span
+        self.propagator = (
+            trace_context_http_header_format.TraceContextPropagator()
+        )
 
     def current_span(self):
         return self.span
@@ -158,6 +173,10 @@ class MockTracer(object):
     def start_span(self):
         span = mock.Mock()
         span.attributes = {}
+        span.context_tracer = mock.Mock()
+        span.context_tracer.span_context = mock.Mock()
+        span.context_tracer.span_context.trace_id = '123'
+        span.context_tracer.span_context.span_id = '456'
         self.span = span
         return span
 

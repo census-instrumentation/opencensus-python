@@ -178,11 +178,15 @@ class JaegerExporter(base.Exporter):
         for span in span_datas:
             start_datetime = datetime.datetime.strptime(
                 span.start_time, ISO_DATETIME_REGEX)
-            start_microsec = calendar.timegm(start_datetime.timetuple()) * 1000
+            start_microsec = calendar.timegm(start_datetime.timetuple()) \
+                * 1e6 \
+                + start_datetime.microsecond
 
             end_datetime = datetime.datetime.strptime(
                 span.end_time, ISO_DATETIME_REGEX)
-            end_microsec = calendar.timegm(end_datetime.timetuple()) * 1000
+            end_microsec = calendar.timegm(end_datetime.timetuple()) \
+                * 1e6 \
+                + end_datetime.microsecond
 
             duration_microsec = end_microsec - start_microsec
 
@@ -212,8 +216,8 @@ class JaegerExporter(base.Exporter):
             parent_span_id = span.parent_span_id
 
             jaeger_span = jaeger.Span(
-                traceIdHigh=_convert_hex_str_to_int(trace_id[0:8]),
-                traceIdLow=_convert_hex_str_to_int(trace_id[8:16]),
+                traceIdHigh=_convert_hex_str_to_int(trace_id[0:16]),
+                traceIdLow=_convert_hex_str_to_int(trace_id[16:32]),
                 spanId=_convert_hex_str_to_int(span_id),
                 operationName=span.name,
                 startTime=int(round(start_microsec)),
@@ -222,7 +226,7 @@ class JaegerExporter(base.Exporter):
                 logs=logs,
                 references=refs,
                 flags=flags,
-                parentSpanId=_convert_hex_str_to_int(parent_span_id))
+                parentSpanId=_convert_hex_str_to_int(parent_span_id or '0'))
 
             jaeger_spans.append(jaeger_span)
 
@@ -238,8 +242,8 @@ def _extract_refs_from_span(span):
         trace_id = link.trace_id
         refs.append(jaeger.SpanRef(
             refType=_convert_reftype_to_jaeger_reftype(link.type),
-            traceIdHigh=_convert_hex_str_to_int(trace_id[0:8]),
-            traceIdLow=_convert_hex_str_to_int(trace_id[8:16]),
+            traceIdHigh=_convert_hex_str_to_int(trace_id[0:16]),
+            traceIdLow=_convert_hex_str_to_int(trace_id[16:32]),
             spanId=_convert_hex_str_to_int(link.span_id)))
     return refs
 
