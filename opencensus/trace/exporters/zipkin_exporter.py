@@ -21,9 +21,9 @@ import logging
 
 import requests
 
-from opencensus.trace import span_data
 from opencensus.trace.exporters import base
 from opencensus.trace.exporters.transports import sync
+from opencensus.trace.utils import check_str_length
 
 DEFAULT_ENDPOINT = '/api/v2/spans'
 DEFAULT_HOST_NAME = 'localhost'
@@ -100,15 +100,9 @@ class ZipkinExporter(base.Exporter):
         :param list of opencensus.trace.span_data.SpanData span_datas:
             SpanData tuples to emit
         """
-        # convert to the legacy trace json for easier refactoring
-        # TODO: refactor this to use the span data directly
-        trace = span_data.format_legacy_trace_json(span_datas)
-
-        trace_id = trace.get('traceId')
-        spans = trace.get('spans')
 
         try:
-            zipkin_spans = self.translate_to_zipkin(trace_id, spans)
+            zipkin_spans = self.translate_to_zipkin(span_datas)
             result = requests.post(
                 url=self.url,
                 data=json.dumps(zipkin_spans),
@@ -124,18 +118,22 @@ class ZipkinExporter(base.Exporter):
     def export(self, span_datas):
         self.transport.export(span_datas)
 
-    def translate_to_zipkin(self, trace_id, spans):
+    def translate_to_zipkin(self, span_datas):
         """Translate the opencensus spans to zipkin spans.
 
-        :type trace_id: str
-        :param trace_id: Trace ID.
-
-        :type spans: list
-        :param spans: List of spans to be exported.
+        :type span_datas: list of :class:
+            `~opencensus.trace.span_data.SpanData`
+        :param span_datas:
+            SpanData tuples to emit
 
         :rtype: list
         :returns: List of zipkin format spans.
         """
+
+        top_span = span_datas[0]
+        trace_id = top_span.context.trace_id if top_span.context is not None \
+            else None
+
         local_endpoint = {
             'serviceName': self.service_name,
             'port': self.port,
@@ -149,17 +147,17 @@ class ZipkinExporter(base.Exporter):
 
         zipkin_spans = []
 
-        for span in spans:
+        for span in span_datas:
             # Timestamp in zipkin spans is int of microseconds.
             start_datetime = datetime.datetime.strptime(
-                span.get('startTime'),
+                span.start_time,
                 ISO_DATETIME_REGEX)
             start_timestamp_ms = calendar.timegm(
                 start_datetime.timetuple()) * 1000 * 1000 \
                 + start_datetime.microsecond
 
             end_datetime = datetime.datetime.strptime(
-                span.get('endTime'),
+                span.end_time,
                 ISO_DATETIME_REGEX)
             end_timestamp_ms = calendar.timegm(
                 end_datetime.timetuple()) * 1000 * 1000 \
@@ -169,16 +167,16 @@ class ZipkinExporter(base.Exporter):
 
             zipkin_span = {
                 'traceId': trace_id,
-                'id': str(span.get('spanId')),
-                'name': span.get('displayName', {}).get('value'),
+                'id': str(span.span_id),
+                'name': span.name,
                 'timestamp': int(round(start_timestamp_ms)),
                 'duration': int(round(duration_ms)),
                 'localEndpoint': local_endpoint,
-                'tags': _extract_tags_from_span(span),
+                'tags': _extract_tags_from_span(span.attributes),
             }
 
-            span_kind = span.get('kind')
-            parent_span_id = span.get('parentSpanId')
+            span_kind = span.span_kind
+            parent_span_id = span.parent_span_id
 
             if span_kind is not None:
                 kind = SPAN_KIND_MAP.get(span_kind)
@@ -195,18 +193,16 @@ class ZipkinExporter(base.Exporter):
         return zipkin_spans
 
 
-def _extract_tags_from_span(span):
+def _extract_tags_from_span(attr):
+    if attr is None:
+        return {}
     tags = {}
-    for attribute_key, attribute_value in span.get(
-            'attributes', {}).get('attributeMap', {}).items():
-        if not isinstance(attribute_value, dict):
-            continue
-        if attribute_value.get('string_value') is not None:
-            value = attribute_value.get('string_value').get('value')
-        elif attribute_value.get('int_value') is not None:
-            value = str(attribute_value.get('int_value'))
-        elif attribute_value.get('bool_value') is not None:
-            value = str(attribute_value.get('bool_value'))
+    for attribute_key, attribute_value in attr.items():
+        if isinstance(attribute_value, (int, bool)):
+            value = str(attribute_value)
+        elif isinstance(attribute_value, str):
+            res, _ = check_str_length(str_to_check=attribute_value)
+            value = res
         else:
             logging.warn('Could not serialize tag {}'.format(attribute_key))
             continue
