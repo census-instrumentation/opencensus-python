@@ -37,9 +37,7 @@ Installation & basic usage
     .. _pip: https://pip.pypa.io
     .. _pipenv: https://docs.pipenv.org/
 
-3. If you want to use the unreleased packages (like stats and tags), 
-you need to build the package from source using the below commands:
-(The stats and tags packages are expected to be released in 0.1.6)
+3. If you want to use the unreleased packages (like stats and tags), you need to build the package from source using the below commands: (The stats and tags packages are expected to be released in 0.1.6)
 
     ::
 
