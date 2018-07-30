@@ -44,3 +44,18 @@ class Test_trace_integrations(unittest.TestCase):
 
         self.assertTrue(mock_module.trace_integration.called)
         self.assertEqual(integrated, integration_list)
+
+    def test_import_failure(self):
+        mock_importlib = mock.Mock()
+        mock_importlib.import_module.side_effect = Exception("bad import!!!")
+        patch = mock.patch(
+            'opencensus.trace.config_integration.importlib',
+            mock_importlib)
+
+        integration_list = ['mysql', 'postgresql']
+
+        with patch:
+            integrated = config_integration.trace_integrations(
+                integration_list)
+
+        self.assertEqual(integrated, [])

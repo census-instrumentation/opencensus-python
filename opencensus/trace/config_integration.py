@@ -37,11 +37,15 @@ def trace_integrations(integrations, tracer=None):
             module = importlib.import_module(path_to_module)
             module.trace_integration(tracer=tracer)
             integrated.append(item)
-        except Exception:
-            log.warning(
-                'Failed to integrate module: {}, supported integrations are {}'
-                .format(
-                    item,
-                    ', '.join(str(x) for x in SUPPORTED_INTEGRATIONS)))
+        except Exception as e:
+            if item in SUPPORTED_INTEGRATIONS:
+                log.warning('Failed to integrate module "{}": {}'
+                            .format(item, e))
+            else:
+                log.warning(
+                    'Failed to integrate module "{}": supported integrations '
+                    'are {}'.format(
+                        item,
+                        ', '.join(str(x) for x in SUPPORTED_INTEGRATIONS)))
 
     return integrated
