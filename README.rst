@@ -26,6 +26,16 @@ Installation & basic usage
         pip install opencensus
         pipenv install opencensus
 
+ 1-1. If you want to use the unreleased packages (like stats and tags), 
+ you need to build the package from source using the below commands:
+
+     ::
+
+        git clone https://github.com/census-instrumentation/opencensus-python.git
+        cd opencensus-python
+        python setup.py bdist_wheel
+        pip install dist/*
+
 2. Initialize a tracer for your application:
 
     .. code:: python
