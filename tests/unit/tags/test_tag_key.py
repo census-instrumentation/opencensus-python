@@ -24,27 +24,19 @@ class TestTagKey(unittest.TestCase):
         key = 'key1'
         tag_key = TagKey(key)
 
-        self.assertEqual(tag_key.name, key)
+        self.assertEqual(tag_key, key)
 
     def test_is_valid(self):
         self.assertRaises(ValueError, TagKey, '')
 
-        tag_key1 = TagKey('testKey')
-        self.assertTrue(TagKey.is_valid_name(tag_key1.name))
+        tag_key = TagKey('testKey')
+        self.assertIsNotNone(tag_key)
 
-        key3_string = 'e9nnb1ixRnvzBH1TUonCG5IsV3ba2PMKjAbSxdLFFpgxFKhZHfi92ajNH6EARaK9FGGShk2EeZ4XObwqIPBwi7j4ZSRR1ZWXtS15keA1h4c9CxeAdakcxxUN0YH6mLJ0BygwRbdbMSeOIPWLo7iyGCil4njKOxH6HF7k0aN4BQl03HQZoXe0t0gd5xKQW37ePNA4FRVZlbLbib3GCF7BeKeA0DKMtuRu27r2hDGEFAmvqh3JEnqOy4gDbhFubaLblr4R4GOHo'
-        self.assertRaises(ValueError, TagKey, key3_string)
+        long_name = 'e9nnb1ixRnvzBH1TUonCG5IsV3ba2PMKjAbSxdLFFpgxFKhZHfi92ajNH6EARaK9FGGShk2EeZ4XObwqIPBwi7j4ZSRR1ZWXtS15keA1h4c9CxeAdakcxxUN0YH6mLJ0BygwRbdbMSeOIPWLo7iyGCil4njKOxH6HF7k0aN4BQl03HQZoXe0t0gd5xKQW37ePNA4FRVZlbLbib3GCF7BeKeA0DKMtuRu27r2hDGEFAmvqh3JEnqOy4gDbhFubaLblr4R4GOHo'
+        self.assertRaises(ValueError, TagKey, long_name)
 
-        key4_string = 'Æ!01kr'
-        self.assertRaises(ValueError, TagKey, key4_string)
+        invalid_chars_name = 'Æ!01kr'
+        self.assertRaises(ValueError, TagKey, invalid_chars_name)
 
-        tag_key5 = TagKey(chr(32) + chr(126))
-        self.assertTrue(TagKey.is_valid_name(tag_key5.name))
-
-    def test_update_name(self):
-        tag_key1 = TagKey('key1')
-        tag_key1.name = 'key2'
-        self.assertEqual(tag_key1.name, 'key2')
-
-        with self.assertRaises(ValueError):
-            tag_key1.name = 'Æ!01kr'
+    def test_inclusive_chars(self):
+        TagKey(chr(32) + chr(126))

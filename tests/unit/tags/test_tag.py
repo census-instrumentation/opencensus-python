@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import unittest
-from opencensus.tags import tag as tag_module
+from opencensus.tags import Tag
 
 
 class TestTag(unittest.TestCase):
@@ -21,7 +21,7 @@ class TestTag(unittest.TestCase):
     def test_constructor(self):
         key = 'key1'
         value = 'value1'
-        tag = tag_module.Tag(key=key, value=value)
+        tag = Tag(key=key, value=value)
 
-        self.assertEqual(tag.key.name, key)
-        self.assertEqual(tag.value.value, value)
+        self.assertEqual(tag.key, key)
+        self.assertEqual(tag.value, value)

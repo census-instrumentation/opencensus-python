@@ -11,43 +11,22 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from opencensus.tags.validation import is_legal_chars
+
+from opencensus.tags.validation import is_legal_chars, is_valid_tag_value
 
 _TAG_VALUE_ERROR = 'tag value must not be longer than 255 characters and of ascii values between 32 - 126'
 
 
-class TagValue(object):
-    """ The value of a tag
+class TagValue(str):
+    """The value of a tag"""
 
-    :type value: str
-    :param value: A string representing the value of a key in a tag
-
-    """
-
-    def __init__(self, value):
-        if not TagValue.is_valid_value(value):
-            raise ValueError(_TAG_VALUE_ERROR)
-        self._value = value
-
-    @property
-    def value(self):
-        return self._value
-
-    @value.setter
-    def value(self, val):
-        if not TagValue.is_valid_value(val):
-            raise ValueError(_TAG_VALUE_ERROR)
-        self._value = val
-
-    @staticmethod
-    def is_valid_value(value):
-        """ Checks if the value if valid
+    def __new__(cls, value):
+        """Create and return a new tag value
 
         :type value: str
-        :param value: the value to be checked
-
-        :rtype: bool
-        :returns: True if valid, if not, False.
-
+        :param value: The name of the key
+        :return: TagValue
         """
-        return is_legal_chars(value) if len(value) <= 255 else False
+        if not is_valid_tag_value(value):
+            raise ValueError(_TAG_VALUE_ERROR)
+        return super(TagValue, cls).__new__(cls, value)

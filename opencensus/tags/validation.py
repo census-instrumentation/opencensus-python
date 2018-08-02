@@ -15,3 +15,28 @@
 
 def is_legal_chars(value):
     return all(32 <= ord(char) <= 126 for char in value)
+
+
+def is_valid_tag_name(name):
+    """Checks if the name of a tag key is valid
+
+    :type name: str
+    :param name: name to check
+
+    :rtype: bool
+    :returns: True if it valid, else returns False
+    """
+    return is_legal_chars(name) if 0 < len(name) <= 255 else False
+
+
+def is_valid_tag_value(value):
+    """Checks if the value is valid
+
+    :type value: str
+    :param value: the value to be checked
+
+    :rtype: bool
+    :returns: True if valid, if not, False.
+
+    """
+    return is_legal_chars(value) if len(value) <= 255 else False

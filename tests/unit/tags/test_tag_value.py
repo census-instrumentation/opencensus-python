@@ -21,26 +21,15 @@ from opencensus.tags.tag_value import TagValue
 class TestTagValue(unittest.TestCase):
 
     def test_constructor(self):
-        value = 'value1'
-        tag_value = TagValue(value)
-
-        self.assertEqual(tag_value.value, value)
+        tag_value = TagValue('value')
+        self.assertEqual(tag_value, 'value')
 
     def test_check_value(self):
         test_val1 = 'e9nnb1ixRnvzBH1TUonCG5IsV3ba2PMKjAbSxdLFFpgxFKhZHfi92ajNH6EARaK9FGGShk2EeZ4XObwqIPBwi7j4ZSRR1ZWXtS15keA1h4c9CxeAdakcxxUN0YH6mLJ0BygwRbdbMSeOIPWLo7iyGCil4njKOxH6HF7k0aN4BQl03HQZoXe0t0gd5xKQW37ePNA4FRVZlbLbib3GCF7BeKeA0DKMtuRu27r2hDGEFAmvqh3JEnqOy4gDbhFubaLblr4R4GOHo'
         self.assertRaises(ValueError, TagValue, test_val1)
 
         tag_val2 = TagValue('testVal')
-        self.assertTrue(TagValue.is_valid_value(tag_val2.value))
+        self.assertIsNotNone(tag_val2)
 
         test_val3 = 'Æ!01kr'
         self.assertRaises(ValueError, TagValue, test_val3)
-
-    def test_update_value(self):
-        tag_val1 = TagValue('key1')
-        tag_val1.value = 'val2'
-        self.assertEqual(tag_val1.value, 'val2')
-
-        with self.assertRaises(ValueError):
-            tag_val1.value = 'Æ!01kr'
-
