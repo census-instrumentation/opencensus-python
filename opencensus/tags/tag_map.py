@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from opencensus.tags.tag import Tag
 
 
 class TagMap(object):
@@ -23,7 +22,6 @@ class TagMap(object):
     """
 
     def __init__(self, tags=None):
-        # if tags is not None:
         self.map = {tag.key: tag.value for tag in tags} if tags is not None else {}
 
     def insert(self, key, value):
