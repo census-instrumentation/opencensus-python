@@ -20,15 +20,12 @@ class TagKey(object):
     :param name: The name of the key
 
     """
+
     def __init__(self, name):
-        self._name = name
+        self.name = name
 
-    @property
-    def name(self):
-        """The name of the current key"""
-        return self._name
-
-    def is_valid_name(self, name):
+    @staticmethod
+    def is_valid_name(name):
         """Checks if the name of the key is valid
 
         :type name: str
@@ -37,11 +34,8 @@ class TagKey(object):
         :rtype: bool
         :returns: True if it valid, else returns False
         """
-        if (len(name) > 0) and (len(name) <= 255):
-            if (all(ord(char) < 126 for char in name) and
-                    all(ord(char) > 32 for char in name)):
-                return True
-            else:
-                return False
+
+        if 0 < len(name) < 256:
+            return all(32 <= ord(char) <= 126 for char in name)
         else:
             return False

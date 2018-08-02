@@ -26,16 +26,7 @@ class Tag(object):
     :param value: Value of the key in the tag.
 
     """
+
     def __init__(self, key, value):
-        self._key = tag_key.TagKey(key)
-        self._value = tag_value.TagValue(value)
-
-    @property
-    def key(self):
-        """The key of the current tag"""
-        return self._key
-
-    @property
-    def value(self):
-        """The value of the key in the current tag"""
-        return self._value
+        self.key = tag_key.TagKey(key)
+        self.value = tag_value.TagValue(value)

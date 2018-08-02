@@ -20,15 +20,12 @@ class TagValue(object):
     :param value: A string representing the value of a key in a tag
 
     """
+
     def __init__(self, value):
-        self._value = value
+        self.value = value
 
-    @property
-    def value(self):
-        """The current value"""
-        return self._value
-
-    def is_valid_value(self, value):
+    @staticmethod
+    def is_valid_value(value):
         """ Checks if the value if valid
 
         :type value: str
@@ -39,10 +36,6 @@ class TagValue(object):
 
         """
         if len(value) <= 255:
-            if (all(ord(char) < 126 for char in value) and
-                    all(ord(char) > 32 for char in value)):
-                return True
-            else:
-                return False
+            return all(32 <= ord(char) <= 126 for char in value)
         else:
             return False
