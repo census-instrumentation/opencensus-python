@@ -37,6 +37,15 @@ Installation & basic usage
     .. _pip: https://pip.pypa.io
     .. _pipenv: https://docs.pipenv.org/
 
+3. If you want to use the unreleased packages (like stats and tags), you need to build the package from source using the below commands: (The stats and tags packages are expected to be released in 0.1.6)
+
+    ::
+
+        git clone https://github.com/census-instrumentation/opencensus-python.git
+        cd opencensus-python
+        python setup.py bdist_wheel
+        pip install dist/*
+
 Usage
 -----
 
