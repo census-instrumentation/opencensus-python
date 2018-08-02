@@ -107,14 +107,21 @@ class DistributionAggregationData(BaseAggregationData):
                  min_,
                  max_,
                  sum_of_sqd_deviations,
-                 counts_per_bucket,
-                 bounds):
+                 counts_per_bucket=None,
+                 bounds=None):
         super(DistributionAggregationData, self).__init__(mean_data)
         self._mean_data = mean_data
         self._count_data = count_data
         self._min = min_
         self._max = max_
         self._sum_of_sqd_deviations = sum_of_sqd_deviations
+        if bounds is None:
+            bounds = [0]
+
+        if counts_per_bucket is None:
+            counts_per_bucket = []
+            for i in bounds:
+                counts_per_bucket.append(0)
         self._counts_per_bucket = counts_per_bucket
         self._bounds = bucket_boundaries.BucketBoundaries(
                                             boundaries=bounds).boundaries

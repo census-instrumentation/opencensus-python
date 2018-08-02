@@ -74,11 +74,11 @@ class ViewData(object):
     def get_tag_map(self, context):
         """function to return the tag map based on the context"""
         if self.tag_map is not None:
-            if context.items() <= self.tag_map.items():
+            if context.map.items() <= self.tag_map.items():
                 return self.tag_map
             else:
                 tags = self.tag_map
-                for tag_key, tag_value in context.items():
+                for tag_key, tag_value in context.map.items():
                     tags[tag_key] = tag_value
                 return tags
         else:  # pragma: NO COVER
@@ -105,4 +105,4 @@ class ViewData(object):
         for val in tuple_vals:
             if val not in self.tag_value_aggregation_map:
                 self.tag_value_aggregation_map[val] = self.view.aggregation
-            self.tag_value_aggregation_map.get(val).add(value)
+            self.tag_value_aggregation_map.get(val).aggregation_data.add_sample(value)

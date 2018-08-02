@@ -75,6 +75,7 @@ class SumAggregation(BaseAggregation):
         super(SumAggregation, self).__init__(aggregation_type=aggregation_type)
         self._sum = aggregation_data.SumAggregationDataFloat(
             sum_data=float(sum or 0))
+        self.aggregation_data = self._sum
 
     @property
     def sum(self):
@@ -97,6 +98,7 @@ class CountAggregation(BaseAggregation):
         super(CountAggregation, self).__init__(
             aggregation_type=aggregation_type)
         self._count = aggregation_data.CountAggregationData(count)
+        self.aggregation_data = self._count
 
     @property
     def count(self):
@@ -128,6 +130,8 @@ class DistributionAggregation(BaseAggregation):
             buckets=boundaries, aggregation_type=aggregation_type)
         self._boundaries = bucket_boundaries.BucketBoundaries(boundaries)
         self._distribution = distribution or {}
+        self.aggregation_data = aggregation_data.DistributionAggregationData(
+            0, 0, 0, 0, 0, None, boundaries)
 
     @property
     def boundaries(self):
