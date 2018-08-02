@@ -37,6 +37,15 @@ Installation & basic usage
     .. _pip: https://pip.pypa.io
     .. _pipenv: https://docs.pipenv.org/
 
+3. If you want to use the unreleased packages (like stats and tags), you need to build the package from source using the below commands: (The stats and tags packages are expected to be released in 0.1.6)
+
+    ::
+
+        git clone https://github.com/census-instrumentation/opencensus-python.git
+        cd opencensus-python
+        python setup.py bdist_wheel
+        pip install dist/*
+
 Usage
 -----
 
@@ -234,7 +243,7 @@ You can configure the sampler, exporter, propagator using the ``OPENCENSUS_TRACE
 
     OPENCENSUS_TRACE = {
         'SAMPLER': 'opencensus.trace.samplers.probability.ProbabilitySampler',
-        'REPORTER': 'opencensus.trace.exporters.print_exporter.PrintExporter',
+        'EXPORTER': 'opencensus.trace.exporters.print_exporter.PrintExporter',
         'PROPAGATOR': 'opencensus.trace.propagation.google_cloud_format.'
                       'GoogleCloudFormatPropagator',
     }

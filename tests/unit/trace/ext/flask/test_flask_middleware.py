@@ -157,7 +157,7 @@ class TestFlaskMiddleware(unittest.TestCase):
     def test__before_request(self):
         from opencensus.trace import execution_context
 
-        flask_trace_header = 'X_CLOUD_TRACE_CONTEXT'
+        flask_trace_header = 'X-Cloud-Trace-Context'
         trace_id = '2dd43a1d6b2549c6bc2a1a54c2fc0b05'
         span_id = '6e0c63257de34c92'
         flask_trace_id = '{}/{}'.format(trace_id, span_id)
@@ -187,7 +187,7 @@ class TestFlaskMiddleware(unittest.TestCase):
             self.assertEqual(span_context.trace_id, trace_id)
 
     def test__before_request_blacklist(self):
-        flask_trace_header = 'X_CLOUD_TRACE_CONTEXT'
+        flask_trace_header = 'X-Cloud-Trace-Context'
         trace_id = '2dd43a1d6b2549c6bc2a1a54c2fc0b05'
         span_id = '6e0c63257de34c92'
         flask_trace_id = '{}/{}'.format(trace_id, span_id)
@@ -214,7 +214,7 @@ class TestFlaskMiddleware(unittest.TestCase):
         # in SpanContext because it cannot match the pattern for trace_id,
         # And a new trace_id will generate for the context.
 
-        flask_trace_header = 'X_CLOUD_TRACE_CONTEXT'
+        flask_trace_header = 'X-Cloud-Trace-Context'
         trace_id = "你好"
         span_id = '6e0c63257de34c92'
         flask_trace_id = '{}/{}'.format(trace_id, span_id)
@@ -265,7 +265,7 @@ class TestFlaskMiddleware(unittest.TestCase):
             assert isinstance(span.parent_span, base.NullContextManager)
 
     def test__after_request_not_sampled(self):
-        flask_trace_header = 'X_CLOUD_TRACE_CONTEXT'
+        flask_trace_header = 'X-Cloud-Trace-Context'
         trace_id = '2dd43a1d6b2549c6bc2a1a54c2fc0b05'
         span_id = '6e0c63257de34c92'
         flask_trace_id = '{}/{}'.format(trace_id, span_id)
@@ -281,7 +281,7 @@ class TestFlaskMiddleware(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test__after_request_sampled(self):
-        flask_trace_header = 'X_CLOUD_TRACE_CONTEXT'
+        flask_trace_header = 'X-Cloud-Trace-Context'
         trace_id = '2dd43a1d6b2549c6bc2a1a54c2fc0b05'
         span_id = '6e0c63257de34c92'
         flask_trace_id = '{}/{}'.format(trace_id, span_id)
@@ -296,7 +296,7 @@ class TestFlaskMiddleware(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test__after_request_blacklist(self):
-        flask_trace_header = 'X_CLOUD_TRACE_CONTEXT'
+        flask_trace_header = 'X-Cloud-Trace-Context'
         trace_id = '2dd43a1d6b2549c6bc2a1a54c2fc0b05'
         span_id = '6e0c63257de34c92'
         flask_trace_id = '{}/{}'.format(trace_id, span_id)
