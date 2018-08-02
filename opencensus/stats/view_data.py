@@ -105,4 +105,5 @@ class ViewData(object):
         for val in tuple_vals:
             if val not in self.tag_value_aggregation_map:
                 self.tag_value_aggregation_map[val] = self.view.aggregation
-            self.tag_value_aggregation_map.get(val).aggregation_data.add_sample(value)
+            self.tag_value_aggregation_map.get(
+                val).aggregation_data.add_sample(value)
