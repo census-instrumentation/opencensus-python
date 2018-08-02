@@ -116,11 +116,12 @@ class DistributionAggregationData(BaseAggregationData):
         self._max = max_
         self._sum_of_sqd_deviations = sum_of_sqd_deviations
         if bounds is None:
-            bounds = [0]
+            bounds = []
 
         if counts_per_bucket is None:
             counts_per_bucket = []
-            for i in bounds:
+            bucket_size = len(bounds) + 1
+            for i in range(bucket_size):
                 counts_per_bucket.append(0)
         self._counts_per_bucket = counts_per_bucket
         self._bounds = bucket_boundaries.BucketBoundaries(
