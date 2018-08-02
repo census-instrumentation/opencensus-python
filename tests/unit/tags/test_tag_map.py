@@ -14,40 +14,48 @@
 
 import unittest
 import mock
-from opencensus.tags import tag_map as tag_map_module
+from opencensus.tags import TagMap, Tag, TagKey, TagValue
 
 
 class TestTagMap(unittest.TestCase):
 
     def test_constructor_defaults(self):
-        tag_map = tag_map_module.TagMap()
+        tag_map = TagMap()
         self.assertEqual(tag_map.map, {})
 
     def test_constructor_explicit(self):
-        tags = [{'key1': 'value1'}]
+        tags_list = [Tag('key1', 'value1'),
+                     Tag('key2', 'value2')]
+        tags_dict = {tag.key: tag.value for tag in tags_list}
 
-        tag_map = tag_map_module.TagMap(tags=tags)
-        self.assertEqual(tag_map.tags, tags)
+        tag_map = TagMap(tags=tags_list)
+        self.assertEqual(tag_map.map, tags_dict)
 
     def test_insert(self):
-        test_key = 'key1'
-        test_value = 'value1'
-        tag_map = tag_map_module.TagMap()
+        test_key = TagKey('key1')
+        test_value = TagValue('value1')
+
+        tag_map = TagMap()
         tag_map.insert(key=test_key, value=test_value)
-        self.assertEqual({'key1': 'value1'}, tag_map.map)
+        self.assertEqual({test_key: test_value}, tag_map.map)
+
         tag_map.insert(key=test_key, value=test_value)
-        self.assertEqual({'key1': 'value1'}, tag_map.map)
+        self.assertEqual({test_key: test_value}, tag_map.map)
 
     def test_delete(self):
-        key = 'key1'
-        tag_map = tag_map_module.TagMap(tags=[{'key1': 'value1', 'key2': 'value2'}])
+        key = TagKey('key1')
+        tag1 = Tag('key1', 'value1')
+        tag2 = Tag('key2', 'value2')
+        tags = [tag1, tag2]
+
+        tag_map = TagMap(tags=tags)
         tag_map.delete(key=key)
-        self.assertEqual(tag_map.map, {'key2': 'value2'})
+        self.assertEqual(tag_map.map, {tag2.key: tag2.value})
 
     def test_update(self):
         key = 'key1'
         value = 'value1'
-        tag_map = tag_map_module.TagMap(tags=[{'key1': 'value2'}])
+        tag_map = TagMap(tags=[{'key1': 'value2'}])
         tag_map.update(key=key, value=value)
         self.assertEqual({'key1': 'value1'}, tag_map.map)
         key_2 = 'key2'
@@ -57,14 +65,14 @@ class TestTagMap(unittest.TestCase):
     def test_tag_key_exists(self):
         key = mock.Mock()
         value = mock.Mock()
-        tag_map = tag_map_module.TagMap(tags=[{key: value}])
+        tag_map = TagMap(tags=[{key: value}])
         self.assertTrue(tag_map.tag_key_exists(key))
         self.assertFalse(tag_map.tag_key_exists('nokey'))
 
     def test_value(self):
         key = 'key1'
         value = 'value1'
-        tag_map = tag_map_module.TagMap(tags=[{key: value}])
+        tag_map = TagMap(tags=[{key: value}])
         test_val = tag_map.get_value(key)
         self.assertEqual(test_val, value)
 

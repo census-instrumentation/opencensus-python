@@ -15,24 +15,36 @@
 # limitations under the License.
 
 import unittest
-from opencensus.tags import tag_key as tag_key_module
+from opencensus.tags.tag_key import TagKey
 
 
 class TestTagKey(unittest.TestCase):
 
     def test_constructor(self):
         key = 'key1'
-        tag_key = tag_key_module.TagKey(key)
+        tag_key = TagKey(key)
 
         self.assertEqual(tag_key.name, key)
 
     def test_is_valid(self):
-        test_key3 = 'e9nnb1ixRnvzBH1TUonCG5IsV3ba2PMKjAbSxdLFFpgxFKhZHfi92ajNH6EARaK9FGGShk2EeZ4XObwqIPBwi7j4ZSRR1ZWXtS15keA1h4c9CxeAdakcxxUN0YH6mLJ0BygwRbdbMSeOIPWLo7iyGCil4njKOxH6HF7k0aN4BQl03HQZoXe0t0gd5xKQW37ePNA4FRVZlbLbib3GCF7BeKeA0DKMtuRu27r2hDGEFAmvqh3JEnqOy4gDbhFubaLblr4R4GOHo'
-        tag_key1 = tag_key_module.TagKey('')
-        self.assertFalse(tag_key1.is_valid_name(tag_key1.name))
-        tag_key2 = tag_key_module.TagKey('testKey')
-        self.assertTrue(tag_key2.is_valid_name(tag_key2.name))
-        tag_key3 = tag_key_module.TagKey(test_key3)
-        self.assertFalse(tag_key3.is_valid_name(tag_key3.name))
-        tag_key4 = tag_key_module.TagKey('Æ!01kr')
-        self.assertFalse(tag_key3.is_valid_name(tag_key4.name))
+        self.assertRaises(ValueError, TagKey, '')
+
+        tag_key1 = TagKey('testKey')
+        self.assertTrue(TagKey.is_valid_name(tag_key1.name))
+
+        key3_string = 'e9nnb1ixRnvzBH1TUonCG5IsV3ba2PMKjAbSxdLFFpgxFKhZHfi92ajNH6EARaK9FGGShk2EeZ4XObwqIPBwi7j4ZSRR1ZWXtS15keA1h4c9CxeAdakcxxUN0YH6mLJ0BygwRbdbMSeOIPWLo7iyGCil4njKOxH6HF7k0aN4BQl03HQZoXe0t0gd5xKQW37ePNA4FRVZlbLbib3GCF7BeKeA0DKMtuRu27r2hDGEFAmvqh3JEnqOy4gDbhFubaLblr4R4GOHo'
+        self.assertRaises(ValueError, TagKey, key3_string)
+
+        key4_string = 'Æ!01kr'
+        self.assertRaises(ValueError, TagKey, key4_string)
+
+        tag_key5 = TagKey(chr(32) + chr(126))
+        self.assertTrue(TagKey.is_valid_name(tag_key5.name))
+
+    def test_update_name(self):
+        tag_key1 = TagKey('key1')
+        tag_key1.name = 'key2'
+        self.assertEqual(tag_key1.name, 'key2')
+
+        with self.assertRaises(ValueError):
+            tag_key1.name = 'Æ!01kr'

@@ -11,6 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from opencensus.tags.validation import is_legal_chars
+
+_TAG_NAME_ERROR = 'tag name must not be empty, no longer than 255 characters and of ascii values between 32 - 126'
 
 
 class TagKey(object):
@@ -22,7 +25,25 @@ class TagKey(object):
     """
 
     def __init__(self, name):
-        self.name = name
+        if not TagKey.is_valid_name(name):
+            raise ValueError(_TAG_NAME_ERROR)
+        self._name = name
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.name == other.name
+
+    def __hash__(self):
+        return hash(self.name)
+
+    @property
+    def name(self):
+        return self._name
+
+    @name.setter
+    def name(self, val):
+        if not TagKey.is_valid_name(val):
+            raise ValueError(_TAG_NAME_ERROR)
+        self._name = val
 
     @staticmethod
     def is_valid_name(name):
@@ -35,7 +56,4 @@ class TagKey(object):
         :returns: True if it valid, else returns False
         """
 
-        if 0 < len(name) < 256:
-            return all(32 <= ord(char) <= 126 for char in name)
-        else:
-            return False
+        return is_legal_chars(name) if 0 < len(name) <= 255 else False
