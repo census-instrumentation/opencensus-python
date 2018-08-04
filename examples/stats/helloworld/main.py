@@ -60,7 +60,10 @@ def main():
 
     # Get aggregated stats and print it to console.
     view_data = view_manager.get_view(VIDEO_SIZE_VIEW_NAME)
-    pprint(vars(view_data))   # TODO: print more meaningful info for view_data
+    pprint(vars(view_data))
+    for k, v in view_data._tag_value_aggregation_map.items():
+      pprint(vars(v))
+      pprint(vars(v.aggregation_data))
 
 
 if __name__ == '__main__':
