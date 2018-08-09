@@ -114,9 +114,9 @@ class TestViewData(unittest.TestCase):
 
     def test_record_with_multi_keys(self):
         measure = mock.Mock()
-        sum = aggregation_module.SumAggregation()
+        sum_aggregation = aggregation_module.SumAggregation()
         view = view_module.View(
-            "test_view", "description", ['key1', 'key2'], measure, sum)
+            "test_view", "description", ['key1', 'key2'], measure, sum_aggregation)
         start_time = datetime.utcnow()
         end_time = datetime.utcnow()
         view_data = view_data_module.ViewData(view=view,
@@ -150,7 +150,6 @@ class TestViewData(unittest.TestCase):
             tags=context_2.map, columns=view.columns)
         tuple_vals_2 = tuple(tag_values_2)
         self.assertEqual(['val3', 'val2'], tag_values_2)
-        self.assertNotEqual(tuple_vals, tuple_vals_2)
         self.assertTrue(tuple_vals_2 in view_data.tag_value_aggregation_map)
         sum_data_2 = view_data.tag_value_aggregation_map.get(
             tuple_vals_2).aggregation_data
@@ -158,7 +157,34 @@ class TestViewData(unittest.TestCase):
 
         time_3 = datetime.utcnow().isoformat() + 'Z'
         value_3 = 3
+        # Use the same context {'key1': 'val1', 'key2': 'val2'}.
+        # Record to entry [(val1, val2), sum=1].
         view_data.record(context=context, value=value_3, timestamp=time_3)
-        sum_data_3 = view_data.tag_value_aggregation_map.get(
+        self.assertEqual(4, sum_data.sum_data)
+        # The other entry should remain unchanged.
+        self.assertEqual(2, sum_data_2.sum_data)
+
+    def test_record_with_missing_key_in_context(self):
+        measure = mock.Mock()
+        sum_aggregation = aggregation_module.SumAggregation()
+        view = view_module.View(
+            "test_view", "description", ['key1', 'key2'], measure, sum_aggregation)
+        start_time = datetime.utcnow()
+        end_time = datetime.utcnow()
+        view_data = view_data_module.ViewData(view=view,
+                                              start_time=start_time,
+                                              end_time=end_time)
+
+        context = mock.Mock()
+        context.map = {'key1': 'val1', 'key3': 'val3'}  # key2 is not in the context.
+        time = datetime.utcnow().isoformat() + 'Z'
+        value = 4
+        view_data.record(context=context, value=value, timestamp=time)
+        tag_values = view_data.get_tag_values(
+            tags=context.map, columns=view.columns)
+        tuple_vals = tuple(tag_values)
+        self.assertEqual(['val1', None], tag_values)
+        self.assertTrue(tuple_vals in view_data.tag_value_aggregation_map)
+        sum_data = view_data.tag_value_aggregation_map.get(
             tuple_vals).aggregation_data
-        self.assertEqual(4, sum_data_3.sum_data)
+        self.assertEqual(4, sum_data.sum_data)
