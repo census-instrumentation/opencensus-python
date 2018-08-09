@@ -393,14 +393,14 @@ Tests
     tox -e py34
     source .tox/py34/bin/activate
 
-    # Run the unit test
+    # Install nox with pip
     pip install nox-automation
 
     # See what's available in the nox suite
     nox -l
 
     # Run a single nox command
-    nox -s "unit_tests(python_version='2.7')"
+    nox -s "unit(py='2.7')"
 
     # Run all the nox commands
     nox
