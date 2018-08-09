@@ -31,7 +31,7 @@ class TestViewData(unittest.TestCase):
         self.assertEqual(view, view_data.view)
         self.assertEqual(start_time, view_data.start_time)
         self.assertEqual(end_time, view_data.end_time)
-        self.assertEqual({}, view_data.tag_value_aggregation_map)
+        self.assertEqual({}, view_data.tag_value_aggregation_data_map)
 
     def test_start(self):
         view = mock.Mock()
@@ -87,28 +87,28 @@ class TestViewData(unittest.TestCase):
         context.map = {'key1': 'val1', 'key2': 'val2'}
         time = datetime.utcnow().isoformat() + 'Z'
         value = 1
-        self.assertEqual({}, view_data.tag_value_aggregation_map)
+        self.assertEqual({}, view_data.tag_value_aggregation_data_map)
 
         view_data.record(context=context, value=value, timestamp=time)
         tag_values = view_data.get_tag_values(
             tags=context.map, columns=view.columns)
         tuple_vals = tuple(tag_values)
         self.assertEqual(['val1'], tag_values)
-        self.assertIsNotNone(view_data.tag_value_aggregation_map)
+        self.assertIsNotNone(view_data.tag_value_aggregation_data_map)
 
-        self.assertTrue(tuple_vals in view_data.tag_value_aggregation_map)
-        self.assertIsNotNone(view_data.tag_value_aggregation_map[tuple_vals])
-        self.assertIsNotNone(view_data.tag_value_aggregation_map.get(
+        self.assertTrue(tuple_vals in view_data.tag_value_aggregation_data_map)
+        self.assertIsNotNone(view_data.tag_value_aggregation_data_map[tuple_vals])
+        self.assertIsNotNone(view_data.tag_value_aggregation_data_map.get(
             tuple_vals).add(value))
 
         view_data.record(context=context, value=value, timestamp=time)
         tag_values.append('val2')
         tuple_vals_2 = tuple(['val2'])
-        self.assertFalse(tuple_vals_2 in view_data.tag_value_aggregation_map)
-        view_data.tag_value_aggregation_map[tuple_vals_2] = view.aggregation
-        self.assertEqual(view_data.tag_value_aggregation_map.get(tuple_vals_2),
+        self.assertFalse(tuple_vals_2 in view_data.tag_value_aggregation_data_map)
+        view_data.tag_value_aggregation_data_map[tuple_vals_2] = view.aggregation
+        self.assertEqual(view_data.tag_value_aggregation_data_map.get(tuple_vals_2),
                          view_data.view.aggregation)
-        self.assertIsNotNone(view_data.tag_value_aggregation_map.get(
+        self.assertIsNotNone(view_data.tag_value_aggregation_data_map.get(
             tuple_vals_2).add(value))
 
 
@@ -127,18 +127,17 @@ class TestViewData(unittest.TestCase):
         context.map = {'key1': 'val1', 'key2': 'val2'}
         time = datetime.utcnow().isoformat() + 'Z'
         value = 1
-        self.assertEqual({}, view_data.tag_value_aggregation_map)
+        self.assertEqual({}, view_data.tag_value_aggregation_data_map)
 
         view_data.record(context=context, value=value, timestamp=time)
         tag_values = view_data.get_tag_values(
             tags=context.map, columns=view.columns)
         tuple_vals = tuple(tag_values)
         self.assertEqual(['val1', 'val2'], tag_values)
-        self.assertIsNotNone(view_data.tag_value_aggregation_map)
-        self.assertTrue(tuple_vals in view_data.tag_value_aggregation_map)
-        self.assertIsNotNone(view_data.tag_value_aggregation_map[tuple_vals])
-        sum_data = view_data.tag_value_aggregation_map.get(
-            tuple_vals).aggregation_data
+        self.assertIsNotNone(view_data.tag_value_aggregation_data_map)
+        self.assertTrue(tuple_vals in view_data.tag_value_aggregation_data_map)
+        self.assertIsNotNone(view_data.tag_value_aggregation_data_map[tuple_vals])
+        sum_data = view_data.tag_value_aggregation_data_map.get(tuple_vals)
         self.assertEqual(1, sum_data.sum_data)
 
         context_2 = mock.Mock()
@@ -150,9 +149,8 @@ class TestViewData(unittest.TestCase):
             tags=context_2.map, columns=view.columns)
         tuple_vals_2 = tuple(tag_values_2)
         self.assertEqual(['val3', 'val2'], tag_values_2)
-        self.assertTrue(tuple_vals_2 in view_data.tag_value_aggregation_map)
-        sum_data_2 = view_data.tag_value_aggregation_map.get(
-            tuple_vals_2).aggregation_data
+        self.assertTrue(tuple_vals_2 in view_data.tag_value_aggregation_data_map)
+        sum_data_2 = view_data.tag_value_aggregation_data_map.get(tuple_vals_2)
         self.assertEqual(2, sum_data_2.sum_data)
 
         time_3 = datetime.utcnow().isoformat() + 'Z'
@@ -184,7 +182,6 @@ class TestViewData(unittest.TestCase):
             tags=context.map, columns=view.columns)
         tuple_vals = tuple(tag_values)
         self.assertEqual(['val1', None], tag_values)
-        self.assertTrue(tuple_vals in view_data.tag_value_aggregation_map)
-        sum_data = view_data.tag_value_aggregation_map.get(
-            tuple_vals).aggregation_data
+        self.assertTrue(tuple_vals in view_data.tag_value_aggregation_data_map)
+        sum_data = view_data.tag_value_aggregation_data_map.get(tuple_vals)
         self.assertEqual(4, sum_data.sum_data)
