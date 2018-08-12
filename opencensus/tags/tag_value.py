@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from opencensus.tags.validation import is_legal_chars, is_valid_tag_value
+from opencensus.tags.validation import is_valid_tag_value
 
 _TAG_VALUE_ERROR = 'tag value must not be longer than 255 characters and of ascii values between 32 - 126'
 
