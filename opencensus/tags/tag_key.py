@@ -14,7 +14,9 @@
 
 from opencensus.tags.validation import is_valid_tag_name
 
-_TAG_NAME_ERROR = 'tag name must not be empty, no longer than 255 characters and of ascii values between 32 - 126'
+_TAG_NAME_ERROR = \
+    'tag name must not be empty,' \
+    'no longer than 255 characters and of ascii values between 32 - 126'
 
 
 class TagKey(str):

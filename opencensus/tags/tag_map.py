@@ -12,8 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from opencensus.tags import TagKey, TagValue
 from collections import OrderedDict
+
+from opencensus.tags.tag_key import TagKey
+from opencensus.tags.tag_value import TagValue
 
 
 class TagMap(object):

@@ -16,7 +16,10 @@
 
 import unittest
 
-from opencensus.tags import TagMap, Tag, TagKey, TagValue
+from opencensus.tags.tag import Tag
+from opencensus.tags.tag_key import TagKey
+from opencensus.tags.tag_map import TagMap
+from opencensus.tags.tag_value import TagValue
 
 
 class TestTagMap(unittest.TestCase):
