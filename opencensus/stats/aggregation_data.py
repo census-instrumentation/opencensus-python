@@ -208,3 +208,27 @@ class DistributionAggregationData(BaseAggregationData):
             i += 1
 
         self._counts_per_bucket[(len(self._bounds))-1] += 1
+
+
+class LastValueAggregationData(BaseAggregationData):
+    """LastValue Aggregation Data is the value of aggregated data
+
+    :type value: long
+    :param value: represents the current value
+
+    """
+    def __init__(self, value):
+        super(LastValueAggregationData, self).__init__(value)
+        self._value = value
+
+    def add_sample(self, value):
+        """Adds a sample to the current LastValue Aggregation Data and overwrite 
+        the current recorded value"""
+        self._value = value
+
+    @property
+    def value(self):
+        """
+            The current value recorded
+        """
+        return self._value

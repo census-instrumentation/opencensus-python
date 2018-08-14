@@ -63,6 +63,24 @@ class TestCountAggregationData(unittest.TestCase):
 
         self.assertEqual(1, count_aggregation_data.count_data)
 
+class TestLastValueAggregationData(unittest.TestCase):
+    
+    def test_constructor(self):
+        value_data = 0
+        last_value_aggregation_data = aggregation_data_module.LastValueAggregationData(
+            value=value_data)
+
+        self.assertEqual(0, last_value_aggregation_data.value)
+
+    def test_overwrite_sample(self):
+        first_data = 0
+        last_value_aggregation_data = aggregation_data_module.LastValueAggregationData(
+            value=first_data)
+        self.assertEqual(0, last_value_aggregation_data.value)
+        
+        last_value_aggregation_data.add_sample(1)
+        self.assertEqual(1, last_value_aggregation_data.value)
+
 
 class TestDistributionAggregationData(unittest.TestCase):
 
