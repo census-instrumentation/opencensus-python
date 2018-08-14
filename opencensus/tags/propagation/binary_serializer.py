@@ -48,7 +48,6 @@ class BinarySerializer(object):
         encoded_bytes += _VarintBytes(VERSION_ID)
         total_chars = 0
         for tag in tag_context:
-            # for tag_key, tag_value in tag.items():
             tag_key, tag_value = tag
             total_chars += len(tag_key)
             total_chars += len(tag_value)

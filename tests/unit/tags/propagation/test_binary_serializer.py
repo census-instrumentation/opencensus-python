@@ -47,7 +47,6 @@ class TestBinarySerializer(unittest.TestCase):
 
         tags = [Tag('key1', 'val1'), Tag('key2', 'val2'),
                 Tag('key3', 'val3'), Tag('key4', 'val4')]
-        # tags = [tag_map]
         tag_context = TagMap(tags=tags)
         propagator = binary_serializer.BinarySerializer()
         binary = propagator.to_byte_array(tag_context)
