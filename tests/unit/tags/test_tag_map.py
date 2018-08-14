@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 # Copyright 2018, OpenCensus Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,7 +15,7 @@
 # limitations under the License.
 
 import unittest
-import mock
+
 from opencensus.tags import TagMap, Tag, TagKey, TagValue
 
 

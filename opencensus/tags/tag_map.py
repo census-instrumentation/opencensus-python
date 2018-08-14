@@ -27,6 +27,9 @@ class TagMap(object):
         self.map = {TagKey(tag.key): TagValue(tag.value)
                     for tag in tags} if tags else {}
 
+    def __iter__(self):
+        return self.map.items().__iter__()
+
     def insert(self, key, value):
         """Inserts a key and value in the map if the map does not already
         contain the key.
