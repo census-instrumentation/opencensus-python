@@ -1,6 +1,8 @@
 [run]
 branch = True
-omit = *gen/jaeger*
+omit = 
+       *gen/jaeger*
+       *gen/opencensusd*
 
 [report]
 fail_under = 100
@@ -10,4 +12,6 @@ exclude_lines =
     pragma: NO COVER
     # Ignore debug-only repr
     def __repr__
-omit = *gen/jaeger*
+omit = 
+       *gen/jaeger*
+       *gen/opencensusd*
