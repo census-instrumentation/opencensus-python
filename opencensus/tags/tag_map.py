@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from opencensus.tags import TagKey, TagValue
+from collections import OrderedDict
 
 
 class TagMap(object):
@@ -24,8 +25,7 @@ class TagMap(object):
     """
 
     def __init__(self, tags=None):
-        self.map = {TagKey(tag.key): TagValue(tag.value)
-                    for tag in tags} if tags else {}
+        self.map = OrderedDict(tags if tags else [])
 
     def __iter__(self):
         return self.map.items().__iter__()
