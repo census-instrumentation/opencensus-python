@@ -15,7 +15,7 @@
 # limitations under the License.
 
 import unittest
-from opencensus.tags.tag_key import TagKey
+from opencensus.tags import TagKey
 
 
 class TestTagKey(unittest.TestCase):

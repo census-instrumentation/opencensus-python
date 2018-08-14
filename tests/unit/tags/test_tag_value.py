@@ -15,7 +15,7 @@
 # limitations under the License.
 
 import unittest
-from opencensus.tags.tag_value import TagValue
+from opencensus.tags import TagValue
 
 
 class TestTagValue(unittest.TestCase):

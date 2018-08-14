@@ -14,7 +14,7 @@
 
 import unittest
 
-from opencensus.tags.tag import Tag
+from opencensus.tags import Tag
 from opencensus.tags.propagation import binary_serializer
 
 
