@@ -16,6 +16,7 @@
 
 import logging
 import re
+import six
 import uuid
 
 from opencensus.trace import trace_options
@@ -100,7 +101,7 @@ class SpanContext(object):
         """
         if span_id is None:
             return None
-        assert isinstance(span_id, str)
+        assert isinstance(span_id, six.string_types)
 
         if span_id is INVALID_SPAN_ID:
             logging.warning(
@@ -130,7 +131,7 @@ class SpanContext(object):
         :rtype: str
         :returns: Trace_id for the current context.
         """
-        assert isinstance(trace_id, str)
+        assert isinstance(trace_id, six.string_types)
 
         if trace_id is _INVALID_TRACE_ID:
             logging.warning(
