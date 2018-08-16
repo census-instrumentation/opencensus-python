@@ -145,6 +145,14 @@ class Span(object):
         self._child_spans = []
         self.context_tracer = context_tracer
         self.span_kind = span_kind
+        for callback in Span._on_create_callbacks:
+            callback(self)
+
+    _on_create_callbacks = []
+
+    @staticmethod
+    def on_create(callback):
+        Span._on_create_callbacks.append(callback)
 
     @property
     def children(self):
