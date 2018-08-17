@@ -212,6 +212,21 @@ class TestSpan(unittest.TestCase):
         span.finish()
         self.assertIsNotNone(span.end_time)
 
+    def test_on_create(self):
+        from opencensus.trace.span import Span
+        self.on_create_called = False
+        span = self._make_one('span1')
+        self.assertFalse(self.on_create_called)
+        try:
+            @Span.on_create
+            def callback(span):
+                self.on_create_called = True
+            span = self._make_one('span2')
+        finally:
+            Span._on_create_callbacks = []
+        self.assertTrue(self.on_create_called)
+        del self.on_create_called
+
     def test___iter__(self):
         root_span_name = 'root_span_name'
         child1_span_name = 'child1_span_name'
