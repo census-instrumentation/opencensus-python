@@ -145,7 +145,7 @@ class OpenCensusClientInterceptor(grpc.UnaryUnaryClientInterceptor,
 
     def _trace_future_exception(self, response):
         # Trace the exception for a grpc.Future if any
-        exception = response.exception(timeout=TIMEOUT)
+        exception = response.exception()
 
         if exception is not None:
             exception = str(exception)
