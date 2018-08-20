@@ -63,7 +63,7 @@ class _Worker(object):
 	def _get_items(self):
 		"""Get multiple items from a Queue.
 
-		Gets at least one (blocking) and at most ``max_items`` items
+		Gets at least one (blocking) and at most ``max_batch_size`` items
 		(non-blocking) from a given Queue. Does not mark the items as done.
 
 		:rtype: Sequence
@@ -85,13 +85,11 @@ class _Worker(object):
 		Pulls pending data off the queue and writes them in
 		batches to the specified tracing backend using the exporter.
 		"""
-		print('Background thread started.')
-
 		quit_ = False
 
 		while True:
 			items = self._get_items()
-			datas = []
+			data = []
 
 			for item in items:
 				if item is _WORKER_TERMINATOR:
@@ -99,10 +97,10 @@ class _Worker(object):
 					# Continue processing items, don't break, try to process
 					# all items we got back before quitting.
 				else:
-					datas.extend(item)
+					data.extend(item)
 
-			if datas:
-				self.exporter.emit(datas)
+			if data:
+				self.exporter.emit(data)
 
 			for _ in range(len(items)):
 				self._queue.task_done()
@@ -113,13 +111,11 @@ class _Worker(object):
 			if quit_:
 				break
 
-		print('Background thread exited.')
-
 	def start(self):
 		"""Starts the background thread.
 
 		Additionally, this registers a handler for process exit to attempt
-		to send any pending datas before shutdown.
+		to send any pending data before shutdown.
 		"""
 		with self._lock:
 			if self.is_alive:
@@ -129,7 +125,7 @@ class _Worker(object):
 				target=self._thread_main, name=_WORKER_THREAD_NAME)
 			self._thread.daemon = True
 			self._thread.start()
-			atexit.register(self._export_pending_datas)
+			atexit.register(self._export_pending_data)
 
 	def stop(self):
 		"""Signals the background thread to stop.
@@ -139,11 +135,6 @@ class _Worker(object):
 		processes the stop signal, it will be terminated without finishing
 		work. The ``grace_period`` parameter will give the background
 		thread some time to finish processing before this function returns.
-
-		:type grace_period: float
-		:param grace_period: If specified, this method will block up to this
-							 many seconds to allow the background thread to
-							 finish work before returning.
 
 		:rtype: bool
 		:returns: True if the thread terminated. False if the thread is still
@@ -161,26 +152,19 @@ class _Worker(object):
 
 			return success
 
-	def _export_pending_datas(self):
-		"""Callback that attempts to send pending datas before termination."""
-
+	def _export_pending_data(self):
+		"""Callback that attempts to send pending data before termination."""
 		if not self.is_alive:
 			return
+		
+		self.stop():
 
-		if not self._queue.empty():
-			print('Sending all pending datas before terminated.')
-
-		if self.stop():
-			print('Sent all pending datas.')
-		else:
-			print('Failed to send pending datas.')
-
-	def enqueue(self, datas):
-		"""Queues datas to be written by the background thread."""
-		self._queue.put_nowait(datas)
+	def enqueue(self, data):
+		"""Queues data to be written by the background thread."""
+		self._queue.put_nowait(data)
 
 	def flush(self):
-		"""Submit any pending datas."""
+		"""Submit any pending data."""
 		self._queue.join()
 
 
@@ -195,7 +179,7 @@ class AsyncTransport(base.Transport):
 					 :class:`.LoggingExporter`, :class:`.FileExporter`.
 
 	:type grace_period: float
-	:param grace_period: The amount of time to wait for pending datas to
+	:param grace_period: The amount of time to wait for pending data to
 						 be submitted when the process is shutting down.
 
 	:type max_batch_size: int
@@ -209,9 +193,9 @@ class AsyncTransport(base.Transport):
 		self.worker = _Worker(exporter, grace_period, max_batch_size)
 		self.worker.start()
 
-	def export(self, datas):
+	def export(self, data):
 		"""Put the trace/stats to be exported into queue."""
-		self.worker.enqueue(datas)
+		self.worker.enqueue(data)
 
 	def flush(self):
 		"""Submit any pending traces/stats."""
