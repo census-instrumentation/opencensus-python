@@ -177,6 +177,7 @@ class MockTracer(object):
         span.context_tracer.span_context = mock.Mock()
         span.context_tracer.span_context.trace_id = '123'
         span.context_tracer.span_context.span_id = '456'
+        span.context_tracer.span_context.tracestate = None
         self.span = span
         return span
 
