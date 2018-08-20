@@ -97,6 +97,9 @@ class DistributionAggregationData(BaseAggregationData):
     :type counts_per_bucket: list(int)
     :param counts_per_bucket: the number of occurrences per bucket
 
+    :type exemplars: list(Exemplar)
+    :param: exemplars: the exemplars associated with histogram buckets.
+
     :type bounds: list(float)
     :param bounds: the histogram distribution of the values
 
@@ -107,6 +110,7 @@ class DistributionAggregationData(BaseAggregationData):
                  min_,
                  max_,
                  sum_of_sqd_deviations,
+                 exemplars=None,
                  counts_per_bucket=None,
                  bounds=None):
         super(DistributionAggregationData, self).__init__(mean_data)
@@ -126,6 +130,8 @@ class DistributionAggregationData(BaseAggregationData):
         self._counts_per_bucket = counts_per_bucket
         self._bounds = bucket_boundaries.BucketBoundaries(
                                             boundaries=bounds).boundaries
+        self._exemplars = exemplars
+
 
     @property
     def mean_data(self):
@@ -156,6 +162,11 @@ class DistributionAggregationData(BaseAggregationData):
     def counts_per_bucket(self):
         """The current counts per bucket for the distribution"""
         return self._counts_per_bucket
+
+    @property
+    def exemplars(self):
+        """The current counts per bucket for the distribution"""
+        return self._exemplars
 
     @property
     def bounds(self):
@@ -232,3 +243,50 @@ class LastValueAggregationData(BaseAggregationData):
             The current value recorded
         """
         return self._value
+
+class Exemplar(object):
+    """ Exemplar represents an example point that may be used to annotate aggregated
+        distribution values, associated with a histogram bucket.
+
+        :type value: double
+        :param value: value of the Exemplar point.
+
+        :type timestamp: time
+        :param timestamp: the time that this Exemplar's value was recorded.
+
+        :type attachments: dict
+        :param attachments: the contextual information about the example value.
+    """
+
+    def __init__(self,
+                 value,
+                 timestamp,
+                 attachments):
+        self._value = value
+
+        self._timestamp = timestamp
+
+        if attachments is None:
+            raise TypeError('attachments should not be None')
+
+        for key, value in attachments.items():
+            if key is None:
+                raise TypeError('attachment key should not be None')
+            if value is None:
+                raise TypeError('attachment value should not be None')
+        self._attachments = attachments
+
+    @property
+    def value(self):
+        """The current value of the Exemplar point"""
+        return self._value
+
+    @property
+    def timestamp(self):
+        """The time that this Exemplar's value was recorded"""
+        return self._timestamp
+
+    @property
+    def attachments(self):
+        """The contextual information about the example value"""
+        return self._attachments

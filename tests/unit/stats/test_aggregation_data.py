@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import unittest
+import time
 import mock
 from opencensus.stats import aggregation_data as aggregation_data_module
 
@@ -114,6 +115,73 @@ class TestDistributionAggregationData(unittest.TestCase):
 
         self.assertIsNotNone(dist_agg_data.sum)
         self.assertEqual(0, dist_agg_data.variance)
+
+    def test_constructor_with_exemplar(self):
+        timestamp = time.time()
+        attachments = {"One": "one", "Two": "two"}
+        exemplar_1 = aggregation_data_module.Exemplar(4, timestamp, attachments)
+        exemplar_2 = aggregation_data_module.Exemplar(5, timestamp, attachments)
+        mean_data = 1
+        count_data = 0
+        _min = 0
+        _max = 1
+        sum_of_sqd_deviations = mock.Mock()
+        counts_per_bucket = [1, 1, 1]
+        bounds = [0, 1/2, 1]
+        exemplars = [exemplar_1, exemplar_2]
+
+        dist_agg_data = aggregation_data_module.DistributionAggregationData(
+                mean_data=mean_data,
+                count_data=count_data,
+                min_= _min,
+                max_ = _max,
+                sum_of_sqd_deviations=sum_of_sqd_deviations,
+                exemplars=exemplars,
+                counts_per_bucket=counts_per_bucket,
+                bounds=bounds
+            )
+
+        self.assertEqual(1, dist_agg_data.mean_data)
+        self.assertEqual(0, dist_agg_data.count_data)
+        self.assertEqual(0, dist_agg_data.min)
+        self.assertEqual(1, dist_agg_data.max)
+        self.assertEqual(sum_of_sqd_deviations,
+                         dist_agg_data.sum_of_sqd_deviations)
+        self.assertEqual([1, 1, 1], dist_agg_data.counts_per_bucket)
+        self.assertEqual([exemplar_1, exemplar_2], dist_agg_data.exemplars)
+        self.assertEqual([0, 1/2, 1], dist_agg_data.bounds)
+
+        self.assertIsNotNone(dist_agg_data.sum)
+        self.assertEqual(0, dist_agg_data.variance)
+
+    def test_exemplar(self):
+        timestamp = time.time()
+        attachments = {"One": "one", "Two": "two"}
+        exemplar = aggregation_data_module.Exemplar(4, timestamp, attachments)
+
+        self.assertEqual(4, exemplar.value)
+        self.assertEqual(timestamp, exemplar.timestamp)
+        self.assertEqual(attachments, exemplar.attachments)
+
+    def test_exemplar_null_attachments(self):
+        timestamp = time.time()
+
+        with self.assertRaisesRegexp(TypeError, 'attachments should not be None'):
+            aggregation_data_module.Exemplar(6, timestamp, None)
+
+    def test_exemplar_null_attachment_key(self):
+        timestamp = time.time()
+        attachment = {None: "one", "Two": "two"}
+
+        with self.assertRaisesRegexp(TypeError, 'attachment key should not be None'):
+            aggregation_data_module.Exemplar(6, timestamp, attachment)
+
+    def test_exemplar_null_attachment_value(self):
+        timestamp = time.time()
+        attachment = {"One": "one", "Two": None}
+
+        with self.assertRaisesRegexp(TypeError, 'attachment value should not be None'):
+            aggregation_data_module.Exemplar(6, timestamp, attachment)
 
     def test_variance(self):
         mean_data = mock.Mock()
