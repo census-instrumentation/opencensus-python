@@ -167,3 +167,4 @@ class LastValueAggregation(BaseAggregation):
             The current recorded value
         """
         return self._value
+    
