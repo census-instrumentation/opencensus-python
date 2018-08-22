@@ -232,3 +232,4 @@ class LastValueAggregationData(BaseAggregationData):
             The current value recorded
         """
         return self._value
+    

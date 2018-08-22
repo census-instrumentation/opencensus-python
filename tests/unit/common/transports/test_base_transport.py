@@ -12,21 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module containing base class for transport."""
+import unittest
 
+class TestBaseTransport(unittest.TestCase):
 
-class Transport(object):
-    """Base class for transport.
+    def test_export_abstract(self):
+        from opencensus.common.transports import base
 
-    Subclasses of :class:`Transport` must override :meth:`export`.
-    """
-    def export(self, datas):
-        """Export the data."""
-        raise NotImplementedError
+        transport = base.Transport()
+        trace = {}
 
-    def flush(self):
-        """Submit any pending data.
+        with self.assertRaises(NotImplementedError):
+            transport.export(trace)
 
-        For blocking/sync transports, this is a no-op.
-        """
-        
+    def test_flush_abstract_and_optional(self):
+        from opencensus.common.transports import base
+
+        transport = base.Transport()
+        transport.flush()
