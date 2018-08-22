@@ -145,6 +145,7 @@ class DistributionAggregation(BaseAggregation):
         """The distribution of the current aggregation"""
         return self._distribution
 
+
 class LastValueAggregation(BaseAggregation):
     """Describes that the data collected with this method will
     overwrite the last recorded value
@@ -157,14 +158,14 @@ class LastValueAggregation(BaseAggregation):
 
     """
     def __init__(self, value=0, aggregation_type=Type.LASTVALUE):
-        super(LastValueAggregation, self).__init__(aggregation_type=aggregation_type)
-        self.aggregation_data = aggregation_data.LastValueAggregationData(value)
+        super(LastValueAggregation, self).__init__(
+            aggregation_type=aggregation_type)
+        self.aggregation_data = aggregation_data.
+                                        LastValueAggregationData(value)
         self._value = value
-        
+
     @property
     def value(self):
-        """
-            The current recorded value
+        """The current recorded value
         """
         return self._value
-    

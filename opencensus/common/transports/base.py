@@ -29,4 +29,3 @@ class Transport(object):
 
         For blocking/sync transports, this is a no-op.
         """
-        
