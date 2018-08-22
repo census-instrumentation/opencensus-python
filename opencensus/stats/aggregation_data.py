@@ -222,14 +222,14 @@ class LastValueAggregationData(BaseAggregationData):
         self._value = value
 
     def add_sample(self, value):
-        """Adds a sample to the current LastValue Aggregation Data and overwrite 
-        the current recorded value"""
+        """Adds a sample to the current
+           LastValue Aggregation Data and overwrite
+           the current recorded value
+        """
         self._value = value
 
     @property
     def value(self):
-        """
-            The current value recorded
+        """The current value recorded
         """
         return self._value
-    
