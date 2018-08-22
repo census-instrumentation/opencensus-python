@@ -14,7 +14,7 @@
 
 import unittest
 
-class TestBaseTransport(unittest.TestCase):
+class TestCommonBaseTransport(unittest.TestCase):
 
     def test_export_abstract(self):
         from opencensus.common.transports import base
