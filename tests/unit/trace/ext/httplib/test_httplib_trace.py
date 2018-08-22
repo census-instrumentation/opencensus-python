@@ -16,6 +16,7 @@ import unittest
 
 import mock
 
+from opencensus.trace import span as span_module
 from opencensus.trace.ext.httplib import trace
 from opencensus.trace.propagation import trace_context_http_header_format
 
@@ -98,6 +99,7 @@ class Test_httplib_trace(unittest.TestCase):
         self.assertEqual(expected_attributes,
                          mock_tracer.span.attributes)
         self.assertEqual(expected_name, mock_tracer.span.name)
+        self.assertEqual(span_module.SpanKind.CLIENT, mock_tracer.span.span_kind)        
 
     def test_wrap_httplib_response(self):
         mock_span = mock.Mock()

@@ -16,6 +16,7 @@ import unittest
 
 import mock
 
+from opencensus.trace import span as span_module
 from opencensus.trace.ext.requests import trace
 
 
@@ -70,6 +71,7 @@ class Test_requests_trace(unittest.TestCase):
             'requests/status_code': '200'}
         expected_name = '[requests]get'
 
+        self.assertEqual(span_module.SpanKind.CLIENT, mock_tracer.current_span.span_kind)
         self.assertEqual(expected_attributes, mock_tracer.current_span.attributes)
         self.assertEqual(expected_name, mock_tracer.current_span.name)
 
@@ -98,6 +100,7 @@ class Test_requests_trace(unittest.TestCase):
             'requests/status_code': '200'}
         expected_name = '[requests]POST'
 
+        self.assertEqual(span_module.SpanKind.CLIENT, mock_tracer.current_span.span_kind)
         self.assertEqual(expected_attributes, mock_tracer.current_span.attributes)
         self.assertEqual(expected_name, mock_tracer.current_span.name)
 

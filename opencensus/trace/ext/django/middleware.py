@@ -18,8 +18,9 @@ import logging
 from opencensus.trace.ext import utils
 from opencensus.trace.ext.django.config import (settings, convert_to_import)
 from opencensus.trace import attributes_helper
-from opencensus.trace import tracer as tracer_module
 from opencensus.trace import execution_context
+from opencensus.trace import span as span_module
+from opencensus.trace import tracer as tracer_module
 from opencensus.trace.samplers import probability
 
 try:
@@ -164,7 +165,8 @@ class OpencensusMiddleware(MiddlewareMixin):
                 propagator=self.propagator)
 
             # Span name is being set at process_view
-            tracer.start_span()
+            span = tracer.start_span()
+            span.span_kind = span_module.SpanKind.SERVER
             tracer.add_attribute_to_current_span(
                 attribute_key=HTTP_METHOD,
                 attribute_value=request.method)

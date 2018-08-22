@@ -19,8 +19,10 @@ from google.rpc import code_pb2
 
 from opencensus.trace import attributes_helper
 from opencensus.trace import execution_context
+from opencensus.trace import span as span_module
 from opencensus.trace import stack_trace as stack_trace
 from opencensus.trace import status
+
 from opencensus.trace import time_event
 from opencensus.trace import tracer as tracer_module
 from opencensus.trace.ext import grpc as oc_grpc
@@ -108,6 +110,8 @@ class OpenCensusServerInterceptor(grpc.ServerInterceptor):
         span = tracer.start_span(
             name=_get_span_name(servicer_context)
         )
+
+        span.span_kind = span_module.SpanKind.SERVER
         tracer.add_attribute_to_current_span(
             attribute_key=attributes_helper.COMMON_ATTRIBUTES.get(
                 ATTRIBUTE_COMPONENT),
