@@ -78,7 +78,7 @@ class Test_sqlalchemy_trace(unittest.TestCase):
 
         expected_name = 'sqlalchemy.query'
 
-        self.assertEqual(mock_tracer.current_span.attribuspan_kind, span_module.SpanKind.CLIENT)
+        self.assertEqual(mock_tracer.current_span.span_kind, span_module.SpanKind.CLIENT)
         self.assertEqual(mock_tracer.current_span.attributes, expected_attributes)
         self.assertEqual(mock_tracer.current_span.name, expected_name)
 

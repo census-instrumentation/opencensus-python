@@ -165,7 +165,7 @@ class OpencensusMiddleware(MiddlewareMixin):
                 propagator=self.propagator)
 
             # Span name is being set at process_view
-            tracer.start_span()
+            span = tracer.start_span()
             span.span_kind = span_module.SpanKind.SERVER
             tracer.add_attribute_to_current_span(
                 attribute_key=HTTP_METHOD,

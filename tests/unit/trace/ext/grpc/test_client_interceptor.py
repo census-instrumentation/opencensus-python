@@ -194,7 +194,6 @@ class TestOpenCensusClientInterceptor(unittest.TestCase):
         expected_attributes = {'/error/message': None}
 
         self.assertEqual(current_span.attributes, expected_attributes)
-        self.assertEqual(current_span.kind, span_module.SpanKind.CLIENT)
 
     def _unary_helper(self):
         continuation = mock.Mock()
