@@ -16,6 +16,7 @@ import logging
 import requests
 import wrapt
 
+from opencensus.trace import attributes_helper
 from opencensus.trace import execution_context
 from opencensus.trace import span as span_module
 
@@ -26,6 +27,9 @@ MODULE_NAME = 'requests'
 REQUESTS_WRAP_METHODS = ['get', 'post', 'put', 'delete', 'head', 'options']
 SESSION_WRAP_METHODS = 'request'
 SESSION_CLASS_NAME = 'Session'
+
+HTTP_URL = attributes_helper.COMMON_ATTRIBUTES['HTTP_URL']
+HTTP_STATUS_CODE = attributes_helper.COMMON_ATTRIBUTES['HTTP_STATUS_CODE']
 
 
 def trace_integration(tracer=None):
@@ -54,13 +58,13 @@ def wrap_requests(requests_func):
         _span.span_kind = span_module.SpanKind.CLIENT
 
         # Add the requests url to attributes
-        _tracer.add_attribute_to_current_span('requests/url', url)
+        _tracer.add_attribute_to_current_span(HTTP_URL, url)
 
         result = requests_func(url, *args, **kwargs)
 
         # Add the status code to attributes
         _tracer.add_attribute_to_current_span(
-            'requests/status_code', str(result.status_code))
+            HTTP_STATUS_CODE, str(result.status_code))
 
         _tracer.end_span()
         return result
@@ -79,13 +83,13 @@ def wrap_session_request(wrapped, instance, args, kwargs):
     _span.span_kind = span_module.SpanKind.CLIENT
 
     # Add the requests url to attributes
-    _tracer.add_attribute_to_current_span('requests/url', url)
+    _tracer.add_attribute_to_current_span(HTTP_URL, url)
 
     result = wrapped(*args, **kwargs)
 
     # Add the status code to attributes
     _tracer.add_attribute_to_current_span(
-        'requests/status_code', str(result.status_code))
+        HTTP_STATUS_CODE, str(result.status_code))
 
     _tracer.end_span()
     return result

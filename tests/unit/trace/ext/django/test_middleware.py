@@ -190,8 +190,8 @@ class TestOpencensusMiddleware(unittest.TestCase):
         span = tracer.current_span()
 
         expected_attributes = {
-            '/http/url': u'/',
-            '/http/method': 'GET',
+            'http.url': u'/',
+            'http.method': 'GET',
         }
         self.assertEqual(span.span_kind, span_module.SpanKind.SERVER)
         self.assertEqual(span.attributes, expected_attributes)
@@ -277,11 +277,11 @@ class TestOpencensusMiddleware(unittest.TestCase):
         django_response.status_code = 200
 
         expected_attributes = {
-            '/http/url': u'/',
-            '/http/method': 'GET',
-            '/http/status_code': '200',
-            '/django/user/id': '123',
-            '/django/user/name': 'test_name'
+            'http.url': u'/',
+            'http.method': 'GET',
+            'http.status_code': '200',
+            'django.user.id': '123',
+            'django.user.name': 'test_name'
         }
 
         mock_user = mock.Mock()
@@ -349,7 +349,7 @@ class Test__set_django_attributes(unittest.TestCase):
         _set_django_attributes(tracer, request)
 
         expected_attributes = {
-            '/django/user/id': '123',
-            '/django/user/name': test_name}
+            'django.user.id': '123',
+            'django.user.name': test_name}
 
         self.assertEqual(tracer.attributes, expected_attributes)

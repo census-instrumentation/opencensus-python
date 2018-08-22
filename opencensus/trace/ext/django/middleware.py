@@ -85,10 +85,10 @@ def _set_django_attributes(tracer, request):
 
     # User id is the django autofield for User model as the primary key
     if user_id is not None:
-        tracer.add_attribute_to_current_span('/django/user/id', str(user_id))
+        tracer.add_attribute_to_current_span('django.user.id', str(user_id))
 
     if user_name is not None:
-        tracer.add_attribute_to_current_span('/django/user/name', user_name)
+        tracer.add_attribute_to_current_span('django.user.name', user_name)
 
 
 class OpencensusMiddleware(MiddlewareMixin):
