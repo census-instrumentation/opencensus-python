@@ -67,7 +67,7 @@ class OpenCensusClientInterceptor(grpc.UnaryUnaryClientInterceptor,
         span = self.tracer.start_span(
             name=_get_span_name(client_call_details)
         )
-        
+
         span.span_kind = span_module.SpanKind.CLIENT
         # Add the component grpc to span attribute
         self.tracer.add_attribute_to_current_span(

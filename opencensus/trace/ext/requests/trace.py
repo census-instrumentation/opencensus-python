@@ -76,8 +76,8 @@ def wrap_session_request(wrapped, instance, args, kwargs):
     _span = _tracer.start_span()
 
     _span.name = '[requests]{}'.format(method)
-    _span.span_kind = span_module.SpanKind.CLIENT    
-    
+    _span.span_kind = span_module.SpanKind.CLIENT
+
     # Add the requests url to attributes
     _tracer.add_attribute_to_current_span('requests/url', url)
 
