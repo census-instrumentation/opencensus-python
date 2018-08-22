@@ -19,6 +19,7 @@ from django.test import RequestFactory
 from django.test.utils import teardown_test_environment
 
 from opencensus.trace import execution_context
+from opencensus.trace import span as span_module
 from opencensus.trace.exporters import print_exporter
 from opencensus.trace.exporters import zipkin_exporter
 from opencensus.trace.exporters.transports import sync
@@ -192,6 +193,7 @@ class TestOpencensusMiddleware(unittest.TestCase):
             '/http/url': u'/',
             '/http/method': 'GET',
         }
+        self.assertEqual(span.span_kind, span_module.SpanKind.SERVER)
         self.assertEqual(span.attributes, expected_attributes)
         self.assertEqual(span.parent_span.span_id, span_id)
 

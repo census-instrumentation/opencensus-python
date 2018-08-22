@@ -16,6 +16,7 @@ import unittest
 
 import mock
 from opencensus.trace import execution_context
+from opencensus.trace import span as span_module
 from opencensus.trace.ext.grpc import client_interceptor
 from opencensus.trace.tracers.noop_tracer import NoopTracer
 
@@ -193,6 +194,7 @@ class TestOpenCensusClientInterceptor(unittest.TestCase):
         expected_attributes = {'/error/message': None}
 
         self.assertEqual(current_span.attributes, expected_attributes)
+        self.assertEqual(current_span.kind, span_module.SpanKind.CLIENT)
 
     def _unary_helper(self):
         continuation = mock.Mock()

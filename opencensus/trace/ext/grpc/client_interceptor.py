@@ -20,6 +20,7 @@ import six
 
 from opencensus.trace import attributes_helper
 from opencensus.trace import execution_context
+from opencensus.trace import span as span_module
 from opencensus.trace import time_event
 from opencensus.trace.ext import grpc as oc_grpc
 from opencensus.trace.ext.grpc import utils as grpc_utils
@@ -66,7 +67,8 @@ class OpenCensusClientInterceptor(grpc.UnaryUnaryClientInterceptor,
         span = self.tracer.start_span(
             name=_get_span_name(client_call_details)
         )
-
+        
+        span.span_kind = span_module.SpanKind.CLIENT
         # Add the component grpc to span attribute
         self.tracer.add_attribute_to_current_span(
             attribute_key=attributes_helper.COMMON_ATTRIBUTES.get(

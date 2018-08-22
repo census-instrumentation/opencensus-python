@@ -19,6 +19,7 @@ from sqlalchemy import event
 
 
 from opencensus.trace import execution_context
+from opencensus.trace import span as span_module
 
 log = logging.getLogger(__name__)
 
@@ -63,6 +64,7 @@ def _before_cursor_execute(conn, cursor, statement, parameters,
     _tracer = execution_context.get_opencensus_tracer()
     _span = _tracer.start_span()
     _span.name = '{}.query'.format(MODULE_NAME)
+    _span.span_kind = span_module.SpanKind.CLIENT    
 
     # Set query statement attribute
     _tracer.add_attribute_to_current_span(

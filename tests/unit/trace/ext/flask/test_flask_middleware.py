@@ -23,6 +23,7 @@ from google.rpc import code_pb2
 
 from opencensus.trace import execution_context
 from opencensus.trace import span_data
+from opencensus.trace import span as span_module
 from opencensus.trace import stack_trace
 from opencensus.trace import status
 from opencensus.trace.exporters import print_exporter, stackdriver_exporter, \
@@ -180,6 +181,7 @@ class TestFlaskMiddleware(unittest.TestCase):
                 '/http/method': 'GET',
             }
 
+            self.assertEqual(span.span_kind, span_module.SpanKind.SERVER)
             self.assertEqual(span.attributes, expected_attributes)
             self.assertEqual(span.parent_span.span_id, span_id)
 

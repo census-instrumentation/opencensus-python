@@ -17,6 +17,7 @@ import requests
 import wrapt
 
 from opencensus.trace import execution_context
+from opencensus.trace import span as span_module
 
 log = logging.getLogger(__name__)
 
@@ -50,6 +51,7 @@ def wrap_requests(requests_func):
         _tracer = execution_context.get_opencensus_tracer()
         _span = _tracer.start_span()
         _span.name = '[requests]{}'.format(requests_func.__name__)
+        _span.span_kind = span_module.SpanKind.CLIENT
 
         # Add the requests url to attributes
         _tracer.add_attribute_to_current_span('requests/url', url)
@@ -72,8 +74,10 @@ def wrap_session_request(wrapped, instance, args, kwargs):
     url = kwargs.get('url') or args[1]
     _tracer = execution_context.get_opencensus_tracer()
     _span = _tracer.start_span()
-    _span.name = '[requests]{}'.format(method)
 
+    _span.name = '[requests]{}'.format(method)
+    _span.span_kind = span_module.SpanKind.CLIENT    
+    
     # Add the requests url to attributes
     _tracer.add_attribute_to_current_span('requests/url', url)
 
