@@ -21,6 +21,8 @@ import logging
 
 import requests
 
+from six import text_type, string_types
+
 from opencensus.trace.exporters import base
 from opencensus.trace.exporters.transports import sync
 from opencensus.trace.utils import check_str_length
@@ -198,9 +200,11 @@ def _extract_tags_from_span(attr):
         return {}
     tags = {}
     for attribute_key, attribute_value in attr.items():
+        if isinstance(attribute_value, string_types):
+            attribute_value = attribute_value.decode('utf8')
         if isinstance(attribute_value, (int, bool)):
             value = str(attribute_value)
-        elif isinstance(attribute_value, str):
+        elif isinstance(attribute_value, text_type):
             res, _ = check_str_length(str_to_check=attribute_value)
             value = res
         else:

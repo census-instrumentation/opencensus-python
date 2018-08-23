@@ -19,6 +19,7 @@ import datetime
 import logging
 import socket
 
+from six import text_type, string_types
 from thrift.protocol import TBinaryProtocol, TCompactProtocol
 from thrift.transport import THttpClient, TTransport
 
@@ -307,12 +308,14 @@ def _extract_tags(attr):
 
 def _convert_attribute_to_tag(key, attr):
     """Convert the attributes to jaeger tags."""
+    if isinstance(attr, string_types):
+        attr = attr.decode('utf8')
     if isinstance(attr, bool):
         return jaeger.Tag(
             key=key,
             vBool=attr,
             vType=jaeger.TagType.BOOL)
-    if isinstance(attr, str):
+    if isinstance(attr, text_type):
         return jaeger.Tag(
             key=key,
             vStr=attr,
