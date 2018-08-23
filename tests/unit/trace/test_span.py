@@ -65,8 +65,8 @@ class TestSpan(unittest.TestCase):
         start_time = datetime.utcnow().isoformat() + 'Z'
         end_time = datetime.utcnow().isoformat() + 'Z'
         attributes = {
-            '/http/status_code': '200',
-            '/component': 'HTTP load balancer',
+            'http.status_code': '200',
+            'component': 'HTTP load balancer',
         }
         time_events = mock.Mock()
         links = mock.Mock()
@@ -161,7 +161,8 @@ class TestSpan(unittest.TestCase):
         self.assertEqual(len(span.time_events), 1)
         a0 = span.time_events[0].annotation
         self.assertEqual(a0.description, 'This is a test')
-        self.assertEqual(a0.attributes.attributes, dict(name='octo-span', age=98))
+        self.assertEqual(a0.attributes.attributes,
+                         dict(name='octo-span', age=98))
 
     def test_add_link(self):
         from opencensus.trace.link import Link
@@ -211,6 +212,21 @@ class TestSpan(unittest.TestCase):
 
         span.finish()
         self.assertIsNotNone(span.end_time)
+
+    def test_on_create(self):
+        from opencensus.trace.span import Span
+        self.on_create_called = False
+        span = self._make_one('span1')
+        self.assertFalse(self.on_create_called)
+        try:
+            @Span.on_create
+            def callback(span):
+                self.on_create_called = True
+            span = self._make_one('span2')
+        finally:
+            Span._on_create_callbacks = []
+        self.assertTrue(self.on_create_called)
+        del self.on_create_called
 
     def test___iter__(self):
         root_span_name = 'root_span_name'
@@ -317,8 +333,8 @@ class Test_format_span_json(unittest.TestCase):
         span_id = 1234
         trace_id = '3456'
         attributes = {
-            '/http/status_code': '200',
-            '/component': 'HTTP load balancer',
+            'http.status_code': '200',
+            'component': 'HTTP load balancer',
             'none_key': None
         }
 
@@ -367,13 +383,13 @@ class Test_format_span_json(unittest.TestCase):
             'endTime': end_time,
             'attributes': {
                 'attributeMap': {
-                    '/component': {
+                    'component': {
                         'string_value': {
                             'truncated_byte_count': 0,
                             'value': 'HTTP load balancer'
                         }
                     },
-                    '/http/status_code': {
+                    'http.status_code': {
                         'string_value': {
                             'truncated_byte_count': 0,
                             'value': '200'
