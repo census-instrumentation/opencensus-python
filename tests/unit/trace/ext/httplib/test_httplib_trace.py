@@ -87,8 +87,8 @@ class Test_httplib_trace(unittest.TestCase):
             wrapped(mock_self, method, url, body, headers)
 
         expected_attributes = {
-            '/http/url': url,
-            '/http/method': method}
+            'http.url': url,
+            'http.method': method}
         expected_name = '[httplib]request'
 
         mock_request_func.assert_called_with(
@@ -126,7 +126,7 @@ class Test_httplib_trace(unittest.TestCase):
             wrapped(mock.Mock())
 
         expected_attributes = {
-            '/http/status_code': '200'}
+            'http.status_code': '200'}
 
         self.assertEqual(expected_attributes,
                          mock_tracer.span.attributes)

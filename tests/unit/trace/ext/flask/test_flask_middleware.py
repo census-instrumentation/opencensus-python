@@ -177,8 +177,8 @@ class TestFlaskMiddleware(unittest.TestCase):
             span = tracer.current_span()
 
             expected_attributes = {
-                '/http/url': u'http://localhost/',
-                '/http/method': 'GET',
+                'http.url': u'http://localhost/',
+                'http.method': 'GET',
             }
 
             self.assertEqual(span.span_kind, span_module.SpanKind.SERVER)
@@ -235,8 +235,8 @@ class TestFlaskMiddleware(unittest.TestCase):
             span = tracer.current_span()
 
             expected_attributes = {
-                '/http/url': u'http://localhost/',
-                '/http/method': 'GET',
+                'http.url': u'http://localhost/',
+                'http.method': 'GET',
             }
 
             self.assertEqual(span.attributes, expected_attributes)
@@ -259,8 +259,8 @@ class TestFlaskMiddleware(unittest.TestCase):
             span = tracer.current_span()
 
             expected_attributes = {
-                '/http/url': u'http://localhost/',
-                '/http/method': 'GET',
+                'http.url': u'http://localhost/',
+                'http.method': 'GET',
             }
 
             self.assertEqual(span.attributes, expected_attributes)
