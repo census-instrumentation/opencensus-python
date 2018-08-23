@@ -206,20 +206,19 @@ class StackdriverExporter(base.Exporter):
         spans = {'spans': spans_list}
         return spans
 
-    def map_attributes(self, span_data_attributes):
-        if span_data_attributes is None:
-            return span_data_attributes
+    def map_attributes(self, attribute_map):
+        if attribute_map is None:
+            return attribute_map
 
-        for (key, value) in span_data_attributes.items():
+        for (key, value) in attribute_map.items():
             if (key != 'attributeMap'):
                 continue
             for attribute_key in list(value.keys()):
                 if (attribute_key in ATTRIBUTE_MAPPING):
-                    value[ATTRIBUTE_MAPPING.get(
-                        attribute_key)] = value[attribute_key]
-                    del value[attribute_key]
+                    new_key = ATTRIBUTE_MAPPING.get(attribute_key)
+                    value[new_key] = value.pop(attribute_key)
 
-        return span_data_attributes
+        return attribute_map
 
 
 ATTRIBUTE_MAPPING = {

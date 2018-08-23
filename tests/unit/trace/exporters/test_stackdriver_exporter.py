@@ -262,7 +262,7 @@ class TestStackdriverExporter(unittest.TestCase):
             project_id=project_id)
 
         # does not throw
-        exporter.map_attributes(None)
+        self.assertIsNone(exporter.map_attributes(None))
 
     def test_translate_common_attributes_to_stackdriver(self):
         project_id = 'PROJECT'
