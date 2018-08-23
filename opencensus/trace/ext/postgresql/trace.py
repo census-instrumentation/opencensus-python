@@ -58,9 +58,9 @@ def trace_cursor_query(query_func):
             _span.name = '{}.query'.format(MODULE_NAME)
             _span.span_kind = span_module.SpanKind.CLIENT
             _tracer.add_attribute_to_current_span(
-                '{}/query'.format(MODULE_NAME), query)
+                '{}.query'.format(MODULE_NAME), query)
             _tracer.add_attribute_to_current_span(
-                '{}/cursor/method/name'.format(MODULE_NAME),
+                '{}.cursor.method.name'.format(MODULE_NAME),
                 query_func.__name__)
 
         result = query_func(query, *args, **kwargs)

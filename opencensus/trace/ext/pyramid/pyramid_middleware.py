@@ -43,6 +43,7 @@ class OpenCensusTweenFactory(object):
     For details on pyramid tweens, see
     https://docs.pylonsproject.org/projects/pyramid/en/latest/narr/hooks.html#creating-a-tween
     """
+
     def __init__(self, handler, registry):
         """Constructor for the pyramid tween
 
