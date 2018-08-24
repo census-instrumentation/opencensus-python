@@ -29,190 +29,173 @@ _WORKER_TERMINATOR = object()
 
 
 class _Worker(object):
-	"""A background thread that exports batches of data.
+    """A background thread that exports batches of data.
 
-	:type exporter: :class:`~opencensus.trace.exporters.base.Exporter` or 
-					:class:`~opencensus.stats.exporters.base.StatsExporter`
-	:param exporter: Instances of Exporter objects. Defaults to
-					:class:`.PrintExporter`. The rest options are
-					:class:`.ZipkinExporter`, :class:`.StackdriverExporter`,
-					:class:`.LoggingExporter`, :class:`.FileExporter`.
+    :type exporter: :class:`~opencensus.trace.exporters.base.Exporter` or
+                    :class:`~opencensus.stats.exporters.base.StatsExporter`
+    :param exporter: Instances of Exporter objects. Defaults to
+                    :class:`.PrintExporter`. The rest options are
+                    :class:`.ZipkinExporter`, :class:`.StackdriverExporter`,
+                    :class:`.LoggingExporter`, :class:`.FileExporter`.
 
-	:type grace_period: float
-	:param grace_period: The amount of time to wait for pending data to
-						 be submitted when the process is shutting down.
+    :type grace_period: float
+    :param grace_period: The amount of time to wait for pending data to
+                         be submitted when the process is shutting down.
 
-	:type max_batch_size: int
-	:param max_batch_size: The maximum number of items to send at a time
-						   in the background thread.
-	"""
-	def __init__(self, exporter, grace_period=_DEFAULT_GRACE_PERIOD,
-				 max_batch_size=_DEFAULT_MAX_BATCH_SIZE):
-		self.exporter = exporter
-		self._grace_period = grace_period
-		self._max_batch_size = max_batch_size
-		self._queue = queue.Queue(0)
-		self._lock = threading.Lock()
-		self._thread = None
+    :type max_batch_size: int
+    :param max_batch_size: The maximum number of items to send at a time
+                           in the background thread.
+    """
+    def __init__(self, exporter, grace_period=_DEFAULT_GRACE_PERIOD,
+                 max_batch_size=_DEFAULT_MAX_BATCH_SIZE):
+        self.exporter = exporter
+        self._grace_period = grace_period
+        self._max_batch_size = max_batch_size
+        self._queue = queue.Queue(0)
+        self._lock = threading.Lock()
+        self._thread = None
 
-	@property
-	def is_alive(self):
-		"""Returns True is the background thread is running."""
-		return self._thread is not None and self._thread.is_alive()
+    @property
+    def is_alive(self):
+        """Returns True is the background thread is running."""
+        return self._thread is not None and self._thread.is_alive()
 
-	def _get_items(self):
-		"""Get multiple items from a Queue.
+    def _get_items(self):
+        """Get multiple items from a Queue.
 
-		Gets at least one (blocking) and at most ``max_items`` items
-		(non-blocking) from a given Queue. Does not mark the items as done.
+        Gets at least one (blocking) and at most ``max_batch_size`` items
+        (non-blocking) from a given Queue. Does not mark the items as done.
 
-		:rtype: Sequence
-		:returns: A sequence of items retrieved from the queue.
-		"""
-		items = [self._queue.get()]
+        :rtype: Sequence
+        :returns: A sequence of items retrieved from the queue.
+        """
+        items = [self._queue.get()]
 
-		while len(items) < self._max_batch_size:
-			try:
-				items.append(self._queue.get_nowait())
-			except queue.Empty:
-				break
+        while len(items) < self._max_batch_size:
+            try:
+                items.append(self._queue.get_nowait())
+            except queue.Empty:
+                break
 
-		return items
+        return items
 
-	def _thread_main(self):
-		"""The entry point for the worker thread.
+    def _thread_main(self):
+        """The entry point for the worker thread.
 
-		Pulls pending data off the queue and writes them in
-		batches to the specified tracing backend using the exporter.
-		"""
-		print('Background thread started.')
+        Pulls pending data off the queue and writes them in
+        batches to the specified tracing backend using the exporter.
+        """
+        quit_ = False
 
-		quit_ = False
+        while True:
+            items = self._get_items()
+            data = []
 
-		while True:
-			items = self._get_items()
-			datas = []
+            for item in items:
+                if item is _WORKER_TERMINATOR:
+                    quit_ = True
+                    # Continue processing items, don't break, try to process
+                    # all items we got back before quitting.
+                else:
+                    data.extend(item)
 
-			for item in items:
-				if item is _WORKER_TERMINATOR:
-					quit_ = True
-					# Continue processing items, don't break, try to process
-					# all items we got back before quitting.
-				else:
-					datas.extend(item)
+            if data:
+                self.exporter.emit(data)
 
-			if datas:
-				self.exporter.emit(datas)
+            for _ in range(len(items)):
+                self._queue.task_done()
 
-			for _ in range(len(items)):
-				self._queue.task_done()
+            # Wait for a while before next export
+            time.sleep(_WAIT_PERIOD)
 
-			# Wait for a while before next export
-			time.sleep(_WAIT_PERIOD)
+            if quit_:
+                break
 
-			if quit_:
-				break
+    def start(self):
+        """Starts the background thread.
 
-		print('Background thread exited.')
+        Additionally, this registers a handler for process exit to attempt
+        to send any pending data before shutdown.
+        """
+        with self._lock:
+            if self.is_alive:
+                return
 
-	def start(self):
-		"""Starts the background thread.
+            self._thread = threading.Thread(
+                target=self._thread_main, name=_WORKER_THREAD_NAME)
+            self._thread.daemon = True
+            self._thread.start()
+            atexit.register(self._export_pending_data)
 
-		Additionally, this registers a handler for process exit to attempt
-		to send any pending datas before shutdown.
-		"""
-		with self._lock:
-			if self.is_alive:
-				return
+    def stop(self):
+        """Signals the background thread to stop.
 
-			self._thread = threading.Thread(
-				target=self._thread_main, name=_WORKER_THREAD_NAME)
-			self._thread.daemon = True
-			self._thread.start()
-			atexit.register(self._export_pending_datas)
+        This does not terminate the background thread. It simply queues the
+        stop signal. If the main process exits before the background thread
+        processes the stop signal, it will be terminated without finishing
+        work. The ``grace_period`` parameter will give the background
+        thread some time to finish processing before this function returns.
 
-	def stop(self):
-		"""Signals the background thread to stop.
+        :rtype: bool
+        :returns: True if the thread terminated. False if the thread is still
+                  running.
+        """
+        if not self.is_alive:
+            return True
 
-		This does not terminate the background thread. It simply queues the
-		stop signal. If the main process exits before the background thread
-		processes the stop signal, it will be terminated without finishing
-		work. The ``grace_period`` parameter will give the background
-		thread some time to finish processing before this function returns.
+        with self._lock:
+            self._queue.put_nowait(_WORKER_TERMINATOR)
+            self._thread.join(timeout=self._grace_period)
 
-		:type grace_period: float
-		:param grace_period: If specified, this method will block up to this
-							 many seconds to allow the background thread to
-							 finish work before returning.
+            success = not self.is_alive
+            self._thread = None
 
-		:rtype: bool
-		:returns: True if the thread terminated. False if the thread is still
-				  running.
-		"""
-		if not self.is_alive:
-			return True
+            return success
 
-		with self._lock:
-			self._queue.put_nowait(_WORKER_TERMINATOR)
-			self._thread.join(timeout=self._grace_period)
+    def _export_pending_data(self):
+        """Callback that attempts to send pending data before termination."""
+        if not self.is_alive:
+            return
+        self.stop()
 
-			success = not self.is_alive
-			self._thread = None
+    def enqueue(self, data):
+        """Queues data to be written by the background thread."""
+        self._queue.put_nowait(data)
 
-			return success
-
-	def _export_pending_datas(self):
-		"""Callback that attempts to send pending datas before termination."""
-
-		if not self.is_alive:
-			return
-
-		if not self._queue.empty():
-			print('Sending all pending datas before terminated.')
-
-		if self.stop():
-			print('Sent all pending datas.')
-		else:
-			print('Failed to send pending datas.')
-
-	def enqueue(self, datas):
-		"""Queues datas to be written by the background thread."""
-		self._queue.put_nowait(datas)
-
-	def flush(self):
-		"""Submit any pending datas."""
-		self._queue.join()
+    def flush(self):
+        """Submit any pending data."""
+        self._queue.join()
 
 
 class AsyncTransport(base.Transport):
-	"""Asynchronous transport that uses a background thread.
+    """Asynchronous transport that uses a background thread.
 
-	:type exporter: :class:`~opencensus.trace.exporters.base.Exporter` or
-					:class:`~opencensus.stats.exporters.base.StatsExporter`
-	:param exporter: Instances of Exporter objects. Defaults to
-					 :class:`.PrintExporter`. The rest options are
-					 :class:`.ZipkinExporter`, :class:`.StackdriverExporter`,
-					 :class:`.LoggingExporter`, :class:`.FileExporter`.
+    :type exporter: :class:`~opencensus.trace.exporters.base.Exporter` or
+                    :class:`~opencensus.stats.exporters.base.StatsExporter`
+    :param exporter: Instances of Exporter objects. Defaults to
+                     :class:`.PrintExporter`. The rest options are
+                     :class:`.ZipkinExporter`, :class:`.StackdriverExporter`,
+                     :class:`.LoggingExporter`, :class:`.FileExporter`.
 
-	:type grace_period: float
-	:param grace_period: The amount of time to wait for pending datas to
-						 be submitted when the process is shutting down.
+    :type grace_period: float
+    :param grace_period: The amount of time to wait for pending data to
+                         be submitted when the process is shutting down.
 
-	:type max_batch_size: int
-	:param max_batch_size: The maximum number of items to send at a time
-						   in the background thread.
-	"""
+    :type max_batch_size: int
+    :param max_batch_size: The maximum number of items to send at a time
+                           in the background thread.
+    """
 
-	def __init__(self, exporter, grace_period=_DEFAULT_GRACE_PERIOD,
-				 max_batch_size=_DEFAULT_MAX_BATCH_SIZE):
-		self.exporter = exporter
-		self.worker = _Worker(exporter, grace_period, max_batch_size)
-		self.worker.start()
+    def __init__(self, exporter, grace_period=_DEFAULT_GRACE_PERIOD,
+                 max_batch_size=_DEFAULT_MAX_BATCH_SIZE):
+        self.exporter = exporter
+        self.worker = _Worker(exporter, grace_period, max_batch_size)
+        self.worker.start()
 
-	def export(self, datas):
-		"""Put the trace/stats to be exported into queue."""
-		self.worker.enqueue(datas)
+    def export(self, data):
+        """Put the trace/stats to be exported into queue."""
+        self.worker.enqueue(data)
 
-	def flush(self):
-		"""Submit any pending traces/stats."""
-		self.worker.flush()
+    def flush(self):
+        """Submit any pending traces/stats."""
+        self.worker.flush()

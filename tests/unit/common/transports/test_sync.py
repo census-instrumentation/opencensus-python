@@ -12,12 +12,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from opencensus.common.transports import base
+import unittest
+import mock
+from opencensus.common.transports import sync
 
+class TestSyncTransport(unittest.TestCase):
 
-class SyncTransport(base.Transport):
-    def __init__(self, exporter):
-        self.exporter = exporter
+    def test_constructor(self):
+        exporter = mock.Mock()
+        transport = sync.SyncTransport(exporter)
 
-    def export(self, datas):
-        self.exporter.emit(datas)
+        self.assertEqual(transport.exporter, exporter)
+
+    def test_export(self):
+        exporter = mock.Mock()
+        transport = sync.SyncTransport(exporter)
+        data = {
+            'traceId': 'test1',
+            'spans': [{}, {}],
+        }
+        transport.export(data)
+        self.assertTrue(True)

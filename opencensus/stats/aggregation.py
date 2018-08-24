@@ -17,14 +17,14 @@ from opencensus.stats import aggregation_data
 
 
 class Type(object):
-    """ The type of aggreation function used on a View.
+    """ The type of aggregation function used on a View.
 
     Attributes:
-      NONE (int): The aggreation type of the view is 'unknown'.
-      SUM (int): The aggreation type of the view is 'sum'.
-      COUNT (int): The aggreation type of the view is 'count'.
-      DISTRIBUTION (int): The aggreation type of the view is 'distribution'.
-      LASTVALUE (int): The aggreation type of the view is 'lastvalue'.
+      NONE (int): The aggregation type of the view is 'unknown'.
+      SUM (int): The aggregation type of the view is 'sum'.
+      COUNT (int): The aggregation type of the view is 'count'.
+      DISTRIBUTION (int): The aggregation type of the view is 'distribution'.
+      LASTVALUE (int): The aggregation type of the view is 'lastvalue'.
     """
     NONE = 0
     SUM = 1
@@ -166,7 +166,6 @@ class LastValueAggregation(BaseAggregation):
 
     @property
     def value(self):
-        """
-            The current recorded value
+        """The current recorded value
         """
         return self._value

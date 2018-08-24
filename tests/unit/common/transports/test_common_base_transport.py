@@ -12,12 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from opencensus.common.transports import base
+import unittest
 
+class TestCommonBaseTransport(unittest.TestCase):
 
-class SyncTransport(base.Transport):
-    def __init__(self, exporter):
-        self.exporter = exporter
+    def test_export_abstract(self):
+        from opencensus.common.transports import base
 
-    def export(self, datas):
-        self.exporter.emit(datas)
+        transport = base.Transport()
+        trace = {}
+
+        with self.assertRaises(NotImplementedError):
+            transport.export(trace)
+
+    def test_flush_abstract_and_optional(self):
+        from opencensus.common.transports import base
+
+        transport = base.Transport()
+        transport.flush()

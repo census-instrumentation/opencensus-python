@@ -241,6 +241,7 @@ class LastValueAggregationData(BaseAggregationData):
         super(LastValueAggregationData, self).__init__(value)
         self._value = value
 
+
     def add_sample(self, value, timestamp, attachments):
         """Adds a sample to the current LastValue Aggregation Data and overwrite
         the current recorded value"""
@@ -248,8 +249,7 @@ class LastValueAggregationData(BaseAggregationData):
 
     @property
     def value(self):
-        """
-            The current value recorded
+        """The current value recorded
         """
         return self._value
 
