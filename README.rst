@@ -144,9 +144,6 @@ google-cloud-trace using `pip`_ or `pipenv`_:
     pip install google-cloud-trace
     pipenv install google-cloud-trace
 
-.. _pip: https://pip.pypa.io
-.. _pipenv: https://docs.pipenv.org/
-
 By default, traces are exported synchronously, which introduces latency during
 your code's execution. To avoid blocking code execution, you can initialize
 your exporter to use a background thread.
