@@ -277,13 +277,13 @@ class Exemplar(object):
         self._timestamp = timestamp
 
         if attachments is None:
-            raise TypeError('attachments should not be None')
+            raise TypeError('attachments should not be empty')
 
         for key, value in attachments.items():
             if key is None:
-                raise TypeError('attachment key should not be None')
+                raise TypeError('attachment key should not be empty')
             if value is None:
-                raise TypeError('attachment value should not be None')
+                raise TypeError('attachment value should not be empty')
         self._attachments = attachments
 
     @property
