@@ -97,7 +97,7 @@ class ViewData(object):
             i += 1
         return tag_values
 
-    def record(self, context, value, timestamp):
+    def record(self, context, value, timestamp, attachments):
         """records the view data against context"""
         tag_values = self.get_tag_values(tags=self.get_tag_map(context),
                                          columns=self.view.columns)
@@ -106,4 +106,4 @@ class ViewData(object):
             if val not in self.tag_value_aggregation_map:
                 self.tag_value_aggregation_map[val] = self.view.aggregation
             self.tag_value_aggregation_map.get(
-                val).aggregation_data.add_sample(value)
+                val).aggregation_data.add_sample(value, timestamp, attachments)

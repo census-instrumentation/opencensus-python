@@ -216,7 +216,7 @@ class TestMeasureToViewMap(unittest.TestCase):
         measure_to_view_map = measure_to_view_map_module.MeasureToViewMap()
         measure_to_view_map._registered_measures = {}
         record = measure_to_view_map.record(
-            tags=tags, measurement_map=measurement_map, timestamp=timestamp)
+            tags=tags, measurement_map=measurement_map, timestamp=timestamp, attachments=None)
         self.assertNotEqual(
             measure,
             measure_to_view_map._registered_measures.get(measure.name))
@@ -225,7 +225,7 @@ class TestMeasureToViewMap(unittest.TestCase):
         measure_to_view_map._registered_measures = {measure.name: measure}
         measure_to_view_map._measure_to_view_data_list_map = {}
         record = measure_to_view_map.record(
-            tags=tags, measurement_map=measurement_map, timestamp=timestamp)
+            tags=tags, measurement_map=measurement_map, timestamp=timestamp, attachments=None)
         self.assertEqual(
             measure,
             measure_to_view_map._registered_measures.get(measure.name))
@@ -235,7 +235,7 @@ class TestMeasureToViewMap(unittest.TestCase):
             measure.name: [mock.Mock()]
         }
         measure_to_view_map.record(
-            tags=tags, measurement_map=measurement_map, timestamp=timestamp)
+            tags=tags, measurement_map=measurement_map, timestamp=timestamp, attachments=None)
         self.assertEqual(
             measure,
             measure_to_view_map._registered_measures.get(measure.name))
@@ -246,7 +246,7 @@ class TestMeasureToViewMap(unittest.TestCase):
             "testing": [mock.Mock()]
         }
         measure_to_view_map.record(
-            tags=tags, measurement_map=measurement_map, timestamp=timestamp)
+            tags=tags, measurement_map=measurement_map, timestamp=timestamp, attachments=None)
         self.assertTrue(measure.name not in
                         measure_to_view_map._measure_to_view_data_list_map)
 
@@ -266,5 +266,5 @@ class TestMeasureToViewMap(unittest.TestCase):
         measurement_map = {}
         measure_to_view_map = measure_to_view_map_module.MeasureToViewMap()
         record = measure_to_view_map.record(
-            tags=tags, measurement_map=measurement_map, timestamp=timestamp)
+            tags=tags, measurement_map=measurement_map, timestamp=timestamp, attachments=None)
         self.assertIsNone(record)

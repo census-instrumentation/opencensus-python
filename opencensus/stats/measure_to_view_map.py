@@ -40,11 +40,11 @@ class MeasureToViewMap(object):
     def exported_views(self):
         """the current exported views"""
         return self._exported_views
-    
+
     @property
     def exporters(self):
         """registered exporters"""
-        return self._exporters    
+        return self._exporters
 
     def get_view(self, view_name, timestamp):
         """get the View Data from the given View name"""
@@ -93,7 +93,7 @@ class MeasureToViewMap(object):
         self._measure_to_view_data_list_map[view.measure.name].append(
             ViewData(view=view, start_time=timestamp, end_time=timestamp))
 
-    def record(self, tags, measurement_map, timestamp):
+    def record(self, tags, measurement_map, timestamp, attachments):
         """records stats with a set of tags"""
         for measure, value in measurement_map.items():
             if measure != self._registered_measures.get(measure.name):
@@ -105,9 +105,10 @@ class MeasureToViewMap(object):
                     view_datas.extend(view_data_list)
             for view_data in view_datas:
                 view_data.record(
-                    context=tags, value=value, timestamp=timestamp)
+                    context=tags, value=value, timestamp=timestamp,
+                    attachment=attachments)
             self.export(view_datas)
-       
+
     def export(self, view_datas):
         """export view datas to registered exporters"""
         if len(self.exporters) > 0:

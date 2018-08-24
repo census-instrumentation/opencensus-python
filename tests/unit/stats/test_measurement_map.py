@@ -49,6 +49,44 @@ class TestMeasurementMap(unittest.TestCase):
 
         self.assertEqual({'testKey': 1.0}, measurement_map.measurement_map)
 
+    def test_put_attachment_none_key(self):
+        measure_to_view_map = mock.Mock()
+        test_key = None
+        test_value = 'testValue'
+        measurement_map = measurement_map_module.MeasurementMap(
+            measure_to_view_map=measure_to_view_map)
+        with self.assertRaisesRegexp(TypeError, 'attachment key should not be empty'):
+            measurement_map.measure_put_attachment(test_key, test_value)
+
+    def test_put_attachment_none_value(self):
+        measure_to_view_map = mock.Mock()
+        test_key = 'testKey'
+        test_value = None
+        measurement_map = measurement_map_module.MeasurementMap(
+            measure_to_view_map=measure_to_view_map)
+        with self.assertRaisesRegexp(TypeError, 'attachment value should not be empty'):
+            measurement_map.measure_put_attachment(test_key, test_value)
+
+    def test_put_attachment(self):
+        measure_to_view_map = mock.Mock()
+        test_key = 'testKey'
+        test_value = 'testValue'
+        measurement_map = measurement_map_module.MeasurementMap(
+            measure_to_view_map=measure_to_view_map)
+        measurement_map.measure_put_attachment(test_key, test_value)
+        self.assertEqual({'testKey': 'testValue'}, measurement_map.attachments)
+
+    def test_put_multiple_attachment(self):
+        measure_to_view_map = mock.Mock()
+        test_key = 'testKey'
+        test_value = 'testValue'
+        test_value2 = 'testValue2'
+        measurement_map = measurement_map_module.MeasurementMap(
+            measure_to_view_map=measure_to_view_map)
+        measurement_map.measure_put_attachment(test_key, test_value)
+        measurement_map.measure_put_attachment(test_key, test_value2)
+        self.assertEqual({test_key: test_value2}, measurement_map.attachments)
+
     def test_record(self):
         measure_to_view_map = mock.Mock()
         measurement_map = measurement_map_module.MeasurementMap(

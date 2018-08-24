@@ -41,7 +41,7 @@ class SumAggregationDataFloat(BaseAggregationData):
         super(SumAggregationDataFloat, self).__init__(sum_data)
         self._sum_data = sum_data
 
-    def add_sample(self, value):
+    def add_sample(self, value, timestamp, attachments):
         """Allows the user to add a sample to the Sum Aggregation Data
         The value of the sample is then added to the current sum data
         """
@@ -64,7 +64,7 @@ class CountAggregationData(BaseAggregationData):
         super(CountAggregationData, self).__init__(count_data)
         self._count_data = count_data
 
-    def add_sample(self, value):
+    def add_sample(self, value, timestamp, attachments):
         """Adds a sample to the current Count Aggregation Data and adds 1 to
         the count data"""
         self._count_data = self._count_data + 1
@@ -110,9 +110,9 @@ class DistributionAggregationData(BaseAggregationData):
                  min_,
                  max_,
                  sum_of_sqd_deviations,
-                 exemplars=None,
                  counts_per_bucket=None,
-                 bounds=None):
+                 bounds=None,
+                 exemplars=None):
         super(DistributionAggregationData, self).__init__(mean_data)
         self._mean_data = mean_data
         self._count_data = count_data
@@ -130,8 +130,11 @@ class DistributionAggregationData(BaseAggregationData):
         self._counts_per_bucket = counts_per_bucket
         self._bounds = bucket_boundaries.BucketBoundaries(
                                             boundaries=bounds).boundaries
-        self._exemplars = exemplars
-
+        bucket = 0
+        for _ in self.bounds:
+            bucket = bucket + 1
+        self._exemplars = \
+            {bucket: exemplars} if len(self._bounds) > 0 else None
 
     @property
     def mean_data(self):
@@ -185,7 +188,7 @@ class DistributionAggregationData(BaseAggregationData):
             return 0
         return self.sum_of_sqd_deviations / (self._count_data - 1)
 
-    def add_sample(self, value):
+    def add_sample(self, value, timestamp, attachments):
         """Adding a sample to Distribution Aggregation Data"""
         if value < self.min:
             self._min = value
@@ -204,6 +207,12 @@ class DistributionAggregationData(BaseAggregationData):
         self._sum_of_sqd_deviations = self._sum_of_sqd_deviations + (
                                       (value - old_mean) *
                                       (value - self._mean_data))
+        bucket = 0
+        for _ in self.bounds:
+            bucket = bucket + 1
+
+        if attachments is not None and self.exemplars is not None:
+            self.exemplars[bucket] = Exemplar(value, timestamp, attachments)
 
     def increment_bucket_count(self, value):
         """Increment the bucket count based on a given value from the user"""
@@ -232,8 +241,8 @@ class LastValueAggregationData(BaseAggregationData):
         super(LastValueAggregationData, self).__init__(value)
         self._value = value
 
-    def add_sample(self, value):
-        """Adds a sample to the current LastValue Aggregation Data and overwrite 
+    def add_sample(self, value, timestamp, attachments):
+        """Adds a sample to the current LastValue Aggregation Data and overwrite
         the current recorded value"""
         self._value = value
 
@@ -244,9 +253,10 @@ class LastValueAggregationData(BaseAggregationData):
         """
         return self._value
 
+
 class Exemplar(object):
-    """ Exemplar represents an example point that may be used to annotate aggregated
-        distribution values, associated with a histogram bucket.
+    """ Exemplar represents an example point that may be used to annotate
+        aggregated distribution values, associated with a histogram bucket.
 
         :type value: double
         :param value: value of the Exemplar point.

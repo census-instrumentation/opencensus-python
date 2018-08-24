@@ -24,10 +24,14 @@ class MeasurementMap(object):
     :param measure_to_view_map: the measure to view map that will store the
                                 recorded stats with tags
 
+    :type: attachments: dict
+    :param attachments: the contextual information about the attachment value.
+
     """
-    def __init__(self, measure_to_view_map):
+    def __init__(self, measure_to_view_map, attachments=dict()):
         self._measurement_map = {}
         self._measure_to_view_map = measure_to_view_map
+        self._attachments = attachments
 
     @property
     def measurement_map(self):
@@ -39,6 +43,11 @@ class MeasurementMap(object):
         """the current measure to view map for the measurement map"""
         return self._measure_to_view_map
 
+    @property
+    def attachments(self):
+        """the current contextual information about the attachment value."""
+        return self._attachments
+
     def measure_int_put(self, measure, value):
         """associates the measure of type Int with the given value"""
         self._measurement_map[measure] = value
@@ -47,11 +56,25 @@ class MeasurementMap(object):
         """associates the measure of type Float with the given value"""
         self._measurement_map[measure] = value
 
+    def measure_put_attachment(self, key, value):
+        """Associate the contextual information of an Exemplar to this MeasureMap
+            Contextual information is represented as key - value string pairs.
+            If this method is called multiple times with the same key,
+            only the last value will be kept.
+        """
+        if key is None:
+            raise TypeError('attachment key should not be empty')
+        if value is None:
+            raise TypeError('attachment value should not be empty')
+
+        self._attachments[key] = value
+
     def record(self, tag_map_tags):
         """records all the measures at the same time with an explicit tag_map
         """
         self.measure_to_view_map.record(
                 tags=tag_map_tags,
                 measurement_map=self.measurement_map,
-                timestamp=datetime.utcnow().isoformat() + 'Z'
+                timestamp=datetime.utcnow().isoformat() + 'Z',
+                attachments=self.attachments
         )
