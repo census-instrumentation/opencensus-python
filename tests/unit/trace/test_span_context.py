@@ -15,6 +15,7 @@
 import unittest
 from opencensus.trace import span_context as span_context_module
 from opencensus.trace.trace_options import TraceOptions
+from opencensus.trace.tracestate import Tracestate
 
 
 class TestSpanContext(unittest.TestCase):
@@ -38,17 +39,20 @@ class TestSpanContext(unittest.TestCase):
         self.assertEqual(span_context.trace_id, self.trace_id)
         self.assertEqual(span_context.span_id, self.span_id)
 
-    def test__str__(self):
+    def test__repr__(self):
         span_context = self._make_one(
             trace_id=self.trace_id,
             span_id=self.span_id,
-            trace_options=TraceOptions('1'))
+            trace_options=TraceOptions('1'),
+            tracestate=Tracestate())
 
-        header_expected = '6e0c63257de34c92bf9efcd03927272e' \
-                          '/6e0c63257de34c92;o=1'
-        header = span_context.__str__()
+        expected_repr = 'SpanContext(' \
+                       'trace_id=6e0c63257de34c92bf9efcd03927272e, ' \
+                       'span_id=6e0c63257de34c92, ' \
+                       'trace_options=TraceOptions(enabled=True), ' \
+                       'tracestate=Tracestate())'
 
-        self.assertEqual(header_expected, header)
+        self.assertEqual(expected_repr, span_context.__repr__())
 
     def test_check_span_id_none(self):
         span_context = self._make_one(

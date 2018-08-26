@@ -110,11 +110,10 @@ class TestStackdriverExporter(unittest.TestCase):
                         }
                     },
                     'stackTrace': None,
-                    'displayName':
-                        {
-                            'truncated_byte_count': 0,
-                            'value': 'span'
-                        },
+                    'displayName': {
+                        'truncated_byte_count': 0,
+                        'value': 'span'
+                    },
                     'name': 'projects/PROJECT/traces/{}/spans/1111'.format(
                         trace_id
                     ),
@@ -152,7 +151,13 @@ class TestStackdriverExporter(unittest.TestCase):
                         'truncated_byte_count': 0,
                         'value': 'value'
                     }
-               }
+                },
+                'http.host': {
+                    'string_value': {
+                        'truncated_byte_count': 0,
+                        'value': 'host'
+                    }
+                }
             }
         }
         parent_span_id = '6e0c63257de34c93'
@@ -209,6 +214,12 @@ class TestStackdriverExporter(unittest.TestCase):
                                     'truncated_byte_count': 0,
                                     'value': 'value'
                                 }
+                            },
+                            '/http/host': {
+                                'string_value': {
+                                    'truncated_byte_count': 0,
+                                    'value': 'host'
+                                }
                             }
                         }
                     },
@@ -227,6 +238,284 @@ class TestStackdriverExporter(unittest.TestCase):
         }
 
         self.assertEqual(spans, expected_traces)
+
+    def test_translate_common_attributes_to_stackdriver_no_attribute_map(self):
+        project_id = 'PROJECT'
+        client = mock.Mock()
+        client.project = project_id
+        exporter = stackdriver_exporter.StackdriverExporter(
+            client=client,
+            project_id=project_id)
+
+        attributes = {'outer key': 'some value'}
+        expected_attributes = {'outer key': 'some value'}
+
+        exporter.map_attributes(attributes)
+        self.assertEqual(attributes, expected_attributes)
+
+    def test_translate_common_attributes_to_stackdriver_none(self):
+        project_id = 'PROJECT'
+        client = mock.Mock()
+        client.project = project_id
+        exporter = stackdriver_exporter.StackdriverExporter(
+            client=client,
+            project_id=project_id)
+
+        # does not throw
+        self.assertIsNone(exporter.map_attributes(None))
+
+    def test_translate_common_attributes_to_stackdriver(self):
+        project_id = 'PROJECT'
+        client = mock.Mock()
+        client.project = project_id
+        exporter = stackdriver_exporter.StackdriverExporter(
+            client=client,
+            project_id=project_id)
+
+        attributes = {
+            'outer key': 'some value',
+            'attributeMap': {
+                'key': {
+                    'string_value': {
+                        'truncated_byte_count': 0,
+                        'value': 'value'
+                    }
+                },
+                'component': {
+                    'string_value': {
+                        'truncated_byte_count': 0,
+                        'value': 'http'
+                    }
+                },
+                'error.message': {
+                    'string_value': {
+                        'truncated_byte_count': 0,
+                        'value': 'error message'
+                    }
+                },
+                'error.name': {
+                    'string_value': {
+                        'truncated_byte_count': 0,
+                        'value': 'error name'
+                    }
+                },
+                'http.host': {
+                    'string_value': {
+                        'truncated_byte_count': 0,
+                        'value': 'host'
+                    }
+                },
+                'http.method': {
+                    'string_value': {
+                        'truncated_byte_count': 0,
+                        'value': 'GET'
+                    }
+                },
+                'http.status_code': {
+                    'int_value': {
+                        'value': 200
+                    }
+                },
+                'http.url': {
+                    'string_value': {
+                        'truncated_byte_count': 0,
+                        'value': 'http://host:port/path?query'
+                    }
+                },
+                'http.user_agent': {
+                    'string_value': {
+                        'truncated_byte_count': 0,
+                        'value': 'some user agent'
+                    }
+                },
+                'http.client_city': {
+                    'string_value': {
+                        'truncated_byte_count': 0,
+                        'value': 'Redmond'
+                    }
+                },
+                'http.client_country': {
+                    'string_value': {
+                        'truncated_byte_count': 0,
+                        'value': 'USA'
+                    }
+                },
+                'http.client_protocol': {
+                    'string_value': {
+                        'truncated_byte_count': 0,
+                        'value': 'HTTP 1.1'
+                    }
+                },
+                'http.client_region': {
+                    'string_value': {
+                        'truncated_byte_count': 0,
+                        'value': 'WA'
+                    }
+                },
+                'http.request_size': {
+                    'int_value': {
+                        'value': 100
+                    }
+                },
+                'http.response_size': {
+                    'int_value': {
+                        'value': 10
+                    }
+                },
+                'pid': {
+                    'int_value': {
+                        'value': 123456789
+                    }
+                },
+                'tid': {
+                    'int_value': {
+                        'value': 987654321
+                    }
+                },
+                'stacktrace': {
+                    'string_value': {
+                        'truncated_byte_count': 0,
+                        'value': 'at unknown'
+                    }
+                },
+                'grpc.host_port': {
+                    'string_value': {
+                        'truncated_byte_count': 0,
+                        'value': 'localhost:50051'
+                    }
+                },
+                'grpc.method': {
+                    'string_value': {
+                        'truncated_byte_count': 0,
+                        'value': 'post'
+                    }
+                }
+            }
+        }
+
+        expected_attributes = {
+            'outer key': 'some value',
+            'attributeMap': {
+                'key': {
+                    'string_value': {
+                        'truncated_byte_count': 0,
+                        'value': 'value'
+                    }
+                },
+                '/component': {
+                    'string_value': {
+                        'truncated_byte_count': 0,
+                        'value': 'http'
+                    }
+                },
+                '/error/message': {
+                    'string_value': {
+                        'truncated_byte_count': 0,
+                        'value': 'error message'
+                    }
+                },
+                '/error/name': {
+                    'string_value': {
+                        'truncated_byte_count': 0,
+                        'value': 'error name'
+                    }
+                },
+                '/http/host': {
+                    'string_value': {
+                        'truncated_byte_count': 0,
+                        'value': 'host'
+                    }
+                },
+                '/http/method': {
+                    'string_value': {
+                        'truncated_byte_count': 0,
+                        'value': 'GET'
+                    }
+                },
+                '/http/status_code': {
+                    'int_value': {
+                        'value': 200
+                    }
+                },
+                '/http/url': {
+                    'string_value': {
+                        'truncated_byte_count': 0,
+                        'value': 'http://host:port/path?query'
+                    }
+                },
+                '/http/user_agent': {
+                    'string_value': {
+                        'truncated_byte_count': 0,
+                        'value': 'some user agent'
+                    }
+                },
+                '/http/client_city': {
+                    'string_value': {
+                        'truncated_byte_count': 0,
+                        'value': 'Redmond'
+                    }
+                },
+                '/http/client_country': {
+                    'string_value': {
+                        'truncated_byte_count': 0,
+                        'value': 'USA'
+                    }
+                },
+                '/http/client_protocol': {
+                    'string_value': {
+                        'truncated_byte_count': 0,
+                        'value': 'HTTP 1.1'
+                    }
+                },
+                '/http/client_region': {
+                    'string_value': {
+                        'truncated_byte_count': 0,
+                        'value': 'WA'
+                    }
+                },
+                '/http/request/size': {
+                    'int_value': {
+                        'value': 100
+                    }
+                },
+                '/http/response/size': {
+                    'int_value': {
+                        'value': 10
+                    }
+                },
+                '/pid': {
+                    'int_value': {
+                        'value': 123456789
+                    }
+                },
+                '/tid': {
+                    'int_value': {
+                        'value': 987654321
+                    }
+                },
+                '/stacktrace': {
+                    'string_value': {
+                        'truncated_byte_count': 0,
+                        'value': 'at unknown'
+                    }
+                },
+                '/grpc/host_port': {
+                    'string_value': {
+                        'truncated_byte_count': 0,
+                        'value': 'localhost:50051'
+                    }
+                },
+                '/grpc/method': {
+                    'string_value': {
+                        'truncated_byte_count': 0,
+                        'value': 'post'
+                    }
+                }
+            }
+        }
+
+        exporter.map_attributes(attributes)
+        self.assertEqual(attributes, expected_attributes)
 
 
 class Test_set_attributes_gae(unittest.TestCase):

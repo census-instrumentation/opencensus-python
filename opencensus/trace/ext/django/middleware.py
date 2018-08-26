@@ -18,8 +18,9 @@ import logging
 from opencensus.trace.ext import utils
 from opencensus.trace.ext.django.config import (settings, convert_to_import)
 from opencensus.trace import attributes_helper
-from opencensus.trace import tracer as tracer_module
 from opencensus.trace import execution_context
+from opencensus.trace import span as span_module
+from opencensus.trace import tracer as tracer_module
 from opencensus.trace.samplers import probability
 
 try:
@@ -84,10 +85,10 @@ def _set_django_attributes(tracer, request):
 
     # User id is the django autofield for User model as the primary key
     if user_id is not None:
-        tracer.add_attribute_to_current_span('/django/user/id', str(user_id))
+        tracer.add_attribute_to_current_span('django.user.id', str(user_id))
 
     if user_name is not None:
-        tracer.add_attribute_to_current_span('/django/user/name', user_name)
+        tracer.add_attribute_to_current_span('django.user.name', user_name)
 
 
 class OpencensusMiddleware(MiddlewareMixin):
@@ -164,7 +165,8 @@ class OpencensusMiddleware(MiddlewareMixin):
                 propagator=self.propagator)
 
             # Span name is being set at process_view
-            tracer.start_span()
+            span = tracer.start_span()
+            span.span_kind = span_module.SpanKind.SERVER
             tracer.add_attribute_to_current_span(
                 attribute_key=HTTP_METHOD,
                 attribute_value=request.method)
