@@ -14,7 +14,7 @@
 
 import unittest
 
-from opencensus.tags import Tag
+from opencensus.tags import Tag, TagKey, TagValue
 from opencensus.tags.propagation import binary_serializer
 
 
@@ -45,8 +45,10 @@ class TestBinarySerializer(unittest.TestCase):
     def test_to_byte_array(self):
         from opencensus.tags.tag_map import TagMap
 
-        tags = [Tag('key1', 'val1'), Tag('key2', 'val2'),
-                Tag('key3', 'val3'), Tag('key4', 'val4')]
+        tags = [Tag(TagKey('key1'), TagValue('val1')),
+                Tag(TagKey('key2'), TagValue('val2')),
+                Tag(TagKey('key3'), TagValue('val3')),
+                Tag(TagKey('key4'), TagValue('val4'))]
         tag_context = TagMap(tags=tags)
         propagator = binary_serializer.BinarySerializer()
         binary = propagator.to_byte_array(tag_context)

@@ -26,7 +26,7 @@ class TagValue(str):
         """Create and return a new tag value
 
         :type value: str
-        :param value: The name of the key
+        :param value: A string representing the value of a key in a tag
         :return: TagValue
         """
         if not is_valid_tag_value(value):

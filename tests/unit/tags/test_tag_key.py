@@ -24,6 +24,7 @@ class TestTagKey(unittest.TestCase):
         key = 'key1'
         tag_key = TagKey(key)
 
+        self.assertIsNotNone(tag_key)
         self.assertEqual(tag_key, key)
 
     def test_is_valid(self):

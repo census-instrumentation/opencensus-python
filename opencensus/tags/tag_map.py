@@ -36,10 +36,10 @@ class TagMap(object):
         """Inserts a key and value in the map if the map does not already
         contain the key.
 
-        :type key: Union[str, :class: '~opencensus.tags.tag_key.TagKey']
+        :type key: :class: '~opencensus.tags.tag_key.TagKey'
         :param key: a tag key to insert into the map
 
-        :type value: Union[str, :class: '~opencensus.tags.tag_value.TagValue']
+        :type value: :class: '~opencensus.tags.tag_value.TagValue'
         :param value: a tag value that is associated with the tag key and
         the value to insert into the tag map
 

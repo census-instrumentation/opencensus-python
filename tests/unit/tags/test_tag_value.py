@@ -22,6 +22,8 @@ class TestTagValue(unittest.TestCase):
 
     def test_constructor(self):
         tag_value = TagValue('value')
+
+        self.assertIsNotNone(tag_value)
         self.assertEqual(tag_value, 'value')
 
     def test_check_value(self):
