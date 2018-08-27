@@ -40,11 +40,11 @@ class MeasureToViewMap(object):
     def exported_views(self):
         """the current exported views"""
         return self._exported_views
-    
+
     @property
     def exporters(self):
         """registered exporters"""
-        return self._exporters    
+        return self._exporters
 
     def get_view(self, view_name, timestamp):
         """get the View Data from the given View name"""
@@ -108,11 +108,9 @@ class MeasureToViewMap(object):
                                  value=value,
                                  timestamp=timestamp)
             self.export(view_datas)
-            
+
     def export(self, view_datas):
         """export view datas to registered exporters"""
         if len(self.exporters) > 0:
             for e in self.exporters:
                 e.emit(view_datas)
-
-        
