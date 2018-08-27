@@ -133,6 +133,8 @@ class DistributionAggregationData(BaseAggregationData):
         bucket = 0
         for _ in self.bounds:
             bucket = bucket + 1
+
+        # If there is no histogram, do not record an exemplar
         self._exemplars = \
             {bucket: exemplars} if len(self._bounds) > 0 else None
 
@@ -197,6 +199,12 @@ class DistributionAggregationData(BaseAggregationData):
         self._count_data += 1
         self.increment_bucket_count(value)
 
+        bucket = 0
+        for _ in self.bounds:
+            bucket = bucket + 1
+
+        if attachments is not None and self.exemplars is not None:
+            self.exemplars[bucket] = Exemplar(value, timestamp, attachments)
         if self.count_data == 1:
             self._mean_data = value
             return
@@ -207,12 +215,6 @@ class DistributionAggregationData(BaseAggregationData):
         self._sum_of_sqd_deviations = self._sum_of_sqd_deviations + (
                                       (value - old_mean) *
                                       (value - self._mean_data))
-        bucket = 0
-        for _ in self.bounds:
-            bucket = bucket + 1
-
-        if attachments is not None and self.exemplars is not None:
-            self.exemplars[bucket] = Exemplar(value, timestamp, attachments)
 
     def increment_bucket_count(self, value):
         """Increment the bucket count based on a given value from the user"""
@@ -240,7 +242,6 @@ class LastValueAggregationData(BaseAggregationData):
     def __init__(self, value):
         super(LastValueAggregationData, self).__init__(value)
         self._value = value
-
 
     def add_sample(self, value, timestamp, attachments):
         """Adds a sample to the current LastValue Aggregation Data and overwrite

@@ -87,4 +87,5 @@ class ViewData(object):
         if tuple_vals not in self.tag_value_aggregation_data_map:
             self.tag_value_aggregation_data_map[tuple_vals] = copy.deepcopy(
                 self.view.aggregation.aggregation_data)
-        self.tag_value_aggregation_data_map.get(tuple_vals).add_sample(value, timestamp, attachments)
+        self.tag_value_aggregation_data_map.get(tuple_vals).\
+            add_sample(value, timestamp, attachments)
