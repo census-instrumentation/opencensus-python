@@ -47,12 +47,12 @@ class BinarySerializer(object):
         encoded_bytes = b''
         encoded_bytes += _VarintBytes(VERSION_ID)
         total_chars = 0
-        for tag in tag_context.tags:
-            for tag_key, tag_value in tag.items():
-                total_chars += len(tag_key)
-                total_chars += len(tag_value)
-                encoded_bytes = self._encode_tag(
-                    tag_key, tag_value, encoded_bytes)
+        for tag in tag_context:
+            tag_key, tag_value = tag
+            total_chars += len(tag_key)
+            total_chars += len(tag_value)
+            encoded_bytes = self._encode_tag(
+                tag_key, tag_value, encoded_bytes)
         if total_chars <= TAG_MAP_SERIALIZED_SIZE_LIMIT:
             return encoded_bytes
         else:  # pragma: NO COVER
