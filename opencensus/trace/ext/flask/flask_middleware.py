@@ -21,6 +21,7 @@ from google.rpc import code_pb2
 
 from opencensus.trace import attributes_helper
 from opencensus.trace import execution_context
+from opencensus.trace import span as span_module
 from opencensus.trace import stack_trace
 from opencensus.trace import status
 from opencensus.trace import tracer as tracer_module
@@ -175,7 +176,7 @@ class FlaskMiddleware(object):
                 propagator=self.propagator)
 
             span = tracer.start_span()
-
+            span.span_kind = span_module.SpanKind.SERVER
             # Set the span name as the name of the current module name
             span.name = '[{}]{}'.format(
                 flask.request.method,

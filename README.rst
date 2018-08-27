@@ -136,6 +136,31 @@ This example shows how to report the traces to Stackdriver Trace:
         project_id='your_cloud_project')
     tracer = tracer_module.Tracer(exporter=exporter)
 
+StackdriverExporter requires the google-cloud-trace package. Install
+google-cloud-trace using `pip`_ or `pipenv`_:
+
+::
+
+    pip install google-cloud-trace
+    pipenv install google-cloud-trace
+
+By default, traces are exported synchronously, which introduces latency during
+your code's execution. To avoid blocking code execution, you can initialize
+your exporter to use a background thread.
+
+This example shows how to configure Census to use a background thread:
+
+.. code:: python
+
+    from opencensus.trace.exporters import stackdriver_exporter
+    from opencensus.trace import tracer as tracer_module
+    from opencensus.trace.exporters.transports.background_thread \
+        import BackgroundThreadTransport
+
+    exporter = stackdriver_exporter.StackdriverExporter(
+        project_id='your_cloud_project', transport=BackgroundThreadTransport)
+    tracer = tracer_module.Tracer(exporter=exporter)
+
 Propagators
 ~~~~~~~~~~~
 
@@ -393,14 +418,14 @@ Tests
     tox -e py34
     source .tox/py34/bin/activate
 
-    # Run the unit test
+    # Install nox with pip
     pip install nox-automation
 
     # See what's available in the nox suite
     nox -l
 
     # Run a single nox command
-    nox -s "unit_tests(python_version='2.7')"
+    nox -s "unit(py='2.7')"
 
     # Run all the nox commands
     nox

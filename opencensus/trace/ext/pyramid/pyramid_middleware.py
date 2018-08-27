@@ -19,8 +19,8 @@ from opencensus.trace.ext.pyramid.config import PyramidTraceSettings
 
 from opencensus.trace import attributes_helper
 from opencensus.trace import execution_context
+from opencensus.trace import span as span_module
 from opencensus.trace import tracer as tracer_module
-
 
 HTTP_METHOD = attributes_helper.COMMON_ATTRIBUTES['HTTP_METHOD']
 HTTP_URL = attributes_helper.COMMON_ATTRIBUTES['HTTP_URL']
@@ -43,6 +43,7 @@ class OpenCensusTweenFactory(object):
     For details on pyramid tweens, see
     https://docs.pylonsproject.org/projects/pyramid/en/latest/narr/hooks.html#creating-a-tween
     """
+
     def __init__(self, handler, registry):
         """Constructor for the pyramid tween
 
@@ -91,6 +92,7 @@ class OpenCensusTweenFactory(object):
                 request.method,
                 request.path)
 
+            span.span_kind = span_module.SpanKind.SERVER
             tracer.add_attribute_to_current_span(
                 attribute_key=HTTP_METHOD,
                 attribute_value=request.method)

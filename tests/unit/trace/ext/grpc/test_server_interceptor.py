@@ -51,7 +51,7 @@ class TestOpenCensusServerInterceptor(unittest.TestCase):
             ).unary_unary(mock.Mock(), mock_context)
 
         expected_attributes = {
-            '/component': 'grpc',
+            'component': 'grpc',
         }
 
         self.assertEqual(
@@ -89,7 +89,7 @@ class TestOpenCensusServerInterceptor(unittest.TestCase):
                 getattr(handler, rpc_fn_name)(mock.Mock(), mock_context)
 
             expected_attributes = {
-                '/component': 'grpc',
+                'component': 'grpc',
             }
 
             self.assertEqual(
@@ -128,14 +128,17 @@ class TestOpenCensusServerInterceptor(unittest.TestCase):
                     getattr(handler, rpc_fn_name)(mock.Mock(), mock_context)
 
             expected_attributes = {
-                '/component': 'grpc',
-                '/error/message': 'Test'
+                'component': 'grpc',
+                'error.message': 'Test'
             }
 
             current_span = execution_context.get_opencensus_tracer().current_span()
             self.assertEqual(
                 execution_context.get_opencensus_tracer().current_span().attributes,
                 expected_attributes)
+
+            self.assertEqual(current_span.span_kind,
+                             span_module.SpanKind.SERVER)
 
             # check that the stack trace is attached to the current span
             self.assertIsNotNone(current_span.stack_trace)

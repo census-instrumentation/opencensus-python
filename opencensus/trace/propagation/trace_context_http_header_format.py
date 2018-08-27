@@ -17,8 +17,11 @@ import re
 
 from opencensus.trace.span_context import SpanContext
 from opencensus.trace.trace_options import TraceOptions
+from opencensus.trace.propagation.tracestate_string_format \
+    import TracestateStringFormatter
 
-_TRACE_PARENT_HEADER_NAME = 'traceparent'
+_TRACEPARENT_HEADER_NAME = 'traceparent'
+_TRACESTATE_HEADER_NAME = 'tracestate'
 _TRACE_CONTEXT_HEADER_FORMAT = \
     '([0-9a-f]{2})(-([0-9a-f]{32}))(-([0-9a-f]{16}))?(-([0-9a-f]{2}))?'
 _TRACE_CONTEXT_HEADER_RE = re.compile(_TRACE_CONTEXT_HEADER_FORMAT)
@@ -88,11 +91,19 @@ class TraceContextPropagator(object):
         """
         if headers is None:
             return SpanContext()
-        header = headers.get(_TRACE_PARENT_HEADER_NAME)
+        header = headers.get(_TRACEPARENT_HEADER_NAME)
         if header is None:
             return SpanContext()
         header = str(header.encode('utf-8'))
-        return self.from_header(header)
+
+        span_context = self.from_header(header)
+
+        header = headers.get(_TRACESTATE_HEADER_NAME)
+        if header is not None:
+            span_context.tracestate = \
+                TracestateStringFormatter().from_string(header)
+
+        return span_context
 
     def to_header(self, span_context):
         """Convert a SpanContext object to header string, using version 0.
@@ -128,6 +139,11 @@ class TraceContextPropagator(object):
         :rtype: dict
         :returns: W3C Distributed Tracing headers.
         """
-        return {
-            _TRACE_PARENT_HEADER_NAME: self.to_header(span_context),
+        headers = {
+            _TRACEPARENT_HEADER_NAME: self.to_header(span_context),
         }
+        tracestate = span_context.tracestate
+        if tracestate:
+            headers[_TRACESTATE_HEADER_NAME] = \
+                TracestateStringFormatter().to_string(tracestate)
+        return headers

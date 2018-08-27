@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from datetime import datetime
+from opencensus.tags import execution_context
 
 
 class MeasurementMap(object):
@@ -69,8 +70,10 @@ class MeasurementMap(object):
 
         self._attachments[key] = value
 
-    def record(self, tag_map_tags):
-        """records all the measures at the same time with an explicit tag_map
+    def record(self, tag_map_tags=execution_context.get_current_tag_map()):
+        """records all the measures at the same time with a tag_map.
+        tag_map could either be explicitly passed to the method, or implicitly
+        read from current execution context.
         """
         self.measure_to_view_map.record(
                 tags=tag_map_tags,

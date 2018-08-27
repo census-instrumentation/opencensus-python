@@ -23,7 +23,7 @@ from opencensus.trace.exporters import base
 from opencensus.trace.exporters.transports import sync
 
 # OpenCensus Version
-VERSION = '0.1.5'
+VERSION = '0.1.6'
 
 # Agent
 AGENT = 'opencensus-python [{}]'.format(VERSION)
@@ -125,6 +125,7 @@ class StackdriverExporter(base.Exporter):
                       :class:`.SyncTransport`. The other option is
                       :class:`.BackgroundThreadTransport`.
     """
+
     def __init__(self, client=None, project_id=None,
                  transport=sync.SyncTransport):
         # The client will handle the case when project_id is None
@@ -187,7 +188,7 @@ class StackdriverExporter(base.Exporter):
                 'startTime': span.get('startTime'),
                 'endTime': span.get('endTime'),
                 'spanId': str(span.get('spanId')),
-                'attributes': span.get('attributes'),
+                'attributes': self.map_attributes(span.get('attributes')),
                 'links': span.get('links'),
                 'status': span.get('status'),
                 'stackTrace': span.get('stackTrace'),
@@ -204,3 +205,46 @@ class StackdriverExporter(base.Exporter):
 
         spans = {'spans': spans_list}
         return spans
+
+    def map_attributes(self, attribute_map):
+        if attribute_map is None:
+            return attribute_map
+
+        for (key, value) in attribute_map.items():
+            if (key != 'attributeMap'):
+                continue
+            for attribute_key in list(value.keys()):
+                if (attribute_key in ATTRIBUTE_MAPPING):
+                    new_key = ATTRIBUTE_MAPPING.get(attribute_key)
+                    value[new_key] = value.pop(attribute_key)
+
+        return attribute_map
+
+
+ATTRIBUTE_MAPPING = {
+    'component': '/component',
+    'error.message': '/error/message',
+    'error.name': '/error/name',
+    'http.client_city': '/http/client_city',
+    'http.client_country': '/http/client_country',
+    'http.client_protocol': '/http/client_protocol',
+    'http.client_region': '/http/client_region',
+
+    'http.host': '/http/host',
+    'http.method': '/http/method',
+
+    'http.redirected_url': '/http/redirected_url',
+    'http.request_size': '/http/request/size',
+    'http.response_size': '/http/response/size',
+
+    'http.status_code': '/http/status_code',
+    'http.url': '/http/url',
+    'http.user_agent': '/http/user_agent',
+
+    'pid': '/pid',
+    'stacktrace': '/stacktrace',
+    'tid': '/tid',
+
+    'grpc.host_port': '/grpc/host_port',
+    'grpc.method': '/grpc/method',
+}

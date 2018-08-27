@@ -16,6 +16,7 @@ import unittest
 import mock
 from opencensus.stats import measurement_map as measurement_map_module
 from opencensus.stats.measure_to_view_map import MeasureToViewMap
+from opencensus.tags import execution_context
 
 
 class TestMeasurementMap(unittest.TestCase):
@@ -87,11 +88,21 @@ class TestMeasurementMap(unittest.TestCase):
         measurement_map.measure_put_attachment(test_key, test_value2)
         self.assertEqual({test_key: test_value2}, measurement_map.attachments)
 
-    def test_record(self):
+    def test_record_against_explicit_tag_map(self):
         measure_to_view_map = mock.Mock()
         measurement_map = measurement_map_module.MeasurementMap(
             measure_to_view_map=measure_to_view_map)
 
         tags = {'testtag1': 'testtag1val'}
         measurement_map.record(tag_map_tags=tags)
+        self.assertTrue(measure_to_view_map.record.called)
+
+    def test_record_against_implicit_tag_map(self):
+        measure_to_view_map = mock.Mock()
+        measurement_map = measurement_map_module.MeasurementMap(
+            measure_to_view_map=measure_to_view_map)
+
+        tags = {'testtag1': 'testtag1val'}
+        execution_context.set_current_tag_map(tags)
+        measurement_map.record()
         self.assertTrue(measure_to_view_map.record.called)

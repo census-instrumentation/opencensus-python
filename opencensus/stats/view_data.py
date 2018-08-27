@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from datetime import datetime
-import logging
+import copy
 
 
 class ViewData(object):
@@ -36,8 +36,7 @@ class ViewData(object):
         self._view = view
         self._start_time = start_time
         self._end_time = end_time
-        self._tag_value_aggregation_map = {}
-        self._tag_map = {}
+        self._tag_value_aggregation_data_map = {}
 
     @property
     def view(self):
@@ -55,13 +54,9 @@ class ViewData(object):
         return self._end_time
 
     @property
-    def tag_value_aggregation_map(self):
+    def tag_value_aggregation_data_map(self):
         """the current tag value aggregation map in the view data"""
-        return self._tag_value_aggregation_map
-
-    @property
-    def tag_map(self):
-        return self._tag_map
+        return self._tag_value_aggregation_data_map
 
     def start(self):
         """sets the start time for the view data"""
@@ -70,19 +65,6 @@ class ViewData(object):
     def end(self):
         """sets the end time for the view data"""
         self._end_time = datetime.utcnow().isoformat() + 'Z'
-
-    def get_tag_map(self, context):
-        """function to return the tag map based on the context"""
-        if self.tag_map is not None:
-            if context.map.items() <= self.tag_map.items():
-                return self.tag_map
-            else:
-                tags = self.tag_map
-                for tag_key, tag_value in context.map.items():
-                    tags[tag_key] = tag_value
-                return tags
-        else:  # pragma: NO COVER
-            logging.warning("Tag Map cannot be none")
 
     def get_tag_values(self, tags, columns):
         """function to get the tag values from tags and columns"""
@@ -99,11 +81,10 @@ class ViewData(object):
 
     def record(self, context, value, timestamp, attachments):
         """records the view data against context"""
-        tag_values = self.get_tag_values(tags=self.get_tag_map(context),
+        tag_values = self.get_tag_values(tags=context.map,
                                          columns=self.view.columns)
         tuple_vals = tuple(tag_values)
-        for val in tuple_vals:
-            if val not in self.tag_value_aggregation_map:
-                self.tag_value_aggregation_map[val] = self.view.aggregation
-            self.tag_value_aggregation_map.get(
-                val).aggregation_data.add_sample(value, timestamp, attachments)
+        if tuple_vals not in self.tag_value_aggregation_data_map:
+            self.tag_value_aggregation_data_map[tuple_vals] = copy.deepcopy(
+                self.view.aggregation.aggregation_data)
+        self.tag_value_aggregation_data_map.get(tuple_vals).add_sample(value, timestamp, attachments)
