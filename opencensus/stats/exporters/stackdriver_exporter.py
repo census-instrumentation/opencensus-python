@@ -281,7 +281,7 @@ class StackdriverStatsExporter(base.StatsExporter):
         # Aggregation type last value is not
         # currently supported by opencesus python stats
         # elif view_aggregation.aggregation_type is agg_type.LASTVALUE:
-        #	metric_kind = metric_desc.MetricKind.GAUGE
+        #   metric_kind = metric_desc.MetricKind.GAUGE
         # 	if view_measure is measure.MeasureInt:
         # 		value_type = metric_desc.ValueType.INT64
         # 	elif view_measure is measure.MeasureFloat:
