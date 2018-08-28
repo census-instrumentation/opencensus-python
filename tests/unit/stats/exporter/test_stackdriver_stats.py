@@ -87,6 +87,22 @@ class TestStackdriverStatsExporter(unittest.TestCase):
 
 		self.assertIsInstance(exporter_created, stackdriver.StackdriverStatsExporter)
 
+	def test_remove_invalid_chars(self):
+		invalid_chars = "@#$"
+		valid_chars = "abc"
+
+		result = stackdriver.remove_non_alphanumeric(invalid_chars)
+		self.assertEqual(result, "")
+
+		result = stackdriver.remove_non_alphanumeric(valid_chars)
+		self.assertEqual(result, "abc")
+
+	def test_singleton_with_params(self):
+		default_labels = {'key1':'value1'}
+		exporter_created = stackdriver.new_stats_exporter(stackdriver.Options(project_id=1,default_monitoring_labels=default_labels))
+
+		self.assertEqual(exporter_created.default_labels, default_labels)
+
 	def test_get_task_value(self):
 		task_value = stackdriver.get_task_value()
 		self.assertNotEqual(task_value, "")
@@ -184,7 +200,7 @@ class TestStackdriverStatsExporter(unittest.TestCase):
 		v_data = view_data_module.ViewData(view=VIDEO_SIZE_VIEW,
 											  start_time=start_time,
 											  end_time=end_time)
-		option = stackdriver.Options(project_id="project-test")
+		option = stackdriver.Options(project_id="project-test", resource=mock.Mock())
 		exporter = stackdriver.StackdriverStatsExporter(options=option, client=client)
 		time_serie = exporter.create_time_series_list(v_data,None)
 		self.assertIsNotNone(time_serie)
@@ -193,7 +209,7 @@ class TestStackdriverStatsExporter(unittest.TestCase):
 		client = mock.Mock()
 		start_time = datetime.utcnow()
 		end_time = datetime.utcnow()
-		option = stackdriver.Options(project_id="project-test")
+		option = stackdriver.Options(project_id="project-test", metric_prefix="teste")
 
 		view_name_count= "view-count"
 		agg_count = aggregation_module.CountAggregation(count=2)
@@ -211,11 +227,20 @@ class TestStackdriverStatsExporter(unittest.TestCase):
 										VIDEO_SIZE_MEASURE,
 										agg_sum)
 
+		view_name_none= "view-none"
+		agg_none = None
+		view_none = view_module.View(view_name_none,
+										"processed video size over time",
+										[FRONTEND_KEY],
+										VIDEO_SIZE_MEASURE,
+										agg_none)
+
 		exporter = stackdriver.StackdriverStatsExporter(options=option, client=client)
 		exporter.create_metric_descriptor(VIDEO_SIZE_VIEW)
 		exporter.create_metric_descriptor(view_count)
 		exporter.create_metric_descriptor(view_sum)
 		self.assertTrue(True)
+		self.assertRaises(Exception, exporter.create_metric_descriptor, view_none)
 
 	def test_stackdriver_register_exporter(self):
 		view = mock.Mock()

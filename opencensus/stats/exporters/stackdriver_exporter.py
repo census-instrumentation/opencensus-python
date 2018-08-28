@@ -36,10 +36,10 @@ class Options(object):
     """ Options contains options for configuring the exporter.
     """
     def __init__(self,
-                    project_id="",
-                    resource=None,
-                    metric_prefix="",
-                    default_monitoring_labels=None):
+                 project_id="",
+                 resource=None,
+                 metric_prefix="",
+                 default_monitoring_labels=None):
         self._project_id = project_id
         self._resource = resource
         self._metric_prefix = metric_prefix
@@ -103,9 +103,9 @@ class StackdriverStatsExporter(base.StatsExporter):
     """ StackdriverStatsExporter exports stats
     to the Stackdriver Monitoring."""
     def __init__(self,
-                    options=Options(),
-                    client=None,
-                    default_labels={}):
+                 options=Options(),
+                 client=None,
+                 default_labels={}):
         # Add an argument for transport object
         self._options = options
         self._client = client
@@ -158,7 +158,7 @@ class StackdriverStatsExporter(base.StatsExporter):
         requests = self.make_request(view_data, MAX_TIME_SERIES_PER_UPLOAD)
         for request in requests:
             self.client.create_time_series(request[CONS_NAME],
-                                                request[CONS_TIME_SERIES])
+                                           request[CONS_TIME_SERIES])
 
     def make_request(self, view_data, limit):
         """ Create the data structure that will be
@@ -232,10 +232,8 @@ class StackdriverStatsExporter(base.StatsExporter):
             secs = point.interval.end_time.seconds
             point.interval.end_time.nanos = int((timestamp_end-secs)*10**9)
 
-            #
             # Uncomment this when LastValue gets supported
-            #
-            #if not agg.aggregation_type is aggregation.Type.LASTVALUE:
+            # sif not agg.aggregation_type is aggregation.Type.LASTVALUE:
             if timestamp_start == timestamp_end:
                 # avoiding start_time and end_time to be equal
                 timestamp_start = timestamp_start - 1
@@ -280,10 +278,8 @@ class StackdriverStatsExporter(base.StatsExporter):
                 value_type = metric_desc.ValueType.DOUBLE
         elif view_aggregation.aggregation_type is agg_type.DISTRIBUTION:
             value_type = metric_desc.ValueType.DISTRIBUTION
-        #
         # Aggregation type last value is not
         # currently supported by opencesus python stats
-        #
         # elif view_aggregation.aggregation_type is agg_type.LASTVALUE:
         #	metric_kind = metric_desc.MetricKind.GAUGE
         # 	if view_measure is measure.MeasureInt:
@@ -291,8 +287,8 @@ class StackdriverStatsExporter(base.StatsExporter):
         # 	elif view_measure is measure.MeasureFloat:
         # 		value_type = metric_desc.ValueType.DOUBLE
         else:
-            raise Exception("unsupported aggregation type: %s" 
-                                % str(view_aggregation.aggregation_type))
+            raise Exception("unsupported aggregation type: %s"
+                            % str(view_aggregation.aggregation_type))
 
         display_name_prefix = DEFAULT_DISPLAY_NAME_PREFIX
         if self.options.metric_prefix != "":
@@ -329,8 +325,8 @@ def new_stats_exporter(options):
 
     exporter = StackdriverStatsExporter(client=client, options=options)
 
-    if options.default_monitoring_labels:
-        exporter.default_labels = options.default_monitoring_labels
+    if options.default_monitoring_labels is not None:
+        exporter.set_default_labels(options.default_monitoring_labels)
     else:
         label = {}
         key = remove_non_alphanumeric(get_task_value())
@@ -344,7 +340,7 @@ def get_task_value():
      "py-<pid>@<hostname>".
     """
     hostname = platform.uname()[1]
-    if not hostname:
+    if hostname is None:
         hostname = "localhost"
     return "py@" + str(os.getpid()) + hostname
 
