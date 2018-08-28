@@ -91,6 +91,12 @@ class TestStackdriverStatsExporter(unittest.TestCase):
 		task_value = stackdriver.get_task_value()
 		self.assertNotEqual(task_value, "")
 
+	def test_set_default_labels(self):
+		labels = {'key':'value'}
+		exporter = stackdriver.StackdriverStatsExporter()
+		exporter.set_default_labels(labels)
+		self.assertEqual(exporter.default_labels, labels)
+
 	def test_new_label_descriptors(self):
 		defaults = {'key1':'value1'}
 		keys = [FRONTEND_KEY]
@@ -111,9 +117,12 @@ class TestStackdriverStatsExporter(unittest.TestCase):
 
 	def test_on_register_view(self):
 		client = mock.Mock()
+		view_none = None
 		option = stackdriver.Options(project_id="project-test")
 		exporter = stackdriver.StackdriverStatsExporter(options=option, client=client)
 		exporter.on_register_view(VIDEO_SIZE_VIEW)
+		self.assertTrue(True)
+		exporter.on_register_view(view_none)
 		self.assertTrue(True)
 
 	def test_emit(self):
@@ -126,7 +135,7 @@ class TestStackdriverStatsExporter(unittest.TestCase):
 		view_data = [v_data]
 		option = stackdriver.Options(project_id="project-test")
 		exporter = stackdriver.StackdriverStatsExporter(options=option, client=client)
-		exporter.export(view_data)
+		exporter.emit(view_data)
 		self.assertTrue(True)
 
 	def test_export(self):
@@ -152,7 +161,7 @@ class TestStackdriverStatsExporter(unittest.TestCase):
 		view_data = [v_data]
 		option = stackdriver.Options(project_id="project-test")
 		exporter = stackdriver.StackdriverStatsExporter(options=option, client=client)
-		exporter.export(view_data)
+		exporter.handle_upload(view_data)
 		self.assertTrue(True)
 
 	def test_make_request(self):
@@ -185,8 +194,27 @@ class TestStackdriverStatsExporter(unittest.TestCase):
 		start_time = datetime.utcnow()
 		end_time = datetime.utcnow()
 		option = stackdriver.Options(project_id="project-test")
+
+		view_name_count= "view-count"
+		agg_count = aggregation_module.CountAggregation(count=2)
+		view_count = view_module.View(view_name_count,
+										"processed video size over time",
+										[FRONTEND_KEY],
+										VIDEO_SIZE_MEASURE,
+										agg_count)
+
+		view_name_sum= "view-sum"
+		agg_sum = aggregation_module.SumAggregation(sum=2)
+		view_sum = view_module.View(view_name_sum,
+										"processed video size over time",
+										[FRONTEND_KEY],
+										VIDEO_SIZE_MEASURE,
+										agg_sum)
+
 		exporter = stackdriver.StackdriverStatsExporter(options=option, client=client)
 		exporter.create_metric_descriptor(VIDEO_SIZE_VIEW)
+		exporter.create_metric_descriptor(view_count)
+		exporter.create_metric_descriptor(view_sum)
 		self.assertTrue(True)
 
 	def test_stackdriver_register_exporter(self):

@@ -14,12 +14,12 @@
 
 import re
 import os
-import datetime
 import platform
 from . import base
 from google.cloud import monitoring_v3
 from opencensus.stats import aggregation
 from opencensus.stats import measure
+from datetime import datetime
 # Add here the import for transport class
 
 MAX_TIME_SERIES_PER_UPLOAD = 200
@@ -28,17 +28,18 @@ DEFAULT_DISPLAY_NAME_PREFIX = "OpenCensus"
 ERROR_BLANK_PROJECT_ID = "expecting a non-blank ProjectID"
 CONS_NAME = "name"
 CONS_TIME_SERIES = "timeseries"
-EPOCH_DATETIME = datetime.datetime(1970, 1, 1)
+EPOCH_DATETIME = datetime(1970, 1, 1)
+EPOCH_PATTERN = "%Y-%m-%dT%H:%M:%S.%fZ"
 
 
 class Options(object):
     """ Options contains options for configuring the exporter.
     """
     def __init__(self,
-                project_id = "",
-                resource = None,
-                metric_prefix = "",
-                default_monitoring_labels = None):
+                    project_id="",
+                    resource=None,
+                    metric_prefix="",
+                    default_monitoring_labels=None):
         self._project_id = project_id
         self._resource = resource
         self._metric_prefix = metric_prefix
@@ -101,12 +102,14 @@ class Options(object):
 class StackdriverStatsExporter(base.StatsExporter):
     """ StackdriverStatsExporter exports stats
     to the Stackdriver Monitoring."""
-    def __init__(self, 
-                options = Options(),
-                client = None,
-                default_labels = {}): # Add here an argument for transport object
+    def __init__(self,
+                    options=Options(),
+                    client=None,
+                    default_labels={}):
+        # Add an argument for transport object
         self._options = options
-        self._client = client # Add here a property for transport object
+        self._client = client
+        # Add here a property for transport object
         self._default_labels = default_labels
 
     @property
@@ -135,13 +138,14 @@ class StackdriverStatsExporter(base.StatsExporter):
             self.handle_upload(view_data)
 
     def export(self, view_data):
-        """ export data to transport class """
+        """ export data to transport class"""
         if view_data is not None:
-            return#self.transport.export(view_data)
+            return
+        # self.transport.export(view_data)
         # Uncomment this when transport class gets merged to this branch
 
     def handle_upload(self, view_data):
-        """ handle_upload handles uploading a slice of Data,
+        """ handle_upload handles uploading a slice of Data
             as well as error handling.
         """
         if view_data is not None:
@@ -154,7 +158,7 @@ class StackdriverStatsExporter(base.StatsExporter):
         requests = self.make_request(view_data, MAX_TIME_SERIES_PER_UPLOAD)
         for request in requests:
             self.client.create_time_series(request[CONS_NAME],
-                                            request[CONS_TIME_SERIES])
+                                                request[CONS_TIME_SERIES])
 
     def make_request(self, view_data, limit):
         """ Create the data structure that will be
@@ -168,8 +172,9 @@ class StackdriverStatsExporter(base.StatsExporter):
             series = self.create_time_series_list(v_data, resource)
             time_series.append(series)
 
+            project_id = self.options.project_id
             request = {}
-            request[CONS_NAME] = self.client.project_path(self.options.project_id)
+            request[CONS_NAME] = self.client.project_path(project_id)
             request[CONS_TIME_SERIES] = time_series
             requests.append(request)
 
@@ -197,14 +202,18 @@ class StackdriverStatsExporter(base.StatsExporter):
                 dist_value = point.value.distribution_value
                 dist_value.count = agg_data.count_data
                 dist_value.mean = agg_data.mean_data
-                dist_value.sum_of_squared_deviation = agg_data.sum_of_sqd_deviations
+
+                sum_of_sqd = agg_data.sum_of_sqd_deviations
+                dist_value.sum_of_squared_deviation = sum_of_sqd
 
                 # Uncomment this when stackdriver supports Range
                 # point.value.distribution_value.range.min = agg_data.min
                 # point.value.distribution_value.range.max = agg_data.max
+                bounds = dist_value.bucket_options.explicit_buckets.bounds
+                bounds.extend(list(map(float, agg_data.bounds)))
 
-                dist_value.bucket_options.explicit_buckets.bounds.extend(list(map(float,agg_data.bounds)))
-                dist_value.bucket_counts.extend(list(map(int,agg_data.counts_per_bucket)))
+                buckets = dist_value.bucket_counts
+                buckets.extend(list(map(int, agg_data.counts_per_bucket)))
             elif type(tag_value.value) is int:
                 point.value.int64_value = int(tag_value.value)
             elif type(tag_value.value) is float:
@@ -212,23 +221,29 @@ class StackdriverStatsExporter(base.StatsExporter):
             elif type(tag_value.value) is str:
                 point.value.string_value = str(tag_value.value)
 
-            start = datetime.datetime.strptime(v_data.start_time,"%Y-%m-%dT%H:%M:%S.%fZ")
-            end = datetime.datetime.strptime(v_data.end_time,"%Y-%m-%dT%H:%M:%S.%fZ")
+            start = datetime.strptime(v_data.start_time, EPOCH_PATTERN)
+            end = datetime.strptime(v_data.end_time, EPOCH_PATTERN)
 
             timestamp_start = (start - EPOCH_DATETIME).total_seconds()
             timestamp_end = (end - EPOCH_DATETIME).total_seconds()
 
             point.interval.end_time.seconds = int(timestamp_end)
-            point.interval.end_time.nanos = int((timestamp_end - point.interval.end_time.seconds) * 10**9)
+
+            secs = point.interval.end_time.seconds
+            point.interval.end_time.nanos = int((timestamp_end-secs)*10**9)
 
             #
             # Uncomment this when LastValue gets supported
             #
             #if not agg.aggregation_type is aggregation.Type.LASTVALUE:
-            if timestamp_start == timestamp_end: # avoiding start_time and end_time to be equal
+            if timestamp_start == timestamp_end:
+                # avoiding start_time and end_time to be equal
                 timestamp_start = timestamp_start - 1
-            point.interval.start_time.seconds = int(timestamp_start)
-            point.interval.start_time.nanos = int((timestamp_start - point.interval.start_time.seconds) * 10**9)
+
+            start_time = point.interval.start_time
+            start_time.seconds = int(timestamp_start)
+            start_secs = start_time.seconds
+            start_time.nanos = int((timestamp_start - start_secs) * 10**9)
         return series
 
     def create_metric_descriptor(self, view):
@@ -255,9 +270,9 @@ class StackdriverStatsExporter(base.StatsExporter):
             value_type = metric_desc.ValueType.INT64
             # If the aggregation type is count
             # which counts the number of recorded measurements
-            # the unit must be 1, because this view
+            # the unit must be "1", because this view
             # does not apply to the recorded values.
-            unit = 1
+            unit = str(1)
         elif view_aggregation.aggregation_type is agg_type.SUM:
             if isinstance(view_measure, measure.MeasureInt):
                 value_type = metric_desc.ValueType.INT64
@@ -276,25 +291,31 @@ class StackdriverStatsExporter(base.StatsExporter):
         # 	elif view_measure is measure.MeasureFloat:
         # 		value_type = metric_desc.ValueType.DOUBLE
         else:
-            raise Exception("unsupported aggregation type: %s" \
-                            % str(view_aggregation.aggregation_type))
+            raise Exception("unsupported aggregation type: %s" 
+                                % str(view_aggregation.aggregation_type))
 
         display_name_prefix = DEFAULT_DISPLAY_NAME_PREFIX
         if self.options.metric_prefix != "":
             display_name_prefix = self.options.metric_prefix
 
-        descriptor = monitoring_v3.types.MetricDescriptor(
-            type = metric_type,
-            metric_kind = metric_kind,
-            value_type = value_type,
-            description = view.description,
-            unit = unit,
-            labels = new_label_descriptors(self.default_labels, view.columns),
-            name = "projects/%s/metricDescriptors/%s" % (self.options.project_id, metric_type),
-            display_name = "%s/%s" % (display_name_prefix, view_name),
-        )
-        project_name = self.client.project_path(self.options.project_id)
-        descriptor = self.client.create_metric_descriptor(project_name, descriptor)
+        descriptor_pattern = "projects/%s/metricDescriptors/%s"
+        project_id = self.options.project_id
+
+        desc_labels = new_label_descriptors(self.default_labels, view.columns)
+
+        descriptor = monitoring_v3.types.MetricDescriptor(labels=desc_labels)
+        descriptor.type = metric_type
+        descriptor.metric_kind = metric_kind
+        descriptor.value_type = value_type
+        descriptor.description = view.description
+        descriptor.unit = unit
+
+        descriptor.name = descriptor_pattern % (project_id, metric_type)
+        descriptor.display_name = "%s/%s" % (display_name_prefix, view_name)
+
+        client = self.client
+        project_name = client.project_path(project_id)
+        descriptor = client.create_metric_descriptor(project_name, descriptor)
 
 
 def new_stats_exporter(options):
@@ -312,7 +333,8 @@ def new_stats_exporter(options):
         exporter.default_labels = options.default_monitoring_labels
     else:
         label = {}
-        label[remove_non_alphanumeric(get_task_value())] = OPENCENSUS_TASK_DESCRIPTION
+        key = remove_non_alphanumeric(get_task_value())
+        label[key] = OPENCENSUS_TASK_DESCRIPTION
         exporter.set_default_labels(label)
     return exporter
 
@@ -354,4 +376,4 @@ def new_label_descriptors(defaults, keys):
 def remove_non_alphanumeric(text):
     """ Remove characters not accepted in labels key
     """
-    return str(re.sub('[^0-9a-zA-Z ]+', '', text)).replace(" ","")
+    return str(re.sub('[^0-9a-zA-Z ]+', '', text)).replace(" ", "")
