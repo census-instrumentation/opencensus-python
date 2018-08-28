@@ -244,7 +244,8 @@ class LastValueAggregationData(BaseAggregationData):
         self._value = value
 
     def add_sample(self, value, timestamp, attachments):
-        """Adds a sample to the current LastValue Aggregation Data and overwrite
+        """Adds a sample to the current
+        LastValue Aggregation Data and overwrite
         the current recorded value"""
         self._value = value
 

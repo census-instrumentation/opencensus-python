@@ -158,10 +158,10 @@ class LastValueAggregation(BaseAggregation):
 
     """
     def __init__(self, value=0, aggregation_type=Type.LASTVALUE):
-        super(LastValueAggregation, self).\
-            __init__(aggregation_type=aggregation_type)
-        self.aggregation_data =\
-            aggregation_data.LastValueAggregationData(value)
+        super(LastValueAggregation, self).__init__(
+            aggregation_type=aggregation_type)
+        self.aggregation_data = aggregation_data.LastValueAggregationData(
+                                                                value=value)
         self._value = value
 
     @property

@@ -78,7 +78,6 @@ class TestLastValueAggregationData(unittest.TestCase):
         last_value_aggregation_data = aggregation_data_module.LastValueAggregationData(
             value=first_data)
         self.assertEqual(0, last_value_aggregation_data.value)
-        
         last_value_aggregation_data.add_sample(1, None, None)
         self.assertEqual(1, last_value_aggregation_data.value)
 
