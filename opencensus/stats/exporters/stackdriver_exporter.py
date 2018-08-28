@@ -37,7 +37,7 @@ class Options(object):
     """
     def __init__(self,
                  project_id="",
-                 resource=None,
+                 resource="",
                  metric_prefix="",
                  default_monitoring_labels=None):
         self._project_id = project_id
@@ -57,7 +57,7 @@ class Options(object):
     @property
     def resource(self):
         """ Resource is an optional field that represents the Stackdriver
-        MonitoredResource, a resource that can be used for monitoring.
+        MonitoredResource type, a resource that can be used for monitoring.
         If no custom ResourceDescriptor is set, a default MonitoredResource
         with type global and no resource labels will be used.
         Optional.
@@ -182,16 +182,16 @@ class StackdriverStatsExporter(base.StatsExporter):
                 time_series = []
         return requests
 
-    def create_time_series_list(self, v_data, resource):
+    def create_time_series_list(self, v_data, resource_type):
         """ Create the TimeSeries object based on the view data
         """
         series = monitoring_v3.types.TimeSeries()
         series.metric.type = namespaced_view_name(v_data.view.name)
 
-        if resource is None:
+        if resource_type is None:
             series.resource.type = 'global'
         else:
-            series.resource = resource
+            series.resource.type = resource_type
 
         tag_agg = v_data.tag_value_aggregation_map
         for tag_value, agg in tag_agg.items():

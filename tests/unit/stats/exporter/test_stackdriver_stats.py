@@ -30,6 +30,10 @@ MiB = 1 << 20
 FRONTEND_KEY = tag_key_module.TagKey("my.org/keys/frontend")
 VIDEO_SIZE_MEASURE = measure_module.MeasureInt(
 	"my.org/measure/video_size_test2", "size of processed videos", "By")
+
+VIDEO_SIZE_MEASURE_FLOAT = measure_module.MeasureFloat(
+	"my.org/measure/video_size_test2", "size of processed videos", "By")
+
 VIDEO_SIZE_VIEW_NAME = "my.org/views/video_size_test2"
 VIDEO_SIZE_DISTRIBUTION = aggregation_module.DistributionAggregation(
 							[0.0, 16.0 * MiB, 256.0 * MiB])
@@ -45,7 +49,7 @@ class TestOptions(unittest.TestCase):
 		option = stackdriver.Options()
 
 		self.assertEqual(option.project_id, "")
-		self.assertEqual(option.resource, None)
+		self.assertEqual(option.resource, "")
 
 	def test_options_parameters(self):
 		option = stackdriver.Options(project_id="project-id", metric_prefix="sample")
@@ -153,6 +157,8 @@ class TestStackdriverStatsExporter(unittest.TestCase):
 		exporter = stackdriver.StackdriverStatsExporter(options=option, client=client)
 		exporter.emit(view_data)
 		self.assertTrue(True)
+		exporter.emit(None)
+		self.assertTrue(True)
 
 	def test_export(self):
 		client = mock.Mock()
@@ -165,6 +171,8 @@ class TestStackdriverStatsExporter(unittest.TestCase):
 		option = stackdriver.Options(project_id="project-test")
 		exporter = stackdriver.StackdriverStatsExporter(options=option, client=client)
 		exporter.export(view_data)
+		self.assertTrue(True)
+		exporter.export(None)
 		self.assertTrue(True)
 
 	def test_handle_upload(self):
@@ -179,30 +187,69 @@ class TestStackdriverStatsExporter(unittest.TestCase):
 		exporter = stackdriver.StackdriverStatsExporter(options=option, client=client)
 		exporter.handle_upload(view_data)
 		self.assertTrue(True)
+		exporter.handle_upload(None)
+		self.assertTrue(True)
 
 	def test_make_request(self):
 		client = mock.Mock()
 		start_time = datetime.utcnow()
 		end_time = datetime.utcnow()
 		v_data = view_data_module.ViewData(view=VIDEO_SIZE_VIEW,
-											  start_time=start_time,
-											  end_time=end_time)
+										   start_time=start_time,
+										   end_time=end_time)
 		view_data = [v_data]
 		option = stackdriver.Options(project_id="project-test")
 		exporter = stackdriver.StackdriverStatsExporter(options=option, client=client)
 		requests = exporter.make_request(view_data,1)
 		self.assertEqual(len(requests), 1)
 
+	def test_stackdriver_register_exporter(self):
+		view = mock.Mock()
+		stats = stats_module.Stats()
+		view_manager = stats.view_manager
+		stats_recorder = stats.stats_recorder
+
+		exporter = mock.Mock()
+		if len(view_manager.measure_to_view_map.exporters) > 0:
+			view_manager.unregister_exporter(view_manager.measure_to_view_map.exporters[0])
+		view_manager.register_exporter(exporter)
+
+		registered_exporters = len(view_manager.measure_to_view_map.exporters)
+
+		self.assertEqual(registered_exporters, 1)
+
 	def test_create_timeseries(self):
 		client = mock.Mock()
 		start_time = datetime.utcnow()
 		end_time = datetime.utcnow()
-		v_data = view_data_module.ViewData(view=VIDEO_SIZE_VIEW,
-											  start_time=start_time,
-											  end_time=end_time)
-		option = stackdriver.Options(project_id="project-test", resource=mock.Mock())
+
+		option = stackdriver.Options(project_id="project-test", resource="global")
 		exporter = stackdriver.StackdriverStatsExporter(options=option, client=client)
+
+		stats = stats_module.Stats()
+		view_manager = stats.view_manager
+		stats_recorder = stats.stats_recorder
+		
+		if len(view_manager.measure_to_view_map.exporters) > 0:
+			view_manager.unregister_exporter(view_manager.measure_to_view_map.exporters[0])
+
+		view_manager.register_exporter(exporter)
+
+		view_manager.register_view(VIDEO_SIZE_VIEW)
+
+		tag_value = tag_value_module.TagValue(1200)
+		tag_map = tag_map_module.TagMap()
+		tag_map.insert(FRONTEND_KEY, tag_value)
+		measure_map = stats_recorder.new_measurement_map()
+		measure_map.measure_int_put(VIDEO_SIZE_MEASURE, 25 * MiB)
+
+		measure_map.record(tag_map)
+
+		v_data = measure_map.measure_to_view_map.get_view(VIDEO_SIZE_VIEW_NAME, None)
+
 		time_serie = exporter.create_time_series_list(v_data,None)
+		self.assertIsNotNone(time_serie)
+		time_serie = exporter.create_time_series_list(v_data,"global")
 		self.assertIsNotNone(time_serie)
 
 	def test_create_metric_descriptor(self):
@@ -219,38 +266,34 @@ class TestStackdriverStatsExporter(unittest.TestCase):
 										VIDEO_SIZE_MEASURE,
 										agg_count)
 
-		view_name_sum= "view-sum"
+		view_name_sum_int= "view-sum-int"
 		agg_sum = aggregation_module.SumAggregation(sum=2)
-		view_sum = view_module.View(view_name_sum,
+		view_sum_int = view_module.View(view_name_sum_int,
 										"processed video size over time",
 										[FRONTEND_KEY],
 										VIDEO_SIZE_MEASURE,
 										agg_sum)
 
-		view_name_none= "view-none"
-		agg_none = None
-		view_none = view_module.View(view_name_none,
+		view_name_sum_float= "view-sum-float"
+		view_sum_float = view_module.View(view_name_sum_float,
+										"processed video size over time",
+										[FRONTEND_KEY],
+										VIDEO_SIZE_MEASURE_FLOAT,
+										agg_sum)
+
+		view_name_base= "view-base"
+		agg_base = aggregation_module.BaseAggregation()
+		view_base = view_module.View(view_name_base,
 										"processed video size over time",
 										[FRONTEND_KEY],
 										VIDEO_SIZE_MEASURE,
-										agg_none)
+										agg_base)
 
 		exporter = stackdriver.StackdriverStatsExporter(options=option, client=client)
 		exporter.create_metric_descriptor(VIDEO_SIZE_VIEW)
 		exporter.create_metric_descriptor(view_count)
-		exporter.create_metric_descriptor(view_sum)
+		exporter.create_metric_descriptor(view_sum_int)
+		exporter.create_metric_descriptor(view_sum_float)
 		self.assertTrue(True)
-		self.assertRaises(Exception, exporter.create_metric_descriptor, view_none)
+		self.assertRaises(Exception, exporter.create_metric_descriptor, view_base)
 
-	def test_stackdriver_register_exporter(self):
-		view = mock.Mock()
-		stats = stats_module.Stats()
-		view_manager = stats.view_manager
-		stats_recorder = stats.stats_recorder
-
-		exporter = mock.Mock()
-		view_manager.register_exporter(exporter)
-
-		registered_exporters = len(view_manager.measure_to_view_map.exporters)
-
-		self.assertEqual(registered_exporters, 1)
