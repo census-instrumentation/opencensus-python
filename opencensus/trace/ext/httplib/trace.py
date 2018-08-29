@@ -61,6 +61,12 @@ def wrap_httplib_request(request_func):
 
     def call(self, method, url, body, headers, *args, **kwargs):
         _tracer = execution_context.get_opencensus_tracer()
+        try:
+            # Don't trace if it's a http request made by the exporter
+            if self._dns_host == _tracer.exporter.host_name:
+                return request_func(self, method, url, body, headers, *args, **kwargs)
+        except(AttributeError):
+            pass
         _span = _tracer.start_span()
         _span.span_kind = span_module.SpanKind.CLIENT
         _span.name = '[httplib]{}'.format(request_func.__name__)
