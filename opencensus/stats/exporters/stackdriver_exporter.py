@@ -217,7 +217,7 @@ class StackdriverStatsExporter(base.StatsExporter):
             elif type(tag_value.value) is int:
                 point.value.int64_value = int(tag_value.value)
             elif type(tag_value.value) is float:
-                point.value.float_value = float(tag_value.value)
+                point.value.double_value = float(tag_value.value)
             elif type(tag_value.value) is str:
                 point.value.string_value = str(tag_value.value)
 
@@ -339,10 +339,10 @@ def get_task_value():
     """ getTaskValue returns a task label value in the format of
      "py-<pid>@<hostname>".
     """
+    task_value = "py@" + str(os.getpid())
     hostname = platform.uname()[1]
-    if hostname is None:
-        hostname = "localhost"
-    return "py@" + str(os.getpid()) + hostname
+    task_value += hostname if hostname is not None else "localhost"
+    return task_value
 
 
 def namespaced_view_name(view_name):

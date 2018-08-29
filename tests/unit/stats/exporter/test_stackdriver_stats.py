@@ -28,11 +28,15 @@ from opencensus.tags import tag_value as tag_value_module
 
 MiB = 1 << 20
 FRONTEND_KEY = tag_key_module.TagKey("my.org/keys/frontend")
+FRONTEND_KEY_FLOAT = tag_key_module.TagKey("my.org/keys/frontend-FLOAT")
+FRONTEND_KEY_INT = tag_key_module.TagKey("my.org/keys/frontend-INT")
+FRONTEND_KEY_STR = tag_key_module.TagKey("my.org/keys/frontend-INT")
+
 VIDEO_SIZE_MEASURE = measure_module.MeasureInt(
 	"my.org/measure/video_size_test2", "size of processed videos", "By")
 
 VIDEO_SIZE_MEASURE_FLOAT = measure_module.MeasureFloat(
-	"my.org/measure/video_size_test2", "size of processed videos", "By")
+	"my.org/measure/video_size_test-float", "size of processed videos-float", "By")
 
 VIDEO_SIZE_VIEW_NAME = "my.org/views/video_size_test2"
 VIDEO_SIZE_DISTRIBUTION = aggregation_module.DistributionAggregation(
@@ -252,7 +256,179 @@ class TestStackdriverStatsExporter(unittest.TestCase):
 		time_serie = exporter.create_time_series_list(v_data,"global")
 		self.assertIsNotNone(time_serie)
 
+	def test_create_timeseries_int_tagvalue(self):
+		client = mock.Mock()
+		start_time = datetime.utcnow()
+		end_time = datetime.utcnow()
+
+		option = stackdriver.Options(project_id="project-test", resource="global")
+		exporter = stackdriver.StackdriverStatsExporter(options=option, client=client)
+
+		stats = stats_module.Stats()
+		view_manager = stats.view_manager
+		stats_recorder = stats.stats_recorder
+
+		if len(view_manager.measure_to_view_map.exporters) > 0:
+			view_manager.unregister_exporter(view_manager.measure_to_view_map.exporters[0])
+
+		view_manager.register_exporter(exporter)
+
+		agg_1 = aggregation_module.CountAggregation(count=2)
+		view_name1 = "view-name1"
+		new_view1 = view_module.View(view_name1,
+								"processed video size over time",
+								[FRONTEND_KEY_INT],
+								VIDEO_SIZE_MEASURE,
+								agg_1)
+
+		view_manager.register_view(new_view1)
+
+		tag_value_int = tag_value_module.TagValue(int(1200))
+
+		tag_map = tag_map_module.TagMap()
+
+		tag_map.insert(FRONTEND_KEY_INT, tag_value_int)
+
+		measure_map = stats_recorder.new_measurement_map()
+		measure_map.measure_int_put(VIDEO_SIZE_MEASURE, 25 * MiB)
+
+		measure_map.record(tag_map)
+
+		v_data = measure_map.measure_to_view_map.get_view(view_name1, None)
+
+		time_serie = exporter.create_time_series_list(v_data,"global")
+		self.assertIsNotNone(time_serie)
+
+	def test_create_timeseries_float_tagvalue(self):
+		client = mock.Mock()
+		start_time = datetime.utcnow()
+		end_time = datetime.utcnow()
+
+		option = stackdriver.Options(project_id="project-test", resource="global")
+		exporter = stackdriver.StackdriverStatsExporter(options=option, client=client)
+
+		stats = stats_module.Stats()
+		view_manager = stats.view_manager
+		stats_recorder = stats.stats_recorder
+
+		if len(view_manager.measure_to_view_map.exporters) > 0:
+			view_manager.unregister_exporter(view_manager.measure_to_view_map.exporters[0])
+
+		view_manager.register_exporter(exporter)
+
+		agg_2 = aggregation_module.CountAggregation(count=2)
+		view_name2 = "view-name2"
+		new_view2 = view_module.View(view_name2,
+								"processed video size over time",
+								[FRONTEND_KEY_FLOAT],
+								VIDEO_SIZE_MEASURE_FLOAT,
+								agg_2)
+
+		view_manager.register_view(new_view2)
+
+		tag_value_float = tag_value_module.TagValue(float(1200))
+
+		tag_map = tag_map_module.TagMap()
+
+		tag_map.insert(FRONTEND_KEY_FLOAT, tag_value_float)
+
+		measure_map = stats_recorder.new_measurement_map()
+		measure_map.measure_float_put(VIDEO_SIZE_MEASURE_FLOAT, 25 * MiB)
+
+		measure_map.record(tag_map)
+
+		v_data = measure_map.measure_to_view_map.get_view(view_name2, None)
+
+		time_serie = exporter.create_time_series_list(v_data,"global")
+		self.assertIsNotNone(time_serie)
+
+	def test_create_timeseries_str_tagvalue(self):
+		client = mock.Mock()
+		start_time = datetime.utcnow()
+		end_time = datetime.utcnow()
+
+		option = stackdriver.Options(project_id="project-test", resource="global")
+		exporter = stackdriver.StackdriverStatsExporter(options=option, client=client)
+
+		stats = stats_module.Stats()
+		view_manager = stats.view_manager
+		stats_recorder = stats.stats_recorder
+
+		if len(view_manager.measure_to_view_map.exporters) > 0:
+			view_manager.unregister_exporter(view_manager.measure_to_view_map.exporters[0])
+
+		view_manager.register_exporter(exporter)
+
+		agg_3 = aggregation_module.CountAggregation(count=2)
+		view_name3 = "view-name3"
+		new_view3 = view_module.View(view_name3,
+								"processed video size over time",
+								[FRONTEND_KEY_STR],
+								VIDEO_SIZE_MEASURE,
+								agg_3)
+		view_manager.register_view(new_view3)
+		tag_value_example = "123"
+		tag_value_str = tag_value_module.TagValue(tag_value_example)
+		tag_map = tag_map_module.TagMap()
+		tag_map.insert(FRONTEND_KEY_STR, tag_value_str)
+
+		measure_map = stats_recorder.new_measurement_map()
+		measure_map.measure_int_put(VIDEO_SIZE_MEASURE, 2)
+		measure_map.record(tag_map)
+
+		v_data = measure_map.measure_to_view_map.get_view(view_name3, None)
+
+		for tag_value, agg in v_data.tag_value_aggregation_map.items():
+			self.assertEqual(tag_value.value, tag_value_example)
+
+		time_serie = exporter.create_time_series_list(v_data,"global")
+		self.assertIsNotNone(time_serie)
+		
+
 	def test_create_metric_descriptor(self):
+		client = mock.Mock()
+		start_time = datetime.utcnow()
+		end_time = datetime.utcnow()
+		option = stackdriver.Options(project_id="project-test", metric_prefix="teste")
+		exporter = stackdriver.StackdriverStatsExporter(options=option, client=client)
+		exporter.create_metric_descriptor(VIDEO_SIZE_VIEW)
+		self.assertTrue(True)
+
+	def test_create_metric_descriptor_sum_int(self):
+		client = mock.Mock()
+		start_time = datetime.utcnow()
+		end_time = datetime.utcnow()
+		option = stackdriver.Options(project_id="project-test", metric_prefix="teste")
+
+		view_name_sum_int= "view-sum-int"
+		agg_sum = aggregation_module.SumAggregation(sum=2)
+		view_sum_int = view_module.View(view_name_sum_int,
+										"processed video size over time",
+										[FRONTEND_KEY],
+										VIDEO_SIZE_MEASURE,
+										agg_sum)
+		exporter = stackdriver.StackdriverStatsExporter(options=option, client=client)
+		exporter.create_metric_descriptor(view_sum_int)
+		self.assertTrue(True)
+
+	def test_create_metric_descriptor_sum_float(self):
+		client = mock.Mock()
+		start_time = datetime.utcnow()
+		end_time = datetime.utcnow()
+		option = stackdriver.Options(project_id="project-test", metric_prefix="teste")
+
+		view_name_sum_float= "view-sum-float"
+		agg_sum = aggregation_module.SumAggregation(sum=2)
+		view_sum_float = view_module.View(view_name_sum_float,
+										"processed video size over time",
+										[FRONTEND_KEY_FLOAT],
+										VIDEO_SIZE_MEASURE_FLOAT,
+										agg_sum)
+		exporter = stackdriver.StackdriverStatsExporter(options=option, client=client)
+		exporter.create_metric_descriptor(view_sum_float)
+		self.assertTrue(True)
+			
+	def test_create_metric_descriptor_count(self):
 		client = mock.Mock()
 		start_time = datetime.utcnow()
 		end_time = datetime.utcnow()
@@ -265,22 +441,16 @@ class TestStackdriverStatsExporter(unittest.TestCase):
 										[FRONTEND_KEY],
 										VIDEO_SIZE_MEASURE,
 										agg_count)
-
-		view_name_sum_int= "view-sum-int"
-		agg_sum = aggregation_module.SumAggregation(sum=2)
-		view_sum_int = view_module.View(view_name_sum_int,
-										"processed video size over time",
-										[FRONTEND_KEY],
-										VIDEO_SIZE_MEASURE,
-										agg_sum)
-
-		view_name_sum_float= "view-sum-float"
-		view_sum_float = view_module.View(view_name_sum_float,
-										"processed video size over time",
-										[FRONTEND_KEY],
-										VIDEO_SIZE_MEASURE_FLOAT,
-										agg_sum)
-
+		exporter = stackdriver.StackdriverStatsExporter(options=option, client=client)
+		exporter.create_metric_descriptor(view_count)
+		self.assertTrue(True)
+			
+	def test_create_metric_descriptor_base(self):
+		client = mock.Mock()
+		start_time = datetime.utcnow()
+		end_time = datetime.utcnow()
+		option = stackdriver.Options(project_id="project-test", metric_prefix="teste")
+		
 		view_name_base= "view-base"
 		agg_base = aggregation_module.BaseAggregation()
 		view_base = view_module.View(view_name_base,
@@ -288,12 +458,5 @@ class TestStackdriverStatsExporter(unittest.TestCase):
 										[FRONTEND_KEY],
 										VIDEO_SIZE_MEASURE,
 										agg_base)
-
 		exporter = stackdriver.StackdriverStatsExporter(options=option, client=client)
-		exporter.create_metric_descriptor(VIDEO_SIZE_VIEW)
-		exporter.create_metric_descriptor(view_count)
-		exporter.create_metric_descriptor(view_sum_int)
-		exporter.create_metric_descriptor(view_sum_float)
-		self.assertTrue(True)
 		self.assertRaises(Exception, exporter.create_metric_descriptor, view_base)
-
