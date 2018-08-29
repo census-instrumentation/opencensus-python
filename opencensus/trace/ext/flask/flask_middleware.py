@@ -145,6 +145,7 @@ class FlaskMiddleware(object):
                 service_name=_zipkin_service_name,
                 host_name=_zipkin_host_name,
                 port=_zipkin_port,
+                protocol=_zipkin_protocol,
                 transport=transport)
         else:
             self.exporter = self.exporter(transport=transport)
