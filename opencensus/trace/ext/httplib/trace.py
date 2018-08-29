@@ -64,7 +64,8 @@ def wrap_httplib_request(request_func):
         try:
             # Don't trace if it's a http request made by the exporter
             if self._dns_host == _tracer.exporter.host_name:
-                return request_func(self, method, url, body, headers, *args, **kwargs)
+                return request_func(self, method, url, body,
+                                    headers, *args, **kwargs)
         except(AttributeError):
             pass
         _span = _tracer.start_span()
