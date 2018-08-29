@@ -64,7 +64,7 @@ class MeasurementMap(object):
             only the last value will be kept.
         """
         if self._attachments is None:
-            raise TypeError('attachments should not be empty')
+            self._attachments = dict()
 
         if key is None or not isinstance(key, str):
             raise TypeError('attachment key should not be '
