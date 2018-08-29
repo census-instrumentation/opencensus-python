@@ -41,6 +41,7 @@ TRANSPORT = 'TRANSPORT'
 ZIPKIN_EXPORTER_SERVICE_NAME = 'ZIPKIN_EXPORTER_SERVICE_NAME'
 ZIPKIN_EXPORTER_HOST_NAME = 'ZIPKIN_EXPORTER_HOST_NAME'
 ZIPKIN_EXPORTER_PORT = 'ZIPKIN_EXPORTER_PORT'
+ZIPKIN_EXPORTER_PROTOCOL = 'ZIPKIN_EXPORTER_PROTOCOL'
 
 
 log = logging.getLogger(__name__)
@@ -126,10 +127,13 @@ class OpencensusMiddleware(MiddlewareMixin):
                 ZIPKIN_EXPORTER_HOST_NAME, 'localhost')
             _zipkin_port = settings.params.get(
                 ZIPKIN_EXPORTER_PORT, 9411)
+            _zipkin_protocol = settings.params.get(
+                ZIPKIN_EXPORTER_PROTOCOL, 'http')
             self.exporter = self._exporter(
                 service_name=_zipkin_service_name,
                 host_name=_zipkin_host_name,
                 port=_zipkin_port,
+                protocol=_zipkin_protocol,
                 transport=transport)
         else:
             self.exporter = self._exporter(transport=transport)
