@@ -42,6 +42,7 @@ TRANSPORT = 'TRANSPORT'
 ZIPKIN_EXPORTER_SERVICE_NAME = 'ZIPKIN_EXPORTER_SERVICE_NAME'
 ZIPKIN_EXPORTER_HOST_NAME = 'ZIPKIN_EXPORTER_HOST_NAME'
 ZIPKIN_EXPORTER_PORT = 'ZIPKIN_EXPORTER_PORT'
+ZIPKIN_EXPORTER_PROTOCOL = 'ZIPKIN_EXPORTER_PROTOCOL'
 
 log = logging.getLogger(__name__)
 
@@ -138,6 +139,8 @@ class FlaskMiddleware(object):
                 ZIPKIN_EXPORTER_HOST_NAME, 'localhost')
             _zipkin_port = params.get(
                 ZIPKIN_EXPORTER_PORT, 9411)
+            _zipkin_protocol = params.get(
+                ZIPKIN_EXPORTER_PROTOCOL, 'http')
             self.exporter = self.exporter(
                 service_name=_zipkin_service_name,
                 host_name=_zipkin_host_name,
