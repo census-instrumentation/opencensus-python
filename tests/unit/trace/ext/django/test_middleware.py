@@ -93,10 +93,12 @@ class TestOpencensusMiddleware(unittest.TestCase):
         service_name = 'test_service'
         host_name = 'test_hostname'
         port = 2333
+        protocol = 'http'
         params = {
             'ZIPKIN_EXPORTER_SERVICE_NAME': service_name,
             'ZIPKIN_EXPORTER_HOST_NAME': host_name,
             'ZIPKIN_EXPORTER_PORT': port,
+            'ZIPKIN_EXPORTER_PROTOCOL': protocol,
             'TRANSPORT':
                 'opencensus.trace.exporters.transports.sync.SyncTransport',
         }
