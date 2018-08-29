@@ -107,7 +107,7 @@ def wrap_httplib_response(response_func):
         span = _tracer.current_span()
 
         # No corresponding request span is found, request not traced.
-        if span.span_id != current_span_id:
+        if not span or span.span_id != current_span_id:
             return response_func(self, *args, **kwargs)
 
         result = response_func(self, *args, **kwargs)
