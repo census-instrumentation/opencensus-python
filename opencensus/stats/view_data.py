@@ -79,7 +79,7 @@ class ViewData(object):
             i += 1
         return tag_values
 
-    def record(self, context, value, timestamp, attachments):
+    def record(self, context, value, timestamp, attachments=None):
         """records the view data against context"""
         tag_values = self.get_tag_values(tags=context.map,
                                          columns=self.view.columns)

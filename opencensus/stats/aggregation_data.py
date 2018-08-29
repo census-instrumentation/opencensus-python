@@ -197,11 +197,7 @@ class DistributionAggregationData(BaseAggregationData):
         if value > self.max:
             self._max = value
         self._count_data += 1
-        self.increment_bucket_count(value)
-
-        bucket = 0
-        for _ in self.bounds:
-            bucket = bucket + 1
+        bucket = self.increment_bucket_count(value)
 
         if attachments is not None and self.exemplars is not None:
             self.exemplars[bucket] = Exemplar(value, timestamp, attachments)
@@ -218,18 +214,24 @@ class DistributionAggregationData(BaseAggregationData):
 
     def increment_bucket_count(self, value):
         """Increment the bucket count based on a given value from the user"""
-        if len(self._bounds) == 0:
-            self._counts_per_bucket[0] += 1
-            return
-
         i = 0
+        incremented = False
         for b in self._bounds:
             if value < b:
                 self._counts_per_bucket[i] += 1
-                return
+                incremented = True
             i += 1
 
+        if incremented:
+            return i
+
+        if len(self._bounds) == 0:
+            self._counts_per_bucket[0] += 1
+            return i
+
         self._counts_per_bucket[(len(self._bounds))-1] += 1
+
+        return i
 
 
 class LastValueAggregationData(BaseAggregationData):
@@ -282,10 +284,12 @@ class Exemplar(object):
             raise TypeError('attachments should not be empty')
 
         for key, value in attachments.items():
-            if key is None:
-                raise TypeError('attachment key should not be empty')
-            if value is None:
-                raise TypeError('attachment value should not be empty')
+            if key is None or not isinstance(key, str):
+                raise TypeError('attachment key should not be '
+                                'empty and should be a string')
+            if value is None or not isinstance(value, str):
+                raise TypeError('attachment value should not be '
+                                'empty and should be a string')
         self._attachments = attachments
 
     @property

@@ -172,14 +172,28 @@ class TestDistributionAggregationData(unittest.TestCase):
         timestamp = time.time()
         attachment = {None: "one", "Two": "two"}
 
-        with self.assertRaisesRegexp(TypeError, 'attachment key should not be empty'):
+        with self.assertRaisesRegexp(TypeError, 'attachment key should not be empty and should be a string'):
             aggregation_data_module.Exemplar(6, timestamp, attachment)
 
     def test_exemplar_null_attachment_value(self):
         timestamp = time.time()
         attachment = {"One": "one", "Two": None}
 
-        with self.assertRaisesRegexp(TypeError, 'attachment value should not be empty'):
+        with self.assertRaisesRegexp(TypeError, 'attachment value should not be empty and should be a string'):
+            aggregation_data_module.Exemplar(6, timestamp, attachment)
+
+    def test_exemplar_int_attachment_key(self):
+        timestamp = time.time()
+        attachment = {1: "one", "Two": "two"}
+
+        with self.assertRaisesRegexp(TypeError, 'attachment key should not be empty and should be a string'):
+            aggregation_data_module.Exemplar(6, timestamp, attachment)
+
+    def test_exemplar_int_attachment_value(self):
+        timestamp = time.time()
+        attachment = {"One": "one", "Two": 2}
+
+        with self.assertRaisesRegexp(TypeError, 'attachment value should not be empty and should be a string'):
             aggregation_data_module.Exemplar(6, timestamp, attachment)
 
     def test_variance(self):

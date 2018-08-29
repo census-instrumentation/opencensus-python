@@ -29,7 +29,7 @@ class MeasurementMap(object):
     :param attachments: the contextual information about the attachment value.
 
     """
-    def __init__(self, measure_to_view_map, attachments=dict()):
+    def __init__(self, measure_to_view_map, attachments=None):
         self._measurement_map = {}
         self._measure_to_view_map = measure_to_view_map
         self._attachments = attachments
@@ -63,10 +63,15 @@ class MeasurementMap(object):
             If this method is called multiple times with the same key,
             only the last value will be kept.
         """
-        if key is None:
-            raise TypeError('attachment key should not be empty')
-        if value is None:
-            raise TypeError('attachment value should not be empty')
+        if self._attachments is None:
+            raise TypeError('attachments should not be empty')
+
+        if key is None or not isinstance(key, str):
+            raise TypeError('attachment key should not be '
+                            'empty and should be a string')
+        if value is None or not isinstance(value, str):
+            raise TypeError('attachment value should not be '
+                            'empty and should be a string')
 
         self._attachments[key] = value
 

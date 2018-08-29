@@ -66,7 +66,7 @@ class TestMeasureToViewMap(unittest.TestCase):
             view.measure.name:
             [ViewData(view=view, start_time=timestamp, end_time=timestamp)]
         }
-        print(measure_to_view_map._measure_to_view_data_list_map)
+
         view_data = measure_to_view_map.get_view(
             view_name=name, timestamp=timestamp)
         self.assertIsNotNone(view_data)

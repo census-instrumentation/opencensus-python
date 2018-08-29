@@ -90,7 +90,7 @@ class TestViewData(unittest.TestCase):
         value = 1
         self.assertEqual({}, view_data.tag_value_aggregation_data_map)
 
-        view_data.record(context=context, value=value, timestamp=time, attachments=None)
+        view_data.record(context=context, value=value, timestamp=time)
         tag_values = view_data.get_tag_values(
             tags=context.map, columns=view.columns)
         tuple_vals = tuple(tag_values)
@@ -102,7 +102,7 @@ class TestViewData(unittest.TestCase):
         self.assertIsNotNone(view_data.tag_value_aggregation_data_map.get(
             tuple_vals).add(value))
 
-        view_data.record(context=context, value=value, timestamp=time, attachments=None)
+        view_data.record(context=context, value=value, timestamp=time)
         tag_values.append('val2')
         tuple_vals_2 = tuple(['val2'])
         self.assertFalse(tuple_vals_2 in view_data.tag_value_aggregation_data_map)
