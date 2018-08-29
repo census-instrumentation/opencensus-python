@@ -61,7 +61,7 @@ def wrap_httplib_request(request_func):
 
     def call(self, method, url, body, headers, *args, **kwargs):
         _tracer = execution_context.get_opencensus_tracer()
-        try:
+        try:  # pragma: NO COVER
             # Don't trace if it's a http request made by the exporter
             if self._dns_host == _tracer.exporter.host_name:
                 return request_func(self, method, url, body,
