@@ -49,6 +49,29 @@ class TestViewManager(unittest.TestCase):
         view_manager.register_view(view=mock.Mock())
         self.assertTrue(view_manager_mock.register_view.called)
 
+    def test_register_exporter(self):
+        exporter = mock.Mock()
+        execution_context.clear()
+        execution_context.set_measure_to_view_map(MeasureToViewMap())
+        view_manager = view_manager_module.ViewManager()
+        view_manager.register_exporter(exporter)
+        count_registered_exporters = len(view_manager.measure_to_view_map.exporters)
+        self.assertEqual(1, count_registered_exporters)
+
+
+    def test_unregister_exporter(self):
+        exporter = mock.Mock()
+        execution_context.clear()
+        execution_context.set_measure_to_view_map(MeasureToViewMap())
+        view_manager = view_manager_module.ViewManager()
+        view_manager.register_exporter(exporter)
+        count_registered_exporters = len(view_manager.measure_to_view_map.exporters)
+        self.assertEqual(1, count_registered_exporters)
+
+        view_manager.unregister_exporter(exporter)
+        count_registered_exporters = len(view_manager.measure_to_view_map.exporters)
+        self.assertEqual(0, count_registered_exporters)
+
     def test_get_view(self):
         view_name = mock.Mock()
         execution_context.clear()

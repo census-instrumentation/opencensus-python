@@ -118,6 +118,7 @@ class TestFlaskMiddleware(unittest.TestCase):
                 'ZIPKIN_EXPORTER_SERVICE_NAME': 'my_service',
                 'ZIPKIN_EXPORTER_HOST_NAME': 'localhost',
                 'ZIPKIN_EXPORTER_PORT': 9411,
+                'ZIPKIN_EXPORTER_PROTOCOL': 'http',
             },
         }
 
@@ -146,6 +147,7 @@ class TestFlaskMiddleware(unittest.TestCase):
                 'ZIPKIN_EXPORTER_SERVICE_NAME': 'my_service',
                 'ZIPKIN_EXPORTER_HOST_NAME': 'localhost',
                 'ZIPKIN_EXPORTER_PORT': 9411,
+                'ZIPKIN_EXPORTER_PROTOCOL': 'http',
             },
         }
 

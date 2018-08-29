@@ -68,6 +68,22 @@ class TestCountAggregation(unittest.TestCase):
         self.assertEqual(aggregation_module.Type.COUNT, count_aggregation.aggregation_type)
 
 
+class TestLastValueAggregation(unittest.TestCase):
+    
+    def test_constructor_defaults(self):
+        last_value_aggregation = aggregation_module.LastValueAggregation()
+
+        self.assertEqual(0, last_value_aggregation.value)
+        self.assertEqual(aggregation_module.Type.LASTVALUE, last_value_aggregation.aggregation_type)
+
+    def test_constructor_explicit(self):
+        val = 16
+        last_value_aggregation = aggregation_module.LastValueAggregation(value=val)
+
+        self.assertEqual(16, last_value_aggregation.value)
+        self.assertEqual(aggregation_module.Type.LASTVALUE, last_value_aggregation.aggregation_type)
+
+
 class TestDistributionAggregation(unittest.TestCase):
 
     def test_constructor_defaults(self):
