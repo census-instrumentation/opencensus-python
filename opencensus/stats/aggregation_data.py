@@ -217,7 +217,7 @@ class DistributionAggregationData(BaseAggregationData):
         i = 0
         incremented = False
         for b in self._bounds:
-            if value < b:
+            if value < b and not incremented:
                 self._counts_per_bucket[i] += 1
                 incremented = True
             i += 1

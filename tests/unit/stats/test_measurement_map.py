@@ -102,11 +102,11 @@ class TestMeasurementMap(unittest.TestCase):
     def test_put_none_attachment(self):
         measure_to_view_map = mock.Mock()
         test_key = 'testKey'
-        test_value = 42
+        test_value = 'testValue'
         measurement_map = measurement_map_module.MeasurementMap(
             measure_to_view_map=measure_to_view_map)
-        with self.assertRaisesRegexp(TypeError, 'attachments should not be empty'):
-            measurement_map.measure_put_attachment(test_key, test_value)
+        measurement_map.measure_put_attachment(test_key, test_value)
+        self.assertEqual({'testKey': 'testValue'}, measurement_map.attachments)
 
     def test_put_multiple_attachment(self):
         measure_to_view_map = mock.Mock()
