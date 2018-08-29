@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from opencensus.trace.tracers import base
-from opencensus.trace import noopspan as trace_span
+from opencensus.trace import blank_span as trace_span
 from opencensus.trace.span_context import SpanContext
 from opencensus.trace import trace_options
 
@@ -25,7 +25,9 @@ class NoopTracer(base.Tracer):
 
     def __init__(self):
 
-        self.span_context = SpanContext(trace_options=trace_options.TraceOptions(0))
+        self.span_context = SpanContext(
+            trace_options=trace_options.TraceOptions(0)
+        )
 
     def finish(self):
         """End spans and send to reporter."""
@@ -53,7 +55,7 @@ class NoopTracer(base.Tracer):
         :rtype: :class:`~opencensus.trace.trace_span.Span`
         :returns: The Span object.
         """
-        span = trace_span.NoopSpan(name, context_tracer=self)
+        span = trace_span.BlankSpan(name, context_tracer=self)
         return span
 
     def end_span(self):
@@ -65,7 +67,7 @@ class NoopTracer(base.Tracer):
 
     def current_span(self):
         """Return the current span."""
-        return trace_span.NoopSpan()
+        return trace_span.BlankSpan()
 
     def add_attribute_to_current_span(self, attribute_key, attribute_value):
         """Add attribute to current span.

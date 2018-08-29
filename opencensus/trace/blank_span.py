@@ -12,19 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from datetime import datetime
+from opencensus.trace import time_event as time_event_module
 from opencensus.trace.span_context import generate_span_id
 from opencensus.trace.tracers import base
 
 
-class NoopSpan(object):
-    """A NoopSpan is an individual timed event which forms a node of the trace
+class BlankSpan(object):
+    """A BlankSpan is an individual timed event which forms a node of the trace
     tree. All operations are no-op.
 
     :type name: str
     :param name: The name of the span.
 
-    :type parent_span: :class:`~opencensus.trace.noopspan.NoopSpan`
+    :type parent_span: :class:`~opencensus.trace.blank_span.BlankSpan`
     :param parent_span: (Optional) Parent span.
 
     :type status: :class: `~opencensus.trace.status.Status`
@@ -43,28 +43,38 @@ class NoopSpan(object):
             self,
             name=None,
             parent_span=None,
+            attributes=None,
+            start_time=None,
+            end_time=None,
+            span_id=None,
+            stack_trace=None,
+            time_events=None,
+            links=None,
             status=None,
-            context_tracer=None):
+            same_process_as_parent_span=None,
+            context_tracer=None,
+            span_kind=None):
         self.name = name
-        self.span_id = generate_span_id()
         self.parent_span = parent_span
+        self.start_time = start_time
+        self.end_time = end_time
 
-        if parent_span is None:
-            self.parent_span = base.NullContextManager()
+        self.span_id = generate_span_id()
+        self.parent_span = base.NullContextManager()
 
         self.attributes = {}
+        self.stack_trace = stack_trace
+        self.time_events = time_events
         self.links = []
-        self._child_spans = []
         self.status = status
+        self.same_process_as_parent_span = same_process_as_parent_span
+        self._child_spans = []
         self.context_tracer = context_tracer
-
-    @staticmethod
-    def on_create(callback):
-        pass
+        self.span_kind = span_kind
 
     @property
     def children(self):
-        """The child spans of the current noopspan."""
+        """The child spans of the current BlankSpan."""
         return list()
 
     def span(self, name='child_span'):
@@ -74,10 +84,10 @@ class NoopSpan(object):
         :type name: str
         :param name: (Optional) The name of the child span.
 
-        :rtype: :class: `~opencensus.trace.noopspan.NoopSpan`
+        :rtype: :class: `~opencensus.trace.blankspan.BlankSpan`
         :returns: A child Span to be added to the current span.
         """
-        child_span = NoopSpan(name, parent_span=self)
+        child_span = BlankSpan(name, parent_span=self)
         self._child_spans.append(child_span)
         return child_span
 
@@ -110,7 +120,9 @@ class NoopSpan(object):
         :type time_event: :class: `~opencensus.trace.time_event.TimeEvent`
         :param time_event: A TimeEvent object.
         """
-        pass
+        if not isinstance(time_event, time_event_module.TimeEvent):
+            raise TypeError("Type Error: received {}, but requires TimeEvent.".
+                            format(type(time_event).__name__))
 
     def add_link(self, link):
         """No-op implementation of this method.
@@ -130,13 +142,4 @@ class NoopSpan(object):
 
     def __iter__(self):
         """Iterate through the span tree."""
-        pass
-
-    def __enter__(self):
-        """Start a span."""
-        return self
-
-    def __exit__(self, exception_type, exception_value, traceback):
-        """Finish a span."""
-        pass
-
+        yield self

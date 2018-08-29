@@ -30,7 +30,7 @@ from opencensus.trace.exporters.transports import sync
 from opencensus.trace.ext.pyramid import pyramid_middleware
 from opencensus.trace.propagation import google_cloud_format
 from opencensus.trace.samplers import always_on
-from opencensus.trace.noopspan import NoopSpan
+from opencensus.trace.blank_span import BlankSpan
 from opencensus.trace.tracers import noop_tracer
 
 
@@ -191,7 +191,7 @@ class TestPyramidMiddleware(unittest.TestCase):
 
         span = tracer.current_span()
 
-        assert isinstance(span, NoopSpan)
+        assert isinstance(span, BlankSpan)
 
     def test__after_request(self):
         pyramid_trace_header = 'X-Cloud-Trace-Context'
@@ -271,4 +271,4 @@ class TestPyramidMiddleware(unittest.TestCase):
 
         middleware._after_request(request, response)
 
-        assert isinstance(span, NoopSpan)
+        assert isinstance(span, BlankSpan)

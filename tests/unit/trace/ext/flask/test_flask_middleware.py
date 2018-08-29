@@ -33,7 +33,7 @@ from opencensus.trace.propagation import google_cloud_format
 from opencensus.trace.samplers import always_off, always_on, ProbabilitySampler
 from opencensus.trace.tracers import base
 from opencensus.trace.tracers import noop_tracer
-from opencensus.trace.noopspan import NoopSpan
+from opencensus.trace.blank_span import BlankSpan
 
 
 class TestFlaskMiddleware(unittest.TestCase):
@@ -208,7 +208,7 @@ class TestFlaskMiddleware(unittest.TestCase):
 
             span = tracer.current_span()
 
-            assert isinstance(span, NoopSpan)
+            assert isinstance(span, BlankSpan)
 
     def test_header_encoding(self):
         # The test is for detecting the encoding compatibility issue in
