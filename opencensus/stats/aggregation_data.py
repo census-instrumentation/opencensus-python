@@ -41,7 +41,7 @@ class SumAggregationDataFloat(BaseAggregationData):
         super(SumAggregationDataFloat, self).__init__(sum_data)
         self._sum_data = sum_data
 
-    def add_sample(self, value, timestamp, attachments):
+    def add_sample(self, value, timestamp=None, attachments=None):
         """Allows the user to add a sample to the Sum Aggregation Data
         The value of the sample is then added to the current sum data
         """
@@ -64,7 +64,7 @@ class CountAggregationData(BaseAggregationData):
         super(CountAggregationData, self).__init__(count_data)
         self._count_data = count_data
 
-    def add_sample(self, value, timestamp, attachments):
+    def add_sample(self, value, timestamp=None, attachments=None):
         """Adds a sample to the current Count Aggregation Data and adds 1 to
         the count data"""
         self._count_data = self._count_data + 1
@@ -235,7 +235,8 @@ class DistributionAggregationData(BaseAggregationData):
 
 
 class LastValueAggregationData(BaseAggregationData):
-    """LastValue Aggregation Data is the value of aggregated data
+    """
+    LastValue Aggregation Data is the value of aggregated data
 
     :type value: long
     :param value: represents the current value
@@ -245,7 +246,7 @@ class LastValueAggregationData(BaseAggregationData):
         super(LastValueAggregationData, self).__init__(value)
         self._value = value
 
-    def add_sample(self, value, timestamp, attachments):
+    def add_sample(self, value, timestamp=None, attachments=None):
         """Adds a sample to the current
         LastValue Aggregation Data and overwrite
         the current recorded value"""
@@ -253,8 +254,7 @@ class LastValueAggregationData(BaseAggregationData):
 
     @property
     def value(self):
-        """The current value recorded
-        """
+        """The current value recorded"""
         return self._value
 
 

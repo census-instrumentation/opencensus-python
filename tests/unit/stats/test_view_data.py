@@ -15,10 +15,10 @@
 import unittest
 import mock
 from datetime import datetime
-from opencensus.stats import view_data as view_data_module
-from opencensus.stats import view as view_module
 from opencensus.stats import aggregation as aggregation_module
 from opencensus.stats import measure as measure_module
+from opencensus.stats import view_data as view_data_module
+from opencensus.stats import view as view_module
 
 
 class TestViewData(unittest.TestCase):
