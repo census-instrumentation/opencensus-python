@@ -144,17 +144,20 @@ class StackdriverExporter(base.Exporter):
         :param list of opencensus.trace.span_data.SpanData span_datas:
             SpanData tuples to emit
         """
-        name = 'projects/{}'.format(self.project_id)
-
-        # convert to the legacy trace json for easier refactoring
-        # TODO: refactor this to use the span data directly
-        trace_id_sds = defaultdict(list)
+        project = 'projects/{}'.format(self.project_id)
+        
+        # Map each span data to it's corresponding trace id
+        trace_span_map = defaultdict(list)
         for sd in span_datas:
-            trace_id_sds[sd.context.trace_id] += [sd]
-        for _, sds  in trace_id_sds.items():
+            trace_span_map[sd.context.trace_id] += [sd]
+
+        # Write spans to Stackdriver
+        for _, sds in trace_span_map.items():
+            # convert to the legacy trace json for easier refactoring
+            # TODO: refactor this to use the span data directly
             trace = span_data.format_legacy_trace_json(sds)
             stackdriver_spans = self.translate_to_stackdriver(trace)
-            self.client.batch_write_spans(name, stackdriver_spans)
+            self.client.batch_write_spans(project, stackdriver_spans)
 
     def export(self, span_datas):
         """
