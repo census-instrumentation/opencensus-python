@@ -31,7 +31,7 @@ class StatsExporter(object):
         raise NotImplementedError
 
     def emit(self, view_datas):
-        """Send view and measurement to exporter record method, 
+        """Send view and measurement to exporter record method,
         and then it will record on its own way.
 
         :type view_datas: object of :class:
