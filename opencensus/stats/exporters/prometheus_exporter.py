@@ -19,7 +19,7 @@ from prometheus_client.core import GaugeMetricFamily
 from prometheus_client.core import CounterMetricFamily
 from prometheus_client.core import UntypedMetricFamily
 from prometheus_client.core import HistogramMetricFamily
-
+from opencensus.stats.exporters import base
 from opencensus.stats import aggregation_data as aggregation_data_module
 from opencensus.common.transports import sync
 
@@ -39,55 +39,77 @@ class Options(object):
 
     @property
     def registry(self):
+        """ Prometheus Collector Registry instance
+        """
         return self._registry
 
     @property
     def namespace(self):
+        """ Prefix to be used with view name
+        """
         return self._namespace
 
     @property
     def port(self):
+        """ Port number to listen
+        """
         return self._port
 
     @property
     def address(self):
+        """ Endpoint address (default is localhost)
+        """
         return self._address
 
 
 class Collector(object):
-    def __init__(self, options=Options(), view_datas={}):
+    """ Collector representes the Prometheus Collector object
+    """
+    def __init__(self, options=Options(), view_data={}):
         self._options = options
         self._registry = options.registry
-        self._view_datas = view_datas
+        self._view_data = view_data
         self._registered_views = {}
 
     @property
     def options(self):
+        """ Options to be used to configure the exporter
+        """
         return self._options
 
     @property
     def registry(self):
+        """ Prometheus Collector Registry instance
+        """
         return self._registry
 
     @property
-    def view_datas(self):
-        return self._view_datas
+    def view_data(self):
+        """ Map with all view data objects
+        that will be sent to Prometheus
+        """
+        return self._view_data
 
     @property
     def registered_views(self):
+        """ Map with all registered views
+        """
         return self._registered_views
 
     def register_views(self, views):
+        """ register_views will create the needed structure
+        in order to be able to sent all data to Prometheus
+        """
         count = 0
         for view in views:
             signature = view_signature(self.options.namespace, view)
 
-            if not signature in self.registered_views:
-                desc = {'name':view_name(self.options.namespace, view),
-                        'documentation':view.description,
-                        'labels':tag_keys_to_labels(view.columns)}
+            if signature not in self.registered_views:
+                desc = {'name': view_name(self.options.namespace, view),
+                        'documentation': view.description,
+                        'labels': tag_keys_to_labels(view.columns)}
                 self.registered_views[signature] = desc
-                count++
+                count += 1
 
         if count == 0:
             return
@@ -95,11 +117,16 @@ class Collector(object):
         self.registry.register(self)
 
     def add_view_data(self, view_data):
+        """ Add view data object to be sent to server
+        """
         self.register_views(view_data.view)
         signature = view_signature(self.options.namespace, view_data.view)
-        self.view_datas[signature] = view_data
+        self.view_data[signature] = view_data
 
     def to_metric(self, desc, view, tag_map, tag_value_aggregation_map):
+        """ to_metric translate the data that OpenCensus create
+        to Prometheus format, using Prometheus Metric object
+        """
         agg_data = view.aggregation.aggregation_data
         if agg_data is aggregation_data_module.CountAggregationData:
             return CounterMetricFamily(name=desc['name'],
@@ -116,7 +143,7 @@ class Collector(object):
             indices_map = {}
             buckets = []
             for idx, boundarie in view.aggregation.boundaries.boundaries:
-                if not boundarie in indices_map:
+                if boundarie not in indices_map:
                     indices_map[boundarie] = idx
                     buckets.append(boundarie)
 
@@ -127,7 +154,7 @@ class Collector(object):
             cum_count = 0
             for bucket in buckets:
                 i = indices_map[bucket]
-                cum_count += int(aggregation_data.counts_per_bucket[i])
+                cum_count += int(agg_data.counts_per_bucket[i])
                 points[bucket] = cum_count
 
             return HistogramMetricFamily(name=desc['name'],
@@ -149,7 +176,8 @@ class Collector(object):
                                      labels=tag_values(tag_map.map))
 
         else:
-            raise ValueError("unsupported aggregation type")
+            raise ValueError("unsupported aggregation type %s"
+                             % type(agg_data))
 
     def collect(self):
         """	Collect fetches the statistics from OpenCensus
@@ -158,18 +186,21 @@ class Collector(object):
         for example when the HTTP endpoint is invoked by Prometheus.
         """
         # We need a copy of all the view data up until this point.
-        view_datas = copy.deepcopy(self.view_datas)
+        view_data = copy.deepcopy(self.view_data)
 
-        for view_data in view_datas:
-            signature = view_signature(self.options.namespace, view_data.view)
+        for v_data in view_data:
+            signature = view_signature(self.options.namespace, v_data.view)
             desc = self.registered_views[signature]
             metric = self.to_metric(desc,
-                                    view_data.view,
-                                    view_data.tag_map,
-                                    view_data.tag_value_aggregation_map)
+                                    v_data.view,
+                                    v_data.tag_map,
+                                    v_data.tag_value_aggregation_map)
             yield metric
 
     def describe(self):
+        """ describe will be used by Prometheus Client
+        to retrieve all registered views.
+        """
         registered = {}
         for sign, desc in self.registered_views:
             registered[sign] = desc
@@ -195,21 +226,34 @@ class PrometheusStatsExporter(base.StatsExporter):
 
     @property
     def transport(self):
+        """ The transport way to be sent data to server
+        (default is sync).
+        """
         return self._transport
 
     @property
     def collector(self):
+        """ Collector class instance to be used
+        to communicate with Prometheus
+        """
         return self._collector
 
     @property
     def gatherer(self):
+        """ Prometheus Collector Registry instance
+        """
         return self._gatherer
 
     @property
     def options(self):
+        """ Options to be used to configure the exporter
+        """
         return self._options
 
-    def export(view_data):
+    def export(self, view_data):
+        """ export send the data to the transport class
+        in order to be sent to Prometheus in a sync or async way.
+        """
         if view_data:
             self.transport.export(view_data)
 
@@ -224,14 +268,15 @@ class PrometheusStatsExporter(base.StatsExporter):
         DistributionData will be a Histogram Metric.
         """
         if not view_data.tag_value_aggregation_map:
-            raise Exception("There are no data to be sent.")
+            raise Exception("There is no data to be sent.")
         self.collector.add_view_data(view_data)
 
-    def serve_http():
+    def serve_http(self):
         """ serve_http serves the Prometheus endpoint.
         """
         start_http_server(port=self.options.port,
                           addr=str(self.options.address))
+
 
 def new_stats_exporter(option):
     """ new_stats_exporter returns an exporter
@@ -249,28 +294,45 @@ def new_stats_exporter(option):
                                        collector=collector)
     return exporter
 
+
 def tag_keys_to_labels(tag_keys):
+    """ Translate Tag keys to labels
+    """
     labels = []
     for key in tag_keys:
         labels.append(key.name)
     return labels
 
+
 def new_collector(options):
+    """ new_collector should be used
+    to create instance of Collector class in order to
+    prevent the usage of constructor directly
+    """
     return Collector(options=options)
 
+
 def tag_values(tags):
+    """ create an array with Tag values
+    """
     values = []
     for tag_key, tag_value in tags.items():
         values.append(tag_value.value)
     return values
 
+
 def view_name(namespace, view):
+    """ create the name for the view
+    """
     name = ""
     if namespace != "":
         name = namespace + "_"
     return name + view.name
 
+
 def view_signature(namespace, view):
+    """ create the signature for the view
+    """
     sign = view_name(namespace, view)
     for key in view.columns:
         sign += "-" + key.name
