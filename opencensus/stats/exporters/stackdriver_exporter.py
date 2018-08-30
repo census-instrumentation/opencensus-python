@@ -312,6 +312,7 @@ class StackdriverStatsExporter(base.StatsExporter):
         client = self.client
         project_name = client.project_path(project_id)
         descriptor = client.create_metric_descriptor(project_name, descriptor)
+        return descriptor
 
 
 def new_stats_exporter(options):

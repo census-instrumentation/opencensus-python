@@ -379,18 +379,18 @@ You can enable Requests integration by specifying ``'requests'`` to ``trace_inte
  Stats
 ------
 
-Stackdriver
------------
+Stackdriver Stats
+-----------------
 
 The OpenCensus Stackdriver Stats Exporter allows users
- to export metrics to Stackdriver Monitoring.
+to export metrics to Stackdriver Monitoring.
 The API of this project is still evolving.
 The use of vendoring or a dependency management tool is recommended.
 
 .. _Stackdriver: https://app.google.stackdriver.com/metrics-explorer
 
-Usage
-~~~~~
+Exporter Usage
+~~~~~~~~~~~~~~
 
 Import
 ******
