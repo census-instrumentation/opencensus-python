@@ -145,7 +145,7 @@ class StackdriverExporter(base.Exporter):
             SpanData tuples to emit
         """
         project = 'projects/{}'.format(self.project_id)
-        
+
         # Map each span data to it's corresponding trace id
         trace_span_map = defaultdict(list)
         for sd in span_datas:
