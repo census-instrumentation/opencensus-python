@@ -398,3 +398,6 @@ class OpenCensusDExporter(base.Exporter):
         elif isinstance(attribute_value, str):
             pb_attributes.attribute_map[attribute_key].\
                 string_value.value = attribute_value
+        else:
+            pb_attributes.attribute_map[attribute_key].\
+                string_value.value = str(attribute_value)

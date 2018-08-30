@@ -656,9 +656,9 @@ class TestOpenCensusDExporter(unittest.TestCase):
 
         self.assertEqual(len(pb_span.tracestate.entries), 3)
         self.assertEqual(pb_span.tracestate.entries[0].key, "k1")
-        self.assertEqual(pb_span.tracestate.entries[0].value, "v1")        
+        self.assertEqual(pb_span.tracestate.entries[0].value, "v1")
         self.assertEqual(pb_span.tracestate.entries[1].key, "k2")
-        self.assertEqual(pb_span.tracestate.entries[1].value, "v2")        
+        self.assertEqual(pb_span.tracestate.entries[1].value, "v2")
         self.assertEqual(pb_span.tracestate.entries[2].key, "k3")
         self.assertEqual(pb_span.tracestate.entries[2].value, "v3")
 
@@ -732,15 +732,21 @@ class TestOpenCensusDExporter(unittest.TestCase):
         exporter.add_proto_attribute_value(
             pb_span.attributes, 'string_key', 'value')
         exporter.add_proto_attribute_value(
+            pb_span.attributes, 'unicode_key', u'uvalue')
+        exporter.add_proto_attribute_value(
             pb_span.attributes, 'dict_key', {"a": "b"})
 
-        self.assertEqual(len(pb_span.attributes.attribute_map), 3)
+        self.assertEqual(len(pb_span.attributes.attribute_map), 5)
         self.assertEqual(
             pb_span.attributes.attribute_map['int_key'].int_value, 42)
         self.assertEqual(
             pb_span.attributes.attribute_map['bool_key'].bool_value, True)
         self.assertEqual(
             pb_span.attributes.attribute_map['string_key'].string_value.value, 'value')
+        self.assertEqual(
+            pb_span.attributes.attribute_map['unicode_key'].string_value.value, 'uvalue')
+        self.assertEqual(
+            pb_span.attributes.attribute_map['dict_key'].string_value.value, "{'a': 'b'}")
 
     def test_set_proto_event(self):
         pb_span = trace_pb2.Span()
