@@ -335,7 +335,7 @@ class TestOpenCensusDExporter(unittest.TestCase):
         self.assertFalse(pb_span.status.message)
 
         self.assertEqual(len(pb_span.links.link), 0)
-        self.assertEqual(len(pb_span.tracestate), 0)
+        self.assertEqual(len(pb_span.tracestate.entries), 0)
 
     def test_none_span_export(self):
         exporter = opencensusd_exporter.OpenCensusDExporter(
@@ -654,10 +654,13 @@ class TestOpenCensusDExporter(unittest.TestCase):
             transport=MockTransport)
         pb_span = exporter.translate_to_opencensusd(client_span_data)
 
-        self.assertEqual(len(pb_span.tracestate), 3)
-        self.assertEqual(pb_span.tracestate["k1"], "v1")
-        self.assertEqual(pb_span.tracestate["k2"], "v2")
-        self.assertEqual(pb_span.tracestate["k3"], "v3")
+        self.assertEqual(len(pb_span.tracestate.entries), 3)
+        self.assertEqual(pb_span.tracestate.entries[0].key, "k1")
+        self.assertEqual(pb_span.tracestate.entries[0].value, "v1")        
+        self.assertEqual(pb_span.tracestate.entries[1].key, "k2")
+        self.assertEqual(pb_span.tracestate.entries[1].value, "v2")        
+        self.assertEqual(pb_span.tracestate.entries[2].key, "k3")
+        self.assertEqual(pb_span.tracestate.entries[2].value, "v3")
 
     def test_span_generator(self):
 

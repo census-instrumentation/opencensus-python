@@ -18,7 +18,6 @@ from opencensus.trace.exporters.gen.opencensusd.agent.common.v1 import common_pb
 from opencensus.trace.exporters.gen.opencensusd.trace.v1 import trace_pb2 as opencensus_dot_proto_dot_trace_dot_v1_dot_trace__pb2
 from opencensus.trace.exporters.gen.opencensusd.trace.v1 import trace_config_pb2 as opencensus_dot_proto_dot_trace_dot_v1_dot_trace__config__pb2
 
-
 DESCRIPTOR = _descriptor.FileDescriptor(
     name='opencensus/proto/agent/trace/v1/trace_service.proto',
     package='opencensus.proto.agent.trace.v1',

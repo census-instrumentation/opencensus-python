@@ -276,7 +276,7 @@ class OpenCensusDExporter(base.Exporter):
         # tracestate
         if span_data.context.tracestate is not None:
             for (key, value) in span_data.context.tracestate.items():
-                pb_span.tracestate[key] = value
+                pb_span.tracestate.entries.add(key=key, value=value)
 
         return pb_span
 
