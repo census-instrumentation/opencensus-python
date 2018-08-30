@@ -14,6 +14,7 @@
 
 import os
 
+from collections import defaultdict
 from google.cloud.trace.client import Client
 
 from opencensus.trace import attributes_helper
@@ -147,10 +148,13 @@ class StackdriverExporter(base.Exporter):
 
         # convert to the legacy trace json for easier refactoring
         # TODO: refactor this to use the span data directly
-        trace = span_data.format_legacy_trace_json(span_datas)
-
-        stackdriver_spans = self.translate_to_stackdriver(trace)
-        self.client.batch_write_spans(name, stackdriver_spans)
+        trace_id_sds = defaultdict(list)
+        for sd in span_datas:
+            trace_id_sds[sd.context.trace_id] += [sd]
+        for _, sds  in trace_id_sds.items():
+            trace = span_data.format_legacy_trace_json(sds)
+            stackdriver_spans = self.translate_to_stackdriver(trace)
+            self.client.batch_write_spans(name, stackdriver_spans)
 
     def export(self, span_datas):
         """
