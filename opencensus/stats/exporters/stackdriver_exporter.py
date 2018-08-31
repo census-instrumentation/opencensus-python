@@ -20,7 +20,7 @@ from google.cloud import monitoring_v3
 from opencensus.stats import aggregation
 from opencensus.stats import measure
 from datetime import datetime
-# Add here the import for transport class
+from opencensus.common.transports import sync
 
 MAX_TIME_SERIES_PER_UPLOAD = 200
 OPENCENSUS_TASK_DESCRIPTION = "Opencensus task identifier"
@@ -105,11 +105,11 @@ class StackdriverStatsExporter(base.StatsExporter):
     def __init__(self,
                  options=Options(),
                  client=None,
-                 default_labels={}):
-        # Add an argument for transport object
+                 default_labels={},
+                 transport=sync.SyncTransport):
         self._options = options
         self._client = client
-        # Add here a property for transport object
+        self._transport = transport(self)
         self._default_labels = default_labels
 
     @property
@@ -119,6 +119,10 @@ class StackdriverStatsExporter(base.StatsExporter):
     @property
     def client(self):
         return self._client
+
+    @property
+    def transport(self):
+        return self._transport
 
     @property
     def default_labels(self):
@@ -140,9 +144,7 @@ class StackdriverStatsExporter(base.StatsExporter):
     def export(self, view_data):
         """ export data to transport class"""
         if view_data is not None:
-            return
-        # self.transport.export(view_data)
-        # Uncomment this when transport class gets merged to this branch
+            self.transport.export(view_data)
 
     def handle_upload(self, view_data):
         """ handle_upload handles uploading a slice of Data
@@ -188,7 +190,7 @@ class StackdriverStatsExporter(base.StatsExporter):
         series = monitoring_v3.types.TimeSeries()
         series.metric.type = namespaced_view_name(v_data.view.name)
 
-        if resource_type is None:
+        if resource_type == "":
             series.resource.type = 'global'
         else:
             series.resource.type = resource_type
@@ -215,12 +217,10 @@ class StackdriverStatsExporter(base.StatsExporter):
                 buckets = dist_value.bucket_counts
                 buckets.extend(list(map(int, agg_data.counts_per_bucket)))
             else:
-                if type(agg) is \
-                        aggregation.aggregation_data.CountAggregationData:
-                    point.value.int64_value = int(tag_value[0])
-                if type(agg) is \
-                        aggregation.aggregation_data.SumAggregationDataFloat:
+                if is_float(tag_value[0])[0]:
                     point.value.double_value = float(tag_value[0])
+                else:
+                    point.value.string_value = str(tag_value[0])
 
             start = datetime.strptime(v_data.start_time, EPOCH_PATTERN)
             end = datetime.strptime(v_data.end_time, EPOCH_PATTERN)
@@ -233,8 +233,11 @@ class StackdriverStatsExporter(base.StatsExporter):
             secs = point.interval.end_time.seconds
             point.interval.end_time.nanos = int((timestamp_end-secs)*10**9)
 
-            # Uncomment this when LastValue gets supported
-            # sif not agg.aggregation_type is aggregation.Type.LASTVALUE:
+            if type(agg) is not \
+                    aggregation.aggregation_data.LastValueAggregationData:
+                if timestamp_start == timestamp_end:
+                    # avoiding start_time and end_time to be equal
+                    timestamp_start = timestamp_start - 1
 
             start_time = point.interval.start_time
             start_time.seconds = int(timestamp_start)
@@ -276,17 +279,15 @@ class StackdriverStatsExporter(base.StatsExporter):
                 value_type = metric_desc.ValueType.DOUBLE
         elif view_aggregation.aggregation_type is agg_type.DISTRIBUTION:
             value_type = metric_desc.ValueType.DISTRIBUTION
-        # Aggregation type last value is not
-        # currently supported by opencesus python stats
-        # elif view_aggregation.aggregation_type is agg_type.LASTVALUE:
-        #   metric_kind = metric_desc.MetricKind.GAUGE
-        # 	if view_measure is measure.MeasureInt:
-        # 		value_type = metric_desc.ValueType.INT64
-        # 	elif view_measure is measure.MeasureFloat:
-        # 		value_type = metric_desc.ValueType.DOUBLE
+        elif view_aggregation.aggregation_type is agg_type.LASTVALUE:
+            metric_kind = metric_desc.MetricKind.GAUGE
+            if isinstance(view_measure, measure.MeasureInt):
+                value_type = metric_desc.ValueType.INT64
+            if isinstance(view_measure, measure.MeasureFloat):
+                value_type = metric_desc.ValueType.DOUBLE
         else:
             raise Exception("unsupported aggregation type: %s"
-                            % str(view_aggregation.aggregation_type))
+                            % type(view_aggregation))
 
         display_name_prefix = DEFAULT_DISPLAY_NAME_PREFIX
         if self.options.metric_prefix != "":
@@ -372,3 +373,13 @@ def remove_non_alphanumeric(text):
     """ Remove characters not accepted in labels key
     """
     return str(re.sub('[^0-9a-zA-Z ]+', '', text)).replace(" ", "")
+
+
+def is_float(value):
+    """ Validate if value is a float
+    """
+    try:
+        result = float(value)
+        return True, result
+    except ValueError as identifier:
+        return False, None
