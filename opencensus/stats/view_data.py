@@ -66,19 +66,6 @@ class ViewData(object):
         """sets the end time for the view data"""
         self._end_time = datetime.utcnow().isoformat() + 'Z'
 
-    def get_tag_map(self, context):
-        """function to return the tag map based on the context"""
-        if self.tag_map is not None:
-            if context.map.items() <= self.tag_map.items():
-                return self.tag_map
-            else:
-                tags = self.tag_map
-                for tag_key, tag_value in context.map.items():
-                    tags[tag_key] = tag_value
-                return tags
-        else:  # pragma: NO COVER
-            logging.warning("Tag Map cannot be none")
-
     def get_tag_values(self, tags, columns):
         """function to get the tag values from tags and columns"""
         tag_values = []

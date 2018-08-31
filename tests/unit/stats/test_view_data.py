@@ -56,29 +56,6 @@ class TestViewData(unittest.TestCase):
 
         self.assertIsNotNone(view_data.end_time)
 
-    def test_get_tag_map(self):
-        view = mock.Mock()
-        start_time = datetime.utcnow()
-        end_time = datetime.utcnow()
-        view_data = view_data_module.ViewData(view=view,
-                                              start_time=start_time,
-                                              end_time=end_time)
-        test_context_1 = mock.Mock()
-        test_context_1.map = {'key1': 'val1'}
-        context_map_1 = view_data.get_tag_map(context=test_context_1)
-        self.assertEqual(test_context_1.map, view_data.tag_map)
-        self.assertEqual(test_context_1.map, context_map_1)
-
-        test_context_2 = mock.Mock()
-        test_context_2.map = {'key1': 'val2'}
-        context_map_2 = view_data.get_tag_map(context=test_context_2)
-        self.assertEqual(test_context_2.map, context_map_2)
-
-        test_context_3 = mock.Mock()
-        test_context_3.map = {}
-        context_map_3 = view_data.get_tag_map(context=test_context_3)
-        self.assertEqual(test_context_2.map, context_map_3)
-
     def test_get_tag_values(self):
         view = mock.Mock()
         start_time = datetime.utcnow()

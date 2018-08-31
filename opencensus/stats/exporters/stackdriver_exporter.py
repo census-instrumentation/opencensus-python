@@ -193,12 +193,12 @@ class StackdriverStatsExporter(base.StatsExporter):
         else:
             series.resource.type = resource_type
 
-        tag_agg = v_data.tag_value_aggregation_map
+        tag_agg = v_data.tag_value_aggregation_data_map
         for tag_value, agg in tag_agg.items():
             point = series.points.add()
-            if agg.aggregation_type is aggregation.Type.DISTRIBUTION:
-                agg_data = tag_agg.get(tag_value).aggregation_data
-
+            if type(agg) is \
+                    aggregation.aggregation_data.DistributionAggregationData:
+                agg_data = tag_agg.get(tag_value)
                 dist_value = point.value.distribution_value
                 dist_value.count = agg_data.count_data
                 dist_value.mean = agg_data.mean_data
@@ -215,12 +215,12 @@ class StackdriverStatsExporter(base.StatsExporter):
                 buckets = dist_value.bucket_counts
                 buckets.extend(list(map(int, agg_data.counts_per_bucket)))
             else:
-                if type(tag_value.value) is str:
-                    point.value.string_value = str(tag_value.value)
-                if type(tag_value.value) is int:
-                    point.value.int64_value = int(tag_value.value)
-                if type(tag_value.value) is float:
-                    point.value.double_value = float(tag_value.value)
+                if type(agg) is \
+                        aggregation.aggregation_data.CountAggregationData:
+                    point.value.int64_value = int(tag_value[0])
+                if type(agg) is \
+                        aggregation.aggregation_data.SumAggregationDataFloat:
+                    point.value.double_value = float(tag_value[0])
 
             start = datetime.strptime(v_data.start_time, EPOCH_PATTERN)
             end = datetime.strptime(v_data.end_time, EPOCH_PATTERN)
@@ -235,9 +235,6 @@ class StackdriverStatsExporter(base.StatsExporter):
 
             # Uncomment this when LastValue gets supported
             # sif not agg.aggregation_type is aggregation.Type.LASTVALUE:
-            if timestamp_start == timestamp_end:
-                # avoiding start_time and end_time to be equal
-                timestamp_start = timestamp_start - 1
 
             start_time = point.interval.start_time
             start_time.seconds = int(timestamp_start)
@@ -366,7 +363,7 @@ def new_label_descriptors(defaults, keys):
 
     for tag_key in keys:
         label = {}
-        label["key"] = remove_non_alphanumeric(tag_key.name)
+        label["key"] = remove_non_alphanumeric(tag_key)
         label_descriptors.append(label)
     return label_descriptors
 

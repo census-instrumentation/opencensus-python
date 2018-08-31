@@ -106,7 +106,7 @@ class MeasureToViewMap(object):
             for view_data in view_datas:
                 view_data.record(
                     context=tags, value=value, timestamp=timestamp,
-                    attachment=attachments)
+                    attachments=attachments)
             self.export(view_datas)
 
     def export(self, view_datas):

@@ -241,7 +241,7 @@ class TestStackdriverStatsExporter(unittest.TestCase):
 
         view_manager.register_view(VIDEO_SIZE_VIEW)
 
-        tag_value = tag_value_module.TagValue(1200)
+        tag_value = tag_value_module.TagValue("1200")
         tag_map = tag_map_module.TagMap()
         tag_map.insert(FRONTEND_KEY, tag_value)
         measure_map = stats_recorder.new_measurement_map()
@@ -283,7 +283,7 @@ class TestStackdriverStatsExporter(unittest.TestCase):
 
         view_manager.register_view(new_view1)
 
-        tag_value_int = tag_value_module.TagValue(int(1200))
+        tag_value_int = tag_value_module.TagValue("1200")
 
         tag_map = tag_map_module.TagMap()
 
@@ -316,7 +316,7 @@ class TestStackdriverStatsExporter(unittest.TestCase):
 
         view_manager.register_exporter(exporter)
 
-        agg_2 = aggregation_module.CountAggregation(count=2)
+        agg_2 = aggregation_module.SumAggregation(sum=2.2)
         view_name2 = "view-name2"
         new_view2 = view_module.View(view_name2,
                                 "processed video size over time",
@@ -326,7 +326,7 @@ class TestStackdriverStatsExporter(unittest.TestCase):
 
         view_manager.register_view(new_view2)
 
-        tag_value_float = tag_value_module.TagValue(float(1200))
+        tag_value_float = tag_value_module.TagValue("1200")
 
         tag_map = tag_map_module.TagMap()
 
@@ -338,45 +338,6 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         measure_map.record(tag_map)
 
         v_data = measure_map.measure_to_view_map.get_view(view_name2, None)
-
-        time_serie = exporter.create_time_series_list(v_data,"global")
-        self.assertIsNotNone(time_serie)
-
-    def test_create_timeseries_str_tagvalue(self):
-        client = mock.Mock()
-        start_time = datetime.utcnow()
-        end_time = datetime.utcnow()
-
-        option = stackdriver.Options(project_id="project-test", resource="global")
-        exporter = stackdriver.StackdriverStatsExporter(options=option, client=client)
-
-        stats = stats_module.Stats()
-        view_manager = stats.view_manager
-        stats_recorder = stats.stats_recorder
-
-        if len(view_manager.measure_to_view_map.exporters) > 0:
-            view_manager.unregister_exporter(view_manager.measure_to_view_map.exporters[0])
-
-        view_manager.register_exporter(exporter)
-
-        agg_3 = aggregation_module.CountAggregation(count=2)
-        view_name3 = "view-name3"
-        new_view3 = view_module.View(view_name3,
-                                "processed video size over time",
-                                [FRONTEND_KEY_STR],
-                                VIDEO_SIZE_MEASURE,
-                                agg_3)
-        view_manager.register_view(new_view3)
-        tag_value_example = "123"
-        tag_value_str = tag_value_module.TagValue(tag_value_example)
-        tag_map = tag_map_module.TagMap()
-        tag_map.insert(FRONTEND_KEY_STR, tag_value_str)
-
-        measure_map = stats_recorder.new_measurement_map()
-        measure_map.measure_int_put(VIDEO_SIZE_MEASURE, 2)
-        measure_map.record(tag_map)
-
-        v_data = measure_map.measure_to_view_map.get_view(view_name3, None)
 
         time_serie = exporter.create_time_series_list(v_data,"global")
         self.assertIsNotNone(time_serie)
