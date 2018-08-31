@@ -214,12 +214,13 @@ class StackdriverStatsExporter(base.StatsExporter):
 
                 buckets = dist_value.bucket_counts
                 buckets.extend(list(map(int, agg_data.counts_per_bucket)))
-            elif type(tag_value.value) is int:
-                point.value.int64_value = int(tag_value.value)
-            elif type(tag_value.value) is float:
-                point.value.double_value = float(tag_value.value)
-            elif type(tag_value.value) is str:
-                point.value.string_value = str(tag_value.value)
+            else:
+                if type(tag_value.value) is str:
+                    point.value.string_value = str(tag_value.value)
+                if type(tag_value.value) is int:
+                    point.value.int64_value = int(tag_value.value)
+                if type(tag_value.value) is float:
+                    point.value.double_value = float(tag_value.value)
 
             start = datetime.strptime(v_data.start_time, EPOCH_PATTERN)
             end = datetime.strptime(v_data.end_time, EPOCH_PATTERN)
@@ -274,7 +275,7 @@ class StackdriverStatsExporter(base.StatsExporter):
         elif view_aggregation.aggregation_type is agg_type.SUM:
             if isinstance(view_measure, measure.MeasureInt):
                 value_type = metric_desc.ValueType.INT64
-            elif isinstance(view_measure, measure.MeasureFloat):
+            if isinstance(view_measure, measure.MeasureFloat):
                 value_type = metric_desc.ValueType.DOUBLE
         elif view_aggregation.aggregation_type is agg_type.DISTRIBUTION:
             value_type = metric_desc.ValueType.DISTRIBUTION
