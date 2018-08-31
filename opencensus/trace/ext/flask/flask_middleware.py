@@ -21,6 +21,7 @@ from google.rpc import code_pb2
 
 from opencensus.trace import attributes_helper
 from opencensus.trace import execution_context
+from opencensus.trace import span as span_module
 from opencensus.trace import stack_trace
 from opencensus.trace import status
 from opencensus.trace import tracer as tracer_module
@@ -41,6 +42,7 @@ TRANSPORT = 'TRANSPORT'
 ZIPKIN_EXPORTER_SERVICE_NAME = 'ZIPKIN_EXPORTER_SERVICE_NAME'
 ZIPKIN_EXPORTER_HOST_NAME = 'ZIPKIN_EXPORTER_HOST_NAME'
 ZIPKIN_EXPORTER_PORT = 'ZIPKIN_EXPORTER_PORT'
+ZIPKIN_EXPORTER_PROTOCOL = 'ZIPKIN_EXPORTER_PROTOCOL'
 
 log = logging.getLogger(__name__)
 
@@ -137,10 +139,13 @@ class FlaskMiddleware(object):
                 ZIPKIN_EXPORTER_HOST_NAME, 'localhost')
             _zipkin_port = params.get(
                 ZIPKIN_EXPORTER_PORT, 9411)
+            _zipkin_protocol = params.get(
+                ZIPKIN_EXPORTER_PROTOCOL, 'http')
             self.exporter = self.exporter(
                 service_name=_zipkin_service_name,
                 host_name=_zipkin_host_name,
                 port=_zipkin_port,
+                protocol=_zipkin_protocol,
                 transport=transport)
         else:
             self.exporter = self.exporter(transport=transport)
@@ -175,7 +180,7 @@ class FlaskMiddleware(object):
                 propagator=self.propagator)
 
             span = tracer.start_span()
-
+            span.span_kind = span_module.SpanKind.SERVER
             # Set the span name as the name of the current module name
             span.name = '[{}]{}'.format(
                 flask.request.method,

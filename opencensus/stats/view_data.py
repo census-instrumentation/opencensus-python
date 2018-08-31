@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from datetime import datetime
-import logging
+import copy
 
 
 class ViewData(object):
@@ -36,8 +36,7 @@ class ViewData(object):
         self._view = view
         self._start_time = start_time
         self._end_time = end_time
-        self._tag_value_aggregation_map = {}
-        self._tag_map = {}
+        self._tag_value_aggregation_data_map = {}
 
     @property
     def view(self):
@@ -55,13 +54,9 @@ class ViewData(object):
         return self._end_time
 
     @property
-    def tag_value_aggregation_map(self):
+    def tag_value_aggregation_data_map(self):
         """the current tag value aggregation map in the view data"""
-        return self._tag_value_aggregation_map
-
-    @property
-    def tag_map(self):
-        return self._tag_map
+        return self._tag_value_aggregation_data_map
 
     def start(self):
         """sets the start time for the view data"""
@@ -97,13 +92,13 @@ class ViewData(object):
             i += 1
         return tag_values
 
-    def record(self, context, value, timestamp):
+    def record(self, context, value, timestamp, attachments=None):
         """records the view data against context"""
-        tag_values = self.get_tag_values(tags=self.get_tag_map(context),
+        tag_values = self.get_tag_values(tags=context.map,
                                          columns=self.view.columns)
         tuple_vals = tuple(tag_values)
-        for val in tuple_vals:
-            if val not in self.tag_value_aggregation_map:
-                self.tag_value_aggregation_map[val] = self.view.aggregation
-            self.tag_value_aggregation_map.get(
-                val).aggregation_data.add_sample(value)
+        if tuple_vals not in self.tag_value_aggregation_data_map:
+            self.tag_value_aggregation_data_map[tuple_vals] = copy.deepcopy(
+                self.view.aggregation.aggregation_data)
+        self.tag_value_aggregation_data_map.get(tuple_vals).\
+            add_sample(value, timestamp, attachments)

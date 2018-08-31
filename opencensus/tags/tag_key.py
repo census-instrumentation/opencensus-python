@@ -12,36 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from opencensus.tags.validation import is_valid_tag_name
 
-class TagKey(object):
-    """ A tag key with a property name
+_TAG_NAME_ERROR = \
+    'tag name must not be empty,' \
+    'no longer than 255 characters and of ascii values between 32 - 126'
 
-    :type name: str
-    :param name: The name of the key
 
-    """
-    def __init__(self, name):
-        self._name = name
+class TagKey(str):
+    """A tag key with a property name"""
 
-    @property
-    def name(self):
-        """The name of the current key"""
-        return self._name
-
-    def is_valid_name(self, name):
-        """Checks if the name of the key is valid
+    def __new__(cls, name):
+        """Create and return a new tag key
 
         :type name: str
-        :param name: name to check
-
-        :rtype: bool
-        :returns: True if it valid, else returns False
+        :param name: The name of the key
+        :return: TagKey
         """
-        if (len(name) > 0) and (len(name) <= 255):
-            if (all(ord(char) < 126 for char in name) and
-                    all(ord(char) > 32 for char in name)):
-                return True
-            else:
-                return False
-        else:
-            return False
+        if not is_valid_tag_name(name):
+            raise ValueError(_TAG_NAME_ERROR)
+        return super(TagKey, cls).__new__(cls, name)

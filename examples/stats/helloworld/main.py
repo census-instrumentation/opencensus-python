@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 # Copyright 2018, OpenCensus Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -61,9 +63,9 @@ def main():
     # Get aggregated stats and print it to console.
     view_data = view_manager.get_view(VIDEO_SIZE_VIEW_NAME)
     pprint(vars(view_data))
-    for k, v in view_data._tag_value_aggregation_map.items():
+    for k, v in view_data._tag_value_aggregation_data_map.items():
+      pprint(k)
       pprint(vars(v))
-      pprint(vars(v.aggregation_data))
 
 
 if __name__ == '__main__':

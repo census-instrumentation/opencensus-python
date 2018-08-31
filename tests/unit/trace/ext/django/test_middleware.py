@@ -19,6 +19,7 @@ from django.test import RequestFactory
 from django.test.utils import teardown_test_environment
 
 from opencensus.trace import execution_context
+from opencensus.trace import span as span_module
 from opencensus.trace.exporters import print_exporter
 from opencensus.trace.exporters import zipkin_exporter
 from opencensus.trace.exporters.transports import sync
@@ -92,10 +93,12 @@ class TestOpencensusMiddleware(unittest.TestCase):
         service_name = 'test_service'
         host_name = 'test_hostname'
         port = 2333
+        protocol = 'http'
         params = {
             'ZIPKIN_EXPORTER_SERVICE_NAME': service_name,
             'ZIPKIN_EXPORTER_HOST_NAME': host_name,
             'ZIPKIN_EXPORTER_PORT': port,
+            'ZIPKIN_EXPORTER_PROTOCOL': protocol,
             'TRANSPORT':
                 'opencensus.trace.exporters.transports.sync.SyncTransport',
         }
@@ -189,9 +192,10 @@ class TestOpencensusMiddleware(unittest.TestCase):
         span = tracer.current_span()
 
         expected_attributes = {
-            '/http/url': u'/',
-            '/http/method': 'GET',
+            'http.url': u'/',
+            'http.method': 'GET',
         }
+        self.assertEqual(span.span_kind, span_module.SpanKind.SERVER)
         self.assertEqual(span.attributes, expected_attributes)
         self.assertEqual(span.parent_span.span_id, span_id)
 
@@ -275,11 +279,11 @@ class TestOpencensusMiddleware(unittest.TestCase):
         django_response.status_code = 200
 
         expected_attributes = {
-            '/http/url': u'/',
-            '/http/method': 'GET',
-            '/http/status_code': '200',
-            '/django/user/id': '123',
-            '/django/user/name': 'test_name'
+            'http.url': u'/',
+            'http.method': 'GET',
+            'http.status_code': '200',
+            'django.user.id': '123',
+            'django.user.name': 'test_name'
         }
 
         mock_user = mock.Mock()
@@ -347,7 +351,7 @@ class Test__set_django_attributes(unittest.TestCase):
         _set_django_attributes(tracer, request)
 
         expected_attributes = {
-            '/django/user/id': '123',
-            '/django/user/name': test_name}
+            'django.user.id': '123',
+            'django.user.name': test_name}
 
         self.assertEqual(tracer.attributes, expected_attributes)

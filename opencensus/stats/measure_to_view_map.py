@@ -33,7 +33,7 @@ class MeasureToViewMap(object):
         self._registered_measures = {}
         # stores the set of the exported views
         self._exported_views = set()
-        # stores the registered exporters
+        # stores the array of the registered exporters
         self._exporters = []
 
     @property
@@ -93,7 +93,7 @@ class MeasureToViewMap(object):
         self._measure_to_view_data_list_map[view.measure.name].append(
             ViewData(view=view, start_time=timestamp, end_time=timestamp))
 
-    def record(self, tags, measurement_map, timestamp):
+    def record(self, tags, measurement_map, timestamp, attachments=None):
         """records stats with a set of tags"""
         for measure, value in measurement_map.items():
             if measure != self._registered_measures.get(measure.name):
@@ -104,13 +104,13 @@ class MeasureToViewMap(object):
                 if measure_name == measure.name:
                     view_datas.extend(view_data_list)
             for view_data in view_datas:
-                view_data.record(context=tags,
-                                 value=value,
-                                 timestamp=timestamp)
+                view_data.record(
+                    context=tags, value=value, timestamp=timestamp,
+                    attachment=attachments)
             self.export(view_datas)
 
     def export(self, view_datas):
         """export view datas to registered exporters"""
         if len(self.exporters) > 0:
             for e in self.exporters:
-                e.emit(view_datas)
+                e.export(view_datas)
