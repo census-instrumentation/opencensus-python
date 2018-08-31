@@ -31,7 +31,7 @@ from opencensus.trace import span_data as span_data_module
 from opencensus.trace import status as status_module
 from opencensus.trace import time_event as time_event_module
 from opencensus.trace import tracestate as tracestate_module
-from opencensus.trace.exporters import opencensusd_exporter
+from opencensus.trace.exporters import span_proto_exporter
 from opencensus.trace.exporters.gen.opencensusd.trace.v1 import trace_pb2
 from opencensus.trace.exporters.gen.opencensusd.agent.trace.v1 import trace_service_pb2
 from opencensus.trace.exporters.gen.opencensusd.trace.v1 import trace_config_pb2
@@ -40,17 +40,17 @@ from opencensus.trace.exporters.gen.opencensusd.trace.v1 import trace_config_pb2
 SERVICE_NAME = 'my-service'
 
 
-class TestOpenCensusDExporter(unittest.TestCase):
+class TestSpanProtoExporter(unittest.TestCase):
 
     def test_constructor(self):
-        exporter = opencensusd_exporter.OpenCensusDExporter(
+        exporter = span_proto_exporter.SpanProtoExporter(
             service_name=SERVICE_NAME)
 
         self.assertEqual(exporter.endpoint, 'localhost:50051')
 
     def test_constructor_with_endpoint(self):
         expected_endpoint = '0.0.0.0:50000'
-        exporter = opencensusd_exporter.OpenCensusDExporter(
+        exporter = span_proto_exporter.SpanProtoExporter(
             service_name=SERVICE_NAME,
             endpoint=expected_endpoint)
 
@@ -58,7 +58,7 @@ class TestOpenCensusDExporter(unittest.TestCase):
 
     def test_constructor_with_client(self):
         client = mock.Mock()
-        exporter = opencensusd_exporter.OpenCensusDExporter(
+        exporter = span_proto_exporter.SpanProtoExporter(
             service_name=SERVICE_NAME,
             client=client,
             transport=MockTransport)
@@ -66,7 +66,7 @@ class TestOpenCensusDExporter(unittest.TestCase):
         self.assertEqual(exporter.client, client)
 
     def test_constructor_node(self):
-        exporter = opencensusd_exporter.OpenCensusDExporter(
+        exporter = span_proto_exporter.SpanProtoExporter(
             service_name=SERVICE_NAME,
             host_name='my host')
 
@@ -81,7 +81,7 @@ class TestOpenCensusDExporter(unittest.TestCase):
         self.assertGreater(exporter.node.identifier.start_timestamp.seconds, 0)
 
     def test_constructor_node(self):
-        exporter = opencensusd_exporter.OpenCensusDExporter(
+        exporter = span_proto_exporter.SpanProtoExporter(
             service_name=SERVICE_NAME)
 
         self.assertEqual(exporter.node.service_info.name, SERVICE_NAME)
@@ -96,7 +96,7 @@ class TestOpenCensusDExporter(unittest.TestCase):
         self.assertGreater(exporter.node.identifier.start_timestamp.seconds, 0)
 
     def test_export(self):
-        exporter = opencensusd_exporter.OpenCensusDExporter(
+        exporter = span_proto_exporter.SpanProtoExporter(
             service_name=SERVICE_NAME,
             transport=MockTransport)
         exporter.export({})
@@ -106,7 +106,7 @@ class TestOpenCensusDExporter(unittest.TestCase):
     def test_emit(self):
         client = mock.Mock()
         client.Export.return_value = [1]
-        exporter = opencensusd_exporter.OpenCensusDExporter(
+        exporter = span_proto_exporter.SpanProtoExporter(
             service_name=SERVICE_NAME,
             client=client,
             transport=MockTransport)
@@ -118,7 +118,7 @@ class TestOpenCensusDExporter(unittest.TestCase):
     def test_emit_throw(self):
         client = mock.Mock()
         client.Export.side_effect = grpc.RpcError()
-        exporter = opencensusd_exporter.OpenCensusDExporter(
+        exporter = span_proto_exporter.SpanProtoExporter(
             service_name=SERVICE_NAME,
             client=client,
             transport=MockTransport)
@@ -159,7 +159,7 @@ class TestOpenCensusDExporter(unittest.TestCase):
             same_process_as_parent_span=None,
             span_kind=0)
 
-        exporter = opencensusd_exporter.OpenCensusDExporter(
+        exporter = span_proto_exporter.SpanProtoExporter(
             service_name=SERVICE_NAME,
             client=client,
             transport=MockTransport)
@@ -221,7 +221,7 @@ class TestOpenCensusDExporter(unittest.TestCase):
             same_process_as_parent_span=None,
             span_kind=0)
 
-        exporter = opencensusd_exporter.OpenCensusDExporter(
+        exporter = span_proto_exporter.SpanProtoExporter(
             service_name=SERVICE_NAME,
             client=client,
             transport=MockTransport)
@@ -259,7 +259,7 @@ class TestOpenCensusDExporter(unittest.TestCase):
             same_process_as_parent_span=None,
             span_kind=0)
 
-        exporter = opencensusd_exporter.OpenCensusDExporter(
+        exporter = span_proto_exporter.SpanProtoExporter(
             service_name=SERVICE_NAME,
             client=client,
             transport=MockTransport)
@@ -300,7 +300,7 @@ class TestOpenCensusDExporter(unittest.TestCase):
             same_process_as_parent_span=None,
             span_kind=0)
 
-        exporter = opencensusd_exporter.OpenCensusDExporter(
+        exporter = span_proto_exporter.SpanProtoExporter(
             service_name=SERVICE_NAME,
             transport=MockTransport)
         pb_span = exporter.translate_to_opencensusd(span_data)
@@ -338,7 +338,7 @@ class TestOpenCensusDExporter(unittest.TestCase):
         self.assertEqual(len(pb_span.tracestate.entries), 0)
 
     def test_none_span_export(self):
-        exporter = opencensusd_exporter.OpenCensusDExporter(
+        exporter = span_proto_exporter.SpanProtoExporter(
             service_name=SERVICE_NAME,
             transport=MockTransport)
         pb_span = exporter.translate_to_opencensusd(None)
@@ -363,7 +363,7 @@ class TestOpenCensusDExporter(unittest.TestCase):
             links=None,
             status=None)
 
-        exporter = opencensusd_exporter.OpenCensusDExporter(
+        exporter = span_proto_exporter.SpanProtoExporter(
             service_name=SERVICE_NAME,
             transport=MockTransport)
         pb_span = exporter.translate_to_opencensusd(client_span_data)
@@ -389,7 +389,7 @@ class TestOpenCensusDExporter(unittest.TestCase):
             links=None,
             status=None)
 
-        exporter = opencensusd_exporter.OpenCensusDExporter(
+        exporter = span_proto_exporter.SpanProtoExporter(
             service_name=SERVICE_NAME,
             transport=MockTransport)
         pb_span = exporter.translate_to_opencensusd(server_span_data)
@@ -416,7 +416,7 @@ class TestOpenCensusDExporter(unittest.TestCase):
             time_events=None,
             links=None)
 
-        exporter = opencensusd_exporter.OpenCensusDExporter(
+        exporter = span_proto_exporter.SpanProtoExporter(
             service_name=SERVICE_NAME,
             transport=MockTransport)
         pb_span = exporter.translate_to_opencensusd(span_data)
@@ -456,7 +456,7 @@ class TestOpenCensusDExporter(unittest.TestCase):
             stack_trace=None,
             time_events=None)
 
-        exporter = opencensusd_exporter.OpenCensusDExporter(
+        exporter = span_proto_exporter.SpanProtoExporter(
             service_name=SERVICE_NAME,
             transport=MockTransport)
         pb_span = exporter.translate_to_opencensusd(span_data)
@@ -548,7 +548,7 @@ class TestOpenCensusDExporter(unittest.TestCase):
             stack_trace=None,
             links=None)
 
-        exporter = opencensusd_exporter.OpenCensusDExporter(
+        exporter = span_proto_exporter.SpanProtoExporter(
             service_name=SERVICE_NAME,
             transport=MockTransport)
         pb_span = exporter.translate_to_opencensusd(span_data)
@@ -618,7 +618,7 @@ class TestOpenCensusDExporter(unittest.TestCase):
             stack_trace=None,
             links=None)
 
-        exporter = opencensusd_exporter.OpenCensusDExporter(
+        exporter = span_proto_exporter.SpanProtoExporter(
             service_name=SERVICE_NAME,
             transport=MockTransport)
         pb_span = exporter.translate_to_opencensusd(span_data)
@@ -649,7 +649,7 @@ class TestOpenCensusDExporter(unittest.TestCase):
             links=None,
             status=None)
 
-        exporter = opencensusd_exporter.OpenCensusDExporter(
+        exporter = span_proto_exporter.SpanProtoExporter(
             service_name=SERVICE_NAME,
             transport=MockTransport)
         pb_span = exporter.translate_to_opencensusd(client_span_data)
@@ -700,7 +700,7 @@ class TestOpenCensusDExporter(unittest.TestCase):
                 span_kind=0)
         ]
 
-        exporter = opencensusd_exporter.OpenCensusDExporter(
+        exporter = span_proto_exporter.SpanProtoExporter(
             service_name=SERVICE_NAME,
             transport=MockTransport)
         export_requests = list(exporter.generate_span_requests(span_datas))
@@ -723,7 +723,7 @@ class TestOpenCensusDExporter(unittest.TestCase):
     def test_add_attribute_value(self):
         pb_span = trace_pb2.Span()
 
-        exporter = opencensusd_exporter.OpenCensusDExporter(
+        exporter = span_proto_exporter.SpanProtoExporter(
             service_name=SERVICE_NAME,
             transport=MockTransport)
         exporter.add_proto_attribute_value(pb_span.attributes, 'int_key', 42)
@@ -758,7 +758,7 @@ class TestOpenCensusDExporter(unittest.TestCase):
             uncompressed_size_bytes=10,
             compressed_size_bytes=1)
 
-        exporter = opencensusd_exporter.OpenCensusDExporter(
+        exporter = span_proto_exporter.SpanProtoExporter(
             service_name=SERVICE_NAME,
             transport=MockTransport)
         exporter.set_proto_message_event(pb_event.message_event, message_event)
@@ -777,7 +777,7 @@ class TestOpenCensusDExporter(unittest.TestCase):
             attributes=attributes_module.Attributes(
                         attributes={'test_str_key': 'test_str_value', 'test_int_key': 1, 'test_bool_key': False}))
 
-        exporter = opencensusd_exporter.OpenCensusDExporter(
+        exporter = span_proto_exporter.SpanProtoExporter(
             service_name=SERVICE_NAME,
             transport=MockTransport)
         exporter.set_proto_annotation(pb_event.annotation, annotation)
@@ -800,7 +800,7 @@ class TestOpenCensusDExporter(unittest.TestCase):
         annotation1 = time_event_module.Annotation(
             description="hi there1", attributes=attributes_module.Attributes())
 
-        exporter = opencensusd_exporter.OpenCensusDExporter(
+        exporter = span_proto_exporter.SpanProtoExporter(
             service_name=SERVICE_NAME,
             transport=MockTransport)
 
@@ -817,7 +817,7 @@ class TestOpenCensusDExporter(unittest.TestCase):
         delta = now - datetime(1970, 1, 1)
         expected_seconds = int(delta.total_seconds())
         expected_nanos = delta.microseconds * 1000
-        exporter = opencensusd_exporter.OpenCensusDExporter(
+        exporter = span_proto_exporter.SpanProtoExporter(
             service_name=SERVICE_NAME,
             transport=MockTransport)
 
@@ -827,7 +827,7 @@ class TestOpenCensusDExporter(unittest.TestCase):
 
     def test_datetime_str_to_proto_ts_conversion_none(self):
 
-        exporter = opencensusd_exporter.OpenCensusDExporter(
+        exporter = span_proto_exporter.SpanProtoExporter(
             service_name=SERVICE_NAME,
             transport=MockTransport)
 
@@ -837,7 +837,7 @@ class TestOpenCensusDExporter(unittest.TestCase):
 
     def test_datetime_str_to_proto_ts_conversion_empty(self):
 
-        exporter = opencensusd_exporter.OpenCensusDExporter(
+        exporter = span_proto_exporter.SpanProtoExporter(
             service_name=SERVICE_NAME,
             transport=MockTransport)
 
@@ -847,7 +847,7 @@ class TestOpenCensusDExporter(unittest.TestCase):
 
     def test_datetime_str_to_proto_ts_conversion_invalid(self):
 
-        exporter = opencensusd_exporter.OpenCensusDExporter(
+        exporter = span_proto_exporter.SpanProtoExporter(
             service_name=SERVICE_NAME,
             transport=MockTransport)
 
@@ -858,7 +858,7 @@ class TestOpenCensusDExporter(unittest.TestCase):
     def test_hex_str_to_proto_bytes_conversion(self):
 
         hex_encoder = codecs.getencoder('hex')
-        exporter = opencensusd_exporter.OpenCensusDExporter(
+        exporter = span_proto_exporter.SpanProtoExporter(
             service_name=SERVICE_NAME,
             transport=MockTransport)
 
@@ -869,7 +869,7 @@ class TestOpenCensusDExporter(unittest.TestCase):
 
     def test_datetime_to_proto_ts_conversion_none(self):
 
-        exporter = opencensusd_exporter.OpenCensusDExporter(
+        exporter = span_proto_exporter.SpanProtoExporter(
             service_name=SERVICE_NAME,
             transport=MockTransport)
 
@@ -882,7 +882,7 @@ class TestOpenCensusDExporter(unittest.TestCase):
         delta = now - datetime(1970, 1, 1)
         expected_seconds = int(delta.total_seconds())
         expected_nanos = delta.microseconds * 1000
-        exporter = opencensusd_exporter.OpenCensusDExporter(
+        exporter = span_proto_exporter.SpanProtoExporter(
             service_name=SERVICE_NAME,
             transport=MockTransport)
 
@@ -892,7 +892,7 @@ class TestOpenCensusDExporter(unittest.TestCase):
 
     def test_datetime_to_proto_ts_conversion_zero(self):
         zero = datetime(1970, 1, 1)
-        exporter = opencensusd_exporter.OpenCensusDExporter(
+        exporter = span_proto_exporter.SpanProtoExporter(
             service_name=SERVICE_NAME,
             transport=MockTransport)
 
@@ -905,7 +905,7 @@ class TestOpenCensusDExporter(unittest.TestCase):
         config = trace_config_pb2.TraceConfig(
             constant_sampler=trace_config_pb2.ConstantSampler(
                 decision=True))
-        exporter = opencensusd_exporter.OpenCensusDExporter(
+        exporter = span_proto_exporter.SpanProtoExporter(
             service_name=SERVICE_NAME,
             transport=MockTransport)
 
@@ -936,7 +936,7 @@ class TestOpenCensusDExporter(unittest.TestCase):
             constant_sampler=trace_config_pb2.ConstantSampler(
                 decision=False))
 
-        exporter = opencensusd_exporter.OpenCensusDExporter(
+        exporter = span_proto_exporter.SpanProtoExporter(
             service_name=SERVICE_NAME,
             client=client,
             transport=MockTransport)
@@ -965,7 +965,7 @@ class TestOpenCensusDExporter(unittest.TestCase):
             constant_sampler=trace_config_pb2.ConstantSampler(
                 decision=False))
 
-        exporter = opencensusd_exporter.OpenCensusDExporter(
+        exporter = span_proto_exporter.SpanProtoExporter(
             service_name=SERVICE_NAME,
             client=client,
             transport=MockTransport)
@@ -997,7 +997,7 @@ class TestOpenCensusDExporter(unittest.TestCase):
             probability_sampler=trace_config_pb2.ProbabilitySampler(
                 samplingProbability=0.1))
 
-        exporter = opencensusd_exporter.OpenCensusDExporter(
+        exporter = span_proto_exporter.SpanProtoExporter(
             service_name=SERVICE_NAME,
             client=client,
             transport=MockTransport)

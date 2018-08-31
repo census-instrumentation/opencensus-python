@@ -41,7 +41,7 @@ DEFAULT_ENDPOINT = 'localhost:50051'
 VERSION = '0.1.6'
 
 
-class OpenCensusDExporter(base.Exporter):
+class SpanProtoExporter(base.Exporter):
     """Export the spans by sending them to opencensus agent.
 
     :type service_name: str
