@@ -28,7 +28,7 @@ class Options(object):
     """ Options contains options for configuring the exporter.
     """
     def __init__(self,
-                 namespace,
+                 namespace='',
                  port=8000,
                  address='',
                  registry=CollectorRegistry()):

@@ -54,13 +54,18 @@ class TestCollectorPrometheus(unittest.TestCase):
 class TestPrometheusStatsExporter(unittest.TestCase):
 
     def test_constructor(self):
-        exporter = prometheus.PrometheusStatsExporter()
+        exporter = prometheus.PrometheusStatsExporter(
+            options=prometheus.Options(),
+            gatherer=mock.Mock()
+        )
 
         self.assertIsInstance(exporter, prometheus.PrometheusStatsExporter)
     
     def test_constructor_param(self):
         exporter = prometheus.PrometheusStatsExporter(
-            options = prometheus.Options(namespace="example"))
+            options = prometheus.Options(namespace="example"),
+            gatherer=mock.Mock()
+        )
         
         self.assertEqual(exporter.options.namespace,"example")
 
@@ -75,22 +80,4 @@ class TestPrometheusStatsExporter(unittest.TestCase):
 
     def test_new_collector(self):
         collector = prometheus.new_collector(prometheus.Options(namespace="test-collector"))
-        self.assertEqual(collector, prometheus.Collector)
-
-    def test_get_task_value(self):
-        task_value = stackdriver.get_task_value()
-
-        self.assertNotEqual(task_value, "")
-
-    def test_stackdriver_register_exporter(self):
-        view = mock.Mock()
-        stats = stats_module.Stats()
-        view_manager = stats.view_manager
-        stats_recorder = stats.stats_recorder
-
-        exporter = mock.Mock()
-        view_manager.register_exporter(exporter)
-
-        registered_exporters = len(view_manager.measure_to_view_map.exporters)
-
-        self.assertEqual(registered_exporters, 1)
+        self.assertIsInstance(collector, prometheus.Collector)
