@@ -41,7 +41,7 @@ class SumAggregationDataFloat(BaseAggregationData):
         super(SumAggregationDataFloat, self).__init__(sum_data)
         self._sum_data = sum_data
 
-    def add_sample(self, value):
+    def add_sample(self, value, timestamp=None, attachments=None):
         """Allows the user to add a sample to the Sum Aggregation Data
         The value of the sample is then added to the current sum data
         """
@@ -64,7 +64,7 @@ class CountAggregationData(BaseAggregationData):
         super(CountAggregationData, self).__init__(count_data)
         self._count_data = count_data
 
-    def add_sample(self, value):
+    def add_sample(self, value, timestamp=None, attachments=None):
         """Adds a sample to the current Count Aggregation Data and adds 1 to
         the count data"""
         self._count_data = self._count_data + 1
@@ -97,6 +97,9 @@ class DistributionAggregationData(BaseAggregationData):
     :type counts_per_bucket: list(int)
     :param counts_per_bucket: the number of occurrences per bucket
 
+    :type exemplars: list(Exemplar)
+    :param: exemplars: the exemplars associated with histogram buckets.
+
     :type bounds: list(float)
     :param bounds: the histogram distribution of the values
 
@@ -108,7 +111,8 @@ class DistributionAggregationData(BaseAggregationData):
                  max_,
                  sum_of_sqd_deviations,
                  counts_per_bucket=None,
-                 bounds=None):
+                 bounds=None,
+                 exemplars=None):
         super(DistributionAggregationData, self).__init__(mean_data)
         self._mean_data = mean_data
         self._count_data = count_data
@@ -126,6 +130,13 @@ class DistributionAggregationData(BaseAggregationData):
         self._counts_per_bucket = counts_per_bucket
         self._bounds = bucket_boundaries.BucketBoundaries(
                                             boundaries=bounds).boundaries
+        bucket = 0
+        for _ in self.bounds:
+            bucket = bucket + 1
+
+        # If there is no histogram, do not record an exemplar
+        self._exemplars = \
+            {bucket: exemplars} if len(self._bounds) > 0 else None
 
     @property
     def mean_data(self):
@@ -158,6 +169,11 @@ class DistributionAggregationData(BaseAggregationData):
         return self._counts_per_bucket
 
     @property
+    def exemplars(self):
+        """The current counts per bucket for the distribution"""
+        return self._exemplars
+
+    @property
     def bounds(self):
         """The current bounds for the distribution"""
         return self._bounds
@@ -174,15 +190,17 @@ class DistributionAggregationData(BaseAggregationData):
             return 0
         return self.sum_of_sqd_deviations / (self._count_data - 1)
 
-    def add_sample(self, value):
+    def add_sample(self, value, timestamp, attachments):
         """Adding a sample to Distribution Aggregation Data"""
         if value < self.min:
             self._min = value
         if value > self.max:
             self._max = value
         self._count_data += 1
-        self.increment_bucket_count(value)
+        bucket = self.increment_bucket_count(value)
 
+        if attachments is not None and self.exemplars is not None:
+            self.exemplars[bucket] = Exemplar(value, timestamp, attachments)
         if self.count_data == 1:
             self._mean_data = value
             return
@@ -196,22 +214,29 @@ class DistributionAggregationData(BaseAggregationData):
 
     def increment_bucket_count(self, value):
         """Increment the bucket count based on a given value from the user"""
+        i = 0
+        incremented = False
+        for b in self._bounds:
+            if value < b and not incremented:
+                self._counts_per_bucket[i] += 1
+                incremented = True
+            i += 1
+
+        if incremented:
+            return i
+
         if len(self._bounds) == 0:
             self._counts_per_bucket[0] += 1
-            return
-
-        i = 0
-        for b in self._bounds:
-            if value < b:
-                self._counts_per_bucket[i] += 1
-                return
-            i += 1
+            return i
 
         self._counts_per_bucket[(len(self._bounds))-1] += 1
 
+        return i
+
 
 class LastValueAggregationData(BaseAggregationData):
-    """LastValue Aggregation Data is the value of aggregated data
+    """
+    LastValue Aggregation Data is the value of aggregated data
 
     :type value: long
     :param value: represents the current value
@@ -221,15 +246,63 @@ class LastValueAggregationData(BaseAggregationData):
         super(LastValueAggregationData, self).__init__(value)
         self._value = value
 
-    def add_sample(self, value):
+    def add_sample(self, value, timestamp=None, attachments=None):
         """Adds a sample to the current
-           LastValue Aggregation Data and overwrite
-           the current recorded value
-        """
+        LastValue Aggregation Data and overwrite
+        the current recorded value"""
         self._value = value
 
     @property
     def value(self):
-        """The current value recorded
-        """
+        """The current value recorded"""
         return self._value
+
+
+class Exemplar(object):
+    """ Exemplar represents an example point that may be used to annotate
+        aggregated distribution values, associated with a histogram bucket.
+
+        :type value: double
+        :param value: value of the Exemplar point.
+
+        :type timestamp: time
+        :param timestamp: the time that this Exemplar's value was recorded.
+
+        :type attachments: dict
+        :param attachments: the contextual information about the example value.
+    """
+
+    def __init__(self,
+                 value,
+                 timestamp,
+                 attachments):
+        self._value = value
+
+        self._timestamp = timestamp
+
+        if attachments is None:
+            raise TypeError('attachments should not be empty')
+
+        for key, value in attachments.items():
+            if key is None or not isinstance(key, str):
+                raise TypeError('attachment key should not be '
+                                'empty and should be a string')
+            if value is None or not isinstance(value, str):
+                raise TypeError('attachment value should not be '
+                                'empty and should be a string')
+        self._attachments = attachments
+
+    @property
+    def value(self):
+        """The current value of the Exemplar point"""
+        return self._value
+
+    @property
+    def timestamp(self):
+        """The time that this Exemplar's value was recorded"""
+        return self._timestamp
+
+    @property
+    def attachments(self):
+        """The contextual information about the example value"""
+        return self._attachments
