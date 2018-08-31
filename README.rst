@@ -431,7 +431,7 @@ Prerequisites
 
 - OpenCensus Python libraries require Python 2.7 or later.
 - Google Cloud Platform account and project.
-- Google Stackdriver Tracing enabled on your project (Need help? `Click here`_).
+- Google Stackdriver Monitoring enabled on your project (Need help? `Click here`_).
 
 .. _Click here: https://opencensus.io/codelabs/stackdriver
 

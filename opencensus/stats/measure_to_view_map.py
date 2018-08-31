@@ -33,7 +33,7 @@ class MeasureToViewMap(object):
         self._registered_measures = {}
         # stores the set of the exported views
         self._exported_views = set()
-        # stores the array of the registered exporters
+        # Stores the registered exporters
         self._exporters = []
 
     @property
