@@ -12,13 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import copy
 from prometheus_client import start_http_server
 from prometheus_client.core import CollectorRegistry
 from prometheus_client.core import GaugeMetricFamily
 from prometheus_client.core import CounterMetricFamily
 from prometheus_client.core import UntypedMetricFamily
 from prometheus_client.core import HistogramMetricFamily
+from prometheus_client.core import REGISTRY
 from opencensus.stats.exporters import base
 from opencensus.stats import aggregation_data as aggregation_data_module
 from opencensus.common.transports import sync
@@ -63,7 +63,7 @@ class Options(object):
 
 
 class Collector(object):
-    """ Collector representes the Prometheus Collector object
+    """ Collector represents the Prometheus Collector object
     """
     def __init__(self, options=Options(), view_data={}):
         self._options = options
@@ -96,44 +96,43 @@ class Collector(object):
         """
         return self._registered_views
 
-    def register_views(self, views):
-        """ register_views will create the needed structure
+    def register_view(self, view):
+        """ register_view will create the needed structure
         in order to be able to sent all data to Prometheus
         """
         count = 0
-        for view in views:
-            signature = view_signature(self.options.namespace, view)
 
-            if signature not in self.registered_views:
-                desc = {'name': view_name(self.options.namespace, view),
-                        'documentation': view.description,
-                        'labels': tag_keys_to_labels(view.columns)}
-                self.registered_views[signature] = desc
-                count += 1
+        signature = view_signature(self.options.namespace, view)
 
-        if count == 0:
-            return
-
-        self.registry.register(self)
+        if signature not in self.registered_views:
+            desc = {'name': view_name(self.options.namespace, view),
+                    'documentation': view.description,
+                    'labels': tag_keys_to_labels(view.columns)}
+            self.registered_views[signature] = desc
+            count += 1
+            self.registry.register(self)
 
     def add_view_data(self, view_data):
         """ Add view data object to be sent to server
         """
-        self.register_views(view_data.view)
+        self.register_view(view_data.view)
         signature = view_signature(self.options.namespace, view_data.view)
         self.view_data[signature] = view_data
 
-    def to_metric(self, desc, view, tag_map, tag_value_aggregation_map):
+    def to_metric(self, desc, view):
         """ to_metric translate the data that OpenCensus create
         to Prometheus format, using Prometheus Metric object
         """
         agg_data = view.aggregation.aggregation_data
-        if agg_data is aggregation_data_module.CountAggregationData:
+
+        if isinstance(agg_data, aggregation_data_module.CountAggregationData):
+            labels = desc['labels'] if agg_data.count_data is None else None
             return CounterMetricFamily(name=desc['name'],
                                        documentation=desc['documentation'],
                                        value=float(agg_data.count_data),
-                                       labels=tag_values(tag_map.map))
-        elif agg_data is aggregation_data_module.DistributionAggregationData:
+                                       labels=labels)
+        elif isinstance(agg_data,
+                        aggregation_data_module.DistributionAggregationData):
             points = {}
             # Histograms are cumulative in Prometheus.
             # 1. Sort buckets in ascending order but, retain
@@ -142,10 +141,12 @@ class Collector(object):
             # are always sorted, then skip the sorting.
             indices_map = {}
             buckets = []
-            for idx, boundarie in view.aggregation.boundaries.boundaries:
+            i = 0
+            for boundarie in view.aggregation.boundaries.boundaries:
                 if boundarie not in indices_map:
-                    indices_map[boundarie] = idx
-                    buckets.append(boundarie)
+                    indices_map[str(boundarie)] = i
+                    buckets.append(str(boundarie))
+                i += 1
 
             buckets.sort()
 
@@ -156,24 +157,28 @@ class Collector(object):
                 i = indices_map[bucket]
                 cum_count += int(agg_data.counts_per_bucket[i])
                 points[bucket] = cum_count
-
+            labels = desc['labels'] if points is None else None
             return HistogramMetricFamily(name=desc['name'],
-                                         documentation=desc['description'],
-                                         buckets=points,
+                                         documentation=desc['documentation'],
+                                         buckets=points.items(),
                                          sum_value=agg_data.sum,
-                                         labels=tag_values(tag_map.map))
+                                         labels=labels)
 
-        elif agg_data is aggregation_data_module.SumAggregationDataFloat:
+        elif isinstance(agg_data,
+                        aggregation_data_module.SumAggregationDataFloat):
+            labels = desc['labels'] if agg_data.sum_data is None else None
             return UntypedMetricFamily(name=desc['name'],
-                                       documentation=desc['description'],
+                                       documentation=desc['documentation'],
                                        value=agg_data.sum_data,
-                                       labels=tag_values(tag_map.map))
+                                       labels=labels)
 
-        elif agg_data is aggregation_data_module.LastValueAggregationData:
+        elif isinstance(agg_data,
+                        aggregation_data_module.LastValueAggregationData):
+            labels = desc['labels'] if agg_data.value is None else None
             return GaugeMetricFamily(name=desc['name'],
-                                     documentation=desc['description'],
+                                     documentation=desc['documentation'],
                                      value=agg_data.value,
-                                     labels=tag_values(tag_map.map))
+                                     labels=labels)
 
         else:
             raise ValueError("unsupported aggregation type %s"
@@ -185,16 +190,12 @@ class Collector(object):
         Collect is invoked everytime a prometheus.Gatherer is run
         for example when the HTTP endpoint is invoked by Prometheus.
         """
-        # We need a copy of all the view data up until this point.
-        view_data = copy.deepcopy(self.view_data)
-
-        for v_data in view_data:
-            signature = view_signature(self.options.namespace, v_data.view)
+        for v_data in list(self.view_data):
+            signature = view_signature(self.options.namespace,
+                                       self.view_data[v_data].view)
             desc = self.registered_views[signature]
             metric = self.to_metric(desc,
-                                    v_data.view,
-                                    v_data.tag_map,
-                                    v_data.tag_value_aggregation_map)
+                                    self.view_data[v_data].view)
             yield metric
 
     def describe(self):
@@ -202,11 +203,15 @@ class Collector(object):
         to retrieve all registered views.
         """
         registered = {}
-        for sign, desc in self.registered_views:
-            registered[sign] = desc
+        for sign in self.registered_views:
+            registered[sign] = self.registered_views[sign]
 
-        for desc in registered:
-            yield desc
+        for v_data in list(self.view_data):
+            signature = view_signature(self.options.namespace, v_data.view)
+            desc = self.registered_views[signature]
+            metric = self.to_metric(desc,
+                                    self.view_data[v_data].view)
+            yield metric
 
 
 class PrometheusStatsExporter(base.StatsExporter):
@@ -222,7 +227,8 @@ class PrometheusStatsExporter(base.StatsExporter):
         self._options = options
         self._gatherer = gatherer
         self._collector = collector
-        self._transport = transport
+        self._transport = transport(self)
+        self.serve_http()
 
     @property
     def transport(self):
@@ -254,7 +260,7 @@ class PrometheusStatsExporter(base.StatsExporter):
         """ export send the data to the transport class
         in order to be sent to Prometheus in a sync or async way.
         """
-        if view_data:
+        if view_data is not None:
             self.transport.export(view_data)
 
     def on_register_view(self, view):
@@ -267,9 +273,11 @@ class PrometheusStatsExporter(base.StatsExporter):
         to Untyped Metric, CountData will be a Counter Metric
         DistributionData will be a Histogram Metric.
         """
-        if not view_data.tag_value_aggregation_map:
-            raise Exception("There is no data to be sent.")
-        self.collector.add_view_data(view_data)
+
+        for v_data in view_data:
+            if not v_data.tag_value_aggregation_data_map:
+                raise Exception("There is no data to be sent.")
+            self.collector.add_view_data(v_data)
 
     def serve_http(self):
         """ serve_http serves the Prometheus endpoint.
@@ -289,6 +297,7 @@ def new_stats_exporter(option):
         option.registry = CollectorRegistry()
 
     collector = new_collector(option)
+    REGISTRY.register(collector)
     exporter = PrometheusStatsExporter(options=option,
                                        gatherer=option.registry,
                                        collector=collector)
@@ -300,7 +309,7 @@ def tag_keys_to_labels(tag_keys):
     """
     labels = []
     for key in tag_keys:
-        labels.append(key.name)
+        labels.append(key)
     return labels
 
 
@@ -310,15 +319,6 @@ def new_collector(options):
     prevent the usage of constructor directly
     """
     return Collector(options=options)
-
-
-def tag_values(tags):
-    """ create an array with Tag values
-    """
-    values = []
-    for tag_key, tag_value in tags.items():
-        values.append(tag_value.value)
-    return values
 
 
 def view_name(namespace, view):
@@ -335,5 +335,5 @@ def view_signature(namespace, view):
     """
     sign = view_name(namespace, view)
     for key in view.columns:
-        sign += "-" + key.name
+        sign += "-" + key
     return sign

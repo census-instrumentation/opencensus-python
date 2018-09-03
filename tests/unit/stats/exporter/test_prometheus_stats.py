@@ -17,6 +17,32 @@ import mock
 
 from opencensus.stats.exporters import prometheus_exporter as prometheus
 from opencensus.stats import stats as stats_module
+from opencensus.stats import aggregation as aggregation_module
+from opencensus.stats import measure as measure_module
+from opencensus.stats import view as view_module
+from opencensus.stats import view_data as view_data_module
+from opencensus.tags import tag_key as tag_key_module
+
+MiB = 1 << 20
+FRONTEND_KEY = tag_key_module.TagKey("my.org/keys/frontend")
+FRONTEND_KEY_FLOAT = tag_key_module.TagKey("my.org/keys/frontend-FLOAT")
+FRONTEND_KEY_INT = tag_key_module.TagKey("my.org/keys/frontend-INT")
+FRONTEND_KEY_STR = tag_key_module.TagKey("my.org/keys/frontend-INT")
+
+VIDEO_SIZE_MEASURE = measure_module.MeasureInt(
+    "my.org/measure/video_size_test2", "size of processed videos", "By")
+
+VIDEO_SIZE_MEASURE_FLOAT = measure_module.MeasureFloat(
+    "my.org/measure/video_size_test-float", "size of processed videos-float", "By")
+
+VIDEO_SIZE_VIEW_NAME = "my.org/views/video_size_test2"
+VIDEO_SIZE_DISTRIBUTION = aggregation_module.DistributionAggregation(
+                            [0.0, 16.0 * MiB, 256.0 * MiB])
+VIDEO_SIZE_VIEW = view_module.View(VIDEO_SIZE_VIEW_NAME,
+                                "processed video size over time",
+                                [FRONTEND_KEY],
+                                VIDEO_SIZE_MEASURE,
+                                VIDEO_SIZE_DISTRIBUTION)
 
 
 class TestOptionsPrometheus(unittest.TestCase):
@@ -81,3 +107,17 @@ class TestPrometheusStatsExporter(unittest.TestCase):
     def test_new_collector(self):
         collector = prometheus.new_collector(prometheus.Options(namespace="test-collector"))
         self.assertIsInstance(collector, prometheus.Collector)
+
+    def test_on_register_view(self):
+        client = mock.Mock()
+        view_none = None
+        option = prometheus.Options(namespace="project-test")
+        exporter = prometheus.PrometheusStatsExporter(
+            options=option,
+            gatherer=mock.Mock()
+        )
+        exporter.on_register_view(VIDEO_SIZE_VIEW)
+
+        self.assertTrue(True)
+        exporter.on_register_view(view_none)
+        self.assertTrue(True)
