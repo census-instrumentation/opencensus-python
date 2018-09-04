@@ -22,19 +22,19 @@ _SAMPLED_KEY = 'x-b3-sampled'
 
 
 class B3FormatPropagator(object):
-    """Propagator for processing the B3 HTTP header format.
+    """Propagator for the B3 HTTP header format.
 
     See: https://github.com/openzipkin/b3-propagation
     """
 
     def from_headers(self, headers):
-        """Generate a SpanContext object using the trace context headers.
+        """Generate a SpanContext object from B3 propagation headers.
 
         :type headers: dict
         :param headers: HTTP request headers.
 
         :rtype: :class:`~opencensus.trace.span_context.SpanContext`
-        :returns: SpanContext generated from the trace context header.
+        :returns: SpanContext generated from B3 propagation headers.
         """
         if headers is None:
             return SpanContext(from_header=False)
@@ -64,14 +64,14 @@ class B3FormatPropagator(object):
         return span_context
 
     def to_headers(self, span_context):
-        """Convert a SpanContext object to HTTP request headers.
+        """Convert a SpanContext object to B3 propagation headers.
 
         :type span_context:
             :class:`~opencensus.trace.span_context.SpanContext`
         :param span_context: SpanContext object.
 
         :rtype: dict
-        :returns: Trace context headers in B3 propagation format.
+        :returns: B3 propagation headers.
         """
 
         if not span_context.span_id:
