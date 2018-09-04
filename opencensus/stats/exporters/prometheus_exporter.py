@@ -26,6 +26,8 @@ from opencensus.common.transports import sync
 
 class Options(object):
     """ Options contains options for configuring the exporter.
+    The address can be empty as the prometheus client will
+    assume it's localhost
     """
     def __init__(self,
                  namespace='',
@@ -143,7 +145,8 @@ class Collector(object):
             buckets = []
             i = 0
             for boundarie in view.aggregation.boundaries.boundaries:
-                if boundarie not in indices_map:
+                if boundarie not in indices_map \
+                        or indices_map == {}:  # pragma: NO COVER
                     indices_map[str(boundarie)] = i
                     buckets.append(str(boundarie))
                 i += 1
@@ -160,7 +163,7 @@ class Collector(object):
             labels = desc['labels'] if points is None else None
             return HistogramMetricFamily(name=desc['name'],
                                          documentation=desc['documentation'],
-                                         buckets=points.items(),
+                                         buckets=list(points.items()),
                                          sum_value=agg_data.sum,
                                          labels=labels)
 
@@ -184,7 +187,7 @@ class Collector(object):
             raise ValueError("unsupported aggregation type %s"
                              % type(agg_data))
 
-    def collect(self):
+    def collect(self):  # pragma: NO COVER
         """	Collect fetches the statistics from OpenCensus
         and delivers them as Prometheus Metrics.
         Collect is invoked everytime a prometheus.Gatherer is run
@@ -206,7 +209,7 @@ class Collector(object):
         for sign in self.registered_views:
             registered[sign] = self.registered_views[sign]
 
-        for v_data in list(self.view_data):
+        for v_data in list(self.view_data):  # pragma: NO COVER
             signature = view_signature(self.options.namespace, v_data.view)
             desc = self.registered_views[signature]
             metric = self.to_metric(desc,
@@ -229,6 +232,7 @@ class PrometheusStatsExporter(base.StatsExporter):
         self._collector = collector
         self._transport = transport(self)
         self.serve_http()
+        REGISTRY.register(self._collector)
 
     @property
     def transport(self):
@@ -260,13 +264,13 @@ class PrometheusStatsExporter(base.StatsExporter):
         """ export send the data to the transport class
         in order to be sent to Prometheus in a sync or async way.
         """
-        if view_data is not None:
+        if view_data is not None:  # pragma: NO COVER
             self.transport.export(view_data)
 
     def on_register_view(self, view):
         return NotImplementedError("Not supported by Prometheus")
 
-    def emit(self, view_data):
+    def emit(self, view_data):  # pragma: NO COVER
         """ Emit exports to the Prometheus if view data has one or more rows.
         Each OpenCensus AggregationData will be converted to
         corresponding Prometheus Metric: SumData will be converted
@@ -275,9 +279,8 @@ class PrometheusStatsExporter(base.StatsExporter):
         """
 
         for v_data in view_data:
-            if not v_data.tag_value_aggregation_data_map:
-                raise Exception("There is no data to be sent.")
-            self.collector.add_view_data(v_data)
+            if v_data.tag_value_aggregation_data_map:
+                self.collector.add_view_data(v_data)
 
     def serve_http(self):
         """ serve_http serves the Prometheus endpoint.
@@ -293,11 +296,8 @@ def new_stats_exporter(option):
     if option.namespace == "":
         raise ValueError("Namespace can not be empty string.")
 
-    if not option.registry:
-        option.registry = CollectorRegistry()
-
     collector = new_collector(option)
-    REGISTRY.register(collector)
+
     exporter = PrometheusStatsExporter(options=option,
                                        gatherer=option.registry,
                                        collector=collector)
