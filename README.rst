@@ -415,7 +415,7 @@ Exporter Usage
 ~~~~~~~~~~~~~~~
 
 Import
-~~~~~
+~~~~~~~
 
     .. code:: python
 
@@ -429,7 +429,7 @@ Prerequisites
 - Prometheus up and running.
 
 Register the exporter
-~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
     .. code:: python
 
         stats = stats_module.Stats()
