@@ -412,10 +412,10 @@ The use of vendoring or a dependency management tool is recommended.
 .. _Prometheus: https://prometheus.io/
 
 Exporter Usage
-~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~
 
 Import
-******
+~~~~~
 
     .. code:: python
 
@@ -423,13 +423,13 @@ Import
         from opencensus.stats import stats as stats_module
 
 Prerequisites
-*************
+~~~~~~~~~~~~~~~
 
 - OpenCensus Python libraries require Python 2.7 or later.
 - Prometheus up and running.
 
 Register the exporter
-*********************
+~~~~~~~~~~~~~~~~~~~~
     .. code:: python
 
         stats = stats_module.Stats()
@@ -441,7 +441,7 @@ Register the exporter
 
 
 Code Reference
-**************
+~~~~~~~~~~~~~~~
 
 In the *examples* folder, you can find all the necessary steps to get the exporter, register a view, put tags on the measure, and see the values against the Prometheus monitoring tool.
 
