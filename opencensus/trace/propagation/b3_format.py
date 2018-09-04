@@ -79,7 +79,7 @@ class B3FormatPropagator(object):
         else:
             span_id = span_context.span_id
 
-        sampled = span_context.trace_options.get_enabled()
+        sampled = span_context.trace_options.enabled
 
         return {
             _TRACE_ID_KEY: span_context.trace_id,
