@@ -32,9 +32,8 @@ FRONTEND_KEY = tag_key_module.TagKey("my.org/keys/frontend")
 VIDEO_SIZE_MEASURE = measure_module.MeasureInt(
     "my.org/measures/video_size", "size of processed videos", "By")
 VIDEO_SIZE_VIEW_NAME = "my.org/views/video_size"
-# VIDEO_SIZE_DISTRIBUTION = aggregation_module.DistributionAggregation(
-#     [0.0, 16.0 * MiB, 256.0 * MiB])
-VIDEO_SIZE_DISTRIBUTION = aggregation_module.CountAggregation(256)
+VIDEO_SIZE_DISTRIBUTION = aggregation_module.DistributionAggregation(
+    [0.0, 16.0 * MiB, 256.0 * MiB])
 VIDEO_SIZE_VIEW = view_module.View(VIDEO_SIZE_VIEW_NAME,
                                    "processed video size over time",
                                    [FRONTEND_KEY],
@@ -65,8 +64,9 @@ def main():
     measure_map.measure_int_put(VIDEO_SIZE_MEASURE, 25 * MiB)
     measure_map.record(tag_map)
 
-    while True:
-        pass
+    # Use the line below to see the data on prometheus
+    # while True:
+    #     pass
 
     # Get aggregated stats and print it to console.
     view_data = view_manager.get_view(VIDEO_SIZE_VIEW_NAME)
