@@ -14,10 +14,6 @@
 
 import codecs
 from datetime import datetime, timedelta
-import grpc
-import mock
-import os
-import socket
 import unittest
 
 from google.protobuf.timestamp_pb2 import Timestamp
@@ -31,255 +27,12 @@ from opencensus.trace import span_data as span_data_module
 from opencensus.trace import status as status_module
 from opencensus.trace import time_event as time_event_module
 from opencensus.trace import tracestate as tracestate_module
-from opencensus.trace.exporters import span_proto_exporter
+from opencensus.trace.exporters.span_proto_exporter import utils
 from opencensus.trace.exporters.gen.opencensusd.trace.v1 import trace_pb2
-from opencensus.trace.exporters.gen.opencensusd.agent.trace.v1 import trace_service_pb2
-from opencensus.trace.exporters.gen.opencensusd.trace.v1 import trace_config_pb2
 
 
-SERVICE_NAME = 'my-service'
-
-
-class TestSpanProtoExporter(unittest.TestCase):
-
-    def test_constructor(self):
-        exporter = span_proto_exporter.SpanProtoExporter(
-            service_name=SERVICE_NAME)
-
-        self.assertEqual(exporter.endpoint, 'localhost:50051')
-
-    def test_constructor_with_endpoint(self):
-        expected_endpoint = '0.0.0.0:50000'
-        exporter = span_proto_exporter.SpanProtoExporter(
-            service_name=SERVICE_NAME,
-            endpoint=expected_endpoint)
-
-        self.assertEqual(exporter.endpoint, expected_endpoint)
-
-    def test_constructor_with_client(self):
-        client = mock.Mock()
-        exporter = span_proto_exporter.SpanProtoExporter(
-            service_name=SERVICE_NAME,
-            client=client,
-            transport=MockTransport)
-
-        self.assertEqual(exporter.client, client)
-
-    def test_constructor_node(self):
-        exporter = span_proto_exporter.SpanProtoExporter(
-            service_name=SERVICE_NAME,
-            host_name='my host')
-
-        self.assertEqual(exporter.node.service_info.name, SERVICE_NAME)
-        self.assertEqual(exporter.node.library_info.language, 8)
-        self.assertIsNotNone(exporter.node.library_info.version)
-
-        self.assertEqual(exporter.node.identifier.host_name, 'my host')
-        self.assertEqual(exporter.node.identifier.pid, os.getpid())
-
-        self.assertIsNotNone(exporter.node.identifier.start_timestamp)
-        self.assertGreater(exporter.node.identifier.start_timestamp.seconds, 0)
-
-    def test_constructor_node(self):
-        exporter = span_proto_exporter.SpanProtoExporter(
-            service_name=SERVICE_NAME)
-
-        self.assertEqual(exporter.node.service_info.name, SERVICE_NAME)
-        self.assertEqual(exporter.node.library_info.language, 8)
-        self.assertIsNotNone(exporter.node.library_info.version)
-
-        self.assertEqual(exporter.node.identifier.host_name,
-                         socket.gethostname())
-        self.assertEqual(exporter.node.identifier.pid, os.getpid())
-
-        self.assertIsNotNone(exporter.node.identifier.start_timestamp)
-        self.assertGreater(exporter.node.identifier.start_timestamp.seconds, 0)
-
-    def test_export(self):
-        exporter = span_proto_exporter.SpanProtoExporter(
-            service_name=SERVICE_NAME,
-            transport=MockTransport)
-        exporter.export({})
-
-        self.assertTrue(exporter.transport.export_called)
-
-    def test_emit(self):
-        client = mock.Mock()
-        client.Export.return_value = [1]
-        exporter = span_proto_exporter.SpanProtoExporter(
-            service_name=SERVICE_NAME,
-            client=client,
-            transport=MockTransport)
-
-        exporter.emit({})
-
-        self.assertTrue(client.Export.called)
-
-    def test_emit_throw(self):
-        client = mock.Mock()
-        client.Export.side_effect = grpc.RpcError()
-        exporter = span_proto_exporter.SpanProtoExporter(
-            service_name=SERVICE_NAME,
-            client=client,
-            transport=MockTransport)
-
-        # does not throw
-        exporter.emit({})
-
-        self.assertTrue(client.Export.called)
-
-    def export_iterate(self, *args, **kwargs):
-        self.export_requests = list(args[0])
-        return iter(self.export_requests)
-
-    def test_basic_span_emit(self):
-        hex_encoder = codecs.getencoder('hex')
-        client = mock.Mock()
-
-        # we need to make exporter iterate over passed generator,
-        # otherwise iteration will happen after Export returns
-        # and it won't be possible to check if node is included.
-        # passed export request will be stored in self.export_requests
-        client.Export.side_effect = self.export_iterate
-
-        span_data = span_data_module.SpanData(
-            name="name",
-            context=span_context_module.SpanContext(
-                trace_id='6e0c63257de34c92bf9efcd03927272e'),
-            span_id='6e0c63257de34c92',
-            parent_span_id=None,
-            start_time=None,
-            end_time=None,
-            attributes=None,
-            child_span_count=None,
-            stack_trace=None,
-            time_events=None,
-            links=None,
-            status=None,
-            same_process_as_parent_span=None,
-            span_kind=0)
-
-        exporter = span_proto_exporter.SpanProtoExporter(
-            service_name=SERVICE_NAME,
-            client=client,
-            transport=MockTransport)
-
-        exporter.emit([span_data])
-
-        self.assertTrue(client.Export.called)
-
-        actual_request = self.export_requests[0]
-        self.assertEqual(actual_request.node, exporter.node)
-
-        pb_span = actual_request.spans[0]
-
-        self.assertEqual(pb_span.name.value, "name")
-        self.assertEqual(hex_encoder(pb_span.trace_id)[
-                         0], b'6e0c63257de34c92bf9efcd03927272e')
-        self.assertEqual(hex_encoder(pb_span.span_id)[0], b'6e0c63257de34c92')
-
-    def test_second_span_emit_without_node(self):
-        client = mock.Mock()
-
-        # we need to make exporter iterate over passed generator,
-        # otherwise iteration will happen after Export returns
-        # and it won't be possible to check if node is included
-        # passed export request will be stored in self.export_requests
-        client.Export.side_effect = self.export_iterate
-
-        span_data0 = span_data_module.SpanData(
-            name="name0",
-            context=span_context_module.SpanContext(
-                trace_id='0e0c63257de34c92bf9efcd03927272e'),
-            span_id='0e0c63257de34c92',
-            parent_span_id=None,
-            start_time=None,
-            end_time=None,
-            attributes=None,
-            child_span_count=None,
-            stack_trace=None,
-            time_events=None,
-            links=None,
-            status=None,
-            same_process_as_parent_span=None,
-            span_kind=0)
-
-        span_data1 = span_data_module.SpanData(
-            name="name1",
-            context=span_context_module.SpanContext(
-                trace_id='1e0c63257de34c92bf9efcd03927272e'),
-            span_id='1e0c63257de34c92',
-            parent_span_id=None,
-            start_time=None,
-            end_time=None,
-            attributes=None,
-            child_span_count=None,
-            stack_trace=None,
-            time_events=None,
-            links=None,
-            status=None,
-            same_process_as_parent_span=None,
-            span_kind=0)
-
-        exporter = span_proto_exporter.SpanProtoExporter(
-            service_name=SERVICE_NAME,
-            client=client,
-            transport=MockTransport)
-
-        exporter.emit([span_data0])
-
-        actual_request = self.export_requests[0]
-        self.assertIsNotNone(actual_request.node)
-        self.assertEqual(actual_request.node, exporter.node)
-
-        exporter.emit([span_data1])
-
-        self.assertEqual(len(client.Export.mock_calls), 2)
-        actual_request = self.export_requests[0]
-        self.assertEqual(actual_request.node,
-                         trace_service_pb2.ExportTraceServiceRequest().node)
-
-    def test_second_span_emit_after_exception_with_node(self):
-        client = mock.Mock()
-
-        span_data0 = span_data_module.SpanData(
-            name="name0",
-            context=span_context_module.SpanContext(
-                trace_id='0e0c63257de34c92bf9efcd03927272e'),
-            span_id='0e0c63257de34c92',
-            parent_span_id=None,
-            start_time=None,
-            end_time=None,
-            attributes=None,
-            child_span_count=None,
-            stack_trace=None,
-            time_events=None,
-            links=None,
-            status=None,
-            same_process_as_parent_span=None,
-            span_kind=0)
-
-        exporter = span_proto_exporter.SpanProtoExporter(
-            service_name=SERVICE_NAME,
-            client=client,
-            transport=MockTransport)
-
-        client.Export.side_effect = grpc.RpcError()
-        exporter.emit([span_data0])
-
-        # we need to make exporter iterate over passed generator,
-        # otherwise iteration will happen after Export returns
-        # and it won't be possible to check if node is included
-        # passed export request will be stored in self.export_requests
-        client.Export.side_effect = self.export_iterate
-
-        exporter.emit([span_data0])
-
-        self.assertEqual(len(client.Export.mock_calls), 2)
-        actual_request = self.export_requests[0]
-        self.assertEqual(actual_request.node, exporter.node)
-
-    def test_basic_span_export(self):
+class TestSpanProtoExporterUtils(unittest.TestCase):
+    def test_basic_span_translation(self):
         hex_encoder = codecs.getencoder('hex')
 
         span_data = span_data_module.SpanData(
@@ -300,10 +53,7 @@ class TestSpanProtoExporter(unittest.TestCase):
             same_process_as_parent_span=None,
             span_kind=0)
 
-        exporter = span_proto_exporter.SpanProtoExporter(
-            service_name=SERVICE_NAME,
-            transport=MockTransport)
-        pb_span = exporter.translate_to_opencensusd(span_data)
+        pb_span = utils.translate_to_opencensusd(span_data)
 
         self.assertEqual(pb_span.name.value, "name")
         self.assertEqual(hex_encoder(pb_span.trace_id)[
@@ -337,15 +87,12 @@ class TestSpanProtoExporter(unittest.TestCase):
         self.assertEqual(len(pb_span.links.link), 0)
         self.assertEqual(len(pb_span.tracestate.entries), 0)
 
-    def test_none_span_export(self):
-        exporter = span_proto_exporter.SpanProtoExporter(
-            service_name=SERVICE_NAME,
-            transport=MockTransport)
-        pb_span = exporter.translate_to_opencensusd(None)
+    def test_translate_none_span(self):
+        pb_span = utils.translate_to_opencensusd(None)
 
         self.assertIsNone(pb_span)
 
-    def test_client_span_kind_export(self):
+    def test_translate_client_span_kind(self):
         client_span_data = span_data_module.SpanData(
             context=span_context_module.SpanContext(
                 trace_id='6e0c63257de34c92bf9efcd03927272e'),
@@ -363,15 +110,12 @@ class TestSpanProtoExporter(unittest.TestCase):
             links=None,
             status=None)
 
-        exporter = span_proto_exporter.SpanProtoExporter(
-            service_name=SERVICE_NAME,
-            transport=MockTransport)
-        pb_span = exporter.translate_to_opencensusd(client_span_data)
+        pb_span = utils.translate_to_opencensusd(client_span_data)
 
         self.assertEqual(pb_span.kind, 2)
         self.assertEqual(pb_span.same_process_as_parent_span.value, True)
 
-    def test_server_span_kind_export(self):
+    def test_translate_server_span_kindt(self):
         server_span_data = span_data_module.SpanData(
             context=span_context_module.SpanContext(
                 trace_id='6e0c63257de34c92bf9efcd03927272e'),
@@ -389,15 +133,12 @@ class TestSpanProtoExporter(unittest.TestCase):
             links=None,
             status=None)
 
-        exporter = span_proto_exporter.SpanProtoExporter(
-            service_name=SERVICE_NAME,
-            transport=MockTransport)
-        pb_span = exporter.translate_to_opencensusd(server_span_data)
+        pb_span = utils.translate_to_opencensusd(server_span_data)
 
         self.assertEqual(pb_span.kind, 1)
         self.assertEqual(pb_span.child_span_count.value, 1)
 
-    def test_status_export(self):
+    def test_translate_status(self):
         span_data = span_data_module.SpanData(
             context=span_context_module.SpanContext(
                 trace_id='6e0c63257de34c92bf9efcd03927272e'),
@@ -416,15 +157,12 @@ class TestSpanProtoExporter(unittest.TestCase):
             time_events=None,
             links=None)
 
-        exporter = span_proto_exporter.SpanProtoExporter(
-            service_name=SERVICE_NAME,
-            transport=MockTransport)
-        pb_span = exporter.translate_to_opencensusd(span_data)
+        pb_span = utils.translate_to_opencensusd(span_data)
 
         self.assertEqual(pb_span.status.code, 2)
         self.assertEqual(pb_span.status.message, 'ERR')
 
-    def test_links_export(self):
+    def test_translate_links(self):
         hex_encoder = codecs.getencoder('hex')
 
         span_data = span_data_module.SpanData(
@@ -456,10 +194,7 @@ class TestSpanProtoExporter(unittest.TestCase):
             stack_trace=None,
             time_events=None)
 
-        exporter = span_proto_exporter.SpanProtoExporter(
-            service_name=SERVICE_NAME,
-            transport=MockTransport)
-        pb_span = exporter.translate_to_opencensusd(span_data)
+        pb_span = utils.translate_to_opencensusd(span_data)
 
         self.assertEqual(len(pb_span.links.link), 3)
         self.assertEqual(hex_encoder(pb_span.links.link[0].trace_id)[
@@ -495,7 +230,7 @@ class TestSpanProtoExporter(unittest.TestCase):
         self.assertEqual(
             pb_span.links.link[0].attributes.attribute_map['test_bool_key'], trace_pb2.AttributeValue(bool_value=False))
 
-    def test_time_events_export(self):
+    def test_translate_time_events(self):
 
         annotation0_ts = datetime.utcnow() + timedelta(seconds=-10)
         annotation1_ts = datetime.utcnow() + timedelta(seconds=-9)
@@ -548,10 +283,7 @@ class TestSpanProtoExporter(unittest.TestCase):
             stack_trace=None,
             links=None)
 
-        exporter = span_proto_exporter.SpanProtoExporter(
-            service_name=SERVICE_NAME,
-            transport=MockTransport)
-        pb_span = exporter.translate_to_opencensusd(span_data)
+        pb_span = utils.translate_to_opencensusd(span_data)
 
         self.assertEqual(len(pb_span.time_events.time_event), 5)
 
@@ -596,7 +328,7 @@ class TestSpanProtoExporter(unittest.TestCase):
         self.assertEqual(event3.message_event.type, 2)
         self.assertEqual(event4.message_event.type, 0)
 
-    def test_time_events_export_invalid(self):
+    def test_translate_time_events_invalid(self):
 
         ts = datetime.utcnow() + timedelta(seconds=-10)
 
@@ -618,14 +350,11 @@ class TestSpanProtoExporter(unittest.TestCase):
             stack_trace=None,
             links=None)
 
-        exporter = span_proto_exporter.SpanProtoExporter(
-            service_name=SERVICE_NAME,
-            transport=MockTransport)
-        pb_span = exporter.translate_to_opencensusd(span_data)
+        pb_span = utils.translate_to_opencensusd(span_data)
 
         self.assertEqual(len(pb_span.time_events.time_event), 0)
 
-    def test_tracestate_export(self):
+    def test_translate_tracestate(self):
 
         tracestate = tracestate_module.Tracestate()
         tracestate.append("k1", "v1")
@@ -649,10 +378,7 @@ class TestSpanProtoExporter(unittest.TestCase):
             links=None,
             status=None)
 
-        exporter = span_proto_exporter.SpanProtoExporter(
-            service_name=SERVICE_NAME,
-            transport=MockTransport)
-        pb_span = exporter.translate_to_opencensusd(client_span_data)
+        pb_span = utils.translate_to_opencensusd(client_span_data)
 
         self.assertEqual(len(pb_span.tracestate.entries), 3)
         self.assertEqual(pb_span.tracestate.entries[0].key, "k1")
@@ -662,78 +388,17 @@ class TestSpanProtoExporter(unittest.TestCase):
         self.assertEqual(pb_span.tracestate.entries[2].key, "k3")
         self.assertEqual(pb_span.tracestate.entries[2].value, "v3")
 
-    def test_span_generator(self):
-
-        hex_encoder = codecs.getencoder('hex')
-        span_datas = [
-            span_data_module.SpanData(
-                name="name0",
-                context=span_context_module.SpanContext(
-                    trace_id='0e0c63257de34c92bf9efcd03927272e'),
-                span_id='0e0c63257de34c92',
-                parent_span_id=None,
-                attributes=None,
-                start_time=None,
-                end_time=None,
-                child_span_count=None,
-                stack_trace=None,
-                time_events=None,
-                links=None,
-                status=None,
-                same_process_as_parent_span=None,
-                span_kind=0),
-            span_data_module.SpanData(
-                name="name1",
-                context=span_context_module.SpanContext(
-                    trace_id='1e0c63257de34c92bf9efcd03927272e'),
-                span_id='1e0c63257de34c92',
-                parent_span_id=None,
-                attributes=None,
-                start_time=None,
-                end_time=None,
-                child_span_count=None,
-                stack_trace=None,
-                time_events=None,
-                links=None,
-                status=None,
-                same_process_as_parent_span=None,
-                span_kind=0)
-        ]
-
-        exporter = span_proto_exporter.SpanProtoExporter(
-            service_name=SERVICE_NAME,
-            transport=MockTransport)
-        export_requests = list(exporter.generate_span_requests(span_datas))
-
-        self.assertEqual(len(export_requests), 1)
-        self.assertEqual(export_requests[0].node, exporter.node)
-        self.assertEqual(len(export_requests[0].spans), 2)
-
-        self.assertEqual(export_requests[0].spans[0].name.value, 'name0')
-        self.assertEqual(export_requests[0].spans[1].name.value, 'name1')
-        self.assertEqual(hex_encoder(export_requests[0].spans[0].trace_id)[
-                         0], b'0e0c63257de34c92bf9efcd03927272e')
-        self.assertEqual(hex_encoder(export_requests[0].spans[0].span_id)[
-                         0], b'0e0c63257de34c92')
-        self.assertEqual(hex_encoder(export_requests[0].spans[1].trace_id)[
-                         0], b'1e0c63257de34c92bf9efcd03927272e')
-        self.assertEqual(hex_encoder(export_requests[0].spans[1].span_id)[
-                         0], b'1e0c63257de34c92')
-
     def test_add_attribute_value(self):
         pb_span = trace_pb2.Span()
 
-        exporter = span_proto_exporter.SpanProtoExporter(
-            service_name=SERVICE_NAME,
-            transport=MockTransport)
-        exporter.add_proto_attribute_value(pb_span.attributes, 'int_key', 42)
-        exporter.add_proto_attribute_value(
+        utils.add_proto_attribute_value(pb_span.attributes, 'int_key', 42)
+        utils.add_proto_attribute_value(
             pb_span.attributes, 'bool_key', True)
-        exporter.add_proto_attribute_value(
+        utils.add_proto_attribute_value(
             pb_span.attributes, 'string_key', 'value')
-        exporter.add_proto_attribute_value(
+        utils.add_proto_attribute_value(
             pb_span.attributes, 'unicode_key', u'uvalue')
-        exporter.add_proto_attribute_value(
+        utils.add_proto_attribute_value(
             pb_span.attributes, 'dict_key', {"a": "b"})
 
         self.assertEqual(len(pb_span.attributes.attribute_map), 5)
@@ -758,10 +423,7 @@ class TestSpanProtoExporter(unittest.TestCase):
             uncompressed_size_bytes=10,
             compressed_size_bytes=1)
 
-        exporter = span_proto_exporter.SpanProtoExporter(
-            service_name=SERVICE_NAME,
-            transport=MockTransport)
-        exporter.set_proto_message_event(pb_event.message_event, message_event)
+        utils.set_proto_message_event(pb_event.message_event, message_event)
 
         self.assertEqual(pb_event.message_event.id, 0)
         self.assertEqual(pb_event.message_event.type, 1)
@@ -777,10 +439,7 @@ class TestSpanProtoExporter(unittest.TestCase):
             attributes=attributes_module.Attributes(
                         attributes={'test_str_key': 'test_str_value', 'test_int_key': 1, 'test_bool_key': False}))
 
-        exporter = span_proto_exporter.SpanProtoExporter(
-            service_name=SERVICE_NAME,
-            transport=MockTransport)
-        exporter.set_proto_annotation(pb_event.annotation, annotation)
+        utils.set_proto_annotation(pb_event.annotation, annotation)
 
         self.assertEqual(pb_event.annotation.description.value, "hi there")
         self.assertEqual(len(pb_event.annotation.attributes.attribute_map), 3)
@@ -800,12 +459,8 @@ class TestSpanProtoExporter(unittest.TestCase):
         annotation1 = time_event_module.Annotation(
             description="hi there1", attributes=attributes_module.Attributes())
 
-        exporter = span_proto_exporter.SpanProtoExporter(
-            service_name=SERVICE_NAME,
-            transport=MockTransport)
-
-        exporter.set_proto_annotation(pb_event0.annotation, annotation0)
-        exporter.set_proto_annotation(pb_event1.annotation, annotation1)
+        utils.set_proto_annotation(pb_event0.annotation, annotation0)
+        utils.set_proto_annotation(pb_event1.annotation, annotation1)
 
         self.assertEqual(pb_event0.annotation.description.value, "hi there0")
         self.assertEqual(pb_event1.annotation.description.value, "hi there1")
@@ -817,63 +472,36 @@ class TestSpanProtoExporter(unittest.TestCase):
         delta = now - datetime(1970, 1, 1)
         expected_seconds = int(delta.total_seconds())
         expected_nanos = delta.microseconds * 1000
-        exporter = span_proto_exporter.SpanProtoExporter(
-            service_name=SERVICE_NAME,
-            transport=MockTransport)
 
-        proto_ts = exporter.proto_ts_from_datetime_str(now.isoformat() + 'Z')
+        proto_ts = utils.proto_ts_from_datetime_str(now.isoformat() + 'Z')
         self.assertEqual(proto_ts.seconds, int(expected_seconds))
         self.assertEqual(proto_ts.nanos, expected_nanos)
 
     def test_datetime_str_to_proto_ts_conversion_none(self):
-
-        exporter = span_proto_exporter.SpanProtoExporter(
-            service_name=SERVICE_NAME,
-            transport=MockTransport)
-
-        proto_ts = exporter.proto_ts_from_datetime_str(None)
+        proto_ts = utils.proto_ts_from_datetime_str(None)
         self.assertEquals(proto_ts.seconds, 0)
         self.assertEquals(proto_ts.nanos, 0)
 
     def test_datetime_str_to_proto_ts_conversion_empty(self):
-
-        exporter = span_proto_exporter.SpanProtoExporter(
-            service_name=SERVICE_NAME,
-            transport=MockTransport)
-
-        proto_ts = exporter.proto_ts_from_datetime_str('')
+        proto_ts = utils.proto_ts_from_datetime_str('')
         self.assertEquals(proto_ts.seconds, 0)
         self.assertEquals(proto_ts.nanos, 0)
 
     def test_datetime_str_to_proto_ts_conversion_invalid(self):
-
-        exporter = span_proto_exporter.SpanProtoExporter(
-            service_name=SERVICE_NAME,
-            transport=MockTransport)
-
-        proto_ts = exporter.proto_ts_from_datetime_str('2018 08 22 T 11:53')
+        proto_ts = utils.proto_ts_from_datetime_str('2018 08 22 T 11:53')
         self.assertEquals(proto_ts.seconds, 0)
         self.assertEquals(proto_ts.nanos, 0)
 
     def test_hex_str_to_proto_bytes_conversion(self):
-
         hex_encoder = codecs.getencoder('hex')
-        exporter = span_proto_exporter.SpanProtoExporter(
-            service_name=SERVICE_NAME,
-            transport=MockTransport)
 
-        proto_bytes = exporter.hex_str_to_bytes_str(
+        proto_bytes = utils.hex_str_to_bytes_str(
             '00010203040506070a0b0c0d0eff')
         self.assertEqual(hex_encoder(proto_bytes)[0],
                          b'00010203040506070a0b0c0d0eff')
 
     def test_datetime_to_proto_ts_conversion_none(self):
-
-        exporter = span_proto_exporter.SpanProtoExporter(
-            service_name=SERVICE_NAME,
-            transport=MockTransport)
-
-        proto_ts = exporter.proto_ts_from_datetime(None)
+        proto_ts = utils.proto_ts_from_datetime(None)
         self.assertEquals(proto_ts.seconds, 0)
         self.assertEquals(proto_ts.nanos, 0)
 
@@ -882,136 +510,14 @@ class TestSpanProtoExporter(unittest.TestCase):
         delta = now - datetime(1970, 1, 1)
         expected_seconds = int(delta.total_seconds())
         expected_nanos = delta.microseconds * 1000
-        exporter = span_proto_exporter.SpanProtoExporter(
-            service_name=SERVICE_NAME,
-            transport=MockTransport)
 
-        proto_ts = exporter.proto_ts_from_datetime(now)
+        proto_ts = utils.proto_ts_from_datetime(now)
         self.assertEqual(proto_ts.seconds, int(expected_seconds))
         self.assertEqual(proto_ts.nanos, expected_nanos)
 
     def test_datetime_to_proto_ts_conversion_zero(self):
         zero = datetime(1970, 1, 1)
-        exporter = span_proto_exporter.SpanProtoExporter(
-            service_name=SERVICE_NAME,
-            transport=MockTransport)
 
-        proto_ts = exporter.proto_ts_from_datetime(zero)
+        proto_ts = utils.proto_ts_from_datetime(zero)
         self.assertEqual(proto_ts.seconds, 0)
         self.assertEqual(proto_ts.nanos, 0)
-
-    def test_config_generator(self):
-
-        config = trace_config_pb2.TraceConfig(
-            constant_sampler=trace_config_pb2.ConstantSampler(
-                decision=True))
-        exporter = span_proto_exporter.SpanProtoExporter(
-            service_name=SERVICE_NAME,
-            transport=MockTransport)
-
-        config_requests = list(exporter.generate_config_request(config))
-
-        self.assertEqual(len(config_requests), 1)
-        self.assertEqual(config_requests[0].node, exporter.node)
-        self.assertEqual(config_requests[0].config, config)
-
-    def config_iterate(self, *args, **kwargs):
-        self.config_requests = list(args[0])
-        return iter(self.config_requests)
-
-    def test_second_config_update_without_node(self):
-        client = mock.Mock()
-
-        # we need to make exporter iterate over passed generator,
-        # otherwise iteration will happen after Config returns
-        # and it won't be possible to check if node is included.
-        # passed config request will be stored in self.config_requests
-        client.Config.side_effect = self.config_iterate
-
-        config0 = trace_config_pb2.TraceConfig(
-            constant_sampler=trace_config_pb2.ConstantSampler(
-                decision=True))
-
-        config1 = trace_config_pb2.TraceConfig(
-            constant_sampler=trace_config_pb2.ConstantSampler(
-                decision=False))
-
-        exporter = span_proto_exporter.SpanProtoExporter(
-            service_name=SERVICE_NAME,
-            client=client,
-            transport=MockTransport)
-
-        exporter.update_config(config0)
-
-        actual_request = self.config_requests[0]
-        self.assertIsNotNone(actual_request.node)
-        self.assertEqual(actual_request.node, exporter.node)
-
-        exporter.update_config(config1)
-
-        self.assertEqual(len(client.Config.mock_calls), 2)
-        actual_request = self.config_requests[0]
-        self.assertEqual(actual_request.node,
-                         trace_service_pb2.ConfigTraceServiceRequest().node)
-
-    def test_second_config_update_after_exception_with_node(self):
-        client = mock.Mock()
-
-        config0 = trace_config_pb2.TraceConfig(
-            constant_sampler=trace_config_pb2.ConstantSampler(
-                decision=True))
-
-        config1 = trace_config_pb2.TraceConfig(
-            constant_sampler=trace_config_pb2.ConstantSampler(
-                decision=False))
-
-        exporter = span_proto_exporter.SpanProtoExporter(
-            service_name=SERVICE_NAME,
-            client=client,
-            transport=MockTransport)
-
-        client.Config.side_effect = grpc.RpcError()
-        with self.assertRaises(grpc.RpcError):
-            exporter.update_config(config0)
-
-        # we need to make exporter iterate over passed generator,
-        # otherwise iteration will happen after Config returns
-        # and it won't be possible to check if node is included.
-        # passed config request will be stored in self.config_requests
-        client.Config.side_effect = self.config_iterate
-
-        exporter.update_config(config1)
-
-        self.assertEqual(len(client.Config.mock_calls), 2)
-        actual_request = self.config_requests[0]
-        self.assertEqual(actual_request.node, exporter.node)
-
-    def test_update_config_return_value(self):
-        client = mock.Mock()
-
-        client_config = trace_config_pb2.TraceConfig(
-            constant_sampler=trace_config_pb2.ConstantSampler(
-                decision=True))
-
-        agent_config = trace_config_pb2.TraceConfig(
-            probability_sampler=trace_config_pb2.ProbabilitySampler(
-                samplingProbability=0.1))
-
-        exporter = span_proto_exporter.SpanProtoExporter(
-            service_name=SERVICE_NAME,
-            client=client,
-            transport=MockTransport)
-
-        client.Config.return_value = iter([agent_config])
-        actual_response = exporter.update_config(client_config)
-
-        self.assertEqual(actual_response, agent_config)
-
-
-class MockTransport(object):
-    def __init__(self, exporter=None):
-        self.export_called = False
-        self.exporter = exporter
-
-    def export(self, trace):
-        self.export_called = True
