@@ -20,7 +20,7 @@ from google.cloud import monitoring_v3
 from opencensus.stats import aggregation
 from opencensus.stats import measure
 from datetime import datetime
-from opencensus.common.transports import sync
+from opencensus.common.transports import async
 
 MAX_TIME_SERIES_PER_UPLOAD = 200
 OPENCENSUS_TASK_DESCRIPTION = "Opencensus task identifier"
@@ -106,7 +106,7 @@ class StackdriverStatsExporter(base.StatsExporter):
                  options=Options(),
                  client=None,
                  default_labels={},
-                 transport=sync.SyncTransport):
+                 transport=async.AsyncTransport):
         self._options = options
         self._client = client
         self._transport = transport(self)
@@ -217,8 +217,9 @@ class StackdriverStatsExporter(base.StatsExporter):
                 buckets = dist_value.bucket_counts
                 buckets.extend(list(map(int, agg_data.counts_per_bucket)))
             else:
-                if is_float(tag_value[0])[0]:
-                    point.value.double_value = float(tag_value[0])
+                convFloat, isFloat = as_float(tag_value[0])
+                if isFloat:
+                    point.value.double_value = convFloat
                 else:
                     point.value.string_value = str(tag_value[0])
 
@@ -242,7 +243,7 @@ class StackdriverStatsExporter(base.StatsExporter):
             start_time = point.interval.start_time
             start_time.seconds = int(timestamp_start)
             start_secs = start_time.seconds
-            start_time.nanos = int((timestamp_start - start_secs) * 10**9)
+            start_time.nanos = int((timestamp_start - start_secs) * 1e9)
         return series
 
     def create_metric_descriptor(self, view):
@@ -375,11 +376,12 @@ def remove_non_alphanumeric(text):
     return str(re.sub('[^0-9a-zA-Z ]+', '', text)).replace(" ", "")
 
 
-def is_float(value):
-    """ Validate if value is a float
+def as_float(value):
+    """ Converts a value to a float if possible
+          On success, it returns (converted_value, True)
+          On failure, it returns (None, False)
     """
     try:
-        result = float(value)
-        return True, result
-    except ValueError as identifier:
-        return False, None
+        return float(value), True
+    except Exception as exception:  # Catch all exception including ValueError
+        return None, False

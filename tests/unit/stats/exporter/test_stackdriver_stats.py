@@ -95,17 +95,17 @@ class TestStackdriverStatsExporter(unittest.TestCase):
 
         self.assertIsInstance(exporter_created, stackdriver.StackdriverStatsExporter)
 
-    def test_is_float(self):
+    def test_as_float(self):
         value = 1.5
-        result = stackdriver.is_float(value)
-        self.assertEqual(result[0], True)
-        self.assertEqual(result[1], value)
+        result = stackdriver.as_float(value)
+        self.assertEqual(result[0], value)
+        self.assertEqual(result[1], True)
 
     def test_is_not_float(self):
         value = "a*7"
-        result = stackdriver.is_float(value)
-        self.assertEqual(result[0], False)
-        self.assertEqual(result[1], None)
+        result = stackdriver.as_float(value)
+        self.assertEqual(result[0], None)
+        self.assertEqual(result[1], False)
 
     def test_remove_invalid_chars(self):
         invalid_chars = "@#$"
