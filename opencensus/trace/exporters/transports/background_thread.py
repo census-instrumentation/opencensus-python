@@ -15,6 +15,7 @@
 import atexit
 import threading
 import time
+import logging
 
 from six.moves import queue
 from six.moves import range
@@ -101,7 +102,15 @@ class _Worker(object):
                     span_datas.extend(item)
 
             if span_datas:
-                self.exporter.emit(span_datas)
+                try:
+                    self.exporter.emit(span_datas)
+                except Exception as e:
+                    logging.exception(
+                        '%s failed to emit spans after max retries.'
+                        'Dropping %s spans from queue.',
+                        self.exporter.__class__.__name__,
+                        len(span_datas))
+                    pass
 
             for _ in range(len(items)):
                 self._queue.task_done()

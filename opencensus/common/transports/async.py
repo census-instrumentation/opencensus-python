@@ -100,7 +100,15 @@ class _Worker(object):
                     data.extend(item)
 
             if data:
-                self.exporter.emit(data)
+                try:
+                    self.exporter.emit(data)
+                except Exception as e:
+                    logging.exception(
+                        '%s failed to emit data after max retries.'
+                        'Dropping %s objects from queue.',
+                        self.exporter.__class__.__name__,
+                        len(data))
+                    pass
 
             for _ in range(len(items)):
                 self._queue.task_done()
