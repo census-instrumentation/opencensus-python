@@ -17,11 +17,11 @@
 from google.protobuf.internal.well_known_types import ParseError
 from google.protobuf.timestamp_pb2 import Timestamp
 from google.protobuf.wrappers_pb2 import BoolValue, UInt32Value
-from opencensus.trace.exporters.gen.opencensusd.trace.v1 import trace_pb2
+from opencensus.trace.exporters.gen.opencensus.trace.v1 import trace_pb2
 
 
-def translate_to_opencensusd(span_data):
-    """Translates the opencensus spans to OpenCensusD spans.
+def translate_to_trace_proto(span_data):
+    """Translates the opencensus spans to ocagent proto spans.
 
     :type span_data: :class:`~opencensus.trace.span_data.SpanData`
     :param span_data: SpanData tuples to convert to protobuf spans

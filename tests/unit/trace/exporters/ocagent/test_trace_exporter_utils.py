@@ -27,11 +27,11 @@ from opencensus.trace import span_data as span_data_module
 from opencensus.trace import status as status_module
 from opencensus.trace import time_event as time_event_module
 from opencensus.trace import tracestate as tracestate_module
-from opencensus.trace.exporters.span_proto_exporter import utils
-from opencensus.trace.exporters.gen.opencensusd.trace.v1 import trace_pb2
+from opencensus.trace.exporters.ocagent import utils
+from opencensus.trace.exporters.gen.opencensus.trace.v1 import trace_pb2
 
 
-class TestSpanProtoExporterUtils(unittest.TestCase):
+class TestTraceExporterUtils(unittest.TestCase):
     def test_basic_span_translation(self):
         hex_encoder = codecs.getencoder('hex')
 
@@ -53,7 +53,7 @@ class TestSpanProtoExporterUtils(unittest.TestCase):
             same_process_as_parent_span=None,
             span_kind=0)
 
-        pb_span = utils.translate_to_opencensusd(span_data)
+        pb_span = utils.translate_to_trace_proto(span_data)
 
         self.assertEqual(pb_span.name.value, "name")
         self.assertEqual(hex_encoder(pb_span.trace_id)[
@@ -88,7 +88,7 @@ class TestSpanProtoExporterUtils(unittest.TestCase):
         self.assertEqual(len(pb_span.tracestate.entries), 0)
 
     def test_translate_none_span(self):
-        pb_span = utils.translate_to_opencensusd(None)
+        pb_span = utils.translate_to_trace_proto(None)
 
         self.assertIsNone(pb_span)
 
@@ -110,7 +110,7 @@ class TestSpanProtoExporterUtils(unittest.TestCase):
             links=None,
             status=None)
 
-        pb_span = utils.translate_to_opencensusd(client_span_data)
+        pb_span = utils.translate_to_trace_proto(client_span_data)
 
         self.assertEqual(pb_span.kind, 2)
         self.assertEqual(pb_span.same_process_as_parent_span.value, True)
@@ -133,7 +133,7 @@ class TestSpanProtoExporterUtils(unittest.TestCase):
             links=None,
             status=None)
 
-        pb_span = utils.translate_to_opencensusd(server_span_data)
+        pb_span = utils.translate_to_trace_proto(server_span_data)
 
         self.assertEqual(pb_span.kind, 1)
         self.assertEqual(pb_span.child_span_count.value, 1)
@@ -157,7 +157,7 @@ class TestSpanProtoExporterUtils(unittest.TestCase):
             time_events=None,
             links=None)
 
-        pb_span = utils.translate_to_opencensusd(span_data)
+        pb_span = utils.translate_to_trace_proto(span_data)
 
         self.assertEqual(pb_span.status.code, 2)
         self.assertEqual(pb_span.status.message, 'ERR')
@@ -194,7 +194,7 @@ class TestSpanProtoExporterUtils(unittest.TestCase):
             stack_trace=None,
             time_events=None)
 
-        pb_span = utils.translate_to_opencensusd(span_data)
+        pb_span = utils.translate_to_trace_proto(span_data)
 
         self.assertEqual(len(pb_span.links.link), 3)
         self.assertEqual(hex_encoder(pb_span.links.link[0].trace_id)[
@@ -283,7 +283,7 @@ class TestSpanProtoExporterUtils(unittest.TestCase):
             stack_trace=None,
             links=None)
 
-        pb_span = utils.translate_to_opencensusd(span_data)
+        pb_span = utils.translate_to_trace_proto(span_data)
 
         self.assertEqual(len(pb_span.time_events.time_event), 5)
 
@@ -350,7 +350,7 @@ class TestSpanProtoExporterUtils(unittest.TestCase):
             stack_trace=None,
             links=None)
 
-        pb_span = utils.translate_to_opencensusd(span_data)
+        pb_span = utils.translate_to_trace_proto(span_data)
 
         self.assertEqual(len(pb_span.time_events.time_event), 0)
 
@@ -378,7 +378,7 @@ class TestSpanProtoExporterUtils(unittest.TestCase):
             links=None,
             status=None)
 
-        pb_span = utils.translate_to_opencensusd(client_span_data)
+        pb_span = utils.translate_to_trace_proto(client_span_data)
 
         self.assertEqual(len(pb_span.tracestate.entries), 3)
         self.assertEqual(pb_span.tracestate.entries[0].key, "k1")

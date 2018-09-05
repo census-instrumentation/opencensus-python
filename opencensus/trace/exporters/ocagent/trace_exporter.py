@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Export opencensus spans to trace proto agent"""
+"""Export opencensus spans to ocagent"""
 
 import datetime
 import grpc
@@ -20,24 +20,26 @@ import os
 import socket
 from threading import Lock
 from opencensus.trace.exporters import base
-from opencensus.trace.exporters.gen.opencensusd.agent.common.v1 import (
+from opencensus.trace.exporters.gen.opencensus.agent.common.v1 import (
     common_pb2
 )
-from opencensus.trace.exporters.gen.opencensusd.agent.trace.v1 import (
+from opencensus.trace.exporters.gen.opencensus.agent.trace.v1 import (
     trace_service_pb2,
     trace_service_pb2_grpc
 )
+from opencensus.trace.exporters.ocagent import utils
 from opencensus.trace.exporters.transports import sync
-from opencensus.trace.exporters.span_proto_exporter import utils
 
 # Default agent endpoint
+# TODO: subject to change: this is not a final default endpoint!
 DEFAULT_ENDPOINT = 'localhost:50051'
 
 # OpenCensus Version
+# TODO: https://github.com/census-instrumentation/opencensus-python/issues/296
 VERSION = '0.1.6'
 
 
-class SpanProtoExporter(base.Exporter):
+class TraceExporter(base.Exporter):
     """Export the spans by sending them to opencensus agent.
 
     :type service_name: str
@@ -50,7 +52,7 @@ class SpanProtoExporter(base.Exporter):
     :param endpoint: opencensus agent endpoint.
 
     :type client: class:`~.trace_service_pb2_grpc.TraceServiceStub`
-    :param client: OpenCensusD client.
+    :param client: TraceService client stub.
 
     :type transport: :class:`type`
     :param transport: Class for creating new transport objects. It should
@@ -92,9 +94,6 @@ class SpanProtoExporter(base.Exporter):
             ),
             service_info=common_pb2.ServiceInfo(name=service_name))
 
-        self.send_node_in_config = True
-        self.send_node_in_export = True
-
     def emit(self, span_datas):
         """
         :type span_datas: list of :class:
@@ -111,12 +110,7 @@ class SpanProtoExporter(base.Exporter):
             for _ in responses:
                 pass
 
-            # Node was successfully sent, unless there is a connectivity
-            # issue between app and agent, Node should not be sent again
-            self.send_node_in_export = False
         except grpc.RpcError:
-            self.send_node_in_export = True
-            self.send_node_in_config = True
             pass
 
     def export(self, span_datas):
@@ -137,19 +131,20 @@ class SpanProtoExporter(base.Exporter):
 
         :type span_datas: list of
                          :class:`~opencensus.trace.span_data.SpanData`
-        :param span_datas: SpanData tuples to convert to protocuf spans
+        :param span_datas: SpanData tuples to convert to protobuf spans
                            and send to opensensusd agent
 
         :rtype: list of
-                `~gen.opencensusd.agent.trace.v1.trace_service_pb2.ExportTraceServiceRequest`
+                `~gen.opencensus.agent.trace.v1.trace_service_pb2.ExportTraceServiceRequest`
         :returns: List of span export requests.
         """
 
-        pb_spans = [utils.translate_to_opencensusd(
+        pb_spans = [utils.translate_to_trace_proto(
             span_data) for span_data in span_datas]
 
+        # TODO: send node once per channel
         yield trace_service_pb2.ExportTraceServiceRequest(
-            node=self.node if self.send_node_in_export else None,
+            node=self.node,
             spans=pb_spans)
 
     # TODO: better support for receiving config updates
@@ -171,11 +166,8 @@ class SpanProtoExporter(base.Exporter):
                     self.generate_config_request(config))
 
                 agent_config = next(config_responses)
-                self.send_node_in_config = False
                 return agent_config
             except grpc.RpcError as e:
-                self.send_node_in_config = True
-                self.send_node_in_export = True
                 raise e
 
     def generate_config_request(self, config):
@@ -189,8 +181,9 @@ class SpanProtoExporter(base.Exporter):
         :returns: List of config requests.
         """
 
+        # TODO: send node once per channel
         request = trace_service_pb2.ConfigTraceServiceRequest(
-            node=self.node if self.send_node_in_config else None,
+            node=self.node,
             config=config)
 
         yield request

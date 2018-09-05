@@ -14,9 +14,9 @@ from google.protobuf import descriptor_pb2
 _sym_db = _symbol_database.Default()
 
 
-from opencensus.trace.exporters.gen.opencensusd.agent.common.v1 import common_pb2 as opencensus_dot_proto_dot_agent_dot_common_dot_v1_dot_common__pb2
-from opencensus.trace.exporters.gen.opencensusd.trace.v1 import trace_pb2 as opencensus_dot_proto_dot_trace_dot_v1_dot_trace__pb2
-from opencensus.trace.exporters.gen.opencensusd.trace.v1 import trace_config_pb2 as opencensus_dot_proto_dot_trace_dot_v1_dot_trace__config__pb2
+from opencensus.trace.exporters.gen.opencensus.agent.common.v1 import common_pb2 as opencensus_dot_proto_dot_agent_dot_common_dot_v1_dot_common__pb2
+from opencensus.trace.exporters.gen.opencensus.trace.v1 import trace_pb2 as opencensus_dot_proto_dot_trace_dot_v1_dot_trace__pb2
+from opencensus.trace.exporters.gen.opencensus.trace.v1 import trace_config_pb2 as opencensus_dot_proto_dot_trace_dot_v1_dot_trace__config__pb2
 
 DESCRIPTOR = _descriptor.FileDescriptor(
     name='opencensus/proto/agent/trace/v1/trace_service.proto',

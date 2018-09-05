@@ -2,7 +2,7 @@
 branch = True
 omit = 
        *gen/jaeger*
-       *gen/opencensusd*
+       *gen/opencensus*
 
 [report]
 fail_under = 100
@@ -14,4 +14,4 @@ exclude_lines =
     def __repr__
 omit = 
        *gen/jaeger*
-       *gen/opencensusd*
+       *gen/opencensus*
