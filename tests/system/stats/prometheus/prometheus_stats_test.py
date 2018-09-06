@@ -62,12 +62,11 @@ class TestPrometheusStats(unittest.TestCase):
         measure_map.record(tag_map)
 
         if sys.version_info > (3, 0):
-            import urllib.request as urllib
+            import urllib.request
+            contents = urllib.request.urlopen("http://localhost:9202/metrics").read()
         else:
-            import urllib
+            import urllib2
+            contents = urllib2.urlopen("http://localhost:9202/metrics").read()
 
-        contents = urllib.urlopen("http://localhost:9202/metrics").read()
-        contents = contents.split("\n")
-
-        self.assertIn('# TYPE opencensus_my.org/views/video_size counter', contents)
-        self.assertIn('opencensus_my.org/views/video_size 268435456.0', contents)
+        self.assertIn(b'# TYPE opencensus_my.org/views/video_size counter', contents)
+        self.assertIn(b'opencensus_my.org/views/video_size 268435456.0', contents)
