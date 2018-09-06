@@ -103,6 +103,11 @@ class TraceExporter(base.Exporter):
         """
 
         try:
+
+            # TODO: keep the stream alive.
+            # The stream is terminated after iteration completes.
+            # To keep it alive, we can enqueue proto spans here
+            # and asyncronously read them and send to the agent.
             responses = self.client.Export(
                 self.generate_span_requests(span_datas))
 
@@ -162,6 +167,10 @@ class TraceExporter(base.Exporter):
         lock = Lock()
         with lock:
             try:
+                # TODO: keep the stream alive.
+                # The stream is terminated after iteration completes.
+                # To keep it alive, we can enqueue proto configs here
+                # and asyncronously read them and send to the agent.
                 config_responses = self.client.Config(
                     self.generate_config_request(config))
 
