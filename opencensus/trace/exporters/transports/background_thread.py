@@ -13,9 +13,9 @@
 # limitations under the License.
 
 import atexit
+import logging
 import threading
 import time
-import logging
 
 from six.moves import queue
 from six.moves import range
