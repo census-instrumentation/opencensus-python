@@ -66,7 +66,7 @@ class TestPrometheusStats(unittest.TestCase):
         else:
             import urllib
 
-        contents = urllib.urlopen("http://localhost:9202/metrics").read()
+        contents = urllib.urlopen("http://localhost:9202/metrics").read().split("\n")
 
         self.assertIn('# TYPE opencensus_my.org/views/video_size counter', contents)
         self.assertIn('opencensus_my.org/views/video_size 268435456.0', contents)
