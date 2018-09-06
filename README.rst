@@ -415,19 +415,19 @@ The use of vendoring or a dependency management tool is recommended.
 
 .. _Stackdriver: https://app.google.stackdriver.com/metrics-explorer
 
-Exporter Usage
-~~~~~~~~~~~~~~
+Stackdriver Exporter Usage
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Import
-******
+Stackdriver Import
+************************
 
     .. code:: python
 
         from opencensus.stats.exporters import stackdriver_exporter as stackdriver
         from opencensus.stats import stats as stats_module
 
-Prerequisites
-*************
+Stackdriver Prerequisites
+**************************
 
 - OpenCensus Python libraries require Python 2.7 or later.
 - Google Cloud Platform account and project.
@@ -435,8 +435,8 @@ Prerequisites
 
 .. _Click here: https://opencensus.io/codelabs/stackdriver
 
-Register the exporter
-*********************
+Register the Stackdriver exporter
+**********************************
 
     .. code:: python
 
@@ -448,8 +448,8 @@ Register the exporter
         ...
 
 
-Code Reference
-***************
+Stackdriver Code Reference
+******************************
 
 In the *examples* folder, you can find all the necessary steps to get the exporter, register a view, put tags on the measure, and see the values against the Stackdriver monitoring tool once you have defined the *project_id*.
 
@@ -473,25 +473,25 @@ The use of vendoring or a dependency management tool is recommended.
 
 .. _Prometheus: https://prometheus.io/
 
-Exporter Usage
-~~~~~~~~~~~~~~~
+Prometheus Exporter Usage
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Import
-*************
+Prometheus Import
+********************
 
     .. code:: python
 
         from opencensus.stats.exporters import prometheus_exporter as prometheus
         from opencensus.stats import stats as stats_module
 
-Prerequisites
-*************
+Prometheus Prerequisites
+***************************
 
 - OpenCensus Python libraries require Python 2.7 or later.
 - Prometheus up and running.
 
-Register the exporter
-**************************
+Register the Prometheus exporter
+***********************************
 
     .. code:: python
 
@@ -503,8 +503,8 @@ Register the exporter
         ...
 
 
-Code Reference
-***************
+Prometheus Code Reference
+***************************
 
 In the *examples* folder, you can find all the necessary steps to get the exporter, register a view, put tags on the measure, and see the values against the Prometheus monitoring tool.
 
@@ -573,3 +573,4 @@ Disclaimer
 ----------
 
 This is not an official Google product.
+gi

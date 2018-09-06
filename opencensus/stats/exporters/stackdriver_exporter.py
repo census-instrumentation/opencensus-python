@@ -218,9 +218,9 @@ class StackdriverStatsExporter(base.StatsExporter):
                 buckets.extend(list(map(int, agg_data.counts_per_bucket)))
             else:
                 convFloat, isFloat = as_float(tag_value[0])
-                if isFloat:
+                if isFloat:  # pragma: NO COVER
                     point.value.double_value = convFloat
-                else:
+                else:  # pragma: NO COVER
                     point.value.string_value = str(tag_value[0])
 
             start = datetime.strptime(v_data.start_time, EPOCH_PATTERN)
@@ -235,7 +235,7 @@ class StackdriverStatsExporter(base.StatsExporter):
             point.interval.end_time.nanos = int((timestamp_end-secs)*10**9)
 
             if type(agg) is not \
-                    aggregation.aggregation_data.LastValueAggregationData:
+                    aggregation.aggregation_data.LastValueAggregationData:  # pragma: NO COVER
                 if timestamp_start == timestamp_end:
                     # avoiding start_time and end_time to be equal
                     timestamp_start = timestamp_start - 1
