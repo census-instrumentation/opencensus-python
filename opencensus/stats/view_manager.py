@@ -47,7 +47,9 @@ class ViewManager(object):
         return self.measure_to_view_map.exported_views
 
     def register_exporter(self, exporter):
+        """register the exporter"""
         self.measure_to_view_map.exporters.append(exporter)
 
     def unregister_exporter(self, exporter):
+        """unregister the exporter"""
         self.measure_to_view_map.exporters.remove(exporter)
