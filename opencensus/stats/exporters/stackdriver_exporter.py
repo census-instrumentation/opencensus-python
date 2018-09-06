@@ -234,8 +234,8 @@ class StackdriverStatsExporter(base.StatsExporter):
             secs = point.interval.end_time.seconds
             point.interval.end_time.nanos = int((timestamp_end-secs)*10**9)
 
-            if type(agg) is not \
-                    aggregation.aggregation_data.LastValueAggregationData:  # pragma: NO COVER
+            if type(agg) is not aggregation.aggregation_data.\
+                    LastValueAggregationData:  # pragma: NO COVER
                 if timestamp_start == timestamp_end:
                     # avoiding start_time and end_time to be equal
                     timestamp_start = timestamp_start - 1
