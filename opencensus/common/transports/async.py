@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import atexit
+import logging
 import threading
 import time
 
