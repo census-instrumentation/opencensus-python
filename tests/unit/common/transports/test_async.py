@@ -228,7 +228,6 @@ class Test_Worker(unittest.TestCase):
         worker._thread_main()
 
         # Span 2 should throw an exception, only span 0 and 1 are left
-        print(exporter.exported)
         self.assertEqual(exporter.exported, span_data0 + span_data1)
 
         # # Logging exception should have been called on the exporter exception
