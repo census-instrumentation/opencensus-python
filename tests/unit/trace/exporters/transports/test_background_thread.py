@@ -231,7 +231,7 @@ class Test_Worker(unittest.TestCase):
         print(exporter.exported)
         self.assertEqual(exporter.exported, span_data0 + span_data1)
 
-        # # Logging exception should have been called on the exporter exception
+        # Logging exception should have been called on the exporter exception
         expected = '%s failed to emit spans after max retries.Dropping %s spans from queue.'
         mock.assert_called_with(expected, 'Exporter', 1)
 
