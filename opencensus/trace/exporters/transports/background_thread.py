@@ -104,7 +104,7 @@ class _Worker(object):
             if span_datas:
                 try:
                     self.exporter.emit(span_datas)
-                except Exception as e:
+                except Exception:
                     logging.exception(
                         '%s failed to emit spans after max retries.'
                         'Dropping %s spans from queue.',
