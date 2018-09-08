@@ -13,13 +13,21 @@
 # limitations under the License.
 
 from opencensus.trace.tracers import base
+from opencensus.trace import blank_span as trace_span
+from opencensus.trace.span_context import SpanContext
+from opencensus.trace import trace_options
 
 
 class NoopTracer(base.Tracer):
     """No-op implementation of the :class:`Tracer` interface, all methods are
     no-ops. Should be used when tracing is not enabled or not sampled.
     """
-    span_context = None
+
+    def __init__(self):
+
+        self.span_context = SpanContext(
+            trace_options=trace_options.TraceOptions(0)
+        )
 
     def finish(self):
         """End spans and send to reporter."""
@@ -34,7 +42,9 @@ class NoopTracer(base.Tracer):
         :rtype: :class:`~opencensus.trace.trace_span.Span`
         :returns: The Span object.
         """
-        return base.NullContextManager(context_tracer=self)
+
+        span = self.start_span(name=name)
+        return span
 
     def start_span(self, name='span'):
         """Start a span.
@@ -45,18 +55,19 @@ class NoopTracer(base.Tracer):
         :rtype: :class:`~opencensus.trace.trace_span.Span`
         :returns: The Span object.
         """
-        return base.NullContextManager(context_tracer=self)
+        span = trace_span.BlankSpan(name, context_tracer=self)
+        return span
 
     def end_span(self):
         """End a span. Remove the span from the span stack, and update the
         span_id in TraceContext as the current span_id which is the peek
         element in the span stack.
         """
-        return base.NullContextManager(context_tracer=self)
+        pass
 
     def current_span(self):
         """Return the current span."""
-        return base.NullContextManager(context_tracer=self)
+        return trace_span.BlankSpan()
 
     def add_attribute_to_current_span(self, attribute_key, attribute_value):
         """Add attribute to current span.
