@@ -105,7 +105,7 @@ class _Worker(object):
                     self.exporter.emit(data)
                 except Exception:
                     logging.exception(
-                        '%s failed to emit data after max retries.'
+                        '%s failed to emit data.'
                         'Dropping %s objects from queue.',
                         self.exporter.__class__.__name__,
                         len(data))
