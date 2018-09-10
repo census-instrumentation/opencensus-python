@@ -200,7 +200,13 @@ class TestJaegerExporter(unittest.TestCase):
                 timestamp=time,
                 annotation=time_event.Annotation(
                     description='First Annotation',
-                    attributes=annotation_attributes))
+                    attributes=annotation_attributes)),
+            time_event.TimeEvent(
+                timestamp=time,
+                message_event=time_event.MessageEvent(
+                    id='message-event-id',
+                    uncompressed_size_bytes=0,
+                )),
         ]
 
         links = [
