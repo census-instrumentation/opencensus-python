@@ -230,6 +230,7 @@ class DistributionAggregationData(BaseAggregationData):
             return i
 
         self._counts_per_bucket[(len(self._bounds))-1] += 1
+
         return i
 
 
