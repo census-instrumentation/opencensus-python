@@ -31,8 +31,7 @@ from opencensus.trace.exporters.ocagent import utils
 from opencensus.trace.exporters.transports import sync
 
 # Default agent endpoint
-# TODO: subject to change: this is not a final default endpoint!
-DEFAULT_ENDPOINT = 'localhost:50051'
+DEFAULT_ENDPOINT = 'localhost:55678'
 
 # OpenCensus Version
 # TODO: https://github.com/census-instrumentation/opencensus-python/issues/296

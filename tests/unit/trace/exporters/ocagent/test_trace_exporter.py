@@ -37,7 +37,7 @@ class TestTraceExporter(unittest.TestCase):
         exporter = TraceExporter(
             service_name=SERVICE_NAME)
 
-        self.assertEqual(exporter.endpoint, 'localhost:50051')
+        self.assertEqual(exporter.endpoint, 'localhost:55678')
 
     def test_constructor_with_endpoint(self):
         expected_endpoint = '0.0.0.0:50000'
