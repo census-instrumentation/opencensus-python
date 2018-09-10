@@ -79,7 +79,7 @@ class ViewData(object):
             i += 1
         return tag_values
 
-    def record(self, context, value, timestamp):
+    def record(self, context, value, timestamp, attachments=None):
         """records the view data against context"""
         tag_values = self.get_tag_values(tags=context.map,
                                          columns=self.view.columns)
@@ -87,4 +87,5 @@ class ViewData(object):
         if tuple_vals not in self.tag_value_aggregation_data_map:
             self.tag_value_aggregation_data_map[tuple_vals] = copy.deepcopy(
                 self.view.aggregation.aggregation_data)
-        self.tag_value_aggregation_data_map.get(tuple_vals).add_sample(value)
+        self.tag_value_aggregation_data_map.get(tuple_vals).\
+            add_sample(value, timestamp, attachments)

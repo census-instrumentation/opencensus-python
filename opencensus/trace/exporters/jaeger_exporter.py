@@ -278,6 +278,8 @@ def _extract_logs_from_span(span):
     logs = []
     for time_event in span.time_events:
         annotation = time_event.annotation
+        if not annotation:
+            continue
         fields = _extract_tags(annotation.attributes)
 
         fields.append(jaeger.Tag(
