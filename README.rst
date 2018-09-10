@@ -286,7 +286,7 @@ setting in ``settings.py``:
         'BLACKLIST_PATHS': ['/_ah/health'],
         'GCP_EXPORTER_PROJECT': None,
         'SAMPLING_RATE': 0.5,
-        'ZIPKIN_EXPORTER_SERVICE_NAME': 'my_service',
+        'SERVICE_NAME': 'my_service',
         'ZIPKIN_EXPORTER_HOST_NAME': 'localhost',
         'ZIPKIN_EXPORTER_PORT': 9411,
         'ZIPKIN_EXPORTER_PROTOCOL': 'http',
@@ -347,8 +347,8 @@ Service Integration
 -------------------
 
 Opencensus supports integration with various popular outbound services such as
-MySQL and Requests. To enable integration you will need to pass the list of
-services to census:
+SQL packages, Requests and Google Cloud client libraries. To enable integration
+services to census:	you will need to pass the list of services to census:
 
 .. code:: python
 
@@ -400,6 +400,17 @@ method, and status will be collected.
 You can enable Requests integration by specifying ``'requests'`` to ``trace_integrations``.
 
 .. _Requests package: https://pypi.python.org/pypi/requests
+
+Google Cloud Client Libraries
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Census can trace HTTP and gRPC requests made with the `Cloud client libraries`_.
+The request URL, method, and status will be collected.
+
+You can enable Google Cloud client libraries integration by specifying ``'google_cloud_clientlibs'`` to ``trace_integrations``.
+
+.. _Cloud client libraries: https://github.com/GoogleCloudPlatform/google-cloud-python#google-cloud-python-client
+
 
 ------
  Stats

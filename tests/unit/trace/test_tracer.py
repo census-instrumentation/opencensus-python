@@ -144,7 +144,7 @@ class TestTracer(unittest.TestCase):
         self.assertTrue(mock_tracer.finish.called)
 
     def test_span_not_sampled(self):
-        from opencensus.trace.tracers import base
+        from opencensus.trace.blank_span import BlankSpan
 
         sampler = mock.Mock()
         sampler.should_sample.return_value = False
@@ -159,8 +159,8 @@ class TestTracer(unittest.TestCase):
         child_span = span.span()
         tracer.finish()
 
-        assert isinstance(span, base.NullContextManager)
-        assert isinstance(child_span, base.NullContextManager)
+        assert isinstance(span, BlankSpan)
+        assert isinstance(child_span, BlankSpan)
 
     def test_span_sampled(self):
         sampler = mock.Mock()
@@ -174,7 +174,7 @@ class TestTracer(unittest.TestCase):
         self.assertTrue(tracer_mock.span.called)
 
     def test_start_span_not_sampled(self):
-        from opencensus.trace.tracers import base
+        from opencensus.trace.blank_span import BlankSpan
 
         sampler = mock.Mock()
         sampler.should_sample.return_value = False
@@ -185,7 +185,7 @@ class TestTracer(unittest.TestCase):
 
         span = tracer.start_span()
 
-        assert isinstance(span, base.NullContextManager)
+        assert isinstance(span, BlankSpan)
 
     def test_start_span_sampled(self):
         from opencensus.trace import span as trace_span
@@ -234,7 +234,7 @@ class TestTracer(unittest.TestCase):
         self.assertTrue(span.finish.called)
 
     def test_current_span_not_sampled(self):
-        from opencensus.trace.tracers import base
+        from opencensus.trace.blank_span import BlankSpan
 
         sampler = mock.Mock()
         sampler.should_sample.return_value = False
@@ -245,7 +245,7 @@ class TestTracer(unittest.TestCase):
 
         span = tracer.current_span()
 
-        assert isinstance(span, base.NullContextManager)
+        assert isinstance(span, BlankSpan)
 
     def test_current_span_sampled(self):
         from opencensus.trace import execution_context
@@ -261,7 +261,7 @@ class TestTracer(unittest.TestCase):
         self.assertEqual(result, span)
 
     def test_add_attribute_to_current_span_not_sampled(self):
-        from opencensus.trace.tracers import base
+        from opencensus.trace.blank_span import BlankSpan
 
         sampler = mock.Mock()
         sampler.should_sample.return_value = False
@@ -273,7 +273,7 @@ class TestTracer(unittest.TestCase):
 
         span = tracer.current_span()
 
-        assert isinstance(span, base.NullContextManager)
+        assert isinstance(span, BlankSpan)
 
     def test_trace_decorator(self):
         mock_exporter = mock.MagicMock()

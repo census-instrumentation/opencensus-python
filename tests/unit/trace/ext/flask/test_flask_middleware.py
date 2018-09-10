@@ -28,11 +28,13 @@ from opencensus.trace import stack_trace
 from opencensus.trace import status
 from opencensus.trace.exporters import print_exporter, stackdriver_exporter, \
     zipkin_exporter
+from opencensus.trace.exporters.ocagent import trace_exporter
 from opencensus.trace.ext.flask import flask_middleware
 from opencensus.trace.propagation import google_cloud_format
 from opencensus.trace.samplers import always_off, always_on, ProbabilitySampler
 from opencensus.trace.tracers import base
 from opencensus.trace.tracers import noop_tracer
+from opencensus.trace.blank_span import BlankSpan
 
 
 class TestFlaskMiddleware(unittest.TestCase):
@@ -135,6 +137,10 @@ class TestFlaskMiddleware(unittest.TestCase):
         self.assertTrue(app.after_request.called)
 
     def test_init_app_config_zipkin_exporter(self):
+
+        service_name = 'foo'
+        host_name = 'localhost'
+        port = 1234
         app = mock.Mock()
         app.config = {
             'OPENCENSUS_TRACE': {
@@ -143,9 +149,9 @@ class TestFlaskMiddleware(unittest.TestCase):
                 'PROPAGATOR': google_cloud_format.GoogleCloudFormatPropagator,
             },
             'OPENCENSUS_TRACE_PARAMS': {
-                'ZIPKIN_EXPORTER_SERVICE_NAME': 'my_service',
-                'ZIPKIN_EXPORTER_HOST_NAME': 'localhost',
-                'ZIPKIN_EXPORTER_PORT': 9411,
+                'ZIPKIN_EXPORTER_SERVICE_NAME': service_name,
+                'ZIPKIN_EXPORTER_HOST_NAME': host_name,
+                'ZIPKIN_EXPORTER_PORT': port,
                 'ZIPKIN_EXPORTER_PROTOCOL': 'http',
             },
         }
@@ -154,6 +160,97 @@ class TestFlaskMiddleware(unittest.TestCase):
         middleware.init_app(app)
 
         self.assertIs(middleware.app, app)
+        self.assertTrue(app.before_request.called)
+        self.assertTrue(app.after_request.called)
+
+        assert isinstance(
+            middleware.exporter, zipkin_exporter.ZipkinExporter)
+        self.assertEqual(middleware.exporter.service_name, service_name)
+        self.assertEqual(middleware.exporter.host_name, host_name)
+        self.assertEqual(middleware.exporter.port, port)
+
+    def test_init_app_config_zipkin_exporter_service_name_param(self):
+
+        service_name = 'foo'
+        host_name = 'localhost'
+        port = 1234
+        app = mock.Mock()
+        app.config = {
+            'OPENCENSUS_TRACE': {
+                'SAMPLER': ProbabilitySampler,
+                'EXPORTER': zipkin_exporter.ZipkinExporter,
+                'PROPAGATOR': google_cloud_format.GoogleCloudFormatPropagator,
+            },
+            'OPENCENSUS_TRACE_PARAMS': {
+                'SERVICE_NAME': service_name,
+                'ZIPKIN_EXPORTER_HOST_NAME': host_name,
+                'ZIPKIN_EXPORTER_PORT': port,
+                'ZIPKIN_EXPORTER_PROTOCOL': 'http',
+            },
+        }
+
+        middleware = flask_middleware.FlaskMiddleware()
+        middleware.init_app(app)
+
+        self.assertIs(middleware.app, app)
+        self.assertTrue(app.before_request.called)
+        self.assertTrue(app.after_request.called)
+
+        assert isinstance(
+            middleware.exporter, zipkin_exporter.ZipkinExporter)
+        self.assertEqual(middleware.exporter.service_name, service_name)
+        self.assertEqual(middleware.exporter.host_name, host_name)
+        self.assertEqual(middleware.exporter.port, port)
+
+    def test_init_app_config_ocagent_trace_exporter(self):
+        app = mock.Mock()
+        app.config = {
+            'OPENCENSUS_TRACE': {
+                'SAMPLER': ProbabilitySampler,
+                'EXPORTER': trace_exporter.TraceExporter,
+                'PROPAGATOR': google_cloud_format.GoogleCloudFormatPropagator,
+            },
+            'OPENCENSUS_TRACE_PARAMS': {
+                'SERVICE_NAME': 'foo',
+                'OCAGENT_TRACE_EXPORTER_ENDPOINT': 'localhost:50001'
+            }
+        }
+
+        middleware = flask_middleware.FlaskMiddleware()
+        middleware.init_app(app)
+
+        self.assertIs(middleware.app, app)
+        assert isinstance(
+            middleware.exporter, trace_exporter.TraceExporter)
+        self.assertEqual(middleware.exporter.service_name, 'foo')
+        self.assertEqual(middleware.exporter.endpoint, 'localhost:50001')
+
+        self.assertTrue(app.before_request.called)
+        self.assertTrue(app.after_request.called)
+
+    def test_init_app_config_ocagent_trace_exporter_default_endpoint(self):
+        app = mock.Mock()
+        app.config = {
+            'OPENCENSUS_TRACE': {
+                'SAMPLER': ProbabilitySampler,
+                'EXPORTER': trace_exporter.TraceExporter,
+                'PROPAGATOR': google_cloud_format.GoogleCloudFormatPropagator,
+            },
+            'OPENCENSUS_TRACE_PARAMS': {
+                'SERVICE_NAME': 'foo'
+            }
+        }
+
+        middleware = flask_middleware.FlaskMiddleware()
+        middleware.init_app(app)
+
+        self.assertIs(middleware.app, app)
+        assert isinstance(
+            middleware.exporter, trace_exporter.TraceExporter)
+        self.assertEqual(middleware.exporter.service_name, 'foo')
+        self.assertEqual(middleware.exporter.endpoint,
+                         trace_exporter.DEFAULT_ENDPOINT)
+
         self.assertTrue(app.before_request.called)
         self.assertTrue(app.after_request.called)
 
@@ -209,7 +306,7 @@ class TestFlaskMiddleware(unittest.TestCase):
 
             span = tracer.current_span()
 
-            assert isinstance(span, base.NullContextManager)
+            assert isinstance(span, BlankSpan)
 
     def test_header_encoding(self):
         # The test is for detecting the encoding compatibility issue in
