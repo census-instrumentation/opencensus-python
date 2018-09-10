@@ -83,7 +83,10 @@ def lint(session):
     session.interpreter = 'python3.6'
     session.install('flake8')
     session.install('.')
-    session.run('flake8', 'opencensus/')
+    session.run(
+        'flake8',
+        '--exclude=opencensus/trace/exporters/gen/opencensus/',
+        'opencensus/')
 
 
 @nox.session
@@ -124,4 +127,3 @@ def docs(session):
     # Build the docs!
     session.run(
         'bash', os.path.join('.', 'scripts', 'update_docs.sh'))
-

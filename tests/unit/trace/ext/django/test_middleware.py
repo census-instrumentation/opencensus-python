@@ -27,7 +27,7 @@ from opencensus.trace.ext import utils
 from opencensus.trace.propagation import google_cloud_format
 from opencensus.trace.samplers import always_on
 from opencensus.trace.samplers import probability
-from opencensus.trace.tracers import base
+from opencensus.trace.blank_span import BlankSpan
 
 
 class TestOpencensusMiddleware(unittest.TestCase):
@@ -244,7 +244,7 @@ class TestOpencensusMiddleware(unittest.TestCase):
         tracer = middleware._get_current_tracer()
         span = tracer.current_span()
 
-        assert isinstance(span, base.NullContextManager)
+        assert isinstance(span, BlankSpan)
 
         # process response
         django_response = mock.Mock()
@@ -254,7 +254,7 @@ class TestOpencensusMiddleware(unittest.TestCase):
 
         tracer = middleware._get_current_tracer()
         span = tracer.current_span()
-        assert isinstance(span, base.NullContextManager)
+        assert isinstance(span, BlankSpan)
 
     def test_process_response(self):
         from opencensus.trace.ext.django import middleware
