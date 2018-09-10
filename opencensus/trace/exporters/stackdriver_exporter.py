@@ -14,6 +14,7 @@
 
 import os
 
+from collections import defaultdict
 from google.cloud.trace.client import Client
 
 from opencensus.trace import attributes_helper
@@ -143,14 +144,20 @@ class StackdriverExporter(base.Exporter):
         :param list of opencensus.trace.span_data.SpanData span_datas:
             SpanData tuples to emit
         """
-        name = 'projects/{}'.format(self.project_id)
+        project = 'projects/{}'.format(self.project_id)
 
-        # convert to the legacy trace json for easier refactoring
-        # TODO: refactor this to use the span data directly
-        trace = span_data.format_legacy_trace_json(span_datas)
+        # Map each span data to it's corresponding trace id
+        trace_span_map = defaultdict(list)
+        for sd in span_datas:
+            trace_span_map[sd.context.trace_id] += [sd]
 
-        stackdriver_spans = self.translate_to_stackdriver(trace)
-        self.client.batch_write_spans(name, stackdriver_spans)
+        # Write spans to Stackdriver
+        for _, sds in trace_span_map.items():
+            # convert to the legacy trace json for easier refactoring
+            # TODO: refactor this to use the span data directly
+            trace = span_data.format_legacy_trace_json(sds)
+            stackdriver_spans = self.translate_to_stackdriver(trace)
+            self.client.batch_write_spans(project, stackdriver_spans)
 
     def export(self, span_datas):
         """

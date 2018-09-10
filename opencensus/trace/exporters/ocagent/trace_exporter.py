@@ -69,7 +69,6 @@ class TraceExporter(base.Exporter):
             client=None,
             transport=sync.SyncTransport):
         self.transport = transport(self)
-
         self.endpoint = DEFAULT_ENDPOINT if endpoint is None else endpoint
 
         if client is None:
@@ -79,6 +78,7 @@ class TraceExporter(base.Exporter):
         else:
             self.client = client
 
+        self.service_name = service_name
         self.node = common_pb2.Node(
             identifier=common_pb2.ProcessIdentifier(
                 host_name=socket.gethostname() if host_name is None
@@ -91,7 +91,7 @@ class TraceExporter(base.Exporter):
                 language=common_pb2.LibraryInfo.Language.Value('PYTHON'),
                 version=VERSION
             ),
-            service_info=common_pb2.ServiceInfo(name=service_name))
+            service_info=common_pb2.ServiceInfo(name=self.service_name))
 
     def emit(self, span_datas):
         """
