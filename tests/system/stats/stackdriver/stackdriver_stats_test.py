@@ -12,9 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import unittest
-import time
+import os
 import random
+import time
+import unittest
 from pprint import pprint
 from opencensus.stats import aggregation as aggregation_module
 from opencensus.stats.exporters import stackdriver_exporter as stackdriver
@@ -28,6 +29,8 @@ from opencensus.common.transports import sync
 from google.cloud import monitoring_v3
 
 MiB = 1 << 20
+
+PROJECT = os.environ.get('GCLOUD_PROJECT_PYTHON')
 
 
 class TestBasicStats(unittest.TestCase):
@@ -50,7 +53,7 @@ class TestBasicStats(unittest.TestCase):
         stats_recorder = stats.stats_recorder
 
         client = monitoring_v3.MetricServiceClient()
-        exporter = stackdriver.StackdriverStatsExporter(options=stackdriver.Options(project_id="opencenus-node"),
+        exporter = stackdriver.StackdriverStatsExporter(options=stackdriver.Options(project_id=PROJECT),
                                                         client=client,
                                                         transport=sync.SyncTransport)
         view_manager.register_exporter(exporter)
@@ -75,7 +78,7 @@ class TestBasicStats(unittest.TestCase):
         # Sleep for [0, 10] milliseconds to fake wait.
         time.sleep(random.randint(1, 10) / 1000.0)
 
-        name = exporter.client.project_path("opencenus-node")
+        name = exporter.client.project_path(PROJECT)
         list_metrics_descriptors = exporter.client.list_metric_descriptors(name)
         element = [element for element in list_metrics_descriptors if element.description == "SampleViewDescriptionSync"]
         self.assertTrue(any(element))
@@ -97,7 +100,7 @@ class TestBasicStats(unittest.TestCase):
         view_manager = stats.view_manager
         stats_recorder = stats.stats_recorder
 
-        exporter = stackdriver.new_stats_exporter(stackdriver.Options(project_id="opencenus-node"))
+        exporter = stackdriver.new_stats_exporter(stackdriver.Options(project_id=PROJECT))
         view_manager.register_exporter(exporter)
 
         # Register view.
