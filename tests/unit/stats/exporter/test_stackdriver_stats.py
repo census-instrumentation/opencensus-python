@@ -25,7 +25,6 @@ from opencensus.tags import tag_key as tag_key_module
 from opencensus.tags import tag_map as tag_map_module
 from opencensus.tags import tag_value as tag_value_module
 
-
 MiB = 1 << 20
 FRONTEND_KEY = tag_key_module.TagKey("my.org/keys/frontend")
 FRONTEND_KEY_FLOAT = tag_key_module.TagKey("my.org/keys/frontend-FLOAT")
@@ -46,6 +45,15 @@ VIDEO_SIZE_VIEW = view_module.View(VIDEO_SIZE_VIEW_NAME,
                                 [FRONTEND_KEY],
                                 VIDEO_SIZE_MEASURE,
                                 VIDEO_SIZE_DISTRIBUTION)
+
+
+class _Client(object):
+    def __init__(self, project=None):
+        if project is None:
+            project = 'PROJECT'
+
+        self.project = project
+
 
 class TestOptions(unittest.TestCase):
 
@@ -91,7 +99,11 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         self.assertRaises(Exception, stackdriver.new_stats_exporter, stackdriver.Options(project_id=""))
 
     def test_not_blank_project(self):
-        exporter_created = stackdriver.new_stats_exporter(stackdriver.Options(project_id=1))
+        patch_client = mock.patch(
+            'opencensus.stats.exporters.stackdriver_exporter.monitoring_v3.MetricServiceClient', _Client)
+
+        with patch_client:
+            exporter_created = stackdriver.new_stats_exporter(stackdriver.Options(project_id=1))
 
         self.assertIsInstance(exporter_created, stackdriver.StackdriverStatsExporter)
 
@@ -119,7 +131,12 @@ class TestStackdriverStatsExporter(unittest.TestCase):
 
     def test_singleton_with_params(self):
         default_labels = {'key1':'value1'}
-        exporter_created = stackdriver.new_stats_exporter(stackdriver.Options(project_id=1,default_monitoring_labels=default_labels))
+        patch_client = mock.patch(
+            'opencensus.stats.exporters.stackdriver_exporter.monitoring_v3.MetricServiceClient',
+            _Client)
+
+        with patch_client:
+            exporter_created = stackdriver.new_stats_exporter(stackdriver.Options(project_id=1,default_monitoring_labels=default_labels))
 
         self.assertEqual(exporter_created.default_labels, default_labels)
 
