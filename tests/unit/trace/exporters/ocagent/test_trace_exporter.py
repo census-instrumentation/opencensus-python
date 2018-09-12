@@ -63,7 +63,8 @@ class TestTraceExporter(unittest.TestCase):
 
         self.assertEqual(exporter.node.service_info.name, SERVICE_NAME)
         self.assertEqual(exporter.node.library_info.language, 8)
-        self.assertIsNotNone(exporter.node.library_info.version)
+        self.assertIsNotNone(exporter.node.library_info.exporter_version)
+        self.assertIsNotNone(exporter.node.library_info.core_library_version)
 
         self.assertEqual(exporter.node.identifier.host_name, 'my host')
         self.assertEqual(exporter.node.identifier.pid, os.getpid())
@@ -77,7 +78,8 @@ class TestTraceExporter(unittest.TestCase):
 
         self.assertEqual(exporter.node.service_info.name, SERVICE_NAME)
         self.assertEqual(exporter.node.library_info.language, 8)
-        self.assertIsNotNone(exporter.node.library_info.version)
+        self.assertIsNotNone(exporter.node.library_info.exporter_version)
+        self.assertIsNotNone(exporter.node.library_info.core_library_version)
 
         self.assertEqual(exporter.node.identifier.host_name,
                          socket.gethostname())
