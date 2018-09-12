@@ -35,7 +35,8 @@ DEFAULT_ENDPOINT = 'localhost:55678'
 
 # OpenCensus Version
 # TODO: https://github.com/census-instrumentation/opencensus-python/issues/296
-VERSION = '0.1.6'
+CORE_LIBRARY_VERSION = '0.1.6'
+EXPORTER_VERSION = '0.0.1'
 
 
 class TraceExporter(base.Exporter):
@@ -89,7 +90,8 @@ class TraceExporter(base.Exporter):
             ),
             library_info=common_pb2.LibraryInfo(
                 language=common_pb2.LibraryInfo.Language.Value('PYTHON'),
-                version=VERSION
+                exporter_version=EXPORTER_VERSION,
+                core_library_version=CORE_LIBRARY_VERSION
             ),
             service_info=common_pb2.ServiceInfo(name=self.service_name))
 
@@ -165,18 +167,15 @@ class TraceExporter(base.Exporter):
         # do not allow updating config simultaneously
         lock = Lock()
         with lock:
-            try:
-                # TODO: keep the stream alive.
-                # The stream is terminated after iteration completes.
-                # To keep it alive, we can enqueue proto configs here
-                # and asyncronously read them and send to the agent.
-                config_responses = self.client.Config(
-                    self.generate_config_request(config))
+            # TODO: keep the stream alive.
+            # The stream is terminated after iteration completes.
+            # To keep it alive, we can enqueue proto configs here
+            # and asyncronously read them and send to the agent.
+            config_responses = self.client.Config(
+                self.generate_config_request(config))
 
-                agent_config = next(config_responses)
-                return agent_config
-            except grpc.RpcError as e:
-                raise e
+            agent_config = next(config_responses)
+            return agent_config
 
     def generate_config_request(self, config):
         """ConfigTraceServiceRequest generator.
@@ -184,13 +183,13 @@ class TraceExporter(base.Exporter):
         :type config: `~opencensus.proto.trace.v1.TraceConfig`
         :param config: Trace config with sampling and other settings
 
-        :rtype: list of
-               `~opencensus.proto.agent.trace.v1.ConfigTraceServiceRequest`
-        :returns: List of config requests.
+        :rtype: iterator of
+               `~opencensus.proto.agent.trace.v1.CurrentLibraryConfig`
+        :returns: Iterator of config requests.
         """
 
         # TODO: send node once per channel
-        request = trace_service_pb2.ConfigTraceServiceRequest(
+        request = trace_service_pb2.CurrentLibraryConfig(
             node=self.node,
             config=config)
 
