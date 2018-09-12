@@ -18,30 +18,31 @@ from opencensus.trace.exporters.gen.opencensus.agent.common.v1 import common_pb2
 from opencensus.trace.exporters.gen.opencensus.trace.v1 import trace_pb2 as opencensus_dot_proto_dot_trace_dot_v1_dot_trace__pb2
 from opencensus.trace.exporters.gen.opencensus.trace.v1 import trace_config_pb2 as opencensus_dot_proto_dot_trace_dot_v1_dot_trace__config__pb2
 
+
 DESCRIPTOR = _descriptor.FileDescriptor(
     name='opencensus/proto/agent/trace/v1/trace_service.proto',
     package='opencensus.proto.agent.trace.v1',
     syntax='proto3',
-    serialized_pb=_b('\n3opencensus/proto/agent/trace/v1/trace_service.proto\x12\x1fopencensus.proto.agent.trace.v1\x1a-opencensus/proto/agent/common/v1/common.proto\x1a%opencensus/proto/trace/v1/trace.proto\x1a,opencensus/proto/trace/v1/trace_config.proto\"\x89\x01\n\x19\x43onfigTraceServiceRequest\x12\x34\n\x04node\x18\x01 \x01(\x0b\x32&.opencensus.proto.agent.common.v1.Node\x12\x36\n\x06\x63onfig\x18\x02 \x01(\x0b\x32&.opencensus.proto.trace.v1.TraceConfig\"T\n\x1a\x43onfigTraceServiceResponse\x12\x36\n\x06\x63onfig\x18\x02 \x01(\x0b\x32&.opencensus.proto.trace.v1.TraceConfig\"\x81\x01\n\x19\x45xportTraceServiceRequest\x12\x34\n\x04node\x18\x01 \x01(\x0b\x32&.opencensus.proto.agent.common.v1.Node\x12.\n\x05spans\x18\x02 \x03(\x0b\x32\x1f.opencensus.proto.trace.v1.Span\"\x1c\n\x1a\x45xportTraceServiceResponse2\xa2\x02\n\x0cTraceService\x12\x87\x01\n\x06\x43onfig\x12:.opencensus.proto.agent.trace.v1.ConfigTraceServiceRequest\x1a;.opencensus.proto.agent.trace.v1.ConfigTraceServiceResponse\"\x00(\x01\x30\x01\x12\x87\x01\n\x06\x45xport\x12:.opencensus.proto.agent.trace.v1.ExportTraceServiceRequest\x1a;.opencensus.proto.agent.trace.v1.ExportTraceServiceResponse\"\x00(\x01\x30\x01\x42\x83\x01\n\"io.opencensus.proto.agent.trace.v1B\x11TraceServiceProtoP\x01ZHgithub.com/census-instrumentation/opencensus-proto/gen-go/agent/trace/v1b\x06proto3'),
+    serialized_pb=_b('\n3opencensus/proto/agent/trace/v1/trace_service.proto\x12\x1fopencensus.proto.agent.trace.v1\x1a-opencensus/proto/agent/common/v1/common.proto\x1a%opencensus/proto/trace/v1/trace.proto\x1a,opencensus/proto/trace/v1/trace_config.proto\"\x84\x01\n\x14\x43urrentLibraryConfig\x12\x34\n\x04node\x18\x01 \x01(\x0b\x32&.opencensus.proto.agent.common.v1.Node\x12\x36\n\x06\x63onfig\x18\x02 \x01(\x0b\x32&.opencensus.proto.trace.v1.TraceConfig\"N\n\x14UpdatedLibraryConfig\x12\x36\n\x06\x63onfig\x18\x02 \x01(\x0b\x32&.opencensus.proto.trace.v1.TraceConfig\"\x81\x01\n\x19\x45xportTraceServiceRequest\x12\x34\n\x04node\x18\x01 \x01(\x0b\x32&.opencensus.proto.agent.common.v1.Node\x12.\n\x05spans\x18\x02 \x03(\x0b\x32\x1f.opencensus.proto.trace.v1.Span\"\x1c\n\x1a\x45xportTraceServiceResponse2\x96\x02\n\x0cTraceService\x12|\n\x06\x43onfig\x12\x35.opencensus.proto.agent.trace.v1.CurrentLibraryConfig\x1a\x35.opencensus.proto.agent.trace.v1.UpdatedLibraryConfig\"\x00(\x01\x30\x01\x12\x87\x01\n\x06\x45xport\x12:.opencensus.proto.agent.trace.v1.ExportTraceServiceRequest\x1a;.opencensus.proto.agent.trace.v1.ExportTraceServiceResponse\"\x00(\x01\x30\x01\x42\x83\x01\n\"io.opencensus.proto.agent.trace.v1B\x11TraceServiceProtoP\x01ZHgithub.com/census-instrumentation/opencensus-proto/gen-go/agent/trace/v1b\x06proto3'),
     dependencies=[opencensus_dot_proto_dot_agent_dot_common_dot_v1_dot_common__pb2.DESCRIPTOR, opencensus_dot_proto_dot_trace_dot_v1_dot_trace__pb2.DESCRIPTOR, opencensus_dot_proto_dot_trace_dot_v1_dot_trace__config__pb2.DESCRIPTOR, ])
 
 
-_CONFIGTRACESERVICEREQUEST = _descriptor.Descriptor(
-    name='ConfigTraceServiceRequest',
-    full_name='opencensus.proto.agent.trace.v1.ConfigTraceServiceRequest',
+_CURRENTLIBRARYCONFIG = _descriptor.Descriptor(
+    name='CurrentLibraryConfig',
+    full_name='opencensus.proto.agent.trace.v1.CurrentLibraryConfig',
     filename=None,
     file=DESCRIPTOR,
     containing_type=None,
     fields=[
         _descriptor.FieldDescriptor(
-            name='node', full_name='opencensus.proto.agent.trace.v1.ConfigTraceServiceRequest.node', index=0,
+            name='node', full_name='opencensus.proto.agent.trace.v1.CurrentLibraryConfig.node', index=0,
             number=1, type=11, cpp_type=10, label=1,
             has_default_value=False, default_value=None,
             message_type=None, enum_type=None, containing_type=None,
             is_extension=False, extension_scope=None,
             options=None, file=DESCRIPTOR),
         _descriptor.FieldDescriptor(
-            name='config', full_name='opencensus.proto.agent.trace.v1.ConfigTraceServiceRequest.config', index=1,
+            name='config', full_name='opencensus.proto.agent.trace.v1.CurrentLibraryConfig.config', index=1,
             number=2, type=11, cpp_type=10, label=1,
             has_default_value=False, default_value=None,
             message_type=None, enum_type=None, containing_type=None,
@@ -60,19 +61,19 @@ _CONFIGTRACESERVICEREQUEST = _descriptor.Descriptor(
     oneofs=[
     ],
     serialized_start=221,
-    serialized_end=358,
+    serialized_end=353,
 )
 
 
-_CONFIGTRACESERVICERESPONSE = _descriptor.Descriptor(
-    name='ConfigTraceServiceResponse',
-    full_name='opencensus.proto.agent.trace.v1.ConfigTraceServiceResponse',
+_UPDATEDLIBRARYCONFIG = _descriptor.Descriptor(
+    name='UpdatedLibraryConfig',
+    full_name='opencensus.proto.agent.trace.v1.UpdatedLibraryConfig',
     filename=None,
     file=DESCRIPTOR,
     containing_type=None,
     fields=[
         _descriptor.FieldDescriptor(
-            name='config', full_name='opencensus.proto.agent.trace.v1.ConfigTraceServiceResponse.config', index=0,
+            name='config', full_name='opencensus.proto.agent.trace.v1.UpdatedLibraryConfig.config', index=0,
             number=2, type=11, cpp_type=10, label=1,
             has_default_value=False, default_value=None,
             message_type=None, enum_type=None, containing_type=None,
@@ -90,8 +91,8 @@ _CONFIGTRACESERVICERESPONSE = _descriptor.Descriptor(
     extension_ranges=[],
     oneofs=[
     ],
-    serialized_start=360,
-    serialized_end=444,
+    serialized_start=355,
+    serialized_end=433,
 )
 
 
@@ -128,8 +129,8 @@ _EXPORTTRACESERVICEREQUEST = _descriptor.Descriptor(
     extension_ranges=[],
     oneofs=[
     ],
-    serialized_start=447,
-    serialized_end=576,
+    serialized_start=436,
+    serialized_end=565,
 )
 
 
@@ -152,34 +153,34 @@ _EXPORTTRACESERVICERESPONSE = _descriptor.Descriptor(
     extension_ranges=[],
     oneofs=[
     ],
-    serialized_start=578,
-    serialized_end=606,
+    serialized_start=567,
+    serialized_end=595,
 )
 
-_CONFIGTRACESERVICEREQUEST.fields_by_name['node'].message_type = opencensus_dot_proto_dot_agent_dot_common_dot_v1_dot_common__pb2._NODE
-_CONFIGTRACESERVICEREQUEST.fields_by_name['config'].message_type = opencensus_dot_proto_dot_trace_dot_v1_dot_trace__config__pb2._TRACECONFIG
-_CONFIGTRACESERVICERESPONSE.fields_by_name['config'].message_type = opencensus_dot_proto_dot_trace_dot_v1_dot_trace__config__pb2._TRACECONFIG
+_CURRENTLIBRARYCONFIG.fields_by_name['node'].message_type = opencensus_dot_proto_dot_agent_dot_common_dot_v1_dot_common__pb2._NODE
+_CURRENTLIBRARYCONFIG.fields_by_name['config'].message_type = opencensus_dot_proto_dot_trace_dot_v1_dot_trace__config__pb2._TRACECONFIG
+_UPDATEDLIBRARYCONFIG.fields_by_name['config'].message_type = opencensus_dot_proto_dot_trace_dot_v1_dot_trace__config__pb2._TRACECONFIG
 _EXPORTTRACESERVICEREQUEST.fields_by_name['node'].message_type = opencensus_dot_proto_dot_agent_dot_common_dot_v1_dot_common__pb2._NODE
 _EXPORTTRACESERVICEREQUEST.fields_by_name['spans'].message_type = opencensus_dot_proto_dot_trace_dot_v1_dot_trace__pb2._SPAN
-DESCRIPTOR.message_types_by_name['ConfigTraceServiceRequest'] = _CONFIGTRACESERVICEREQUEST
-DESCRIPTOR.message_types_by_name['ConfigTraceServiceResponse'] = _CONFIGTRACESERVICERESPONSE
+DESCRIPTOR.message_types_by_name['CurrentLibraryConfig'] = _CURRENTLIBRARYCONFIG
+DESCRIPTOR.message_types_by_name['UpdatedLibraryConfig'] = _UPDATEDLIBRARYCONFIG
 DESCRIPTOR.message_types_by_name['ExportTraceServiceRequest'] = _EXPORTTRACESERVICEREQUEST
 DESCRIPTOR.message_types_by_name['ExportTraceServiceResponse'] = _EXPORTTRACESERVICERESPONSE
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
-ConfigTraceServiceRequest = _reflection.GeneratedProtocolMessageType('ConfigTraceServiceRequest', (_message.Message,), dict(
-    DESCRIPTOR=_CONFIGTRACESERVICEREQUEST,
+CurrentLibraryConfig = _reflection.GeneratedProtocolMessageType('CurrentLibraryConfig', (_message.Message,), dict(
+    DESCRIPTOR=_CURRENTLIBRARYCONFIG,
     __module__='opencensus.proto.agent.trace.v1.trace_service_pb2'
-    # @@protoc_insertion_point(class_scope:opencensus.proto.agent.trace.v1.ConfigTraceServiceRequest)
+    # @@protoc_insertion_point(class_scope:opencensus.proto.agent.trace.v1.CurrentLibraryConfig)
 ))
-_sym_db.RegisterMessage(ConfigTraceServiceRequest)
+_sym_db.RegisterMessage(CurrentLibraryConfig)
 
-ConfigTraceServiceResponse = _reflection.GeneratedProtocolMessageType('ConfigTraceServiceResponse', (_message.Message,), dict(
-    DESCRIPTOR=_CONFIGTRACESERVICERESPONSE,
+UpdatedLibraryConfig = _reflection.GeneratedProtocolMessageType('UpdatedLibraryConfig', (_message.Message,), dict(
+    DESCRIPTOR=_UPDATEDLIBRARYCONFIG,
     __module__='opencensus.proto.agent.trace.v1.trace_service_pb2'
-    # @@protoc_insertion_point(class_scope:opencensus.proto.agent.trace.v1.ConfigTraceServiceResponse)
+    # @@protoc_insertion_point(class_scope:opencensus.proto.agent.trace.v1.UpdatedLibraryConfig)
 ))
-_sym_db.RegisterMessage(ConfigTraceServiceResponse)
+_sym_db.RegisterMessage(UpdatedLibraryConfig)
 
 ExportTraceServiceRequest = _reflection.GeneratedProtocolMessageType('ExportTraceServiceRequest', (_message.Message,), dict(
     DESCRIPTOR=_EXPORTTRACESERVICEREQUEST,
@@ -206,16 +207,16 @@ _TRACESERVICE = _descriptor.ServiceDescriptor(
     file=DESCRIPTOR,
     index=0,
     options=None,
-    serialized_start=609,
-    serialized_end=899,
+    serialized_start=598,
+    serialized_end=876,
     methods=[
         _descriptor.MethodDescriptor(
             name='Config',
             full_name='opencensus.proto.agent.trace.v1.TraceService.Config',
             index=0,
             containing_service=None,
-            input_type=_CONFIGTRACESERVICEREQUEST,
-            output_type=_CONFIGTRACESERVICERESPONSE,
+            input_type=_CURRENTLIBRARYCONFIG,
+            output_type=_UPDATEDLIBRARYCONFIG,
             options=None,
         ),
         _descriptor.MethodDescriptor(
