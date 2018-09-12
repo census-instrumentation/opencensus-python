@@ -16,6 +16,7 @@ import os
 import random
 import time
 import unittest
+from retrying import retry
 from pprint import pprint
 from opencensus.stats import aggregation as aggregation_module
 from opencensus.stats.exporters import stackdriver_exporter as stackdriver
@@ -31,19 +32,30 @@ from google.cloud import monitoring_v3
 MiB = 1 << 20
 
 PROJECT = os.environ.get('GCLOUD_PROJECT_PYTHON')
-
+RETRY_WAIT_PERIOD = 10000  # Wait 10 seconds between each retry
+RETRY_MAX_ATTEMPT = 10  # Retry 10 times
 
 class TestBasicStats(unittest.TestCase):
-
+    
+    @retry(wait_fixed=RETRY_WAIT_PERIOD, stop_max_attempt_number=RETRY_MAX_ATTEMPT)
     def test_stats_record_sync(self):
-        FRONTEND_KEY = tag_key_module.TagKey("SampleKeySync")
+        # We are using sufix in order to prevent cached objects
+        sufix = str(os.getgid())
+
+        tag_key = "SampleKeySyncTest%s" % sufix
+        measure_name = "SampleMeasureNameSyncTest%s" % sufix
+        measure_description = "SampleDescriptionSyncTest%s" % sufix
+        view_name = "SampleViewNameSyncTest%s" % sufix
+        view_description = "SampleViewDescriptionSyncTest%s" % sufix
+
+        FRONTEND_KEY = tag_key_module.TagKey(tag_key)
         VIDEO_SIZE_MEASURE = measure_module.MeasureInt(
-            "SampleMeasureNameSync", "SampleDescriptionSync", "By")
-        VIDEO_SIZE_VIEW_NAME = "SampleViewNameSync"
+            measure_name, measure_description, "By")
+        VIDEO_SIZE_VIEW_NAME = view_name
         VIDEO_SIZE_DISTRIBUTION = aggregation_module.DistributionAggregation(
                                     [0.0, 16.0 * MiB, 256.0 * MiB])
         VIDEO_SIZE_VIEW = view_module.View(VIDEO_SIZE_VIEW_NAME,
-                                        "SampleViewDescriptionSync",
+                                        view_description,
                                         [FRONTEND_KEY],
                                         VIDEO_SIZE_MEASURE,
                                         VIDEO_SIZE_DISTRIBUTION)
@@ -80,18 +92,31 @@ class TestBasicStats(unittest.TestCase):
 
         name = exporter.client.project_path(PROJECT)
         list_metrics_descriptors = exporter.client.list_metric_descriptors(name)
-        element = [element for element in list_metrics_descriptors if element.description == "SampleViewDescriptionSync"]
-        self.assertTrue(any(element))
+        element = next((element for element in list_metrics_descriptors if element.description == view_description), None)
+        
+        self.assertNotEqual(element, None)
+        self.assertEqual(element.description, view_description)
+        self.assertEqual(element.unit, "By")
 
+    @retry(wait_fixed=RETRY_WAIT_PERIOD, stop_max_attempt_number=RETRY_MAX_ATTEMPT)
     def test_stats_record_async(self):
-        FRONTEND_KEY_ASYNC = tag_key_module.TagKey("SampleKeyAsync")
+        # We are using sufix in order to prevent cached objects
+        sufix = str(os.getpid())
+
+        tag_key = "SampleKeyAsyncTest%s" % sufix
+        measure_name = "SampleMeasureNameAsyncTest%s" % sufix
+        measure_description = "SampleDescriptionAsyncTest%s" % sufix
+        view_name = "SampleViewNameAsyncTest%s" % sufix
+        view_description = "SampleViewDescriptionAsyncTest%s" % sufix
+
+        FRONTEND_KEY_ASYNC = tag_key_module.TagKey(tag_key)
         VIDEO_SIZE_MEASURE_ASYNC = measure_module.MeasureInt(
-            "SampleMeasureNameAsync", "SampleDescriptionAsync", "By")
-        VIDEO_SIZE_VIEW_NAME_ASYNC = "SampleViewNameAsync"
+            measure_name, measure_description, "By")
+        VIDEO_SIZE_VIEW_NAME_ASYNC = view_name
         VIDEO_SIZE_DISTRIBUTION_ASYNC = aggregation_module.DistributionAggregation(
                                     [0.0, 16.0 * MiB, 256.0 * MiB])
         VIDEO_SIZE_VIEW_ASYNC = view_module.View(VIDEO_SIZE_VIEW_NAME_ASYNC,
-                                        "SampleViewDescriptionAsync",
+                                        view_description,
                                         [FRONTEND_KEY_ASYNC],
                                         VIDEO_SIZE_MEASURE_ASYNC,
                                         VIDEO_SIZE_DISTRIBUTION_ASYNC)
@@ -118,4 +143,11 @@ class TestBasicStats(unittest.TestCase):
         measure_map.measure_int_put(VIDEO_SIZE_MEASURE_ASYNC, 25 * MiB)
 
         measure_map.record(tag_map)
-        self.assertTrue(True)
+        
+        name = exporter.client.project_path(PROJECT)
+        list_metrics_descriptors = exporter.client.list_metric_descriptors(name)
+        element = next((element for element in list_metrics_descriptors if element.description == view_description), None)
+        
+        self.assertNotEqual(element, None)
+        self.assertEqual(element.description, view_description)
+        self.assertEqual(element.unit, "By")
