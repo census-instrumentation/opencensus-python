@@ -25,7 +25,6 @@ from opencensus.tags import tag_key as tag_key_module
 from opencensus.tags import tag_map as tag_map_module
 from opencensus.tags import tag_value as tag_value_module
 
-
 MiB = 1 << 20
 FRONTEND_KEY = tag_key_module.TagKey("my.org/keys/frontend")
 FRONTEND_KEY_FLOAT = tag_key_module.TagKey("my.org/keys/frontend-FLOAT")
@@ -47,6 +46,15 @@ VIDEO_SIZE_VIEW = view_module.View(VIDEO_SIZE_VIEW_NAME,
                                 VIDEO_SIZE_MEASURE,
                                 VIDEO_SIZE_DISTRIBUTION)
 
+
+class _Client(object):
+    def __init__(self, project=None):
+        if project is None:
+            project = 'PROJECT'
+
+        self.project = project
+
+
 class TestOptions(unittest.TestCase):
 
     def test_options_blank(self):
@@ -62,7 +70,7 @@ class TestOptions(unittest.TestCase):
 
     def test_default_monitoring_labels_blank(self):
         option = stackdriver.Options()
-        self.assertEqual(option.default_monitoring_labels, None)
+        self.assertIsNone(option.default_monitoring_labels)
 
     def test_default_monitoring_labels(self):
         default_labels = {'key1':'value1'}
@@ -75,7 +83,7 @@ class TestStackdriverStatsExporter(unittest.TestCase):
     def test_constructor(self):
         exporter = stackdriver.StackdriverStatsExporter()
 
-        self.assertEqual(exporter.client, None)
+        self.assertIsNone(exporter.client)
 
     def test_constructor_param(self):
         project_id = 1
@@ -91,7 +99,11 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         self.assertRaises(Exception, stackdriver.new_stats_exporter, stackdriver.Options(project_id=""))
 
     def test_not_blank_project(self):
-        exporter_created = stackdriver.new_stats_exporter(stackdriver.Options(project_id=1))
+        patch_client = mock.patch(
+            'opencensus.stats.exporters.stackdriver_exporter.monitoring_v3.MetricServiceClient', _Client)
+
+        with patch_client:
+            exporter_created = stackdriver.new_stats_exporter(stackdriver.Options(project_id=1))
 
         self.assertIsInstance(exporter_created, stackdriver.StackdriverStatsExporter)
 
@@ -119,7 +131,12 @@ class TestStackdriverStatsExporter(unittest.TestCase):
 
     def test_singleton_with_params(self):
         default_labels = {'key1':'value1'}
-        exporter_created = stackdriver.new_stats_exporter(stackdriver.Options(project_id=1,default_monitoring_labels=default_labels))
+        patch_client = mock.patch(
+            'opencensus.stats.exporters.stackdriver_exporter.monitoring_v3.MetricServiceClient',
+            _Client)
+
+        with patch_client:
+            exporter_created = stackdriver.new_stats_exporter(stackdriver.Options(project_id=1,default_monitoring_labels=default_labels))
 
         self.assertEqual(exporter_created.default_labels, default_labels)
 
@@ -146,20 +163,14 @@ class TestStackdriverStatsExporter(unittest.TestCase):
 
         self.assertEqual(expected_view_name_namespaced, view_name_namespaced)
 
-    def test_get_task_value(self):
-        task_value = stackdriver.get_task_value()
-
-        self.assertNotEqual(task_value, "")
-
     def test_on_register_view(self):
         client = mock.Mock()
         view_none = None
         option = stackdriver.Options(project_id="project-test")
         exporter = stackdriver.StackdriverStatsExporter(options=option, client=client)
         exporter.on_register_view(VIDEO_SIZE_VIEW)
-        self.assertTrue(True)
         exporter.on_register_view(view_none)
-        self.assertTrue(True)
+        self.assertTrue(client.create_metric_descriptor.called)
 
     def test_emit(self):
         client = mock.Mock()
@@ -172,39 +183,53 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         option = stackdriver.Options(project_id="project-test")
         exporter = stackdriver.StackdriverStatsExporter(options=option, client=client)
         exporter.emit(view_data)
-        self.assertTrue(True)
         exporter.emit(None)
-        self.assertTrue(True)
+        self.assertTrue(client.create_time_series.called)
 
-    def test_export(self):
+    def test_export_no_data(self):
         client = mock.Mock()
-        start_time = datetime.utcnow()
-        end_time = datetime.utcnow()
-        v_data = view_data_module.ViewData(view=VIDEO_SIZE_VIEW,
-                                              start_time=start_time,
-                                              end_time=end_time)
-        view_data = [v_data]
+        transport = mock.Mock()
         option = stackdriver.Options(project_id="project-test")
-        exporter = stackdriver.StackdriverStatsExporter(options=option, client=client)
-        exporter.export(view_data)
-        self.assertTrue(True)
+        exporter = stackdriver.StackdriverStatsExporter(
+            options=option, client=client, transport=transport)
         exporter.export(None)
-        self.assertTrue(True)
+        self.assertFalse(exporter.transport.export.called)
 
-    def test_handle_upload(self):
+    def test_export_with_data(self):
+        client = mock.Mock()
+        transport = mock.Mock()
+        start_time = datetime.utcnow()
+        end_time = datetime.utcnow()
+        v_data = view_data_module.ViewData(view=VIDEO_SIZE_VIEW,
+                                           start_time=start_time,
+                                           end_time=end_time)
+        view_data = [v_data]
+        option = stackdriver.Options(project_id="project-test")
+        exporter = stackdriver.StackdriverStatsExporter(
+            options=option, client=client, transport=transport)
+        exporter.export(view_data)
+        self.assertTrue(exporter.transport.export.called)
+
+    def test_handle_upload_no_data(self):
+        client = mock.Mock()
+        option = stackdriver.Options(project_id="project-test")
+        exporter = stackdriver.StackdriverStatsExporter(options=option, client=client)
+        exporter.handle_upload(None)
+        self.assertFalse(client.create_time_series.called)
+
+    def test_handle_upload_with_data(self):
         client = mock.Mock()
         start_time = datetime.utcnow()
         end_time = datetime.utcnow()
         v_data = view_data_module.ViewData(view=VIDEO_SIZE_VIEW,
-                                              start_time=start_time,
-                                              end_time=end_time)
+                                           start_time=start_time,
+                                           end_time=end_time)
         view_data = [v_data]
         option = stackdriver.Options(project_id="project-test")
-        exporter = stackdriver.StackdriverStatsExporter(options=option, client=client)
+        exporter = stackdriver.StackdriverStatsExporter(options=option,
+                                                        client=client)
         exporter.handle_upload(view_data)
-        self.assertTrue(True)
-        exporter.handle_upload(None)
-        self.assertTrue(True)
+        self.assertTrue(client.create_time_series.called)
 
     def test_make_request(self):
         client = mock.Mock()
@@ -220,10 +245,8 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         self.assertEqual(len(requests), 1)
 
     def test_stackdriver_register_exporter(self):
-        view = mock.Mock()
         stats = stats_module.Stats()
         view_manager = stats.view_manager
-        stats_recorder = stats.stats_recorder
 
         exporter = mock.Mock()
         if len(view_manager.measure_to_view_map.exporters) > 0:
@@ -236,8 +259,6 @@ class TestStackdriverStatsExporter(unittest.TestCase):
 
     def test_create_timeseries(self):
         client = mock.Mock()
-        start_time = datetime.utcnow()
-        end_time = datetime.utcnow()
 
         option = stackdriver.Options(project_id="project-test", resource="global")
         exporter = stackdriver.StackdriverStatsExporter(options=option, client=client)
@@ -270,8 +291,6 @@ class TestStackdriverStatsExporter(unittest.TestCase):
 
     def test_create_timeseries_str_tagvalue(self):
         client = mock.Mock()
-        start_time = datetime.utcnow()
-        end_time = datetime.utcnow()
 
         option = stackdriver.Options(project_id="project-test", resource="global")
         exporter = stackdriver.StackdriverStatsExporter(options=option, client=client)
@@ -313,8 +332,6 @@ class TestStackdriverStatsExporter(unittest.TestCase):
 
     def test_create_timeseries_last_value_float_tagvalue(self):
         client = mock.Mock()
-        start_time = datetime.utcnow()
-        end_time = datetime.utcnow()
 
         option = stackdriver.Options(project_id="project-test", resource="global")
         exporter = stackdriver.StackdriverStatsExporter(options=option, client=client)
@@ -356,8 +373,6 @@ class TestStackdriverStatsExporter(unittest.TestCase):
 
     def test_create_timeseries_float_tagvalue(self):
         client = mock.Mock()
-        start_time = datetime.utcnow()
-        end_time = datetime.utcnow()
 
         option = stackdriver.Options(project_id="project-test", resource="global")
         exporter = stackdriver.StackdriverStatsExporter(options=option, client=client)
@@ -399,8 +414,6 @@ class TestStackdriverStatsExporter(unittest.TestCase):
 
     def test_create_metric_descriptor_count(self):
         client = mock.Mock()
-        start_time = datetime.utcnow()
-        end_time = datetime.utcnow()
         option = stackdriver.Options(project_id="project-test", metric_prefix="teste")
         view_name_count= "view-count"
         agg_count = aggregation_module.CountAggregation(count=2)
@@ -411,12 +424,10 @@ class TestStackdriverStatsExporter(unittest.TestCase):
                                         agg_count)
         exporter = stackdriver.StackdriverStatsExporter(options=option, client=client)
         desc = exporter.create_metric_descriptor(view_count)
-        self.assertNotEqual(desc, None)
+        self.assertIsNotNone(desc)
 
     def test_create_metric_descriptor_sum_int(self):
         client = mock.Mock()
-        start_time = datetime.utcnow()
-        end_time = datetime.utcnow()
         option = stackdriver.Options(project_id="project-test", metric_prefix="teste")
 
         view_name_sum_int= "view-sum-int"
@@ -428,12 +439,10 @@ class TestStackdriverStatsExporter(unittest.TestCase):
                                         agg_sum)
         exporter = stackdriver.StackdriverStatsExporter(options=option, client=client)
         desc = exporter.create_metric_descriptor(view_sum_int)
-        self.assertNotEqual(desc, None)
+        self.assertIsNotNone(desc)
 
     def test_create_metric_descriptor_sum_float(self):
         client = mock.Mock()
-        start_time = datetime.utcnow()
-        end_time = datetime.utcnow()
         option = stackdriver.Options(project_id="project-test", metric_prefix="teste")
 
         view_name_sum_float= "view-sum-float"
@@ -445,22 +454,18 @@ class TestStackdriverStatsExporter(unittest.TestCase):
                                         agg_sum)
         exporter = stackdriver.StackdriverStatsExporter(options=option, client=client)
         desc = exporter.create_metric_descriptor(view_sum_float)
-        self.assertNotEqual(desc, None)
+        self.assertIsNotNone(desc)
 
     def test_create_metric_descriptor(self):
         client = mock.Mock()
-        start_time = datetime.utcnow()
-        end_time = datetime.utcnow()
         option = stackdriver.Options(project_id="project-test", metric_prefix="teste")
         exporter = stackdriver.StackdriverStatsExporter(options=option, client=client)
         desc = exporter.create_metric_descriptor(VIDEO_SIZE_VIEW)
-        self.assertNotEqual(desc, None)
+        self.assertIsNotNone(desc)
 
 
     def test_create_metric_descriptor_last_value_int(self):
         client = mock.Mock()
-        start_time = datetime.utcnow()
-        end_time = datetime.utcnow()
         option = stackdriver.Options(project_id="project-test", metric_prefix="teste")
 
         view_name_base= "view-base"
@@ -472,12 +477,10 @@ class TestStackdriverStatsExporter(unittest.TestCase):
                                         agg_base)
         exporter = stackdriver.StackdriverStatsExporter(options=option, client=client)
         desc = exporter.create_metric_descriptor(view_base)
-        self.assertNotEqual(desc, None)
+        self.assertIsNotNone(desc)
 
     def test_create_metric_descriptor_last_value_float(self):
         client = mock.Mock()
-        start_time = datetime.utcnow()
-        end_time = datetime.utcnow()
         option = stackdriver.Options(project_id="project-test", metric_prefix="teste")
 
         view_name_base= "view-base"
@@ -489,12 +492,10 @@ class TestStackdriverStatsExporter(unittest.TestCase):
                                         agg_base)
         exporter = stackdriver.StackdriverStatsExporter(options=option, client=client)
         desc = exporter.create_metric_descriptor(view_base)
-        self.assertNotEqual(desc, None)
+        self.assertIsNotNone(desc)
 
     def test_create_metric_descriptor_base(self):
         client = mock.Mock()
-        start_time = datetime.utcnow()
-        end_time = datetime.utcnow()
         option = stackdriver.Options(project_id="project-test", metric_prefix="teste")
 
         view_name_base= "view-base"
