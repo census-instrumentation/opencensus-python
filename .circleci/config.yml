@@ -29,7 +29,7 @@ jobs:
           command: |
             if [ -n "$GOOGLE_APPLICATION_CREDENTIALS" ]; then
               openssl aes-256-cbc -d -a -k "$GOOGLE_CREDENTIALS_PASSPHRASE" \
-                  -in tests/system/trace/credentials.json.enc \
+                  -in tests/system/credentials.json.enc \
                   -out $GOOGLE_APPLICATION_CREDENTIALS
             else
               echo "No credentials. System tests will not run."
