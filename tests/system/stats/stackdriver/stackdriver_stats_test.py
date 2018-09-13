@@ -31,13 +31,12 @@ from google.cloud import monitoring_v3
 
 MiB = 1 << 20
 
-PROJECT = os.environ.get('GCLOUD_PROJECT_PYTHON')
+PROJECT = "opencenus-node"#os.environ.get('GCLOUD_PROJECT_PYTHON')
 RETRY_WAIT_PERIOD = 10000  # Wait 10 seconds between each retry
 RETRY_MAX_ATTEMPT = 10  # Retry 10 times
 
 class TestBasicStats(unittest.TestCase):
-    
-    @retry(wait_fixed=RETRY_WAIT_PERIOD, stop_max_attempt_number=RETRY_MAX_ATTEMPT)
+
     def test_stats_record_sync(self):
         # We are using sufix in order to prevent cached objects
         sufix = str(os.getgid())
@@ -86,19 +85,21 @@ class TestBasicStats(unittest.TestCase):
 
         measure_map.record(tag_map)
 
-
         # Sleep for [0, 10] milliseconds to fake wait.
         time.sleep(random.randint(1, 10) / 1000.0)
 
-        name = exporter.client.project_path(PROJECT)
-        list_metrics_descriptors = exporter.client.list_metric_descriptors(name)
-        element = next((element for element in list_metrics_descriptors if element.description == view_description), None)
+        @retry(wait_fixed=RETRY_WAIT_PERIOD, stop_max_attempt_number=RETRY_MAX_ATTEMPT)
+        def get_metric_descriptors(self, exporter, view_description):
+            name = exporter.client.project_path(PROJECT)
+            list_metrics_descriptors = exporter.client.list_metric_descriptors(name)
+            element = next((element for element in list_metrics_descriptors if element.description == view_description), None)
         
-        self.assertNotEqual(element, None)
-        self.assertEqual(element.description, view_description)
-        self.assertEqual(element.unit, "By")
+            self.assertIsNotNone(element)
+            self.assertEqual(element.description, view_description)
+            self.assertEqual(element.unit, "By")
 
-    @retry(wait_fixed=RETRY_WAIT_PERIOD, stop_max_attempt_number=RETRY_MAX_ATTEMPT)
+        get_metric_descriptors(self, exporter, view_description)
+
     def test_stats_record_async(self):
         # We are using sufix in order to prevent cached objects
         sufix = str(os.getpid())
@@ -143,11 +144,14 @@ class TestBasicStats(unittest.TestCase):
         measure_map.measure_int_put(VIDEO_SIZE_MEASURE_ASYNC, 25 * MiB)
 
         measure_map.record(tag_map)
-        
-        name = exporter.client.project_path(PROJECT)
-        list_metrics_descriptors = exporter.client.list_metric_descriptors(name)
-        element = next((element for element in list_metrics_descriptors if element.description == view_description), None)
-        
-        self.assertNotEqual(element, None)
-        self.assertEqual(element.description, view_description)
-        self.assertEqual(element.unit, "By")
+
+        @retry(wait_fixed=RETRY_WAIT_PERIOD, stop_max_attempt_number=RETRY_MAX_ATTEMPT)
+        def get_metric_descriptors(self, exporter, view_description):
+            name = exporter.client.project_path(PROJECT)
+            list_metrics_descriptors = exporter.client.list_metric_descriptors(name)
+            element = next((element for element in list_metrics_descriptors if element.description == view_description), None)
+            self.assertIsNotNone(element)
+            self.assertEqual(element.description, view_description)
+            self.assertEqual(element.unit, "By")
+
+        get_metric_descriptors(self, exporter, view_description)
