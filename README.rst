@@ -176,15 +176,19 @@ This example shows how to use the ``TraceContextPropagator``:
 
 .. code:: python
 
+    import requests
+
+    from opencensus.trace import config_integration
     from opencensus.trace.propagation.trace_context_http_header_format import TraceContextPropagator
+    from opencensus.trace.tracer import Tracer
 
-    propagator = TraceContextPropagator()
+    config_integration.trace_integrations(['httplib'])
+    tracer = Tracer(propagator = TraceContextPropagator())
 
-    # Deserialize
-    span_context = propagator.from_headers(headers)
+    with tracer.span(name = 'parent'):
+        with tracer.span(name = 'child'):
+            response = requests.get('http://localhost:5000')
 
-    # Serialize
-    headers = propagator.to_headers(span_context)
 
 Blacklist Paths
 ~~~~~~~~~~~~~~~
