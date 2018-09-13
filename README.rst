@@ -172,6 +172,20 @@ You can specify the propagator type for serializing and deserializing the
 ``SpanContext`` and its headers. There are currently three built in propagators:
 ``GoogleCloudFormatPropagator``, ``TextFormatPropagator`` and ``TraceContextPropagator``.
 
+This example shows how to use the ``GoogleCloudFormatPropagator``:
+
+.. code:: python
+
+    from opencensus.trace.propagation import google_cloud_format
+
+    propagator = google_cloud_format.GoogleCloudFormatPropagator()
+
+    # Deserialize
+    span_context = propagator.from_header(header)
+
+    # Serialize
+    header = propagator.to_header(span_context)
+
 This example shows how to use the ``TraceContextPropagator``:
 
 .. code:: python
@@ -188,7 +202,6 @@ This example shows how to use the ``TraceContextPropagator``:
     with tracer.span(name = 'parent'):
         with tracer.span(name = 'child'):
             response = requests.get('http://localhost:5000')
-
 
 Blacklist Paths
 ~~~~~~~~~~~~~~~
