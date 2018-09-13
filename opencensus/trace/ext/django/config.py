@@ -31,10 +31,12 @@ DEFAULT_DJANGO_TRACER_PARAMS = {
     'BLACKLIST_PATHS': ['_ah/health'],
     'GCP_EXPORTER_PROJECT': None,
     'SAMPLING_RATE': 0.5,
+    'SERVICE_NAME': 'my_service',
     'ZIPKIN_EXPORTER_SERVICE_NAME': 'my_service',
     'ZIPKIN_EXPORTER_HOST_NAME': 'localhost',
     'ZIPKIN_EXPORTER_PORT': 9411,
     'ZIPKIN_EXPORTER_PROTOCOL': 'http',
+    'OCAGENT_TRACE_EXPORTER_ENDPOINT': None,
     'TRANSPORT': 'opencensus.trace.exporters.transports.sync.SyncTransport',
 }
 

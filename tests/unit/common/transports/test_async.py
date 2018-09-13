@@ -200,6 +200,45 @@ class Test_Worker(unittest.TestCase):
         # trace2 should be left in the queue because worker is terminated.
         self.assertEqual(worker._queue.qsize(), 1)
 
+    @mock.patch('logging.exception')
+    def test__thread_main_alive_on_emit_failed(self, mock):
+
+        class Exporter(object):
+            def __init__(self):
+                self.exported = []
+
+            def emit(self, span):
+                if len(self.exported) < 2:
+                    self.exported.extend(span)
+                else:
+                    raise Exception("This exporter is broken !")
+
+        exporter = Exporter()
+        worker = async._Worker(exporter, max_batch_size=2)
+
+        span_data0 = [mock.Mock()]
+        span_data1 = [mock.Mock()]
+        span_data2 = [mock.Mock()]
+
+        worker.enqueue(span_data0)
+        worker.enqueue(span_data1)
+        worker.enqueue(span_data2)
+        worker.enqueue(async._WORKER_TERMINATOR)
+
+        worker._thread_main()
+
+        # Span 2 should throw an exception, only span 0 and 1 are left
+        self.assertEqual(exporter.exported, span_data0 + span_data1)
+
+        # Logging exception should have been called on the exporter exception
+        expected = '%s failed to emit data.Dropping %s objects from queue.'
+        mock.assert_called_with(expected, 'Exporter', 1)
+
+        # Nothing should be left in the queue because worker is terminated
+        # and the data was dropped.
+        self.assertEqual(worker._queue.qsize(), 0)
+
+
     def test_flush(self):
         from six.moves import queue
 

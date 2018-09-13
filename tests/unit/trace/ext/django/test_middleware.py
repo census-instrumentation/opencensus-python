@@ -22,12 +22,13 @@ from opencensus.trace import execution_context
 from opencensus.trace import span as span_module
 from opencensus.trace.exporters import print_exporter
 from opencensus.trace.exporters import zipkin_exporter
+from opencensus.trace.exporters.ocagent import trace_exporter
 from opencensus.trace.exporters.transports import sync
 from opencensus.trace.ext import utils
 from opencensus.trace.propagation import google_cloud_format
 from opencensus.trace.samplers import always_on
 from opencensus.trace.samplers import probability
-from opencensus.trace.tracers import base
+from opencensus.trace.blank_span import BlankSpan
 
 
 class TestOpencensusMiddleware(unittest.TestCase):
@@ -131,6 +132,102 @@ class TestOpencensusMiddleware(unittest.TestCase):
         self.assertEqual(middleware.exporter.service_name, service_name)
         self.assertEqual(middleware.exporter.host_name, host_name)
         self.assertEqual(middleware.exporter.port, port)
+
+    def test_constructor_zipkin_service_name_param(self):
+        from opencensus.trace.ext.django import middleware
+
+        service_name = 'test_service'
+        host_name = 'test_hostname'
+        port = 2333
+        protocol = 'http'
+        params = {
+            'SERVICE_NAME': service_name,
+            'ZIPKIN_EXPORTER_HOST_NAME': host_name,
+            'ZIPKIN_EXPORTER_PORT': port,
+            'ZIPKIN_EXPORTER_PROTOCOL': protocol,
+            'TRANSPORT':
+                'opencensus.trace.exporters.transports.sync.SyncTransport',
+        }
+
+        patch_zipkin = mock.patch(
+            'opencensus.trace.ext.django.config.settings.EXPORTER',
+            zipkin_exporter.ZipkinExporter)
+
+        patch_params = mock.patch(
+            'opencensus.trace.ext.django.config.settings.params',
+            params)
+
+        with patch_zipkin, patch_params:
+            middleware = middleware.OpencensusMiddleware()
+
+        self.assertEqual(middleware.exporter.service_name, service_name)
+        self.assertEqual(middleware.exporter.host_name, host_name)
+        self.assertEqual(middleware.exporter.port, port)
+
+    def test_constructor_ocagent_trace_exporter(self):
+        from opencensus.trace.ext.django import middleware
+
+        service_name = 'test_service'
+        endpoint = 'localhost:50001'
+        params = {
+            'SERVICE_NAME': service_name,
+            'OCAGENT_TRACE_EXPORTER_ENDPOINT': endpoint,
+            'TRANSPORT':
+                'opencensus.trace.exporters.transports.sync.SyncTransport',
+        }
+
+        patch_ocagent_trace = mock.patch(
+            'opencensus.trace.ext.django.config.settings.EXPORTER',
+            trace_exporter.TraceExporter)
+
+        patch_params = mock.patch(
+            'opencensus.trace.ext.django.config.settings.params',
+            params)
+
+        with patch_ocagent_trace, patch_params:
+            middleware = middleware.OpencensusMiddleware()
+
+        self.assertIs(middleware._sampler, always_on.AlwaysOnSampler)
+        self.assertIs(
+            middleware._exporter, trace_exporter.TraceExporter)
+        self.assertIs(
+            middleware._propagator,
+            google_cloud_format.GoogleCloudFormatPropagator)
+
+        assert isinstance(middleware.sampler, always_on.AlwaysOnSampler)
+        assert isinstance(
+            middleware.exporter, trace_exporter.TraceExporter)
+        assert isinstance(
+            middleware.propagator,
+            google_cloud_format.GoogleCloudFormatPropagator)
+
+        self.assertEqual(middleware.exporter.service_name, service_name)
+        self.assertEqual(middleware.exporter.endpoint, endpoint)
+
+    def test_constructor_ocagent_trace_exporter_default_endpoint(self):
+        from opencensus.trace.ext.django import middleware
+
+        service_name = 'test_service'
+        params = {
+            'SERVICE_NAME': service_name,
+            'TRANSPORT':
+                'opencensus.trace.exporters.transports.sync.SyncTransport',
+        }
+
+        patch_ocagent_trace = mock.patch(
+            'opencensus.trace.ext.django.config.settings.EXPORTER',
+            trace_exporter.TraceExporter)
+
+        patch_params = mock.patch(
+            'opencensus.trace.ext.django.config.settings.params',
+            params)
+
+        with patch_ocagent_trace, patch_params:
+            middleware = middleware.OpencensusMiddleware()
+
+        self.assertEqual(middleware.exporter.service_name, service_name)
+        self.assertEqual(middleware.exporter.endpoint,
+                         trace_exporter.DEFAULT_ENDPOINT)
 
     def test_constructor_probability_sampler(self):
         from opencensus.trace.ext.django import middleware
@@ -244,7 +341,7 @@ class TestOpencensusMiddleware(unittest.TestCase):
         tracer = middleware._get_current_tracer()
         span = tracer.current_span()
 
-        assert isinstance(span, base.NullContextManager)
+        assert isinstance(span, BlankSpan)
 
         # process response
         django_response = mock.Mock()
@@ -254,7 +351,7 @@ class TestOpencensusMiddleware(unittest.TestCase):
 
         tracer = middleware._get_current_tracer()
         span = tracer.current_span()
-        assert isinstance(span, base.NullContextManager)
+        assert isinstance(span, BlankSpan)
 
     def test_process_response(self):
         from opencensus.trace.ext.django import middleware
