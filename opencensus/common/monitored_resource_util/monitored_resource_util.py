@@ -13,14 +13,12 @@
 # limitations under the License.
 
 import os
+from opencensus.common.monitored_resource_util import monitored_resource
+from opencensus.common.monitored_resource_util.aws_identity_doc_utils \
+    import AwsIdentityDocumentUtils
 
-from opencensus.utils.monitored_resource_util import monitored_resource
-
-# Environment variable set in App Engine when vm:true is set.
-_APPENGINE_FLEXIBLE_ENV_VM = 'GAE_APPENGINE_HOSTNAME'
-
-# Environment variable set in App Engine when env:flex is set.
-_APPENGINE_FLEXIBLE_ENV_FLEX = 'GAE_INSTANCE'
+from opencensus.common.monitored_resource_util.gcp_metadata_config \
+    import GcpMetadataConfig
 
 # Kubenertes environment variables
 _KUBERNETES_SERVICE_HOST = 'KUBERNETES_SERVICE_HOST'
@@ -42,10 +40,9 @@ class MonitoredResourceUtil(object):
         3. aws_ec2_instance:
         :return: MonitoredResource or None
         """
-
         if is_gke_environment():
             return monitored_resource.GcpGkeMonitoredResource()
-        elif is_gae_environment():
+        elif is_gce_environment():
             return monitored_resource.GcpGceMonitoredResource()
         elif is_aws_environment():
             return monitored_resource.AwsMonitoredResource()
@@ -54,21 +51,19 @@ class MonitoredResourceUtil(object):
 
 
 def is_gke_environment():
+    """A Google Container Engine (GKE) container instance.
+    KUBERNETES_SERVICE_HOST environment variable must be set.
+    """
     if _KUBERNETES_SERVICE_HOST in os.environ:
         return True
     return False
 
 
-def is_gae_environment():
-    """Return True if the GAE related env vars is detected."""
-    if (_APPENGINE_FLEXIBLE_ENV_VM in os.environ or
-            _APPENGINE_FLEXIBLE_ENV_FLEX in os.environ):
-        return True
-    return False
+def is_gce_environment():
+    """A virtual machine instance hosted in Google Compute Engine (GCE)."""
+    return GcpMetadataConfig.is_running_on_gcp()
 
 
 def is_aws_environment():
-    from opencensus.utils.monitored_resource_util.aws_identity_doc_utils \
-        import AwsIdentityDocumentUtils
-
-    return AwsIdentityDocumentUtils.is_aws_environment()
+    """A virtual machine instance in Amazon EC2"""
+    return AwsIdentityDocumentUtils.is_running_on_aws()

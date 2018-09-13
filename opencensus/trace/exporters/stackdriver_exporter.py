@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 from google.cloud.trace.client import Client
 
 from opencensus.trace import attributes_helper
@@ -19,13 +20,38 @@ from opencensus.trace import span_data
 from opencensus.trace.attributes import Attributes
 from opencensus.trace.exporters import base
 from opencensus.trace.exporters.transports import sync
-from opencensus.utils.monitored_resource_util import monitored_resource_util
+from opencensus.common.monitored_resource_util.monitored_resource_util \
+    import MonitoredResourceUtil
 
 # OpenCensus Version
 VERSION = '0.1.6'
 
 # Agent
 AGENT = 'opencensus-python [{}]'.format(VERSION)
+
+# Environment variable set in App Engine when vm:true is set.
+_APPENGINE_FLEXIBLE_ENV_VM = 'GAE_APPENGINE_HOSTNAME'
+
+# Environment variable set in App Engine when env:flex is set.
+_APPENGINE_FLEXIBLE_ENV_FLEX = 'GAE_INSTANCE'
+
+# GAE common attributes
+# See: https://cloud.google.com/appengine/docs/flexible/python/runtime#
+#      environment_variables
+GAE_ATTRIBUTES = {
+    'GAE_VERSION': 'g.co/gae/app/version',
+    # Note that as of June 2018, the GAE_SERVICE variable needs to map
+    # to the g.co/gae/app/module attribute in order for the stackdriver
+    # UI to properly filter by 'service' - kinda inconsistent...
+    'GAE_SERVICE': 'g.co/gae/app/module',
+    'GOOGLE_CLOUD_PROJECT': 'g.co/gae/app/project',
+    'GAE_INSTANCE': 'g.co/gae/app/instance',
+    'GAE_MEMORY_MB': 'g.co/gae/app/memory_mb',
+    'PORT': 'g.co/gae/app/port',
+}
+
+# resource label structure
+RESOURCE_LABEL = 'g.co/r/%s/%s'
 
 
 def _update_attr_map(span, attrs):
@@ -41,19 +67,27 @@ def set_attributes(trace):
         if span.get('attributes') is None:
             span['attributes'] = {}
 
+        if is_gae_environment():
+            set_gae_attributes(span)
+
         set_common_attributes(span)
 
-        set_resource_attributes(span)
+        set_monitored_resource_attributes(span)
 
 
-def set_resource_attributes(span):
-    monitor_resource = monitored_resource_util.MonitoredResourceUtil.\
-        get_instance()
+def set_monitored_resource_attributes(span):
+    monitored_resource = MonitoredResourceUtil.get_instance()
 
-    if monitor_resource is not None:
-        attrs_list = monitor_resource.get_resource_labels()
-        for attr in attrs_list:
-            _update_attr_map(span, attr)
+    if monitored_resource is not None:
+        resource_labels = monitored_resource.get_resource_labels()
+        for attribute_key, attribute_value in resource_labels.items():
+            pair = {RESOURCE_LABEL % (monitored_resource.resource_type,
+                                      attribute_key): attribute_value}
+            pair_attrs = Attributes(pair) \
+                .format_attributes_json() \
+                .get('attributeMap')
+
+            _update_attr_map(span, pair_attrs)
 
 
 def set_common_attributes(span):
@@ -66,6 +100,27 @@ def set_common_attributes(span):
         .get('attributeMap')
 
     _update_attr_map(span, common_attrs)
+
+
+def set_gae_attributes(span):
+    """Set the GAE environment common attributes."""
+    for env_var, attribute_key in GAE_ATTRIBUTES.items():
+        attribute_value = os.environ.get(env_var)
+
+        if attribute_value is not None:
+            pair = {attribute_key: attribute_value}
+            pair_attrs = Attributes(pair)\
+                .format_attributes_json()\
+                .get('attributeMap')
+
+            _update_attr_map(span, pair_attrs)
+
+
+def is_gae_environment():
+    """Return True if the GAE related env vars is detected."""
+    if (_APPENGINE_FLEXIBLE_ENV_VM in os.environ or
+            _APPENGINE_FLEXIBLE_ENV_FLEX in os.environ):
+        return True
 
 
 class StackdriverExporter(base.Exporter):

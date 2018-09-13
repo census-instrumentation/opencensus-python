@@ -68,7 +68,10 @@ class TestStackdriverExporter(unittest.TestCase):
 
         self.assertTrue(exporter.transport.export_called)
 
-    def test_emit(self):
+    @mock.patch('opencensus.trace.exporters.stackdriver_exporter.'
+                'MonitoredResourceUtil.get_instance',
+                return_value=None)
+    def test_emit(self, monitor_resource_mock):
         trace_id = '6e0c63257de34c92bf9efcd03927272e'
         span_datas = [
             span_data_module.SpanData(
@@ -139,7 +142,10 @@ class TestStackdriverExporter(unittest.TestCase):
         client.batch_write_spans.assert_called_with(name, stackdriver_spans)
         self.assertTrue(client.batch_write_spans.called)
 
-    def test_translate_to_stackdriver(self):
+    @mock.patch('opencensus.trace.exporters.stackdriver_exporter.'
+                'MonitoredResourceUtil.get_instance',
+                return_value=None)
+    def test_translate_to_stackdriver(self, monitor_resource_mock):
         project_id = 'PROJECT'
         trace_id = '6e0c63257de34c92bf9efcd03927272e'
         span_name = 'test span'
@@ -520,7 +526,10 @@ class TestStackdriverExporter(unittest.TestCase):
 
 class Test_set_attributes_gae(unittest.TestCase):
 
-    def test_set_attributes_gae(self):
+    @mock.patch('opencensus.trace.exporters.stackdriver_exporter.'
+                'MonitoredResourceUtil.get_instance',
+                return_value=None)
+    def test_set_attributes_gae(self, monitor_resource_mock):
         import os
 
         trace = {'spans': [
@@ -581,6 +590,97 @@ class Test_set_attributes_gae(unittest.TestCase):
         span = trace.get('spans')[0]
         self.assertEqual(span, expected)
 
+
+class Test_monitored_resource_attributes(unittest.TestCase):
+
+    @mock.patch('opencensus.trace.exporters.stackdriver_exporter.'
+                'MonitoredResourceUtil.get_instance')
+    def test_monitored_resource_attributes(self, monitor_resource_mock):
+        import os
+
+        trace = {'spans': [
+            {
+                'attributes': {}
+            }
+        ]}
+
+        expected = {
+            'attributes': {
+                'attributeMap': {
+                    'g.co/gae/app/module': {
+                        'string_value': {
+                            'truncated_byte_count': 0,
+                            'value': 'service'
+                        }
+                    },
+                    'g.co/gae/app/instance': {
+                        'string_value': {
+                            'truncated_byte_count': 0,
+                            'value': 'flex'
+                        }
+                    },
+                    'g.co/gae/app/version': {
+                        'string_value': {
+                            'truncated_byte_count': 0,
+                            'value': 'version'
+                        }
+                    },
+                    'g.co/gae/app/project': {
+                        'string_value': {
+                            'truncated_byte_count': 0,
+                            'value': 'project'
+                        }
+                    },
+                    'g.co/agent': {
+                        'string_value': {
+                            'truncated_byte_count': 0,
+                            'value': 'opencensus-python [{}]'.format(
+                                stackdriver_exporter.VERSION
+                            )
+                        }
+                    },
+                    'g.co/r/gke_container/instance_id': {
+                        'string_value': {
+                            'truncated_byte_count': 0,
+                            'value': '12345'
+                        }
+                    },
+                    'g.co/r/gke_container/project_id': {
+                        'string_value': {
+                            'truncated_byte_count': 0,
+                            'value': 'my_project'
+                        }
+                    },
+                    'g.co/r/gke_container/zone': {
+                        'string_value': {
+                            'truncated_byte_count': 0,
+                            'value': 'zone1'
+                        }
+                    },
+                }
+            }
+        }
+
+        monitor_resource_mock.return_value = mock.Mock()
+
+        monitor_resource_mock.return_value.resource_type = 'gke_container'
+        monitor_resource_mock.return_value.get_resource_labels.return_value = {
+            'project_id': 'my_project',
+            'instance_id': '12345',
+            'zone': 'zone1'
+        }
+        with mock.patch.dict(
+                os.environ,
+                {stackdriver_exporter._APPENGINE_FLEXIBLE_ENV_VM: 'vm',
+                 stackdriver_exporter._APPENGINE_FLEXIBLE_ENV_FLEX: 'flex',
+                 'GOOGLE_CLOUD_PROJECT': 'project',
+                 'GAE_SERVICE': 'service',
+                 'GAE_VERSION': 'version'}):
+            self.assertTrue(stackdriver_exporter.is_gae_environment())
+            stackdriver_exporter.set_attributes(trace)
+
+        span = trace.get('spans')[0]
+        self.assertEqual(span, expected)
 
 class MockTransport(object):
     def __init__(self, exporter=None):

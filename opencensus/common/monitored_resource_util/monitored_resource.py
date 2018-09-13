@@ -13,11 +13,23 @@
 # limitations under the License.
 
 
+from opencensus.common.monitored_resource_util.gcp_metadata_config \
+    import GcpMetadataConfig
+from opencensus.common.monitored_resource_util.aws_identity_doc_utils \
+    import AwsIdentityDocumentUtils
+
+# supported environments (resource types)
+_GCE_INSTANCE = "gce_instance"
+_GKE_CONTAINER = "gke_container"
+_AWS_EC2_INSTANCE = "aws_ec2_instance"
+
+
 class MonitoredResource(object):
     """MonitoredResource returns the resource type and resource labels.
     """
 
-    def get_resource_type(self):
+    @property
+    def resource_type(self):
         """Returns the resource type this MonitoredResource.
         :return:
         """
@@ -29,9 +41,6 @@ class MonitoredResource(object):
         """
         raise NotImplementedError
 
-    def _get_resource_label_format(self):
-        return '/g.co/r/{res_type}/'.format(res_type=self.get_resource_type())
-
 
 class GcpGceMonitoredResource(MonitoredResource):
     """GceMonitoredResource represents gce_instance type monitored resource.
@@ -39,15 +48,13 @@ class GcpGceMonitoredResource(MonitoredResource):
     https://cloud.google.com/monitoring/api/resources#tag_gce_instance
     """
 
-    def get_resource_type(self):
-        return "gce_instance"
+    @property
+    def resource_type(self):
+        return _GCE_INSTANCE
 
     def get_resource_labels(self):
-        from opencensus.utils.monitored_resource_util.gcp_metadata_config \
-            import GcpMetadataConfig
-
-        label_key_prefix = self._get_resource_label_format()
-        return GcpMetadataConfig.get_gce_metadata(label_key_prefix)
+        gcp_config = GcpMetadataConfig()
+        return gcp_config.get_gce_metadata()
 
 
 class GcpGkeMonitoredResource(MonitoredResource):
@@ -56,15 +63,13 @@ class GcpGkeMonitoredResource(MonitoredResource):
     https://cloud.google.com/monitoring/api/resources#tag_gke_container
     """
 
-    def get_resource_type(self):
-        return "gke_container"
+    @property
+    def resource_type(self):
+        return _GKE_CONTAINER
 
     def get_resource_labels(self):
-        from opencensus.utils.monitored_resource_util.gcp_metadata_config \
-            import GcpMetadataConfig
-
-        label_key_prefix = self._get_resource_label_format()
-        return GcpMetadataConfig.get_gke_metadata(label_key_prefix)
+        gcp_config = GcpMetadataConfig()
+        return gcp_config.get_gke_metadata()
 
 
 class AwsMonitoredResource(MonitoredResource):
@@ -72,14 +77,10 @@ class AwsMonitoredResource(MonitoredResource):
     For definition refer to
     https://cloud.google.com/monitoring/api/resources#tag_aws_ec2_instance
     """
-
-    def get_resource_type(self):
-        return "aws_ec2_instance"
+    @property
+    def resource_type(self):
+        return _AWS_EC2_INSTANCE
 
     def get_resource_labels(self):
-        from opencensus.utils.monitored_resource_util.aws_identity_doc_utils \
-            import AwsIdentityDocumentUtils
-
-        label_key_prefix = self._get_resource_label_format()
-        return AwsIdentityDocumentUtils.retrieve_aws_identity_document(
-            label_key_prefix)
+        aws_util = AwsIdentityDocumentUtils()
+        return aws_util.get_aws_metadata()
