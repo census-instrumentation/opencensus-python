@@ -16,8 +16,8 @@ class TraceServiceStub(object):
         """
         self.Config = channel.stream_stream(
             '/opencensus.proto.agent.trace.v1.TraceService/Config',
-            request_serializer=opencensus_dot_proto_dot_agent_dot_trace_dot_v1_dot_trace__service__pb2.ConfigTraceServiceRequest.SerializeToString,
-            response_deserializer=opencensus_dot_proto_dot_agent_dot_trace_dot_v1_dot_trace__service__pb2.ConfigTraceServiceResponse.FromString,
+            request_serializer=opencensus_dot_proto_dot_agent_dot_trace_dot_v1_dot_trace__service__pb2.CurrentLibraryConfig.SerializeToString,
+            response_deserializer=opencensus_dot_proto_dot_agent_dot_trace_dot_v1_dot_trace__service__pb2.UpdatedLibraryConfig.FromString,
         )
         self.Export = channel.stream_stream(
             '/opencensus.proto.agent.trace.v1.TraceService/Export',
@@ -31,17 +31,17 @@ class TraceServiceServicer(object):
     pass
 
     def Config(self, request_iterator, context):
-        """After the initialization this RPC must be kept alive for the
-        entire life of the application. Agent pushes configs to the
-        application via a stream of responses.
+        """After initialization, this RPC must be kept alive for the
+        entire life of the application. The agent pushes configs
+        down to applications via a stream.
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def Export(self, request_iterator, context):
-        """Allow to export Spans.
-        For performance reason, it is recommended to keep this RPC
+        """Allows applications to send spans to the agent.
+        For performance reasons, it is recommended to keep this RPC
         alive for the entire life of the application.
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -53,8 +53,8 @@ def add_TraceServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
         'Config': grpc.stream_stream_rpc_method_handler(
             servicer.Config,
-            request_deserializer=opencensus_dot_proto_dot_agent_dot_trace_dot_v1_dot_trace__service__pb2.ConfigTraceServiceRequest.FromString,
-            response_serializer=opencensus_dot_proto_dot_agent_dot_trace_dot_v1_dot_trace__service__pb2.ConfigTraceServiceResponse.SerializeToString,
+            request_deserializer=opencensus_dot_proto_dot_agent_dot_trace_dot_v1_dot_trace__service__pb2.CurrentLibraryConfig.FromString,
+            response_serializer=opencensus_dot_proto_dot_agent_dot_trace_dot_v1_dot_trace__service__pb2.UpdatedLibraryConfig.SerializeToString,
         ),
         'Export': grpc.stream_stream_rpc_method_handler(
             servicer.Export,
