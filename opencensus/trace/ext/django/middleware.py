@@ -33,6 +33,7 @@ HTTP_URL = attributes_helper.COMMON_ATTRIBUTES['HTTP_URL']
 HTTP_STATUS_CODE = attributes_helper.COMMON_ATTRIBUTES['HTTP_STATUS_CODE']
 
 REQUEST_THREAD_LOCAL_KEY = 'django_request'
+SPAN_THREAD_LOCAL_KEY = 'django_span'
 
 BLACKLIST_PATHS = 'BLACKLIST_PATHS'
 GCP_EXPORTER_PROJECT = 'GCP_EXPORTER_PROJECT'
@@ -70,12 +71,21 @@ def _get_django_request():
     return execution_context.get_opencensus_attr(REQUEST_THREAD_LOCAL_KEY)
 
 
+def _get_django_span():
+    """Get Django span from thread local.
+
+    :rtype: str
+    :returns: Django request.
+    """
+    return execution_context.get_opencensus_attr(SPAN_THREAD_LOCAL_KEY)
+
+
 def _get_current_tracer():
     """Get the current request tracer."""
     return execution_context.get_opencensus_tracer()
 
 
-def _set_django_attributes(tracer, request):
+def _set_django_attributes(span, request):
     """Set the django related attributes."""
     django_user = getattr(request, 'user', None)
 
@@ -87,10 +97,10 @@ def _set_django_attributes(tracer, request):
 
     # User id is the django autofield for User model as the primary key
     if user_id is not None:
-        tracer.add_attribute_to_current_span('django.user.id', str(user_id))
+        span.add_attribute('django.user.id', str(user_id))
 
     if user_name is not None:
-        tracer.add_attribute_to_current_span('django.user.name', user_name)
+        span.add_attribute('django.user.name', user_name)
 
 
 class OpencensusMiddleware(MiddlewareMixin):
@@ -185,6 +195,16 @@ class OpencensusMiddleware(MiddlewareMixin):
             tracer.add_attribute_to_current_span(
                 attribute_key=HTTP_URL,
                 attribute_value=request.path)
+
+            # Add the span to thread local
+            # in some cases (exceptions, timeouts) currentspan in
+            # response event will be one of a child spans.
+            # let's keep reference to 'django' span and
+            # use it in response event
+            execution_context.set_opencensus_attr(
+                SPAN_THREAD_LOCAL_KEY,
+                span)
+
         except Exception:  # pragma: NO COVER
             log.error('Failed to trace request', exc_info=True)
 
@@ -192,6 +212,7 @@ class OpencensusMiddleware(MiddlewareMixin):
         """Process view is executed before the view function, here we get the
         function name add set it as the span name.
         """
+
         # Do not trace if the url is blacklisted
         if utils.disable_tracing_url(request.path, self._blacklist_paths):
             return
@@ -211,13 +232,14 @@ class OpencensusMiddleware(MiddlewareMixin):
             return response
 
         try:
-            tracer = _get_current_tracer()
-            tracer.add_attribute_to_current_span(
+            span = _get_django_span()
+            span.add_attribute(
                 attribute_key=HTTP_STATUS_CODE,
                 attribute_value=str(response.status_code))
 
-            _set_django_attributes(tracer, request)
+            _set_django_attributes(span, request)
 
+            tracer = _get_current_tracer()
             tracer.end_span()
             tracer.finish()
         except Exception:  # pragma: NO COVER

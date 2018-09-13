@@ -392,33 +392,74 @@ class TestOpencensusMiddleware(unittest.TestCase):
 
         self.assertEqual(span.attributes, expected_attributes)
 
+    def test_process_response_unfinished_child_span(self):
+        from opencensus.trace.ext.django import middleware
+
+        trace_id = '2dd43a1d6b2549c6bc2a1a54c2fc0b05'
+        span_id = '6e0c63257de34c92'
+        django_trace_id = '{}/{}'.format(trace_id, span_id)
+
+        django_request = RequestFactory().get('/', **{
+            google_cloud_format._TRACE_CONTEXT_HEADER_NAME: django_trace_id})
+
+        middleware_obj = middleware.OpencensusMiddleware()
+
+        middleware_obj.process_request(django_request)
+        tracer = middleware._get_current_tracer()
+        span = tracer.current_span()
+
+        exporter_mock = mock.Mock()
+        tracer.exporter = exporter_mock
+
+        django_response = mock.Mock()
+        django_response.status_code = 500
+
+        expected_attributes = {
+            'http.url': u'/',
+            'http.method': 'GET',
+            'http.status_code': '500',
+            'django.user.id': '123',
+            'django.user.name': 'test_name'
+        }
+
+        mock_user = mock.Mock()
+        mock_user.pk = 123
+        mock_user.get_username.return_value = 'test_name'
+        django_request.user = mock_user
+
+        tracer.start_span()
+        self.assertNotEqual(span, tracer.current_span())
+        middleware_obj.process_response(django_request, django_response)
+
+        self.assertEqual(span.attributes, expected_attributes)
+
 
 class Test__set_django_attributes(unittest.TestCase):
-    class Tracer(object):
+    class Span(object):
         def __init__(self):
             self.attributes = {}
 
-        def add_attribute_to_current_span(self, key, value):
+        def add_attribute(self, key, value):
             self.attributes[key] = value
 
     def test__set_django_attributes_no_user(self):
         from opencensus.trace.ext.django.middleware import \
             _set_django_attributes
-        tracer = self.Tracer()
+        span = self.Span()
         request = mock.Mock()
 
         request.user = None
 
-        _set_django_attributes(tracer, request)
+        _set_django_attributes(span, request)
 
         expected_attributes = {}
 
-        self.assertEqual(tracer.attributes, expected_attributes)
+        self.assertEqual(span.attributes, expected_attributes)
 
     def test__set_django_attributes_no_user_info(self):
         from opencensus.trace.ext.django.middleware import \
             _set_django_attributes
-        tracer = self.Tracer()
+        span = self.Span()
         request = mock.Mock()
         django_user = mock.Mock()
 
@@ -426,16 +467,16 @@ class Test__set_django_attributes(unittest.TestCase):
         django_user.pk = None
         django_user.get_username.return_value = None
 
-        _set_django_attributes(tracer, request)
+        _set_django_attributes(span, request)
 
         expected_attributes = {}
 
-        self.assertEqual(tracer.attributes, expected_attributes)
+        self.assertEqual(span.attributes, expected_attributes)
 
     def test__set_django_attributes_with_user_info(self):
         from opencensus.trace.ext.django.middleware import \
             _set_django_attributes
-        tracer = self.Tracer()
+        span = self.Span()
         request = mock.Mock()
         django_user = mock.Mock()
 
@@ -445,10 +486,10 @@ class Test__set_django_attributes(unittest.TestCase):
         django_user.pk = test_id
         django_user.get_username.return_value = test_name
 
-        _set_django_attributes(tracer, request)
+        _set_django_attributes(span, request)
 
         expected_attributes = {
             'django.user.id': '123',
             'django.user.name': test_name}
 
-        self.assertEqual(tracer.attributes, expected_attributes)
+        self.assertEqual(span.attributes, expected_attributes)
