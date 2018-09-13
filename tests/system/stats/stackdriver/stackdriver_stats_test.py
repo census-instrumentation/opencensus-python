@@ -31,7 +31,7 @@ from google.cloud import monitoring_v3
 
 MiB = 1 << 20
 
-PROJECT = "opencenus-node"#os.environ.get('GCLOUD_PROJECT_PYTHON')
+PROJECT = os.environ.get('GCLOUD_PROJECT_PYTHON')
 RETRY_WAIT_PERIOD = 10000  # Wait 10 seconds between each retry
 RETRY_MAX_ATTEMPT = 10  # Retry 10 times
 
