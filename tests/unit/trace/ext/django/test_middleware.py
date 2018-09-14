@@ -19,14 +19,16 @@ from django.test import RequestFactory
 from django.test.utils import teardown_test_environment
 
 from opencensus.trace import execution_context
+from opencensus.trace import span as span_module
 from opencensus.trace.exporters import print_exporter
 from opencensus.trace.exporters import zipkin_exporter
+from opencensus.trace.exporters.ocagent import trace_exporter
 from opencensus.trace.exporters.transports import sync
 from opencensus.trace.ext import utils
 from opencensus.trace.propagation import google_cloud_format
 from opencensus.trace.samplers import always_on
 from opencensus.trace.samplers import probability
-from opencensus.trace.tracers import base
+from opencensus.trace.blank_span import BlankSpan
 
 
 class TestOpencensusMiddleware(unittest.TestCase):
@@ -92,10 +94,12 @@ class TestOpencensusMiddleware(unittest.TestCase):
         service_name = 'test_service'
         host_name = 'test_hostname'
         port = 2333
+        protocol = 'http'
         params = {
             'ZIPKIN_EXPORTER_SERVICE_NAME': service_name,
             'ZIPKIN_EXPORTER_HOST_NAME': host_name,
             'ZIPKIN_EXPORTER_PORT': port,
+            'ZIPKIN_EXPORTER_PROTOCOL': protocol,
             'TRANSPORT':
                 'opencensus.trace.exporters.transports.sync.SyncTransport',
         }
@@ -128,6 +132,102 @@ class TestOpencensusMiddleware(unittest.TestCase):
         self.assertEqual(middleware.exporter.service_name, service_name)
         self.assertEqual(middleware.exporter.host_name, host_name)
         self.assertEqual(middleware.exporter.port, port)
+
+    def test_constructor_zipkin_service_name_param(self):
+        from opencensus.trace.ext.django import middleware
+
+        service_name = 'test_service'
+        host_name = 'test_hostname'
+        port = 2333
+        protocol = 'http'
+        params = {
+            'SERVICE_NAME': service_name,
+            'ZIPKIN_EXPORTER_HOST_NAME': host_name,
+            'ZIPKIN_EXPORTER_PORT': port,
+            'ZIPKIN_EXPORTER_PROTOCOL': protocol,
+            'TRANSPORT':
+                'opencensus.trace.exporters.transports.sync.SyncTransport',
+        }
+
+        patch_zipkin = mock.patch(
+            'opencensus.trace.ext.django.config.settings.EXPORTER',
+            zipkin_exporter.ZipkinExporter)
+
+        patch_params = mock.patch(
+            'opencensus.trace.ext.django.config.settings.params',
+            params)
+
+        with patch_zipkin, patch_params:
+            middleware = middleware.OpencensusMiddleware()
+
+        self.assertEqual(middleware.exporter.service_name, service_name)
+        self.assertEqual(middleware.exporter.host_name, host_name)
+        self.assertEqual(middleware.exporter.port, port)
+
+    def test_constructor_ocagent_trace_exporter(self):
+        from opencensus.trace.ext.django import middleware
+
+        service_name = 'test_service'
+        endpoint = 'localhost:50001'
+        params = {
+            'SERVICE_NAME': service_name,
+            'OCAGENT_TRACE_EXPORTER_ENDPOINT': endpoint,
+            'TRANSPORT':
+                'opencensus.trace.exporters.transports.sync.SyncTransport',
+        }
+
+        patch_ocagent_trace = mock.patch(
+            'opencensus.trace.ext.django.config.settings.EXPORTER',
+            trace_exporter.TraceExporter)
+
+        patch_params = mock.patch(
+            'opencensus.trace.ext.django.config.settings.params',
+            params)
+
+        with patch_ocagent_trace, patch_params:
+            middleware = middleware.OpencensusMiddleware()
+
+        self.assertIs(middleware._sampler, always_on.AlwaysOnSampler)
+        self.assertIs(
+            middleware._exporter, trace_exporter.TraceExporter)
+        self.assertIs(
+            middleware._propagator,
+            google_cloud_format.GoogleCloudFormatPropagator)
+
+        assert isinstance(middleware.sampler, always_on.AlwaysOnSampler)
+        assert isinstance(
+            middleware.exporter, trace_exporter.TraceExporter)
+        assert isinstance(
+            middleware.propagator,
+            google_cloud_format.GoogleCloudFormatPropagator)
+
+        self.assertEqual(middleware.exporter.service_name, service_name)
+        self.assertEqual(middleware.exporter.endpoint, endpoint)
+
+    def test_constructor_ocagent_trace_exporter_default_endpoint(self):
+        from opencensus.trace.ext.django import middleware
+
+        service_name = 'test_service'
+        params = {
+            'SERVICE_NAME': service_name,
+            'TRANSPORT':
+                'opencensus.trace.exporters.transports.sync.SyncTransport',
+        }
+
+        patch_ocagent_trace = mock.patch(
+            'opencensus.trace.ext.django.config.settings.EXPORTER',
+            trace_exporter.TraceExporter)
+
+        patch_params = mock.patch(
+            'opencensus.trace.ext.django.config.settings.params',
+            params)
+
+        with patch_ocagent_trace, patch_params:
+            middleware = middleware.OpencensusMiddleware()
+
+        self.assertEqual(middleware.exporter.service_name, service_name)
+        self.assertEqual(middleware.exporter.endpoint,
+                         trace_exporter.DEFAULT_ENDPOINT)
 
     def test_constructor_probability_sampler(self):
         from opencensus.trace.ext.django import middleware
@@ -189,9 +289,10 @@ class TestOpencensusMiddleware(unittest.TestCase):
         span = tracer.current_span()
 
         expected_attributes = {
-            '/http/url': u'/',
-            '/http/method': 'GET',
+            'http.url': u'/',
+            'http.method': 'GET',
         }
+        self.assertEqual(span.span_kind, span_module.SpanKind.SERVER)
         self.assertEqual(span.attributes, expected_attributes)
         self.assertEqual(span.parent_span.span_id, span_id)
 
@@ -240,7 +341,7 @@ class TestOpencensusMiddleware(unittest.TestCase):
         tracer = middleware._get_current_tracer()
         span = tracer.current_span()
 
-        assert isinstance(span, base.NullContextManager)
+        assert isinstance(span, BlankSpan)
 
         # process response
         django_response = mock.Mock()
@@ -250,7 +351,7 @@ class TestOpencensusMiddleware(unittest.TestCase):
 
         tracer = middleware._get_current_tracer()
         span = tracer.current_span()
-        assert isinstance(span, base.NullContextManager)
+        assert isinstance(span, BlankSpan)
 
     def test_process_response(self):
         from opencensus.trace.ext.django import middleware
@@ -275,11 +376,11 @@ class TestOpencensusMiddleware(unittest.TestCase):
         django_response.status_code = 200
 
         expected_attributes = {
-            '/http/url': u'/',
-            '/http/method': 'GET',
-            '/http/status_code': '200',
-            '/django/user/id': '123',
-            '/django/user/name': 'test_name'
+            'http.url': u'/',
+            'http.method': 'GET',
+            'http.status_code': '200',
+            'django.user.id': '123',
+            'django.user.name': 'test_name'
         }
 
         mock_user = mock.Mock()
@@ -291,33 +392,74 @@ class TestOpencensusMiddleware(unittest.TestCase):
 
         self.assertEqual(span.attributes, expected_attributes)
 
+    def test_process_response_unfinished_child_span(self):
+        from opencensus.trace.ext.django import middleware
+
+        trace_id = '2dd43a1d6b2549c6bc2a1a54c2fc0b05'
+        span_id = '6e0c63257de34c92'
+        django_trace_id = '{}/{}'.format(trace_id, span_id)
+
+        django_request = RequestFactory().get('/', **{
+            google_cloud_format._TRACE_CONTEXT_HEADER_NAME: django_trace_id})
+
+        middleware_obj = middleware.OpencensusMiddleware()
+
+        middleware_obj.process_request(django_request)
+        tracer = middleware._get_current_tracer()
+        span = tracer.current_span()
+
+        exporter_mock = mock.Mock()
+        tracer.exporter = exporter_mock
+
+        django_response = mock.Mock()
+        django_response.status_code = 500
+
+        expected_attributes = {
+            'http.url': u'/',
+            'http.method': 'GET',
+            'http.status_code': '500',
+            'django.user.id': '123',
+            'django.user.name': 'test_name'
+        }
+
+        mock_user = mock.Mock()
+        mock_user.pk = 123
+        mock_user.get_username.return_value = 'test_name'
+        django_request.user = mock_user
+
+        tracer.start_span()
+        self.assertNotEqual(span, tracer.current_span())
+        middleware_obj.process_response(django_request, django_response)
+
+        self.assertEqual(span.attributes, expected_attributes)
+
 
 class Test__set_django_attributes(unittest.TestCase):
-    class Tracer(object):
+    class Span(object):
         def __init__(self):
             self.attributes = {}
 
-        def add_attribute_to_current_span(self, key, value):
+        def add_attribute(self, key, value):
             self.attributes[key] = value
 
     def test__set_django_attributes_no_user(self):
         from opencensus.trace.ext.django.middleware import \
             _set_django_attributes
-        tracer = self.Tracer()
+        span = self.Span()
         request = mock.Mock()
 
         request.user = None
 
-        _set_django_attributes(tracer, request)
+        _set_django_attributes(span, request)
 
         expected_attributes = {}
 
-        self.assertEqual(tracer.attributes, expected_attributes)
+        self.assertEqual(span.attributes, expected_attributes)
 
     def test__set_django_attributes_no_user_info(self):
         from opencensus.trace.ext.django.middleware import \
             _set_django_attributes
-        tracer = self.Tracer()
+        span = self.Span()
         request = mock.Mock()
         django_user = mock.Mock()
 
@@ -325,16 +467,16 @@ class Test__set_django_attributes(unittest.TestCase):
         django_user.pk = None
         django_user.get_username.return_value = None
 
-        _set_django_attributes(tracer, request)
+        _set_django_attributes(span, request)
 
         expected_attributes = {}
 
-        self.assertEqual(tracer.attributes, expected_attributes)
+        self.assertEqual(span.attributes, expected_attributes)
 
     def test__set_django_attributes_with_user_info(self):
         from opencensus.trace.ext.django.middleware import \
             _set_django_attributes
-        tracer = self.Tracer()
+        span = self.Span()
         request = mock.Mock()
         django_user = mock.Mock()
 
@@ -344,10 +486,10 @@ class Test__set_django_attributes(unittest.TestCase):
         django_user.pk = test_id
         django_user.get_username.return_value = test_name
 
-        _set_django_attributes(tracer, request)
+        _set_django_attributes(span, request)
 
         expected_attributes = {
-            '/django/user/id': '123',
-            '/django/user/name': test_name}
+            'django.user.id': '123',
+            'django.user.name': test_name}
 
-        self.assertEqual(tracer.attributes, expected_attributes)
+        self.assertEqual(span.attributes, expected_attributes)

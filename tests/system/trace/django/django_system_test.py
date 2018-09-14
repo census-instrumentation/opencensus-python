@@ -30,8 +30,8 @@ PROJECT = os.environ.get('GCLOUD_PROJECT_PYTHON')
 HOST_PORT = 'localhost:8000'
 BASE_URL = 'http://localhost:8000/'
 
-RETRY_WAIT_PERIOD = 8000 # Wait 8 seconds between each retry
-RETRY_MAX_ATTEMPT = 10 # Retry 10 times
+RETRY_WAIT_PERIOD = 8000  # Wait 8 seconds between each retry
+RETRY_MAX_ATTEMPT = 10  # Retry 10 times
 
 
 def wait_app_to_start():
@@ -53,7 +53,8 @@ def generate_header():
 
 def run_application():
     """Start running the django application."""
-    cmd = 'python tests/system/trace/django/manage.py runserver {}'.format(HOST_PORT)
+    cmd = 'python tests/system/trace/django/manage.py runserver {}'.format(
+        HOST_PORT)
     process = subprocess.Popen(
         cmd,
         stdout=subprocess.PIPE,
@@ -138,8 +139,9 @@ class TestDjangoTrace(unittest.TestCase):
                     request_succeeded = True
 
                 if span.get('name') == '[mysql.query]SELECT 2*3':
-                    self.assertEqual(labels.get('mysql/cursor/method/name'), 'execute')
-                    self.assertEqual(labels.get('mysql/query'), 'SELECT 2*3')
+                    self.assertEqual(labels.get(
+                        'mysql.cursor.method.name'), 'execute')
+                    self.assertEqual(labels.get('mysql.query'), 'SELECT 2*3')
 
             self.assertTrue(request_succeeded)
 
@@ -170,8 +172,10 @@ class TestDjangoTrace(unittest.TestCase):
                     request_succeeded = True
 
                 if span.get('name') == '[postgresql.query]SELECT 2*3':
-                    self.assertEqual(labels.get('postgresql/cursor/method/name'), 'execute')
-                    self.assertEqual(labels.get('postgresql/query'), 'SELECT 2*3')
+                    self.assertEqual(labels.get(
+                        'postgresql.cursor.method.name'), 'execute')
+                    self.assertEqual(labels.get(
+                        'postgresql.query'), 'SELECT 2*3')
 
             self.assertTrue(request_succeeded)
 

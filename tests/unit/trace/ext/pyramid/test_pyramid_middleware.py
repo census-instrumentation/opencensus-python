@@ -23,13 +23,14 @@ from pyramid.response import Response
 from pyramid.testing import DummyRequest
 
 from opencensus.trace import execution_context
+from opencensus.trace import span as span_module
 from opencensus.trace.exporters import print_exporter
 from opencensus.trace.exporters import zipkin_exporter
 from opencensus.trace.exporters.transports import sync
 from opencensus.trace.ext.pyramid import pyramid_middleware
 from opencensus.trace.propagation import google_cloud_format
 from opencensus.trace.samplers import always_on
-from opencensus.trace.tracers import base
+from opencensus.trace.blank_span import BlankSpan
 from opencensus.trace.tracers import noop_tracer
 
 
@@ -147,10 +148,11 @@ class TestPyramidMiddleware(unittest.TestCase):
         span = tracer.current_span()
 
         expected_attributes = {
-            '/http/url': u'/',
-            '/http/method': 'GET',
+            'http.url': u'/',
+            'http.method': 'GET',
         }
 
+        self.assertEqual(span.span_kind, span_module.SpanKind.SERVER)
         self.assertEqual(span.attributes, expected_attributes)
         self.assertEqual(span.parent_span.span_id, span_id)
 
@@ -189,7 +191,7 @@ class TestPyramidMiddleware(unittest.TestCase):
 
         span = tracer.current_span()
 
-        assert isinstance(span, base.NullContextManager)
+        assert isinstance(span, BlankSpan)
 
     def test__after_request(self):
         pyramid_trace_header = 'X-Cloud-Trace-Context'
@@ -224,9 +226,9 @@ class TestPyramidMiddleware(unittest.TestCase):
         span = tracer.current_span()
 
         expected_attributes = {
-            '/http/url': u'/',
-            '/http/method': 'GET',
-            '/http/status_code': '200',
+            'http.url': u'/',
+            'http.method': 'GET',
+            'http.status_code': '200',
         }
 
         self.assertEqual(span.parent_span.span_id, span_id)
@@ -269,4 +271,4 @@ class TestPyramidMiddleware(unittest.TestCase):
 
         middleware._after_request(request, response)
 
-        assert isinstance(span, base.NullContextManager)
+        assert isinstance(span, BlankSpan)

@@ -44,6 +44,13 @@ class TraceOptions(object):
 
         return trace_options_byte
 
+    def __repr__(self):
+        fmt = '{}(enabled={})'
+        return fmt.format(
+            type(self).__name__,
+            self.get_enabled,
+        )
+
     @property
     def get_enabled(self):
         """Get the last bit from the trace options which is the enabled field.

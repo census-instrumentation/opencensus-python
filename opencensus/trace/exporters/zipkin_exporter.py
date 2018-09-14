@@ -28,6 +28,7 @@ from opencensus.trace.utils import check_str_length
 DEFAULT_ENDPOINT = '/api/v2/spans'
 DEFAULT_HOST_NAME = 'localhost'
 DEFAULT_PORT = 9411
+DEFAULT_PROTOCOL = 'http'
 ZIPKIN_HEADERS = {'Content-Type': 'application/json'}
 
 ISO_DATETIME_REGEX = '%Y-%m-%dT%H:%M:%S.%fZ'
@@ -59,6 +60,9 @@ class ZipkinExporter(base.Exporter):
     :type end_point: str
     :param end_point: (Optional) The path for the span exporting endpoint.
 
+    :type protocol: str
+    :param protocol: (Optional) The protocol used for the request.
+
     :type transport: :class:`type`
     :param transport: Class for creating new transport objects. It should
                       extend from the base :class:`.Transport` type and
@@ -73,6 +77,7 @@ class ZipkinExporter(base.Exporter):
             host_name=DEFAULT_HOST_NAME,
             port=DEFAULT_PORT,
             endpoint=DEFAULT_ENDPOINT,
+            protocol=DEFAULT_PROTOCOL,
             transport=sync.SyncTransport,
             ipv4=None,
             ipv6=None):
@@ -80,6 +85,7 @@ class ZipkinExporter(base.Exporter):
         self.host_name = host_name
         self.port = port
         self.endpoint = endpoint
+        self.protocol = protocol
         self.url = self.get_url
         self.transport = transport(self)
         self.ipv4 = ipv4
@@ -87,7 +93,8 @@ class ZipkinExporter(base.Exporter):
 
     @property
     def get_url(self):
-        return 'http://{}:{}{}'.format(
+        return '{}://{}:{}{}'.format(
+            self.protocol,
             self.host_name,
             self.port,
             self.endpoint)

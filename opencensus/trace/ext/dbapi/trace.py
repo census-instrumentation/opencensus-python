@@ -15,6 +15,7 @@
 import logging
 
 from opencensus.trace import execution_context
+from opencensus.trace import span as span_module
 
 CURSOR_WRAP_METHOD = 'cursor'
 QUERY_WRAP_METHODS = ['execute', 'executemany']
@@ -55,9 +56,10 @@ def trace_cursor_query(query_func):
         _tracer = execution_context.get_opencensus_tracer()
         _span = _tracer.start_span()
         _span.name = 'mysql.query'
-        _tracer.add_attribute_to_current_span('mysql/query', query)
+        _span.span_kind = span_module.SpanKind.CLIENT
+        _tracer.add_attribute_to_current_span('mysql.query', query)
         _tracer.add_attribute_to_current_span(
-            'mysql/cursor/method/name',
+            'mysql.cursor.method.name',
             query_func.__name__)
 
         result = query_func(query, *args, **kwargs)

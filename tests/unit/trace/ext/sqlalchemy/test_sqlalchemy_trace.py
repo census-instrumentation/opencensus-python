@@ -16,6 +16,7 @@ import unittest
 
 import mock
 
+from opencensus.trace import span as span_module
 from opencensus.trace.ext.sqlalchemy import trace
 
 
@@ -70,14 +71,17 @@ class Test_sqlalchemy_trace(unittest.TestCase):
                                          parameters, None, False)
 
         expected_attributes = {
-            'sqlalchemy/query': query,
-            'sqlalchemy/query/parameters': parameters,
-            'sqlalchemy/cursor/method/name': 'execute'
+            'sqlalchemy.query': query,
+            'sqlalchemy.query.parameters': parameters,
+            'sqlalchemy.cursor.method.name': 'execute'
         }
 
         expected_name = 'sqlalchemy.query'
 
-        self.assertEqual(mock_tracer.current_span.attributes, expected_attributes)
+        self.assertEqual(mock_tracer.current_span.span_kind,
+                         span_module.SpanKind.CLIENT)
+        self.assertEqual(mock_tracer.current_span.attributes,
+                         expected_attributes)
         self.assertEqual(mock_tracer.current_span.name, expected_name)
 
     def test__before_cursor_executemany(self):
@@ -96,14 +100,15 @@ class Test_sqlalchemy_trace(unittest.TestCase):
                                          parameters, None, True)
 
         expected_attributes = {
-            'sqlalchemy/query': query,
-            'sqlalchemy/query/parameters': parameters,
-            'sqlalchemy/cursor/method/name': 'executemany'
+            'sqlalchemy.query': query,
+            'sqlalchemy.query.parameters': parameters,
+            'sqlalchemy.cursor.method.name': 'executemany'
         }
 
         expected_name = 'sqlalchemy.query'
 
-        self.assertEqual(mock_tracer.current_span.attributes, expected_attributes)
+        self.assertEqual(mock_tracer.current_span.attributes,
+                         expected_attributes)
         self.assertEqual(mock_tracer.current_span.name, expected_name)
 
     def test__after_cursor_execute(self):
