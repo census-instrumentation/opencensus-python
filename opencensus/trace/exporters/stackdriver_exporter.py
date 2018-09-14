@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import os
-
 from collections import defaultdict
 from google.cloud.trace.client import Client
 
@@ -22,6 +21,8 @@ from opencensus.trace import span_data
 from opencensus.trace.attributes import Attributes
 from opencensus.trace.exporters import base
 from opencensus.trace.exporters.transports import sync
+from opencensus.common.monitored_resource_util.monitored_resource_util \
+    import MonitoredResourceUtil
 
 # OpenCensus Version
 VERSION = '0.1.6'
@@ -50,11 +51,8 @@ GAE_ATTRIBUTES = {
     'PORT': 'g.co/gae/app/port',
 }
 
-# GCE common attributes
-GCE_ATTRIBUTES = {
-    'GCE_INSTANCE_ID': 'g.co/gce/instanceid',
-    'GCE_HOSTNAME': 'g.co/gce/hostname',
-}
+# resource label structure
+RESOURCE_LABEL = 'g.co/r/%s/%s'
 
 
 def _update_attr_map(span, attrs):
@@ -74,6 +72,26 @@ def set_attributes(trace):
             set_gae_attributes(span)
 
         set_common_attributes(span)
+
+        set_monitored_resource_attributes(span)
+
+
+def set_monitored_resource_attributes(span):
+    monitored_resource = MonitoredResourceUtil.get_instance()
+
+    if monitored_resource is not None:
+        resource_labels = monitored_resource.get_resource_labels()
+        for attribute_key, attribute_value in resource_labels.items():
+
+            attribute_value = 'aws:' + attribute_value if \
+                attribute_key == 'region' else attribute_value
+            pair = {RESOURCE_LABEL % (monitored_resource.resource_type,
+                                      attribute_key): attribute_value}
+            pair_attrs = Attributes(pair) \
+                .format_attributes_json() \
+                .get('attributeMap')
+
+            _update_attr_map(span, pair_attrs)
 
 
 def set_common_attributes(span):
