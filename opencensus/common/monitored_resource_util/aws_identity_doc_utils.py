@@ -35,14 +35,16 @@ _AWS_ATTRIBUTES = {
 # inited is used to make sure AWS initialize executes only once.
 inited = False
 
+# Detects if the application is running on EC2 by making a connection to AWS
+# instance identity document URI.If connection is successful, application
+# should be on an EC2 instance.
 is_running_on_aws = False
 
 aws_metadata_map = {}
 
 
 class AwsIdentityDocumentUtils(object):
-    """Util methods for getting and parsing AWS instance identity document.
-    """
+    """Util methods for getting and parsing AWS instance identity document."""
 
     @staticmethod
     def _initialize_aws_identity_document():
@@ -50,6 +52,7 @@ class AwsIdentityDocumentUtils(object):
         identity document url. If the application is running on an EC2
         instance, we should be able to get back a valid JSON document. Make a
         http get request call and store data in local map.
+        This method should only be called once.
         """
         global inited
         global aws_metadata_map

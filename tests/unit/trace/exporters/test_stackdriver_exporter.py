@@ -682,6 +682,63 @@ class Test_monitored_resource_attributes(unittest.TestCase):
         span = trace.get('spans')[0]
         self.assertEqual(span, expected)
 
+    @mock.patch('opencensus.trace.exporters.stackdriver_exporter.'
+                'MonitoredResourceUtil.get_instance')
+    def test_monitored_resource_attributes_aws(self, aws_monitor_resource_mock):
+        import os
+
+        trace = {'spans': [
+            {
+                'attributes': {}
+            }
+        ]}
+
+        expected = {
+            'attributes': {
+                'attributeMap': {
+                    'g.co/agent': {
+                        'string_value': {
+                            'truncated_byte_count': 0,
+                            'value': 'opencensus-python [{}]'.format(
+                                stackdriver_exporter.VERSION
+                            )
+                        }
+                    },
+                    'g.co/r/aws_ec2_instance/aws_account': {
+                        'string_value': {
+                            'truncated_byte_count': 0,
+                            'value': '123456789012'
+                        }
+                    },
+                    'g.co/r/aws_ec2_instance/instance_id': {
+                        'string_value': {
+                            'truncated_byte_count': 0,
+                            'value': 'i-1234567890abcdef0'
+                        }
+                    },
+                    'g.co/r/aws_ec2_instance/region': {
+                        'string_value': {
+                            'truncated_byte_count': 0,
+                            'value': 'aws:us-west-2'
+                        }
+                    },
+                }
+            }
+        }
+
+        aws_monitor_resource_mock.return_value = mock.Mock()
+
+        aws_monitor_resource_mock.return_value.resource_type = 'aws_ec2_instance'
+        aws_monitor_resource_mock.return_value.get_resource_labels.return_value = {
+            'instance_id': 'i-1234567890abcdef0',
+            'aws_account': '123456789012',
+            'region': 'us-west-2'
+        }
+        stackdriver_exporter.set_attributes(trace)
+        span = trace.get('spans')[0]
+        self.assertEqual(span, expected)
+
+
 class MockTransport(object):
     def __init__(self, exporter=None):
         self.export_called = False

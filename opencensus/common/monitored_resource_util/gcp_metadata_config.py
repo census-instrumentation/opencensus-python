@@ -15,7 +15,7 @@
 from opencensus.common.http_handler import get_request
 import os
 
-_GCP_METADATA_URI = 'http://localhost:5002/'
+_GCP_METADATA_URI = 'http://metadata/computeMetadata/v1/'
 _GCP_METADATA_URI_HEADER = {'Metadata-Flavor': 'Google'}
 
 # GCE common attributes
@@ -80,10 +80,16 @@ gcp_metadata_map = {}
 class GcpMetadataConfig(object):
     """GcpMetadata represents metadata retrieved from GCP (GKE and GCE)
     environment. Some attributes are retrieved from the system environment.
+    see : <a href="https://cloud.google.com/compute/docs/
+    storing-retrieving-metadata"> https://cloud.google.com/compute/docs/storing
+    -retrieving-metadata</a>
     """
 
     @classmethod
     def _initialize_metadata_service(cls):
+        """Initialize metadata service once and load gcp metadata into map
+        This method should only be called once.
+        """
         global inited
         global is_running_on_gcp
 
@@ -116,12 +122,14 @@ class GcpMetadataConfig(object):
         return is_running_on_gcp
 
     def get_gce_metadata(self):
+        """for GCP GCE instance"""
         if self.is_running_on_gcp():
             return gcp_metadata_map
 
         return dict()
 
     def get_gke_metadata(self):
+        """for GCP GKE container."""
         gke_metadata = {}
 
         if self.is_running_on_gcp():

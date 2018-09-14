@@ -82,6 +82,9 @@ def set_monitored_resource_attributes(span):
     if monitored_resource is not None:
         resource_labels = monitored_resource.get_resource_labels()
         for attribute_key, attribute_value in resource_labels.items():
+
+            attribute_value = 'aws:' + attribute_value if \
+                attribute_key == 'region' else attribute_value
             pair = {RESOURCE_LABEL % (monitored_resource.resource_type,
                                       attribute_key): attribute_value}
             pair_attrs = Attributes(pair) \

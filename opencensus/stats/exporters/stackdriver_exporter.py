@@ -196,7 +196,10 @@ class StackdriverStatsExporter(base.StatsExporter):
             monitor_resource = MonitoredResourceUtil.get_instance()
             if monitor_resource is not None:
                 series.resource.type = monitor_resource.resource_type
-                for attribute_key, attribute_value in monitor_resource.get_resource_labels().items():
+                labels = monitor_resource.get_resource_labels()
+                for attribute_key, attribute_value in labels.items():
+                    attribute_value = 'aws:' + attribute_value if \
+                        attribute_key == 'region' else attribute_value
                     series.resource.labels[attribute_key] = attribute_value
             else:
                 series.resource.type = 'global'
