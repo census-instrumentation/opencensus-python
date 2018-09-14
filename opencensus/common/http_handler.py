@@ -37,11 +37,7 @@ def get_request(request_url, request_headers=dict()):
     try:
         response = urlopen(request, timeout=_REQUEST_TIMEOUT)
         response_content = response.read()
-    except HTTPError:
-        response_content = None
-    except URLError:
-        response_content = None
-    except socket.timeout:
+    except (HTTPError, URLError, socket.timeout):
         response_content = None
 
     return response_content

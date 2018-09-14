@@ -46,19 +46,19 @@ aws_metadata_map = {}
 class AwsIdentityDocumentUtils(object):
     """Util methods for getting and parsing AWS instance identity document."""
 
-    @staticmethod
-    def _initialize_aws_identity_document():
+    inited = False
+    is_running = False
+
+    @classmethod
+    def _initialize_aws_identity_document(cls):
         """This method, tries to establish an HTTP connection to AWS instance
         identity document url. If the application is running on an EC2
         instance, we should be able to get back a valid JSON document. Make a
         http get request call and store data in local map.
         This method should only be called once.
         """
-        global inited
-        global aws_metadata_map
-        global is_running_on_aws
 
-        if inited:
+        if cls.inited:
             return
 
         content = get_request(_AWS_INSTANCE_IDENTITY_DOCUMENT_URI)
@@ -69,14 +69,14 @@ class AwsIdentityDocumentUtils(object):
                 if attribute_value is not None:
                     aws_metadata_map[attribute_key] = attribute_value
 
-            is_running_on_aws = True
+            cls.is_running = True
 
-        inited = True
+        cls.inited = True
 
     @classmethod
     def is_running_on_aws(cls):
         cls._initialize_aws_identity_document()
-        return is_running_on_aws
+        return cls.is_running
 
     def get_aws_metadata(self):
         """AWS Instance Identity Document is a JSON file.

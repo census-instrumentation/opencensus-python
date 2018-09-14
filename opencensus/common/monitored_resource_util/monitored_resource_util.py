@@ -54,9 +54,7 @@ def is_gke_environment():
     """A Google Container Engine (GKE) container instance.
     KUBERNETES_SERVICE_HOST environment variable must be set.
     """
-    if _KUBERNETES_SERVICE_HOST in os.environ:
-        return True
-    return False
+    return _KUBERNETES_SERVICE_HOST in os.environ
 
 
 def is_gce_environment():

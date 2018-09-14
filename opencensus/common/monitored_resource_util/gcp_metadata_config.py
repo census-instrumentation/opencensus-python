@@ -69,11 +69,6 @@ _GKE_ENV_ATTRIBUTES = {
 # Kubenertes environment variables
 _KUBERNETES_SERVICE_HOST = 'KUBERNETES_SERVICE_HOST'
 
-# inited is used to make sure GCP initialize executes only once.
-inited = False
-
-is_running_on_gcp = False
-
 gcp_metadata_map = {}
 
 
@@ -84,22 +79,21 @@ class GcpMetadataConfig(object):
     storing-retrieving-metadata"> https://cloud.google.com/compute/docs/storing
     -retrieving-metadata</a>
     """
+    inited = False
+    is_running = False
 
     @classmethod
     def _initialize_metadata_service(cls):
         """Initialize metadata service once and load gcp metadata into map
         This method should only be called once.
         """
-        global inited
-        global is_running_on_gcp
-
-        if inited:
+        if cls.inited:
             return
 
         instance_id = cls._get_attribute('instance_id')
 
         if instance_id is not None:
-            is_running_on_gcp = True
+            cls.is_running = True
 
             gcp_metadata_map['instance_id'] = instance_id
 
@@ -114,12 +108,12 @@ class GcpMetadataConfig(object):
                     if attribute_value is not None:
                         gcp_metadata_map[attribute_key] = attribute_value
 
-        inited = True
+        cls.inited = True
 
     @classmethod
     def is_running_on_gcp(cls):
         cls._initialize_metadata_service()
-        return is_running_on_gcp
+        return cls.is_running
 
     def get_gce_metadata(self):
         """for GCP GCE instance"""

@@ -20,6 +20,7 @@ from opencensus.common.monitored_resource_util.aws_identity_doc_utils \
 from opencensus.common.monitored_resource_util import \
     aws_identity_doc_utils
 
+
 class TestAwsIdentityDocumentUtils(unittest.TestCase):
 
     @mock.patch('opencensus.common.monitored_resource_util.'
@@ -42,8 +43,8 @@ class TestAwsIdentityDocumentUtils(unittest.TestCase):
         }
 
         http_request_mock.return_value = json.dumps(mocked_http_response)
-        aws_identity_doc_utils.inited = False
-        aws_identity_doc_utils.is_running_on_aws = False
+        AwsIdentityDocumentUtils.inited = False
+        AwsIdentityDocumentUtils.is_running = False
         aws_identity_doc_utils.aws_metadata_map = {}
 
         self.assertTrue(AwsIdentityDocumentUtils.is_running_on_aws())
@@ -80,8 +81,8 @@ class TestAwsIdentityDocumentUtils(unittest.TestCase):
         }
 
         http_request_mock.return_value = json.dumps(mocked_http_response)
-        aws_identity_doc_utils.inited = False
-        aws_identity_doc_utils.is_running_on_aws = False
+        AwsIdentityDocumentUtils.inited = False
+        AwsIdentityDocumentUtils.is_running = False
         aws_identity_doc_utils.aws_metadata_map = {}
 
         self.assertTrue(AwsIdentityDocumentUtils.is_running_on_aws())

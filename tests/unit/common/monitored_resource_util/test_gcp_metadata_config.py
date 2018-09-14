@@ -36,8 +36,8 @@ class TestGcpMetadataConfig(unittest.TestCase):
                 return 'us-east1'
 
         http_request_mock.side_effect = assign_attribute_value
-        gcp_metadata_config.inited = False
-        gcp_metadata_config.is_running_on_gcp = False
+        GcpMetadataConfig.inited = False
+        GcpMetadataConfig.is_running = False
         gcp_metadata_config.gcp_metadata_map = {}
 
         self.assertTrue(GcpMetadataConfig.is_running_on_gcp())
@@ -76,8 +76,8 @@ class TestGcpMetadataConfig(unittest.TestCase):
                 return 'us-east1'
 
         http_request_mock.side_effect = assign_attribute_value
-        gcp_metadata_config.inited = False
-        gcp_metadata_config.is_running_on_gcp = False
+        GcpMetadataConfig.inited = False
+        GcpMetadataConfig.is_running = False
         gcp_metadata_config.gcp_metadata_map = {}
 
         self.assertTrue(GcpMetadataConfig.is_running_on_gcp())
@@ -117,8 +117,8 @@ class TestGcpMetadataConfig(unittest.TestCase):
                 return 'us-east1'
 
         http_request_mock.side_effect = assign_attribute_value
-        gcp_metadata_config.inited = False
-        gcp_metadata_config.is_running_on_gcp = False
+        GcpMetadataConfig.inited = False
+        GcpMetadataConfig.is_running = False
         gcp_metadata_config.gcp_metadata_map = {}
 
         self.assertTrue(GcpMetadataConfig.is_running_on_gcp())
@@ -142,8 +142,8 @@ class TestGcpMetadataConfig(unittest.TestCase):
                 'gcp_metadata_config.get_request')
     def test_gcp_not_running(self, http_request_mock):
         http_request_mock.return_value = None
-        gcp_metadata_config.inited = False
-        gcp_metadata_config.is_running_on_gcp = False
+        GcpMetadataConfig.inited = False
+        GcpMetadataConfig.is_running = False
         gcp_metadata_config.gcp_metadata_map = {}
 
         self.assertFalse(GcpMetadataConfig.is_running_on_gcp())
