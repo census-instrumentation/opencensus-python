@@ -60,6 +60,43 @@ class TestAwsIdentityDocumentUtils(unittest.TestCase):
 
         self.assertEquals(labels_list, expected_labels)
 
+
+    @mock.patch('opencensus.common.monitored_resource_util.'
+                'aws_identity_doc_utils.get_request')
+    def test_get_aws_metadata_none_fields(self, http_request_mock):
+        mocked_http_response = {
+            'availabilityZone': 'us-west-2b',
+            'imageId': 'ami-5fb8c835',
+            'privateIp': '10.158.112.84',
+            'pendingTime': '2016-11-19T16:32:11Z',
+            'accountId': '123456789012',
+            'region': 'us-west-2',
+            'marketplaceProductCodes': [
+                "1abc2defghijklm3nopqrs4tu"
+            ],
+            'instanceType': 't2.micro',
+            'version': '2017-09-30',
+            'architecture': 'x86_64',
+        }
+
+        http_request_mock.return_value = json.dumps(mocked_http_response)
+        aws_identity_doc_utils.inited = False
+        aws_identity_doc_utils.is_running_on_aws = False
+        aws_identity_doc_utils.aws_metadata_map = {}
+
+        self.assertTrue(AwsIdentityDocumentUtils.is_running_on_aws())
+
+        labels_list = AwsIdentityDocumentUtils().get_aws_metadata()
+
+        self.assertEquals(len(labels_list), 2)
+
+        expected_labels = {
+            'aws_account': '123456789012',
+            'region': 'us-west-2'
+        }
+
+        self.assertEquals(labels_list, expected_labels)
+
     @mock.patch('opencensus.common.monitored_resource_util.'
                 'aws_identity_doc_utils.get_request')
     def test_aws_not_running(self, http_request_mock):

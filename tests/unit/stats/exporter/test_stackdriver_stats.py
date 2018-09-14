@@ -25,6 +25,7 @@ from opencensus.tags import tag_key as tag_key_module
 from opencensus.tags import tag_map as tag_map_module
 from opencensus.tags import tag_value as tag_value_module
 
+
 MiB = 1 << 20
 FRONTEND_KEY = tag_key_module.TagKey("my.org/keys/frontend")
 FRONTEND_KEY_FLOAT = tag_key_module.TagKey("my.org/keys/frontend-FLOAT")
@@ -172,7 +173,9 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         exporter.on_register_view(view_none)
         self.assertTrue(client.create_metric_descriptor.called)
 
-    def test_emit(self):
+    @mock.patch('opencensus.stats.exporters.stackdriver_exporter.'
+                'MonitoredResourceUtil.get_instance', return_value=None)
+    def test_emit(self, monitor_resource_mock):
         client = mock.Mock()
         start_time = datetime.utcnow()
         end_time = datetime.utcnow()
@@ -217,7 +220,9 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         exporter.handle_upload(None)
         self.assertFalse(client.create_time_series.called)
 
-    def test_handle_upload_with_data(self):
+    @mock.patch('opencensus.stats.exporters.stackdriver_exporter.'
+                'MonitoredResourceUtil.get_instance', return_value=None)
+    def test_handle_upload_with_data(self, monitor_resource_mock):
         client = mock.Mock()
         start_time = datetime.utcnow()
         end_time = datetime.utcnow()
@@ -231,7 +236,9 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         exporter.handle_upload(view_data)
         self.assertTrue(client.create_time_series.called)
 
-    def test_make_request(self):
+    @mock.patch('opencensus.stats.exporters.stackdriver_exporter.'
+                'MonitoredResourceUtil.get_instance', return_value=None)
+    def test_make_request(self, monitor_resource_mock):
         client = mock.Mock()
         start_time = datetime.utcnow()
         end_time = datetime.utcnow()
@@ -257,7 +264,9 @@ class TestStackdriverStatsExporter(unittest.TestCase):
 
         self.assertEqual(registered_exporters, 1)
 
-    def test_create_timeseries(self):
+    @mock.patch('opencensus.stats.exporters.stackdriver_exporter.'
+                'MonitoredResourceUtil.get_instance', return_value=None)
+    def test_create_timeseries(self, monitor_resource_mock):
         client = mock.Mock()
 
         option = stackdriver.Options(project_id="project-test", resource="global")
@@ -284,12 +293,65 @@ class TestStackdriverStatsExporter(unittest.TestCase):
 
         v_data = measure_map.measure_to_view_map.get_view(VIDEO_SIZE_VIEW_NAME, None)
 
-        time_serie = exporter.create_time_series_list(v_data,"")
-        self.assertIsNotNone(time_serie)
-        time_serie = exporter.create_time_series_list(v_data,"global")
-        self.assertIsNotNone(time_serie)
+        time_series = exporter.create_time_series_list(v_data, "")
+        self.assertEquals(time_series.resource.type, "global")
+        self.assertIsNotNone(time_series)
 
-    def test_create_timeseries_str_tagvalue(self):
+        time_series = exporter.create_time_series_list(v_data, "global")
+        self.assertIsNotNone(time_series)
+
+
+    @mock.patch('opencensus.stats.exporters.stackdriver_exporter.'
+                'MonitoredResourceUtil.get_instance')
+    def test_create_timeseries_with_resource(self, monitor_resource_mock):
+        client = mock.Mock()
+
+        option = stackdriver.Options(project_id="project-test", resource="global")
+        exporter = stackdriver.StackdriverStatsExporter(options=option, client=client)
+
+        stats = stats_module.Stats()
+        view_manager = stats.view_manager
+        stats_recorder = stats.stats_recorder
+
+        if len(view_manager.measure_to_view_map.exporters) > 0:
+            view_manager.unregister_exporter(view_manager.measure_to_view_map.exporters[0])
+
+        view_manager.register_exporter(exporter)
+
+        view_manager.register_view(VIDEO_SIZE_VIEW)
+
+        tag_value = tag_value_module.TagValue("1200")
+        tag_map = tag_map_module.TagMap()
+        tag_map.insert(FRONTEND_KEY, tag_value)
+        measure_map = stats_recorder.new_measurement_map()
+        measure_map.measure_int_put(VIDEO_SIZE_MEASURE, 25 * MiB)
+
+        measure_map.record(tag_map)
+
+        v_data = measure_map.measure_to_view_map.get_view(VIDEO_SIZE_VIEW_NAME, None)
+
+        mocked_labels = {
+            'instance_id': 'my-instance',
+            'project_id': 'my-project',
+            'zone': 'us-east1',
+            'pod_id': 'localhost',
+            'namespace_id': 'namespace'
+        }
+
+        monitor_resource_mock.return_value = mock.Mock()
+        monitor_resource_mock.return_value.resource_type = 'gce_instance'
+        monitor_resource_mock.return_value.get_resource_labels.return_value = mocked_labels
+
+        time_series = exporter.create_time_series_list(v_data, "")
+        self.assertEquals(time_series.resource.type, "gce_instance")
+        self.assertIsNotNone(time_series)
+
+        time_series = exporter.create_time_series_list(v_data, "global")
+        self.assertIsNotNone(time_series)
+
+    @mock.patch('opencensus.stats.exporters.stackdriver_exporter.'
+                'MonitoredResourceUtil.get_instance', return_value=None)
+    def test_create_timeseries_str_tagvalue(self, monitor_resource_mock):
         client = mock.Mock()
 
         option = stackdriver.Options(project_id="project-test", resource="global")
@@ -327,10 +389,12 @@ class TestStackdriverStatsExporter(unittest.TestCase):
 
         v_data = measure_map.measure_to_view_map.get_view(view_name1, None)
 
-        time_serie = exporter.create_time_series_list(v_data,"global")
-        self.assertIsNotNone(time_serie)
+        time_series = exporter.create_time_series_list(v_data,"global")
+        self.assertIsNotNone(time_series)
 
-    def test_create_timeseries_last_value_float_tagvalue(self):
+    @mock.patch('opencensus.stats.exporters.stackdriver_exporter.'
+                'MonitoredResourceUtil.get_instance', return_value=None)
+    def test_create_timeseries_last_value_float_tagvalue(self, monitor_resource_mock):
         client = mock.Mock()
 
         option = stackdriver.Options(project_id="project-test", resource="global")
@@ -368,10 +432,12 @@ class TestStackdriverStatsExporter(unittest.TestCase):
 
         v_data = measure_map.measure_to_view_map.get_view(view_name1, None)
 
-        time_serie = exporter.create_time_series_list(v_data,"global")
-        self.assertIsNotNone(time_serie)
+        time_series = exporter.create_time_series_list(v_data,"global")
+        self.assertIsNotNone(time_series)
 
-    def test_create_timeseries_float_tagvalue(self):
+    @mock.patch('opencensus.stats.exporters.stackdriver_exporter.'
+                'MonitoredResourceUtil.get_instance', return_value=None)
+    def test_create_timeseries_float_tagvalue(self, monitor_resource_mock):
         client = mock.Mock()
 
         option = stackdriver.Options(project_id="project-test", resource="global")
@@ -409,8 +475,8 @@ class TestStackdriverStatsExporter(unittest.TestCase):
 
         v_data = measure_map.measure_to_view_map.get_view(view_name2, None)
 
-        time_serie = exporter.create_time_series_list(v_data,"global")
-        self.assertIsNotNone(time_serie)
+        time_series = exporter.create_time_series_list(v_data,"global")
+        self.assertIsNotNone(time_series)
 
     def test_create_metric_descriptor_count(self):
         client = mock.Mock()

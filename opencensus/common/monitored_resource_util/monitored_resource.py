@@ -33,13 +33,13 @@ class MonitoredResource(object):
         """Returns the resource type this MonitoredResource.
         :return:
         """
-        raise NotImplementedError
+        raise NotImplementedError  # pragma: NO COVER
 
     def get_resource_labels(self):
         """Returns the resource labels for this MonitoredResource.
         :return:
         """
-        raise NotImplementedError
+        raise NotImplementedError  # pragma: NO COVER
 
 
 class GcpGceMonitoredResource(MonitoredResource):

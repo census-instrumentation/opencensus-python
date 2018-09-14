@@ -17,7 +17,7 @@ import json
 
 # AWS provides Instance Metadata via below url
 _AWS_INSTANCE_IDENTITY_DOCUMENT_URI = \
-    "http://localhost:5002/employees"
+    "http://169.254.169.254/latest/dynamic/instance-identity/document"
 
 _AWS_ATTRIBUTES = {
     # Region is the AWS region for the VM. The format of this field is
