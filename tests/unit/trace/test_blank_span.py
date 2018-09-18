@@ -1,8 +1,20 @@
-import unittest
-
-import mock
+# Copyright 2018, OpenCensus Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import datetime
+import mock
+import unittest
 from opencensus.trace.link import Link
 from opencensus.trace.span import format_span_json
 from opencensus.trace.time_event import TimeEvent
@@ -123,16 +135,6 @@ class TestBlankSpan(unittest.TestCase):
         span.start()
         self.assertIsNone(span.start_time)
 
-    def test_finish_with_context_tracer(self):
-        context_tracer = mock.Mock()
-        span_name = 'root_span'
-        span = self._make_one(name=span_name, context_tracer=context_tracer)
-
-        with span:
-            print('test')
-
-        self.assertTrue(context_tracer.end_span.called)
-
     def test_finish_without_context_tracer(self):
         span_name = 'root_span'
         span = self._make_one(span_name)
@@ -162,3 +164,9 @@ class TestBlankSpan(unittest.TestCase):
         finally:
             BlankSpan._on_create_callbacks = []
         self.assertFalse(self.on_create_called)
+
+    def test_context_manager(self):
+        span_name = 'root_span'
+        with self._make_one(span_name) as s:
+            self.assertIsNotNone(s)
+            self.assertEquals(s.name, span_name)

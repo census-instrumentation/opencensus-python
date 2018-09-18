@@ -12,9 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from opencensus.trace import stack_trace
-from opencensus.trace import status
-
 """Module containing base class for Span."""
 
 
@@ -97,17 +94,8 @@ class BaseSpan(object):
 
     def __enter__(self):
         """Start a span."""
-        self.start()
-        return self
+        raise NotImplementedError
 
     def __exit__(self, exception_type, exception_value, traceback):
         """Finish a span."""
-        if traceback is not None:
-            self.stack_trace = stack_trace.StackTrace.from_traceback(traceback)
-        if exception_value is not None:
-            self.status = status.Status.from_exception(exception_value)
-        if self.context_tracer is not None:
-            self.context_tracer.end_span()
-            return
-
-        self.finish()
+        raise NotImplementedError
