@@ -17,30 +17,13 @@ import mock
 from opencensus.trace.base_span import BaseSpan
 
 
-class TestBaseTracer(unittest.TestCase):
+class TestBaseSpan(unittest.TestCase):
 
     def test_span_abstract(self):
         span = BaseSpan()
 
         with self.assertRaises(NotImplementedError):
             span.span('root_span')
-
-    @mock.patch.object(BaseSpan, '__exit__')
-    @mock.patch.object(BaseSpan, '__enter__')
-    def test_context_manager_called(self, mock_enter, mock_exit):
-        span = BaseSpan()
-        with span:
-            pass
-        self.assertTrue(mock_enter.called)
-        self.assertTrue(mock_exit.called)
-
-    def test_context_manager_methods(self):
-        span = BaseSpan()
-        with self.assertRaises(NotImplementedError):
-            span.__enter__()
-
-        with self.assertRaises(NotImplementedError):
-            span.__exit__(None, None, None)
 
     def test_children_abstract(self):
         span = BaseSpan()
@@ -97,5 +80,22 @@ class TestBaseTracer(unittest.TestCase):
 
         with self.assertRaises(NotImplementedError):
             list(iter(span))
+
+    @mock.patch.object(BaseSpan, '__exit__')
+    @mock.patch.object(BaseSpan, '__enter__')
+    def test_context_manager_called(self, mock_enter, mock_exit):
+        span = BaseSpan()
+        with span:
+            pass
+        self.assertTrue(mock_enter.called)
+        self.assertTrue(mock_exit.called)
+
+    def test_context_manager_methods(self):
+        span = BaseSpan()
+        with self.assertRaises(NotImplementedError):
+            span.__enter__()
+
+        with self.assertRaises(NotImplementedError):
+            span.__exit__(None, None, None)
 
 
