@@ -71,3 +71,94 @@ class TestBlankSpan(unittest.TestCase):
 
         span.start()
         span.finish()
+
+    def test_constructor_explicit(self):
+        from datetime import datetime
+
+        span_id = 'test_span_id'
+        span_name = 'test_span_name'
+        parent_span = mock.Mock()
+        start_time = datetime.utcnow().isoformat() + 'Z'
+        end_time = datetime.utcnow().isoformat() + 'Z'
+        attributes = {
+            'http.status_code': '200',
+            'component': 'HTTP load balancer',
+        }
+        time_events = mock.Mock()
+        links = mock.Mock()
+        stack_trace = mock.Mock()
+        status = mock.Mock()
+        context_tracer = mock.Mock()
+
+        span = self._make_one(
+            name=span_name,
+            parent_span=parent_span,
+            attributes=attributes,
+            start_time=start_time,
+            end_time=end_time,
+            span_id=span_id,
+            stack_trace=stack_trace,
+            time_events=time_events,
+            links=links,
+            status=status,
+            context_tracer=context_tracer)
+
+        self.assertEqual(span.name, span_name)
+        self.assertIsNotNone(span.span_id)
+        self.assertEqual(span.attributes, {})
+        self.assertEqual(span.start_time, start_time)
+        self.assertEqual(span.end_time, end_time)
+        self.assertEqual(span.time_events, time_events)
+        self.assertEqual(span.stack_trace, stack_trace)
+        self.assertEqual(span.links, [])
+        self.assertEqual(span.status, status)
+        self.assertEqual(span.children, [])
+        self.assertEqual(span.context_tracer, context_tracer)
+
+    def test_start(self):
+        span_name = 'root_span'
+        span = self._make_one(span_name)
+        self.assertIsNone(span.start_time)
+
+        span.start()
+        self.assertIsNone(span.start_time)
+
+    def test_finish_with_context_tracer(self):
+        context_tracer = mock.Mock()
+        span_name = 'root_span'
+        span = self._make_one(name=span_name, context_tracer=context_tracer)
+
+        with span:
+            print('test')
+
+        self.assertTrue(context_tracer.end_span.called)
+
+    def test_finish_without_context_tracer(self):
+        span_name = 'root_span'
+        span = self._make_one(span_name)
+        self.assertIsNone(span.end_time)
+
+        span.finish()
+        self.assertIsNone(span.end_time)
+
+    def test_finish(self):
+        span_name = 'root_span'
+        span = self._make_one(span_name)
+        self.assertIsNone(span.end_time)
+
+        span.finish()
+        self.assertIsNone(span.end_time)
+
+    def test_on_create(self):
+        from opencensus.trace.blank_span import BlankSpan
+        self.on_create_called = False
+        span = self._make_one('span1')
+        self.assertFalse(self.on_create_called)
+        try:
+            @BlankSpan.on_create
+            def callback(span):
+                self.on_create_called = True
+            span = self._make_one('span2')
+        finally:
+            BlankSpan._on_create_callbacks = []
+        self.assertFalse(self.on_create_called)

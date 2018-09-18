@@ -15,9 +15,10 @@
 from opencensus.trace import time_event as time_event_module
 from opencensus.trace.span_context import generate_span_id
 from opencensus.trace.tracers import base
+from opencensus.trace.base_span import BaseSpan
 
 
-class BlankSpan(object):
+class BlankSpan(BaseSpan):
     """A BlankSpan is an individual timed event which forms a node of the trace
     tree. All operations are no-op.
 
@@ -71,6 +72,10 @@ class BlankSpan(object):
         self._child_spans = []
         self.context_tracer = context_tracer
         self.span_kind = span_kind
+
+    @staticmethod
+    def on_create(callback):
+        pass
 
     @property
     def children(self):

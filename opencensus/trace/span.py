@@ -17,12 +17,11 @@ from itertools import chain
 
 from opencensus.trace import attributes
 from opencensus.trace import link as link_module
-from opencensus.trace import stack_trace
-from opencensus.trace import status
 from opencensus.trace import time_event as time_event_module
 from opencensus.trace.span_context import generate_span_id
 from opencensus.trace.tracers import base
 from opencensus.trace.utils import _get_truncatable_str
+from opencensus.trace import base_span
 
 
 class SpanKind(object):
@@ -31,7 +30,7 @@ class SpanKind(object):
     CLIENT = 2
 
 
-class Span(object):
+class Span(base_span.BaseSpan):
     """A span is an individual timed event which forms a node of the trace
     tree. Each span has its name, span id and parent id. The parent id
     indicates the causal relationships between the individual spans in a
@@ -235,23 +234,6 @@ class Span(object):
         for span in chain(*(map(iter, self.children))):
             yield span
         yield self
-
-    def __enter__(self):
-        """Start a span."""
-        self.start()
-        return self
-
-    def __exit__(self, exception_type, exception_value, traceback):
-        """Finish a span."""
-        if traceback is not None:
-            self.stack_trace = stack_trace.StackTrace.from_traceback(traceback)
-        if exception_value is not None:
-            self.status = status.Status.from_exception(exception_value)
-        if self.context_tracer is not None:
-            self.context_tracer.end_span()
-            return
-
-        self.finish()
 
 
 def format_span_json(span):
