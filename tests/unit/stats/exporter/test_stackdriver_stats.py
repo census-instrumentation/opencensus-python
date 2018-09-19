@@ -160,8 +160,11 @@ class TestStackdriverStatsExporter(unittest.TestCase):
     def test_namespacedviews(self):
         view_name = "view-1"
         expected_view_name_namespaced = "custom.googleapis.com/opencensus/%s" % view_name
-        view_name_namespaced = stackdriver.namespaced_view_name(view_name)
+        view_name_namespaced = stackdriver.namespaced_view_name(view_name, "")
+        self.assertEqual(expected_view_name_namespaced, view_name_namespaced)
 
+        expected_view_name_namespaced = "kubernetes.io/myorg/%s" % view_name
+        view_name_namespaced = stackdriver.namespaced_view_name(view_name, "kubernetes.io/myorg")
         self.assertEqual(expected_view_name_namespaced, view_name_namespaced)
 
     def test_on_register_view(self):
@@ -293,11 +296,13 @@ class TestStackdriverStatsExporter(unittest.TestCase):
 
         v_data = measure_map.measure_to_view_map.get_view(VIDEO_SIZE_VIEW_NAME, None)
 
-        time_series = exporter.create_time_series_list(v_data, "")
+        time_series = exporter.create_time_series_list(v_data, "", "")
         self.assertEquals(time_series.resource.type, "global")
+        self.assertEquals(time_series.metric.type, "custom.googleapis.com/opencensus/my.org/views/video_size_test2")
         self.assertIsNotNone(time_series)
 
-        time_series = exporter.create_time_series_list(v_data, "global")
+        time_series = exporter.create_time_series_list(v_data, "global", "kubernetes.io/myorg")
+        self.assertEquals(time_series.metric.type, "kubernetes.io/myorg/my.org/views/video_size_test2")
         self.assertIsNotNone(time_series)
 
 
@@ -342,11 +347,13 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         monitor_resource_mock.return_value.resource_type = 'gce_instance'
         monitor_resource_mock.return_value.get_resource_labels.return_value = mocked_labels
 
-        time_series = exporter.create_time_series_list(v_data, "")
+        time_series = exporter.create_time_series_list(v_data, "", "")
         self.assertEquals(time_series.resource.type, "gce_instance")
+        self.assertEquals(time_series.metric.type, "custom.googleapis.com/opencensus/my.org/views/video_size_test2")
         self.assertIsNotNone(time_series)
 
-        time_series = exporter.create_time_series_list(v_data, "global")
+        time_series = exporter.create_time_series_list(v_data, "global", "")
+        self.assertEquals(time_series.metric.type, "custom.googleapis.com/opencensus/my.org/views/video_size_test2")
         self.assertIsNotNone(time_series)
 
     @mock.patch('opencensus.stats.exporters.stackdriver_exporter.'
@@ -389,7 +396,8 @@ class TestStackdriverStatsExporter(unittest.TestCase):
 
         v_data = measure_map.measure_to_view_map.get_view(view_name1, None)
 
-        time_series = exporter.create_time_series_list(v_data,"global")
+        time_series = exporter.create_time_series_list(v_data, "global", "kubernetes.io/myorg/")
+        self.assertEquals(time_series.metric.type, "kubernetes.io/myorg/view-name1")
         self.assertIsNotNone(time_series)
 
     @mock.patch('opencensus.stats.exporters.stackdriver_exporter.'
@@ -432,7 +440,8 @@ class TestStackdriverStatsExporter(unittest.TestCase):
 
         v_data = measure_map.measure_to_view_map.get_view(view_name1, None)
 
-        time_series = exporter.create_time_series_list(v_data,"global")
+        time_series = exporter.create_time_series_list(v_data,"global", "kubernetes.io/myorg")
+        self.assertEquals(time_series.metric.type, "kubernetes.io/myorg/view-name1")
         self.assertIsNotNone(time_series)
 
     @mock.patch('opencensus.stats.exporters.stackdriver_exporter.'
@@ -475,7 +484,8 @@ class TestStackdriverStatsExporter(unittest.TestCase):
 
         v_data = measure_map.measure_to_view_map.get_view(view_name2, None)
 
-        time_series = exporter.create_time_series_list(v_data,"global")
+        time_series = exporter.create_time_series_list(v_data, "global", "")
+        self.assertEquals(time_series.metric.type, "custom.googleapis.com/opencensus/view-name2")
         self.assertIsNotNone(time_series)
 
     def test_create_metric_descriptor_count(self):
