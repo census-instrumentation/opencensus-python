@@ -37,7 +37,7 @@ def get_func_name(func):
     return func_name
 
 
-def disable_tracing_url(url, blacklist_paths=None):
+def disable_tracing_path(url, blacklist_paths=None):
     """Disable tracing on the provided blacklist paths, by default not tracing
     the health check request.
 

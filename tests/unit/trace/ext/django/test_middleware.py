@@ -323,7 +323,7 @@ class TestOpencensusMiddleware(unittest.TestCase):
             middleware_obj = middleware.OpencensusMiddleware()
 
         django_request = RequestFactory().get('/test_blacklist_path')
-        disabled = utils.disable_tracing_url(django_request.path,
+        disabled = utils.disable_tracing_path(django_request.path,
                                              blacklist_paths)
         self.assertTrue(disabled)
         self.assertEqual(middleware_obj._blacklist_paths, blacklist_paths)

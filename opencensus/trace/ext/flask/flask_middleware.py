@@ -177,7 +177,7 @@ class FlaskMiddleware(object):
         See: http://flask.pocoo.org/docs/0.12/api/#flask.Flask.before_request
         """
         # Do not trace if the url is blacklisted
-        if utils.disable_tracing_url(flask.request.url, self.blacklist_paths):
+        if utils.disable_tracing_path(flask.request.url, self.blacklist_paths):
             return
 
         try:
@@ -207,7 +207,7 @@ class FlaskMiddleware(object):
         See: http://flask.pocoo.org/docs/0.12/api/#flask.Flask.after_request
         """
         # Do not trace if the url is blacklisted
-        if utils.disable_tracing_url(flask.request.url, self.blacklist_paths):
+        if utils.disable_tracing_path(flask.request.url, self.blacklist_paths):
             return response
 
         try:
@@ -222,7 +222,7 @@ class FlaskMiddleware(object):
 
     def _teardown_request(self, exception):
         # Do not trace if the url is blacklisted
-        if utils.disable_tracing_url(flask.request.url, self.blacklist_paths):
+        if utils.disable_tracing_path(flask.request.url, self.blacklist_paths):
             return
 
         try:

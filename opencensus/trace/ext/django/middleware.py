@@ -166,7 +166,7 @@ class OpencensusMiddleware(MiddlewareMixin):
         :param request: Django http request.
         """
         # Do not trace if the url is blacklisted
-        if utils.disable_tracing_url(request.path, self._blacklist_paths):
+        if utils.disable_tracing_path(request.path, self._blacklist_paths):
             return
 
         # Add the request to thread local
@@ -214,7 +214,7 @@ class OpencensusMiddleware(MiddlewareMixin):
         """
 
         # Do not trace if the url is blacklisted
-        if utils.disable_tracing_url(request.path, self._blacklist_paths):
+        if utils.disable_tracing_path(request.path, self._blacklist_paths):
             return
 
         try:
@@ -228,7 +228,7 @@ class OpencensusMiddleware(MiddlewareMixin):
 
     def process_response(self, request, response):
         # Do not trace if the url is blacklisted
-        if utils.disable_tracing_url(request.path, self._blacklist_paths):
+        if utils.disable_tracing_path(request.path, self._blacklist_paths):
             return response
 
         try:

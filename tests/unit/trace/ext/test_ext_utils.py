@@ -41,18 +41,18 @@ class TestUtils(unittest.TestCase):
 
         self.assertEqual(func_name, expected_func_name)
 
-    def test_disable_tracing_url_default(self):
+    def test_disable_tracing_path_default(self):
         url = 'http://127.0.0.1:8080/_ah/health'
-        disable_tracing = utils.disable_tracing_url(url)
+        disable_tracing = utils.disable_tracing_path(url)
         self.assertTrue(disable_tracing)
 
         url = 'http://127.0.0.1:8080/mysql'
-        disable_tracing = utils.disable_tracing_url(url)
+        disable_tracing = utils.disable_tracing_path(url)
         self.assertFalse(disable_tracing)
 
-    def test_disable_tracing_url_explicit(self):
+    def test_disable_tracing_path_explicit(self):
         url = 'http://127.0.0.1:8080/test_no_tracing'
         blacklist_paths = ['test_no_tracing']
 
-        disable_tracing = utils.disable_tracing_url(url, blacklist_paths)
+        disable_tracing = utils.disable_tracing_path(url, blacklist_paths)
         self.assertTrue(disable_tracing)
