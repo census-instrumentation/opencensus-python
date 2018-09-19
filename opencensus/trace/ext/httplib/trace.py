@@ -18,6 +18,7 @@ import sys
 from opencensus.trace import attributes_helper
 from opencensus.trace import execution_context
 from opencensus.trace import span as span_module
+from opencensus.trace.ext import utils
 
 PYTHON2 = sys.version_info.major == 2
 
@@ -61,13 +62,11 @@ def wrap_httplib_request(request_func):
 
     def call(self, method, url, body, headers, *args, **kwargs):
         _tracer = execution_context.get_opencensus_tracer()
-        try:  # pragma: NO COVER
-            # Don't trace if it's a http request made by the exporter
-            if self._dns_host == _tracer.exporter.host_name:
-                return request_func(self, method, url, body,
+        blacklist_urls = execution_context.get_opencensus_attr('blacklist_urls')
+        dest_url = '{}:{}'.format(self._dns_host, self.port)
+        if utils.disable_tracing_hostname(dest_url, blacklist_urls):
+            return request_func(self, method, url, body,
                                     headers, *args, **kwargs)
-        except(AttributeError):
-            pass
         _span = _tracer.start_span()
         _span.span_kind = span_module.SpanKind.CLIENT
         _span.name = '[httplib]{}'.format(request_func.__name__)
