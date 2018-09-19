@@ -169,8 +169,8 @@ Propagators
 ~~~~~~~~~~~
 
 You can specify the propagator type for serializing and deserializing the
-``SpanContext`` and its headers. There are currently two built in propagators:
-``GoogleCloudFormatPropagator`` and ``TextFormatPropagator``.
+``SpanContext`` and its headers. There are currently three built in propagators:
+``GoogleCloudFormatPropagator``, ``TextFormatPropagator`` and ``TraceContextPropagator``.
 
 This example shows how to use the ``GoogleCloudFormatPropagator``:
 
@@ -185,6 +185,23 @@ This example shows how to use the ``GoogleCloudFormatPropagator``:
 
     # Serialize
     header = propagator.to_header(span_context)
+
+This example shows how to use the ``TraceContextPropagator``:
+
+.. code:: python
+
+    import requests
+
+    from opencensus.trace import config_integration
+    from opencensus.trace.propagation.trace_context_http_header_format import TraceContextPropagator
+    from opencensus.trace.tracer import Tracer
+
+    config_integration.trace_integrations(['httplib'])
+    tracer = Tracer(propagator = TraceContextPropagator())
+
+    with tracer.span(name = 'parent'):
+        with tracer.span(name = 'child'):
+            response = requests.get('http://localhost:5000')
 
 Blacklist Paths
 ~~~~~~~~~~~~~~~
@@ -286,7 +303,7 @@ setting in ``settings.py``:
         'BLACKLIST_PATHS': ['/_ah/health'],
         'GCP_EXPORTER_PROJECT': None,
         'SAMPLING_RATE': 0.5,
-        'ZIPKIN_EXPORTER_SERVICE_NAME': 'my_service',
+        'SERVICE_NAME': 'my_service',
         'ZIPKIN_EXPORTER_HOST_NAME': 'localhost',
         'ZIPKIN_EXPORTER_PORT': 9411,
         'ZIPKIN_EXPORTER_PROTOCOL': 'http',
@@ -410,6 +427,7 @@ The request URL, method, and status will be collected.
 You can enable Google Cloud client libraries integration by specifying ``'google_cloud_clientlibs'`` to ``trace_integrations``.
 
 .. _Cloud client libraries: https://github.com/GoogleCloudPlatform/google-cloud-python#google-cloud-python-client
+
 
 ------
  Stats

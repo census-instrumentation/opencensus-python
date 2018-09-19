@@ -21,6 +21,8 @@ from opencensus.stats import aggregation
 from opencensus.stats import measure
 from datetime import datetime
 from opencensus.common.transports import async
+from opencensus.common.monitored_resource_util.monitored_resource_util \
+    import MonitoredResourceUtil
 
 MAX_TIME_SERIES_PER_UPLOAD = 200
 OPENCENSUS_TASK_DESCRIPTION = "Opencensus task identifier"
@@ -191,7 +193,16 @@ class StackdriverStatsExporter(base.StatsExporter):
         series.metric.type = namespaced_view_name(v_data.view.name)
 
         if resource_type == "":
-            series.resource.type = 'global'
+            monitor_resource = MonitoredResourceUtil.get_instance()
+            if monitor_resource is not None:
+                series.resource.type = monitor_resource.resource_type
+                labels = monitor_resource.get_resource_labels()
+                for attribute_key, attribute_value in labels.items():
+                    attribute_value = 'aws:' + attribute_value if \
+                        attribute_key == 'region' else attribute_value
+                    series.resource.labels[attribute_key] = attribute_value
+            else:
+                series.resource.type = 'global'
         else:
             series.resource.type = resource_type
 

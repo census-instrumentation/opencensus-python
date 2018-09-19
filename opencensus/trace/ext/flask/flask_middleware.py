@@ -39,10 +39,12 @@ BLACKLIST_PATHS = 'BLACKLIST_PATHS'
 GCP_EXPORTER_PROJECT = 'GCP_EXPORTER_PROJECT'
 SAMPLING_RATE = 'SAMPLING_RATE'
 TRANSPORT = 'TRANSPORT'
+SERVICE_NAME = 'SERVICE_NAME'
 ZIPKIN_EXPORTER_SERVICE_NAME = 'ZIPKIN_EXPORTER_SERVICE_NAME'
 ZIPKIN_EXPORTER_HOST_NAME = 'ZIPKIN_EXPORTER_HOST_NAME'
 ZIPKIN_EXPORTER_PORT = 'ZIPKIN_EXPORTER_PORT'
 ZIPKIN_EXPORTER_PROTOCOL = 'ZIPKIN_EXPORTER_PROTOCOL'
+OCAGENT_TRACE_EXPORTER_ENDPOINT = 'OCAGENT_TRACE_EXPORTER_ENDPOINT'
 
 log = logging.getLogger(__name__)
 
@@ -79,6 +81,7 @@ class FlaskMiddleware(object):
                        :class:`.TextFormatPropagator` and
                        :class:`.TraceContextPropagator`.
     """
+
     def __init__(self, app=None, blacklist_paths=None, sampler=None,
                  exporter=None, propagator=None):
         self.app = app
@@ -133,8 +136,7 @@ class FlaskMiddleware(object):
                 project_id=_project_id,
                 transport=transport)
         elif self.exporter.__name__ == 'ZipkinExporter':
-            _zipkin_service_name = params.get(
-                ZIPKIN_EXPORTER_SERVICE_NAME, 'my_service')
+            _service_name = self._get_service_name(params)
             _zipkin_host_name = params.get(
                 ZIPKIN_EXPORTER_HOST_NAME, 'localhost')
             _zipkin_port = params.get(
@@ -142,10 +144,18 @@ class FlaskMiddleware(object):
             _zipkin_protocol = params.get(
                 ZIPKIN_EXPORTER_PROTOCOL, 'http')
             self.exporter = self.exporter(
-                service_name=_zipkin_service_name,
+                service_name=_service_name,
                 host_name=_zipkin_host_name,
                 port=_zipkin_port,
                 protocol=_zipkin_protocol,
+                transport=transport)
+        elif self.exporter.__name__ == 'TraceExporter':
+            _service_name = self._get_service_name(params)
+            _endpoint = params.get(
+                OCAGENT_TRACE_EXPORTER_ENDPOINT, None)
+            self.exporter = self.exporter(
+                service_name=_service_name,
+                endpoint=_endpoint,
                 transport=transport)
         else:
             self.exporter = self.exporter(transport=transport)
@@ -237,3 +247,13 @@ class FlaskMiddleware(object):
             tracer.finish()
         except Exception:  # pragma: NO COVER
             log.error('Failed to trace request', exc_info=True)
+
+    def _get_service_name(self, params):
+        _service_name = params.get(
+            SERVICE_NAME, None)
+
+        if _service_name is None:
+            _service_name = params.get(
+                ZIPKIN_EXPORTER_SERVICE_NAME, 'my_service')
+
+        return _service_name

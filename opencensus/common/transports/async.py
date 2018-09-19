@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import atexit
+import logging
 import threading
 import time
 
@@ -100,7 +101,15 @@ class _Worker(object):
                     data.extend(item)
 
             if data:
-                self.exporter.emit(data)
+                try:
+                    self.exporter.emit(data)
+                except Exception:
+                    logging.exception(
+                        '%s failed to emit data.'
+                        'Dropping %s objects from queue.',
+                        self.exporter.__class__.__name__,
+                        len(data))
+                    pass
 
             for _ in range(len(items)):
                 self._queue.task_done()
