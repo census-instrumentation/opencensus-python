@@ -174,7 +174,8 @@ class StackdriverStatsExporter(base.StatsExporter):
         resource = self.options.resource
         metric_prefix = self.options.metric_prefix
         for v_data in view_data:
-            series = self.create_time_series_list(v_data, resource, metric_prefix)
+            series = self.create_time_series_list(v_data, resource,
+                                                  metric_prefix)
             time_series.append(series)
 
             project_id = self.options.project_id
@@ -191,7 +192,8 @@ class StackdriverStatsExporter(base.StatsExporter):
         """ Create the TimeSeries object based on the view data
         """
         series = monitoring_v3.types.TimeSeries()
-        series.metric.type = namespaced_view_name(v_data.view.name, metric_prefix)
+        series.metric.type = namespaced_view_name(v_data.view.name,
+                                                  metric_prefix)
 
         if resource_type == "":
             monitor_resource = MonitoredResourceUtil.get_instance()
@@ -269,7 +271,8 @@ class StackdriverStatsExporter(base.StatsExporter):
         view_aggregation = view.aggregation
         view_name = view.name
 
-        metric_type = namespaced_view_name(view_name, self.options.metric_prefix)
+        metric_type = namespaced_view_name(view_name,
+                                           self.options.metric_prefix)
         value_type = None
         unit = view_measure.unit
         metric_desc = monitoring_v3.enums.MetricDescriptor
