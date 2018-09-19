@@ -172,8 +172,10 @@ class StackdriverStatsExporter(base.StatsExporter):
         time_series = []
 
         resource = self.options.resource
+        metric_prefix = self.options.metric_prefix
         for v_data in view_data:
-            series = self.create_time_series_list(v_data, resource)
+            series = self.create_time_series_list(v_data, resource,
+                                                  metric_prefix)
             time_series.append(series)
 
             project_id = self.options.project_id
@@ -186,11 +188,12 @@ class StackdriverStatsExporter(base.StatsExporter):
                 time_series = []
         return requests
 
-    def create_time_series_list(self, v_data, resource_type):
+    def create_time_series_list(self, v_data, resource_type, metric_prefix):
         """ Create the TimeSeries object based on the view data
         """
         series = monitoring_v3.types.TimeSeries()
-        series.metric.type = namespaced_view_name(v_data.view.name)
+        series.metric.type = namespaced_view_name(v_data.view.name,
+                                                  metric_prefix)
 
         if resource_type == "":
             monitor_resource = MonitoredResourceUtil.get_instance()
@@ -268,7 +271,8 @@ class StackdriverStatsExporter(base.StatsExporter):
         view_aggregation = view.aggregation
         view_name = view.name
 
-        metric_type = namespaced_view_name(view_name)
+        metric_type = namespaced_view_name(view_name,
+                                           self.options.metric_prefix)
         value_type = None
         unit = view_measure.unit
         metric_desc = monitoring_v3.enums.MetricDescriptor
@@ -357,10 +361,12 @@ def get_task_value():
     return task_value
 
 
-def namespaced_view_name(view_name):
+def namespaced_view_name(view_name, metric_prefix):
     """ create string to be used as metric type
     """
-    return os.path.join("custom.googleapis.com", "opencensus", view_name)
+    if metric_prefix == "":
+        return os.path.join("custom.googleapis.com", "opencensus", view_name)
+    return os.path.join(metric_prefix, view_name)
 
 
 def new_label_descriptors(defaults, keys):
