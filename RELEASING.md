@@ -2,20 +2,10 @@
 
 ## Steps
 
-### Create a Github release
-
 ### Update the version number in `setup.py`
 
 ### Update the version number in `stackdriver_exporter.py`
 
-### Build the Python wheel
+### Create a Github release
 
-```
-python setup.py bdist_wheel
-```
-
-### Upload the package to PyPI using twine
-
-```
-twine upload dist/*
-```
+Then the Circle CI will build the package and upload it PyPI automatically.
