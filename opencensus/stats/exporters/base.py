@@ -28,7 +28,7 @@ class StatsExporter(object):
         :param object of opencensus.stats.view.View view:
             View object to register
         """
-        raise NotImplementedError
+        raise NotImplementedError  # pragma: NO COVER
 
     def emit(self, view_datas):
         """Send view and measurement to exporter record method,
@@ -39,4 +39,4 @@ class StatsExporter(object):
         :param list of opencensus.stats.view_data.ViewData ViewData:
             list of ViewData object to send to Stackdriver Monitoring
         """
-        raise NotImplementedError
+        raise NotImplementedError  # pragma: NO COVER

@@ -12,12 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from opencensus.trace import base_span
 from opencensus.trace import time_event as time_event_module
 from opencensus.trace.span_context import generate_span_id
 from opencensus.trace.tracers import base
 
 
-class BlankSpan(object):
+class BlankSpan(base_span.BaseSpan):
     """A BlankSpan is an individual timed event which forms a node of the trace
     tree. All operations are no-op.
 
@@ -71,6 +72,10 @@ class BlankSpan(object):
         self._child_spans = []
         self.context_tracer = context_tracer
         self.span_kind = span_kind
+
+    @staticmethod
+    def on_create(callback):
+        pass
 
     @property
     def children(self):
@@ -143,3 +148,11 @@ class BlankSpan(object):
     def __iter__(self):
         """Iterate through the span tree."""
         yield self
+
+    def __enter__(self):
+        """Start a span."""
+        return self
+
+    def __exit__(self, exception_type, exception_value, traceback):
+        """Finish a span."""
+        pass
