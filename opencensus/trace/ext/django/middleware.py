@@ -19,6 +19,7 @@ from opencensus.trace.ext import utils
 from opencensus.trace.ext.django.config import (settings, convert_to_import)
 from opencensus.trace import attributes_helper
 from opencensus.trace import execution_context
+from opencensus.trace import config_integration
 from opencensus.trace import span as span_module
 from opencensus.trace import tracer as tracer_module
 from opencensus.trace.samplers import probability
@@ -45,6 +46,7 @@ ZIPKIN_EXPORTER_HOST_NAME = 'ZIPKIN_EXPORTER_HOST_NAME'
 ZIPKIN_EXPORTER_PORT = 'ZIPKIN_EXPORTER_PORT'
 ZIPKIN_EXPORTER_PROTOCOL = 'ZIPKIN_EXPORTER_PROTOCOL'
 OCAGENT_TRACE_EXPORTER_ENDPOINT = 'OCAGENT_TRACE_EXPORTER_ENDPOINT'
+BLACKLIST_HOSTNAMES = 'BLACKLIST_HOSTNAMES'
 
 log = logging.getLogger(__name__)
 
@@ -156,6 +158,8 @@ class OpencensusMiddleware(MiddlewareMixin):
         else:
             self.exporter = self._exporter(transport=transport)
 
+        self.blacklist_hostnames = settings.params.get(BLACKLIST_HOSTNAMES, None)
+
         # Initialize the propagator
         self.propagator = self._propagator()
 
@@ -173,6 +177,10 @@ class OpencensusMiddleware(MiddlewareMixin):
         execution_context.set_opencensus_attr(
             REQUEST_THREAD_LOCAL_KEY,
             request)
+
+        execution_context.set_opencensus_attr(
+            'blacklist_hostnames',
+            self.blacklist_hostnames)
 
         try:
             # Start tracing this request

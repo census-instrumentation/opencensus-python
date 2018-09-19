@@ -67,24 +67,24 @@ def disable_tracing_url(url, blacklist_paths=None):
     return False
 
 
-def disable_tracing_hostname(url, blacklist_urls=None):
+def disable_tracing_hostname(url, blacklist_hostnames=None):
     """Disable tracing for the provided blacklist URLs, by default not tracing
     the exporter url.
 
     If the url path starts with the blacklisted path, return True.
 
-    :type blacklist_urls: list
-    :param blacklist_urls: URL that not tracing.
+    :type blacklist_hostnames: list
+    :param blacklist_hostnames: URL that not tracing.
 
     :rtype: bool
     :returns: True if not tracing, False if tracing.
     """
-    if blacklist_urls is None:
+    if blacklist_hostnames is None:
         # Exporter host_name are not traced by default
         _tracer = execution_context.get_opencensus_tracer()
         try:
-            blacklist_urls = ['%s:%s' % (_tracer.exporter.host_name, _tracer.exporter.port)]
+            blacklist_hostnames = ['%s:%s' % (_tracer.exporter.host_name, _tracer.exporter.port)]
         except(AttributeError):
-            blacklist_urls = []
+            blacklist_hostnames = []
 
-    return url in blacklist_urls
+    return url in blacklist_hostnames

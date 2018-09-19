@@ -62,9 +62,9 @@ def wrap_httplib_request(request_func):
 
     def call(self, method, url, body, headers, *args, **kwargs):
         _tracer = execution_context.get_opencensus_tracer()
-        blacklist_urls = execution_context.get_opencensus_attr('blacklist_urls')
+        blacklist_hostnames = execution_context.get_opencensus_attr('blacklist_hostnames')
         dest_url = '{}:{}'.format(self._dns_host, self.port)
-        if utils.disable_tracing_hostname(dest_url, blacklist_urls):
+        if utils.disable_tracing_hostname(dest_url, blacklist_hostnames):
             return request_func(self, method, url, body,
                                     headers, *args, **kwargs)
         _span = _tracer.start_span()
