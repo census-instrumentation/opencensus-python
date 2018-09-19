@@ -83,7 +83,9 @@ def disable_tracing_hostname(url, blacklist_hostnames=None):
         # Exporter host_name are not traced by default
         _tracer = execution_context.get_opencensus_tracer()
         try:
-            blacklist_hostnames = ['%s:%s' % (_tracer.exporter.host_name, _tracer.exporter.port)]
+            blacklist_hostnames = [
+                    '%s:%s' % (_tracer.exporter.host_name, _tracer.exporter.port)
+                ]
         except(AttributeError):
             blacklist_hostnames = []
 
