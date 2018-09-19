@@ -73,7 +73,7 @@ class OpenCensusTweenFactory(object):
         return response
 
     def _before_request(self, request):
-        if utils.disable_tracing_path(request.path, self._blacklist_paths):
+        if utils.disable_tracing_url(request.path, self._blacklist_paths):
             return
 
         try:
@@ -103,7 +103,7 @@ class OpenCensusTweenFactory(object):
             log.error('Failed to trace request', exc_info=True)
 
     def _after_request(self, request, response):
-        if utils.disable_tracing_path(request.path, self._blacklist_paths):
+        if utils.disable_tracing_url(request.path, self._blacklist_paths):
             return
 
         try:
