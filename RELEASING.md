@@ -8,4 +8,4 @@
 
 ### Create a Github release
 
-Then the Circle CI will build the package and upload it PyPI automatically.
+Then the Circle CI will build the package and upload it to PyPI automatically.
