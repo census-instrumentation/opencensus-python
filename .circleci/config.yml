@@ -38,3 +38,12 @@ jobs:
           name: Run tests - opencensus
           command: |
             nox -f nox.py
+      - deploy:
+          name: Push to PyPI (if this is a release tag).
+          command: scripts/twine_upload.sh
+
+deployment:
+  tag_build_for_cci2:
+    tag: /(([a-z]+)-)*([0-9]+)\.([0-9]+)\.([0-9]+)/
+    commands:
+      - true
