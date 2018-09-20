@@ -19,7 +19,6 @@ from opencensus.trace.ext import utils
 from opencensus.trace.ext.django.config import (settings, convert_to_import)
 from opencensus.trace import attributes_helper
 from opencensus.trace import execution_context
-from opencensus.trace import config_integration
 from opencensus.trace import span as span_module
 from opencensus.trace import tracer as tracer_module
 from opencensus.trace.samplers import probability
@@ -158,7 +157,8 @@ class OpencensusMiddleware(MiddlewareMixin):
         else:
             self.exporter = self._exporter(transport=transport)
 
-        self.blacklist_hostnames = settings.params.get(BLACKLIST_HOSTNAMES, None)
+        self.blacklist_hostnames = settings.params.get(
+            BLACKLIST_HOSTNAMES, None)
 
         # Initialize the propagator
         self.propagator = self._propagator()

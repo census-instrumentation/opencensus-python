@@ -57,7 +57,8 @@ def trace_integration(tracer=None):
 def wrap_requests(requests_func):
     """Wrap the requests function to trace it."""
     def call(url, *args, **kwargs):
-        blacklist_hostnames = execution_context.get_opencensus_attr('blacklist_hostnames')
+        blacklist_hostnames = execution_context.get_opencensus_attr(
+            'blacklist_hostnames')
         parsed_url = urlparse(url)
         if parsed_url.port is None:
             dest_url = parsed_url.hostname
@@ -91,7 +92,8 @@ def wrap_session_request(wrapped, instance, args, kwargs):
     method = kwargs.get('method') or args[0]
     url = kwargs.get('url') or args[1]
 
-    blacklist_hostnames = execution_context.get_opencensus_attr('blacklist_hostnames')
+    blacklist_hostnames = execution_context.get_opencensus_attr(
+        'blacklist_hostnames')
     parsed_url = urlparse(url)
     if parsed_url.port is None:
         dest_url = parsed_url.hostname
