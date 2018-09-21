@@ -421,6 +421,7 @@ won't be traced. It's configurable by giving an array of hostname/port to the at
 ``blacklist_hostnames`` in OpenCensus context's attributes:
 
 .. code:: python
+
     execution_context.set_opencensus_attr('blacklist_hostnames',['hostname:port'])
 
 Only the hostname must be specified if only the hostname is specified in the URL request.

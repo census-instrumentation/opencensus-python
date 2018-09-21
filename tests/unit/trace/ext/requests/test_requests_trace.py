@@ -77,6 +77,62 @@ class Test_requests_trace(unittest.TestCase):
                          mock_tracer.current_span.attributes)
         self.assertEqual(expected_name, mock_tracer.current_span.name)
 
+    def test_wrap_requests_blacklist_ok(self):
+        mock_return = mock.Mock()
+        mock_return.status_code = 200
+        return_value = mock_return
+        mock_func = mock.Mock()
+        mock_func.__name__ = 'get'
+        mock_func.return_value = return_value
+        mock_tracer = MockTracer()
+
+        patch_tracer = mock.patch(
+            'opencensus.trace.ext.requests.trace.execution_context.'
+            'get_opencensus_tracer',
+            return_value=mock_tracer)
+        patch_attr = mock.patch(
+            'opencensus.trace.ext.requests.trace.execution_context.'
+            'get_opencensus_attr',
+            return_value=['localhost:8080'])
+
+        wrapped = trace.wrap_requests(mock_func)
+
+        url = 'http://localhost'
+
+        with patch_tracer, patch_attr:
+            wrapped(url)
+
+        expected_name = '[requests]get'
+
+        self.assertEqual(expected_name, mock_tracer.current_span.name)
+
+    def test_wrap_requests_blacklist_nok(self):
+        mock_return = mock.Mock()
+        mock_return.status_code = 200
+        return_value = mock_return
+        mock_func = mock.Mock()
+        mock_func.__name__ = 'get'
+        mock_func.return_value = return_value
+        mock_tracer = MockTracer()
+
+        patch_tracer = mock.patch(
+            'opencensus.trace.ext.requests.trace.execution_context.'
+            'get_opencensus_tracer',
+            return_value=mock_tracer)
+        patch_attr = mock.patch(
+            'opencensus.trace.ext.requests.trace.execution_context.'
+            'get_opencensus_attr',
+            return_value=['localhost:8080'])
+
+        wrapped = trace.wrap_requests(mock_func)
+
+        url = 'http://localhost:8080'
+
+        with patch_tracer, patch_attr:
+            wrapped(url)
+
+        self.assertEqual(None, mock_tracer.current_span)
+
     def test_wrap_session_request(self):
         def wrapped(*args, **kwargs):
             result = mock.Mock()
@@ -107,6 +163,59 @@ class Test_requests_trace(unittest.TestCase):
         self.assertEqual(expected_attributes,
                          mock_tracer.current_span.attributes)
         self.assertEqual(expected_name, mock_tracer.current_span.name)
+
+    def test_wrap_session_request_blacklist_ok(self):
+        def wrapped(*args, **kwargs):
+            result = mock.Mock()
+            result.status_code = 200
+            return result
+
+        mock_tracer = MockTracer()
+
+        patch_tracer = mock.patch(
+            'opencensus.trace.ext.requests.trace.execution_context.'
+            'get_opencensus_tracer',
+            return_value=mock_tracer)
+        patch_attr = mock.patch(
+            'opencensus.trace.ext.requests.trace.execution_context.'
+            'get_opencensus_attr',
+            return_value=None)
+
+        url = 'http://localhost'
+        request_method = 'POST'
+
+        with patch_tracer, patch_attr:
+            result = trace.wrap_session_request(
+                wrapped, 'Session.request', (request_method, url), {})
+
+        expected_name = '[requests]POST'
+        self.assertEqual(expected_name, mock_tracer.current_span.name)
+
+
+    def test_wrap_session_request_blacklist_nok(self):
+        def wrapped(*args, **kwargs):
+            result = mock.Mock()
+            result.status_code = 200
+            return result
+
+        mock_tracer = MockTracer()
+
+        patch_tracer = mock.patch(
+            'opencensus.trace.ext.requests.trace.execution_context.'
+            'get_opencensus_tracer',
+            return_value=mock_tracer)
+        patch_attr = mock.patch(
+            'opencensus.trace.ext.requests.trace.execution_context.'
+            'get_opencensus_attr',
+            return_value=['localhost:8080'])
+
+        url = 'http://localhost:8080'
+        request_method = 'POST'
+
+        with patch_tracer, patch_attr:
+            result = trace.wrap_session_request(
+                wrapped, 'Session.request', (request_method, url), {})
+        self.assertEqual(None, mock_tracer.current_span)
 
 
 class MockTracer(object):
