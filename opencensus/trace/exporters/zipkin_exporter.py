@@ -137,10 +137,6 @@ class ZipkinExporter(base.Exporter):
         :returns: List of zipkin format spans.
         """
 
-        top_span = span_datas[0]
-        trace_id = top_span.context.trace_id if top_span.context is not None \
-            else None
-
         local_endpoint = {
             'serviceName': self.service_name,
             'port': self.port,
@@ -173,7 +169,7 @@ class ZipkinExporter(base.Exporter):
             duration_ms = end_timestamp_ms - start_timestamp_ms
 
             zipkin_span = {
-                'traceId': trace_id,
+                'traceId': span.context.trace_id,
                 'id': str(span.span_id),
                 'name': span.name,
                 'timestamp': int(round(start_timestamp_ms)),

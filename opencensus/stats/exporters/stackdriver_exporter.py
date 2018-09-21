@@ -21,6 +21,8 @@ from opencensus.stats import aggregation
 from opencensus.stats import measure
 from datetime import datetime
 from opencensus.common.transports import async
+from opencensus.common.monitored_resource_util.monitored_resource_util \
+    import MonitoredResourceUtil
 
 MAX_TIME_SERIES_PER_UPLOAD = 200
 OPENCENSUS_TASK_DESCRIPTION = "Opencensus task identifier"
@@ -170,8 +172,10 @@ class StackdriverStatsExporter(base.StatsExporter):
         time_series = []
 
         resource = self.options.resource
+        metric_prefix = self.options.metric_prefix
         for v_data in view_data:
-            series = self.create_time_series_list(v_data, resource)
+            series = self.create_time_series_list(v_data, resource,
+                                                  metric_prefix)
             time_series.append(series)
 
             project_id = self.options.project_id
@@ -184,14 +188,24 @@ class StackdriverStatsExporter(base.StatsExporter):
                 time_series = []
         return requests
 
-    def create_time_series_list(self, v_data, resource_type):
+    def create_time_series_list(self, v_data, resource_type, metric_prefix):
         """ Create the TimeSeries object based on the view data
         """
         series = monitoring_v3.types.TimeSeries()
-        series.metric.type = namespaced_view_name(v_data.view.name)
+        series.metric.type = namespaced_view_name(v_data.view.name,
+                                                  metric_prefix)
 
         if resource_type == "":
-            series.resource.type = 'global'
+            monitor_resource = MonitoredResourceUtil.get_instance()
+            if monitor_resource is not None:
+                series.resource.type = monitor_resource.resource_type
+                labels = monitor_resource.get_resource_labels()
+                for attribute_key, attribute_value in labels.items():
+                    attribute_value = 'aws:' + attribute_value if \
+                        attribute_key == 'region' else attribute_value
+                    series.resource.labels[attribute_key] = attribute_value
+            else:
+                series.resource.type = 'global'
         else:
             series.resource.type = resource_type
 
@@ -257,7 +271,8 @@ class StackdriverStatsExporter(base.StatsExporter):
         view_aggregation = view.aggregation
         view_name = view.name
 
-        metric_type = namespaced_view_name(view_name)
+        metric_type = namespaced_view_name(view_name,
+                                           self.options.metric_prefix)
         value_type = None
         unit = view_measure.unit
         metric_desc = monitoring_v3.enums.MetricDescriptor
@@ -346,10 +361,12 @@ def get_task_value():
     return task_value
 
 
-def namespaced_view_name(view_name):
+def namespaced_view_name(view_name, metric_prefix):
     """ create string to be used as metric type
     """
-    return os.path.join("custom.googleapis.com", "opencensus", view_name)
+    if metric_prefix == "":
+        return os.path.join("custom.googleapis.com", "opencensus", view_name)
+    return os.path.join(metric_prefix, view_name)
 
 
 def new_label_descriptors(defaults, keys):
