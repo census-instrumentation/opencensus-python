@@ -28,6 +28,21 @@ class Options(object):
     """ Options contains options for configuring the exporter.
     The address can be empty as the prometheus client will
     assume it's localhost
+
+    :type namespace: str
+    :param namespace: The prometheus namespace to be used. Defaults to ''.
+
+    :type port: int
+    :param port: The Prometheus port to be used. Defaults to 8000.
+
+    :type address: str
+    :param address: The Prometheus address to be used. Defaults to ''.
+
+    :type registry: registry
+    :param registry: The Prometheus address to be used. Defaults to ''.
+
+    :type registry: :class:`~prometheus_client.core.CollectorRegistry`
+    :param registry: A Prometheus collector registry instance.
     """
     def __init__(self,
                  namespace='',
@@ -124,6 +139,20 @@ class Collector(object):
     def to_metric(self, desc, view):
         """ to_metric translate the data that OpenCensus create
         to Prometheus format, using Prometheus Metric object
+
+        :type desc: str
+        :param desc: The view descriptor
+
+        :type view: object of :class:
+            `~opencensus.stats.view.View`
+        :param object of opencensus.stats.view.View view:
+            View object to translate
+
+        :rtype: :class:`~prometheus_client.core.CounterMetricFamily` or
+                :class:`~prometheus_client.core.HistogramMetricFamily` or
+                :class:`~prometheus_client.core.UntypedMetricFamily` or
+                :class:`~prometheus_client.core.GaugeMetricFamily`
+        :returns: A Prometheus metric object
         """
         agg_data = view.aggregation.aggregation_data
 
@@ -221,6 +250,23 @@ class PrometheusStatsExporter(base.StatsExporter):
     """ Exporter exports stats to Prometheus, users need
         to register the exporter as an HTTP Handler to be
         able to export.
+
+    :type options:
+        :class:`~opencensus.stats.exporters.prometheus_exporters.Options`
+    :param options: An options object with the parameters to instantiate the
+                         prometheus exporter.
+
+    :type gatherer: :class:`~prometheus_client.core.CollectorRegistry`
+    :param gatherer: A Prometheus collector registry instance.
+
+    :type transport:
+        :class:`opencensus.common.transports.sync.SyncTransport` or
+        :class:`opencensus.common.transports.async.AsyncTransport`
+    :param transport: An instance of a Transpor to send data with.
+
+    :type collector:
+        :class:`~opencensus.stats.exporters.prometheus_exporters.Collector`
+    :param collector: An instance of the Prometheus Collector object.
     """
     def __init__(self,
                  options,
