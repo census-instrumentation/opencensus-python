@@ -77,7 +77,7 @@ def set_attributes(trace):
 
 
 def set_monitored_resource_attributes(span):
-    """Set a labels to span that can be used for tracing.
+    """Set labels to span that can be used for tracing.
     :param span: Span object
     """
     monitored_resource = MonitoredResourceUtil.get_instance()
