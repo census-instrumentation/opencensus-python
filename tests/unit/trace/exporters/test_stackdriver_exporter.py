@@ -591,11 +591,11 @@ class Test_set_attributes_gae(unittest.TestCase):
         self.assertEqual(span, expected)
 
 
-class Test_monitored_resource_attributes(unittest.TestCase):
+class TestMonitoredResourceAttributes(unittest.TestCase):
 
     @mock.patch('opencensus.trace.exporters.stackdriver_exporter.'
                 'MonitoredResourceUtil.get_instance')
-    def test_monitored_resource_attributes(self, monitor_resource_mock):
+    def test_monitored_resource_attributes_gke(self, gke_monitor_resource_mock):
         import os
 
         trace = {'spans': [
@@ -639,34 +639,56 @@ class Test_monitored_resource_attributes(unittest.TestCase):
                             )
                         }
                     },
-                    'g.co/r/gke_container/instance_id': {
-                        'string_value': {
-                            'truncated_byte_count': 0,
-                            'value': '12345'
-                        }
-                    },
-                    'g.co/r/gke_container/project_id': {
+                    'g.co/r/k8s_container/project_id': {
                         'string_value': {
                             'truncated_byte_count': 0,
                             'value': 'my_project'
                         }
                     },
-                    'g.co/r/gke_container/zone': {
+                    'g.co/r/k8s_container/location': {
                         'string_value': {
                             'truncated_byte_count': 0,
                             'value': 'zone1'
+                        }
+                    },
+                    'g.co/r/k8s_container/namespace_name': {
+                        'string_value': {
+                            'truncated_byte_count': 0,
+                            'value': 'namespace'
+                        }
+                    },
+                    'g.co/r/k8s_container/pod_name': {
+                        'string_value': {
+                            'truncated_byte_count': 0,
+                            'value': 'pod'
+                        }
+                    },
+                    'g.co/r/k8s_container/cluster_name': {
+                        'string_value': {
+                            'truncated_byte_count': 0,
+                            'value': 'cluster'
+                        }
+                    },
+                    'g.co/r/k8s_container/container_name': {
+                        'string_value': {
+                            'truncated_byte_count': 0,
+                            'value': 'c1'
                         }
                     },
                 }
             }
         }
 
-        monitor_resource_mock.return_value = mock.Mock()
+        gke_monitor_resource_mock.return_value = mock.Mock()
 
-        monitor_resource_mock.return_value.resource_type = 'gke_container'
-        monitor_resource_mock.return_value.get_resource_labels.return_value = {
+        gke_monitor_resource_mock.return_value.resource_type = 'gke_container'
+        gke_monitor_resource_mock.return_value.get_resource_labels.return_value = {
+            'pod_id': 'pod',
+            'cluster_name': 'cluster',
+            'namespace_id': 'namespace',
+            'container_name': 'c1',
             'project_id': 'my_project',
-            'instance_id': '12345',
+            'instance_id': 'instance',
             'zone': 'zone1'
         }
         with mock.patch.dict(
@@ -684,9 +706,60 @@ class Test_monitored_resource_attributes(unittest.TestCase):
 
     @mock.patch('opencensus.trace.exporters.stackdriver_exporter.'
                 'MonitoredResourceUtil.get_instance')
-    def test_monitored_resource_attributes_aws(self, aws_monitor_resource_mock):
-        import os
+    def test_monitored_resource_attributes_gce(self, gce_monitor_resource_mock):
+        trace = {'spans': [
+            {
+                'attributes': {}
+            }
+        ]}
 
+        expected = {
+            'attributes': {
+                'attributeMap': {
+                    'g.co/agent': {
+                        'string_value': {
+                            'truncated_byte_count': 0,
+                            'value': 'opencensus-python [{}]'.format(
+                                stackdriver_exporter.VERSION
+                            )
+                        }
+                    },
+                    'g.co/r/gce_instance/project_id': {
+                        'string_value': {
+                            'truncated_byte_count': 0,
+                            'value': 'my_project'
+                        }
+                    },
+                    'g.co/r/gce_instance/instance_id': {
+                        'string_value': {
+                            'truncated_byte_count': 0,
+                            'value': '12345'
+                        }
+                    },
+                    'g.co/r/gce_instance/zone': {
+                        'string_value': {
+                            'truncated_byte_count': 0,
+                            'value': 'zone1'
+                        }
+                    },
+                }
+            }
+        }
+
+        gce_monitor_resource_mock.return_value = mock.Mock()
+        gce_monitor_resource_mock.return_value.resource_type = 'gce_instance'
+        gce_monitor_resource_mock.return_value.get_resource_labels.return_value = {
+            'project_id': 'my_project',
+            'instance_id': '12345',
+            'zone': 'zone1'
+        }
+        stackdriver_exporter.set_attributes(trace)
+        span = trace.get('spans')[0]
+        self.assertEqual(span, expected)
+
+    @mock.patch('opencensus.trace.exporters.stackdriver_exporter.'
+                'MonitoredResourceUtil.get_instance')
+    def test_monitored_resource_attributes_aws(self, aws_monitor_resource_mock):
         trace = {'spans': [
             {
                 'attributes': {}
@@ -710,12 +783,6 @@ class Test_monitored_resource_attributes(unittest.TestCase):
                             'value': '123456789012'
                         }
                     },
-                    'g.co/r/aws_ec2_instance/instance_id': {
-                        'string_value': {
-                            'truncated_byte_count': 0,
-                            'value': 'i-1234567890abcdef0'
-                        }
-                    },
                     'g.co/r/aws_ec2_instance/region': {
                         'string_value': {
                             'truncated_byte_count': 0,
@@ -730,10 +797,45 @@ class Test_monitored_resource_attributes(unittest.TestCase):
 
         aws_monitor_resource_mock.return_value.resource_type = 'aws_ec2_instance'
         aws_monitor_resource_mock.return_value.get_resource_labels.return_value = {
-            'instance_id': 'i-1234567890abcdef0',
             'aws_account': '123456789012',
             'region': 'us-west-2'
         }
+        stackdriver_exporter.set_attributes(trace)
+        span = trace.get('spans')[0]
+        self.assertEqual(span, expected)
+
+    @mock.patch('opencensus.trace.exporters.stackdriver_exporter.'
+                'MonitoredResourceUtil.get_instance')
+    def test_monitored_resource_attributes_None(self, monitor_resource_mock):
+        trace = {'spans': [
+            {
+                'attributes': {}
+            }
+        ]}
+
+        expected = {
+            'attributes': {
+                'attributeMap': {
+                    'g.co/agent': {
+                        'string_value': {
+                            'truncated_byte_count': 0,
+                            'value': 'opencensus-python [{}]'.format(
+                                stackdriver_exporter.VERSION
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
+        monitor_resource_mock.return_value = None
+        stackdriver_exporter.set_attributes(trace)
+        span = trace.get('spans')[0]
+        self.assertEqual(span, expected)
+
+        monitor_resource_mock.return_value = mock.Mock()
+        monitor_resource_mock.return_value.resource_type = mock.Mock()
+        monitor_resource_mock.return_value.get_resource_labels.return_value = mock.Mock()
         stackdriver_exporter.set_attributes(trace)
         span = trace.get('spans')[0]
         self.assertEqual(span, expected)
