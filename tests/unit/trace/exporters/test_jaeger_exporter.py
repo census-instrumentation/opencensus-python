@@ -16,8 +16,8 @@ import unittest
 
 import mock
 
-from opencensus.trace import (link, span_context, span_data, status,
-                              time_event, trace_options)
+from opencensus.trace import (attributes, link, span_context, span_data,
+                              status, time_event)
 from opencensus.trace.exporters import jaeger_exporter
 from opencensus.trace.exporters.gen.jaeger import jaeger
 
@@ -178,7 +178,7 @@ class TestJaegerExporter(unittest.TestCase):
         span_id = '6e0c63257de34c92'
         parent_span_id = '1111111111111111'
 
-        attributes = {
+        span_attributes = {
             'key_bool': False,
             'key_string': 'hello_world',
             'key_int': 3
@@ -200,7 +200,7 @@ class TestJaegerExporter(unittest.TestCase):
                 timestamp=time,
                 annotation=time_event.Annotation(
                     description='First Annotation',
-                    attributes=annotation_attributes)),
+                    attributes=attributes.Attributes(annotation_attributes))),
             time_event.TimeEvent(
                 timestamp=time,
                 message_event=time_event.MessageEvent(
@@ -238,7 +238,7 @@ class TestJaegerExporter(unittest.TestCase):
                 context=span_context.SpanContext(trace_id=trace_id),
                 span_id=span_id,
                 parent_span_id=parent_span_id,
-                attributes=attributes,
+                attributes=span_attributes,
                 start_time=start_time,
                 end_time=end_time,
                 child_span_count=0,
