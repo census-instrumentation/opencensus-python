@@ -209,6 +209,20 @@ class TestJaegerExporter(unittest.TestCase):
                 )),
         ]
 
+        time_events2 = [
+            time_event.TimeEvent(
+                timestamp=time,
+                annotation=time_event.Annotation(
+                    description='First Annotation',
+                    attributes=None)),
+            time_event.TimeEvent(
+                timestamp=time,
+                message_event=time_event.MessageEvent(
+                    id='message-event-id',
+                    uncompressed_size_bytes=0,
+                )),
+        ]
+
         links = [
             link.Link(
                 trace_id=trace_id,
@@ -259,7 +273,7 @@ class TestJaegerExporter(unittest.TestCase):
                 end_time=end_time,
                 child_span_count=None,
                 stack_trace=None,
-                time_events=None,
+                time_events=time_events2,
                 links=None,
                 status=None,
                 same_process_as_parent_span=None,
@@ -341,7 +355,18 @@ class TestJaegerExporter(unittest.TestCase):
                 spanId=7929822056569588882,
                 parentSpanId=0,
                 startTime=1502820146071158,
-                duration=10000000)
+                duration=10000000,
+                logs=[
+                    jaeger.Log(
+                        timestamp=1502820146000,
+                        fields=[
+                            jaeger.Tag(
+                                key='message',
+                                vType=jaeger.TagType.STRING,
+                                vStr='First Annotation')
+                        ])
+                ]
+            )
         ]
 
         spans_json = [span.format_span_json() for span in spans]
