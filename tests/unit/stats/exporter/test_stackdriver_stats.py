@@ -335,6 +335,7 @@ class TestStackdriverStatsExporter(unittest.TestCase):
 
         v_data = measure_map.measure_to_view_map.get_view(VIDEO_SIZE_VIEW_NAME, None)
 
+        # check for gce_instance monitored resource
         mocked_labels = {
             'instance_id': 'my-instance',
             'project_id': 'my-project',
@@ -351,10 +352,67 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         self.assertEquals(time_series.resource.type, "gce_instance")
         self.assertEquals(time_series.metric.type, "custom.googleapis.com/opencensus/my.org/views/video_size_test2")
         self.assertIsNotNone(time_series)
+        self.assertEquals(time_series.resource.labels['instance_id'], 'my-instance')
+        self.assertEquals(time_series.resource.labels['project_id'], 'my-project')
+        self.assertEquals(time_series.resource.labels['zone'], 'us-east1')
 
         time_series = exporter.create_time_series_list(v_data, "global", "")
         self.assertEquals(time_series.metric.type, "custom.googleapis.com/opencensus/my.org/views/video_size_test2")
         self.assertIsNotNone(time_series)
+
+        # check for gke_container monitored resource
+        mocked_labels = {
+            'instance_id': 'my-instance',
+            'project_id': 'my-project',
+            'zone': 'us-east1',
+            'pod_id': 'localhost',
+            'cluster_name': 'cluster',
+            'namespace_id': 'namespace'
+        }
+
+        monitor_resource_mock.return_value = mock.Mock()
+        monitor_resource_mock.return_value.resource_type = 'gke_container'
+        monitor_resource_mock.return_value.get_resource_labels.return_value = mocked_labels
+
+        time_series = exporter.create_time_series_list(v_data, "", "")
+        self.assertEquals(time_series.resource.type, "k8s_container")
+        self.assertEquals(time_series.metric.type, "custom.googleapis.com/opencensus/my.org/views/video_size_test2")
+        self.assertIsNotNone(time_series)
+        self.assertEquals(time_series.resource.labels['project_id'], 'my-project')
+        self.assertEquals(time_series.resource.labels['location'], 'us-east1')
+        self.assertEquals(time_series.resource.labels['pod_name'], 'localhost')
+        self.assertEquals(time_series.resource.labels['namespace_name'], 'namespace')
+        self.assertEquals(time_series.resource.labels['container_name'], '')
+
+        # check for aws_ec2_instance monitored resource
+        mocked_labels = {
+            'instance_id': 'my-instance',
+            'aws_account': 'my-project',
+            'region': 'us-east1',
+        }
+
+        monitor_resource_mock.return_value = mock.Mock()
+        monitor_resource_mock.return_value.resource_type = 'aws_ec2_instance'
+        monitor_resource_mock.return_value.get_resource_labels.return_value = mocked_labels
+
+        time_series = exporter.create_time_series_list(v_data, "", "")
+        self.assertEquals(time_series.resource.type, "aws_ec2_instance")
+        self.assertEquals(time_series.metric.type, "custom.googleapis.com/opencensus/my.org/views/video_size_test2")
+        self.assertIsNotNone(time_series)
+        self.assertEquals(time_series.resource.labels['instance_id'], 'my-instance')
+        self.assertEquals(time_series.resource.labels['aws_account'], 'my-project')
+        self.assertEquals(time_series.resource.labels['region'], 'aws:us-east1')
+
+        # check for out of box monitored resource
+        monitor_resource_mock.return_value = mock.Mock()
+        monitor_resource_mock.return_value.resource_type = ''
+        monitor_resource_mock.return_value.get_resource_labels.return_value = mock.Mock()
+
+        time_series = exporter.create_time_series_list(v_data, "", "")
+        self.assertEquals(time_series.resource.type, 'global')
+        self.assertEquals(time_series.metric.type, "custom.googleapis.com/opencensus/my.org/views/video_size_test2")
+        self.assertIsNotNone(time_series)
+
 
     @mock.patch('opencensus.stats.exporters.stackdriver_exporter.'
                 'MonitoredResourceUtil.get_instance', return_value=None)
