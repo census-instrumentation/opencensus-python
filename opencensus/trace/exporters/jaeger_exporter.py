@@ -280,7 +280,10 @@ def _extract_logs_from_span(span):
         annotation = time_event.annotation
         if not annotation:
             continue
-        fields = _extract_tags(annotation.attributes.attributes)
+
+        fields = []
+        if annotation.attributes is not None:
+            fields = _extract_tags(annotation.attributes.attributes)
 
         fields.append(jaeger.Tag(
             key='message',
@@ -297,7 +300,7 @@ def _extract_logs_from_span(span):
 
 def _extract_tags(attr):
     if attr is None:
-        return None
+        return []
     tags = []
     for attribute_key, attribute_value in attr.items():
         tag = _convert_attribute_to_tag(attribute_key, attribute_value)
