@@ -18,6 +18,7 @@ import mock
 
 from opencensus.trace import span_context
 from opencensus.trace import span_data as span_data_module
+from opencensus.trace import time_event
 from opencensus.trace.exporters import zipkin_exporter
 
 
@@ -179,6 +180,7 @@ class TestZipkinExporter(unittest.TestCase):
                 'duration': 10000000,
                 'localEndpoint': local_endpoint_ipv4,
                 'tags': {'test_key': 'test_value'},
+                'annotations': [],
             },
             {
                 'traceId': '6e0c63257de34c92bf9efcd03927272e',
@@ -189,6 +191,7 @@ class TestZipkinExporter(unittest.TestCase):
                 'duration': 10000000,
                 'localEndpoint': local_endpoint_ipv4,
                 'tags': {'test_key': '1'},
+                'annotations': [],
             },
         ]
 
@@ -202,6 +205,178 @@ class TestZipkinExporter(unittest.TestCase):
                 'localEndpoint': local_endpoint_ipv6,
                 'tags': {'test_key': 'False', 'test_key2': 'raw_value'},
                 'kind': 'SERVER',
+                'annotations': [],
+            },
+        ]
+
+        # Test ipv4 local endpoint
+        exporter_ipv4 = zipkin_exporter.ZipkinExporter(
+            service_name='my_service', ipv4=ipv4)
+        zipkin_spans_ipv4 = exporter_ipv4.translate_to_zipkin(
+            span_datas=spans_ipv4)
+
+        self.assertEqual(zipkin_spans_ipv4, expected_zipkin_spans_ipv4)
+
+        # Test ipv6 local endpoint
+        exporter_ipv6 = zipkin_exporter.ZipkinExporter(
+            service_name='my_service', ipv6=ipv6)
+        zipkin_spans_ipv6 = exporter_ipv6.translate_to_zipkin(
+            span_datas=spans_ipv6)
+
+        self.assertEqual(zipkin_spans_ipv6, expected_zipkin_spans_ipv6)
+
+    def test_translate_to_zipkin_with_annotations(self):
+        trace_id = '6e0c63257de34c92bf9efcd03927272e'
+
+        annotation_attributes = {
+            'annotation_bool': True,
+            'annotation_string': 'annotation_test',
+            'key_float': .3
+        }
+
+        import datetime
+        s = '2017-08-15T18:02:26.071158'
+        time = datetime.datetime.strptime(s, '%Y-%m-%dT%H:%M:%S.%f')
+        time_events = [
+            time_event.TimeEvent(
+                timestamp=time,
+                annotation=time_event.Annotation(
+                    description='First Annotation',
+                    attributes=annotation_attributes)),
+            time_event.TimeEvent(
+                timestamp=time,
+                message_event=time_event.MessageEvent(
+                    id='message-event-id',
+                    uncompressed_size_bytes=0,
+                )),
+        ]
+
+        spans_ipv4 = [
+            span_data_module.SpanData(
+                name='child_span',
+                context=span_context.SpanContext(trace_id=trace_id),
+                span_id='6e0c63257de34c92',
+                parent_span_id='6e0c63257de34c93',
+                attributes={'test_key': 'test_value'},
+                start_time='2017-08-15T18:02:26.071158Z',
+                end_time='2017-08-15T18:02:36.071158Z',
+                child_span_count=None,
+                stack_trace=None,
+                time_events=time_events,
+                links=None,
+                status=None,
+                same_process_as_parent_span=None,
+                span_kind=0,
+            ),
+            span_data_module.SpanData(
+                name='child_span',
+                context=span_context.SpanContext(trace_id=trace_id),
+                span_id='6e0c63257de34c92',
+                parent_span_id='6e0c63257de34c93',
+                attributes={'test_key': 1},
+                start_time='2017-08-15T18:02:26.071158Z',
+                end_time='2017-08-15T18:02:36.071158Z',
+                child_span_count=None,
+                stack_trace=None,
+                time_events=time_events,
+                links=None,
+                status=None,
+                same_process_as_parent_span=None,
+                span_kind=None,
+            ),
+        ]
+
+        trace_id = '6e0c63257de34c92bf9efcd03927272e'
+        spans_ipv6 = [
+            span_data_module.SpanData(
+                name='child_span',
+                context=span_context.SpanContext(trace_id=trace_id),
+                span_id='6e0c63257de34c92',
+                parent_span_id=None,
+                attributes={
+                    'test_key': False,
+                    'test_key2': 'raw_value',
+                    # these tags are malformed and should be omitted
+                    'test_key3': 0.1,
+                },
+                start_time='2017-08-15T18:02:26.071158Z',
+                end_time='2017-08-15T18:02:36.071158Z',
+                child_span_count=None,
+                stack_trace=None,
+                time_events=time_events,
+                links=None,
+                status=None,
+                same_process_as_parent_span=None,
+                span_kind=1,
+            ),
+        ]
+
+        ipv4 = '127.0.0.1'
+        ipv6 = '2001:0db8:85a3:0000:0000:8a2e:0370:7334'
+
+        local_endpoint_ipv4 = {
+            'serviceName': 'my_service',
+            'ipv4': ipv4,
+            'port': 9411,
+        }
+
+        local_endpoint_ipv6 = {
+            'serviceName': 'my_service',
+            'ipv6': ipv6,
+            'port': 9411,
+        }
+
+        expected_zipkin_spans_ipv4 = [
+            {
+                'traceId': '6e0c63257de34c92bf9efcd03927272e',
+                'id': '6e0c63257de34c92',
+                'parentId': '6e0c63257de34c93',
+                'name': 'child_span',
+                'timestamp': 1502820146071158,
+                'duration': 10000000,
+                'localEndpoint': local_endpoint_ipv4,
+                'tags': {'test_key': 'test_value'},
+                'annotations': [
+                    {
+                        'timestamp': 1502820146071158,
+                        'value': 'First Annotation'
+                    }
+                ]
+            },
+            {
+                'traceId': '6e0c63257de34c92bf9efcd03927272e',
+                'id': '6e0c63257de34c92',
+                'parentId': '6e0c63257de34c93',
+                'name': 'child_span',
+                'timestamp': 1502820146071158,
+                'duration': 10000000,
+                'localEndpoint': local_endpoint_ipv4,
+                'tags': {'test_key': '1'},
+                'annotations': [
+                    {
+                        'timestamp': 1502820146071158,
+                        'value': 'First Annotation'
+                    }
+                ]
+            },
+        ]
+
+        expected_zipkin_spans_ipv6 = [
+            {
+                'traceId': '6e0c63257de34c92bf9efcd03927272e',
+                'id': '6e0c63257de34c92',
+                'name': 'child_span',
+                'timestamp': 1502820146071158,
+                'duration': 10000000,
+                'localEndpoint': local_endpoint_ipv6,
+                'tags': {'test_key': 'False', 'test_key2': 'raw_value'},
+                'kind': 'SERVER',
+                'annotations': [
+                    {
+                        'timestamp': 1502820146071158,
+                        'value': 'First Annotation'
+                    }
+                ]
             },
         ]
 
