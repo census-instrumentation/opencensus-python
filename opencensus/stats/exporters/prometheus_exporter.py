@@ -237,8 +237,8 @@ class Collector(object):
         registered = {}
         for sign in self.registered_views:
             registered[sign] = self.registered_views[sign]
-        if not isinstance(self.view_data, str):
-            for v_data in list(self.view_data):  # pragma: NO COVER
+        for v_data in list(self.view_data):  # pragma: NO COVER
+            if not isinstance(v_data, str):
                 signature = view_signature(self.options.namespace, v_data.view)
                 desc = self.registered_views[signature]
                 metric = self.to_metric(desc,
