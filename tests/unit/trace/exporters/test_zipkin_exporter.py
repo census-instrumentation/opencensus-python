@@ -15,7 +15,7 @@
 import unittest
 
 import mock
-
+from datetime import datetime
 from opencensus.trace import span_context
 from opencensus.trace import span_data as span_data_module
 from opencensus.trace import time_event
@@ -234,9 +234,8 @@ class TestZipkinExporter(unittest.TestCase):
             'key_float': .3
         }
 
-        import datetime
         s = '2017-08-15T18:02:26.071158'
-        time = datetime.datetime.strptime(s, '%Y-%m-%dT%H:%M:%S.%f')
+        time = datetime.strptime(s, '%Y-%m-%dT%H:%M:%S.%f')
         time_events = [
             time_event.TimeEvent(
                 timestamp=time,
@@ -286,7 +285,6 @@ class TestZipkinExporter(unittest.TestCase):
             ),
         ]
 
-        trace_id = '6e0c63257de34c92bf9efcd03927272e'
         spans_ipv6 = [
             span_data_module.SpanData(
                 name='child_span',
