@@ -237,13 +237,13 @@ class Collector(object):
         registered = {}
         for sign in self.registered_views:
             registered[sign] = self.registered_views[sign]
-
-        for v_data in list(self.view_data):  # pragma: NO COVER
-            signature = view_signature(self.options.namespace, v_data.view)
-            desc = self.registered_views[signature]
-            metric = self.to_metric(desc,
-                                    self.view_data[v_data].view)
-            yield metric
+        if not isinstance(self.view_data, str):
+            for v_data in list(self.view_data):  # pragma: NO COVER
+                signature = view_signature(self.options.namespace, v_data.view)
+                desc = self.registered_views[signature]
+                metric = self.to_metric(desc,
+                                        self.view_data[v_data].view)
+                yield metric
 
 
 class PrometheusStatsExporter(base.StatsExporter):
