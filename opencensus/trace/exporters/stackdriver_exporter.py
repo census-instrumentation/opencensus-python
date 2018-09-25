@@ -77,21 +77,68 @@ def set_attributes(trace):
 
 
 def set_monitored_resource_attributes(span):
+    """Set labels to span that can be used for tracing.
+    :param span: Span object
+    """
     monitored_resource = MonitoredResourceUtil.get_instance()
-
     if monitored_resource is not None:
+        resource_type = monitored_resource.resource_type
         resource_labels = monitored_resource.get_resource_labels()
-        for attribute_key, attribute_value in resource_labels.items():
 
-            attribute_value = 'aws:' + attribute_value if \
-                attribute_key == 'region' else attribute_value
-            pair = {RESOURCE_LABEL % (monitored_resource.resource_type,
-                                      attribute_key): attribute_value}
-            pair_attrs = Attributes(pair) \
-                .format_attributes_json() \
-                .get('attributeMap')
+        if resource_type == 'gke_container':
+            resource_type = 'k8s_container'
+            set_attribute_label(span, resource_type, resource_labels,
+                                'project_id')
+            set_attribute_label(span, resource_type, resource_labels,
+                                'cluster_name')
+            set_attribute_label(span, resource_type, resource_labels,
+                                'container_name')
+            set_attribute_label(span, resource_type, resource_labels,
+                                'namespace_id', 'namespace_name')
+            set_attribute_label(span, resource_type, resource_labels,
+                                'pod_id', 'pod_name')
+            set_attribute_label(span, resource_type, resource_labels,
+                                'zone', 'location')
 
-            _update_attr_map(span, pair_attrs)
+        elif resource_type == 'gce_instance':
+            set_attribute_label(span, resource_type, resource_labels,
+                                'project_id')
+            set_attribute_label(span, resource_type, resource_labels,
+                                'instance_id')
+            set_attribute_label(span, resource_type, resource_labels,
+                                'zone')
+
+        elif resource_type == 'aws_ec2_instance':
+            set_attribute_label(span, resource_type, resource_labels,
+                                'aws_account')
+            set_attribute_label(span, resource_type, resource_labels,
+                                'instance_id')
+            set_attribute_label(span, resource_type, resource_labels,
+                                'region', label_value_prefix='aws:')
+
+
+def set_attribute_label(span, resource_type, resource_labels, attribute_key,
+                        canonical_key=None, label_value_prefix=''):
+    """Set a label to span that can be used for tracing.
+    :param span: Span object
+    :param resource_type: resource type
+    :param resource_labels: collection of labels
+    :param attribute_key: actual label key
+    :param canonical_key: exporter specific label key, Optional
+    :param label_value_prefix: exporter specific label value prefix, Optional
+    """
+
+    if attribute_key in resource_labels:
+        if canonical_key is None:
+            canonical_key = attribute_key
+
+        pair = {RESOURCE_LABEL % (resource_type, canonical_key):
+                label_value_prefix + resource_labels[attribute_key]
+                }
+        pair_attrs = Attributes(pair).format_attributes_json()\
+            .get('attributeMap')
+
+        _update_attr_map(span, pair_attrs)
 
 
 def set_common_attributes(span):
