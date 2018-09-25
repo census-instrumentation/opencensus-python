@@ -428,6 +428,12 @@ You can enable Google Cloud client libraries integration by specifying ``'google
 
 .. _Cloud client libraries: https://github.com/GoogleCloudPlatform/google-cloud-python#google-cloud-python-client
 
+Threading
+~~~~~~~~~
+
+Census can propagate trace across threads when using the Threading package.
+
+You can enable Requests integration by specifying ``'threading'`` to ``trace_integrations``.
 
 ------
  Stats
