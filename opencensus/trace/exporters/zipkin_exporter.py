@@ -176,6 +176,7 @@ class ZipkinExporter(base.Exporter):
                 'duration': int(round(duration_ms)),
                 'localEndpoint': local_endpoint,
                 'tags': _extract_tags_from_span(span.attributes),
+                'annotations': _extract_annotations_from_span(span),
             }
 
             span_kind = span.span_kind
@@ -211,3 +212,24 @@ def _extract_tags_from_span(attr):
             continue
         tags[attribute_key] = value
     return tags
+
+
+def _extract_annotations_from_span(span):
+    """Extract and convert time event annotations to zipkin annotations"""
+    if span.time_events is None:
+        return []
+
+    annotations = []
+    for time_event in span.time_events:
+        annotation = time_event.annotation
+        if not annotation:
+            continue
+
+        event_time = datetime.datetime.strptime(time_event.timestamp,
+                                                ISO_DATETIME_REGEX)
+        epoch_time = calendar.timegm(
+            event_time.timetuple()) * 1e6 + event_time.microsecond
+        annotations.append({'timestamp': int(round(epoch_time)),
+                            'value': annotation.description})
+
+    return annotations
