@@ -293,8 +293,7 @@ def _extract_logs_from_span(span):
         event_time = datetime.datetime.strptime(
             time_event.timestamp, ISO_DATETIME_REGEX)
         timestamp = calendar.timegm(event_time.timetuple()) \
-                    * 1e6 \
-                    + event_time.microsecond
+            * 1e6 + event_time.microsecond
 
         logs.append(jaeger.Log(timestamp=int(round(timestamp)), fields=fields))
     return logs
