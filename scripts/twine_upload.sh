@@ -11,3 +11,22 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+set -ev
+
+# If this is not a CircleCI tag, no-op.
+if [[ -z "$CIRCLE_TAG" ]]; then
+  echo "This is not a release tag. Doing nothing."
+  exit 0
+fi
+
+echo -e "[pypi]" >> ~/.pypirc
+echo -e "username = $PYPI_USERNAME" >> ~/.pypirc
+echo -e "password = $PYPI_PASSWORD" >> ~/.pypirc
+
+# Ensure that we have the latest versions of Twine, Wheel, and Setuptools.
+python3 -m pip install --upgrade twine wheel setuptools
+
+# Build the distribution and upload.
+python3 setup.py bdist_wheel
+twine upload dist/*

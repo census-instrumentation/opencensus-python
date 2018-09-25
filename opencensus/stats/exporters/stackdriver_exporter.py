@@ -32,6 +32,7 @@ CONS_NAME = "name"
 CONS_TIME_SERIES = "timeseries"
 EPOCH_DATETIME = datetime(1970, 1, 1)
 EPOCH_PATTERN = "%Y-%m-%dT%H:%M:%S.%fZ"
+GLOBAL_RESOURCE_TYPE = 'global'
 
 
 class Options(object):
@@ -172,8 +173,10 @@ class StackdriverStatsExporter(base.StatsExporter):
         time_series = []
 
         resource = self.options.resource
+        metric_prefix = self.options.metric_prefix
         for v_data in view_data:
-            series = self.create_time_series_list(v_data, resource)
+            series = self.create_time_series_list(v_data, resource,
+                                                  metric_prefix)
             time_series.append(series)
 
             project_id = self.options.project_id
@@ -186,25 +189,14 @@ class StackdriverStatsExporter(base.StatsExporter):
                 time_series = []
         return requests
 
-    def create_time_series_list(self, v_data, resource_type):
+    def create_time_series_list(self, v_data, option_resource_type,
+                                metric_prefix):
         """ Create the TimeSeries object based on the view data
         """
         series = monitoring_v3.types.TimeSeries()
-        series.metric.type = namespaced_view_name(v_data.view.name)
-
-        if resource_type == "":
-            monitor_resource = MonitoredResourceUtil.get_instance()
-            if monitor_resource is not None:
-                series.resource.type = monitor_resource.resource_type
-                labels = monitor_resource.get_resource_labels()
-                for attribute_key, attribute_value in labels.items():
-                    attribute_value = 'aws:' + attribute_value if \
-                        attribute_key == 'region' else attribute_value
-                    series.resource.labels[attribute_key] = attribute_value
-            else:
-                series.resource.type = 'global'
-        else:
-            series.resource.type = resource_type
+        series.metric.type = namespaced_view_name(v_data.view.name,
+                                                  metric_prefix)
+        set_monitored_resource(series, option_resource_type)
 
         tag_agg = v_data.tag_value_aggregation_data_map
         for tag_value, agg in tag_agg.items():
@@ -229,9 +221,9 @@ class StackdriverStatsExporter(base.StatsExporter):
                 buckets.extend(list(map(int, agg_data.counts_per_bucket)))
             else:
                 convFloat, isFloat = as_float(tag_value[0])
-                if isFloat:
+                if isFloat:  # pragma: NO COVER
                     point.value.double_value = convFloat
-                else:
+                else:  # pragma: NO COVER
                     point.value.string_value = str(tag_value[0])
 
             start = datetime.strptime(v_data.start_time, EPOCH_PATTERN)
@@ -245,8 +237,8 @@ class StackdriverStatsExporter(base.StatsExporter):
             secs = point.interval.end_time.seconds
             point.interval.end_time.nanos = int((timestamp_end-secs)*10**9)
 
-            if type(agg) is not \
-                    aggregation.aggregation_data.LastValueAggregationData:
+            if type(agg) is not aggregation.aggregation_data.\
+                    LastValueAggregationData:  # pragma: NO COVER
                 if timestamp_start == timestamp_end:
                     # avoiding start_time and end_time to be equal
                     timestamp_start = timestamp_start - 1
@@ -268,7 +260,8 @@ class StackdriverStatsExporter(base.StatsExporter):
         view_aggregation = view.aggregation
         view_name = view.name
 
-        metric_type = namespaced_view_name(view_name)
+        metric_type = namespaced_view_name(view_name,
+                                           self.options.metric_prefix)
         value_type = None
         unit = view_measure.unit
         metric_desc = monitoring_v3.enums.MetricDescriptor
@@ -326,6 +319,65 @@ class StackdriverStatsExporter(base.StatsExporter):
         return descriptor
 
 
+def set_monitored_resource(series, option_resource_type):
+    """Set a resource(type and labels) that can be used for monitoring.
+    :param series: TimeSeries object based on view data
+    :param option_resource_type: Resource is an optional field that
+    represents the Stackdriver MonitoredResource type.
+    """
+    resource_type = GLOBAL_RESOURCE_TYPE
+
+    if option_resource_type == "":
+        monitored_resource = MonitoredResourceUtil.get_instance()
+        if monitored_resource is not None:
+            resource_labels = monitored_resource.get_resource_labels()
+
+            if monitored_resource.resource_type == 'gke_container':
+                resource_type = 'k8s_container'
+                set_attribute_label(series, resource_labels, 'project_id')
+                set_attribute_label(series, resource_labels, 'cluster_name')
+                set_attribute_label(series, resource_labels, 'container_name')
+                set_attribute_label(series, resource_labels, 'namespace_id',
+                                    'namespace_name')
+                set_attribute_label(series, resource_labels, 'pod_id',
+                                    'pod_name')
+                set_attribute_label(series, resource_labels, 'zone',
+                                    'location')
+
+            elif monitored_resource.resource_type == 'gce_instance':
+                resource_type = monitored_resource.resource_type
+                set_attribute_label(series, resource_labels, 'project_id')
+                set_attribute_label(series, resource_labels, 'instance_id')
+                set_attribute_label(series, resource_labels, 'zone')
+
+            elif monitored_resource.resource_type == 'aws_ec2_instance':
+                resource_type = monitored_resource.resource_type
+                set_attribute_label(series, resource_labels, 'aws_account')
+                set_attribute_label(series, resource_labels, 'instance_id')
+                set_attribute_label(series, resource_labels, 'region',
+                                    label_value_prefix='aws:')
+    else:
+        resource_type = option_resource_type
+    series.resource.type = resource_type
+
+
+def set_attribute_label(series, resource_labels, attribute_key,
+                        canonical_key=None, label_value_prefix=''):
+    """Set a label to timeseries that can be used for monitoring
+    :param series: TimeSeries object based on view data
+    :param resource_labels: collection of labels
+    :param attribute_key: actual label key
+    :param canonical_key: exporter specific label key, Optional
+    :param label_value_prefix: exporter specific label value prefix, Optional
+    """
+    if attribute_key in resource_labels:
+        if canonical_key is None:
+            canonical_key = attribute_key
+
+        series.resource.labels[canonical_key] = \
+            label_value_prefix + resource_labels[attribute_key]
+
+
 def new_stats_exporter(options):
     """ new_stats_exporter returns an exporter that
         uploads stats data to Stackdriver Monitoring.
@@ -357,10 +409,12 @@ def get_task_value():
     return task_value
 
 
-def namespaced_view_name(view_name):
+def namespaced_view_name(view_name, metric_prefix):
     """ create string to be used as metric type
     """
-    return os.path.join("custom.googleapis.com", "opencensus", view_name)
+    if metric_prefix == "":
+        return os.path.join("custom.googleapis.com", "opencensus", view_name)
+    return os.path.join(metric_prefix, view_name)
 
 
 def new_label_descriptors(defaults, keys):

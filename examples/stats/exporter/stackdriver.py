@@ -53,7 +53,7 @@ time.sleep(random.randint(1, 10) / 1000.0)
 
 # Process video.
 # Record the processed video size.
-tag_value = tag_value_module.TagValue(1200)
+tag_value = tag_value_module.TagValue(str(1200))
 tag_map = tag_map_module.TagMap()
 tag_map.insert(FRONTEND_KEY, tag_value)
 measure_map = stats_recorder.new_measurement_map()

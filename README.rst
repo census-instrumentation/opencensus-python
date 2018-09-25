@@ -464,19 +464,19 @@ The use of vendoring or a dependency management tool is recommended.
 
 .. _Stackdriver: https://app.google.stackdriver.com/metrics-explorer
 
-Exporter Usage
-~~~~~~~~~~~~~~
+Stackdriver Exporter Usage
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Import
-******
+Stackdriver Import
+************************
 
     .. code:: python
 
         from opencensus.stats.exporters import stackdriver_exporter as stackdriver
         from opencensus.stats import stats as stats_module
 
-Prerequisites
-*************
+Stackdriver Prerequisites
+**************************
 
 - OpenCensus Python libraries require Python 2.7 or later.
 - Google Cloud Platform account and project.
@@ -484,8 +484,9 @@ Prerequisites
 
 .. _Click here: https://opencensus.io/codelabs/stackdriver
 
-Register the exporter
-*********************
+Register the Stackdriver exporter
+**********************************
+
     .. code:: python
 
         stats = stats_module.Stats()
@@ -496,8 +497,8 @@ Register the exporter
         ...
 
 
-Code Reference
-**************
+Stackdriver Code Reference
+******************************
 
 In the *examples* folder, you can find all the necessary steps to get the exporter, register a view, put tags on the measure, and see the values against the Stackdriver monitoring tool once you have defined the *project_id*.
 
@@ -509,6 +510,62 @@ For further details for the Stackdriver implementation, see the file *stackdrive
 | examples/stats/exporter/stackdriver.py             | End to end example                  |
 +----------------------------------------------------+-------------------------------------+
 | opencensus/stats/exporters/stackdriver_exporter.py | Stats implementation for Stackdriver|
++----------------------------------------------------+-------------------------------------+
+
+Prometheus Stats
+-----------------
+
+The OpenCensus `Prometheus`_ Stats Exporter allows users
+to export metrics to Prometheus monitoring solution.
+The API of this project is still evolving.
+The use of vendoring or a dependency management tool is recommended.
+
+.. _Prometheus: https://prometheus.io/
+
+Prometheus Exporter Usage
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Prometheus Import
+********************
+
+    .. code:: python
+
+        from opencensus.stats.exporters import prometheus_exporter as prometheus
+        from opencensus.stats import stats as stats_module
+
+Prometheus Prerequisites
+***************************
+
+- OpenCensus Python libraries require Python 2.7 or later.
+- Prometheus up and running.
+
+Register the Prometheus exporter
+***********************************
+
+    .. code:: python
+
+        stats = stats_module.Stats()
+        view_manager = stats.view_manager
+
+        exporter = prometheus.new_stats_exporter(prometheus.Options(namespace="<namespace>"))
+        view_manager.register_exporter(exporter)
+        ...
+
+
+Prometheus Code Reference
+***************************
+
+In the *examples* folder, you can find all the necessary steps to get the exporter, register a view, put tags on the measure, and see the values against the Prometheus monitoring tool.
+
+For further details for the Prometheus implementation, see the file *prometheus_exporter.py*.
+
+
++----------------------------------------------------+-------------------------------------+
+| Path & File                                        | Short Description                   |
++====================================================+=====================================+
+| examples/stats/exporter/prometheus.py              | End to end example                  |
++----------------------------------------------------+-------------------------------------+
+| opencensus/stats/exporters/prometheus_exporter.py  | Stats implementation for Prometheus |
 +----------------------------------------------------+-------------------------------------+
 
 ------------------
