@@ -47,7 +47,7 @@ class TestPrometheusStats(unittest.TestCase):
         view_manager = stats.view_manager
         stats_recorder = stats.stats_recorder
 
-        exporter = prometheus.new_stats_exporter(prometheus.Options(namespace="opencensus", port=9202))
+        exporter = prometheus.new_stats_exporter(prometheus.Options(namespace="opencensus", port=9303))
         view_manager.register_exporter(exporter)
 
         view_manager.register_view(VIDEO_SIZE_VIEW)
@@ -63,10 +63,10 @@ class TestPrometheusStats(unittest.TestCase):
 
         if sys.version_info > (3, 0):
             import urllib.request
-            contents = urllib.request.urlopen("http://localhost:9202/metrics").read()
+            contents = urllib.request.urlopen("http://localhost:9303/metrics").read()
         else:
             import urllib2
-            contents = urllib2.urlopen("http://localhost:9202/metrics").read()
+            contents = urllib2.urlopen("http://localhost:9303/metrics").read()
 
         self.assertIn(b'# TYPE opencensus_my.org/views/video_size counter', contents)
         self.assertIn(b'opencensus_my.org/views/video_size 268435456.0', contents)
