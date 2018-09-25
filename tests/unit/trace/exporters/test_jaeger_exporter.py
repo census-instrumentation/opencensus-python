@@ -278,6 +278,22 @@ class TestJaegerExporter(unittest.TestCase):
                 status=None,
                 same_process_as_parent_span=None,
                 span_kind=None,
+            ),
+            span_data.SpanData(
+                name='test3',
+                context=None,
+                span_id=span_id,
+                parent_span_id=None,
+                attributes=None,
+                start_time=start_time,
+                end_time=end_time,
+                child_span_count=None,
+                stack_trace=None,
+                time_events=None,
+                links=None,
+                status=None,
+                same_process_as_parent_span=None,
+                span_kind=None,
             )
         ]
 
@@ -366,6 +382,16 @@ class TestJaegerExporter(unittest.TestCase):
                                 vStr='First Annotation')
                         ])
                 ]
+            ),
+            jaeger.Span(
+                operationName="test3",
+                traceIdHigh=7929822056569588882,
+                traceIdLow=-4638992594902767826,
+                spanId=7929822056569588882,
+                parentSpanId=0,
+                startTime=1502820146071158,
+                duration=10000000,
+                logs=[]
             )
         ]
 
@@ -400,6 +426,8 @@ class TestJaegerExporter(unittest.TestCase):
         self.assertEqual(span.get('duration'), expected_span.get('duration'))
         self.assertEqual(span.get('flags'), expected_span.get('flags'))
         self.assertEqual(spans_json[1], expected_spans_json[1])
+
+        self.assertEqual(spans_json[2], expected_spans_json[2])
 
     def test_convert_hex_str_to_int(self):
         invalid_id = '990c63257de34c92'
