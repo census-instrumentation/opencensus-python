@@ -348,7 +348,7 @@ class TestJaegerExporter(unittest.TestCase):
                 ],
                 logs=[
                     jaeger.Log(
-                        timestamp=1502820146000,
+                        timestamp=1502820146071158,
                         fields=[
                             jaeger.Tag(
                                 key='annotation_bool',
@@ -374,7 +374,7 @@ class TestJaegerExporter(unittest.TestCase):
                 duration=10000000,
                 logs=[
                     jaeger.Log(
-                        timestamp=1502820146000,
+                        timestamp=1502820146071158,
                         fields=[
                             jaeger.Tag(
                                 key='message',
