@@ -26,6 +26,7 @@ from opencensus.trace import link as link_module
 from opencensus.trace.exporters import base
 from opencensus.trace.exporters.gen.jaeger import agent, jaeger
 from opencensus.trace.exporters.transports import sync
+from opencensus.trace.utils import timestamp_to_microseconds
 
 DEFAULT_HOST_NAME = 'localhost'
 DEFAULT_AGENT_PORT = 6831
@@ -176,19 +177,9 @@ class JaegerExporter(base.Exporter):
         jaeger_spans = []
 
         for span in span_datas:
-            start_datetime = datetime.datetime.strptime(
-                span.start_time, ISO_DATETIME_REGEX)
-            start_microsec = calendar.timegm(start_datetime.timetuple()) \
-                * 1e6 \
-                + start_datetime.microsecond
-
-            end_datetime = datetime.datetime.strptime(
-                span.end_time, ISO_DATETIME_REGEX)
-            end_microsec = calendar.timegm(end_datetime.timetuple()) \
-                * 1e6 \
-                + end_datetime.microsecond
-
-            duration_microsec = end_microsec - start_microsec
+            start_timestamp_ms = timestamp_to_microseconds(span.start_time)
+            end_timestamp_ms = timestamp_to_microseconds(span.end_time)
+            duration_ms = end_timestamp_ms - start_timestamp_ms
 
             tags = _extract_tags(span.attributes)
 
@@ -220,8 +211,8 @@ class JaegerExporter(base.Exporter):
                 traceIdLow=_convert_hex_str_to_int(trace_id[16:32]),
                 spanId=_convert_hex_str_to_int(span_id),
                 operationName=span.name,
-                startTime=int(round(start_microsec)),
-                duration=int(round(duration_microsec)),
+                startTime=int(round(start_timestamp_ms)),
+                duration=int(round(duration_ms)),
                 tags=tags,
                 logs=logs,
                 references=refs,

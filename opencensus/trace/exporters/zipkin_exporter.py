@@ -14,8 +14,6 @@
 
 """Export the spans data to Zipkin Collector."""
 
-import calendar
-import datetime
 import json
 import logging
 
@@ -23,15 +21,13 @@ import requests
 
 from opencensus.trace.exporters import base
 from opencensus.trace.exporters.transports import sync
-from opencensus.trace.utils import check_str_length
+from opencensus.trace.utils import check_str_length, timestamp_to_microseconds
 
 DEFAULT_ENDPOINT = '/api/v2/spans'
 DEFAULT_HOST_NAME = 'localhost'
 DEFAULT_PORT = 9411
 DEFAULT_PROTOCOL = 'http'
 ZIPKIN_HEADERS = {'Content-Type': 'application/json'}
-
-ISO_DATETIME_REGEX = '%Y-%m-%dT%H:%M:%S.%fZ'
 
 SPAN_KIND_MAP = {
     0: None,  # span kind unspecified
@@ -152,20 +148,8 @@ class ZipkinExporter(base.Exporter):
 
         for span in span_datas:
             # Timestamp in zipkin spans is int of microseconds.
-            start_datetime = datetime.datetime.strptime(
-                span.start_time,
-                ISO_DATETIME_REGEX)
-            start_timestamp_ms = calendar.timegm(
-                start_datetime.timetuple()) * 1000 * 1000 \
-                + start_datetime.microsecond
-
-            end_datetime = datetime.datetime.strptime(
-                span.end_time,
-                ISO_DATETIME_REGEX)
-            end_timestamp_ms = calendar.timegm(
-                end_datetime.timetuple()) * 1000 * 1000 \
-                + end_datetime.microsecond
-
+            start_timestamp_ms = timestamp_to_microseconds(span.start_time)
+            end_timestamp_ms = timestamp_to_microseconds(span.end_time)
             duration_ms = end_timestamp_ms - start_timestamp_ms
 
             zipkin_span = {
@@ -225,11 +209,8 @@ def _extract_annotations_from_span(span):
         if not annotation:
             continue
 
-        event_time = datetime.datetime.strptime(time_event.timestamp,
-                                                ISO_DATETIME_REGEX)
-        epoch_time = calendar.timegm(
-            event_time.timetuple()) * 1e6 + event_time.microsecond
-        annotations.append({'timestamp': int(round(epoch_time)),
+        event_timestamp_ms = timestamp_to_microseconds(time_event.timestamp)
+        annotations.append({'timestamp': int(round(event_timestamp_ms)),
                             'value': annotation.description})
 
     return annotations
