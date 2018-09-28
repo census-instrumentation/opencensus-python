@@ -14,8 +14,6 @@
 
 """Export the spans data to Jaeger."""
 
-import calendar
-import datetime
 import logging
 import socket
 
@@ -32,7 +30,6 @@ DEFAULT_HOST_NAME = 'localhost'
 DEFAULT_AGENT_PORT = 6831
 DEFAULT_ENDPOINT = '/api/traces?format=jaeger.thrift'
 
-ISO_DATETIME_REGEX = '%Y-%m-%dT%H:%M:%S.%fZ'
 UDP_PACKET_MAX_LENGTH = 65000
 
 logging = logging.getLogger(__name__)
@@ -281,12 +278,9 @@ def _extract_logs_from_span(span):
             vType=jaeger.TagType.STRING,
             vStr=annotation.description))
 
-        event_time = datetime.datetime.strptime(
-            time_event.timestamp, ISO_DATETIME_REGEX)
-        timestamp = calendar.timegm(event_time.timetuple()) \
-            * 1e6 + event_time.microsecond
-
-        logs.append(jaeger.Log(timestamp=int(round(timestamp)), fields=fields))
+        event_timestamp = timestamp_to_microseconds(time_event.timestamp)
+        logs.append(jaeger.Log(timestamp=int(round(event_timestamp)),
+                               fields=fields))
     return logs
 
 

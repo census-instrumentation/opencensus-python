@@ -148,16 +148,16 @@ class ZipkinExporter(base.Exporter):
 
         for span in span_datas:
             # Timestamp in zipkin spans is int of microseconds.
-            start_timestamp_ms = timestamp_to_microseconds(span.start_time)
-            end_timestamp_ms = timestamp_to_microseconds(span.end_time)
-            duration_ms = end_timestamp_ms - start_timestamp_ms
+            start_timestamp_mus = timestamp_to_microseconds(span.start_time)
+            end_timestamp_mus = timestamp_to_microseconds(span.end_time)
+            duration_mus = end_timestamp_mus - start_timestamp_mus
 
             zipkin_span = {
                 'traceId': span.context.trace_id,
                 'id': str(span.span_id),
                 'name': span.name,
-                'timestamp': int(round(start_timestamp_ms)),
-                'duration': int(round(duration_ms)),
+                'timestamp': int(round(start_timestamp_mus)),
+                'duration': int(round(duration_mus)),
                 'localEndpoint': local_endpoint,
                 'tags': _extract_tags_from_span(span.attributes),
                 'annotations': _extract_annotations_from_span(span),
@@ -209,8 +209,8 @@ def _extract_annotations_from_span(span):
         if not annotation:
             continue
 
-        event_timestamp_ms = timestamp_to_microseconds(time_event.timestamp)
-        annotations.append({'timestamp': int(round(event_timestamp_ms)),
+        event_timestamp_mus = timestamp_to_microseconds(time_event.timestamp)
+        annotations.append({'timestamp': int(round(event_timestamp_mus)),
                             'value': annotation.description})
 
     return annotations

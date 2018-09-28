@@ -70,5 +70,5 @@ def timestamp_to_microseconds(timestamp):
     """
     timestamp_str = datetime.datetime.strptime(timestamp, ISO_DATETIME_REGEX)
     epoch_time_secs = calendar.timegm(timestamp_str.timetuple())
-    epoch_time_ms = epoch_time_secs * 1e6 + timestamp_str.microsecond
-    return epoch_time_ms
+    epoch_time_mus = epoch_time_secs * 1e6 + timestamp_str.microsecond
+    return epoch_time_mus
