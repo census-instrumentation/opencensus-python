@@ -23,7 +23,7 @@ from opencensus.trace.propagation.tracestate_string_format \
 _TRACEPARENT_HEADER_NAME = 'traceparent'
 _TRACESTATE_HEADER_NAME = 'tracestate'
 _TRACE_CONTEXT_HEADER_FORMAT = \
-    '([0-9a-f]{2})(-([0-9a-f]{32}))(-([0-9a-f]{16}))?(-([0-9a-f]{2}))?'
+    '^[ \t]*([0-9a-f]{2})-([0-9a-f]{32})-([0-9a-f]{16})-([0-9a-f]{2})(-.*)?[ \t]*$'
 _TRACE_CONTEXT_HEADER_RE = re.compile(_TRACE_CONTEXT_HEADER_FORMAT)
 
 
@@ -41,7 +41,7 @@ class TraceContextPropagator(object):
         :returns: SpanContext generated from the trace context header.
         """
         if header is None:
-            return SpanContext()
+            return
 
         try:
             match = re.search(_TRACE_CONTEXT_HEADER_RE, header)
@@ -49,36 +49,33 @@ class TraceContextPropagator(object):
             logging.warning(
                 'Header should be str, got {}. Cannot parse the header.'
                 .format(header.__class__.__name__))
-            raise
-
+            return
         if match:
             version = match.group(1)
+            trace_id = match.group(2)
+            span_id = match.group(3)
+            trace_options = match.group(4)
+
+            if trace_id == '0' * 32 or span_id == '0' * 16:
+                return
 
             if version == '00':
-                trace_id = match.group(3)
-                span_id = match.group(5)
-                trace_options = match.group(7)
+                if match.group(5):
+                    return
+            elif version == 'ff':
+                return
 
-                if trace_options is None:
-                    trace_options = 1
+            # Need to convert span_id from hex string to int
+            span_context = SpanContext(
+                trace_id=trace_id,
+                span_id=span_id,
+                trace_options=TraceOptions(trace_options),
+                from_header=True)
+            return span_context
 
-                # Need to convert span_id from hex string to int
-                span_context = SpanContext(
-                    trace_id=trace_id,
-                    span_id=span_id,
-                    trace_options=TraceOptions(trace_options),
-                    from_header=True)
-                return span_context
-            else:
-                logging.warning(
-                    'Header format version {} is not supported, generate a new'
-                    'context instead.'.format(version))
-        else:
-            logging.warning(
-                'Cannot parse the header {}, generate a new context instead.'
-                .format(header))
-
-        return SpanContext()
+        logging.warning(
+            'Cannot parse the header {}, generate a new context instead.'
+            .format(header))
 
     def from_headers(self, headers):
         """Generate a SpanContext object using the W3C Distributed Tracing headers.
@@ -94,9 +91,10 @@ class TraceContextPropagator(object):
         header = headers.get(_TRACEPARENT_HEADER_NAME)
         if header is None:
             return SpanContext()
-        header = str(header.encode('utf-8'))
 
         span_context = self.from_header(header)
+        if span_context is None:
+            return SpanContext()
 
         header = headers.get(_TRACESTATE_HEADER_NAME)
         if header is not None:
