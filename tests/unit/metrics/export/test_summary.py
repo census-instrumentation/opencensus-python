@@ -31,11 +31,11 @@ class TestSummary(unittest.TestCase):
         self.assertIsNotNone(summary.snapshot)
         self.assertIsInstance(summary.snapshot, summary_module.Snapshot)
 
-    def test_constructor_with_Negative_count(self):
+    def test_constructor_with_negative_count(self):
         with self.assertRaisesRegexp(ValueError, 'count must be non-negative'):
             summary_module.Summary(-10, 87.07, self.snapshot)
 
-    def test_constructor_with_Negative_sum_data(self):
+    def test_constructor_with_negative_sum_data(self):
         with self.assertRaisesRegexp(ValueError, 'sum_data must be non-negative'):
             summary_module.Summary(10, -87.07, self.snapshot)
 
@@ -43,7 +43,7 @@ class TestSummary(unittest.TestCase):
         with self.assertRaisesRegexp(ValueError, 'sum_data must be 0 if count is 0'):
             summary_module.Summary(0, 87.07, self.snapshot)
 
-    def test_constructor_with_None_snapshot(self):
+    def test_constructor_with_none_snapshot(self):
         with self.assertRaisesRegexp(ValueError, 'snapshot must not be none'):
             summary_module.Summary(10, 87.07, None)
 
@@ -78,11 +78,11 @@ class TestSnapshot(unittest.TestCase):
         self.assertIsNotNone(snapshot.value_at_percentiles)
         self.assertEquals(len(snapshot.value_at_percentiles), 0)
 
-    def test_constructor_with_Negative_count(self):
+    def test_constructor_with_negative_count(self):
         with self.assertRaisesRegexp(ValueError, 'count must be non-negative'):
             summary_module.Snapshot(-10, 87.07, self.value_at_percentile)
 
-    def test_constructor_with_Negative_sum_data(self):
+    def test_constructor_with_negative_sum_data(self):
         with self.assertRaisesRegexp(ValueError, 'sum_data must be non-negative'):
             summary_module.Snapshot(10, -87.07, self.value_at_percentile)
 
@@ -93,7 +93,7 @@ class TestSnapshot(unittest.TestCase):
     def test_constructor_with_zero_count_and_sum_data(self):
         summary_module.Snapshot(0, 0, self.value_at_percentile)
 
-    def test_constructor_with_None_count_sum(self):
+    def test_constructor_with_none_count_sum(self):
         snapshot = summary_module.Snapshot(None, None, self.value_at_percentile)
 
         self.assertIsNotNone(snapshot)

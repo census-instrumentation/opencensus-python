@@ -24,14 +24,14 @@ class TestValue(unittest.TestCase):
 
         self.assertIsNotNone(double_value)
         self.assertIsInstance(double_value, value_module.ValueDouble)
-        self.assertEqual(double_value.get_value, -34.56)
+        self.assertEqual(double_value.value, -34.56)
 
     def test_create_long_value(self):
         long_value = value_module.Value.long_value(123456789)
 
         self.assertIsNotNone(long_value)
         self.assertIsInstance(long_value, value_module.ValueLong)
-        self.assertEqual(long_value.get_value, 123456789)
+        self.assertEqual(long_value.value, 123456789)
 
     def test_create_summary_value(self):
         value_at_percentile = [summary_module.ValueAtPercentile(99.5, 10.2)]
@@ -42,4 +42,4 @@ class TestValue(unittest.TestCase):
 
         self.assertIsNotNone(summary_value)
         self.assertIsInstance(summary_value, value_module.ValueSummary)
-        self.assertEqual(summary_value.get_value, summary)
+        self.assertEqual(summary_value.value, summary)

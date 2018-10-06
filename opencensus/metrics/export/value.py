@@ -55,7 +55,7 @@ class Value(object):
         return ValueSummary(value)
 
     @property
-    def get_value(self):
+    def value(self):
         """Returns the value."""
         return self._value
 

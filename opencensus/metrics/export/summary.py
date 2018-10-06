@@ -14,7 +14,7 @@
 
 
 class Summary(object):
-    """Implementation of the Distribution as a summary of observations.
+    """Implementation of the Summary as a summary of observations.
 
     :type count: long
     :param count: the count of the population values.
@@ -23,7 +23,7 @@ class Summary(object):
     :param sum_data: the sum of the population values.
 
     :type snapshot: Snapshot
-    :param snapshot: the bucket boundaries of a histogram.
+    :param snapshot: the values calculated over a sliding time window.
     """
 
     def __init__(self, count, sum_data, snapshot):
@@ -48,7 +48,7 @@ class Summary(object):
 
     @property
     def snapshot(self):
-        """Returns the bucket boundaries of a histogram."""
+        """Returns the values calculated over a sliding time window."""
         return self._snapshot
 
 
@@ -94,8 +94,8 @@ class Snapshot(object):
 
     @property
     def value_at_percentiles(self):
-        """Returns a list of values at different percentiles of the distribution
-        calculated from the current snapshot.
+        """Returns a list of values at different percentiles
+        of the distribution calculated from the current snapshot.
         """
         return self._value_at_percentiles
 
@@ -113,11 +113,11 @@ class ValueAtPercentile(object):
     def __init__(self, percentile, value):
 
         if not 0 < percentile <= 100.0:
-            raise ValueError("percentile must be in the interval (0.0, 100.0)")
+            raise ValueError("percentile must be in the interval (0.0, 100.0]")
 
         self._percentile = percentile
 
-        if value <= 0:
+        if value < 0:
             raise ValueError('value must be non-negative')
 
         self._value = value
@@ -136,8 +136,9 @@ class ValueAtPercentile(object):
 def check_count_and_sum(count, sum_data):
     if not (count is None or count >= 0):
         raise ValueError('count must be non-negative')
-    elif not (sum_data is None or sum_data >= 0):
+
+    if not (sum_data is None or sum_data >= 0):
         raise ValueError('sum_data must be non-negative')
-    elif count is not None and count == 0:
-        if not (sum_data is None or sum_data == 0):
-            raise ValueError('sum_data must be 0 if count is 0')
+
+    if count == 0 and sum_data != 0:
+        raise ValueError('sum_data must be 0 if count is 0')
