@@ -30,53 +30,6 @@ _TRACE_CONTEXT_HEADER_RE = re.compile(_TRACE_CONTEXT_HEADER_FORMAT)
 class TraceContextPropagator(object):
     """Propagator for processing the trace context HTTP header format."""
 
-    def from_header(self, header):
-        """Generate a SpanContext object using the trace context header.
-
-        :type header: str
-        :param header: Trace context header which was extracted from the HTTP
-                       request headers.
-
-        :rtype: :class:`~opencensus.trace.span_context.SpanContext`
-        :returns: SpanContext generated from the trace context header.
-        """
-        if header is None:
-            return
-
-        try:
-            match = re.search(_TRACE_CONTEXT_HEADER_RE, header)
-        except TypeError:
-            logging.warning(
-                'Header should be str, got {}. Cannot parse the header.'
-                .format(header.__class__.__name__))
-            return
-        if match:
-            version = match.group(1)
-            trace_id = match.group(2)
-            span_id = match.group(3)
-            trace_options = match.group(4)
-
-            if trace_id == '0' * 32 or span_id == '0' * 16:
-                return
-
-            if version == '00':
-                if match.group(5):
-                    return
-            elif version == 'ff':
-                return
-
-            # Need to convert span_id from hex string to int
-            span_context = SpanContext(
-                trace_id=trace_id,
-                span_id=span_id,
-                trace_options=TraceOptions(trace_options),
-                from_header=True)
-            return span_context
-
-        logging.warning(
-            'Cannot parse the header {}, generate a new context instead.'
-            .format(header))
-
     def from_headers(self, headers):
         """Generate a SpanContext object using the W3C Distributed Tracing headers.
 
@@ -88,43 +41,53 @@ class TraceContextPropagator(object):
         """
         if headers is None:
             return SpanContext()
+
         header = headers.get(_TRACEPARENT_HEADER_NAME)
         if header is None:
             return SpanContext()
 
-        span_context = self.from_header(header)
-        if span_context is None:
+        try:
+            match = re.search(_TRACE_CONTEXT_HEADER_RE, header)
+        except TypeError:
+            logging.warning(
+                'Header should be str, got {}. Cannot parse the header.'
+                .format(header.__class__.__name__))
             return SpanContext()
 
+        if not match:
+            return SpanContext()
+
+        version = match.group(1)
+        trace_id = match.group(2)
+        span_id = match.group(3)
+        trace_options = match.group(4)
+
+        if trace_id == '0' * 32 or span_id == '0' * 16:
+            return SpanContext()
+
+        if version == '00':
+            if match.group(5):
+                return SpanContext()
+        elif version == 'ff':
+            return SpanContext()
+
+        span_context = SpanContext(
+            trace_id=trace_id,
+            span_id=span_id,
+            trace_options=TraceOptions(trace_options),
+            from_header=True)
+
         header = headers.get(_TRACESTATE_HEADER_NAME)
-        if header is not None:
-            span_context.tracestate = \
-                TracestateStringFormatter().from_string(header)
-
+        if header is None:
+            return span_context
+        try:
+            tracestate = TracestateStringFormatter().from_string(header)
+            if tracestate.is_valid():
+                span_context.tracestate = \
+                    TracestateStringFormatter().from_string(header)
+        except ValueError:
+            pass
         return span_context
-
-    def to_header(self, span_context):
-        """Convert a SpanContext object to header string, using version 0.
-
-        :type span_context:
-            :class:`~opencensus.trace.span_context.SpanContext`
-        :param span_context: SpanContext object.
-
-        :rtype: str
-        :returns: A trace context header string in trace context HTTP format.
-        """
-        trace_id = span_context.trace_id
-        span_id = span_context.span_id
-        trace_options = span_context.trace_options.enabled
-
-        # Convert the trace options
-        trace_options = '01' if trace_options else '00'
-
-        header = '00-{}-{}-{}'.format(
-            trace_id,
-            span_id,
-            trace_options)
-        return header
 
     def to_headers(self, span_context):
         """Convert a SpanContext object to W3C Distributed Tracing headers,
@@ -137,8 +100,19 @@ class TraceContextPropagator(object):
         :rtype: dict
         :returns: W3C Distributed Tracing headers.
         """
+        trace_id = span_context.trace_id
+        span_id = span_context.span_id
+        trace_options = span_context.trace_options.enabled
+
+        # Convert the trace options
+        trace_options = '01' if trace_options else '00'
+
         headers = {
-            _TRACEPARENT_HEADER_NAME: self.to_header(span_context),
+            _TRACEPARENT_HEADER_NAME: '00-{}-{}-{}'.format(
+                trace_id,
+                span_id,
+                trace_options
+            ),
         }
         tracestate = span_context.tracestate
         if tracestate:
