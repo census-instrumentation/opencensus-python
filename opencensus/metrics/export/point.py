@@ -11,3 +11,28 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+
+class Point(object):
+    """A timestamped measurement of a TimeSeries.
+
+    :type value: Value
+    :param value: the Value of the Point.
+
+    :type timestamp: time
+    :param timestamp: the Timestamp when the Point was recorded.
+    """
+
+    def __init__(self, value, timestamp):
+        self._value = value
+        self._timestamp = timestamp
+
+    @property
+    def value(self):
+        """Returns the Value"""
+        return self._value
+
+    @property
+    def timestamp(self):
+        """Returns the Timestamp when this Point was recorded."""
+        return self._timestamp
