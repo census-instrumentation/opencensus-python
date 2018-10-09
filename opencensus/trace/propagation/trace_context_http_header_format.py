@@ -22,9 +22,9 @@ from opencensus.trace.propagation.tracestate_string_format \
 
 _TRACEPARENT_HEADER_NAME = 'traceparent'
 _TRACESTATE_HEADER_NAME = 'tracestate'
-_TRACE_CONTEXT_HEADER_FORMAT = \
+_TRACEPARENT_HEADER_FORMAT = \
     '^[ \t]*([0-9a-f]{2})-([0-9a-f]{32})-([0-9a-f]{16})-([0-9a-f]{2})(-.*)?[ \t]*$'
-_TRACE_CONTEXT_HEADER_RE = re.compile(_TRACE_CONTEXT_HEADER_FORMAT)
+_TRACEPARENT_HEADER_FORMAT_RE = re.compile(_TRACEPARENT_HEADER_FORMAT)
 
 
 class TraceContextPropagator(object):
@@ -46,14 +46,7 @@ class TraceContextPropagator(object):
         if header is None:
             return SpanContext()
 
-        try:
-            match = re.search(_TRACE_CONTEXT_HEADER_RE, header)
-        except TypeError:
-            logging.warning(
-                'Header should be str, got {}. Cannot parse the header.'
-                .format(header.__class__.__name__))
-            return SpanContext()
-
+        match = re.search(_TRACEPARENT_HEADER_FORMAT_RE, header)
         if not match:
             return SpanContext()
 
@@ -68,7 +61,7 @@ class TraceContextPropagator(object):
         if version == '00':
             if match.group(5):
                 return SpanContext()
-        elif version == 'ff':
+        if version == 'ff':
             return SpanContext()
 
         span_context = SpanContext(

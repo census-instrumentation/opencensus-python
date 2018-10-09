@@ -54,6 +54,35 @@ class TestTraceContextPropagator(unittest.TestCase):
         self.assertTrue(isinstance(span_context, SpanContext))
         self.assertTrue(span_context.tracestate)
 
+    def test_from_headers_tracestate_limit(self):
+        propagator = trace_context_http_header_format.\
+            TraceContextPropagator()
+
+        span_context = propagator.from_headers({
+            'traceparent':
+                '00-12345678901234567890123456789012-1234567890123456-00',
+            'tracestate': ','.join([
+                'a00=0,a01=1,a02=2,a03=3,a04=4,a05=5,a06=6,a07=7,a08=8,a09=9',
+                'b00=0,b01=1,b02=2,b03=3,b04=4,b05=5,b06=6,b07=7,b08=8,b09=9',
+                'c00=0,c01=1,c02=2,c03=3,c04=4,c05=5,c06=6,c07=7,c08=8,c09=9',
+                'd00=0,d01=1,d02=2',
+            ]),
+        })
+
+        self.assertFalse(span_context.tracestate)
+
+    def test_from_headers_tracestate_duplicated_keys(self):
+        propagator = trace_context_http_header_format.\
+            TraceContextPropagator()
+
+        span_context = propagator.from_headers({
+            'traceparent':
+                '00-12345678901234567890123456789012-1234567890123456-00',
+            'tracestate': 'foo=1,bar=2,foo=3',
+        })
+
+        self.assertFalse(span_context.tracestate)
+
     def test_header_all_zero(self):
         from opencensus.trace.span_context import SpanContext
 
