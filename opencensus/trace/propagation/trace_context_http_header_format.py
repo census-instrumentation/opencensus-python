@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import logging
 import re
 
 from opencensus.trace.span_context import SpanContext
@@ -23,7 +22,8 @@ from opencensus.trace.propagation.tracestate_string_format \
 _TRACEPARENT_HEADER_NAME = 'traceparent'
 _TRACESTATE_HEADER_NAME = 'tracestate'
 _TRACEPARENT_HEADER_FORMAT = \
-    '^[ \t]*([0-9a-f]{2})-([0-9a-f]{32})-([0-9a-f]{16})-([0-9a-f]{2})(-.*)?[ \t]*$'
+    '^[ \t]*([0-9a-f]{2})-([0-9a-f]{32})-([0-9a-f]{16})-([0-9a-f]{2})' + \
+    '(-.*)?[ \t]*$'
 _TRACEPARENT_HEADER_FORMAT_RE = re.compile(_TRACEPARENT_HEADER_FORMAT)
 
 
