@@ -38,6 +38,12 @@ class TimeSeries(object):
     """
 
     def __init__(self, start_timestamp, label_values, points):
+        if start_timestamp is None:
+            raise ValueError
+        if not points:
+            raise ValueError
+        if not label_values:
+            raise ValueError
         self._start_timestamp = start_timestamp
         self._label_values = label_values
         self._points = points
@@ -53,3 +59,11 @@ class TimeSeries(object):
     @property
     def points(self):
         return self._points
+
+    def check_points_type(self, type_):
+        """Check that each point's value is an instance `type_`.
+
+        :type type_: type
+        :param type_: Type to check against.
+        """
+        return all(isinstance(type_, point.value) for point in self.points)
