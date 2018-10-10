@@ -27,6 +27,7 @@ def unit(session, py):
     session.interpreter = 'python{}'.format(py)
 
     # Install all test dependencies, then install this package in-place.
+    session.install('google-cloud-trace')
     session.install('-r', 'requirements-test.txt')
 
     session.install('-e', '.')
@@ -47,7 +48,9 @@ def unit(session, py):
 
 @nox.session
 @nox.parametrize('py', ['2.7', '3.6'])
-def system(session, py):
+@nox.parametrize('apicore', ['google-api-core==0.1.1', 'google-api-core==1.0.0', 'google-api-core'])
+@nox.parametrize('cloudtrace', ['google-cloud-trace==0.17', 'google-cloud-trace'])
+def system(session, py, apicore, cloudtrace):
     """Run the system test suite."""
 
     # Sanity check: Only run system tests if the environment variable is set.
@@ -62,6 +65,8 @@ def system(session, py):
 
     # Install all test dependencies, then install this package into the
     # virutalenv's dist-packages.
+    session.install(apicore)
+    session.install(cloudtrace)
     session.install('-r', 'requirements-test.txt')
     session.install('.')
 
