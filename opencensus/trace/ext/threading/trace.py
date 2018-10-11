@@ -1,4 +1,4 @@
-# Copyright 2017, OpenCensus Authors
+# Copyright 2018, OpenCensus Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,37 +23,38 @@ MODULE_NAME = "threading"
 
 
 def trace_integration(tracer=None):
-    """Wrap the httplib to trace."""
+    """Wrap threading functions to trace."""
     log.info("Integrated module: {}".format(MODULE_NAME))
-    # Wrap the httplib request function
-    request_func = getattr(threading.Thread, "start")
-    setattr(threading.Thread, request_func.__name__,
-            wrap_threading_start(request_func))
+    # Wrap the threading start function
+    start_func = getattr(threading.Thread, "start")
+    setattr(threading.Thread, start_func.__name__,
+            wrap_threading_start(start_func))
 
-    request_func = getattr(threading.Thread, "run")
-    setattr(threading.Thread, request_func.__name__,
-            wrap_threading_run(request_func))
+    # Wrap the threading run function
+    run_func = getattr(threading.Thread, "run")
+    setattr(threading.Thread, run_func.__name__,
+            wrap_threading_run(run_func))
 
 
-def wrap_threading_start(request_func):
+def wrap_threading_start(start_func):
     """Wrap the start function from thread. Put the tracer informations in the
     threading object.
     """
 
     def call(self):
         self.__opencensus_tracer = execution_context.get_opencensus_tracer()
-        return request_func(self)
+        return start_func(self)
 
     return call
 
 
-def wrap_threading_run(request_func):
+def wrap_threading_run(run_func):
     """Wrap the run function from thread. Get the tracer informations from the
     threading object and set it as current tracer.
     """
 
     def call(self):
         execution_context.set_opencensus_tracer(self.__opencensus_tracer)
-        return request_func(self)
+        return run_func(self)
 
     return call

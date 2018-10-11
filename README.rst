@@ -433,7 +433,7 @@ Threading
 
 Census can propagate trace across threads when using the Threading package.
 
-You can enable Requests integration by specifying ``'threading'`` to ``trace_integrations``.
+You can enable Threading integration by specifying ``'threading'`` to ``trace_integrations``.
 
 ------
  Stats
