@@ -23,7 +23,7 @@ OpenCensus for Python - A stats collection and distributed tracing framework
 Installation & basic usage
 --------------------------
 
-1. Install the opencensus-trace package using `pip`_ or `pipenv`_:
+1. Install the opencensus package using `pip`_ or `pipenv`_:
 
     ::
 
@@ -41,14 +41,16 @@ Installation & basic usage
     .. _pip: https://pip.pypa.io
     .. _pipenv: https://docs.pipenv.org/
 
-3. If you want to use the unreleased packages (like stats and tags), you need to build the package from source using the below commands: (The stats and tags packages are expected to be released in 0.1.6)
+3. Initialize a view_manager and a stats_recorder for your application:
 
-    ::
+    .. code:: python
 
-        git clone https://github.com/census-instrumentation/opencensus-python.git
-        cd opencensus-python
-        python setup.py bdist_wheel
-        pip install dist/*
+        from opencensus.stats import stats as stats_module
+
+        stats = stats_module.Stats()
+        view_manager = stats.view_manager
+        stats_recorder = stats.stats_recorder
+
 
 Usage
 -----

@@ -14,8 +14,6 @@
 
 """Export the spans data to Zipkin Collector."""
 
-import calendar
-import datetime
 import json
 import logging
 
@@ -23,15 +21,13 @@ import requests
 
 from opencensus.trace.exporters import base
 from opencensus.trace.exporters.transports import sync
-from opencensus.trace.utils import check_str_length
+from opencensus.trace.utils import check_str_length, timestamp_to_microseconds
 
 DEFAULT_ENDPOINT = '/api/v2/spans'
 DEFAULT_HOST_NAME = 'localhost'
 DEFAULT_PORT = 9411
 DEFAULT_PROTOCOL = 'http'
 ZIPKIN_HEADERS = {'Content-Type': 'application/json'}
-
-ISO_DATETIME_REGEX = '%Y-%m-%dT%H:%M:%S.%fZ'
 
 SPAN_KIND_MAP = {
     0: None,  # span kind unspecified
@@ -152,30 +148,19 @@ class ZipkinExporter(base.Exporter):
 
         for span in span_datas:
             # Timestamp in zipkin spans is int of microseconds.
-            start_datetime = datetime.datetime.strptime(
-                span.start_time,
-                ISO_DATETIME_REGEX)
-            start_timestamp_ms = calendar.timegm(
-                start_datetime.timetuple()) * 1000 * 1000 \
-                + start_datetime.microsecond
-
-            end_datetime = datetime.datetime.strptime(
-                span.end_time,
-                ISO_DATETIME_REGEX)
-            end_timestamp_ms = calendar.timegm(
-                end_datetime.timetuple()) * 1000 * 1000 \
-                + end_datetime.microsecond
-
-            duration_ms = end_timestamp_ms - start_timestamp_ms
+            start_timestamp_mus = timestamp_to_microseconds(span.start_time)
+            end_timestamp_mus = timestamp_to_microseconds(span.end_time)
+            duration_mus = end_timestamp_mus - start_timestamp_mus
 
             zipkin_span = {
                 'traceId': span.context.trace_id,
                 'id': str(span.span_id),
                 'name': span.name,
-                'timestamp': int(round(start_timestamp_ms)),
-                'duration': int(round(duration_ms)),
+                'timestamp': int(round(start_timestamp_mus)),
+                'duration': int(round(duration_mus)),
                 'localEndpoint': local_endpoint,
                 'tags': _extract_tags_from_span(span.attributes),
+                'annotations': _extract_annotations_from_span(span),
             }
 
             span_kind = span.span_kind
@@ -211,3 +196,21 @@ def _extract_tags_from_span(attr):
             continue
         tags[attribute_key] = value
     return tags
+
+
+def _extract_annotations_from_span(span):
+    """Extract and convert time event annotations to zipkin annotations"""
+    if span.time_events is None:
+        return []
+
+    annotations = []
+    for time_event in span.time_events:
+        annotation = time_event.annotation
+        if not annotation:
+            continue
+
+        event_timestamp_mus = timestamp_to_microseconds(time_event.timestamp)
+        annotations.append({'timestamp': int(round(event_timestamp_mus)),
+                            'value': annotation.description})
+
+    return annotations

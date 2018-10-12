@@ -11,3 +11,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+
+class LabelValue(object):
+    """The label values associated with the TimeSeries.
+
+    :type value: str
+    :param value: the value for the label
+    """
+    def __init__(self, value=None):
+        self._value = value
+
+    @property
+    def value(self):
+        """the value for the label"""
+        return self._value
