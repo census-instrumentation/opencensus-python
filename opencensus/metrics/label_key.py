@@ -11,3 +11,27 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+
+class LabelKey(object):
+    """The label keys associated with the metric descriptor.
+
+    :type key: str
+    :param key: the key for the label
+
+    :type description: str
+    :param description: description of the label
+    """
+    def __init__(self, key, description):
+        self._key = key
+        self._description = description
+
+    @property
+    def key(self):
+        """the key for the label"""
+        return self._key
+
+    @property
+    def description(self):
+        """a human-readable description of what this label key represents"""
+        return self._description
