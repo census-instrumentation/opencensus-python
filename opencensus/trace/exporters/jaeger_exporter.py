@@ -114,11 +114,10 @@ class JaegerExporter(base.Exporter):
         if self.host_name is None or self.port is None:
             return None
 
-        thrift_url = 'http://{}:{}{}{}'.format(
+        thrift_url = 'http://{}:{}{}'.format(
             self.host_name,
             self.port,
-            self.endpoint,
-            DEFAULT_ENDPOINT)
+            self.endpoint or DEFAULT_ENDPOINT)
 
         auth = None
         if self.username is not None and self.password is not None:
