@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from opencensus.metrics.export.metric_descriptor import MetricDescriptorType
+
 
 class TimeSeries(object):
     """Time series data for a given metric and time interval.
@@ -66,4 +68,8 @@ class TimeSeries(object):
         :type type_: type
         :param type_: Type to check against.
         """
-        return all(isinstance(type_, point.value) for point in self.points)
+        type_class = MetricDescriptorType.to_type_class(type_)
+        for point in self.points:
+            if not isinstance(point.value.value, type_class):
+                return False
+        return True

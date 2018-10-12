@@ -12,20 +12,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 import six
+
+from opencensus.metrics.export.value import ValueDistribution
+from opencensus.metrics.export.value import ValueSummary
 
 
 class _MetricDescriptorTypeMeta(type):
     """Helper for `x in MetricDescriptorType`."""
 
     def __contains__(cls, item):
-        return item in {MetricDescriptorType.GAUGE_INT64,
-                        MetricDescriptorType.GAUGE_DOUBLE,
-                        MetricDescriptorType.GAUGE_DISTRIBUTION,
-                        MetricDescriptorType.CUMULATIVE_INT64,
-                        MetricDescriptorType.CUMULATIVE_DOUBLE,
-                        MetricDescriptorType.CUMULATIVE_DISTRIBUTION}
+        return item in {
+            MetricDescriptorType.GAUGE_INT64,
+            MetricDescriptorType.GAUGE_DOUBLE,
+            MetricDescriptorType.GAUGE_DISTRIBUTION,
+            MetricDescriptorType.CUMULATIVE_INT64,
+            MetricDescriptorType.CUMULATIVE_DOUBLE,
+            MetricDescriptorType.CUMULATIVE_DISTRIBUTION
+        }
 
 
 @six.add_metaclass(_MetricDescriptorTypeMeta)
@@ -77,6 +81,22 @@ class MetricDescriptorType(object):
     # is not recommended, since it cannot be aggregated.
     SUMMARY = 7
 
+    @classmethod
+    def to_type_class(cls, metric_descriptor_type):
+        type_map = {
+            cls.GAUGE_INT64: int,
+            cls.GAUGE_DOUBLE: float,
+            cls.GAUGE_DISTRIBUTION: ValueDistribution,
+            cls.CUMULATIVE_INT64: int,
+            cls.CUMULATIVE_DOUBLE: float,
+            cls.CUMULATIVE_DISTRIBUTION: ValueDistribution,
+            cls.SUMMARY: ValueSummary
+        }
+        try:
+            return type_map[metric_descriptor_type]
+        except KeyError:
+            raise ValueError("Unknown MetricDescriptorType value")
+
 
 class MetricDescriptor(object):
     """Defines a metric type and its schema.
@@ -105,6 +125,7 @@ class MetricDescriptor(object):
     :type label_keys: list(:class: '~opencensus.metrics.label_key.LabelKey')
     :param label_keys: The label keys associated with the metric descriptor.
     """
+
     def __init__(self, name, description, unit, type_, label_keys):
         if type_ not in MetricDescriptorType:
             raise ValueError("Invalid type")
