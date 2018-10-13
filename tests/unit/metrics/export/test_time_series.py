@@ -16,43 +16,62 @@
 
 import unittest
 
-from opencensus.metrics.export.metric_descriptor import MetricDescriptorType
-from opencensus.metrics.export.point import Point
-from opencensus.metrics.export.time_series import TimeSeries
-from opencensus.metrics.export.value import Value
-from opencensus.metrics.label_value import LabelValue
+from opencensus.metrics import label_value
+from opencensus.metrics.export import metric_descriptor
+from opencensus.metrics.export import point
+from opencensus.metrics.export import time_series
+from opencensus.metrics.export import value
 
 START_TIMESTAMP = '2018-10-09T22:33:44.012345Z'
-LABEL_VALUE1 = LabelValue('value one')
-LABEL_VALUE2 = LabelValue('价值二')
+LABEL_VALUE1 = label_value.LabelValue('value one')
+LABEL_VALUE2 = label_value.LabelValue('价值二')
 LABEL_VALUES = (LABEL_VALUE1, LABEL_VALUE2)
-POINTS = (Point(Value.long_value(1), "2018-10-09T23:33:44.012345Z"),
-          Point(Value.long_value(2), "2018-10-10T00:33:44.012345Z"),
-          Point(Value.long_value(3), "2018-10-10T01:33:44.012345Z"),
-          Point(Value.long_value(4), "2018-10-10T02:33:44.012345Z"),
-          Point(Value.long_value(5), "2018-10-10T03:33:44.012345Z"))
+POINTS = (point.Point(
+    value.Value.long_value(1), "2018-10-09T23:33:44.012345Z"),
+          point.Point(
+              value.Value.long_value(2), "2018-10-10T00:33:44.012345Z"),
+          point.Point(
+              value.Value.long_value(3), "2018-10-10T01:33:44.012345Z"),
+          point.Point(
+              value.Value.long_value(4), "2018-10-10T02:33:44.012345Z"),
+          point.Point(
+              value.Value.long_value(5), "2018-10-10T03:33:44.012345Z"))
 
 
 class TestTimeSeries(unittest.TestCase):
     def test_init(self):
-        time_series = TimeSeries(START_TIMESTAMP, LABEL_VALUES, POINTS)
+        ts = time_series.TimeSeries(START_TIMESTAMP, LABEL_VALUES, POINTS)
 
-        self.assertEqual(time_series.start_timestamp, START_TIMESTAMP)
-        self.assertEqual(time_series.label_values, LABEL_VALUES)
-        self.assertEqual(time_series.points, POINTS)
+        self.assertEqual(ts.start_timestamp, START_TIMESTAMP)
+        self.assertEqual(ts.label_values, LABEL_VALUES)
+        self.assertEqual(ts.points, POINTS)
+
+    def test_init_invalid(self):
+        with self.assertRaises(ValueError):
+            time_series.TimeSeries(None, LABEL_VALUES, POINTS)
+        with self.assertRaises(ValueError):
+            time_series.TimeSeries(START_TIMESTAMP, None, POINTS)
+        with self.assertRaises(ValueError):
+            time_series.TimeSeries(START_TIMESTAMP, [], POINTS)
+        with self.assertRaises(ValueError):
+            time_series.TimeSeries(START_TIMESTAMP, LABEL_VALUES, None)
+        with self.assertRaises(ValueError):
+            time_series.TimeSeries(START_TIMESTAMP, LABEL_VALUES, [])
 
     def test_check_points_type(self):
-        time_series = TimeSeries(START_TIMESTAMP, LABEL_VALUES, POINTS)
+        ts = time_series.TimeSeries(START_TIMESTAMP, LABEL_VALUES, POINTS)
         self.assertTrue(
-            time_series.check_points_type(MetricDescriptorType.GAUGE_INT64))
+            ts.check_points_type(
+                metric_descriptor.MetricDescriptorType.GAUGE_INT64))
 
-        bad_points = POINTS + (Point(
-            Value.double_value(6.0), "2018-10-10T04:33:44.012345Z"), )
-        bad_time_series = TimeSeries(START_TIMESTAMP, LABEL_VALUES, bad_points)
+        bad_points = POINTS + (point.Point(
+            value.Value.double_value(6.0), "2018-10-10T04:33:44.012345Z"), )
+        bad_time_series = time_series.TimeSeries(START_TIMESTAMP, LABEL_VALUES,
+                                                 bad_points)
 
         self.assertFalse(
             bad_time_series.check_points_type(
-                MetricDescriptorType.GAUGE_INT64))
+                metric_descriptor.MetricDescriptorType.GAUGE_INT64))
         self.assertFalse(
             bad_time_series.check_points_type(
-                MetricDescriptorType.GAUGE_DOUBLE))
+                metric_descriptor.MetricDescriptorType.GAUGE_DOUBLE))

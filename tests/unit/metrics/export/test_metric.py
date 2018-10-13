@@ -19,10 +19,9 @@ except ImportError:
 
 import unittest
 
-from opencensus.metrics.export.metric import Metric
-from opencensus.metrics.export.time_series import TimeSeries
-from opencensus.metrics.export.metric_descriptor import MetricDescriptor
-from opencensus.metrics.export.metric_descriptor import MetricDescriptorType
+from opencensus.metrics.export import metric
+from opencensus.metrics.export import metric_descriptor
+from opencensus.metrics.export import time_series
 
 
 class TestMetric(unittest.TestCase):
@@ -30,29 +29,41 @@ class TestMetric(unittest.TestCase):
 
         # Check for required arg errors
         with self.assertRaises(ValueError):
-            Metric(Mock(), None)
+            metric.Metric(Mock(), None)
         with self.assertRaises(ValueError):
-            Metric(Mock(), None)
+            metric.Metric(None, Mock())
 
-        mock_time_series = Mock(spec=TimeSeries)
+        mock_time_series = Mock(spec=time_series.TimeSeries)
         mock_time_series.check_points_type.return_value = True
 
-        mock_descriptor = Mock(spec=MetricDescriptor)
-        mock_descriptor.type = MetricDescriptorType.GAUGE_INT64
+        mock_descriptor = Mock(spec=metric_descriptor.MetricDescriptor)
+        mock_descriptor.type = (metric_descriptor
+                                .MetricDescriptorType.GAUGE_INT64)
 
-        metric = Metric([mock_time_series], mock_descriptor)
-        self.assertEqual(metric.time_series, [mock_time_series])
-        self.assertEqual(metric.descriptor, mock_descriptor)
+        mm = metric.Metric(mock_descriptor, [mock_time_series],)
+        self.assertEqual(mm.time_series, [mock_time_series])
+        self.assertEqual(mm.descriptor, mock_descriptor)
 
     def test_init_wrong_ts_type(self):
-        mock_descriptor = Mock(spec=MetricDescriptor)
-        mock_descriptor.type = MetricDescriptorType.GAUGE_INT64
+        mock_descriptor = Mock(spec=metric_descriptor.MetricDescriptor)
 
-        mock_time_series1 = Mock(spec=TimeSeries)
+        mock_time_series1 = Mock(spec=time_series.TimeSeries)
         mock_time_series1.check_points_type.return_value = True
 
-        mock_time_series2 = Mock(spec=TimeSeries)
+        mock_time_series2 = Mock(spec=time_series.TimeSeries)
         mock_time_series2.check_points_type.return_value = False
 
-        with self.assertRaises(ValueError):
-            Metric([mock_time_series1, mock_time_series2], mock_descriptor)
+        for value_type in (
+            metric_descriptor.MetricDescriptorType.GAUGE_INT64,
+            metric_descriptor.MetricDescriptorType.CUMULATIVE_INT64,
+            metric_descriptor.MetricDescriptorType.GAUGE_DOUBLE,
+            metric_descriptor.MetricDescriptorType.CUMULATIVE_DOUBLE,
+            metric_descriptor.MetricDescriptorType.GAUGE_DISTRIBUTION,
+            metric_descriptor.MetricDescriptorType.CUMULATIVE_DISTRIBUTION,
+            metric_descriptor.MetricDescriptorType.SUMMARY,
+            10  # unspecified type
+        ):
+            with self.assertRaises(ValueError):
+                mock_descriptor.type = value_type
+                metric.Metric(mock_descriptor,
+                              [mock_time_series1, mock_time_series2])

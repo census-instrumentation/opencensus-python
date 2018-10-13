@@ -179,6 +179,7 @@ class ValueDistribution(Value):
     :param sum_of_squared_deviation: The sum of squared deviations from the
     mean of the values in the population.
 
+    TODO: update to BucketOptions
     :type bucket_bounds: list(float)
     :param bucket_bounds: Bucket boundaries for the histogram of the values in
     the population.

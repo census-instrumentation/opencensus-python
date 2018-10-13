@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from opencensus.metrics.export.metric_descriptor import MetricDescriptorType
+from opencensus.metrics.export import metric_descriptor
 
 
 class TimeSeries(object):
@@ -26,9 +26,9 @@ class TimeSeries(object):
     A TimeSeries is a collection of data points that describes the time-varying
     values of a metric.
 
-    :type start_timestamp: int
+    :type start_timestamp: str
     :param start_timestamp: The time when the cumulative value was reset to
-    zero.
+    zero, must be set for cumulative metrics.
 
     :type label_values: list(:class:
     '~opencensus.metrics.label_value.LabelValue')
@@ -68,7 +68,8 @@ class TimeSeries(object):
         :type type_: type
         :param type_: Type to check against.
         """
-        type_class = MetricDescriptorType.to_type_class(type_)
+        type_class = (
+            metric_descriptor.MetricDescriptorType.to_type_class(type_))
         for point in self.points:
             if not isinstance(point.value.value, type_class):
                 return False

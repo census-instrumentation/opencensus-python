@@ -12,12 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from opencensus.metrics.export.metric_descriptor import MetricDescriptorType
-
-from opencensus.metrics.export.value import ValueLong
-from opencensus.metrics.export.value import ValueDouble
-from opencensus.metrics.export.value import ValueSummary
-from opencensus.metrics.export.value import ValueDistribution
+from opencensus.metrics.export import metric_descriptor
+from opencensus.metrics.export import value
 
 
 class Metric(object):
@@ -38,11 +34,11 @@ class Metric(object):
     timeseries has one or more points.
     """
 
-    def __init__(self, time_series, descriptor):
+    def __init__(self, descriptor, time_series):
         if not time_series:
-            raise ValueError
+            raise ValueError("time_series must not be empty or null")
         if descriptor is None:
-            raise ValueError
+            raise ValueError("descriptor must not be null")
         self._time_series = time_series
         self._descriptor = descriptor
         self._check_type()
@@ -57,18 +53,22 @@ class Metric(object):
 
     def _check_type(self):
         check_type = None
-        if self.descriptor.type in (MetricDescriptorType.GAUGE_INT64,
-                                    MetricDescriptorType.CUMULATIVE_INT64):
-            check_type = ValueLong
-        elif self.descriptor.type in (MetricDescriptorType.GAUGE_DOUBLE,
-                                      MetricDescriptorType.CUMULATIVE_DOUBLE):
-            check_type = ValueDouble
+        if self.descriptor.type in (
+                metric_descriptor.MetricDescriptorType.GAUGE_INT64,
+                metric_descriptor.MetricDescriptorType.CUMULATIVE_INT64):
+            check_type = value.ValueLong
         elif self.descriptor.type in (
-                MetricDescriptorType.GAUGE_DISTRIBUTION,
-                MetricDescriptorType.CUMULATIVE_DISTRIBUTION):
-            check_type = ValueDistribution
-        elif self.descriptor.type == MetricDescriptorType.SUMMARY:
-            check_type = ValueSummary
+                metric_descriptor.MetricDescriptorType.GAUGE_DOUBLE,
+                metric_descriptor.MetricDescriptorType.CUMULATIVE_DOUBLE):
+            check_type = value.ValueDouble
+        elif self.descriptor.type in (
+                metric_descriptor.MetricDescriptorType.GAUGE_DISTRIBUTION,
+                metric_descriptor.MetricDescriptorType.CUMULATIVE_DISTRIBUTION
+        ):
+            check_type = value.ValueDistribution
+        elif self.descriptor.type == (
+                metric_descriptor.MetricDescriptorType.SUMMARY):
+            check_type = value.ValueSummary
         else:
             raise ValueError("Unknown metric descriptor type")
         for ts in self.time_series:
