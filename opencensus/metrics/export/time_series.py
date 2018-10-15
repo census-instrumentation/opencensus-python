@@ -26,10 +26,6 @@ class TimeSeries(object):
     A TimeSeries is a collection of data points that describes the time-varying
     values of a metric.
 
-    :type start_timestamp: str
-    :param start_timestamp: The time when the cumulative value was reset to
-    zero, must be set for cumulative metrics.
-
     :type label_values: list(:class:
     '~opencensus.metrics.label_value.LabelValue')
     :param label_values: The set of label values that uniquely identify this
@@ -37,18 +33,20 @@ class TimeSeries(object):
 
     :type points: list(:class: '~opencensus.metrics.export.point.Point')
     :param points: The data points of this timeseries.
+
+    :type start_timestamp: str
+    :param start_timestamp: The time when the cumulative value was reset to
+    zero, must be set for cumulative metrics.
     """
 
-    def __init__(self, start_timestamp, label_values, points):
-        if start_timestamp is None:
-            raise ValueError
-        if not points:
-            raise ValueError
+    def __init__(self, label_values, points, start_timestamp):
         if not label_values:
-            raise ValueError
-        self._start_timestamp = start_timestamp
+            raise ValueError("label_values must not be null or empty")
+        if not points:
+            raise ValueError("points must not be null or empty")
         self._label_values = label_values
         self._points = points
+        self._start_timestamp = start_timestamp
 
     @property
     def start_timestamp(self):

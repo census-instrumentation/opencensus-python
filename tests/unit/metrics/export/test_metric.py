@@ -67,3 +67,31 @@ class TestMetric(unittest.TestCase):
                 mock_descriptor.type = value_type
                 metric.Metric(mock_descriptor,
                               [mock_time_series1, mock_time_series2])
+
+    def test_init_missing_start_timestamp(self):
+        mock_ts = Mock(spec=time_series.TimeSeries)
+        mock_ts.check_points_type.return_value = True
+        mock_ts_no_start = Mock(spec=time_series.TimeSeries)
+        mock_ts_no_start.start_timestamp = None
+        mock_ts_no_start.check_points_type.return_value = True
+
+        mock_descriptor_gauge = Mock(spec=metric_descriptor.MetricDescriptor)
+        mock_descriptor_gauge.type = (
+            metric_descriptor.MetricDescriptorType.GAUGE_INT64
+        )
+        mock_descriptor_cumulative = (
+            Mock(spec=metric_descriptor.MetricDescriptor)
+        )
+        mock_descriptor_cumulative.type = (
+            metric_descriptor.MetricDescriptorType.CUMULATIVE_INT64
+        )
+
+        (metric.Metric(mock_descriptor_gauge, [mock_ts])
+         ._check_start_timestamp())
+        (metric.Metric(mock_descriptor_cumulative, [mock_ts])
+         ._check_start_timestamp())
+        (metric.Metric(mock_descriptor_gauge, [mock_ts_no_start])
+         ._check_start_timestamp())
+        with self.assertRaises(ValueError):
+            metric.Metric(mock_descriptor_cumulative,
+                          [mock_ts_no_start])._check_start_timestamp()

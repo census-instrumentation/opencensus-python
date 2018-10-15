@@ -52,6 +52,7 @@ class Metric(object):
         return self._descriptor
 
     def _check_type(self):
+        """Check that point value types match the descriptor type."""
         check_type = None
         if self.descriptor.type in (
                 metric_descriptor.MetricDescriptorType.GAUGE_INT64,
@@ -74,3 +75,15 @@ class Metric(object):
         for ts in self.time_series:
             if not ts.check_points_type(check_type):
                 raise ValueError("Invalid point value type")
+
+    def _check_start_timestamp(self):
+        """Check that starting timestamp exists for cumulative metrics."""
+        if self.descriptor.type in (
+                metric_descriptor.MetricDescriptorType.CUMULATIVE_INT64,
+                metric_descriptor.MetricDescriptorType.CUMULATIVE_DOUBLE,
+                metric_descriptor.MetricDescriptorType.CUMULATIVE_DISTRIBUTION,
+        ):
+            for ts in self.time_series:
+                if ts.start_timestamp is None:
+                    raise ValueError("time_series.start_timestamp must exist "
+                                     "for cumulative metrics")
