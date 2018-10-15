@@ -19,7 +19,6 @@ from opencensus.metrics import label_value as label_value_module
 
 
 class TestLabelValue(unittest.TestCase):
-
     def test_constructor(self):
         value = 'value1'
         label_value = label_value_module.LabelValue(value)
@@ -38,11 +37,11 @@ class TestLabelValue(unittest.TestCase):
         label_value = label_value_module.LabelValue(value)
 
         self.assertIsNotNone(label_value)
-        self.assertEquals(label_value.value, '')
+        self.assertEqual(label_value.value, '')
 
     def test_constructor_WithNonAsciiChars(self):
         value = '值'
         label_value = label_value_module.LabelValue(value)
 
         self.assertIsNotNone(label_value)
-        self.assertEquals(label_value.value, value)
+        self.assertEqual(label_value.value, value)
