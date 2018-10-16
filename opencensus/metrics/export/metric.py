@@ -16,6 +16,24 @@ from opencensus.metrics.export import metric_descriptor
 from opencensus.metrics.export import value
 
 
+DESCRIPTOR_VALUE = {
+    metric_descriptor.MetricDescriptorType.GAUGE_INT64:
+    value.ValueLong,
+    metric_descriptor.MetricDescriptorType.CUMULATIVE_INT64:
+    value.ValueLong,
+    metric_descriptor.MetricDescriptorType.GAUGE_DOUBLE:
+    value.ValueDouble,
+    metric_descriptor.MetricDescriptorType.CUMULATIVE_DOUBLE:
+    value.ValueDouble,
+    metric_descriptor.MetricDescriptorType.GAUGE_DISTRIBUTION:
+    value.ValueDistribution,
+    metric_descriptor.MetricDescriptorType.CUMULATIVE_DISTRIBUTION:
+    value.ValueDistribution,
+    metric_descriptor.MetricDescriptorType.SUMMARY:
+    value.ValueSummary,
+}
+
+
 class Metric(object):
     """A collection of time series data and label metadata.
 
@@ -53,24 +71,8 @@ class Metric(object):
 
     def _check_type(self):
         """Check that point value types match the descriptor type."""
-        check_type = None
-        if self.descriptor.type in (
-                metric_descriptor.MetricDescriptorType.GAUGE_INT64,
-                metric_descriptor.MetricDescriptorType.CUMULATIVE_INT64):
-            check_type = value.ValueLong
-        elif self.descriptor.type in (
-                metric_descriptor.MetricDescriptorType.GAUGE_DOUBLE,
-                metric_descriptor.MetricDescriptorType.CUMULATIVE_DOUBLE):
-            check_type = value.ValueDouble
-        elif self.descriptor.type in (
-                metric_descriptor.MetricDescriptorType.GAUGE_DISTRIBUTION,
-                metric_descriptor.MetricDescriptorType.CUMULATIVE_DISTRIBUTION
-        ):
-            check_type = value.ValueDistribution
-        elif self.descriptor.type == (
-                metric_descriptor.MetricDescriptorType.SUMMARY):
-            check_type = value.ValueSummary
-        else:
+        check_type = DESCRIPTOR_VALUE.get(self.descriptor.type)
+        if check_type is None:
             raise ValueError("Unknown metric descriptor type")
         for ts in self.time_series:
             if not ts.check_points_type(check_type):
