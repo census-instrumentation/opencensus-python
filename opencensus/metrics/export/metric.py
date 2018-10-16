@@ -22,17 +22,17 @@ class Metric(object):
     This class implements the spec for v1 Metrics as of opencensus-proto
     release v0.0.2. See opencensus-proto for details:
 
-        https://github.com/census-instrumentation/opencensus-proto/blob/24333298e36590ea0716598caacc8959fc393c48/src/opencensus/proto/metrics/v1/metrics.proto#33  # noqa
+    https://github.com/census-instrumentation/opencensus-proto/blob/24333298e36590ea0716598caacc8959fc393c48/src/opencensus/proto/metrics/v1/metrics.proto#33
 
     Defines a Metric which has one or more timeseries.
 
-    :type descriptor: class: '~opencensus.metrics.export.metric_descriptor.MetricDescriptor'  # noqa
+    :type descriptor: class: '~opencensus.metrics.export.metric_descriptor.MetricDescriptor'
     :param descriptor: The metric's descriptor.
 
     :type timeseries: list(:class: '~opencensus.metrics.export.time_series.TimeSeries')
     :param timeseries: One or more timeseries for a single metric, where each
     timeseries has one or more points.
-    """
+    """  # noqa
 
     def __init__(self, descriptor, time_series):
         if not time_series:

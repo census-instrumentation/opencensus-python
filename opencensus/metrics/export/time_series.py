@@ -21,7 +21,7 @@ class TimeSeries(object):
     This class implements the spec for v1 TimeSeries structs as of
     opencensus-proto release v0.0.2. See opencensus-proto for details:
 
-        https://github.com/census-instrumentation/opencensus-proto/blob/24333298e36590ea0716598caacc8959fc393c48/src/opencensus/proto/metrics/v1/metrics.proto#L112  # noqa
+        https://github.com/census-instrumentation/opencensus-proto/blob/24333298e36590ea0716598caacc8959fc393c48/src/opencensus/proto/metrics/v1/metrics.proto#L112
 
     A TimeSeries is a collection of data points that describes the time-varying
     values of a metric.
@@ -37,7 +37,7 @@ class TimeSeries(object):
     :type start_timestamp: str
     :param start_timestamp: The time when the cumulative value was reset to
     zero, must be set for cumulative metrics.
-    """
+    """  # noqa
 
     def __init__(self, label_values, points, start_timestamp):
         if not label_values:
