@@ -13,12 +13,12 @@
 # limitations under the License.
 
 import unittest
+
 from opencensus.metrics.export import summary as summary_module
 from opencensus.metrics.export import value as value_module
 
 
 class TestValue(unittest.TestCase):
-
     def test_create_double_value(self):
         double_value = value_module.Value.double_value(-34.56)
 
@@ -43,3 +43,95 @@ class TestValue(unittest.TestCase):
         self.assertIsNotNone(summary_value)
         self.assertIsInstance(summary_value, value_module.ValueSummary)
         self.assertEqual(summary_value.value, summary)
+
+
+VD_COUNT = 100
+VD_SUM = 1000.0
+VD_SUM_OF_SQUARED_DEVIATION = 10.0
+BUCKET_BOUNDS = list(range(11))
+BUCKETS = [value_module.Bucket(10, None) for ii in range(10)]
+
+
+class TestValueDistribution(unittest.TestCase):
+    def test_init(self):
+        distribution = value_module.ValueDistribution(
+            VD_COUNT, VD_SUM, VD_SUM_OF_SQUARED_DEVIATION, BUCKET_BOUNDS,
+            BUCKETS)
+        self.assertEqual(distribution.count, VD_COUNT)
+        self.assertEqual(distribution.sum, VD_SUM)
+        self.assertEqual(distribution.sum_of_squared_deviation,
+                         VD_SUM_OF_SQUARED_DEVIATION)
+        self.assertEqual(distribution.bucket_bounds, BUCKET_BOUNDS)
+        self.assertEqual(distribution.buckets, BUCKETS)
+
+    def test_init_no_histogram(self):
+        distribution = value_module.ValueDistribution(
+            VD_COUNT, VD_SUM, VD_SUM_OF_SQUARED_DEVIATION, [], None)
+        self.assertEqual(distribution.count, VD_COUNT)
+        self.assertEqual(distribution.sum, VD_SUM)
+        self.assertEqual(distribution.sum_of_squared_deviation,
+                         VD_SUM_OF_SQUARED_DEVIATION)
+        self.assertEqual(distribution.bucket_bounds, [])
+        self.assertEqual(distribution.buckets, None)
+
+    def test_init_bad_args(self):
+
+        with self.assertRaises(ValueError):
+            value_module.ValueDistribution(-1, VD_SUM,
+                                           VD_SUM_OF_SQUARED_DEVIATION,
+                                           BUCKET_BOUNDS, BUCKETS)
+
+        with self.assertRaises(ValueError):
+            value_module.ValueDistribution(
+                0, VD_SUM, VD_SUM_OF_SQUARED_DEVIATION, BUCKET_BOUNDS, BUCKETS)
+
+        with self.assertRaises(ValueError):
+            value_module.ValueDistribution(0, 0, VD_SUM_OF_SQUARED_DEVIATION,
+                                           BUCKET_BOUNDS, BUCKETS)
+
+        with self.assertRaises(ValueError):
+            value_module.ValueDistribution(
+                VD_COUNT, VD_SUM, VD_SUM_OF_SQUARED_DEVIATION, None, BUCKETS)
+
+        with self.assertRaises(ValueError):
+            value_module.ValueDistribution(
+                VD_COUNT, VD_SUM, VD_SUM_OF_SQUARED_DEVIATION, [], BUCKETS)
+
+        with self.assertRaises(ValueError):
+            value_module.ValueDistribution(0, 0, 0, BUCKET_BOUNDS, BUCKETS)
+
+        with self.assertRaises(ValueError):
+            value_module.ValueDistribution(
+                VD_COUNT, VD_SUM, VD_SUM_OF_SQUARED_DEVIATION, [1, 1],
+                [value_module.Bucket(1, None),
+                 value_module.Bucket(1, None)])
+
+        with self.assertRaises(ValueError):
+            value_module.ValueDistribution(VD_COUNT - 1, VD_SUM,
+                                           VD_SUM_OF_SQUARED_DEVIATION,
+                                           BUCKET_BOUNDS, BUCKETS)
+
+
+EX_VALUE = 1.0
+EX_TIMESTAMP = '2018-10-06T17:57:57.936475Z'
+EX_ATTACHMENTS = {'attach': 'ments'}
+
+
+class TestExemplar(unittest.TestCase):
+    def test_init(self):
+        exemplar = value_module.Exemplar(EX_VALUE, EX_TIMESTAMP,
+                                         EX_ATTACHMENTS)
+        self.assertEqual(exemplar.value, EX_VALUE)
+        self.assertEqual(exemplar.timestamp, EX_TIMESTAMP)
+        self.assertEqual(exemplar.attachments, EX_ATTACHMENTS)
+
+
+class TestBucket(unittest.TestCase):
+    def setUp(self):
+        self.exemplar = value_module.Exemplar(EX_VALUE, EX_TIMESTAMP,
+                                              EX_ATTACHMENTS)
+
+    def test_init(self):
+        bucket = value_module.Bucket(1, self.exemplar)
+        self.assertEqual(bucket.count, 1)
+        self.assertEqual(bucket.exemplar, self.exemplar)

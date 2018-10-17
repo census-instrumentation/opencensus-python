@@ -20,7 +20,6 @@ from opencensus.metrics.export.metric_descriptor import MetricDescriptor
 from opencensus.metrics.export.metric_descriptor import MetricDescriptorType
 from opencensus.metrics.label_key import LabelKey
 
-
 NAME = 'metric'
 DESCRIPTION = 'Metric description'
 UNIT = '0.738.[ft_i].[lbf_av]/s'
@@ -30,7 +29,6 @@ LABEL_KEYS = (LABEL_KEY1, LABEL_KEY2)
 
 
 class TestMetricDescriptor(unittest.TestCase):
-
     def test_init(self):
         metric_descriptor = MetricDescriptor(NAME, DESCRIPTION, UNIT,
                                              MetricDescriptorType.GAUGE_DOUBLE,
@@ -45,7 +43,7 @@ class TestMetricDescriptor(unittest.TestCase):
 
     def test_bogus_type(self):
         with self.assertRaises(ValueError):
-            MetricDescriptor(NAME, DESCRIPTION, UNIT, 0, (LABEL_KEY1,))
+            MetricDescriptor(NAME, DESCRIPTION, UNIT, 0, (LABEL_KEY1, ))
 
     def test_null_label_keys(self):
         with self.assertRaises(ValueError):
@@ -55,4 +53,11 @@ class TestMetricDescriptor(unittest.TestCase):
     def test_null_label_key_values(self):
         with self.assertRaises(ValueError):
             MetricDescriptor(NAME, DESCRIPTION, UNIT,
-                             MetricDescriptorType.GAUGE_DOUBLE, (None,))
+                             MetricDescriptorType.GAUGE_DOUBLE, (None, ))
+
+    def test_to_type_class(self):
+        self.assertEqual(
+            MetricDescriptorType.to_type_class(
+                MetricDescriptorType.GAUGE_INT64), int)
+        with self.assertRaises(ValueError):
+            MetricDescriptorType.to_type_class(10)

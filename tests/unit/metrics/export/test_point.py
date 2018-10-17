@@ -19,7 +19,6 @@ from opencensus.metrics.export import value as value_module
 
 
 class TestPoint(unittest.TestCase):
-
     def setUp(self):
         self.double_value = value_module.Value.double_value(55.5)
         self.long_value = value_module.Value.long_value(9876543210)
@@ -29,6 +28,13 @@ class TestPoint(unittest.TestCase):
         snapshot = summary_module.Snapshot(10, 87.07, value_at_percentile)
         self.summary = summary_module.Summary(10, 6.6, snapshot)
         self.summary_value = value_module.Value.summary_value(self.summary)
+        self.distribution_value = value_module.ValueDistribution(
+            100,
+            1000.0,
+            10.0,
+            list(range(11)),
+            [value_module.Bucket(10, None) for ii in range(10)],
+        )
 
     def test_point_with_double_value(self):
         point = point_module.Point(self.double_value, self.timestamp)
@@ -62,3 +68,13 @@ class TestPoint(unittest.TestCase):
         self.assertIsNotNone(point.value)
         self.assertEqual(point.value, self.summary_value)
         self.assertEqual(point.value.value, self.summary)
+
+    def test_point_with_distribution_value(self):
+        point = point_module.Point(self.distribution_value, self.timestamp)
+
+        self.assertIsNotNone(point)
+        self.assertEqual(point.timestamp, self.timestamp)
+
+        self.assertIsInstance(point.value, value_module.ValueDistribution)
+        self.assertIsNotNone(point.value)
+        self.assertEqual(point.value, self.distribution_value)
