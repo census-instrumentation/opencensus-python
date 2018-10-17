@@ -157,9 +157,9 @@ class FlaskMiddleware(object):
                 service_name=_service_name,
                 endpoint=_endpoint,
                 transport=transport)
-        elif self._exporter.__name__ == 'JaegerExporter':
+        elif self.exporter.__name__ == 'JaegerExporter':
             _service_name = self._get_service_name(settings.params)
-            self.exporter = self._exporter(
+            self.exporter = self.exporter(
                 service_name=_service_name,
                 transport=transport)
         else:
