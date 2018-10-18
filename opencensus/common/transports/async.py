@@ -24,7 +24,7 @@ from opencensus.common.transports import base
 
 _DEFAULT_GRACE_PERIOD = 5.0  # Seconds
 _DEFAULT_MAX_BATCH_SIZE = 10
-_WAIT_PERIOD = 1.0  # Seconds
+_WAIT_PERIOD = 60.0  # Seconds
 _WORKER_THREAD_NAME = 'opencensus.common.Worker'
 _WORKER_TERMINATOR = object()
 
