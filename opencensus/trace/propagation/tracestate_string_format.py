@@ -32,6 +32,8 @@ class TracestateStringFormatter(object):
             if not match:
                 raise ValueError('illegal key-value format %r' % (member))
             key, eq, value = match.groups()
+            if key in tracestate:
+                raise ValueError('conflict key {!r}'.format(key))
             tracestate[key] = value
         return tracestate
 
