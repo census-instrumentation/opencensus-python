@@ -22,6 +22,7 @@ from opencensus.trace import execution_context
 from opencensus.trace import span as span_module
 from opencensus.trace.exporters import print_exporter
 from opencensus.trace.exporters import zipkin_exporter
+from opencensus.trace.exporters import jaeger_exporter
 from opencensus.trace.exporters.ocagent import trace_exporter
 from opencensus.trace.exporters.transports import sync
 from opencensus.trace.ext import utils
@@ -132,6 +133,43 @@ class TestOpencensusMiddleware(unittest.TestCase):
         self.assertEqual(middleware.exporter.service_name, service_name)
         self.assertEqual(middleware.exporter.host_name, host_name)
         self.assertEqual(middleware.exporter.port, port)
+
+    def test_constructor_jaeger(self):
+        from opencensus.trace.ext.django import middleware
+
+        service_name = 'test_service'
+        params = {
+            'SERVICE_NAME': service_name,
+            'TRANSPORT':
+                'opencensus.trace.exporters.transports.sync.SyncTransport',
+        }
+
+        patch_jaeger = mock.patch(
+            'opencensus.trace.ext.django.config.settings.EXPORTER',
+            jaeger_exporter.JaegerExporter)
+
+        patch_params = mock.patch(
+            'opencensus.trace.ext.django.config.settings.params',
+            params)
+
+        with patch_jaeger, patch_params:
+            middleware = middleware.OpencensusMiddleware()
+
+        self.assertIs(middleware._sampler, always_on.AlwaysOnSampler)
+        self.assertIs(
+            middleware._exporter, jaeger_exporter.JaegerExporter)
+        self.assertIs(
+            middleware._propagator,
+            google_cloud_format.GoogleCloudFormatPropagator)
+
+        assert isinstance(middleware.sampler, always_on.AlwaysOnSampler)
+        assert isinstance(
+            middleware.exporter, jaeger_exporter.JaegerExporter)
+        assert isinstance(
+            middleware.propagator,
+            google_cloud_format.GoogleCloudFormatPropagator)
+
+        self.assertEqual(middleware.exporter.service_name, service_name)
 
     def test_constructor_zipkin_service_name_param(self):
         from opencensus.trace.ext.django import middleware
