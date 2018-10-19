@@ -38,6 +38,10 @@ def set_opencensus_attr(attr_key, attr_value):
     setattr(_thread_local, 'attrs', attrs)
 
 
+def set_opencensus_attrs(attrs):
+    setattr(_thread_local, 'attrs', attrs)
+
+
 def get_opencensus_attr(attr_key):
     attrs = getattr(_thread_local, 'attrs', None)
 
@@ -47,12 +51,38 @@ def get_opencensus_attr(attr_key):
     return None
 
 
+def get_opencensus_attrs():
+    return getattr(_thread_local, 'attrs', None)
+
+
 def get_current_span():
     return getattr(_thread_local, 'current_span', None)
 
 
 def set_current_span(current_span):
     setattr(_thread_local, 'current_span', current_span)
+
+
+def get_opencensus_full_context():
+    _tracer = get_opencensus_tracer()
+    _span = get_current_span()
+    _attrs = get_opencensus_attrs()
+    return _tracer, _span, _attrs
+
+
+def set_opencensus_full_context(tracer, span, attrs):
+    set_opencensus_tracer(tracer)
+    set_current_span(span)
+    if not attrs:
+        set_opencensus_attrs({})
+    else:
+        set_opencensus_attrs(attrs)
+
+
+def clean():
+    setattr(_thread_local, 'attrs', {})
+    delattr(_thread_local, 'current_span')
+    delattr(_thread_local, 'tracer')
 
 
 def clear():

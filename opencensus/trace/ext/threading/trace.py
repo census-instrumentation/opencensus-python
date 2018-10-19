@@ -14,6 +14,7 @@
 
 import logging
 import threading
+from multiprocessing import pool
 
 from opencensus.trace import execution_context
 
@@ -25,15 +26,20 @@ MODULE_NAME = "threading"
 def trace_integration(tracer=None):
     """Wrap threading functions to trace."""
     log.info("Integrated module: {}".format(MODULE_NAME))
-    # Wrap the threading start function
-    start_func = getattr(threading.Thread, "start")
-    setattr(threading.Thread, start_func.__name__,
-            wrap_threading_start(start_func))
+    # # Wrap the threading start function
+    # start_func = getattr(threading.Thread, "start")
+    # setattr(threading.Thread, start_func.__name__,
+    #         wrap_threading_start(start_func))
+    #
+    # # Wrap the threading run function
+    # run_func = getattr(threading.Thread, "run")
+    # setattr(threading.Thread, run_func.__name__,
+    #         wrap_threading_run(run_func))
 
     # Wrap the threading run function
-    run_func = getattr(threading.Thread, "run")
-    setattr(threading.Thread, run_func.__name__,
-            wrap_threading_run(run_func))
+    queue_func = getattr(pool.ThreadPool, "apply_async")
+    setattr(pool.Pool, queue_func.__name__,
+            wrap_apply_async(queue_func))
 
 
 def wrap_threading_start(start_func):
@@ -56,5 +62,61 @@ def wrap_threading_run(run_func):
     def call(self):
         execution_context.set_opencensus_tracer(self.__opencensus_tracer)
         return run_func(self)
+
+    return call
+
+
+def wrap_apply_async(apply_async_func):
+    from opencensus.trace import execution_context
+    print("Wrap of put tracer %s" % execution_context.get_opencensus_tracer())
+
+    def call(self, func, args=(), kwds={}, **kwargs):
+        from opencensus.trace import execution_context
+        print("Apply async tracer %s" % execution_context.get_opencensus_tracer())
+        func = wrap_task_func(func)
+        kwds['_opencensus_context'] = execution_context.get_opencensus_full_context()
+        return apply_async_func(self, func, args=args, kwds=kwds, **kwargs)
+
+    return call
+
+
+def wrap_pool_inqueue(queue_func):
+    """Wrap the run function from thread. Get the tracer informations from the
+    threading object and set it as current tracer.
+    """
+
+    def call(self):
+        result = queue_func(self)
+        self._quick_put = wrap_queue_put(self._quick_put)
+        return result
+
+    return call
+
+
+def wrap_queue_put(put_func):
+    from opencensus.trace import execution_context
+    print("Wrap of put tracer %s" % execution_context.get_opencensus_tracer())
+    def call(task, *args):
+        from opencensus.trace import execution_context
+        print("Put tracer %s" % execution_context.get_opencensus_tracer())
+        if task:
+            job, i, func, args, kwds = task
+            func = wrap_task_func(func)
+            kwds['_opencensus_context'] = execution_context.get_opencensus_full_context()
+            task = (job, i, func, args, kwds)
+        return put_func(task, args)
+
+    return call
+
+
+def wrap_task_func(task_func):
+
+    def call(*args, **kwargs):
+        _opencensus_context = kwargs.pop('_opencensus_context')
+        print(_opencensus_context)
+        execution_context.set_opencensus_full_context(*_opencensus_context)
+        result = task_func(*args, **kwargs)
+        execution_context.clean()
+        return result
 
     return call
