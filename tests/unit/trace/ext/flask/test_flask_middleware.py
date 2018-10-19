@@ -27,7 +27,7 @@ from opencensus.trace import span as span_module
 from opencensus.trace import stack_trace
 from opencensus.trace import status
 from opencensus.trace.exporters import print_exporter, stackdriver_exporter, \
-    zipkin_exporter
+    zipkin_exporter, jaeger_exporter
 from opencensus.trace.exporters.ocagent import trace_exporter
 from opencensus.trace.ext.flask import flask_middleware
 from opencensus.trace.propagation import google_cloud_format
@@ -201,6 +201,31 @@ class TestFlaskMiddleware(unittest.TestCase):
         self.assertEqual(middleware.exporter.service_name, service_name)
         self.assertEqual(middleware.exporter.host_name, host_name)
         self.assertEqual(middleware.exporter.port, port)
+
+    def test_init_app_config_jaeger_exporter(self):
+        service_name = 'foo'
+        app = mock.Mock()
+        app.config = {
+            'OPENCENSUS_TRACE': {
+                'SAMPLER': ProbabilitySampler,
+                'EXPORTER': jaeger_exporter.JaegerExporter,
+                'PROPAGATOR': google_cloud_format.GoogleCloudFormatPropagator,
+            },
+            'OPENCENSUS_TRACE_PARAMS': {
+                'SERVICE_NAME': service_name,
+            },
+        }
+
+        middleware = flask_middleware.FlaskMiddleware()
+        middleware.init_app(app)
+
+        self.assertIs(middleware.app, app)
+        self.assertTrue(app.before_request.called)
+        self.assertTrue(app.after_request.called)
+
+        assert isinstance(
+            middleware.exporter, jaeger_exporter.JaegerExporter)
+        self.assertEqual(middleware.exporter.service_name, service_name)
 
     def test_init_app_config_ocagent_trace_exporter(self):
         app = mock.Mock()
