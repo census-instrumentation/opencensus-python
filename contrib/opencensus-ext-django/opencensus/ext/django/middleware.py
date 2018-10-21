@@ -23,6 +23,7 @@ from opencensus.trace import tracer as tracer_module
 from opencensus.trace import utils
 from opencensus.trace.samplers import probability
 
+from django.db import connection
 try:
     from django.utils.deprecation import MiddlewareMixin
 except ImportError:  # pragma: NO COVER
@@ -237,8 +238,37 @@ class OpencensusMiddleware(MiddlewareMixin):
                 SPAN_THREAD_LOCAL_KEY,
                 span)
 
+            connection.execute_wrappers.append(self._trace_db_call)
+
         except Exception:  # pragma: NO COVER
             log.error('Failed to trace request', exc_info=True)
+
+    def _trace_db_call(self, execute, sql, params, many, context):
+        _tracer = execution_context.get_opencensus_tracer()
+        if _tracer is not None:
+            if many:
+                method_name = 'executemany'
+            else:
+                method_name = 'execute'
+            db_type = context['connection'].vendor
+            # Note that although get_opencensus_tracer() returns a NoopTracer
+            # if no thread local has been set, set_opencensus_tracer() does NOT
+            # protect against setting None to the thread local - be defensive
+            # here
+            _span = _tracer.start_span()
+            _span.name = '{}.query'.format(db_type)
+            _span.span_kind = span_module.SpanKind.CLIENT
+            _tracer.add_attribute_to_current_span(
+                '{}.query'.format(db_type), sql)
+            _tracer.add_attribute_to_current_span(
+                '{}.cursor.method.name'.format(db_type), method_name)
+
+        result = execute(sql, params, many, context)
+
+        if _tracer is not None:
+            _tracer.end_span()
+
+        return result
 
     def process_view(self, request, view_func, *args, **kwargs):
         """Process view is executed before the view function, here we get the
