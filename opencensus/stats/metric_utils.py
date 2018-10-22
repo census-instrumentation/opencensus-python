@@ -79,4 +79,5 @@ def view_to_metric_descriptor(view):
     return metric_descriptor.MetricDescriptor(
         view.name, view.description, view.measure.unit,
         get_metric_type(view.measure, view.aggregation),
+        # TODO: add label key description
         [label_key.LabelKey(tk, "") for tk in view.columns])
