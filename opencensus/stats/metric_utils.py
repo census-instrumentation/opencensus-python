@@ -70,7 +70,7 @@ def get_metric_type(measure, aggregation):
         raise AssertionError  # pragma: NO COVER
 
 
-def get_metric_descriptor(view):
+def view_to_metric_descriptor(view):
     """Get a MetricDescriptor for given view data.
 
     :type view: (:class: '~opencensus.stats.view.View')

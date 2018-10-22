@@ -83,14 +83,14 @@ class TestMetricUtils(unittest.TestCase):
         with self.assertRaises(ValueError):
             metric_utils.get_metric_type(base_measure, agg_lv)
 
-    def test_get_metric_descriptor(self):
+    def test_view_to_metric_descriptor(self):
         mock_measure = mock.Mock(spec=measure.MeasureFloat)
         mock_agg = mock.Mock(spec=aggregation.SumAggregation)
         mock_agg.aggregation_type = aggregation.Type.SUM
         test_view = view.View("name", "description", ["tk1", "tk2"],
                               mock_measure, mock_agg)
 
-        md = metric_utils.get_metric_descriptor(test_view)
+        md = metric_utils.view_to_metric_descriptor(test_view)
         self.assertTrue(isinstance(md, metric_descriptor.MetricDescriptor))
         self.assertEqual(md.name, test_view.name)
         self.assertEqual(md.description, test_view.description)
