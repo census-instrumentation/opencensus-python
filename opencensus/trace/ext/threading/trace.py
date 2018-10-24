@@ -37,9 +37,9 @@ def trace_integration(tracer=None):
             wrap_threading_run(run_func))
 
     # Wrap the threading run function
-    queue_func = getattr(pool.ThreadPool, "apply_async")
-    setattr(pool.Pool, queue_func.__name__,
-            wrap_apply_async(queue_func))
+    apply_async_func = getattr(pool.Pool, "apply_async")
+    setattr(pool.Pool, apply_async_func.__name__,
+            wrap_apply_async(apply_async_func))
 
 
 def wrap_threading_start(start_func):

@@ -81,8 +81,10 @@ def set_opencensus_full_context(tracer, span, attrs):
 
 def clean():
     setattr(_thread_local, 'attrs', {})
-    delattr(_thread_local, 'current_span')
-    delattr(_thread_local, 'tracer')
+    if hasattr(_thread_local, 'current_span'):
+        delattr(_thread_local, 'current_span')
+    if hasattr(_thread_local, 'tracer'):
+        delattr(_thread_local, 'tracer')
 
 
 def clear():
