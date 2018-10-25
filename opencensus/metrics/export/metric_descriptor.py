@@ -119,8 +119,8 @@ class MetricDescriptor(object):
     format described by http://unitsofmeasure.org/ucum.html.
 
     :type type_: int
-    :param unit: The unit in which the metric value is reported. The
-    MetricDescriptorType class enumerates valid options.
+    :param type_: The type of metric. MetricDescriptorType enumerates the valid
+    options.
 
     :type label_keys: list(:class: '~opencensus.metrics.label_key.LabelKey')
     :param label_keys: The label keys associated with the metric descriptor.
