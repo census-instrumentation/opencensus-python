@@ -17,7 +17,6 @@
 import unittest
 
 from opencensus.metrics import label_value
-from opencensus.metrics.export import metric_descriptor
 from opencensus.metrics.export import point
 from opencensus.metrics.export import time_series
 from opencensus.metrics.export import value
@@ -59,18 +58,12 @@ class TestTimeSeries(unittest.TestCase):
 
     def test_check_points_type(self):
         ts = time_series.TimeSeries(LABEL_VALUES, POINTS, START_TIMESTAMP)
-        self.assertTrue(
-            ts.check_points_type(
-                metric_descriptor.MetricDescriptorType.GAUGE_INT64))
+        self.assertTrue(ts.check_points_type(value.ValueLong))
 
         bad_points = POINTS + (point.Point(
             value.Value.double_value(6.0), "2018-10-10T04:33:44.012345Z"), )
         bad_time_series = time_series.TimeSeries(LABEL_VALUES, bad_points,
                                                  START_TIMESTAMP)
 
-        self.assertFalse(
-            bad_time_series.check_points_type(
-                metric_descriptor.MetricDescriptorType.GAUGE_INT64))
-        self.assertFalse(
-            bad_time_series.check_points_type(
-                metric_descriptor.MetricDescriptorType.GAUGE_DOUBLE))
+        self.assertFalse(bad_time_series.check_points_type(value.ValueLong))
+        self.assertFalse(bad_time_series.check_points_type(value.ValueLong))

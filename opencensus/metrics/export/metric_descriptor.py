@@ -14,8 +14,7 @@
 
 import six
 
-from opencensus.metrics.export.value import ValueDistribution
-from opencensus.metrics.export.value import ValueSummary
+from opencensus.metrics.export import value
 
 
 class _MetricDescriptorTypeMeta(type):
@@ -84,13 +83,13 @@ class MetricDescriptorType(object):
     @classmethod
     def to_type_class(cls, metric_descriptor_type):
         type_map = {
-            cls.GAUGE_INT64: int,
-            cls.GAUGE_DOUBLE: float,
-            cls.GAUGE_DISTRIBUTION: ValueDistribution,
-            cls.CUMULATIVE_INT64: int,
-            cls.CUMULATIVE_DOUBLE: float,
-            cls.CUMULATIVE_DISTRIBUTION: ValueDistribution,
-            cls.SUMMARY: ValueSummary
+            cls.GAUGE_INT64: value.ValueLong,
+            cls.GAUGE_DOUBLE: value.ValueDouble,
+            cls.GAUGE_DISTRIBUTION: value.ValueDistribution,
+            cls.CUMULATIVE_INT64: value.ValueLong,
+            cls.CUMULATIVE_DOUBLE: value.ValueDouble,
+            cls.CUMULATIVE_DISTRIBUTION: value.ValueDistribution,
+            cls.SUMMARY: value.ValueSummary
         }
         try:
             return type_map[metric_descriptor_type]

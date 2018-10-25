@@ -13,25 +13,6 @@
 # limitations under the License.
 
 from opencensus.metrics.export import metric_descriptor
-from opencensus.metrics.export import value
-
-
-DESCRIPTOR_VALUE = {
-    metric_descriptor.MetricDescriptorType.GAUGE_INT64:
-    value.ValueLong,
-    metric_descriptor.MetricDescriptorType.CUMULATIVE_INT64:
-    value.ValueLong,
-    metric_descriptor.MetricDescriptorType.GAUGE_DOUBLE:
-    value.ValueDouble,
-    metric_descriptor.MetricDescriptorType.CUMULATIVE_DOUBLE:
-    value.ValueDouble,
-    metric_descriptor.MetricDescriptorType.GAUGE_DISTRIBUTION:
-    value.ValueDistribution,
-    metric_descriptor.MetricDescriptorType.CUMULATIVE_DISTRIBUTION:
-    value.ValueDistribution,
-    metric_descriptor.MetricDescriptorType.SUMMARY:
-    value.ValueSummary,
-}
 
 
 class Metric(object):
@@ -71,7 +52,8 @@ class Metric(object):
 
     def _check_type(self):
         """Check that point value types match the descriptor type."""
-        check_type = DESCRIPTOR_VALUE.get(self.descriptor.type)
+        check_type = metric_descriptor.MetricDescriptorType.to_type_class(
+            self.descriptor.type)
         if check_type is None:
             raise ValueError("Unknown metric descriptor type")
         for ts in self.time_series:
