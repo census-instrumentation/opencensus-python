@@ -427,9 +427,8 @@ def get_task_value():
 def namespaced_view_name(view_name, metric_prefix):
     """ create string to be used as metric type
     """
-    if metric_prefix == "":
-        return os.path.join("custom.googleapis.com", "opencensus", view_name)
-    return os.path.join(metric_prefix, view_name)
+    metric_prefix = metric_prefix or "custom.googleapis.com/opencensus"
+    return os.path.join(metric_prefix, view_name).replace('\\', '/')
 
 
 def new_label_descriptors(defaults, keys):
