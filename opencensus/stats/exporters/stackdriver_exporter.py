@@ -448,5 +448,5 @@ def as_float(value):
     """
     try:
         return float(value), True
-    except Exception as exception:  # Catch all exception including ValueError
+    except Exception:  # Catch all exception including ValueError
         return None, False
