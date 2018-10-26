@@ -72,7 +72,7 @@ class Test_requests_trace(unittest.TestCase):
         with patch_wrap, patch_requests:
             trace.trace_integration(tracer=TmpTracer())
 
-            self.assertEqual(execution_context.get_opencensus_tracer(), TmpTracer)
+            self.assertIsInstance(execution_context.get_opencensus_tracer(), TmpTracer)
 
     def test_wrap_requests(self):
         mock_return = mock.Mock()
