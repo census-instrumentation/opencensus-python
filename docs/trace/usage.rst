@@ -248,9 +248,10 @@ setting in ``settings.py``:
         'BLACKLIST_PATHS': ['/_ah/health'],
         'GCP_EXPORTER_PROJECT': None,
         'SAMPLING_RATE': 0.5,
-        'ZIPKIN_EXPORTER_SERVICE_NAME': 'my_service',
+        'SERVICE_NAME': 'my_service',
         'ZIPKIN_EXPORTER_HOST_NAME': 'localhost',
         'ZIPKIN_EXPORTER_PORT': 9411,
+        'ZIPKIN_EXPORTER_PROTOCOL': 'http',
     }
 
 

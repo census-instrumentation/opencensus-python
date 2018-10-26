@@ -23,20 +23,28 @@ class MeasureToViewMap(object):
     specific View Datas
 
     """
+
     def __init__(self):
         # stores the one-to-many mapping from Measures to View Datas
-        self._map = defaultdict(list)
+        self._measure_to_view_data_list_map = defaultdict(list)
         # stores a map from the registered View names to the Views
         self._registered_views = {}
         # stores a map from the registered Measure names to the Measures
         self._registered_measures = {}
         # stores the set of the exported views
         self._exported_views = set()
+        # Stores the registered exporters
+        self._exporters = []
 
     @property
     def exported_views(self):
         """the current exported views"""
         return self._exported_views
+
+    @property
+    def exporters(self):
+        """registered exporters"""
+        return self._exporters
 
     def get_view(self, view_name, timestamp):
         """get the View Data from the given View name"""
@@ -44,11 +52,14 @@ class MeasureToViewMap(object):
         if view is None:
             return None
 
-        views = self._map.get(view.measure.name)
-        if views is not None:
-            for view_data in views:
+        view_data_list = self._measure_to_view_data_list_map.get(
+            view.measure.name)
+        if view_data_list is not None:
+            for view_data in view_data_list:
                 if view_data.view.name == view_name:
-                    return copy.deepcopy(view_data)
+                    view_data_copy = copy.deepcopy(view_data)
+                    view_data_copy.end()
+                    return view_data_copy
 
     def filter_exported_views(self, all_views):
         """returns the subset of the given view that should be exported"""
@@ -57,6 +68,10 @@ class MeasureToViewMap(object):
 
     def register_view(self, view, timestamp):
         """registers the view's measure name to View Datas given a view"""
+        if len(self.exporters) > 0:
+            for e in self.exporters:
+                e.on_register_view(view)
+
         self._exported_views = None
         existing_view = self._registered_views.get(view.name)
         if existing_view is not None:
@@ -72,24 +87,30 @@ class MeasureToViewMap(object):
         if registered_measure is not None and registered_measure != measure:
             logging.warning(
                 "A different measure with the same name is already registered")
-        self._registered_views[measure.name] = view
+        self._registered_views[view.name] = view
         if registered_measure is None:
             self._registered_measures[measure.name] = measure
-        self._map[view.measure.name].append(ViewData(view=view,
-                                                     start_time=timestamp,
-                                                     end_time=timestamp))
+        self._measure_to_view_data_list_map[view.measure.name].append(
+            ViewData(view=view, start_time=timestamp, end_time=timestamp))
 
-    def record(self, tags, measurement_map, timestamp):
+    def record(self, tags, measurement_map, timestamp, attachments=None):
         """records stats with a set of tags"""
         for measure, value in measurement_map.items():
             if measure != self._registered_measures.get(measure.name):
                 return
             view_datas = []
-            for key, value in self._map.items():
-                if key == measure.name:
-                    # note that self._map is a multi-map.
-                    view_datas.extend(self._map[key])
+            for measure_name, view_data_list \
+                    in self._measure_to_view_data_list_map.items():
+                if measure_name == measure.name:
+                    view_datas.extend(view_data_list)
             for view_data in view_datas:
-                view_data.record(context=tags,
-                                 value=view_data.view.measure,
-                                 timestamp=timestamp)
+                view_data.record(
+                    context=tags, value=value, timestamp=timestamp,
+                    attachments=attachments)
+            self.export(view_datas)
+
+    def export(self, view_datas):
+        """export view datas to registered exporters"""
+        if len(self.exporters) > 0:
+            for e in self.exporters:
+                e.export(view_datas)

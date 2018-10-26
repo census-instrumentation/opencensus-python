@@ -12,10 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import calendar
+import datetime
+
 UTF8 = 'utf-8'
 
 # Max length is 128 bytes for a truncatable string.
 MAX_LENGTH = 128
+
+ISO_DATETIME_REGEX = '%Y-%m-%dT%H:%M:%S.%fZ'
 
 
 def _get_truncatable_str(str_to_convert):
@@ -56,3 +61,14 @@ def check_str_length(str_to_check, limit=MAX_LENGTH):
     result = str(str_bytes.decode(UTF8, errors='ignore'))
 
     return (result, truncated_byte_count)
+
+
+def timestamp_to_microseconds(timestamp):
+    """Convert a timestamp string into a microseconds value
+    :param timestamp
+    :return time in microseconds
+    """
+    timestamp_str = datetime.datetime.strptime(timestamp, ISO_DATETIME_REGEX)
+    epoch_time_secs = calendar.timegm(timestamp_str.timetuple())
+    epoch_time_mus = epoch_time_secs * 1e6 + timestamp_str.microsecond
+    return epoch_time_mus

@@ -11,3 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+from opencensus.tags.tag import Tag
+from opencensus.tags.tag_key import TagKey
+from opencensus.tags.tag_value import TagValue
+from opencensus.tags.tag_map import TagMap
+
+__all__ = ['Tag', 'TagKey', 'TagValue', 'TagMap']

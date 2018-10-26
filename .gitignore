@@ -19,7 +19,7 @@ develop-eggs
 lib
 lib64
 __pycache__
-venv/
+venv*/
 
 # Installer logs
 pip-log.txt
@@ -63,3 +63,6 @@ system_tests/local_test_setup
 # Make sure a generated file isn't accidentally committed.
 pylintrc
 pylintrc.test
+
+# Ignore default file, used for exporting the trace spans.
+opencensus-traces.json

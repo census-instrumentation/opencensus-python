@@ -68,7 +68,10 @@ class TestStackdriverExporter(unittest.TestCase):
 
         self.assertTrue(exporter.transport.export_called)
 
-    def test_emit(self):
+    @mock.patch('opencensus.trace.exporters.stackdriver_exporter.'
+                'MonitoredResourceUtil.get_instance',
+                return_value=None)
+    def test_emit(self, monitor_resource_mock):
         trace_id = '6e0c63257de34c92bf9efcd03927272e'
         span_datas = [
             span_data_module.SpanData(
@@ -110,11 +113,10 @@ class TestStackdriverExporter(unittest.TestCase):
                         }
                     },
                     'stackTrace': None,
-                    'displayName':
-                        {
-                            'truncated_byte_count': 0,
-                            'value': 'span'
-                        },
+                    'displayName': {
+                        'truncated_byte_count': 0,
+                        'value': 'span'
+                    },
                     'name': 'projects/PROJECT/traces/{}/spans/1111'.format(
                         trace_id
                     ),
@@ -140,7 +142,10 @@ class TestStackdriverExporter(unittest.TestCase):
         client.batch_write_spans.assert_called_with(name, stackdriver_spans)
         self.assertTrue(client.batch_write_spans.called)
 
-    def test_translate_to_stackdriver(self):
+    @mock.patch('opencensus.trace.exporters.stackdriver_exporter.'
+                'MonitoredResourceUtil.get_instance',
+                return_value=None)
+    def test_translate_to_stackdriver(self, monitor_resource_mock):
         project_id = 'PROJECT'
         trace_id = '6e0c63257de34c92bf9efcd03927272e'
         span_name = 'test span'
@@ -152,7 +157,13 @@ class TestStackdriverExporter(unittest.TestCase):
                         'truncated_byte_count': 0,
                         'value': 'value'
                     }
-               }
+                },
+                'http.host': {
+                    'string_value': {
+                        'truncated_byte_count': 0,
+                        'value': 'host'
+                    }
+                }
             }
         }
         parent_span_id = '6e0c63257de34c93'
@@ -209,6 +220,12 @@ class TestStackdriverExporter(unittest.TestCase):
                                     'truncated_byte_count': 0,
                                     'value': 'value'
                                 }
+                            },
+                            '/http/host': {
+                                'string_value': {
+                                    'truncated_byte_count': 0,
+                                    'value': 'host'
+                                }
                             }
                         }
                     },
@@ -228,10 +245,291 @@ class TestStackdriverExporter(unittest.TestCase):
 
         self.assertEqual(spans, expected_traces)
 
+    def test_translate_common_attributes_to_stackdriver_no_attribute_map(self):
+        project_id = 'PROJECT'
+        client = mock.Mock()
+        client.project = project_id
+        exporter = stackdriver_exporter.StackdriverExporter(
+            client=client,
+            project_id=project_id)
+
+        attributes = {'outer key': 'some value'}
+        expected_attributes = {'outer key': 'some value'}
+
+        exporter.map_attributes(attributes)
+        self.assertEqual(attributes, expected_attributes)
+
+    def test_translate_common_attributes_to_stackdriver_none(self):
+        project_id = 'PROJECT'
+        client = mock.Mock()
+        client.project = project_id
+        exporter = stackdriver_exporter.StackdriverExporter(
+            client=client,
+            project_id=project_id)
+
+        # does not throw
+        self.assertIsNone(exporter.map_attributes(None))
+
+    def test_translate_common_attributes_to_stackdriver(self):
+        project_id = 'PROJECT'
+        client = mock.Mock()
+        client.project = project_id
+        exporter = stackdriver_exporter.StackdriverExporter(
+            client=client,
+            project_id=project_id)
+
+        attributes = {
+            'outer key': 'some value',
+            'attributeMap': {
+                'key': {
+                    'string_value': {
+                        'truncated_byte_count': 0,
+                        'value': 'value'
+                    }
+                },
+                'component': {
+                    'string_value': {
+                        'truncated_byte_count': 0,
+                        'value': 'http'
+                    }
+                },
+                'error.message': {
+                    'string_value': {
+                        'truncated_byte_count': 0,
+                        'value': 'error message'
+                    }
+                },
+                'error.name': {
+                    'string_value': {
+                        'truncated_byte_count': 0,
+                        'value': 'error name'
+                    }
+                },
+                'http.host': {
+                    'string_value': {
+                        'truncated_byte_count': 0,
+                        'value': 'host'
+                    }
+                },
+                'http.method': {
+                    'string_value': {
+                        'truncated_byte_count': 0,
+                        'value': 'GET'
+                    }
+                },
+                'http.status_code': {
+                    'int_value': {
+                        'value': 200
+                    }
+                },
+                'http.url': {
+                    'string_value': {
+                        'truncated_byte_count': 0,
+                        'value': 'http://host:port/path?query'
+                    }
+                },
+                'http.user_agent': {
+                    'string_value': {
+                        'truncated_byte_count': 0,
+                        'value': 'some user agent'
+                    }
+                },
+                'http.client_city': {
+                    'string_value': {
+                        'truncated_byte_count': 0,
+                        'value': 'Redmond'
+                    }
+                },
+                'http.client_country': {
+                    'string_value': {
+                        'truncated_byte_count': 0,
+                        'value': 'USA'
+                    }
+                },
+                'http.client_protocol': {
+                    'string_value': {
+                        'truncated_byte_count': 0,
+                        'value': 'HTTP 1.1'
+                    }
+                },
+                'http.client_region': {
+                    'string_value': {
+                        'truncated_byte_count': 0,
+                        'value': 'WA'
+                    }
+                },
+                'http.request_size': {
+                    'int_value': {
+                        'value': 100
+                    }
+                },
+                'http.response_size': {
+                    'int_value': {
+                        'value': 10
+                    }
+                },
+                'pid': {
+                    'int_value': {
+                        'value': 123456789
+                    }
+                },
+                'tid': {
+                    'int_value': {
+                        'value': 987654321
+                    }
+                },
+                'stacktrace': {
+                    'string_value': {
+                        'truncated_byte_count': 0,
+                        'value': 'at unknown'
+                    }
+                },
+                'grpc.host_port': {
+                    'string_value': {
+                        'truncated_byte_count': 0,
+                        'value': 'localhost:50051'
+                    }
+                },
+                'grpc.method': {
+                    'string_value': {
+                        'truncated_byte_count': 0,
+                        'value': 'post'
+                    }
+                }
+            }
+        }
+
+        expected_attributes = {
+            'outer key': 'some value',
+            'attributeMap': {
+                'key': {
+                    'string_value': {
+                        'truncated_byte_count': 0,
+                        'value': 'value'
+                    }
+                },
+                '/component': {
+                    'string_value': {
+                        'truncated_byte_count': 0,
+                        'value': 'http'
+                    }
+                },
+                '/error/message': {
+                    'string_value': {
+                        'truncated_byte_count': 0,
+                        'value': 'error message'
+                    }
+                },
+                '/error/name': {
+                    'string_value': {
+                        'truncated_byte_count': 0,
+                        'value': 'error name'
+                    }
+                },
+                '/http/host': {
+                    'string_value': {
+                        'truncated_byte_count': 0,
+                        'value': 'host'
+                    }
+                },
+                '/http/method': {
+                    'string_value': {
+                        'truncated_byte_count': 0,
+                        'value': 'GET'
+                    }
+                },
+                '/http/status_code': {
+                    'int_value': {
+                        'value': 200
+                    }
+                },
+                '/http/url': {
+                    'string_value': {
+                        'truncated_byte_count': 0,
+                        'value': 'http://host:port/path?query'
+                    }
+                },
+                '/http/user_agent': {
+                    'string_value': {
+                        'truncated_byte_count': 0,
+                        'value': 'some user agent'
+                    }
+                },
+                '/http/client_city': {
+                    'string_value': {
+                        'truncated_byte_count': 0,
+                        'value': 'Redmond'
+                    }
+                },
+                '/http/client_country': {
+                    'string_value': {
+                        'truncated_byte_count': 0,
+                        'value': 'USA'
+                    }
+                },
+                '/http/client_protocol': {
+                    'string_value': {
+                        'truncated_byte_count': 0,
+                        'value': 'HTTP 1.1'
+                    }
+                },
+                '/http/client_region': {
+                    'string_value': {
+                        'truncated_byte_count': 0,
+                        'value': 'WA'
+                    }
+                },
+                '/http/request/size': {
+                    'int_value': {
+                        'value': 100
+                    }
+                },
+                '/http/response/size': {
+                    'int_value': {
+                        'value': 10
+                    }
+                },
+                '/pid': {
+                    'int_value': {
+                        'value': 123456789
+                    }
+                },
+                '/tid': {
+                    'int_value': {
+                        'value': 987654321
+                    }
+                },
+                '/stacktrace': {
+                    'string_value': {
+                        'truncated_byte_count': 0,
+                        'value': 'at unknown'
+                    }
+                },
+                '/grpc/host_port': {
+                    'string_value': {
+                        'truncated_byte_count': 0,
+                        'value': 'localhost:50051'
+                    }
+                },
+                '/grpc/method': {
+                    'string_value': {
+                        'truncated_byte_count': 0,
+                        'value': 'post'
+                    }
+                }
+            }
+        }
+
+        exporter.map_attributes(attributes)
+        self.assertEqual(attributes, expected_attributes)
+
 
 class Test_set_attributes_gae(unittest.TestCase):
 
-    def test_set_attributes_gae(self):
+    @mock.patch('opencensus.trace.exporters.stackdriver_exporter.'
+                'MonitoredResourceUtil.get_instance',
+                return_value=None)
+    def test_set_attributes_gae(self, monitor_resource_mock):
         import os
 
         trace = {'spans': [
@@ -289,6 +587,256 @@ class Test_set_attributes_gae(unittest.TestCase):
             self.assertTrue(stackdriver_exporter.is_gae_environment())
             stackdriver_exporter.set_attributes(trace)
 
+        span = trace.get('spans')[0]
+        self.assertEqual(span, expected)
+
+
+class TestMonitoredResourceAttributes(unittest.TestCase):
+
+    @mock.patch('opencensus.trace.exporters.stackdriver_exporter.'
+                'MonitoredResourceUtil.get_instance')
+    def test_monitored_resource_attributes_gke(self, gke_monitor_resource_mock):
+        import os
+
+        trace = {'spans': [
+            {
+                'attributes': {}
+            }
+        ]}
+
+        expected = {
+            'attributes': {
+                'attributeMap': {
+                    'g.co/gae/app/module': {
+                        'string_value': {
+                            'truncated_byte_count': 0,
+                            'value': 'service'
+                        }
+                    },
+                    'g.co/gae/app/instance': {
+                        'string_value': {
+                            'truncated_byte_count': 0,
+                            'value': 'flex'
+                        }
+                    },
+                    'g.co/gae/app/version': {
+                        'string_value': {
+                            'truncated_byte_count': 0,
+                            'value': 'version'
+                        }
+                    },
+                    'g.co/gae/app/project': {
+                        'string_value': {
+                            'truncated_byte_count': 0,
+                            'value': 'project'
+                        }
+                    },
+                    'g.co/agent': {
+                        'string_value': {
+                            'truncated_byte_count': 0,
+                            'value': 'opencensus-python [{}]'.format(
+                                stackdriver_exporter.VERSION
+                            )
+                        }
+                    },
+                    'g.co/r/k8s_container/project_id': {
+                        'string_value': {
+                            'truncated_byte_count': 0,
+                            'value': 'my_project'
+                        }
+                    },
+                    'g.co/r/k8s_container/location': {
+                        'string_value': {
+                            'truncated_byte_count': 0,
+                            'value': 'zone1'
+                        }
+                    },
+                    'g.co/r/k8s_container/namespace_name': {
+                        'string_value': {
+                            'truncated_byte_count': 0,
+                            'value': 'namespace'
+                        }
+                    },
+                    'g.co/r/k8s_container/pod_name': {
+                        'string_value': {
+                            'truncated_byte_count': 0,
+                            'value': 'pod'
+                        }
+                    },
+                    'g.co/r/k8s_container/cluster_name': {
+                        'string_value': {
+                            'truncated_byte_count': 0,
+                            'value': 'cluster'
+                        }
+                    },
+                    'g.co/r/k8s_container/container_name': {
+                        'string_value': {
+                            'truncated_byte_count': 0,
+                            'value': 'c1'
+                        }
+                    },
+                }
+            }
+        }
+
+        gke_monitor_resource_mock.return_value = mock.Mock()
+
+        gke_monitor_resource_mock.return_value.resource_type = 'gke_container'
+        gke_monitor_resource_mock.return_value.get_resource_labels.return_value = {
+            'pod_id': 'pod',
+            'cluster_name': 'cluster',
+            'namespace_id': 'namespace',
+            'container_name': 'c1',
+            'project_id': 'my_project',
+            'instance_id': 'instance',
+            'zone': 'zone1'
+        }
+        with mock.patch.dict(
+                os.environ,
+                {stackdriver_exporter._APPENGINE_FLEXIBLE_ENV_VM: 'vm',
+                 stackdriver_exporter._APPENGINE_FLEXIBLE_ENV_FLEX: 'flex',
+                 'GOOGLE_CLOUD_PROJECT': 'project',
+                 'GAE_SERVICE': 'service',
+                 'GAE_VERSION': 'version'}):
+            self.assertTrue(stackdriver_exporter.is_gae_environment())
+            stackdriver_exporter.set_attributes(trace)
+
+        span = trace.get('spans')[0]
+        self.assertEqual(span, expected)
+
+    @mock.patch('opencensus.trace.exporters.stackdriver_exporter.'
+                'MonitoredResourceUtil.get_instance')
+    def test_monitored_resource_attributes_gce(self, gce_monitor_resource_mock):
+        trace = {'spans': [
+            {
+                'attributes': {}
+            }
+        ]}
+
+        expected = {
+            'attributes': {
+                'attributeMap': {
+                    'g.co/agent': {
+                        'string_value': {
+                            'truncated_byte_count': 0,
+                            'value': 'opencensus-python [{}]'.format(
+                                stackdriver_exporter.VERSION
+                            )
+                        }
+                    },
+                    'g.co/r/gce_instance/project_id': {
+                        'string_value': {
+                            'truncated_byte_count': 0,
+                            'value': 'my_project'
+                        }
+                    },
+                    'g.co/r/gce_instance/instance_id': {
+                        'string_value': {
+                            'truncated_byte_count': 0,
+                            'value': '12345'
+                        }
+                    },
+                    'g.co/r/gce_instance/zone': {
+                        'string_value': {
+                            'truncated_byte_count': 0,
+                            'value': 'zone1'
+                        }
+                    },
+                }
+            }
+        }
+
+        gce_monitor_resource_mock.return_value = mock.Mock()
+        gce_monitor_resource_mock.return_value.resource_type = 'gce_instance'
+        gce_monitor_resource_mock.return_value.get_resource_labels.return_value = {
+            'project_id': 'my_project',
+            'instance_id': '12345',
+            'zone': 'zone1'
+        }
+        stackdriver_exporter.set_attributes(trace)
+        span = trace.get('spans')[0]
+        self.assertEqual(span, expected)
+
+    @mock.patch('opencensus.trace.exporters.stackdriver_exporter.'
+                'MonitoredResourceUtil.get_instance')
+    def test_monitored_resource_attributes_aws(self, aws_monitor_resource_mock):
+        trace = {'spans': [
+            {
+                'attributes': {}
+            }
+        ]}
+
+        expected = {
+            'attributes': {
+                'attributeMap': {
+                    'g.co/agent': {
+                        'string_value': {
+                            'truncated_byte_count': 0,
+                            'value': 'opencensus-python [{}]'.format(
+                                stackdriver_exporter.VERSION
+                            )
+                        }
+                    },
+                    'g.co/r/aws_ec2_instance/aws_account': {
+                        'string_value': {
+                            'truncated_byte_count': 0,
+                            'value': '123456789012'
+                        }
+                    },
+                    'g.co/r/aws_ec2_instance/region': {
+                        'string_value': {
+                            'truncated_byte_count': 0,
+                            'value': 'aws:us-west-2'
+                        }
+                    },
+                }
+            }
+        }
+
+        aws_monitor_resource_mock.return_value = mock.Mock()
+
+        aws_monitor_resource_mock.return_value.resource_type = 'aws_ec2_instance'
+        aws_monitor_resource_mock.return_value.get_resource_labels.return_value = {
+            'aws_account': '123456789012',
+            'region': 'us-west-2'
+        }
+        stackdriver_exporter.set_attributes(trace)
+        span = trace.get('spans')[0]
+        self.assertEqual(span, expected)
+
+    @mock.patch('opencensus.trace.exporters.stackdriver_exporter.'
+                'MonitoredResourceUtil.get_instance')
+    def test_monitored_resource_attributes_None(self, monitor_resource_mock):
+        trace = {'spans': [
+            {
+                'attributes': {}
+            }
+        ]}
+
+        expected = {
+            'attributes': {
+                'attributeMap': {
+                    'g.co/agent': {
+                        'string_value': {
+                            'truncated_byte_count': 0,
+                            'value': 'opencensus-python [{}]'.format(
+                                stackdriver_exporter.VERSION
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
+        monitor_resource_mock.return_value = None
+        stackdriver_exporter.set_attributes(trace)
+        span = trace.get('spans')[0]
+        self.assertEqual(span, expected)
+
+        monitor_resource_mock.return_value = mock.Mock()
+        monitor_resource_mock.return_value.resource_type = mock.Mock()
+        monitor_resource_mock.return_value.get_resource_labels.return_value = mock.Mock()
+        stackdriver_exporter.set_attributes(trace)
         span = trace.get('spans')[0]
         self.assertEqual(span, expected)
 

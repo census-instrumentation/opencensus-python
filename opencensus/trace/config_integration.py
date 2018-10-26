@@ -18,7 +18,8 @@ import logging
 log = logging.getLogger(__name__)
 
 SUPPORTED_INTEGRATIONS = ['httplib', 'mysql', 'postgresql', 'pymysql',
-                          'requests', 'sqlalchemy', 'google_cloud_clientlibs']
+                          'requests', 'sqlalchemy', 'google_cloud_clientlibs',
+                          'threading']
 
 PATH_PREFIX = 'opencensus.trace.ext'
 
@@ -37,11 +38,12 @@ def trace_integrations(integrations, tracer=None):
             module = importlib.import_module(path_to_module)
             module.trace_integration(tracer=tracer)
             integrated.append(item)
-        except Exception:
+        except Exception as e:
             log.warning(
                 'Failed to integrate module: {}, supported integrations are {}'
                 .format(
                     item,
                     ', '.join(str(x) for x in SUPPORTED_INTEGRATIONS)))
+            log.warning('{}'.format(e))
 
     return integrated

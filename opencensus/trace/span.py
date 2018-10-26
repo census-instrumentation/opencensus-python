@@ -16,6 +16,7 @@ from datetime import datetime
 from itertools import chain
 
 from opencensus.trace import attributes
+from opencensus.trace import base_span
 from opencensus.trace import link as link_module
 from opencensus.trace import stack_trace
 from opencensus.trace import status
@@ -31,7 +32,7 @@ class SpanKind(object):
     CLIENT = 2
 
 
-class Span(object):
+class Span(base_span.BaseSpan):
     """A span is an individual timed event which forms a node of the trace
     tree. Each span has its name, span id and parent id. The parent id
     indicates the causal relationships between the individual spans in a
@@ -145,6 +146,14 @@ class Span(object):
         self._child_spans = []
         self.context_tracer = context_tracer
         self.span_kind = span_kind
+        for callback in Span._on_create_callbacks:
+            callback(self)
+
+    _on_create_callbacks = []
+
+    @staticmethod
+    def on_create(callback):
+        Span._on_create_callbacks.append(callback)
 
     @property
     def children(self):

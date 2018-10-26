@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import os
-
+from collections import defaultdict
 from google.cloud.trace.client import Client
 
 from opencensus.trace import attributes_helper
@@ -21,9 +21,11 @@ from opencensus.trace import span_data
 from opencensus.trace.attributes import Attributes
 from opencensus.trace.exporters import base
 from opencensus.trace.exporters.transports import sync
+from opencensus.common.monitored_resource_util.monitored_resource_util \
+    import MonitoredResourceUtil
 
 # OpenCensus Version
-VERSION = '0.1.5'
+VERSION = '0.1.8'
 
 # Agent
 AGENT = 'opencensus-python [{}]'.format(VERSION)
@@ -49,11 +51,8 @@ GAE_ATTRIBUTES = {
     'PORT': 'g.co/gae/app/port',
 }
 
-# GCE common attributes
-GCE_ATTRIBUTES = {
-    'GCE_INSTANCE_ID': 'g.co/gce/instanceid',
-    'GCE_HOSTNAME': 'g.co/gce/hostname',
-}
+# resource label structure
+RESOURCE_LABEL = 'g.co/r/%s/%s'
 
 
 def _update_attr_map(span, attrs):
@@ -73,6 +72,73 @@ def set_attributes(trace):
             set_gae_attributes(span)
 
         set_common_attributes(span)
+
+        set_monitored_resource_attributes(span)
+
+
+def set_monitored_resource_attributes(span):
+    """Set labels to span that can be used for tracing.
+    :param span: Span object
+    """
+    monitored_resource = MonitoredResourceUtil.get_instance()
+    if monitored_resource is not None:
+        resource_type = monitored_resource.resource_type
+        resource_labels = monitored_resource.get_resource_labels()
+
+        if resource_type == 'gke_container':
+            resource_type = 'k8s_container'
+            set_attribute_label(span, resource_type, resource_labels,
+                                'project_id')
+            set_attribute_label(span, resource_type, resource_labels,
+                                'cluster_name')
+            set_attribute_label(span, resource_type, resource_labels,
+                                'container_name')
+            set_attribute_label(span, resource_type, resource_labels,
+                                'namespace_id', 'namespace_name')
+            set_attribute_label(span, resource_type, resource_labels,
+                                'pod_id', 'pod_name')
+            set_attribute_label(span, resource_type, resource_labels,
+                                'zone', 'location')
+
+        elif resource_type == 'gce_instance':
+            set_attribute_label(span, resource_type, resource_labels,
+                                'project_id')
+            set_attribute_label(span, resource_type, resource_labels,
+                                'instance_id')
+            set_attribute_label(span, resource_type, resource_labels,
+                                'zone')
+
+        elif resource_type == 'aws_ec2_instance':
+            set_attribute_label(span, resource_type, resource_labels,
+                                'aws_account')
+            set_attribute_label(span, resource_type, resource_labels,
+                                'instance_id')
+            set_attribute_label(span, resource_type, resource_labels,
+                                'region', label_value_prefix='aws:')
+
+
+def set_attribute_label(span, resource_type, resource_labels, attribute_key,
+                        canonical_key=None, label_value_prefix=''):
+    """Set a label to span that can be used for tracing.
+    :param span: Span object
+    :param resource_type: resource type
+    :param resource_labels: collection of labels
+    :param attribute_key: actual label key
+    :param canonical_key: exporter specific label key, Optional
+    :param label_value_prefix: exporter specific label value prefix, Optional
+    """
+
+    if attribute_key in resource_labels:
+        if canonical_key is None:
+            canonical_key = attribute_key
+
+        pair = {RESOURCE_LABEL % (resource_type, canonical_key):
+                label_value_prefix + resource_labels[attribute_key]
+                }
+        pair_attrs = Attributes(pair).format_attributes_json()\
+            .get('attributeMap')
+
+        _update_attr_map(span, pair_attrs)
 
 
 def set_common_attributes(span):
@@ -125,6 +191,7 @@ class StackdriverExporter(base.Exporter):
                       :class:`.SyncTransport`. The other option is
                       :class:`.BackgroundThreadTransport`.
     """
+
     def __init__(self, client=None, project_id=None,
                  transport=sync.SyncTransport):
         # The client will handle the case when project_id is None
@@ -142,14 +209,20 @@ class StackdriverExporter(base.Exporter):
         :param list of opencensus.trace.span_data.SpanData span_datas:
             SpanData tuples to emit
         """
-        name = 'projects/{}'.format(self.project_id)
+        project = 'projects/{}'.format(self.project_id)
 
-        # convert to the legacy trace json for easier refactoring
-        # TODO: refactor this to use the span data directly
-        trace = span_data.format_legacy_trace_json(span_datas)
+        # Map each span data to it's corresponding trace id
+        trace_span_map = defaultdict(list)
+        for sd in span_datas:
+            trace_span_map[sd.context.trace_id] += [sd]
 
-        stackdriver_spans = self.translate_to_stackdriver(trace)
-        self.client.batch_write_spans(name, stackdriver_spans)
+        # Write spans to Stackdriver
+        for _, sds in trace_span_map.items():
+            # convert to the legacy trace json for easier refactoring
+            # TODO: refactor this to use the span data directly
+            trace = span_data.format_legacy_trace_json(sds)
+            stackdriver_spans = self.translate_to_stackdriver(trace)
+            self.client.batch_write_spans(project, stackdriver_spans)
 
     def export(self, span_datas):
         """
@@ -187,7 +260,7 @@ class StackdriverExporter(base.Exporter):
                 'startTime': span.get('startTime'),
                 'endTime': span.get('endTime'),
                 'spanId': str(span.get('spanId')),
-                'attributes': span.get('attributes'),
+                'attributes': self.map_attributes(span.get('attributes')),
                 'links': span.get('links'),
                 'status': span.get('status'),
                 'stackTrace': span.get('stackTrace'),
@@ -204,3 +277,46 @@ class StackdriverExporter(base.Exporter):
 
         spans = {'spans': spans_list}
         return spans
+
+    def map_attributes(self, attribute_map):
+        if attribute_map is None:
+            return attribute_map
+
+        for (key, value) in attribute_map.items():
+            if (key != 'attributeMap'):
+                continue
+            for attribute_key in list(value.keys()):
+                if (attribute_key in ATTRIBUTE_MAPPING):
+                    new_key = ATTRIBUTE_MAPPING.get(attribute_key)
+                    value[new_key] = value.pop(attribute_key)
+
+        return attribute_map
+
+
+ATTRIBUTE_MAPPING = {
+    'component': '/component',
+    'error.message': '/error/message',
+    'error.name': '/error/name',
+    'http.client_city': '/http/client_city',
+    'http.client_country': '/http/client_country',
+    'http.client_protocol': '/http/client_protocol',
+    'http.client_region': '/http/client_region',
+
+    'http.host': '/http/host',
+    'http.method': '/http/method',
+
+    'http.redirected_url': '/http/redirected_url',
+    'http.request_size': '/http/request/size',
+    'http.response_size': '/http/response/size',
+
+    'http.status_code': '/http/status_code',
+    'http.url': '/http/url',
+    'http.user_agent': '/http/user_agent',
+
+    'pid': '/pid',
+    'stacktrace': '/stacktrace',
+    'tid': '/tid',
+
+    'grpc.host_port': '/grpc/host_port',
+    'grpc.method': '/grpc/method',
+}

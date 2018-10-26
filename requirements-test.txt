@@ -1,5 +1,5 @@
-Django==1.11.7
-Flask==0.12.2
+Django==1.11.15
+Flask==0.12.3
 google-cloud-monitoring==0.29.0
 google-cloud-trace==0.17.0
 grpcio==1.8.3
@@ -16,3 +16,4 @@ webapp2==2.5.2
 WebOb==1.7.3
 wrapt==1.10.11
 thrift==0.10.0
+prometheus_client==0.3.1

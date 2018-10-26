@@ -14,23 +14,20 @@
 
 """Export the spans data to Zipkin Collector."""
 
-import calendar
-import datetime
 import json
 import logging
 
 import requests
 
-from opencensus.trace import span_data
 from opencensus.trace.exporters import base
 from opencensus.trace.exporters.transports import sync
+from opencensus.trace.utils import check_str_length, timestamp_to_microseconds
 
 DEFAULT_ENDPOINT = '/api/v2/spans'
 DEFAULT_HOST_NAME = 'localhost'
 DEFAULT_PORT = 9411
+DEFAULT_PROTOCOL = 'http'
 ZIPKIN_HEADERS = {'Content-Type': 'application/json'}
-
-ISO_DATETIME_REGEX = '%Y-%m-%dT%H:%M:%S.%fZ'
 
 SPAN_KIND_MAP = {
     0: None,  # span kind unspecified
@@ -59,6 +56,9 @@ class ZipkinExporter(base.Exporter):
     :type end_point: str
     :param end_point: (Optional) The path for the span exporting endpoint.
 
+    :type protocol: str
+    :param protocol: (Optional) The protocol used for the request.
+
     :type transport: :class:`type`
     :param transport: Class for creating new transport objects. It should
                       extend from the base :class:`.Transport` type and
@@ -73,6 +73,7 @@ class ZipkinExporter(base.Exporter):
             host_name=DEFAULT_HOST_NAME,
             port=DEFAULT_PORT,
             endpoint=DEFAULT_ENDPOINT,
+            protocol=DEFAULT_PROTOCOL,
             transport=sync.SyncTransport,
             ipv4=None,
             ipv6=None):
@@ -80,6 +81,7 @@ class ZipkinExporter(base.Exporter):
         self.host_name = host_name
         self.port = port
         self.endpoint = endpoint
+        self.protocol = protocol
         self.url = self.get_url
         self.transport = transport(self)
         self.ipv4 = ipv4
@@ -87,7 +89,8 @@ class ZipkinExporter(base.Exporter):
 
     @property
     def get_url(self):
-        return 'http://{}:{}{}'.format(
+        return '{}://{}:{}{}'.format(
+            self.protocol,
             self.host_name,
             self.port,
             self.endpoint)
@@ -100,15 +103,9 @@ class ZipkinExporter(base.Exporter):
         :param list of opencensus.trace.span_data.SpanData span_datas:
             SpanData tuples to emit
         """
-        # convert to the legacy trace json for easier refactoring
-        # TODO: refactor this to use the span data directly
-        trace = span_data.format_legacy_trace_json(span_datas)
-
-        trace_id = trace.get('traceId')
-        spans = trace.get('spans')
 
         try:
-            zipkin_spans = self.translate_to_zipkin(trace_id, spans)
+            zipkin_spans = self.translate_to_zipkin(span_datas)
             result = requests.post(
                 url=self.url,
                 data=json.dumps(zipkin_spans),
@@ -124,18 +121,18 @@ class ZipkinExporter(base.Exporter):
     def export(self, span_datas):
         self.transport.export(span_datas)
 
-    def translate_to_zipkin(self, trace_id, spans):
+    def translate_to_zipkin(self, span_datas):
         """Translate the opencensus spans to zipkin spans.
 
-        :type trace_id: str
-        :param trace_id: Trace ID.
-
-        :type spans: list
-        :param spans: List of spans to be exported.
+        :type span_datas: list of :class:
+            `~opencensus.trace.span_data.SpanData`
+        :param span_datas:
+            SpanData tuples to emit
 
         :rtype: list
         :returns: List of zipkin format spans.
         """
+
         local_endpoint = {
             'serviceName': self.service_name,
             'port': self.port,
@@ -149,36 +146,25 @@ class ZipkinExporter(base.Exporter):
 
         zipkin_spans = []
 
-        for span in spans:
+        for span in span_datas:
             # Timestamp in zipkin spans is int of microseconds.
-            start_datetime = datetime.datetime.strptime(
-                span.get('startTime'),
-                ISO_DATETIME_REGEX)
-            start_timestamp_ms = calendar.timegm(
-                start_datetime.timetuple()) * 1000 * 1000 \
-                + start_datetime.microsecond
-
-            end_datetime = datetime.datetime.strptime(
-                span.get('endTime'),
-                ISO_DATETIME_REGEX)
-            end_timestamp_ms = calendar.timegm(
-                end_datetime.timetuple()) * 1000 * 1000 \
-                + end_datetime.microsecond
-
-            duration_ms = end_timestamp_ms - start_timestamp_ms
+            start_timestamp_mus = timestamp_to_microseconds(span.start_time)
+            end_timestamp_mus = timestamp_to_microseconds(span.end_time)
+            duration_mus = end_timestamp_mus - start_timestamp_mus
 
             zipkin_span = {
-                'traceId': trace_id,
-                'id': str(span.get('spanId')),
-                'name': span.get('displayName', {}).get('value'),
-                'timestamp': int(round(start_timestamp_ms)),
-                'duration': int(round(duration_ms)),
+                'traceId': span.context.trace_id,
+                'id': str(span.span_id),
+                'name': span.name,
+                'timestamp': int(round(start_timestamp_mus)),
+                'duration': int(round(duration_mus)),
                 'localEndpoint': local_endpoint,
-                'tags': _extract_tags_from_span(span),
+                'tags': _extract_tags_from_span(span.attributes),
+                'annotations': _extract_annotations_from_span(span),
             }
 
-            span_kind = span.get('kind')
-            parent_span_id = span.get('parentSpanId')
+            span_kind = span.span_kind
+            parent_span_id = span.parent_span_id
 
             if span_kind is not None:
                 kind = SPAN_KIND_MAP.get(span_kind)
@@ -195,20 +181,36 @@ class ZipkinExporter(base.Exporter):
         return zipkin_spans
 
 
-def _extract_tags_from_span(span):
+def _extract_tags_from_span(attr):
+    if attr is None:
+        return {}
     tags = {}
-    for attribute_key, attribute_value in span.get(
-            'attributes', {}).get('attributeMap', {}).items():
-        if not isinstance(attribute_value, dict):
-            continue
-        if attribute_value.get('string_value') is not None:
-            value = attribute_value.get('string_value').get('value')
-        elif attribute_value.get('int_value') is not None:
-            value = str(attribute_value.get('int_value'))
-        elif attribute_value.get('bool_value') is not None:
-            value = str(attribute_value.get('bool_value'))
+    for attribute_key, attribute_value in attr.items():
+        if isinstance(attribute_value, (int, bool)):
+            value = str(attribute_value)
+        elif isinstance(attribute_value, str):
+            res, _ = check_str_length(str_to_check=attribute_value)
+            value = res
         else:
             logging.warn('Could not serialize tag {}'.format(attribute_key))
             continue
         tags[attribute_key] = value
     return tags
+
+
+def _extract_annotations_from_span(span):
+    """Extract and convert time event annotations to zipkin annotations"""
+    if span.time_events is None:
+        return []
+
+    annotations = []
+    for time_event in span.time_events:
+        annotation = time_event.annotation
+        if not annotation:
+            continue
+
+        event_timestamp_mus = timestamp_to_microseconds(time_event.timestamp)
+        annotations.append({'timestamp': int(round(event_timestamp_mus)),
+                            'value': annotation.description})
+
+    return annotations

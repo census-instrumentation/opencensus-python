@@ -16,8 +16,8 @@ import unittest
 
 import mock
 
-from opencensus.trace import (link, span_context, span_data, status,
-                              time_event, trace_options)
+from opencensus.trace import (attributes, link, span_context, span_data,
+                              status, time_event)
 from opencensus.trace.exporters import jaeger_exporter
 from opencensus.trace.exporters.gen.jaeger import jaeger
 
@@ -172,11 +172,13 @@ class TestJaegerExporter(unittest.TestCase):
 
     def test_translate_to_jaeger(self):
         self.maxDiff = None
-        trace_id = '6e0c63257de34c92bf9efcd03927272e'
+        trace_id_high = '6e0c63257de34c92'
+        trace_id_low = 'bf9efcd03927272e'
+        trace_id= trace_id_high + trace_id_low
         span_id = '6e0c63257de34c92'
         parent_span_id = '1111111111111111'
 
-        attributes = {
+        span_attributes = {
             'key_bool': False,
             'key_string': 'hello_world',
             'key_int': 3
@@ -198,7 +200,27 @@ class TestJaegerExporter(unittest.TestCase):
                 timestamp=time,
                 annotation=time_event.Annotation(
                     description='First Annotation',
-                    attributes=annotation_attributes))
+                    attributes=attributes.Attributes(annotation_attributes))),
+            time_event.TimeEvent(
+                timestamp=time,
+                message_event=time_event.MessageEvent(
+                    id='message-event-id',
+                    uncompressed_size_bytes=0,
+                )),
+        ]
+
+        time_events2 = [
+            time_event.TimeEvent(
+                timestamp=time,
+                annotation=time_event.Annotation(
+                    description='First Annotation',
+                    attributes=None)),
+            time_event.TimeEvent(
+                timestamp=time,
+                message_event=time_event.MessageEvent(
+                    id='message-event-id',
+                    uncompressed_size_bytes=0,
+                )),
         ]
 
         links = [
@@ -230,7 +252,7 @@ class TestJaegerExporter(unittest.TestCase):
                 context=span_context.SpanContext(trace_id=trace_id),
                 span_id=span_id,
                 parent_span_id=parent_span_id,
-                attributes=attributes,
+                attributes=span_attributes,
                 start_time=start_time,
                 end_time=end_time,
                 child_span_count=0,
@@ -243,6 +265,22 @@ class TestJaegerExporter(unittest.TestCase):
             ),
             span_data.SpanData(
                 name='test2',
+                context=None,
+                span_id=span_id,
+                parent_span_id=None,
+                attributes=None,
+                start_time=start_time,
+                end_time=end_time,
+                child_span_count=None,
+                stack_trace=None,
+                time_events=time_events2,
+                links=None,
+                status=None,
+                same_process_as_parent_span=None,
+                span_kind=None,
+            ),
+            span_data.SpanData(
+                name='test3',
                 context=None,
                 span_id=span_id,
                 parent_span_id=None,
@@ -264,13 +302,13 @@ class TestJaegerExporter(unittest.TestCase):
         spans = exporter.translate_to_jaeger(span_datas)
         expected_spans = [
             jaeger.Span(
-                traceIdHigh=1846305573,
-                traceIdLow=2112048274,
+                traceIdHigh=7929822056569588882,
+                traceIdLow=-4638992594902767826,
                 spanId=7929822056569588882,
                 parentSpanId=1229782938247303441,
                 operationName='test1',
-                startTime=1502820146000,
-                duration=10000,
+                startTime=1502820146071158,
+                duration=10000000,
                 flags=1,
                 tags=[
                     jaeger.Tag(
@@ -294,23 +332,23 @@ class TestJaegerExporter(unittest.TestCase):
                 references=[
                     jaeger.SpanRef(
                         refType=jaeger.SpanRefType.CHILD_OF,
-                        traceIdHigh=1846305573,
-                        traceIdLow=2112048274,
+                        traceIdHigh=7929822056569588882,
+                        traceIdLow=-4638992594902767826,
                         spanId=7929822056569588882),
                     jaeger.SpanRef(
                         refType=jaeger.SpanRefType.FOLLOWS_FROM,
-                        traceIdHigh=1846305573,
-                        traceIdLow=2112048274,
+                        traceIdHigh=7929822056569588882,
+                        traceIdLow=-4638992594902767826,
                         spanId=7929822056569588882),
                     jaeger.SpanRef(
                         refType=None,
-                        traceIdHigh=1846305573,
-                        traceIdLow=2112048274,
+                        traceIdHigh=7929822056569588882,
+                        traceIdLow=-4638992594902767826,
                         spanId=7929822056569588882)
                 ],
                 logs=[
                     jaeger.Log(
-                        timestamp=1502820146000,
+                        timestamp=1502820146071158,
                         fields=[
                             jaeger.Tag(
                                 key='annotation_bool',
@@ -328,11 +366,33 @@ class TestJaegerExporter(unittest.TestCase):
                 ]),
             jaeger.Span(
                 operationName="test2",
-                traceIdHigh=1846305573,
-                traceIdLow=2112048274,
+                traceIdHigh=7929822056569588882,
+                traceIdLow=-4638992594902767826,
                 spanId=7929822056569588882,
-                startTime=1502820146000,
-                duration=10000)
+                parentSpanId=0,
+                startTime=1502820146071158,
+                duration=10000000,
+                logs=[
+                    jaeger.Log(
+                        timestamp=1502820146071158,
+                        fields=[
+                            jaeger.Tag(
+                                key='message',
+                                vType=jaeger.TagType.STRING,
+                                vStr='First Annotation')
+                        ])
+                ]
+            ),
+            jaeger.Span(
+                operationName="test3",
+                traceIdHigh=7929822056569588882,
+                traceIdLow=-4638992594902767826,
+                spanId=7929822056569588882,
+                parentSpanId=0,
+                startTime=1502820146071158,
+                duration=10000000,
+                logs=[]
+            )
         ]
 
         spans_json = [span.format_span_json() for span in spans]
@@ -367,11 +427,14 @@ class TestJaegerExporter(unittest.TestCase):
         self.assertEqual(span.get('flags'), expected_span.get('flags'))
         self.assertEqual(spans_json[1], expected_spans_json[1])
 
+        self.assertEqual(spans_json[2], expected_spans_json[2])
+
     def test_convert_hex_str_to_int(self):
         invalid_id = '990c63257de34c92'
         jaeger_exporter._convert_hex_str_to_int(invalid_id)
         valid_id = '290c63257de34c92'
         jaeger_exporter._convert_hex_str_to_int(valid_id)
+        self.assertIsNone(jaeger_exporter._convert_hex_str_to_int(None))
 
 
 class MockBatch(object):

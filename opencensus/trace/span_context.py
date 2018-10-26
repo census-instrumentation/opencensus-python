@@ -22,7 +22,6 @@ from opencensus.trace import trace_options
 
 _INVALID_TRACE_ID = '0' * 32
 INVALID_SPAN_ID = '0' * 16
-_TRACE_HEADER_KEY = 'X_CLOUD_TRACE_CONTEXT'
 
 TRACE_ID_PATTERN = re.compile('[0-9a-f]{32}?')
 SPAN_ID_PATTERN = re.compile('[0-9a-f]{16}?')
@@ -59,6 +58,7 @@ class SpanContext(object):
             trace_id=None,
             span_id=None,
             trace_options=None,
+            tracestate=None,
             from_header=False):
         if trace_id is None:
             trace_id = generate_trace_id()
@@ -70,21 +70,22 @@ class SpanContext(object):
         self.trace_id = self._check_trace_id(trace_id)
         self.span_id = self._check_span_id(span_id)
         self.trace_options = trace_options
+        self.tracestate = tracestate
 
-    def __str__(self):
-        """Returns a string form of the SpanContext. This is the format of
-        the Trace Context Header and should be forwarded to downstream
-        requests as the X-Cloud-Trace-Context header.
+    def __repr__(self):
+        """Returns a string form of the SpanContext.
 
         :rtype: str
         :returns: String form of the SpanContext.
         """
-        enabled = self.trace_options.enabled
-        header = '{}/{};o={}'.format(
+        fmt = '{}(trace_id={}, span_id={}, trace_options={}, tracestate={})'
+        return fmt.format(
+            type(self).__name__,
             self.trace_id,
             self.span_id,
-            int(enabled))
-        return header
+            self.trace_options,
+            self.tracestate,
+        )
 
     def _check_span_id(self, span_id):
         """Check the format of the span_id to ensure it is 16-character hex

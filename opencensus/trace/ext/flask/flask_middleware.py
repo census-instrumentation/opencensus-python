@@ -21,6 +21,7 @@ from google.rpc import code_pb2
 
 from opencensus.trace import attributes_helper
 from opencensus.trace import execution_context
+from opencensus.trace import span as span_module
 from opencensus.trace import stack_trace
 from opencensus.trace import status
 from opencensus.trace import tracer as tracer_module
@@ -30,9 +31,6 @@ from opencensus.trace.ext import utils
 from opencensus.trace.propagation import google_cloud_format
 from opencensus.trace.samplers import always_on, probability
 
-
-_FLASK_TRACE_HEADER = 'X_CLOUD_TRACE_CONTEXT'
-
 HTTP_METHOD = attributes_helper.COMMON_ATTRIBUTES['HTTP_METHOD']
 HTTP_URL = attributes_helper.COMMON_ATTRIBUTES['HTTP_URL']
 HTTP_STATUS_CODE = attributes_helper.COMMON_ATTRIBUTES['HTTP_STATUS_CODE']
@@ -41,9 +39,12 @@ BLACKLIST_PATHS = 'BLACKLIST_PATHS'
 GCP_EXPORTER_PROJECT = 'GCP_EXPORTER_PROJECT'
 SAMPLING_RATE = 'SAMPLING_RATE'
 TRANSPORT = 'TRANSPORT'
+SERVICE_NAME = 'SERVICE_NAME'
 ZIPKIN_EXPORTER_SERVICE_NAME = 'ZIPKIN_EXPORTER_SERVICE_NAME'
 ZIPKIN_EXPORTER_HOST_NAME = 'ZIPKIN_EXPORTER_HOST_NAME'
 ZIPKIN_EXPORTER_PORT = 'ZIPKIN_EXPORTER_PORT'
+ZIPKIN_EXPORTER_PROTOCOL = 'ZIPKIN_EXPORTER_PROTOCOL'
+OCAGENT_TRACE_EXPORTER_ENDPOINT = 'OCAGENT_TRACE_EXPORTER_ENDPOINT'
 
 log = logging.getLogger(__name__)
 
@@ -80,6 +81,7 @@ class FlaskMiddleware(object):
                        :class:`.TextFormatPropagator` and
                        :class:`.TraceContextPropagator`.
     """
+
     def __init__(self, app=None, blacklist_paths=None, sampler=None,
                  exporter=None, propagator=None):
         self.app = app
@@ -134,16 +136,31 @@ class FlaskMiddleware(object):
                 project_id=_project_id,
                 transport=transport)
         elif self.exporter.__name__ == 'ZipkinExporter':
-            _zipkin_service_name = params.get(
-                ZIPKIN_EXPORTER_SERVICE_NAME, 'my_service')
+            _service_name = self._get_service_name(params)
             _zipkin_host_name = params.get(
                 ZIPKIN_EXPORTER_HOST_NAME, 'localhost')
             _zipkin_port = params.get(
                 ZIPKIN_EXPORTER_PORT, 9411)
+            _zipkin_protocol = params.get(
+                ZIPKIN_EXPORTER_PROTOCOL, 'http')
             self.exporter = self.exporter(
-                service_name=_zipkin_service_name,
+                service_name=_service_name,
                 host_name=_zipkin_host_name,
                 port=_zipkin_port,
+                protocol=_zipkin_protocol,
+                transport=transport)
+        elif self.exporter.__name__ == 'TraceExporter':
+            _service_name = self._get_service_name(params)
+            _endpoint = params.get(
+                OCAGENT_TRACE_EXPORTER_ENDPOINT, None)
+            self.exporter = self.exporter(
+                service_name=_service_name,
+                endpoint=_endpoint,
+                transport=transport)
+        elif self.exporter.__name__ == 'JaegerExporter':
+            _service_name = self._get_service_name(params)
+            self.exporter = self.exporter(
+                service_name=_service_name,
                 transport=transport)
         else:
             self.exporter = self.exporter(transport=transport)
@@ -169,8 +186,7 @@ class FlaskMiddleware(object):
             return
 
         try:
-            header = get_flask_header()
-            span_context = self.propagator.from_header(header)
+            span_context = self.propagator.from_headers(flask.request.headers)
 
             tracer = tracer_module.Tracer(
                 span_context=span_context,
@@ -179,7 +195,7 @@ class FlaskMiddleware(object):
                 propagator=self.propagator)
 
             span = tracer.start_span()
-
+            span.span_kind = span_module.SpanKind.SERVER
             # Set the span name as the name of the current module name
             span.name = '[{}]{}'.format(
                 flask.request.method,
@@ -237,17 +253,12 @@ class FlaskMiddleware(object):
         except Exception:  # pragma: NO COVER
             log.error('Failed to trace request', exc_info=True)
 
+    def _get_service_name(self, params):
+        _service_name = params.get(
+            SERVICE_NAME, None)
 
-def get_flask_header():
-    """Get trace context header from flask request headers.
+        if _service_name is None:
+            _service_name = params.get(
+                ZIPKIN_EXPORTER_SERVICE_NAME, 'my_service')
 
-    :rtype: str
-    :returns: Trace context header in HTTP request headers.
-    """
-    header = flask.request.headers.get(_FLASK_TRACE_HEADER)
-
-    # In case the header is unicode, convert it to string.
-    if header is not None:
-        header = str(header.encode('utf-8'))
-
-    return header
+        return _service_name

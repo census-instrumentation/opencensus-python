@@ -18,8 +18,9 @@ import logging
 from opencensus.trace.ext import utils
 from opencensus.trace.ext.django.config import (settings, convert_to_import)
 from opencensus.trace import attributes_helper
-from opencensus.trace import tracer as tracer_module
 from opencensus.trace import execution_context
+from opencensus.trace import span as span_module
+from opencensus.trace import tracer as tracer_module
 from opencensus.trace.samplers import probability
 
 try:
@@ -32,19 +33,33 @@ HTTP_URL = attributes_helper.COMMON_ATTRIBUTES['HTTP_URL']
 HTTP_STATUS_CODE = attributes_helper.COMMON_ATTRIBUTES['HTTP_STATUS_CODE']
 
 REQUEST_THREAD_LOCAL_KEY = 'django_request'
-
-_DJANGO_TRACE_HEADER = 'HTTP_X_CLOUD_TRACE_CONTEXT'
+SPAN_THREAD_LOCAL_KEY = 'django_span'
 
 BLACKLIST_PATHS = 'BLACKLIST_PATHS'
 GCP_EXPORTER_PROJECT = 'GCP_EXPORTER_PROJECT'
 SAMPLING_RATE = 'SAMPLING_RATE'
 TRANSPORT = 'TRANSPORT'
+SERVICE_NAME = 'SERVICE_NAME'
 ZIPKIN_EXPORTER_SERVICE_NAME = 'ZIPKIN_EXPORTER_SERVICE_NAME'
 ZIPKIN_EXPORTER_HOST_NAME = 'ZIPKIN_EXPORTER_HOST_NAME'
 ZIPKIN_EXPORTER_PORT = 'ZIPKIN_EXPORTER_PORT'
-
+ZIPKIN_EXPORTER_PROTOCOL = 'ZIPKIN_EXPORTER_PROTOCOL'
+OCAGENT_TRACE_EXPORTER_ENDPOINT = 'OCAGENT_TRACE_EXPORTER_ENDPOINT'
 
 log = logging.getLogger(__name__)
+
+
+class _DjangoMetaWrapper(object):
+    """
+    Wrapper class which takes HTTP header name and retrieve the value from
+    Django request.META
+    """
+
+    def __init__(self, meta=None):
+        self.meta = meta or _get_django_request().META
+
+    def get(self, key):
+        return self.meta.get('HTTP_' + key.upper().replace('-', '_'))
 
 
 def _get_django_request():
@@ -56,12 +71,21 @@ def _get_django_request():
     return execution_context.get_opencensus_attr(REQUEST_THREAD_LOCAL_KEY)
 
 
+def _get_django_span():
+    """Get Django span from thread local.
+
+    :rtype: str
+    :returns: Django request.
+    """
+    return execution_context.get_opencensus_attr(SPAN_THREAD_LOCAL_KEY)
+
+
 def _get_current_tracer():
     """Get the current request tracer."""
     return execution_context.get_opencensus_tracer()
 
 
-def _set_django_attributes(tracer, request):
+def _set_django_attributes(span, request):
     """Set the django related attributes."""
     django_user = getattr(request, 'user', None)
 
@@ -73,23 +97,10 @@ def _set_django_attributes(tracer, request):
 
     # User id is the django autofield for User model as the primary key
     if user_id is not None:
-        tracer.add_attribute_to_current_span('/django/user/id', str(user_id))
+        span.add_attribute('django.user.id', str(user_id))
 
     if user_name is not None:
-        tracer.add_attribute_to_current_span('/django/user/name', user_name)
-
-
-def get_django_header():
-    """Get trace context header from django request headers.
-
-    :rtype: str
-    :returns: Trace context header in HTTP request headers.
-    """
-    request = _get_django_request()
-
-    header = request.META.get(_DJANGO_TRACE_HEADER)
-
-    return header
+        span.add_attribute('django.user.name', user_name)
 
 
 class OpencensusMiddleware(MiddlewareMixin):
@@ -121,16 +132,31 @@ class OpencensusMiddleware(MiddlewareMixin):
                 project_id=_project_id,
                 transport=transport)
         elif self._exporter.__name__ == 'ZipkinExporter':
-            _zipkin_service_name = settings.params.get(
-                ZIPKIN_EXPORTER_SERVICE_NAME, 'my_service')
+            _service_name = self._get_service_name(settings.params)
             _zipkin_host_name = settings.params.get(
                 ZIPKIN_EXPORTER_HOST_NAME, 'localhost')
             _zipkin_port = settings.params.get(
                 ZIPKIN_EXPORTER_PORT, 9411)
+            _zipkin_protocol = settings.params.get(
+                ZIPKIN_EXPORTER_PROTOCOL, 'http')
             self.exporter = self._exporter(
-                service_name=_zipkin_service_name,
+                service_name=_service_name,
                 host_name=_zipkin_host_name,
                 port=_zipkin_port,
+                protocol=_zipkin_protocol,
+                transport=transport)
+        elif self._exporter.__name__ == 'TraceExporter':
+            _service_name = self._get_service_name(settings.params)
+            _endpoint = settings.params.get(
+                OCAGENT_TRACE_EXPORTER_ENDPOINT, None)
+            self.exporter = self._exporter(
+                service_name=_service_name,
+                endpoint=_endpoint,
+                transport=transport)
+        elif self._exporter.__name__ == 'JaegerExporter':
+            _service_name = self._get_service_name(settings.params)
+            self.exporter = self._exporter(
+                service_name=_service_name,
                 transport=transport)
         else:
             self.exporter = self._exporter(transport=transport)
@@ -155,8 +181,8 @@ class OpencensusMiddleware(MiddlewareMixin):
 
         try:
             # Start tracing this request
-            header = get_django_header()
-            span_context = self.propagator.from_header(header)
+            span_context = self.propagator.from_headers(
+                _DjangoMetaWrapper(_get_django_request().META))
 
             # Reload the tracer with the new span context
             tracer = tracer_module.Tracer(
@@ -166,13 +192,24 @@ class OpencensusMiddleware(MiddlewareMixin):
                 propagator=self.propagator)
 
             # Span name is being set at process_view
-            tracer.start_span()
+            span = tracer.start_span()
+            span.span_kind = span_module.SpanKind.SERVER
             tracer.add_attribute_to_current_span(
                 attribute_key=HTTP_METHOD,
                 attribute_value=request.method)
             tracer.add_attribute_to_current_span(
                 attribute_key=HTTP_URL,
                 attribute_value=request.path)
+
+            # Add the span to thread local
+            # in some cases (exceptions, timeouts) currentspan in
+            # response event will be one of a child spans.
+            # let's keep reference to 'django' span and
+            # use it in response event
+            execution_context.set_opencensus_attr(
+                SPAN_THREAD_LOCAL_KEY,
+                span)
+
         except Exception:  # pragma: NO COVER
             log.error('Failed to trace request', exc_info=True)
 
@@ -180,6 +217,7 @@ class OpencensusMiddleware(MiddlewareMixin):
         """Process view is executed before the view function, here we get the
         function name add set it as the span name.
         """
+
         # Do not trace if the url is blacklisted
         if utils.disable_tracing_url(request.path, self._blacklist_paths):
             return
@@ -199,16 +237,27 @@ class OpencensusMiddleware(MiddlewareMixin):
             return response
 
         try:
-            tracer = _get_current_tracer()
-            tracer.add_attribute_to_current_span(
+            span = _get_django_span()
+            span.add_attribute(
                 attribute_key=HTTP_STATUS_CODE,
                 attribute_value=str(response.status_code))
 
-            _set_django_attributes(tracer, request)
+            _set_django_attributes(span, request)
 
+            tracer = _get_current_tracer()
             tracer.end_span()
             tracer.finish()
         except Exception:  # pragma: NO COVER
             log.error('Failed to trace request', exc_info=True)
         finally:
             return response
+
+    def _get_service_name(self, params):
+        _service_name = params.get(
+            SERVICE_NAME, None)
+
+        if _service_name is None:
+            _service_name = params.get(
+                ZIPKIN_EXPORTER_SERVICE_NAME, 'my_service')
+
+        return _service_name

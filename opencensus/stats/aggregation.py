@@ -17,18 +17,20 @@ from opencensus.stats import aggregation_data
 
 
 class Type(object):
-    """ The type of aggreation function used on a View.
+    """ The type of aggregation function used on a View.
 
     Attributes:
-      NONE (int): The aggreation type of the view is 'unknown'.
-      SUM (int): The aggreation type of the view is 'sum'.
-      COUNT (int): The aggreation type of the view is 'count'.
-      DISTRIBUTION (int): The aggreation type of the view is 'distribution'.
+      NONE (int): The aggregation type of the view is 'unknown'.
+      SUM (int): The aggregation type of the view is 'sum'.
+      COUNT (int): The aggregation type of the view is 'count'.
+      DISTRIBUTION (int): The aggregation type of the view is 'distribution'.
+      LASTVALUE (int): The aggregation type of the view is 'lastvalue'.
     """
     NONE = 0
     SUM = 1
     COUNT = 2
     DISTRIBUTION = 3
+    LASTVALUE = 4
 
 
 class BaseAggregation(object):
@@ -75,6 +77,7 @@ class SumAggregation(BaseAggregation):
         super(SumAggregation, self).__init__(aggregation_type=aggregation_type)
         self._sum = aggregation_data.SumAggregationDataFloat(
             sum_data=float(sum or 0))
+        self.aggregation_data = self._sum
 
     @property
     def sum(self):
@@ -97,6 +100,7 @@ class CountAggregation(BaseAggregation):
         super(CountAggregation, self).__init__(
             aggregation_type=aggregation_type)
         self._count = aggregation_data.CountAggregationData(count)
+        self.aggregation_data = self._count
 
     @property
     def count(self):
@@ -128,6 +132,8 @@ class DistributionAggregation(BaseAggregation):
             buckets=boundaries, aggregation_type=aggregation_type)
         self._boundaries = bucket_boundaries.BucketBoundaries(boundaries)
         self._distribution = distribution or {}
+        self.aggregation_data = aggregation_data.DistributionAggregationData(
+            0, 0, 0, 0, 0, None, boundaries)
 
     @property
     def boundaries(self):
@@ -138,3 +144,28 @@ class DistributionAggregation(BaseAggregation):
     def distribution(self):
         """The distribution of the current aggregation"""
         return self._distribution
+
+
+class LastValueAggregation(BaseAggregation):
+    """Describes that the data collected with this method will
+    overwrite the last recorded value
+
+    :type value: long
+    :param value: represents the value of this aggregation
+
+    :type aggregation_type: :class:`~opencensus.stats.aggregation.Type`
+    :param aggregation_type: represents the type of this aggregation
+
+    """
+    def __init__(self, value=0, aggregation_type=Type.LASTVALUE):
+        super(LastValueAggregation, self).__init__(
+            aggregation_type=aggregation_type)
+        self.aggregation_data = aggregation_data.LastValueAggregationData(
+                                                                value=value)
+        self._value = value
+
+    @property
+    def value(self):
+        """The current recorded value
+        """
+        return self._value

@@ -23,15 +23,18 @@ from google.rpc import code_pb2
 
 from opencensus.trace import execution_context
 from opencensus.trace import span_data
+from opencensus.trace import span as span_module
 from opencensus.trace import stack_trace
 from opencensus.trace import status
 from opencensus.trace.exporters import print_exporter, stackdriver_exporter, \
-    zipkin_exporter
+    zipkin_exporter, jaeger_exporter
+from opencensus.trace.exporters.ocagent import trace_exporter
 from opencensus.trace.ext.flask import flask_middleware
 from opencensus.trace.propagation import google_cloud_format
 from opencensus.trace.samplers import always_off, always_on, ProbabilitySampler
 from opencensus.trace.tracers import base
 from opencensus.trace.tracers import noop_tracer
+from opencensus.trace.blank_span import BlankSpan
 
 
 class TestFlaskMiddleware(unittest.TestCase):
@@ -116,6 +119,7 @@ class TestFlaskMiddleware(unittest.TestCase):
                 'ZIPKIN_EXPORTER_SERVICE_NAME': 'my_service',
                 'ZIPKIN_EXPORTER_HOST_NAME': 'localhost',
                 'ZIPKIN_EXPORTER_PORT': 9411,
+                'ZIPKIN_EXPORTER_PROTOCOL': 'http',
             },
         }
 
@@ -133,6 +137,10 @@ class TestFlaskMiddleware(unittest.TestCase):
         self.assertTrue(app.after_request.called)
 
     def test_init_app_config_zipkin_exporter(self):
+
+        service_name = 'foo'
+        host_name = 'localhost'
+        port = 1234
         app = mock.Mock()
         app.config = {
             'OPENCENSUS_TRACE': {
@@ -141,9 +149,10 @@ class TestFlaskMiddleware(unittest.TestCase):
                 'PROPAGATOR': google_cloud_format.GoogleCloudFormatPropagator,
             },
             'OPENCENSUS_TRACE_PARAMS': {
-                'ZIPKIN_EXPORTER_SERVICE_NAME': 'my_service',
-                'ZIPKIN_EXPORTER_HOST_NAME': 'localhost',
-                'ZIPKIN_EXPORTER_PORT': 9411,
+                'ZIPKIN_EXPORTER_SERVICE_NAME': service_name,
+                'ZIPKIN_EXPORTER_HOST_NAME': host_name,
+                'ZIPKIN_EXPORTER_PORT': port,
+                'ZIPKIN_EXPORTER_PROTOCOL': 'http',
             },
         }
 
@@ -154,10 +163,126 @@ class TestFlaskMiddleware(unittest.TestCase):
         self.assertTrue(app.before_request.called)
         self.assertTrue(app.after_request.called)
 
+        assert isinstance(
+            middleware.exporter, zipkin_exporter.ZipkinExporter)
+        self.assertEqual(middleware.exporter.service_name, service_name)
+        self.assertEqual(middleware.exporter.host_name, host_name)
+        self.assertEqual(middleware.exporter.port, port)
+
+    def test_init_app_config_zipkin_exporter_service_name_param(self):
+
+        service_name = 'foo'
+        host_name = 'localhost'
+        port = 1234
+        app = mock.Mock()
+        app.config = {
+            'OPENCENSUS_TRACE': {
+                'SAMPLER': ProbabilitySampler,
+                'EXPORTER': zipkin_exporter.ZipkinExporter,
+                'PROPAGATOR': google_cloud_format.GoogleCloudFormatPropagator,
+            },
+            'OPENCENSUS_TRACE_PARAMS': {
+                'SERVICE_NAME': service_name,
+                'ZIPKIN_EXPORTER_HOST_NAME': host_name,
+                'ZIPKIN_EXPORTER_PORT': port,
+                'ZIPKIN_EXPORTER_PROTOCOL': 'http',
+            },
+        }
+
+        middleware = flask_middleware.FlaskMiddleware()
+        middleware.init_app(app)
+
+        self.assertIs(middleware.app, app)
+        self.assertTrue(app.before_request.called)
+        self.assertTrue(app.after_request.called)
+
+        assert isinstance(
+            middleware.exporter, zipkin_exporter.ZipkinExporter)
+        self.assertEqual(middleware.exporter.service_name, service_name)
+        self.assertEqual(middleware.exporter.host_name, host_name)
+        self.assertEqual(middleware.exporter.port, port)
+
+    def test_init_app_config_jaeger_exporter(self):
+        service_name = 'foo'
+        app = mock.Mock()
+        app.config = {
+            'OPENCENSUS_TRACE': {
+                'SAMPLER': ProbabilitySampler,
+                'EXPORTER': jaeger_exporter.JaegerExporter,
+                'PROPAGATOR': google_cloud_format.GoogleCloudFormatPropagator,
+            },
+            'OPENCENSUS_TRACE_PARAMS': {
+                'SERVICE_NAME': service_name,
+            },
+        }
+
+        middleware = flask_middleware.FlaskMiddleware()
+        middleware.init_app(app)
+
+        self.assertIs(middleware.app, app)
+        self.assertTrue(app.before_request.called)
+        self.assertTrue(app.after_request.called)
+
+        assert isinstance(
+            middleware.exporter, jaeger_exporter.JaegerExporter)
+        self.assertEqual(middleware.exporter.service_name, service_name)
+
+    def test_init_app_config_ocagent_trace_exporter(self):
+        app = mock.Mock()
+        app.config = {
+            'OPENCENSUS_TRACE': {
+                'SAMPLER': ProbabilitySampler,
+                'EXPORTER': trace_exporter.TraceExporter,
+                'PROPAGATOR': google_cloud_format.GoogleCloudFormatPropagator,
+            },
+            'OPENCENSUS_TRACE_PARAMS': {
+                'SERVICE_NAME': 'foo',
+                'OCAGENT_TRACE_EXPORTER_ENDPOINT': 'localhost:50001'
+            }
+        }
+
+        middleware = flask_middleware.FlaskMiddleware()
+        middleware.init_app(app)
+
+        self.assertIs(middleware.app, app)
+        assert isinstance(
+            middleware.exporter, trace_exporter.TraceExporter)
+        self.assertEqual(middleware.exporter.service_name, 'foo')
+        self.assertEqual(middleware.exporter.endpoint, 'localhost:50001')
+
+        self.assertTrue(app.before_request.called)
+        self.assertTrue(app.after_request.called)
+
+    def test_init_app_config_ocagent_trace_exporter_default_endpoint(self):
+        app = mock.Mock()
+        app.config = {
+            'OPENCENSUS_TRACE': {
+                'SAMPLER': ProbabilitySampler,
+                'EXPORTER': trace_exporter.TraceExporter,
+                'PROPAGATOR': google_cloud_format.GoogleCloudFormatPropagator,
+            },
+            'OPENCENSUS_TRACE_PARAMS': {
+                'SERVICE_NAME': 'foo'
+            }
+        }
+
+        middleware = flask_middleware.FlaskMiddleware()
+        middleware.init_app(app)
+
+        self.assertIs(middleware.app, app)
+        assert isinstance(
+            middleware.exporter, trace_exporter.TraceExporter)
+        self.assertEqual(middleware.exporter.service_name, 'foo')
+        self.assertEqual(middleware.exporter.endpoint,
+                         trace_exporter.DEFAULT_ENDPOINT)
+
+        self.assertTrue(app.before_request.called)
+        self.assertTrue(app.after_request.called)
+
     def test__before_request(self):
         from opencensus.trace import execution_context
 
-        flask_trace_header = 'X_CLOUD_TRACE_CONTEXT'
+        flask_trace_header = 'X-Cloud-Trace-Context'
         trace_id = '2dd43a1d6b2549c6bc2a1a54c2fc0b05'
         span_id = '6e0c63257de34c92'
         flask_trace_id = '{}/{}'.format(trace_id, span_id)
@@ -176,10 +301,11 @@ class TestFlaskMiddleware(unittest.TestCase):
             span = tracer.current_span()
 
             expected_attributes = {
-                '/http/url': u'http://localhost/',
-                '/http/method': 'GET',
+                'http.url': u'http://localhost/',
+                'http.method': 'GET',
             }
 
+            self.assertEqual(span.span_kind, span_module.SpanKind.SERVER)
             self.assertEqual(span.attributes, expected_attributes)
             self.assertEqual(span.parent_span.span_id, span_id)
 
@@ -187,7 +313,7 @@ class TestFlaskMiddleware(unittest.TestCase):
             self.assertEqual(span_context.trace_id, trace_id)
 
     def test__before_request_blacklist(self):
-        flask_trace_header = 'X_CLOUD_TRACE_CONTEXT'
+        flask_trace_header = 'X-Cloud-Trace-Context'
         trace_id = '2dd43a1d6b2549c6bc2a1a54c2fc0b05'
         span_id = '6e0c63257de34c92'
         flask_trace_id = '{}/{}'.format(trace_id, span_id)
@@ -205,7 +331,7 @@ class TestFlaskMiddleware(unittest.TestCase):
 
             span = tracer.current_span()
 
-            assert isinstance(span, base.NullContextManager)
+            assert isinstance(span, BlankSpan)
 
     def test_header_encoding(self):
         # The test is for detecting the encoding compatibility issue in
@@ -214,7 +340,7 @@ class TestFlaskMiddleware(unittest.TestCase):
         # in SpanContext because it cannot match the pattern for trace_id,
         # And a new trace_id will generate for the context.
 
-        flask_trace_header = 'X_CLOUD_TRACE_CONTEXT'
+        flask_trace_header = 'X-Cloud-Trace-Context'
         trace_id = "你好"
         span_id = '6e0c63257de34c92'
         flask_trace_id = '{}/{}'.format(trace_id, span_id)
@@ -233,8 +359,8 @@ class TestFlaskMiddleware(unittest.TestCase):
             span = tracer.current_span()
 
             expected_attributes = {
-                '/http/url': u'http://localhost/',
-                '/http/method': 'GET',
+                'http.url': u'http://localhost/',
+                'http.method': 'GET',
             }
 
             self.assertEqual(span.attributes, expected_attributes)
@@ -257,15 +383,15 @@ class TestFlaskMiddleware(unittest.TestCase):
             span = tracer.current_span()
 
             expected_attributes = {
-                '/http/url': u'http://localhost/',
-                '/http/method': 'GET',
+                'http.url': u'http://localhost/',
+                'http.method': 'GET',
             }
 
             self.assertEqual(span.attributes, expected_attributes)
             assert isinstance(span.parent_span, base.NullContextManager)
 
     def test__after_request_not_sampled(self):
-        flask_trace_header = 'X_CLOUD_TRACE_CONTEXT'
+        flask_trace_header = 'X-Cloud-Trace-Context'
         trace_id = '2dd43a1d6b2549c6bc2a1a54c2fc0b05'
         span_id = '6e0c63257de34c92'
         flask_trace_id = '{}/{}'.format(trace_id, span_id)
@@ -281,7 +407,7 @@ class TestFlaskMiddleware(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test__after_request_sampled(self):
-        flask_trace_header = 'X_CLOUD_TRACE_CONTEXT'
+        flask_trace_header = 'X-Cloud-Trace-Context'
         trace_id = '2dd43a1d6b2549c6bc2a1a54c2fc0b05'
         span_id = '6e0c63257de34c92'
         flask_trace_id = '{}/{}'.format(trace_id, span_id)
@@ -296,7 +422,7 @@ class TestFlaskMiddleware(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test__after_request_blacklist(self):
-        flask_trace_header = 'X_CLOUD_TRACE_CONTEXT'
+        flask_trace_header = 'X-Cloud-Trace-Context'
         trace_id = '2dd43a1d6b2549c6bc2a1a54c2fc0b05'
         span_id = '6e0c63257de34c92'
         flask_trace_id = '{}/{}'.format(trace_id, span_id)

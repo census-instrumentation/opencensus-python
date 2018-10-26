@@ -14,8 +14,6 @@
 
 """Export the spans data to Jaeger."""
 
-import calendar
-import datetime
 import logging
 import socket
 
@@ -26,12 +24,12 @@ from opencensus.trace import link as link_module
 from opencensus.trace.exporters import base
 from opencensus.trace.exporters.gen.jaeger import agent, jaeger
 from opencensus.trace.exporters.transports import sync
+from opencensus.trace.utils import timestamp_to_microseconds
 
 DEFAULT_HOST_NAME = 'localhost'
 DEFAULT_AGENT_PORT = 6831
 DEFAULT_ENDPOINT = '/api/traces?format=jaeger.thrift'
 
-ISO_DATETIME_REGEX = '%Y-%m-%dT%H:%M:%S.%fZ'
 UDP_PACKET_MAX_LENGTH = 65000
 
 logging = logging.getLogger(__name__)
@@ -116,11 +114,10 @@ class JaegerExporter(base.Exporter):
         if self.host_name is None or self.port is None:
             return None
 
-        thrift_url = 'http://{}:{}{}{}'.format(
+        thrift_url = 'http://{}:{}{}'.format(
             self.host_name,
             self.port,
-            self.endpoint,
-            DEFAULT_ENDPOINT)
+            self.endpoint or DEFAULT_ENDPOINT)
 
         auth = None
         if self.username is not None and self.password is not None:
@@ -176,15 +173,9 @@ class JaegerExporter(base.Exporter):
         jaeger_spans = []
 
         for span in span_datas:
-            start_datetime = datetime.datetime.strptime(
-                span.start_time, ISO_DATETIME_REGEX)
-            start_microsec = calendar.timegm(start_datetime.timetuple()) * 1000
-
-            end_datetime = datetime.datetime.strptime(
-                span.end_time, ISO_DATETIME_REGEX)
-            end_microsec = calendar.timegm(end_datetime.timetuple()) * 1000
-
-            duration_microsec = end_microsec - start_microsec
+            start_timestamp_ms = timestamp_to_microseconds(span.start_time)
+            end_timestamp_ms = timestamp_to_microseconds(span.end_time)
+            duration_ms = end_timestamp_ms - start_timestamp_ms
 
             tags = _extract_tags(span.attributes)
 
@@ -212,17 +203,17 @@ class JaegerExporter(base.Exporter):
             parent_span_id = span.parent_span_id
 
             jaeger_span = jaeger.Span(
-                traceIdHigh=_convert_hex_str_to_int(trace_id[0:8]),
-                traceIdLow=_convert_hex_str_to_int(trace_id[8:16]),
+                traceIdHigh=_convert_hex_str_to_int(trace_id[0:16]),
+                traceIdLow=_convert_hex_str_to_int(trace_id[16:32]),
                 spanId=_convert_hex_str_to_int(span_id),
                 operationName=span.name,
-                startTime=int(round(start_microsec)),
-                duration=int(round(duration_microsec)),
+                startTime=int(round(start_timestamp_ms)),
+                duration=int(round(duration_ms)),
                 tags=tags,
                 logs=logs,
                 references=refs,
                 flags=flags,
-                parentSpanId=_convert_hex_str_to_int(parent_span_id))
+                parentSpanId=_convert_hex_str_to_int(parent_span_id or '0'))
 
             jaeger_spans.append(jaeger_span)
 
@@ -238,8 +229,8 @@ def _extract_refs_from_span(span):
         trace_id = link.trace_id
         refs.append(jaeger.SpanRef(
             refType=_convert_reftype_to_jaeger_reftype(link.type),
-            traceIdHigh=_convert_hex_str_to_int(trace_id[0:8]),
-            traceIdLow=_convert_hex_str_to_int(trace_id[8:16]),
+            traceIdHigh=_convert_hex_str_to_int(trace_id[0:16]),
+            traceIdLow=_convert_hex_str_to_int(trace_id[16:32]),
             spanId=_convert_hex_str_to_int(link.span_id)))
     return refs
 
@@ -274,24 +265,27 @@ def _extract_logs_from_span(span):
     logs = []
     for time_event in span.time_events:
         annotation = time_event.annotation
-        fields = _extract_tags(annotation.attributes)
+        if not annotation:
+            continue
+
+        fields = []
+        if annotation.attributes is not None:
+            fields = _extract_tags(annotation.attributes.attributes)
 
         fields.append(jaeger.Tag(
             key='message',
             vType=jaeger.TagType.STRING,
             vStr=annotation.description))
 
-        event_time = datetime.datetime.strptime(
-            time_event.timestamp, ISO_DATETIME_REGEX)
-        timestamp = calendar.timegm(event_time.timetuple()) * 1000
-
-        logs.append(jaeger.Log(timestamp=timestamp, fields=fields))
+        event_timestamp = timestamp_to_microseconds(time_event.timestamp)
+        logs.append(jaeger.Log(timestamp=int(round(event_timestamp)),
+                               fields=fields))
     return logs
 
 
 def _extract_tags(attr):
     if attr is None:
-        return None
+        return []
     tags = []
     for attribute_key, attribute_value in attr.items():
         tag = _convert_attribute_to_tag(attribute_key, attribute_value)
