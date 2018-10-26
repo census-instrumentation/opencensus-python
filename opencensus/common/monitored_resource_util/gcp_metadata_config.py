@@ -95,6 +95,9 @@ class GcpMetadataConfig(object):
         if instance_id is not None:
             cls.is_running = True
 
+            if isinstance(instance_id, bytes):
+                instance_id = instance_id.decode('utf-8')
+
             gcp_metadata_map['instance_id'] = instance_id
 
             attributes = _GCE_ATTRIBUTES
