@@ -37,8 +37,9 @@ def trace_integration(tracer=None):
     log.info('Integrated module: {}'.format(MODULE_NAME))
 
     if tracer is not None:
-        # The execution_context tracer should never be None - if it has not been set it returns a no-op tracer.
-        # Most code in this library does not handle None being used in the execution context.
+        # The execution_context tracer should never be None - if it has not
+        # been set it returns a no-op tracer. Most code in this library does
+        # not handle None being used in the execution context.
         execution_context.set_opencensus_tracer(tracer)
 
     # Wrap the requests functions
