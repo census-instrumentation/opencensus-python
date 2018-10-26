@@ -95,9 +95,6 @@ class GcpMetadataConfig(object):
         if instance_id is not None:
             cls.is_running = True
 
-            if isinstance(instance_id, bytes):
-                instance_id = instance_id.decode('utf-8')
-
             gcp_metadata_map['instance_id'] = instance_id
 
             attributes = _GCE_ATTRIBUTES
@@ -109,12 +106,6 @@ class GcpMetadataConfig(object):
                 if attribute_key not in gcp_metadata_map:
                     attribute_value = cls._get_attribute(attribute_key)
                     if attribute_value is not None:
-                        if isinstance(attribute_value, bytes):
-                            # At least in python3, bytes are are returned from
-                            # urllib (although the response is text), convert
-                            # to a normal string:
-                            attribute_value = attribute_value.decode('utf-8')
-
                         gcp_metadata_map[attribute_key] = attribute_value
 
         cls.inited = True
@@ -157,5 +148,11 @@ class GcpMetadataConfig(object):
         attribute_value = get_request(_GCP_METADATA_URI +
                                       _GKE_ATTRIBUTES[attribute_key],
                                       _GCP_METADATA_URI_HEADER)
+
+        if attribute_value is not None and isinstance(attribute_value, bytes):
+            # At least in python3, bytes are are returned from
+            # urllib (although the response is text), convert
+            # to a normal string:
+            attribute_value = attribute_value.decode('utf-8')
 
         return attribute_value
