@@ -106,6 +106,12 @@ class GcpMetadataConfig(object):
                 if attribute_key not in gcp_metadata_map:
                     attribute_value = cls._get_attribute(attribute_key)
                     if attribute_value is not None:
+                        if isinstance(attribute_value, bytes):
+                            # At least in python3, bytes are are returned from
+                            # urllib (although the response is text), convert
+                            # to a normal string:
+                            attribute_value = attribute_value.decode('utf-8')
+
                         gcp_metadata_map[attribute_key] = attribute_value
 
         cls.inited = True

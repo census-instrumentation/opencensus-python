@@ -36,7 +36,10 @@ def trace_integration(tracer=None):
     """Wrap the requests library to trace it."""
     log.info('Integrated module: {}'.format(MODULE_NAME))
 
-    execution_context.set_opencensus_tracer(tracer)
+    if tracer is not None:
+        # The execution_context tracer should never be None - if it has not been set it returns a no-op tracer.
+        # Most code in this library does not handle None being used in the execution context.
+        execution_context.set_opencensus_tracer(tracer)
 
     # Wrap the requests functions
     for func in REQUESTS_WRAP_METHODS:
