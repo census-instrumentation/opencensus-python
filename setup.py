@@ -25,9 +25,10 @@ install_requires = [
     'google-api-core >= 1.0.0, < 2.0.0',
 ]
 
+exec(open("opencensus/__version__.py").read())
 setup(
     name='opencensus',
-    version='0.1.9',
+    version=__version__,  # noqa
     author='OpenCensus Authors',
     author_email='census-developers@googlegroups.com',
     classifiers=[

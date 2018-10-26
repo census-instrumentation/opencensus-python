@@ -12,23 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
 from collections import defaultdict
+import os
+
 from google.cloud.trace.client import Client
 
+from opencensus.__version__ import __version__
+from opencensus.common.monitored_resource_util.monitored_resource_util \
+    import MonitoredResourceUtil
 from opencensus.trace import attributes_helper
 from opencensus.trace import span_data
 from opencensus.trace.attributes import Attributes
 from opencensus.trace.exporters import base
 from opencensus.trace.exporters.transports import sync
-from opencensus.common.monitored_resource_util.monitored_resource_util \
-    import MonitoredResourceUtil
 
-# OpenCensus Version
-VERSION = '0.1.9'
 
 # Agent
-AGENT = 'opencensus-python [{}]'.format(VERSION)
+AGENT = 'opencensus-python [{}]'.format(__version__)
 
 # Environment variable set in App Engine when vm:true is set.
 _APPENGINE_FLEXIBLE_ENV_VM = 'GAE_APPENGINE_HOSTNAME'
