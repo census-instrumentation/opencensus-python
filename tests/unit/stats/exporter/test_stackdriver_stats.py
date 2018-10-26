@@ -12,15 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import unittest
-import mock
 from datetime import datetime
+import unittest
+
+import mock
+
+from opencensus.__version__ import __version__
 from opencensus.stats import aggregation as aggregation_module
-from opencensus.stats.exporters import stackdriver_exporter as stackdriver
 from opencensus.stats import measure as measure_module
 from opencensus.stats import stats as stats_module
 from opencensus.stats import view as view_module
 from opencensus.stats import view_data as view_data_module
+from opencensus.stats.exporters import stackdriver_exporter as stackdriver
 from opencensus.tags import tag_key as tag_key_module
 from opencensus.tags import tag_map as tag_map_module
 from opencensus.tags import tag_value as tag_value_module
@@ -49,11 +52,8 @@ VIDEO_SIZE_VIEW = view_module.View(VIDEO_SIZE_VIEW_NAME,
 
 
 class _Client(object):
-    def __init__(self, project=None):
-        if project is None:
-            project = 'PROJECT'
-
-        self.project = project
+    def __init__(self, client_info=None):
+        self.client_info = client_info
 
 
 class TestOptions(unittest.TestCase):
@@ -107,6 +107,25 @@ class TestStackdriverStatsExporter(unittest.TestCase):
             exporter_created = stackdriver.new_stats_exporter(stackdriver.Options(project_id=1))
 
         self.assertIsInstance(exporter_created, stackdriver.StackdriverStatsExporter)
+
+    def test_client_info_user_agent(self):
+        """Check that the monitoring client sets a user agent.
+
+        The user agent should include the library version. Note that this
+        assumes MetricServiceClient calls ClientInfo.to_user_agent to attach
+        the user agent as metadata to metric service API calls.
+        """
+        patch_client = mock.patch(
+            'opencensus.stats.exporters.stackdriver_exporter.monitoring_v3'
+            '.MetricServiceClient',
+            _Client)
+
+        with patch_client:
+            exporter = stackdriver.new_stats_exporter(
+                stackdriver.Options(project_id=1))
+
+        self.assertIn("gccl/{}".format(__version__),
+                      exporter.client.client_info.to_user_agent())
 
     def test_as_float(self):
         value = 1.5

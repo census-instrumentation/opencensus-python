@@ -12,17 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import re
 import os
 import platform
-from . import base
-from google.cloud import monitoring_v3
-from opencensus.stats import aggregation
-from opencensus.stats import measure
+import re
+
 from datetime import datetime
-from opencensus.common.transports import async_
+from google.api_core.gapic_v1 import client_info
+from google.cloud import monitoring_v3
+
+from opencensus.__version__ import __version__
 from opencensus.common.monitored_resource_util.monitored_resource_util \
     import MonitoredResourceUtil
+from opencensus.common.transports import async_
+from opencensus.stats import aggregation
+from opencensus.stats import measure
+from opencensus.stats.exporters import base
 
 MAX_TIME_SERIES_PER_UPLOAD = 200
 OPENCENSUS_TASK_DESCRIPTION = "Opencensus task identifier"
@@ -385,7 +389,8 @@ def new_stats_exporter(options):
     if str(options.project_id).strip() == "":
         raise Exception(ERROR_BLANK_PROJECT_ID)
 
-    client = monitoring_v3.MetricServiceClient()
+    ci = client_info.ClientInfo(client_library_version=__version__)
+    client = monitoring_v3.MetricServiceClient(client_info=ci)
 
     exporter = StackdriverStatsExporter(client=client, options=options)
 
