@@ -382,6 +382,11 @@ def set_attribute_label(series, resource_labels, attribute_key,
             label_value_prefix + resource_labels[attribute_key]
 
 
+def get_user_agent_slug():
+    """Get the UA fragment to identify this library version."""
+    return "opencensus-{}".format(__version__)
+
+
 def new_stats_exporter(options):
     """ new_stats_exporter returns an exporter that
         uploads stats data to Stackdriver Monitoring.
@@ -389,7 +394,7 @@ def new_stats_exporter(options):
     if str(options.project_id).strip() == "":
         raise Exception(ERROR_BLANK_PROJECT_ID)
 
-    ci = client_info.ClientInfo(client_library_version=__version__)
+    ci = client_info.ClientInfo(client_library_version=get_user_agent_slug())
     client = monitoring_v3.MetricServiceClient(client_info=ci)
 
     exporter = StackdriverStatsExporter(client=client, options=options)

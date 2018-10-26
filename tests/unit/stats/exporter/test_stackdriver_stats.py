@@ -108,6 +108,9 @@ class TestStackdriverStatsExporter(unittest.TestCase):
 
         self.assertIsInstance(exporter_created, stackdriver.StackdriverStatsExporter)
 
+    def test_get_user_agent_slug(self):
+        self.assertIn(__version__, stackdriver.get_user_agent_slug())
+
     def test_client_info_user_agent(self):
         """Check that the monitoring client sets a user agent.
 
@@ -124,7 +127,7 @@ class TestStackdriverStatsExporter(unittest.TestCase):
             exporter = stackdriver.new_stats_exporter(
                 stackdriver.Options(project_id=1))
 
-        self.assertIn("gccl/{}".format(__version__),
+        self.assertIn(stackdriver.get_user_agent_slug(),
                       exporter.client.client_info.to_user_agent())
 
     def test_as_float(self):
