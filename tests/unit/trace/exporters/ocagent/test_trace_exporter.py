@@ -19,13 +19,11 @@ import os
 import socket
 import unittest
 
-from google.protobuf.timestamp_pb2 import Timestamp
-
+from opencensus.__version__ import __version__
 from opencensus.trace import span_context as span_context_module
 from opencensus.trace import span_data as span_data_module
-from opencensus.trace.exporters.ocagent.trace_exporter import TraceExporter
-from opencensus.trace.exporters.gen.opencensus.agent.trace.v1 import trace_service_pb2
 from opencensus.trace.exporters.gen.opencensus.trace.v1 import trace_config_pb2
+from opencensus.trace.exporters.ocagent.trace_exporter import TraceExporter
 
 
 SERVICE_NAME = 'my-service'
@@ -79,7 +77,8 @@ class TestTraceExporter(unittest.TestCase):
         self.assertEqual(exporter.node.service_info.name, SERVICE_NAME)
         self.assertEqual(exporter.node.library_info.language, 8)
         self.assertIsNotNone(exporter.node.library_info.exporter_version)
-        self.assertIsNotNone(exporter.node.library_info.core_library_version)
+        self.assertEqual(exporter.node.library_info.core_library_version,
+                         __version__)
 
         self.assertEqual(exporter.node.identifier.host_name,
                          socket.gethostname())
