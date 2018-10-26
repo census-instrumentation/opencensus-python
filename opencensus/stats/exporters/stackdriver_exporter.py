@@ -20,7 +20,7 @@ from google.cloud import monitoring_v3
 from opencensus.stats import aggregation
 from opencensus.stats import measure
 from datetime import datetime
-from opencensus.common.transports import async
+from opencensus.common.transports import async_
 from opencensus.common.monitored_resource_util.monitored_resource_util \
     import MonitoredResourceUtil
 
@@ -109,7 +109,7 @@ class StackdriverStatsExporter(base.StatsExporter):
                  options=Options(),
                  client=None,
                  default_labels={},
-                 transport=async.AsyncTransport):
+                 transport=async_.AsyncTransport):
         self._options = options
         self._client = client
         self._transport = transport(self)
@@ -448,5 +448,5 @@ def as_float(value):
     """
     try:
         return float(value), True
-    except Exception as exception:  # Catch all exception including ValueError
+    except Exception:  # Catch all exception including ValueError
         return None, False
