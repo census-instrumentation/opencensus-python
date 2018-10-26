@@ -70,8 +70,7 @@ def wrap_threading_run(run_func):
     def call(self):
         execution_context.set_opencensus_full_context(*self._opencensus_context)
         _tracer = execution_context.get_opencensus_tracer()
-        with _tracer.span(name=threading.current_thread().name):
-            return run_func(self)
+        return run_func(self)
 
     return call
 
@@ -86,6 +85,7 @@ def wrap_apply_async(apply_async_func):
         propagator = binary_format.BinaryFormatPropagator()
 
         wrapped_kwargs = {}
+        print(_tracer)
         wrapped_kwargs['span_context_binary'] = propagator.to_header(_tracer.span_context)
         wrapped_kwargs['kwds'] = kwds
         wrapped_kwargs['sampler'] = _tracer.sampler
@@ -125,8 +125,6 @@ class wrap_task_func(object):
         self.func = func
 
     def __call__(self, *args, **kwargs):
-        if 'kwds' not in kwargs:
-            return self.func(*args, **kwargs)
         kwds = kwargs.pop('kwds')
 
         span_context_binary = kwargs.pop('span_context_binary')

@@ -16,6 +16,7 @@ import unittest
 import threading
 import mock
 from multiprocessing.pool import Pool
+from concurrent.futures import ThreadPoolExecutor
 
 from opencensus.trace.ext.threading import trace
 from opencensus.trace import execution_context, tracer
@@ -95,12 +96,29 @@ class Test_threading_trace(unittest.TestCase):
         execution_context.set_opencensus_tracer(tracer)
 
         trace.trace_integration()
+        context = tracer.Tracer().span_context
+        print(context.trace_id)
 
         pool = Pool(processes=1)
         with _tracer.span(name='span1'):
             result = pool.apply_async(fake_pooled_func, ()).get(timeout=1)
 
-        self.assertEqual(result, 'span1')
+        self.assertEqual(result, context.trace_id)
+
+    def test_wrap_futures(self):
+        _tracer = tracer.Tracer()
+        execution_context.set_opencensus_tracer(tracer)
+
+        trace.trace_integration()
+        context = tracer.Tracer().span_context
+        print(context.trace_id)
+
+        pool = ThreadPoolExecutor(max_workers=1)
+        with _tracer.span(name='span1'):
+            future = pool.submit(fake_pooled_func)
+            result = future.result()
+
+        self.assertEqual(result, context.trace_id)
 
     def fake_threaded_func(self):
         global global_tracer
@@ -109,7 +127,7 @@ class Test_threading_trace(unittest.TestCase):
 
 def fake_pooled_func():
     _tracer = execution_context.get_opencensus_tracer()
-    return _tracer.current_span().name
+    return _tracer.span_context.trace_id
 
 
 class MockTracer(object):
