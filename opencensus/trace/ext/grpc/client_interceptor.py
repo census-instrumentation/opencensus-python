@@ -88,7 +88,7 @@ class OpenCensusClientInterceptor(grpc.UnaryUnaryClientInterceptor,
             attribute_value=str(client_call_details.method))
 
         # Add user defined auxiliary attributes to span
-        if self.aux_attributes is not None and type(self.aux_attributes) is dict:
+        if type(self.aux_attributes) is dict:
             for attr_key, attr_value in self.aux_attributes.items():
                 if type(attr_key) is not str and type(attr_value) is not str:
                     continue
