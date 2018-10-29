@@ -16,6 +16,7 @@
 from opencensus.trace.span_context import SpanContext, INVALID_SPAN_ID
 from opencensus.trace.trace_options import TraceOptions
 
+_STATE_HEADER_KEY = 'b3'
 _TRACE_ID_KEY = 'x-b3-traceid'
 _SPAN_ID_KEY = 'x-b3-spanid'
 _SAMPLED_KEY = 'x-b3-sampled'
@@ -39,20 +40,42 @@ class B3FormatPropagator(object):
         if headers is None:
             return SpanContext(from_header=False)
 
-        trace_id = headers.get(_TRACE_ID_KEY)
-        span_id = headers.get(_SPAN_ID_KEY)
-        sampled = headers.get(_SAMPLED_KEY) == '1'
+        trace_id, span_id, sampled = None, None, None
+        trace_options = TraceOptions()
 
-        # Trace Id and Span Id headers both have to exist
+        state = headers.get(_STATE_HEADER_KEY)
+        if state:
+            fields = state.split('-', 4)
+
+            if len(fields) == 1:
+                sampled = fields[0]
+            elif len(fields) == 2:
+                trace_id, span_id = fields
+            elif len(fields) == 3:
+                trace_id, span_id, sampled = fields
+            elif len(fields) == 4:
+                trace_id, span_id, sampled, _parent_span_id = fields
+            else:
+                return SpanContext(from_header=False)
+        else:
+            trace_id = headers.get(_TRACE_ID_KEY)
+            span_id = headers.get(_SPAN_ID_KEY)
+            sampled = headers.get(_SAMPLED_KEY)
+
+        if sampled is not None:
+            if len(sampled) != 1:
+                return SpanContext(from_header=False)
+
+            sampled = sampled in ('1', 'd')
+            trace_options.set_enabled(sampled)
+
+        # TraceId and SpanId headers both have to exist
         if not trace_id or not span_id:
-            return SpanContext()
+            return SpanContext(trace_options=trace_options)
 
         # Convert 64-bit trace ids to 128-bit
         if len(trace_id) == 16:
             trace_id = '0'*16 + trace_id
-
-        trace_options = TraceOptions()
-        trace_options.set_enabled(sampled)
 
         span_context = SpanContext(
             trace_id=trace_id,
