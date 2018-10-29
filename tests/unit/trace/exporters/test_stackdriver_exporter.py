@@ -16,6 +16,7 @@ import unittest
 
 import mock
 
+from opencensus.__version__ import __version__
 from opencensus.trace import span_context
 from opencensus.trace import span_data as span_data_module
 from opencensus.trace.exporters import stackdriver_exporter
@@ -106,7 +107,7 @@ class TestStackdriverExporter(unittest.TestCase):
                                 'string_value': {
                                     'truncated_byte_count': 0,
                                     'value': 'opencensus-python [{}]'.format(
-                                        stackdriver_exporter.VERSION
+                                        __version__
                                     )
                                 }
                             }
@@ -211,7 +212,7 @@ class TestStackdriverExporter(unittest.TestCase):
                                 'string_value': {
                                     'truncated_byte_count': 0,
                                     'value': 'opencensus-python [{}]'.format(
-                                        stackdriver_exporter.VERSION
+                                        __version__
                                     )
                                 }
                             },
@@ -569,7 +570,7 @@ class Test_set_attributes_gae(unittest.TestCase):
                         'string_value': {
                             'truncated_byte_count': 0,
                             'value': 'opencensus-python [{}]'.format(
-                                stackdriver_exporter.VERSION
+                                __version__
                             )
                         }
                     },
@@ -635,7 +636,7 @@ class TestMonitoredResourceAttributes(unittest.TestCase):
                         'string_value': {
                             'truncated_byte_count': 0,
                             'value': 'opencensus-python [{}]'.format(
-                                stackdriver_exporter.VERSION
+                                __version__
                             )
                         }
                     },
@@ -720,7 +721,7 @@ class TestMonitoredResourceAttributes(unittest.TestCase):
                         'string_value': {
                             'truncated_byte_count': 0,
                             'value': 'opencensus-python [{}]'.format(
-                                stackdriver_exporter.VERSION
+                                __version__
                             )
                         }
                     },
@@ -773,7 +774,7 @@ class TestMonitoredResourceAttributes(unittest.TestCase):
                         'string_value': {
                             'truncated_byte_count': 0,
                             'value': 'opencensus-python [{}]'.format(
-                                stackdriver_exporter.VERSION
+                                __version__
                             )
                         }
                     },
@@ -820,7 +821,7 @@ class TestMonitoredResourceAttributes(unittest.TestCase):
                         'string_value': {
                             'truncated_byte_count': 0,
                             'value': 'opencensus-python [{}]'.format(
-                                stackdriver_exporter.VERSION
+                                __version__
                             )
                         }
                     }

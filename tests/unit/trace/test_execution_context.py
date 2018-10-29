@@ -13,6 +13,8 @@
 # limitations under the License.
 
 import unittest
+import mock
+import threading
 
 from opencensus.trace import execution_context
 
@@ -38,3 +40,60 @@ class Test__get_opencensus_attr(unittest.TestCase):
         result = execution_context.get_opencensus_attr(key)
 
         self.assertEqual(result, value)
+
+    def test_get_and_set_full_context(self):
+        mock_tracer_get = mock.Mock()
+        mock_span_get = mock.Mock()
+        execution_context.set_opencensus_tracer(mock_tracer_get)
+        execution_context.set_current_span(mock_span_get)
+
+        execution_context.set_opencensus_attr("test", "test_value")
+
+        tracer, span, attrs = execution_context.get_opencensus_full_context()
+
+        self.assertEqual(mock_tracer_get, tracer)
+        self.assertEqual(mock_span_get, span)
+        self.assertEqual({"test":"test_value"}, attrs)
+
+        mock_tracer_set = mock.Mock()
+        mock_span_set = mock.Mock()
+
+        execution_context.set_opencensus_full_context(mock_tracer_set, mock_span_set, None)
+        self.assertEqual(mock_tracer_set, execution_context.get_opencensus_tracer())
+        self.assertEqual(mock_span_set, execution_context.get_current_span())
+        self.assertEqual({}, execution_context.get_opencensus_attrs())
+
+        execution_context.set_opencensus_full_context(mock_tracer_set, mock_span_set, {"test": "test_value"})
+        self.assertEqual("test_value", execution_context.get_opencensus_attr("test"))
+
+    def test_clean_tracer(self):
+        mock_tracer = mock.Mock()
+        some_value = mock.Mock()
+        execution_context.set_opencensus_tracer(mock_tracer)
+
+        thread_local = threading.local()
+        setattr(thread_local, 'random_non_oc_attr', some_value)
+
+        execution_context.clean()
+
+        self.assertNotEqual(mock_tracer, execution_context.get_opencensus_tracer())
+        self.assertEqual(some_value, getattr(thread_local, 'random_non_oc_attr'))
+
+    def test_clean_span(self):
+        mock_span = mock.Mock()
+        some_value = mock.Mock()
+        execution_context.set_current_span(mock_span)
+
+        thread_local = threading.local()
+        setattr(thread_local, 'random_non_oc_attr', some_value)
+
+        execution_context.clean()
+
+        self.assertNotEqual(mock_span, execution_context.get_current_span())
+        self.assertEqual(some_value, getattr(thread_local, 'random_non_oc_attr'))
+
+
+
+
+
+
