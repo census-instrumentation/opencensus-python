@@ -49,10 +49,23 @@ class TestOpenCensusClientInterceptor(unittest.TestCase):
         self.assertTrue(isinstance(
             interceptor._propagator, binary_format.BinaryFormatPropagator))
 
+    def test_constructor_aux_attrs(self):
+        from opencensus.trace.propagation import binary_format
+
+        tracer = mock.Mock()
+        aux_attrs = {'some_aux_attr_key': 'some_aux_attr_value'}
+        interceptor = client_interceptor.OpenCensusClientInterceptor(
+            tracer=tracer, aux_attributes=aux_attrs)
+
+        self.assertEqual(interceptor._tracer, tracer)
+        self.assertEqual(interceptor.aux_attributes, aux_attrs)
+        self.assertTrue(isinstance(
+            interceptor._propagator, binary_format.BinaryFormatPropagator))
+
     def test__start_client_span(self):
         tracer = mock.Mock()
         interceptor = client_interceptor.OpenCensusClientInterceptor(
-            tracer=tracer, host_port='test')
+            tracer=tracer, host_port='test', aux_attributes={'some_aux_attr_key': 'some_aux_attr_value'})
         mock_client_call_details = mock.Mock()
         mock_client_call_details.method = '/hello'
         interceptor._start_client_span(mock_client_call_details)
@@ -66,7 +79,7 @@ class TestOpenCensusClientInterceptor(unittest.TestCase):
         current_span = mock.Mock()
         tracer = mock.Mock()
         interceptor = client_interceptor.OpenCensusClientInterceptor(
-            tracer=tracer, host_port='test')
+            tracer=tracer, host_port='test', aux_attributes={'some_aux_attr_key': 'some_aux_attr_value'})
         interceptor._end_span_between_context(current_span)
 
         span_in_context = execution_context.get_current_span()
@@ -82,7 +95,7 @@ class TestOpenCensusClientInterceptor(unittest.TestCase):
         mock_propagator.to_header.return_value = test_header
 
         interceptor = client_interceptor.OpenCensusClientInterceptor(
-            tracer=tracer, host_port='test')
+            tracer=tracer, host_port='test', aux_attributes={'some_aux_attr_key': 'some_aux_attr_value'})
         interceptor._propagator = mock_propagator
         mock_client_call_details = mock.Mock()
         mock_client_call_details.metadata = None
@@ -104,7 +117,7 @@ class TestOpenCensusClientInterceptor(unittest.TestCase):
         mock_propagator.to_header.return_value = test_header
 
         interceptor = client_interceptor.OpenCensusClientInterceptor(
-            tracer=tracer, host_port='test')
+            tracer=tracer, host_port='test', aux_attributes={'some_aux_attr_key': 'some_aux_attr_value'})
         interceptor._propagator = mock_propagator
         mock_client_call_details = mock.Mock()
         mock_client_call_details.metadata = None
@@ -127,7 +140,7 @@ class TestOpenCensusClientInterceptor(unittest.TestCase):
         mock_propagator.to_header.return_value = test_header
 
         interceptor = client_interceptor.OpenCensusClientInterceptor(
-            tracer=tracer, host_port='test')
+            tracer=tracer, host_port='test', aux_attributes={'some_aux_attr_key': 'some_aux_attr_value'})
         interceptor._propagator = mock_propagator
         mock_client_call_details = mock.Mock()
         mock_client_call_details.metadata = [('test_key', 'test_value'), ]
@@ -151,7 +164,7 @@ class TestOpenCensusClientInterceptor(unittest.TestCase):
         mock_propagator.to_header.return_value = test_header
 
         interceptor = client_interceptor.OpenCensusClientInterceptor(
-            tracer=tracer, host_port='test')
+            tracer=tracer, host_port='test', aux_attributes={'some_aux_attr_key': 'some_aux_attr_value'})
         interceptor._propagator = mock_propagator
         mock_client_call_details = mock.Mock()
         mock_client_call_details.metadata = (('test_key', 'test_value'),)
@@ -171,7 +184,7 @@ class TestOpenCensusClientInterceptor(unittest.TestCase):
         current_span = mock.Mock()
         tracer = MockTracer(current_span)
         interceptor = client_interceptor.OpenCensusClientInterceptor(
-            tracer=tracer, host_port='test')
+            tracer=tracer, host_port='test', aux_attributes={'some_aux_attr_key': 'some_aux_attr_value'})
         current_span.attributes = {}
         callback = interceptor._callback(current_span)
         response = mock.Mock()
@@ -187,7 +200,7 @@ class TestOpenCensusClientInterceptor(unittest.TestCase):
         current_span = mock.Mock()
         tracer = MockTracer(current_span)
         interceptor = client_interceptor.OpenCensusClientInterceptor(
-            tracer=tracer, host_port='test')
+            tracer=tracer, host_port='test', aux_attributes={'some_aux_attr_key': 'some_aux_attr_value'})
         current_span.attributes = {}
         callback = interceptor._callback(current_span)
         response = mock.Mock()

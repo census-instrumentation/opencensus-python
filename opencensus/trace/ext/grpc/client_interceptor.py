@@ -54,9 +54,10 @@ class OpenCensusClientInterceptor(grpc.UnaryUnaryClientInterceptor,
                                   grpc.StreamUnaryClientInterceptor,
                                   grpc.StreamStreamClientInterceptor):
 
-    def __init__(self, tracer=None, host_port=None):
+    def __init__(self, tracer=None, host_port=None, aux_attributes=None):
         self._tracer = tracer
         self.host_port = host_port
+        self.aux_attributes = aux_attributes
         self._propagator = binary_format.BinaryFormatPropagator()
 
     @property
@@ -85,6 +86,16 @@ class OpenCensusClientInterceptor(grpc.UnaryUnaryClientInterceptor,
         self.tracer.add_attribute_to_current_span(
             attribute_key=attributes_helper.GRPC_ATTRIBUTES.get(GRPC_METHOD),
             attribute_value=str(client_call_details.method))
+
+        # Add user defined auxiliary attributes to span
+        if self.aux_attributes is not None and type(self.aux_attributes) is dict:
+            for attr_key, attr_value in self.aux_attributes.items():
+                if type(attr_key) is not str and type(attr_value) is not str:
+                    continue
+
+                self.tracer.add_attribute_to_current_span(
+                    attribute_key=attr_key,
+                    attribute_value=attr_value)
 
         execution_context.set_opencensus_tracer(self.tracer)
         execution_context.set_current_span(span)
