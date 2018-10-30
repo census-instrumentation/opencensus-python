@@ -261,7 +261,7 @@ class PrometheusStatsExporter(base.StatsExporter):
 
     :type transport:
         :class:`opencensus.common.transports.sync.SyncTransport` or
-        :class:`opencensus.common.transports.async.AsyncTransport`
+        :class:`opencensus.common.transports.async_.AsyncTransport`
     :param transport: An instance of a Transpor to send data with.
 
     :type collector:

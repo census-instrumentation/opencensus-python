@@ -16,7 +16,7 @@ import unittest
 
 import mock
 
-from opencensus.common.transports import async
+from opencensus.common.transports import async_
 
 class Test_Worker(unittest.TestCase):
 
@@ -34,7 +34,7 @@ class Test_Worker(unittest.TestCase):
         grace_period = 10
         max_batch_size = 20
 
-        worker = async._Worker(exporter, grace_period=grace_period,
+        worker = async_._Worker(exporter, grace_period=grace_period,
                                            max_batch_size=max_batch_size)
 
         self.assertEqual(worker.exporter, exporter)
@@ -45,7 +45,7 @@ class Test_Worker(unittest.TestCase):
 
     def test_start(self):
         exporter = mock.Mock()
-        worker = async._Worker(exporter)
+        worker = async_._Worker(exporter)
 
         mock_thread, mock_atexit = self._start_worker(worker)
 
@@ -54,7 +54,7 @@ class Test_Worker(unittest.TestCase):
         self.assertTrue(worker._thread.daemon)
         self.assertEqual(worker._thread._target, worker._thread_main)
         self.assertEqual(
-            worker._thread._name, async._WORKER_THREAD_NAME)
+            worker._thread._name, async_._WORKER_THREAD_NAME)
         mock_atexit.assert_called_once_with(worker._export_pending_data)
 
         cur_thread = worker._thread
@@ -63,7 +63,7 @@ class Test_Worker(unittest.TestCase):
 
     def test_stop(self):
         exporter = mock.Mock()
-        worker = async._Worker(exporter)
+        worker = async_._Worker(exporter)
 
         mock_thread, mock_atexit = self._start_worker(worker)
 
@@ -73,7 +73,7 @@ class Test_Worker(unittest.TestCase):
 
         self.assertEqual(worker._queue.qsize(), 1)
         self.assertEqual(
-            worker._queue.get(), async._WORKER_TERMINATOR)
+            worker._queue.get(), async_._WORKER_TERMINATOR)
         self.assertFalse(worker.is_alive)
         self.assertIsNone(worker._thread)
 
@@ -82,7 +82,7 @@ class Test_Worker(unittest.TestCase):
 
     def test__export_pending_data(self):
         exporter = mock.Mock()
-        worker = async._Worker(exporter)
+        worker = async_._Worker(exporter)
 
         self._start_worker(worker)
         worker._export_pending_data()
@@ -93,7 +93,7 @@ class Test_Worker(unittest.TestCase):
 
     def test__export_pending_data_non_empty_queue(self):
         exporter = mock.Mock()
-        worker = async._Worker(exporter)
+        worker = async_._Worker(exporter)
 
         self._start_worker(worker)
         worker.enqueue(mock.Mock())
@@ -103,7 +103,7 @@ class Test_Worker(unittest.TestCase):
 
     def test__export_pending_data_did_not_join(self):
         exporter = mock.Mock()
-        worker = async._Worker(exporter)
+        worker = async_._Worker(exporter)
 
         self._start_worker(worker)
         worker._thread._terminate_on_join = False
@@ -114,7 +114,7 @@ class Test_Worker(unittest.TestCase):
 
     def test__thread_main(self):
         exporter = mock.Mock()
-        worker = async._Worker(exporter)
+        worker = async_._Worker(exporter)
 
         trace1 = {
             'traceId': 'test1',
@@ -127,7 +127,7 @@ class Test_Worker(unittest.TestCase):
 
         worker.enqueue(trace1)
         worker.enqueue(trace2)
-        worker._queue.put_nowait(async._WORKER_TERMINATOR)
+        worker._queue.put_nowait(async_._WORKER_TERMINATOR)
 
         worker._thread_main()
 
@@ -136,7 +136,7 @@ class Test_Worker(unittest.TestCase):
 
     def test__thread_main_batches(self):
         exporter = mock.Mock()
-        worker = async._Worker(exporter, max_batch_size=2)
+        worker = async_._Worker(exporter, max_batch_size=2)
 
         # Enqueue three records and the termination signal. This should be
         # enough to perform two separate batches and a third loop with just
@@ -162,7 +162,7 @@ class Test_Worker(unittest.TestCase):
         worker.enqueue(trace3)
         worker.enqueue(trace4)
 
-        worker._queue.put_nowait(async._WORKER_TERMINATOR)
+        worker._queue.put_nowait(async_._WORKER_TERMINATOR)
 
         worker._thread_main()
 
@@ -178,12 +178,12 @@ class Test_Worker(unittest.TestCase):
                 self.exported.append(span)
 
         exporter = Exporter()
-        worker = async._Worker(exporter, max_batch_size=2)
+        worker = async_._Worker(exporter, max_batch_size=2)
 
         # Enqueue three records and the termination signal. This should be
         # enough to perform two separate batches and a third loop with just
         # the exit.
-        worker._queue.put_nowait(async._WORKER_TERMINATOR)
+        worker._queue.put_nowait(async_._WORKER_TERMINATOR)
 
         # Worker should be terminated after sending span_data1, and
         # span_data2 won't be exported.
@@ -214,7 +214,7 @@ class Test_Worker(unittest.TestCase):
                     raise Exception("This exporter is broken !")
 
         exporter = Exporter()
-        worker = async._Worker(exporter, max_batch_size=2)
+        worker = async_._Worker(exporter, max_batch_size=2)
 
         span_data0 = [mock.Mock()]
         span_data1 = [mock.Mock()]
@@ -223,7 +223,7 @@ class Test_Worker(unittest.TestCase):
         worker.enqueue(span_data0)
         worker.enqueue(span_data1)
         worker.enqueue(span_data2)
-        worker.enqueue(async._WORKER_TERMINATOR)
+        worker.enqueue(async_._WORKER_TERMINATOR)
 
         worker._thread_main()
 
@@ -243,7 +243,7 @@ class Test_Worker(unittest.TestCase):
         from six.moves import queue
 
         exporter = mock.Mock()
-        worker = async._Worker(exporter)
+        worker = async_._Worker(exporter)
         worker._queue = mock.Mock(spec=queue.Queue)
 
         # Queue is empty, should not block.
@@ -255,24 +255,24 @@ class TestAsyncTransport(unittest.TestCase):
 
     def test_constructor(self):
         patch_worker = mock.patch(
-            'opencensus.common.transports.async._Worker',
+            'opencensus.common.transports.async_._Worker',
             autospec=True)
         exporter = mock.Mock()
 
         with patch_worker as mock_worker:
-            transport = async.AsyncTransport(exporter)
+            transport = async_.AsyncTransport(exporter)
 
         self.assertTrue(transport.worker.start.called)
         self.assertEqual(transport.exporter, exporter)
 
     def test_export(self):
         patch_worker = mock.patch(
-            'opencensus.common.transports.async._Worker',
+            'opencensus.common.transports.async_._Worker',
             autospec=True)
         exporter = mock.Mock()
 
         with patch_worker as mock_worker:
-            transport = async.AsyncTransport(exporter)
+            transport = async_.AsyncTransport(exporter)
 
         trace = {
             'traceId': 'test',
@@ -285,12 +285,12 @@ class TestAsyncTransport(unittest.TestCase):
 
     def test_flush(self):
         patch_worker = mock.patch(
-            'opencensus.common.transports.async._Worker',
+            'opencensus.common.transports.async_._Worker',
             autospec=True)
         exporter = mock.Mock()
 
         with patch_worker as mock_worker:
-            transport = async.AsyncTransport(exporter)
+            transport = async_.AsyncTransport(exporter)
 
             transport.flush()
 

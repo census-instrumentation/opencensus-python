@@ -11,11 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """A setup module for Open Source Census Instrumentation Library"""
 
-import io
-from setuptools import setup, find_packages
+from setuptools import find_packages
+from setuptools import setup
 
 extras = {
     "stackdriver": ['google-cloud-trace>=0.17.0, <0.20'],
@@ -26,9 +25,10 @@ install_requires = [
     'google-api-core >= 0.1.1, < 2.0.0',
 ]
 
+exec(open("opencensus/__version__.py").read())
 setup(
     name='opencensus',
-    version='0.1.7',
+    version=__version__,  # noqa
     author='OpenCensus Authors',
     author_email='census-developers@googlegroups.com',
     classifiers=[

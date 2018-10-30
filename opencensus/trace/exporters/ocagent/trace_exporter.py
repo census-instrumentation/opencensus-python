@@ -11,31 +11,29 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Export opencensus spans to ocagent"""
 
+from threading import Lock
 import datetime
 import grpc
 import os
 import socket
-from threading import Lock
+
+from opencensus.__version__ import __version__
 from opencensus.trace.exporters import base
-from opencensus.trace.exporters.gen.opencensus.agent.common.v1 import (
-    common_pb2
-)
-from opencensus.trace.exporters.gen.opencensus.agent.trace.v1 import (
-    trace_service_pb2,
-    trace_service_pb2_grpc
-)
+from opencensus.trace.exporters.gen.opencensus.agent.common.v1 \
+    import common_pb2
+from opencensus.trace.exporters.gen.opencensus.agent.trace.v1 \
+    import trace_service_pb2
+from opencensus.trace.exporters.gen.opencensus.agent.trace.v1 \
+    import trace_service_pb2_grpc
 from opencensus.trace.exporters.ocagent import utils
 from opencensus.trace.exporters.transports import sync
 
 # Default agent endpoint
 DEFAULT_ENDPOINT = 'localhost:55678'
 
-# OpenCensus Version
-# TODO: https://github.com/census-instrumentation/opencensus-python/issues/296
-CORE_LIBRARY_VERSION = '0.1.6'
+# OCAgent exporter version
 EXPORTER_VERSION = '0.0.1'
 
 
@@ -91,7 +89,7 @@ class TraceExporter(base.Exporter):
             library_info=common_pb2.LibraryInfo(
                 language=common_pb2.LibraryInfo.Language.Value('PYTHON'),
                 exporter_version=EXPORTER_VERSION,
-                core_library_version=CORE_LIBRARY_VERSION
+                core_library_version=__version__
             ),
             service_info=common_pb2.ServiceInfo(name=self.service_name))
 
