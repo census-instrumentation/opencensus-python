@@ -217,7 +217,6 @@ class DistributionAggregationData(BaseAggregationData):
         self._sum_of_sqd_deviations = self._sum_of_sqd_deviations + (
             (value - old_mean) * (value - self._mean_data))
 
-
     def increment_bucket_count(self, value):
         """Increment the bucket count based on a given value from the user"""
         if len(self._bounds) == 0:
