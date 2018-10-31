@@ -98,7 +98,6 @@ class TestMeasureToViewMap(unittest.TestCase):
             columns=columns,
             measure=measure,
             aggregation=aggregation)
-        print("test view 1", test_view_1)
 
         test_view_2_name = "testView2"
         test_view_2 = View(
@@ -107,13 +106,10 @@ class TestMeasureToViewMap(unittest.TestCase):
             columns=columns,
             measure=measure,
             aggregation=aggregation)
-        print("test view 2", test_view_2)
         all_the_views = {test_view_1, test_view_2}
-        print("all the views", all_the_views)
         measure_to_view_map = measure_to_view_map_module.MeasureToViewMap()
         views = measure_to_view_map.filter_exported_views(
             all_views=all_the_views)
-        print("filtered views", views)
         self.assertEqual(views, all_the_views)
 
     def test_register_view(self):
