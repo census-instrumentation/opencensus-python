@@ -112,6 +112,28 @@ class TestDistributionAggregationData(unittest.TestCase):
         self.assertIsNotNone(dist_agg_data.sum)
         self.assertEqual(0, dist_agg_data.variance)
 
+    def test_init_bad_bucket_counts(self):
+        # Check that len(counts_per_bucket) == len(bounds) + 1
+        with self.assertRaises(ValueError):
+            aggregation_data_module.DistributionAggregationData(
+                mean_data=mock.Mock(),
+                count_data=mock.Mock(),
+                min_=mock.Mock(),
+                max_=mock.Mock(),
+                sum_of_sqd_deviations=mock.Mock(),
+                counts_per_bucket=[0, 0, 0],
+                bounds=[0, 1, 2])
+
+        # And check that we don't throw given the right args
+        aggregation_data_module.DistributionAggregationData(
+            mean_data=mock.Mock(),
+            count_data=mock.Mock(),
+            min_=mock.Mock(),
+            max_=mock.Mock(),
+            sum_of_sqd_deviations=mock.Mock(),
+            counts_per_bucket=[0, 0, 0, 0],
+            bounds=[0, 1, 2])
+
     def test_constructor_with_exemplar(self):
         timestamp = time.time()
         attachments = {"One": "one", "Two": "two"}
