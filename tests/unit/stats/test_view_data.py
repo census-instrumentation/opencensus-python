@@ -150,7 +150,7 @@ class TestViewData(unittest.TestCase):
         self.assertTrue(tuple_vals in view_data.tag_value_aggregation_data_map)
         self.assertIsNotNone(view_data.tag_value_aggregation_data_map[tuple_vals])
         self.assertEqual(attachments, view_data.
-                         tag_value_aggregation_data_map[tuple_vals].exemplars[3].attachments)
+                         tag_value_aggregation_data_map[tuple_vals].exemplars[1].attachments)
 
     def test_record_with_attachment_no_histogram(self):
         boundaries = None
