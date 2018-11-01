@@ -85,7 +85,7 @@ class _Worker(object):
         Pulls pending SpanData tuples off the queue and writes them in
         batches to the specified tracing backend using the exporter.
         """
-        logging.debug('Background thread started.')
+        print('Background thread started.')
 
         quit_ = False
 
