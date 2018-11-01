@@ -82,6 +82,12 @@ def wrap_session_request(wrapped, instance, args, kwargs):
     _span.name = '[requests]{}'.format(method)
     _span.span_kind = span_module.SpanKind.CLIENT
 
+    tracer_headers = _tracer.propagator.to_headers(
+        _tracer.span_context)
+
+    kwargs.setdefault('headers', {}).update(
+        tracer_headers)
+
     # Add the requests url to attributes
     _tracer.add_attribute_to_current_span(HTTP_URL, url)
 
