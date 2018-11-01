@@ -107,7 +107,7 @@ class _Worker(object):
                 try:
                     self.exporter.emit(span_datas)
                 except Exception:
-                    logger.exception(
+                    logging.exception(
                         '%s failed to emit spans.'
                         'Dropping %s spans from queue.',
                         self.exporter.__class__.__name__,
