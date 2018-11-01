@@ -20,7 +20,6 @@ class Exporter(object):
 
     Subclasses of :class:`Exporter` must override :meth:`export`.
     """
-
     def emit(self, span_datas):
         """
         :type span_datas: list of :class:
@@ -41,3 +40,17 @@ class Exporter(object):
             SpanData tuples to export
         """
         raise NotImplementedError
+
+    def __init_transport(self, cls, config=None):
+        """Initiate the transport instance to be used by the exporter.
+
+        :type cls: :class:
+            `~opencensus.trace.exporters.transports.base.Transport`
+        :param transport class to use for the exporter.
+
+        :type config dict
+        :param dict of config options to initiate the transport with.
+        """
+        if config is None:
+            return cls(self)
+        return cls(self, **config)

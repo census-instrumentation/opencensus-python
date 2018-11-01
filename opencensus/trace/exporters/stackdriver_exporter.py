@@ -192,14 +192,14 @@ class StackdriverExporter(base.Exporter):
     """
 
     def __init__(self, client=None, project_id=None,
-                 transport=sync.SyncTransport):
+                 transport=sync.SyncTransport, transport_config=None):
         # The client will handle the case when project_id is None
         if client is None:
             client = Client(project=project_id)
 
         self.client = client
         self.project_id = client.project
-        self.transport = transport(self)
+        self.transport = self.__init_transport(transport, transport_config)
 
     def emit(self, span_datas):
         """

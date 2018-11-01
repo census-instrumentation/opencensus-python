@@ -72,6 +72,9 @@ class JaegerExporter(base.Exporter):
                       implement :meth:`.Transport.export`. Defaults to
                       :class:`.SyncTransport`. The other option is
                       :class:`.BackgroundThreadTransport`.
+
+    :type transport_config
+    :param
     """
 
     def __init__(
@@ -85,8 +88,9 @@ class JaegerExporter(base.Exporter):
             agent_host_name=DEFAULT_HOST_NAME,
             agent_port=DEFAULT_AGENT_PORT,
             agent_endpoint=DEFAULT_ENDPOINT,
-            transport=sync.SyncTransport):
-        self.transport = transport(self)
+            transport=sync.SyncTransport,
+            transport_config=None
+        ):
         self.service_name = service_name
         self.host_name = host_name
         self.agent_host_name = agent_host_name
@@ -97,6 +101,7 @@ class JaegerExporter(base.Exporter):
         self.password = password
         self._agent_client = None
         self._collector = None
+        self.transport = self.__init_transport(transport, transport_config)
 
     @property
     def agent_client(self):

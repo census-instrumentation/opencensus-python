@@ -75,6 +75,7 @@ class ZipkinExporter(base.Exporter):
             endpoint=DEFAULT_ENDPOINT,
             protocol=DEFAULT_PROTOCOL,
             transport=sync.SyncTransport,
+            transport_config=None,
             ipv4=None,
             ipv6=None):
         self.service_name = service_name
@@ -83,9 +84,9 @@ class ZipkinExporter(base.Exporter):
         self.endpoint = endpoint
         self.protocol = protocol
         self.url = self.get_url
-        self.transport = transport(self)
         self.ipv4 = ipv4
         self.ipv6 = ipv6
+        self.transport = self.__init_transport(transport, transport_config)
 
     @property
     def get_url(self):

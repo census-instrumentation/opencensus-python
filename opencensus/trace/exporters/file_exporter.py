@@ -41,12 +41,11 @@ class FileExporter(base.Exporter):
 
     """
 
-    def __init__(self, file_name=DEFAULT_FILENAME,
-                 transport=sync.SyncTransport,
-                 file_mode='w+'):
+    def __init__(self, file_name=DEFAULT_FILENAME, file_mode='w+',
+                 transport=sync.SyncTransport, transport_config=None):
         self.file_name = file_name
-        self.transport = transport(self)
         self.file_mode = file_mode
+        self.transport = self.__init_transport(transport, transport_config)
 
     def emit(self, span_datas):
         """

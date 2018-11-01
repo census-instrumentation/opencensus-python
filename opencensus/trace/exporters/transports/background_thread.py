@@ -217,7 +217,7 @@ class BackgroundThreadTransport(base.Transport):
         self.worker.start()
 
     def export(self, span_datas):
-        """Put the trace to be exported into queue."""
+        """Put the traces to be exported into queue."""
         self.worker.enqueue(span_datas)
 
     def flush(self):

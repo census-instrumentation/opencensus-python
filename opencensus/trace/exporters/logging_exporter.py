@@ -53,7 +53,8 @@ class LoggingExporter(base.Exporter):
     will be exported to logging when finished.
     """
 
-    def __init__(self, handler=None, transport=sync.SyncTransport):
+    def __init__(self, handler=None, transport=sync.SyncTransport,
+                 transport_config=None):
         self.logger = logging.getLogger()
 
         if handler is None:
@@ -62,7 +63,8 @@ class LoggingExporter(base.Exporter):
         self.handler = handler
         self.logger.addHandler(handler)
         self.logger.setLevel(logging.INFO)
-        self.transport = transport(self)
+
+        self.transport = self.__init_transport(transport, transport_config)
 
     def emit(self, span_datas):
         """
