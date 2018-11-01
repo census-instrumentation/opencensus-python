@@ -121,7 +121,7 @@ class _Worker(object):
             if quit_:
                 break
 
-        logging.debug('Background thread exited.')
+        print('Background thread exited.')
 
     def start(self):
         """Starts the background thread.
@@ -176,12 +176,12 @@ class _Worker(object):
             return
 
         if not self._queue.empty():
-            logging.info('Sending all pending spans before terminated.')
+            print('Sending all pending spans before terminated.')
 
         if self.stop():
-            logging.info('Sent all pending spans.')
+            print('Sent all pending spans.')
         else:
-            logging.error('Failed to send pending spans.')
+            print('Failed to send pending spans.')
 
     def enqueue(self, span_datas):
         """Queues span_datas to be written by the background thread."""
