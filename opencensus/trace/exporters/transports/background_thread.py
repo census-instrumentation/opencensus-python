@@ -85,7 +85,7 @@ class _Worker(object):
         Pulls pending SpanData tuples off the queue and writes them in
         batches to the specified tracing backend using the exporter.
         """
-        print('Background thread started.')
+        logging.debug('Background thread started.')
 
         quit_ = False
 
@@ -121,7 +121,7 @@ class _Worker(object):
             if quit_:
                 break
 
-        print('Background thread exited.')
+        logging.debug('Background thread exited.')
 
     def start(self):
         """Starts the background thread.
@@ -176,12 +176,12 @@ class _Worker(object):
             return
 
         if not self._queue.empty():
-            print('Sending all pending spans before terminated.')
+            logging.info('Sending all pending spans before terminated.')
 
         if self.stop():
-            print('Sent all pending spans.')
+            logging.info('Sent all pending spans.')
         else:
-            print('Failed to send pending spans.')
+            logging.error('Failed to send pending spans.')
 
     def enqueue(self, span_datas):
         """Queues span_datas to be written by the background thread."""
