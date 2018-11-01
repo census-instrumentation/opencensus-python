@@ -28,6 +28,8 @@ _WAIT_PERIOD = 1.0  # Seconds
 _WORKER_THREAD_NAME = 'opencensus.trace.Worker'
 _WORKER_TERMINATOR = object()
 
+logger = logging.getLogger(__name__)
+
 
 class _Worker(object):
     """A background thread that exports batches of spans.
@@ -85,7 +87,7 @@ class _Worker(object):
         Pulls pending SpanData tuples off the queue and writes them in
         batches to the specified tracing backend using the exporter.
         """
-        print('Background thread started.')
+        logger.debug('Background thread started.')
 
         quit_ = False
 
@@ -121,7 +123,7 @@ class _Worker(object):
             if quit_:
                 break
 
-        print('Background thread exited.')
+        logger.debug('Background thread exited.')
 
     def start(self):
         """Starts the background thread.
@@ -176,12 +178,12 @@ class _Worker(object):
             return
 
         if not self._queue.empty():
-            print('Sending all pending spans before terminated.')
+            logger.info('Sending all pending spans before terminated.')
 
         if self.stop():
-            print('Sent all pending spans.')
+            logger.info('Sent all pending spans.')
         else:
-            print('Failed to send pending spans.')
+            logger.error('Failed to send pending spans.')
 
     def enqueue(self, span_datas):
         """Queues span_datas to be written by the background thread."""
