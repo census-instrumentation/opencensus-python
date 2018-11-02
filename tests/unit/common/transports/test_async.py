@@ -18,6 +18,12 @@ import mock
 
 from opencensus.common.transports import async_
 
+
+# Don't let workers wait between exports in testing
+wait_period_patch = mock.patch(
+    'opencensus.common.transports.async_._WAIT_PERIOD', 0)
+
+
 class Test_Worker(unittest.TestCase):
 
     def _start_worker(self, worker):
@@ -35,7 +41,7 @@ class Test_Worker(unittest.TestCase):
         max_batch_size = 20
 
         worker = async_._Worker(exporter, grace_period=grace_period,
-                                           max_batch_size=max_batch_size)
+                                max_batch_size=max_batch_size)
 
         self.assertEqual(worker.exporter, exporter)
         self.assertEqual(worker._grace_period, grace_period)
@@ -66,8 +72,6 @@ class Test_Worker(unittest.TestCase):
         worker = async_._Worker(exporter)
 
         mock_thread, mock_atexit = self._start_worker(worker)
-
-        thread = worker._thread
 
         worker.stop()
 
@@ -129,7 +133,8 @@ class Test_Worker(unittest.TestCase):
         worker.enqueue(trace2)
         worker._queue.put_nowait(async_._WORKER_TERMINATOR)
 
-        worker._thread_main()
+        with wait_period_patch:
+            worker._thread_main()
 
         self.assertTrue(worker.exporter.emit.called)
         self.assertEqual(worker._queue.qsize(), 0)
@@ -164,7 +169,8 @@ class Test_Worker(unittest.TestCase):
 
         worker._queue.put_nowait(async_._WORKER_TERMINATOR)
 
-        worker._thread_main()
+        with wait_period_patch:
+            worker._thread_main()
 
         self.assertEqual(worker._queue.qsize(), 0)
 
@@ -193,7 +199,8 @@ class Test_Worker(unittest.TestCase):
         worker.enqueue(span_data1)
         worker.enqueue(span_data2)
 
-        worker._thread_main()
+        with wait_period_patch:
+            worker._thread_main()
 
         self.assertEqual(exporter.exported, [span_data1])
 
@@ -225,7 +232,8 @@ class Test_Worker(unittest.TestCase):
         worker.enqueue(span_data2)
         worker.enqueue(async_._WORKER_TERMINATOR)
 
-        worker._thread_main()
+        with wait_period_patch:
+            worker._thread_main()
 
         # Span 2 should throw an exception, only span 0 and 1 are left
         self.assertEqual(exporter.exported, span_data0 + span_data1)
@@ -237,7 +245,6 @@ class Test_Worker(unittest.TestCase):
         # Nothing should be left in the queue because worker is terminated
         # and the data was dropped.
         self.assertEqual(worker._queue.qsize(), 0)
-
 
     def test_flush(self):
         from six.moves import queue
@@ -259,7 +266,7 @@ class TestAsyncTransport(unittest.TestCase):
             autospec=True)
         exporter = mock.Mock()
 
-        with patch_worker as mock_worker:
+        with patch_worker:
             transport = async_.AsyncTransport(exporter)
 
         self.assertTrue(transport.worker.start.called)
@@ -271,7 +278,7 @@ class TestAsyncTransport(unittest.TestCase):
             autospec=True)
         exporter = mock.Mock()
 
-        with patch_worker as mock_worker:
+        with patch_worker:
             transport = async_.AsyncTransport(exporter)
 
         trace = {
@@ -289,7 +296,7 @@ class TestAsyncTransport(unittest.TestCase):
             autospec=True)
         exporter = mock.Mock()
 
-        with patch_worker as mock_worker:
+        with patch_worker:
             transport = async_.AsyncTransport(exporter)
 
             transport.flush()
