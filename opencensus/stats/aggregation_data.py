@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 from opencensus.stats import bucket_boundaries
 
 
@@ -21,6 +22,7 @@ class BaseAggregationData(object):
     :param aggregation_data: represents the aggregated value from a collection
 
     """
+
     def __init__(self, aggregation_data):
         self._aggregation_data = aggregation_data
 
@@ -37,6 +39,7 @@ class SumAggregationDataFloat(BaseAggregationData):
     :param sum_data: represents the aggregated sum
 
     """
+
     def __init__(self, sum_data):
         super(SumAggregationDataFloat, self).__init__(sum_data)
         self._sum_data = sum_data
@@ -60,6 +63,7 @@ class CountAggregationData(BaseAggregationData):
     :param count_data: represents the aggregated count
 
     """
+
     def __init__(self, count_data):
         super(CountAggregationData, self).__init__(count_data)
         self._count_data = count_data
@@ -104,6 +108,7 @@ class DistributionAggregationData(BaseAggregationData):
     :param bounds: the histogram distribution of the values
 
     """
+
     def __init__(self,
                  mean_data,
                  count_data,
@@ -123,13 +128,14 @@ class DistributionAggregationData(BaseAggregationData):
             bounds = []
 
         if counts_per_bucket is None:
-            counts_per_bucket = []
-            bucket_size = len(bounds) + 1
-            for i in range(bucket_size):
-                counts_per_bucket.append(0)
+            counts_per_bucket = [0 for ii in range(len(bounds) + 1)]
+        elif len(counts_per_bucket) != len(bounds) + 1:
+            raise ValueError("counts_per_bucket length does not match bounds "
+                             "length")
+
         self._counts_per_bucket = counts_per_bucket
         self._bounds = bucket_boundaries.BucketBoundaries(
-                                            boundaries=bounds).boundaries
+            boundaries=bounds).boundaries
         bucket = 0
         for _ in self.bounds:
             bucket = bucket + 1
@@ -207,30 +213,24 @@ class DistributionAggregationData(BaseAggregationData):
 
         old_mean = self._mean_data
         self._mean_data = self._mean_data + (
-                          (value - self._mean_data) / self._count_data)
+            (value - self._mean_data) / self._count_data)
         self._sum_of_sqd_deviations = self._sum_of_sqd_deviations + (
-                                      (value - old_mean) *
-                                      (value - self._mean_data))
+            (value - old_mean) * (value - self._mean_data))
 
     def increment_bucket_count(self, value):
         """Increment the bucket count based on a given value from the user"""
-        i = 0
-        incremented = False
-        for b in self._bounds:
-            if value < b and not incremented:
-                self._counts_per_bucket[i] += 1
-                incremented = True
-            i += 1
-
-        if incremented:
-            return i
-
         if len(self._bounds) == 0:
             self._counts_per_bucket[0] += 1
-            return i
+            return 0
 
-        self._counts_per_bucket[(len(self._bounds))-1] += 1
-        return i
+        for ii, bb in enumerate(self._bounds):
+            if value < bb:
+                self._counts_per_bucket[ii] += 1
+                return ii
+        else:
+            last_bucket_index = len(self._bounds)
+            self._counts_per_bucket[last_bucket_index] += 1
+            return last_bucket_index
 
 
 class LastValueAggregationData(BaseAggregationData):
@@ -241,6 +241,7 @@ class LastValueAggregationData(BaseAggregationData):
     :param value: represents the current value
 
     """
+
     def __init__(self, value):
         super(LastValueAggregationData, self).__init__(value)
         self._value = value
@@ -271,10 +272,7 @@ class Exemplar(object):
         :param attachments: the contextual information about the example value.
     """
 
-    def __init__(self,
-                 value,
-                 timestamp,
-                 attachments):
+    def __init__(self, value, timestamp, attachments):
         self._value = value
 
         self._timestamp = timestamp

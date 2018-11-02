@@ -133,7 +133,7 @@ class DistributionAggregation(BaseAggregation):
         self._boundaries = bucket_boundaries.BucketBoundaries(boundaries)
         self._distribution = distribution or {}
         self.aggregation_data = aggregation_data.DistributionAggregationData(
-            0, 0, 0, 0, 0, None, boundaries)
+            0, 0, float('inf'), float('-inf'), 0, None, boundaries)
 
     @property
     def boundaries(self):
