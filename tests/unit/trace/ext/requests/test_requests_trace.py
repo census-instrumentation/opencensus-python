@@ -134,12 +134,11 @@ class Test_requests_trace(unittest.TestCase):
         self.assertEqual(None, mock_tracer.current_span)
 
     def test_wrap_session_request(self):
-        def wrapped(*args, **kwargs):
-            result = mock.Mock()
-            result.status_code = 200
-            return result
+        wrapped = mock.Mock(return_value=mock.Mock(status_code=200))
 
-        mock_tracer = MockTracer()
+        mock_tracer = MockTracer(propagator=mock.Mock(
+            to_headers=lambda x: {'x-trace': 'some-value'})
+        )
 
         patch = mock.patch(
             'opencensus.trace.ext.requests.trace.execution_context.'
@@ -148,10 +147,11 @@ class Test_requests_trace(unittest.TestCase):
 
         url = 'http://localhost:8080'
         request_method = 'POST'
+        kwargs = {}
 
         with patch:
-            result = trace.wrap_session_request(
-                wrapped, 'Session.request', (request_method, url), {})
+            trace.wrap_session_request(
+                wrapped, 'Session.request', (request_method, url), kwargs)
 
         expected_attributes = {
             'http.url': url,
@@ -162,6 +162,7 @@ class Test_requests_trace(unittest.TestCase):
                          mock_tracer.current_span.span_kind)
         self.assertEqual(expected_attributes,
                          mock_tracer.current_span.attributes)
+        self.assertEqual(kwargs['headers']['x-trace'], 'some-value')
         self.assertEqual(expected_name, mock_tracer.current_span.name)
 
     def test_wrap_session_request_blacklist_ok(self):
@@ -185,12 +186,11 @@ class Test_requests_trace(unittest.TestCase):
         request_method = 'POST'
 
         with patch_tracer, patch_attr:
-            result = trace.wrap_session_request(
+            trace.wrap_session_request(
                 wrapped, 'Session.request', (request_method, url), {})
 
         expected_name = '[requests]POST'
         self.assertEqual(expected_name, mock_tracer.current_span.name)
-
 
     def test_wrap_session_request_blacklist_nok(self):
         def wrapped(*args, **kwargs):
@@ -213,14 +213,80 @@ class Test_requests_trace(unittest.TestCase):
         request_method = 'POST'
 
         with patch_tracer, patch_attr:
-            result = trace.wrap_session_request(
+            trace.wrap_session_request(
                 wrapped, 'Session.request', (request_method, url), {})
         self.assertEqual(None, mock_tracer.current_span)
 
+    def test_header_is_passed_in(self):
+        wrapped = mock.Mock(return_value=mock.Mock(status_code=200))
+        mock_tracer = MockTracer(propagator=mock.Mock(
+            to_headers=lambda x: {'x-trace': 'some-value'})
+        )
+
+        patch = mock.patch(
+            'opencensus.trace.ext.requests.trace.execution_context.'
+            'get_opencensus_tracer',
+            return_value=mock_tracer)
+
+        url = 'http://localhost:8080'
+        request_method = 'POST'
+        kwargs = {}
+
+        with patch:
+            trace.wrap_session_request(
+                wrapped, 'Session.request', (request_method, url), kwargs)
+
+        self.assertEqual(kwargs['headers']['x-trace'], 'some-value')
+
+    def test_headers_are_preserved(self):
+        wrapped = mock.Mock(return_value=mock.Mock(status_code=200))
+        mock_tracer = MockTracer(propagator=mock.Mock(
+            to_headers=lambda x: {'x-trace': 'some-value'})
+        )
+
+        patch = mock.patch(
+            'opencensus.trace.ext.requests.trace.execution_context.'
+            'get_opencensus_tracer',
+            return_value=mock_tracer)
+
+        url = 'http://localhost:8080'
+        request_method = 'POST'
+        kwargs = {'headers': {'key': 'value'}}
+
+        with patch:
+            trace.wrap_session_request(
+                wrapped, 'Session.request', (request_method, url), kwargs)
+
+        self.assertEqual(kwargs['headers']['key'], 'value')
+        self.assertEqual(kwargs['headers']['x-trace'], 'some-value')
+
+    def test_tracer_headers_are_overwritten(self):
+        wrapped = mock.Mock(return_value=mock.Mock(status_code=200))
+        mock_tracer = MockTracer(propagator=mock.Mock(
+            to_headers=lambda x: {'x-trace': 'some-value'})
+        )
+
+        patch = mock.patch(
+            'opencensus.trace.ext.requests.trace.execution_context.'
+            'get_opencensus_tracer',
+            return_value=mock_tracer)
+
+        url = 'http://localhost:8080'
+        request_method = 'POST'
+        kwargs = {'headers': {'x-trace': 'original-value'}}
+
+        with patch:
+            trace.wrap_session_request(
+                wrapped, 'Session.request', (request_method, url), kwargs)
+
+        self.assertEqual(kwargs['headers']['x-trace'], 'some-value')
+
 
 class MockTracer(object):
-    def __init__(self):
+    def __init__(self, propagator=None):
         self.current_span = None
+        self.span_context = {}
+        self.propagator = propagator
 
     def start_span(self):
         span = mock.Mock()
