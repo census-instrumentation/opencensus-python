@@ -73,8 +73,8 @@ class JaegerExporter(base.Exporter):
                       :class:`.SyncTransport`. The other option is
                       :class:`.BackgroundThreadTransport`.
 
-    :type transport_config
-    :param
+    :type transport_config: :class:`dict`
+    :param transport_config: Transport configuration dictionary.
     """
 
     def __init__(
