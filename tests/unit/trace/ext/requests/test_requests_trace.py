@@ -171,7 +171,9 @@ class Test_requests_trace(unittest.TestCase):
             result.status_code = 200
             return result
 
-        mock_tracer = MockTracer()
+        mock_tracer = MockTracer(propagator=mock.Mock(
+            to_headers=lambda x: {'x-trace': 'some-value'})
+        )
 
         patch_tracer = mock.patch(
             'opencensus.trace.ext.requests.trace.execution_context.'
