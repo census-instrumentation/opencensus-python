@@ -189,7 +189,7 @@ class StackdriverExporter(base.Exporter):
                       implement :meth:`.Transport.export`. Defaults to
                       :class:`.SyncTransport`. The other option is
                       :class:`.BackgroundThreadTransport`.
-                      
+
     :type transport_config: :class:`dict`
     :param transport_config: Transport configuration dictionary.
     """
