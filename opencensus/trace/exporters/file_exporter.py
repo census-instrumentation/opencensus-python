@@ -28,17 +28,19 @@ class FileExporter(base.Exporter):
     :type file_name: str
     :param file_name: The name of the output file.
 
+    :type file_mode: str
+    :param file_mode: The file mode to open the output file with.
+                      Defaults to w+
+                      
     :type transport: :class:`type`
     :param transport: Class for creating new transport objects. It should
                       extend from the base :class:`.Transport` type and
                       implement :meth:`.Transport.export`. Defaults to
                       :class:`.SyncTransport`. The other option is
                       :class:`.BackgroundThreadTransport`.
-
-    :type file_mode: str
-    :param file_mode: The file mode to open the output file with.
-                      Defaults to w+
-
+                      
+    :type transport_config: :class:`dict`
+    :param transport_config: Transport configuration dictionary.
     """
 
     def __init__(self, file_name=DEFAULT_FILENAME, file_mode='w+',

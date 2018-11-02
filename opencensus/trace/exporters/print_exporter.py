@@ -27,6 +27,9 @@ class PrintExporter(base.Exporter):
                       implement :meth:`.Transport.export`. Defaults to
                       :class:`.SyncTransport`. The other option is
                       :class:`.BackgroundThreadTransport`.
+                      
+    :type transport_config: :class:`dict`
+    :param transport_config: Transport configuration dictionary.
     """
 
     def __init__(self, transport=sync.SyncTransport, transport_config=None):
