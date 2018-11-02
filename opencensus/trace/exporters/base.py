@@ -20,7 +20,7 @@ class Exporter(object):
 
     Subclasses of :class:`Exporter` must override :meth:`export`.
     """
-    
+
     def emit(self, span_datas):
         """
         :type span_datas: list of :class:
