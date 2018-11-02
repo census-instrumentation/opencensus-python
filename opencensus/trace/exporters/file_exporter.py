@@ -45,7 +45,7 @@ class FileExporter(base.Exporter):
                  transport=sync.SyncTransport, transport_config=None):
         self.file_name = file_name
         self.file_mode = file_mode
-        self.transport = self.__init_transport(transport, transport_config)
+        self.transport = base.init_transport(self, transport, transport_config)
 
     def emit(self, span_datas):
         """

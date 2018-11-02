@@ -101,7 +101,7 @@ class JaegerExporter(base.Exporter):
         self.password = password
         self._agent_client = None
         self._collector = None
-        self.transport = self.__init_transport(transport, transport_config)
+        self.transport = base.init_transport(self, transport, transport_config)
 
     @property
     def agent_client(self):

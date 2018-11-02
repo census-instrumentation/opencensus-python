@@ -30,7 +30,7 @@ class PrintExporter(base.Exporter):
     """
 
     def __init__(self, transport=sync.SyncTransport, transport_config=None):
-        self.transport = self.__init_transport(transport, transport_config)
+        self.transport = base.init_transport(self, transport, transport_config)
 
     def emit(self, span_datas):
         """

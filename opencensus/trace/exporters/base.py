@@ -41,16 +41,19 @@ class Exporter(object):
         """
         raise NotImplementedError
 
-    def __init_transport(self, cls, config=None):
-        """Initiate the transport instance to be used by the exporter.
+def init_transport(exporter, transport, config=None):
+    """Initiate a transport instance to be used by the exporter.
 
-        :type cls: :class:
-            `~opencensus.trace.exporters.transports.base.Transport`
-        :param transport class to use for the exporter.
+    :type exporter: :class: `~opencensus.trace.exporters.base.Exporter`
+    :param exporter exporter instance.
 
-        :type config dict
-        :param dict of config options to initiate the transport with.
-        """
-        if config is None:
-            return cls(self)
-        return cls(self, **config)
+    :type transport: :class:
+        `~opencensus.trace.exporters.transports.base.Transport`
+    :param transport class to use for the exporter.
+
+    :type config: :class:`dict`
+    :param dict of config options to initiate the transport with.
+    """
+    if config is None:
+        return transport(exporter)
+    return transport(exporter, **config)

@@ -63,8 +63,7 @@ class LoggingExporter(base.Exporter):
         self.handler = handler
         self.logger.addHandler(handler)
         self.logger.setLevel(logging.INFO)
-
-        self.transport = self.__init_transport(transport, transport_config)
+        self.transport = base.init_transport(self, transport, transport_config)
 
     def emit(self, span_datas):
         """

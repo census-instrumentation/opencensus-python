@@ -199,7 +199,7 @@ class StackdriverExporter(base.Exporter):
 
         self.client = client
         self.project_id = client.project
-        self.transport = self.__init_transport(transport, transport_config)
+        self.transport = base.init_transport(self, transport, transport_config)
 
     def emit(self, span_datas):
         """

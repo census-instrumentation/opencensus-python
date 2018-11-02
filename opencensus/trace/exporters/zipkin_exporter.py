@@ -86,7 +86,7 @@ class ZipkinExporter(base.Exporter):
         self.url = self.get_url
         self.ipv4 = ipv4
         self.ipv6 = ipv6
-        self.transport = self.__init_transport(transport, transport_config)
+        self.transport = base.init_transport(self, transport, transport_config)
 
     @property
     def get_url(self):
