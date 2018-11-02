@@ -12,7 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
+
 from opencensus.stats import bucket_boundaries
+
+
+logger = logging.getLogger(__name__)
 
 
 class BaseAggregationData(object):
@@ -129,9 +134,26 @@ class DistributionAggregationData(BaseAggregationData):
 
         if counts_per_bucket is None:
             counts_per_bucket = [0 for ii in range(len(bounds) + 1)]
+        elif any(cc < 0 for cc in counts_per_bucket):
+            raise ValueError("Bucket counts may not be negative")
         elif len(counts_per_bucket) != len(bounds) + 1:
             raise ValueError("counts_per_bucket length does not match bounds "
                              "length")
+
+        if bounds:
+            if not all(bounds[ii] < bounds[ii + 1]
+                       for ii in range(len(bounds) - 1)):
+                raise ValueError("bounds must be sorted in increasing order")
+
+            dropped = [bb for bb in bounds if bb <= 0]
+            if dropped:
+                logger.warn("Bucket boundaries must be positive. Dropping "
+                            "boundaries {}"
+                            .format(dropped))
+                bounds = bounds[len(dropped):]
+                dropped_counts = counts_per_bucket[:len(dropped):]
+                counts_per_bucket = counts_per_bucket[len(dropped):]
+                counts_per_bucket[0] += sum(dropped_counts)
 
         self._counts_per_bucket = counts_per_bucket
         self._bounds = bucket_boundaries.BucketBoundaries(
