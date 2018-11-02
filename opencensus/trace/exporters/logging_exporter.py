@@ -35,6 +35,9 @@ class LoggingExporter(base.Exporter):
                       :class:`.SyncTransport`. The other option is
                       :class:`.BackgroundThreadTransport`.
 
+    :type transport_config: :class:`dict`
+    :param transport_config: Transport configuration dictionary.
+
     Example:
 
     .. code-block:: python
