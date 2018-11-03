@@ -135,6 +135,20 @@ class FlaskMiddleware(object):
             self.exporter = self.exporter(
                 project_id=_project_id,
                 transport=transport)
+        elif self.exporter.__name__ == 'JaegerExporter':
+            _service_name = self._get_service_name(params)
+            _jaeger_host_name = params.get(
+                JAEGER_EXPORTER_HOST_NAME, 'localhost')
+            _jaeger_port = params.get(
+                JAEGER_EXPORTER_PORT, 14268)
+            _jaeger_protocol = params.get(
+                JAEGER_EXPORTER_PROTOCOL, 'http')
+            self.exporter = self.exporter(
+                service_name=_service_name,
+                host_name=_jaeger_host_name,
+                port=_jaeger_port,
+                protocol=_jaeger_protocol,
+                transport=transport)
         elif self.exporter.__name__ == 'ZipkinExporter':
             _service_name = self._get_service_name(params)
             _zipkin_host_name = params.get(
@@ -156,11 +170,6 @@ class FlaskMiddleware(object):
             self.exporter = self.exporter(
                 service_name=_service_name,
                 endpoint=_endpoint,
-                transport=transport)
-        elif self.exporter.__name__ == 'JaegerExporter':
-            _service_name = self._get_service_name(params)
-            self.exporter = self.exporter(
-                service_name=_service_name,
                 transport=transport)
         else:
             self.exporter = self.exporter(transport=transport)
@@ -202,7 +211,7 @@ class FlaskMiddleware(object):
                 flask.request.url)
             tracer.add_attribute_to_current_span(
                 HTTP_METHOD, flask.request.method)
-            tracer.add_attribute_to_current_span(HTTP_URL, flask.request.url)
+            tracer.add_attribute_to_current_span(HTTP_URL, str(flask.request.url))
         except Exception:  # pragma: NO COVER
             log.error('Failed to trace request', exc_info=True)
 
