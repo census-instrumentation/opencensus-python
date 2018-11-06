@@ -43,7 +43,6 @@ SERVICE_NAME = 'SERVICE_NAME'
 JAEGER_EXPORTER_SERVICE_NAME = 'JAEGER_EXPORTER_SERVICE_NAME'
 JAEGER_EXPORTER_HOST_NAME = 'JAEGER_EXPORTER_HOST_NAME'
 JAEGER_EXPORTER_PORT = 'JAEGER_EXPORTER_PORT'
-JAEGER_EXPORTER_PROTOCOL = 'JAEGER_EXPORTER_PROTOCOL'
 ZIPKIN_EXPORTER_SERVICE_NAME = 'ZIPKIN_EXPORTER_SERVICE_NAME'
 ZIPKIN_EXPORTER_HOST_NAME = 'ZIPKIN_EXPORTER_HOST_NAME'
 ZIPKIN_EXPORTER_PORT = 'ZIPKIN_EXPORTER_PORT'
@@ -145,13 +144,10 @@ class FlaskMiddleware(object):
                 JAEGER_EXPORTER_HOST_NAME, 'localhost')
             _jaeger_port = params.get(
                 JAEGER_EXPORTER_PORT, 14268)
-            _jaeger_protocol = params.get(
-                JAEGER_EXPORTER_PROTOCOL, 'http')
             self.exporter = self.exporter(
                 service_name=_service_name,
                 host_name=_jaeger_host_name,
                 port=_jaeger_port,
-                protocol=_jaeger_protocol,
                 transport=transport)
         elif self.exporter.__name__ == 'ZipkinExporter':
             _service_name = self._get_service_name(params)
