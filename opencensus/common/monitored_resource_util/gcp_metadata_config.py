@@ -149,4 +149,10 @@ class GcpMetadataConfig(object):
                                       _GKE_ATTRIBUTES[attribute_key],
                                       _GCP_METADATA_URI_HEADER)
 
+        if attribute_value is not None and isinstance(attribute_value, bytes):
+            # At least in python3, bytes are are returned from
+            # urllib (although the response is text), convert
+            # to a normal string:
+            attribute_value = attribute_value.decode('utf-8')
+
         return attribute_value
