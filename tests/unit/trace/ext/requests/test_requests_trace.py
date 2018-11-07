@@ -15,8 +15,9 @@
 import unittest
 
 import mock
+from opencensus.trace.tracers import noop_tracer
 
-from opencensus.trace import span as span_module
+from opencensus.trace import span as span_module, execution_context
 from opencensus.trace.ext.requests import trace
 
 
@@ -42,8 +43,36 @@ class Test_requests_trace(unittest.TestCase):
         with patch_wrap, patch_requests:
             trace.trace_integration()
 
+            self.assertIsInstance(execution_context.get_opencensus_tracer(),
+                                  noop_tracer.NoopTracer)
+
         for func in trace.REQUESTS_WRAP_METHODS:
             self.assertEqual(getattr(mock_requests, func), wrap_result)
+
+    def test_trace_integration_set_tracer(self):
+        mock_wrap = mock.Mock()
+        mock_requests = mock.Mock()
+
+        wrap_result = 'wrap result'
+        mock_wrap.return_value = wrap_result
+
+        for func in trace.REQUESTS_WRAP_METHODS:
+            mock_func = mock.Mock()
+            mock_func.__name__ = func
+            setattr(mock_requests, func, mock_func)
+
+        patch_wrap = mock.patch(
+            'opencensus.trace.ext.requests.trace.wrap_requests', mock_wrap)
+        patch_requests = mock.patch(
+            'opencensus.trace.ext.requests.trace.requests', mock_requests)
+
+        class TmpTracer(noop_tracer.NoopTracer):
+            pass
+
+        with patch_wrap, patch_requests:
+            trace.trace_integration(tracer=TmpTracer())
+
+            self.assertIsInstance(execution_context.get_opencensus_tracer(), TmpTracer)
 
     def test_wrap_requests(self):
         mock_return = mock.Mock()
