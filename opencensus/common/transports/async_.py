@@ -15,7 +15,6 @@
 import atexit
 import logging
 import threading
-import time
 
 from six.moves import queue
 from six.moves import range
@@ -54,6 +53,7 @@ class _Worker(object):
         self._max_batch_size = max_batch_size
         self._queue = queue.Queue(0)
         self._lock = threading.Lock()
+        self._event = threading.Event()
         self._thread = None
 
     @property
@@ -114,8 +114,10 @@ class _Worker(object):
             for _ in range(len(items)):
                 self._queue.task_done()
 
-            # Wait for a while before next export
-            time.sleep(_WAIT_PERIOD)
+            # self._event is set at exit, at which point we start draining the
+            # queue immediately. If self._event is unset, block for
+            # _WAIT_PERIOD between each batch of exports.
+            self._event.wait(_WAIT_PERIOD)
 
             if quit_:
                 break
@@ -165,6 +167,8 @@ class _Worker(object):
         """Callback that attempts to send pending data before termination."""
         if not self.is_alive:
             return
+        # Stop blocking between export batches
+        self._event.set()
         self.stop()
 
     def enqueue(self, data):
