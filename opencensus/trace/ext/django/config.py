@@ -37,6 +37,7 @@ DEFAULT_DJANGO_TRACER_PARAMS = {
     'ZIPKIN_EXPORTER_PORT': 9411,
     'ZIPKIN_EXPORTER_PROTOCOL': 'http',
     'OCAGENT_TRACE_EXPORTER_ENDPOINT': None,
+    'BLACKLIST_HOSTNAMES': None,
     'TRANSPORT': 'opencensus.trace.exporters.transports.sync.SyncTransport',
 }
 

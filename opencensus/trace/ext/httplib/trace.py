@@ -18,6 +18,7 @@ import sys
 from opencensus.trace import attributes_helper
 from opencensus.trace import execution_context
 from opencensus.trace import span as span_module
+from opencensus.trace.ext import utils
 
 PYTHON2 = sys.version_info.major == 2
 
@@ -61,6 +62,12 @@ def wrap_httplib_request(request_func):
 
     def call(self, method, url, body, headers, *args, **kwargs):
         _tracer = execution_context.get_opencensus_tracer()
+        blacklist_hostnames = execution_context.get_opencensus_attr(
+            'blacklist_hostnames')
+        dest_url = '{}:{}'.format(self._dns_host, self.port)
+        if utils.disable_tracing_hostname(dest_url, blacklist_hostnames):
+            return request_func(self, method, url, body,
+                                headers, *args, **kwargs)
         _span = _tracer.start_span()
         _span.span_kind = span_module.SpanKind.CLIENT
         _span.name = '[httplib]{}'.format(request_func.__name__)
@@ -100,7 +107,7 @@ def wrap_httplib_response(response_func):
         span = _tracer.current_span()
 
         # No corresponding request span is found, request not traced.
-        if span.span_id != current_span_id:
+        if not span or span.span_id != current_span_id:
             return response_func(self, *args, **kwargs)
 
         result = response_func(self, *args, **kwargs)

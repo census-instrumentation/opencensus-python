@@ -56,3 +56,20 @@ class TestUtils(unittest.TestCase):
 
         disable_tracing = utils.disable_tracing_url(url, blacklist_paths)
         self.assertTrue(disable_tracing)
+
+    def test_disable_tracing_hostname_default(self):
+        url = '127.0.0.1:8080'
+
+        disable_tracing = utils.disable_tracing_hostname(url)
+        self.assertFalse(disable_tracing)
+
+    def test_disable_tracing_hostname_explicit(self):
+        blacklist_paths = ['127.0.0.1', '192.168.0.1:80']
+
+        url = '127.0.0.1:8080'
+        disable_tracing = utils.disable_tracing_hostname(url, blacklist_paths)
+        self.assertFalse(disable_tracing)
+
+        url = '127.0.0.1:80'
+        disable_tracing = utils.disable_tracing_hostname(url, blacklist_paths)
+        self.assertFalse(disable_tracing)
