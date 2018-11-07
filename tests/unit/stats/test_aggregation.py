@@ -100,14 +100,14 @@ class TestDistributionAggregation(unittest.TestCase):
                          distribution_aggregation.aggregation_type)
 
     def test_constructor_explicit(self):
-        boundaries = ["test"]
-        distribution = {1: "test"}
+        boundaries = [1, 2]
+        distribution = [0, 1, 2]
         distribution_aggregation = aggregation_module.DistributionAggregation(
             boundaries=boundaries, distribution=distribution)
 
-        self.assertEqual(["test"],
+        self.assertEqual([1, 2],
                          distribution_aggregation.boundaries.boundaries)
-        self.assertEqual({1: "test"}, distribution_aggregation.distribution)
+        self.assertEqual([0, 1, 2], distribution_aggregation.distribution)
         self.assertEqual(aggregation_module.Type.DISTRIBUTION,
                          distribution_aggregation.aggregation_type)
 
