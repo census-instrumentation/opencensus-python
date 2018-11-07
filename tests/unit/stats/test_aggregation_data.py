@@ -122,7 +122,7 @@ class TestDistributionAggregationData(unittest.TestCase):
                 max_=mock.Mock(),
                 sum_of_sqd_deviations=mock.Mock(),
                 counts_per_bucket=[0, 0, 0],
-                bounds=[0, 1, 2])
+                bounds=[1, 2, 3])
 
         # Check that counts aren't negative
         with self.assertRaises(ValueError):
@@ -133,7 +133,7 @@ class TestDistributionAggregationData(unittest.TestCase):
                 max_=mock.Mock(),
                 sum_of_sqd_deviations=mock.Mock(),
                 counts_per_bucket=[0, 2, -2, 0],
-                bounds=[0, 1, 2])
+                bounds=[1, 2, 3])
 
         # And check that we don't throw given the right args
         aggregation_data_module.DistributionAggregationData(
@@ -143,7 +143,7 @@ class TestDistributionAggregationData(unittest.TestCase):
             max_=mock.Mock(),
             sum_of_sqd_deviations=mock.Mock(),
             counts_per_bucket=[0, 0, 0, 0],
-            bounds=[0, 1, 2])
+            bounds=[1, 2, 3])
 
     def test_init_bad_bounds(self):
         # Check that bounds are unique
@@ -155,7 +155,7 @@ class TestDistributionAggregationData(unittest.TestCase):
                 max_=mock.Mock(),
                 sum_of_sqd_deviations=mock.Mock(),
                 counts_per_bucket=[0, 0, 0, 0],
-                bounds=[0, 1, 1])
+                bounds=[1, 2, 2])
 
         # Check that bounds are sorted
         with self.assertRaises(ValueError):
@@ -166,34 +166,7 @@ class TestDistributionAggregationData(unittest.TestCase):
                 max_=mock.Mock(),
                 sum_of_sqd_deviations=mock.Mock(),
                 counts_per_bucket=[0, 0, 0, 0],
-                bounds=[0, 2, 1])
-
-    def test_init_negative_bounds(self):
-        # Check that non-positive-bound counts are summed
-        da1 = aggregation_data_module.DistributionAggregationData(
-            mean_data=mock.Mock(),
-            count_data=mock.Mock(),
-            min_=mock.Mock(),
-            max_=mock.Mock(),
-            sum_of_sqd_deviations=mock.Mock(),
-            counts_per_bucket=[3, 4, 5, 6, 7],
-            bounds=[-1, 0, 1, 10])
-
-        self.assertEqual(da1.bounds, [1, 10])
-        self.assertEqual(da1.counts_per_bucket, [12, 6, 7])
-
-        # Check the same for all non-positive bounds
-        da2 = aggregation_data_module.DistributionAggregationData(
-            mean_data=mock.Mock(),
-            count_data=mock.Mock(),
-            min_=mock.Mock(),
-            max_=mock.Mock(),
-            sum_of_sqd_deviations=mock.Mock(),
-            counts_per_bucket=[3, 4, 5],
-            bounds=[-1, 0])
-
-        self.assertEqual(da2.bounds, [])
-        self.assertEqual(da2.counts_per_bucket, [12])
+                bounds=[1, 3, 2])
 
     def test_constructor_with_exemplar(self):
         timestamp = time.time()
@@ -292,8 +265,8 @@ class TestDistributionAggregationData(unittest.TestCase):
         _min = mock.Mock()
         _max = mock.Mock()
         sum_of_sqd_deviations = mock.Mock()
-        counts_per_bucket = [1, 1, 1, 1]
-        bounds = [0, 1.0 / 2.0, 1]
+        counts_per_bucket = [1, 1, 1]
+        bounds = [1.0 / 2.0, 1]
         dist_agg_data = aggregation_data_module.DistributionAggregationData(
             mean_data=mean_data,
             count_data=count_data,
