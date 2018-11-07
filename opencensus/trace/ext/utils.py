@@ -14,6 +14,8 @@
 
 import re
 
+from opencensus.trace import execution_context
+
 # By default the blacklist urls are not tracing, currently just include the
 # health check url. The paths are literal string matched instead of regular
 # expressions. Do not include the '/' at the beginning of the path.
@@ -63,3 +65,31 @@ def disable_tracing_url(url, blacklist_paths=None):
             return True
 
     return False
+
+
+def disable_tracing_hostname(url, blacklist_hostnames=None):
+    """Disable tracing for the provided blacklist URLs, by default not tracing
+    the exporter url.
+
+    If the url path starts with the blacklisted path, return True.
+
+    :type blacklist_hostnames: list
+    :param blacklist_hostnames: URL that not tracing.
+
+    :rtype: bool
+    :returns: True if not tracing, False if tracing.
+    """
+    if blacklist_hostnames is None:
+        # Exporter host_name are not traced by default
+        _tracer = execution_context.get_opencensus_tracer()
+        try:
+            blacklist_hostnames = [
+                '{}:{}'.format(
+                    _tracer.exporter.host_name,
+                    _tracer.exporter.port
+                )
+            ]
+        except(AttributeError):
+            blacklist_hostnames = []
+
+    return url in blacklist_hostnames

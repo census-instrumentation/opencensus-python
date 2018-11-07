@@ -99,7 +99,85 @@ class Test_httplib_trace(unittest.TestCase):
         self.assertEqual(expected_attributes,
                          mock_tracer.span.attributes)
         self.assertEqual(expected_name, mock_tracer.span.name)
-        self.assertEqual(span_module.SpanKind.CLIENT, mock_tracer.span.span_kind)        
+        self.assertEqual(span_module.SpanKind.CLIENT, mock_tracer.span.span_kind)
+
+    def test_wrap_httplib_request_blacklist_ok(self):
+        mock_span = mock.Mock()
+        span_id = '1234'
+        mock_span.span_id = span_id
+        mock_tracer = MockTracer(mock_span)
+        mock_request_func = mock.Mock()
+        mock_request_func.__name__ = 'request'
+
+        patch_tracer = mock.patch(
+            'opencensus.trace.ext.requests.trace.execution_context.'
+            'get_opencensus_tracer',
+            return_value=mock_tracer)
+        patch_attr = mock.patch(
+            'opencensus.trace.ext.requests.trace.execution_context.'
+            'get_opencensus_attr',
+            return_value=None)
+
+        wrapped = trace.wrap_httplib_request(mock_request_func)
+
+        mock_self = mock.Mock()
+        method = 'GET'
+        url = 'http://localhost:8080'
+        body = None
+        headers = {}
+
+        with patch_tracer, patch_attr:
+            wrapped(mock_self, method, url, body, headers)
+
+        expected_attributes = {
+            'http.url': url,
+            'http.method': method}
+        expected_name = '[httplib]request'
+
+        mock_request_func.assert_called_with(
+            mock_self, method, url, body, {
+                'traceparent': '00-123-456-01',
+            }
+        )
+
+    def test_wrap_httplib_request_blacklist_nok(self):
+        mock_span = mock.Mock()
+        span_id = '1234'
+        mock_span.span_id = span_id
+        mock_tracer = MockTracer(mock_span)
+        mock_request_func = mock.Mock()
+        mock_request_func.__name__ = 'request'
+
+        patch_tracer = mock.patch(
+            'opencensus.trace.ext.requests.trace.execution_context.'
+            'get_opencensus_tracer',
+            return_value=mock_tracer)
+        patch_attr = mock.patch(
+            'opencensus.trace.ext.requests.trace.execution_context.'
+            'get_opencensus_attr',
+            return_value=['localhost:8080'])
+
+        wrapped = trace.wrap_httplib_request(mock_request_func)
+
+        mock_self = mock.Mock()
+        mock_self._dns_host = 'localhost'
+        mock_self.port = '8080'
+        method = 'GET'
+        url = 'http://{}:{}'.format(mock_self._dns_host, mock_self.port)
+        body = None
+        headers = {}
+
+        with patch_tracer, patch_attr:
+            wrapped(mock_self, method, url, body, headers)
+
+        expected_attributes = {
+            'http.url': url,
+            'http.method': method}
+        expected_name = '[httplib]request'
+
+        mock_request_func.assert_called_with(
+            mock_self, method, url, body, {}
+        )
 
     def test_wrap_httplib_response(self):
         mock_span = mock.Mock()

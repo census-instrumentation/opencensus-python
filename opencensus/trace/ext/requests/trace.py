@@ -15,10 +15,15 @@
 import logging
 import requests
 import wrapt
+try:
+    from urllib.parse import urlparse
+except ImportError:
+    from urlparse import urlparse
 
 from opencensus.trace import attributes_helper
 from opencensus.trace import execution_context
 from opencensus.trace import span as span_module
+from opencensus.trace.ext import utils
 
 log = logging.getLogger(__name__)
 
@@ -56,6 +61,16 @@ def trace_integration(tracer=None):
 def wrap_requests(requests_func):
     """Wrap the requests function to trace it."""
     def call(url, *args, **kwargs):
+        blacklist_hostnames = execution_context.get_opencensus_attr(
+            'blacklist_hostnames')
+        parsed_url = urlparse(url)
+        if parsed_url.port is None:
+            dest_url = parsed_url.hostname
+        else:
+            dest_url = '{}:{}'.format(parsed_url.hostname, parsed_url.port)
+        if utils.disable_tracing_hostname(dest_url, blacklist_hostnames):
+            return requests_func(url, *args, **kwargs)
+
         _tracer = execution_context.get_opencensus_tracer()
         _span = _tracer.start_span()
         _span.name = '[requests]{}'.format(requests_func.__name__)
@@ -80,6 +95,17 @@ def wrap_session_request(wrapped, instance, args, kwargs):
     """Wrap the session function to trace it."""
     method = kwargs.get('method') or args[0]
     url = kwargs.get('url') or args[1]
+
+    blacklist_hostnames = execution_context.get_opencensus_attr(
+        'blacklist_hostnames')
+    parsed_url = urlparse(url)
+    if parsed_url.port is None:
+        dest_url = parsed_url.hostname
+    else:
+        dest_url = '{}:{}'.format(parsed_url.hostname, parsed_url.port)
+    if utils.disable_tracing_hostname(dest_url, blacklist_hostnames):
+        return wrapped(*args, **kwargs)
+
     _tracer = execution_context.get_opencensus_tracer()
     _span = _tracer.start_span()
 
