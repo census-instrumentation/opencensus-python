@@ -51,7 +51,7 @@ class TestB3FormatPropagator(unittest.TestCase):
 
         self.assertIsNotNone(span_context.trace_id)
         self.assertIsNone(span_context.span_id)
-        self.assertTrue(span_context.trace_options.enabled)
+        self.assertFalse(span_context.trace_options.enabled)
 
     def test_from_headers_64bit_traceid(self):
         test_trace_id = 'bf9efcd03927272e'

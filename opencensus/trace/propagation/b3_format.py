@@ -41,7 +41,6 @@ class B3FormatPropagator(object):
             return SpanContext(from_header=False)
 
         trace_id, span_id, sampled = None, None, None
-        trace_options = TraceOptions()
 
         state = headers.get(_STATE_HEADER_KEY)
         if state:
@@ -67,7 +66,14 @@ class B3FormatPropagator(object):
                 return SpanContext(from_header=False)
 
             sampled = sampled in ('1', 'd')
-            trace_options.set_enabled(sampled)
+        else:
+            # If there's no incoming sampling decision, it was deferred to us.
+            # Even though we set it to False here, we might still sample
+            # depending on the tracer configuration.
+            sampled = False
+
+        trace_options = TraceOptions()
+        trace_options.set_enabled(sampled)
 
         # TraceId and SpanId headers both have to exist
         if not trace_id or not span_id:
