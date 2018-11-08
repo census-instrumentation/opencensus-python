@@ -123,11 +123,17 @@ class DistributionAggregation(BaseAggregation):
     :param aggregation_type: represents the type of this aggregation
 
     """
-    def __init__(
-            self,
-            boundaries=None,
-            distribution=None,
-            aggregation_type=Type.DISTRIBUTION):
+
+    def __init__(self,
+                 boundaries=None,
+                 distribution=None,
+                 aggregation_type=Type.DISTRIBUTION):
+        if boundaries:
+            if not all(boundaries[ii] < boundaries[ii + 1]
+                       for ii in range(len(boundaries) - 1)):
+                raise ValueError("bounds must be sorted in increasing order")
+            boundaries = [bb for bb in boundaries if bb > 0]
+
         super(DistributionAggregation, self).__init__(
             buckets=boundaries, aggregation_type=aggregation_type)
         self._boundaries = bucket_boundaries.BucketBoundaries(boundaries)

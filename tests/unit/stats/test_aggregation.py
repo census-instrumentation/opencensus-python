@@ -122,3 +122,16 @@ class TestDistributionAggregation(unittest.TestCase):
 
         self.assertEqual(da.aggregation_data.min, -10)
         self.assertEqual(da.aggregation_data.max, 10)
+
+    def test_init_bad_boundaries(self):
+        """Check that boundaries must be sorted and unique."""
+        with self.assertRaises(ValueError):
+            aggregation_module.DistributionAggregation([1, 3, 2])
+        with self.assertRaises(ValueError):
+            aggregation_module.DistributionAggregation([1, 1, 2])
+
+    def test_init_negative_boundaries(self):
+        """Check that non-positive boundaries are dropped."""
+        da = aggregation_module.DistributionAggregation([-2, -1, 0, 1, 2])
+        self.assertEqual(da.boundaries.boundaries, [1, 2])
+        self.assertEqual(da.aggregation_data.bounds, [1, 2])

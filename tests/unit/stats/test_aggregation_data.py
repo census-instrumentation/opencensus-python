@@ -114,7 +114,7 @@ class TestDistributionAggregationData(unittest.TestCase):
 
     def test_init_bad_bucket_counts(self):
         # Check that len(counts_per_bucket) == len(bounds) + 1
-        with self.assertRaises(ValueError):
+        with self.assertRaises(AssertionError):
             aggregation_data_module.DistributionAggregationData(
                 mean_data=mock.Mock(),
                 count_data=mock.Mock(),
@@ -125,7 +125,7 @@ class TestDistributionAggregationData(unittest.TestCase):
                 bounds=[1, 2, 3])
 
         # Check that counts aren't negative
-        with self.assertRaises(ValueError):
+        with self.assertRaises(AssertionError):
             aggregation_data_module.DistributionAggregationData(
                 mean_data=mock.Mock(),
                 count_data=mock.Mock(),
@@ -147,7 +147,7 @@ class TestDistributionAggregationData(unittest.TestCase):
 
     def test_init_bad_bounds(self):
         # Check that bounds are unique
-        with self.assertRaises(ValueError):
+        with self.assertRaises(AssertionError):
             aggregation_data_module.DistributionAggregationData(
                 mean_data=mock.Mock(),
                 count_data=mock.Mock(),
@@ -158,7 +158,7 @@ class TestDistributionAggregationData(unittest.TestCase):
                 bounds=[1, 2, 2])
 
         # Check that bounds are sorted
-        with self.assertRaises(ValueError):
+        with self.assertRaises(AssertionError):
             aggregation_data_module.DistributionAggregationData(
                 mean_data=mock.Mock(),
                 count_data=mock.Mock(),

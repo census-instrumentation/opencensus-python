@@ -131,29 +131,17 @@ class DistributionAggregationData(BaseAggregationData):
         self._sum_of_sqd_deviations = sum_of_sqd_deviations
         if bounds is None:
             bounds = []
+        else:
+            assert bounds == list(sorted(set(bounds)))
 
         if counts_per_bucket is None:
             counts_per_bucket = [0 for ii in range(len(bounds) + 1)]
-        elif any(cc < 0 for cc in counts_per_bucket):
-            raise ValueError("Bucket counts may not be negative")
-        elif len(counts_per_bucket) != len(bounds) + 1:
-            raise ValueError("counts_per_bucket length does not match bounds "
-                             "length")
+        else:
+            assert all(cc >= 0 for cc in counts_per_bucket)
+            assert len(counts_per_bucket) == len(bounds) + 1
 
-        if bounds:
-            if not all(bounds[ii] < bounds[ii + 1]
-                       for ii in range(len(bounds) - 1)):
-                raise ValueError("bounds must be sorted in increasing order")
-
-            dropped = [bb for bb in bounds if bb <= 0]
-            if dropped:
-                logger.warn("Bucket boundaries must be positive. Dropping "
-                            "boundaries {}"
-                            .format(dropped))
-                bounds = bounds[len(dropped):]
-                dropped_counts = counts_per_bucket[:len(dropped):]
-                counts_per_bucket = counts_per_bucket[len(dropped):]
-                counts_per_bucket[0] += sum(dropped_counts)
+        assert bounds == sorted(bounds)
+        assert all(bb > 0 for bb in bounds)
 
         self._counts_per_bucket = counts_per_bucket
         self._bounds = bucket_boundaries.BucketBoundaries(
