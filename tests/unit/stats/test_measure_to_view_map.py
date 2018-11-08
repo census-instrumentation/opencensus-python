@@ -303,6 +303,26 @@ class TestMeasureToViewMap(unittest.TestCase):
             attachments=None)
         self.assertIsNone(record)
 
+    def test_record_negative_value(self):
+        """Check that we warn and drop negative measures at record time."""
+        measure = mock.Mock()
+        view_data = mock.Mock()
+        measure_to_view_map = measure_to_view_map_module.MeasureToViewMap()
+        measure_to_view_map._registered_measures = {measure.name: measure}
+        measure_to_view_map._measure_to_view_data_list_map = {
+            measure.name: [view_data]
+        }
+        with mock.patch('opencensus.stats.measure_to_view_map.logger') \
+                as mock_logger:
+            record = measure_to_view_map.record(
+                tags=mock.Mock(),
+                measurement_map={measure: -1},
+                timestamp=mock.Mock(),
+                attachments=None)
+        self.assertIsNone(record)
+        mock_logger.warning.assert_called_once()
+        view_data.record.assert_not_called()
+
     def test_record_with_exporter(self):
         exporter = mock.Mock()
         measure_name = "test_measure"
