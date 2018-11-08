@@ -182,11 +182,10 @@ For Django, you can configure the blacklist in the ``OPENCENSUS_PARAMS`` in ``se
 Framework Integration
 ---------------------
 
-Census supports integration with popular web frameworks including
-Django, Flask, Pyramid, and Webapp2. When the application receives a HTTP request,
-the tracer will automatically generate a span context using the trace
-information extracted from the request headers, and propagated to the
-child spans.
+Census supports integration with popular web frameworks including Django,
+Flask, and Pyramid. When the application receives a HTTP request, the tracer
+will automatically generate a span context using the trace information
+extracted from the request headers, and propagated to the child spans.
 
 Flask
 ~~~~~
