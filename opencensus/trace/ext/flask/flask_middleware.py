@@ -45,6 +45,7 @@ ZIPKIN_EXPORTER_HOST_NAME = 'ZIPKIN_EXPORTER_HOST_NAME'
 ZIPKIN_EXPORTER_PORT = 'ZIPKIN_EXPORTER_PORT'
 ZIPKIN_EXPORTER_PROTOCOL = 'ZIPKIN_EXPORTER_PROTOCOL'
 OCAGENT_TRACE_EXPORTER_ENDPOINT = 'OCAGENT_TRACE_EXPORTER_ENDPOINT'
+BLACKLIST_HOSTNAMES = 'BLACKLIST_HOSTNAMES'
 
 log = logging.getLogger(__name__)
 
@@ -165,6 +166,7 @@ class FlaskMiddleware(object):
         else:
             self.exporter = self.exporter(transport=transport)
 
+        self.blacklist_hostnames = params.get(BLACKLIST_HOSTNAMES, None)
         # Initialize the propagator
         if inspect.isclass(self.propagator):
             self.propagator = self.propagator()
@@ -203,6 +205,9 @@ class FlaskMiddleware(object):
             tracer.add_attribute_to_current_span(
                 HTTP_METHOD, flask.request.method)
             tracer.add_attribute_to_current_span(HTTP_URL, flask.request.url)
+            execution_context.set_opencensus_attr(
+                'blacklist_hostnames',
+                self.blacklist_hostnames)
         except Exception:  # pragma: NO COVER
             log.error('Failed to trace request', exc_info=True)
 
