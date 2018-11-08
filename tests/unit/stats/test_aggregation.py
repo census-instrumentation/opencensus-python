@@ -135,3 +135,7 @@ class TestDistributionAggregation(unittest.TestCase):
         da = aggregation_module.DistributionAggregation([-2, -1, 0, 1, 2])
         self.assertEqual(da.boundaries.boundaries, [1, 2])
         self.assertEqual(da.aggregation_data.bounds, [1, 2])
+
+        da2 = aggregation_module.DistributionAggregation([-2, -1])
+        self.assertEqual(da2.boundaries.boundaries, [])
+        self.assertEqual(da2.aggregation_data.bounds, [])
