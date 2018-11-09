@@ -13,7 +13,12 @@
 # limitations under the License.
 
 from datetime import datetime
+import logging
+
 from opencensus.tags import execution_context
+
+
+logger = logging.getLogger(__name__)
 
 
 class MeasurementMap(object):
@@ -33,6 +38,10 @@ class MeasurementMap(object):
         self._measurement_map = {}
         self._measure_to_view_map = measure_to_view_map
         self._attachments = attachments
+        # If the user tries to record a negative value for any measurement,
+        # refuse to record all measurements from this map. Recording negative
+        # measurements will become an error in a later release.
+        self._invalid = False
 
     @property
     def measurement_map(self):
@@ -75,11 +84,27 @@ class MeasurementMap(object):
 
         self._attachments[key] = value
 
-    def record(self, tag_map_tags=execution_context.get_current_tag_map()):
+    def record(self, tag_map_tags=None):
         """records all the measures at the same time with a tag_map.
         tag_map could either be explicitly passed to the method, or implicitly
         read from current execution context.
         """
+        if tag_map_tags is None:
+            tag_map_tags = execution_context.get_current_tag_map()
+        if self._invalid:
+            logger.warning("Measurement map has included negative value "
+                           "measurements, refusing to record")
+            return
+        for measure, value in self.measurement_map.items():
+            if value < 0:
+                self._invalid = True
+                logger.warning("Dropping values, value to record must be "
+                               "non-negative")
+                logger.info("Measure '{}' has negative value ({}), refusing "
+                            "to record measurements from {}"
+                            .format(measure.name, value, self))
+                return
+
         self.measure_to_view_map.record(
                 tags=tag_map_tags,
                 measurement_map=self.measurement_map,

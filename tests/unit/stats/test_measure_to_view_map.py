@@ -312,15 +312,11 @@ class TestMeasureToViewMap(unittest.TestCase):
         measure_to_view_map._measure_to_view_data_list_map = {
             measure.name: [view_data]
         }
-        with mock.patch('opencensus.stats.measure_to_view_map.logger') \
-                as mock_logger:
-            record = measure_to_view_map.record(
+        with self.assertRaises(AssertionError):
+            measure_to_view_map.record(
                 tags=mock.Mock(),
                 measurement_map={measure: -1},
-                timestamp=mock.Mock(),
-                attachments=None)
-        self.assertIsNone(record)
-        mock_logger.warning.assert_called_once()
+                timestamp=mock.Mock())
         view_data.record.assert_not_called()
 
     def test_record_with_exporter(self):

@@ -19,9 +19,6 @@ import logging
 from opencensus.stats import view_data as view_data_module
 
 
-logger = logging.getLogger(__name__)
-
-
 class MeasureToViewMap(object):
     """Measure To View Map stores a map from names of Measures to
     specific View Datas
@@ -100,12 +97,7 @@ class MeasureToViewMap(object):
 
     def record(self, tags, measurement_map, timestamp, attachments=None):
         """records stats with a set of tags"""
-        for measure, value in measurement_map.items():
-            if value < 0:
-                logger.warning("Recorded values must be non-negative, "
-                               "dropping values")
-                return
-
+        assert all(vv >= 0 for vv in measurement_map.values())
         for measure, value in measurement_map.items():
             if measure != self._registered_measures.get(measure.name):
                 return
