@@ -60,10 +60,16 @@ class MeasurementMap(object):
 
     def measure_int_put(self, measure, value):
         """associates the measure of type Int with the given value"""
+        if value < 0:
+            # Should be an error in a later release.
+            logger.warning("Cannot record negative values")
         self._measurement_map[measure] = value
 
     def measure_float_put(self, measure, value):
         """associates the measure of type Float with the given value"""
+        if value < 0:
+            # Should be an error in a later release.
+            logger.warning("Cannot record negative values")
         self._measurement_map[measure] = value
 
     def measure_put_attachment(self, key, value):

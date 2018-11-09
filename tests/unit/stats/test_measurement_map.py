@@ -178,3 +178,15 @@ class TestMeasurementMap(unittest.TestCase):
         self.assertTrue(measurement_map._invalid)
         measurement_map._measure_to_view_map.record.assert_not_called()
         another_mock_logger.warning.assert_called_once()
+
+    def test_log_negative_puts(self):
+        """Check that we warn against negative measurements on put."""
+        measurement_map = measurement_map_module.MeasurementMap(mock.Mock())
+
+        with logger_patch as mock_logger:
+            measurement_map.measure_int_put(mock.Mock(), -1)
+        mock_logger.warning.assert_called_once()
+
+        with logger_patch as another_mock_logger:
+            measurement_map.measure_float_put(mock.Mock(), -1.0)
+        another_mock_logger.warning.assert_called_once()
