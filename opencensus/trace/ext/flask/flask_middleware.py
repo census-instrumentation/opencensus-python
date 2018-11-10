@@ -40,6 +40,9 @@ GCP_EXPORTER_PROJECT = 'GCP_EXPORTER_PROJECT'
 SAMPLING_RATE = 'SAMPLING_RATE'
 TRANSPORT = 'TRANSPORT'
 SERVICE_NAME = 'SERVICE_NAME'
+JAEGER_EXPORTER_SERVICE_NAME = 'JAEGER_EXPORTER_SERVICE_NAME'
+JAEGER_EXPORTER_HOST_NAME = 'JAEGER_EXPORTER_HOST_NAME'
+JAEGER_EXPORTER_PORT = 'JAEGER_EXPORTER_PORT'
 ZIPKIN_EXPORTER_SERVICE_NAME = 'ZIPKIN_EXPORTER_SERVICE_NAME'
 ZIPKIN_EXPORTER_HOST_NAME = 'ZIPKIN_EXPORTER_HOST_NAME'
 ZIPKIN_EXPORTER_PORT = 'ZIPKIN_EXPORTER_PORT'
@@ -136,6 +139,17 @@ class FlaskMiddleware(object):
             self.exporter = self.exporter(
                 project_id=_project_id,
                 transport=transport)
+        elif self.exporter.__name__ == 'JaegerExporter':
+            _service_name = self._get_service_name(params)
+            _jaeger_host_name = params.get(
+                JAEGER_EXPORTER_HOST_NAME, 'localhost')
+            _jaeger_port = params.get(
+                JAEGER_EXPORTER_PORT, 14268)
+            self.exporter = self.exporter(
+                service_name=_service_name,
+                host_name=_jaeger_host_name,
+                port=_jaeger_port,
+                transport=transport)
         elif self.exporter.__name__ == 'ZipkinExporter':
             _service_name = self._get_service_name(params)
             _zipkin_host_name = params.get(
@@ -157,11 +171,6 @@ class FlaskMiddleware(object):
             self.exporter = self.exporter(
                 service_name=_service_name,
                 endpoint=_endpoint,
-                transport=transport)
-        elif self.exporter.__name__ == 'JaegerExporter':
-            _service_name = self._get_service_name(params)
-            self.exporter = self.exporter(
-                service_name=_service_name,
                 transport=transport)
         else:
             self.exporter = self.exporter(transport=transport)
@@ -204,7 +213,8 @@ class FlaskMiddleware(object):
                 flask.request.url)
             tracer.add_attribute_to_current_span(
                 HTTP_METHOD, flask.request.method)
-            tracer.add_attribute_to_current_span(HTTP_URL, flask.request.url)
+            tracer.add_attribute_to_current_span(
+                HTTP_URL, str(flask.request.url))
             execution_context.set_opencensus_attr(
                 'blacklist_hostnames',
                 self.blacklist_hostnames)
