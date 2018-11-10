@@ -89,8 +89,7 @@ class JaegerExporter(base.Exporter):
             agent_port=DEFAULT_AGENT_PORT,
             agent_endpoint=DEFAULT_ENDPOINT,
             transport=sync.SyncTransport,
-            transport_config=None
-        ):
+            transport_config=None):
         self.service_name = service_name
         self.host_name = host_name
         self.agent_host_name = agent_host_name

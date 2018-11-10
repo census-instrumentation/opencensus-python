@@ -42,6 +42,7 @@ class Exporter(object):
         """
         raise NotImplementedError
 
+
 def init_transport(exporter, transport, config=None):
     """Initiate a transport instance to be used by the exporter.
 
