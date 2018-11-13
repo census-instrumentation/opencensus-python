@@ -33,7 +33,8 @@ class TestContextTracer(unittest.TestCase):
         tracer = context_tracer.ContextTracer()
 
         assert isinstance(tracer.span_context, span_context.SpanContext)
-        assert isinstance(tracer.exporter, print_exporter.PrintExporter)
+        [tracer_exporter] = tracer.exporters
+        assert isinstance(tracer_exporter, print_exporter.PrintExporter)
         self.assertEqual(tracer._spans_list, [])
         self.assertEqual(tracer.root_span_id, tracer.span_context.span_id)
 
@@ -43,16 +44,16 @@ class TestContextTracer(unittest.TestCase):
         span_context = span_context.SpanContext()
         exporter = mock.Mock()
         tracer = context_tracer.ContextTracer(
-            exporter=exporter, span_context=span_context)
+            exporters=[exporter], span_context=span_context)
 
         self.assertIs(tracer.span_context, span_context)
-        self.assertIs(tracer.exporter, exporter)
+        [tracer_exporter] = tracer.exporters
+        self.assertIs(tracer_exporter, exporter)
         self.assertEqual(tracer.trace_id, span_context.trace_id)
         self.assertEqual(tracer._spans_list, [])
         self.assertEqual(tracer.root_span_id, span_context.span_id)
 
     def test_finish_without_spans(self):
-        spans = []
         trace_id = '6e0c63257de34c92bf9efcd03927272e'
         tracer = context_tracer.ContextTracer()
         tracer.trace_id = trace_id
@@ -127,7 +128,7 @@ class TestContextTracer(unittest.TestCase):
     @mock.patch.object(context_tracer.ContextTracer, 'current_span')
     def test_end_span_active(self, mock_current_span):
         exporter = mock.Mock()
-        tracer = context_tracer.ContextTracer(exporter=exporter)
+        tracer = context_tracer.ContextTracer(exporters=[exporter])
         mock_span = mock.Mock()
         mock_span.name = 'span'
         mock_span.children = []
@@ -145,7 +146,8 @@ class TestContextTracer(unittest.TestCase):
 
         self.assertTrue(mock_span.finish.called)
         self.assertEqual(tracer.span_context.span_id, parent_span_id)
-        self.assertFalse(tracer.exporter.export.called)
+        [tracer_exporter] = tracer.exporters
+        self.assertFalse(tracer_exporter.export.called)
 
     @mock.patch.object(context_tracer.ContextTracer, 'current_span')
     def test_end_span_without_parent(self, mock_current_span):
@@ -170,7 +172,7 @@ class TestContextTracer(unittest.TestCase):
 
     def test_end_span_batch_export(self):
         exporter = mock.Mock()
-        tracer = context_tracer.ContextTracer(exporter=exporter)
+        tracer = context_tracer.ContextTracer(exporters=[exporter])
         span = tracer.start_span('test')
         parent_span_id = '6e0c63257de34c92'
         span.parent_span.span_id = parent_span_id
@@ -179,7 +181,23 @@ class TestContextTracer(unittest.TestCase):
 
         self.assertTrue(span.finish.called)
         self.assertEqual(tracer.span_context.span_id, parent_span_id)
-        self.assertTrue(tracer.exporter.export.called)
+        [tracer_exporter] = tracer.exporters
+        self.assertTrue(tracer_exporter.export.called)
+
+    def test_end_span_multiple_exporters(self):
+        exporter1 = mock.Mock()
+        exporter2 = mock.Mock()
+        tracer = context_tracer.ContextTracer(exporters=[exporter1, exporter2])
+        span = tracer.start_span('test')
+        parent_span_id = '11b19989a40e4de1'
+        span.parent_span.span_id = parent_span_id
+        span.finish = mock.Mock()
+        tracer.end_span()
+
+        self.assertTrue(span.finish.called)
+        self.assertEqual(tracer.span_context.span_id, parent_span_id)
+        self.assertTrue(exporter1.export.called)
+        self.assertTrue(exporter2.export.called)
 
     def test_list_collected_spans(self):
         tracer = context_tracer.ContextTracer()

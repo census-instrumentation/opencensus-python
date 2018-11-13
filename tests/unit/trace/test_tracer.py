@@ -33,7 +33,8 @@ class TestTracer(unittest.TestCase):
 
         assert isinstance(tracer.span_context, SpanContext)
         assert isinstance(tracer.sampler, AlwaysOnSampler)
-        assert isinstance(tracer.exporter, print_exporter.PrintExporter)
+        [tracer_exporter] = tracer.exporters
+        assert isinstance(tracer_exporter, print_exporter.PrintExporter)
         assert isinstance(
             tracer.propagator,
             google_cloud_format.GoogleCloudFormatPropagator)
@@ -58,7 +59,8 @@ class TestTracer(unittest.TestCase):
 
         self.assertIs(tracer.span_context, span_context)
         self.assertIs(tracer.sampler, sampler)
-        self.assertIs(tracer.exporter, exporter)
+        [tracer_exporter] = tracer.exporters
+        self.assertIs(tracer_exporter, exporter)
         self.assertIs(tracer.propagator, propagator)
         assert isinstance(tracer.tracer, noop_tracer.NoopTracer)
 
