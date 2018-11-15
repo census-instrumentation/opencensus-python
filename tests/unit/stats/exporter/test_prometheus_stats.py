@@ -42,7 +42,7 @@ VIDEO_SIZE_MEASURE_FLOAT = measure_module.MeasureFloat(
 
 VIDEO_SIZE_VIEW_NAME = "my.org/views/video_size_test2"
 VIDEO_SIZE_DISTRIBUTION = aggregation_module.DistributionAggregation(
-    [0.0, 16.0 * MiB, 256.0 * MiB])
+    [16.0 * MiB, 256.0 * MiB])
 VIDEO_SIZE_VIEW = view_module.View(
     VIDEO_SIZE_VIEW_NAME, "processed video size over time", [FRONTEND_KEY],
     VIDEO_SIZE_MEASURE, VIDEO_SIZE_DISTRIBUTION)
@@ -189,7 +189,7 @@ class TestCollectorPrometheus(unittest.TestCase):
         self.assertEqual(desc['name'], metric.name)
         self.assertEqual(desc['documentation'], metric.documentation)
         self.assertEqual('histogram', metric.type)
-        self.assertEqual(5, len(metric.samples))
+        self.assertEqual(4, len(metric.samples))
 
     def test_collector_to_metric_invalid_dist(self):
         agg = mock.Mock()
@@ -232,7 +232,7 @@ class TestCollectorPrometheus(unittest.TestCase):
         self.assertEqual(desc['name'], metric.name)
         self.assertEqual(desc['documentation'], metric.documentation)
         self.assertEqual('histogram', metric.type)
-        self.assertEqual(5, len(metric.samples))
+        self.assertEqual(4, len(metric.samples))
 
 
 class TestPrometheusStatsExporter(unittest.TestCase):

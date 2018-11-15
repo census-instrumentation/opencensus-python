@@ -12,15 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import unittest
 import mock
+import unittest
+
 from opencensus.stats import measurement_map as measurement_map_module
-from opencensus.stats.measure_to_view_map import MeasureToViewMap
 from opencensus.tags import execution_context
-from opencensus.stats.measure import BaseMeasure
-from opencensus.stats.measure import MeasureInt
-from opencensus.stats import measure_to_view_map as measure_to_view_map_module
-from opencensus.stats.view import View
+
+
+logger_patch = mock.patch('opencensus.stats.measurement_map.logger')
 
 
 class TestMeasurementMap(unittest.TestCase):
@@ -137,3 +136,57 @@ class TestMeasurementMap(unittest.TestCase):
         execution_context.set_current_tag_map(tags)
         measurement_map.record()
         self.assertTrue(measure_to_view_map.record.called)
+
+    def test_record_negative_value(self):
+        """Check that we refuse to record negative measurements."""
+        measurement_map = measurement_map_module.MeasurementMap(mock.Mock())
+        measurement_map.measure_int_put(mock.Mock(), 1)
+        measurement_map.measure_int_put(mock.Mock(), -1)
+
+        with logger_patch as mock_logger:
+            measurement_map.record()
+
+        self.assertTrue(measurement_map._invalid)
+        measurement_map._measure_to_view_map.record.assert_not_called()
+        mock_logger.warning.assert_called_once()
+
+    def test_record_previous_negative_value(self):
+        """Check that negative measurements poison the map."""
+        measurement_map = measurement_map_module.MeasurementMap(mock.Mock())
+        measure = mock.Mock()
+        measurement_map.measure_int_put(measure, 1)
+
+        measurement_map.record()
+        self.assertFalse(measurement_map._invalid)
+        measurement_map._measure_to_view_map.record.assert_called_once()
+
+        measurement_map.measure_int_put(measure, -1)
+        measurement_map._measure_to_view_map = mock.Mock()
+
+        with logger_patch as mock_logger:
+            measurement_map.record()
+
+        self.assertTrue(measurement_map._invalid)
+        measurement_map._measure_to_view_map.record.assert_not_called()
+        mock_logger.warning.assert_called_once()
+
+        measurement_map.measure_int_put(measure, 1)
+
+        with logger_patch as another_mock_logger:
+            measurement_map.record()
+
+        self.assertTrue(measurement_map._invalid)
+        measurement_map._measure_to_view_map.record.assert_not_called()
+        another_mock_logger.warning.assert_called_once()
+
+    def test_log_negative_puts(self):
+        """Check that we warn against negative measurements on put."""
+        measurement_map = measurement_map_module.MeasurementMap(mock.Mock())
+
+        with logger_patch as mock_logger:
+            measurement_map.measure_int_put(mock.Mock(), -1)
+        mock_logger.warning.assert_called_once()
+
+        with logger_patch as another_mock_logger:
+            measurement_map.measure_float_put(mock.Mock(), -1.0)
+        another_mock_logger.warning.assert_called_once()

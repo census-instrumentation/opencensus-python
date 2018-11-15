@@ -88,8 +88,8 @@ class TestDistributionAggregationData(unittest.TestCase):
         _min = 0
         _max = 1
         sum_of_sqd_deviations = mock.Mock()
-        counts_per_bucket = [1, 1, 1, 1]
-        bounds = [0, 1.0 / 2.0, 1]
+        counts_per_bucket = [1, 1, 1]
+        bounds = [1.0 / 2.0, 1]
 
         dist_agg_data = aggregation_data_module.DistributionAggregationData(
             mean_data=mean_data,
@@ -106,15 +106,15 @@ class TestDistributionAggregationData(unittest.TestCase):
         self.assertEqual(1, dist_agg_data.max)
         self.assertEqual(sum_of_sqd_deviations,
                          dist_agg_data.sum_of_sqd_deviations)
-        self.assertEqual([1, 1, 1, 1], dist_agg_data.counts_per_bucket)
-        self.assertEqual([0, 1.0 / 2.0, 1], dist_agg_data.bounds)
+        self.assertEqual([1, 1, 1], dist_agg_data.counts_per_bucket)
+        self.assertEqual([1.0 / 2.0, 1], dist_agg_data.bounds)
 
         self.assertIsNotNone(dist_agg_data.sum)
         self.assertEqual(0, dist_agg_data.variance)
 
     def test_init_bad_bucket_counts(self):
         # Check that len(counts_per_bucket) == len(bounds) + 1
-        with self.assertRaises(ValueError):
+        with self.assertRaises(AssertionError):
             aggregation_data_module.DistributionAggregationData(
                 mean_data=mock.Mock(),
                 count_data=mock.Mock(),
@@ -122,7 +122,18 @@ class TestDistributionAggregationData(unittest.TestCase):
                 max_=mock.Mock(),
                 sum_of_sqd_deviations=mock.Mock(),
                 counts_per_bucket=[0, 0, 0],
-                bounds=[0, 1, 2])
+                bounds=[1, 2, 3])
+
+        # Check that counts aren't negative
+        with self.assertRaises(AssertionError):
+            aggregation_data_module.DistributionAggregationData(
+                mean_data=mock.Mock(),
+                count_data=mock.Mock(),
+                min_=mock.Mock(),
+                max_=mock.Mock(),
+                sum_of_sqd_deviations=mock.Mock(),
+                counts_per_bucket=[0, 2, -2, 0],
+                bounds=[1, 2, 3])
 
         # And check that we don't throw given the right args
         aggregation_data_module.DistributionAggregationData(
@@ -132,7 +143,41 @@ class TestDistributionAggregationData(unittest.TestCase):
             max_=mock.Mock(),
             sum_of_sqd_deviations=mock.Mock(),
             counts_per_bucket=[0, 0, 0, 0],
-            bounds=[0, 1, 2])
+            bounds=[1, 2, 3])
+
+    def test_init_bad_bounds(self):
+        # Check that bounds are unique
+        with self.assertRaises(AssertionError):
+            aggregation_data_module.DistributionAggregationData(
+                mean_data=mock.Mock(),
+                count_data=mock.Mock(),
+                min_=mock.Mock(),
+                max_=mock.Mock(),
+                sum_of_sqd_deviations=mock.Mock(),
+                counts_per_bucket=[0, 0, 0, 0],
+                bounds=[1, 2, 2])
+
+        # Check that bounds are sorted
+        with self.assertRaises(AssertionError):
+            aggregation_data_module.DistributionAggregationData(
+                mean_data=mock.Mock(),
+                count_data=mock.Mock(),
+                min_=mock.Mock(),
+                max_=mock.Mock(),
+                sum_of_sqd_deviations=mock.Mock(),
+                counts_per_bucket=[0, 0, 0, 0],
+                bounds=[1, 3, 2])
+
+        # Check that all bounds are positive
+        with self.assertRaises(AssertionError):
+            aggregation_data_module.DistributionAggregationData(
+                mean_data=mock.Mock(),
+                count_data=mock.Mock(),
+                min_=mock.Mock(),
+                max_=mock.Mock(),
+                sum_of_sqd_deviations=mock.Mock(),
+                counts_per_bucket=[0, 0, 0, 0],
+                bounds=[-1, 1, 2])
 
     def test_constructor_with_exemplar(self):
         timestamp = time.time()
@@ -146,8 +191,8 @@ class TestDistributionAggregationData(unittest.TestCase):
         _min = 0
         _max = 1
         sum_of_sqd_deviations = mock.Mock()
-        counts_per_bucket = [1, 1, 1, 1]
-        bounds = [0, 1.0 / 2.0, 1]
+        counts_per_bucket = [1, 1, 1]
+        bounds = [1.0 / 2.0, 1]
         exemplars = [exemplar_1, exemplar_2]
 
         dist_agg_data = aggregation_data_module.DistributionAggregationData(
@@ -166,9 +211,9 @@ class TestDistributionAggregationData(unittest.TestCase):
         self.assertEqual(1, dist_agg_data.max)
         self.assertEqual(sum_of_sqd_deviations,
                          dist_agg_data.sum_of_sqd_deviations)
-        self.assertEqual([1, 1, 1, 1], dist_agg_data.counts_per_bucket)
-        self.assertEqual([exemplar_1, exemplar_2], dist_agg_data.exemplars[3])
-        self.assertEqual([0, 1.0 / 2.0, 1], dist_agg_data.bounds)
+        self.assertEqual([1, 1, 1], dist_agg_data.counts_per_bucket)
+        self.assertEqual([exemplar_1, exemplar_2], dist_agg_data.exemplars[2])
+        self.assertEqual([1.0 / 2.0, 1], dist_agg_data.bounds)
 
         self.assertIsNotNone(dist_agg_data.sum)
         self.assertEqual(0, dist_agg_data.variance)
@@ -231,8 +276,8 @@ class TestDistributionAggregationData(unittest.TestCase):
         _min = mock.Mock()
         _max = mock.Mock()
         sum_of_sqd_deviations = mock.Mock()
-        counts_per_bucket = [1, 1, 1, 1]
-        bounds = [0, 1.0 / 2.0, 1]
+        counts_per_bucket = [1, 1, 1]
+        bounds = [1.0 / 2.0, 1]
         dist_agg_data = aggregation_data_module.DistributionAggregationData(
             mean_data=mean_data,
             count_data=count_data,
@@ -261,8 +306,8 @@ class TestDistributionAggregationData(unittest.TestCase):
         _min = 0
         _max = 1
         sum_of_sqd_deviations = 2
-        counts_per_bucket = [1, 1, 1, 1, 1]
-        bounds = [0, 0.5, 1, 1.5]
+        counts_per_bucket = [1, 1, 1, 1]
+        bounds = [0.5, 1, 1.5]
 
         value = 3
 
@@ -307,8 +352,8 @@ class TestDistributionAggregationData(unittest.TestCase):
         _min = 0
         _max = 1
         sum_of_sqd_deviations = 2
-        counts_per_bucket = [1, 1, 1, 1, 1]
-        bounds = [0, 0.5, 1, 1.5]
+        counts_per_bucket = [1, 1, 1, 1]
+        bounds = [0.5, 1, 1.5]
 
         value = 3
         timestamp = time.time()
@@ -326,14 +371,14 @@ class TestDistributionAggregationData(unittest.TestCase):
             bounds=bounds,
             exemplars=exemplar_1)
 
-        self.assertEqual({4: exemplar_1}, dist_agg_data.exemplars)
+        self.assertEqual({3: exemplar_1}, dist_agg_data.exemplars)
 
         dist_agg_data.add_sample(value, timestamp, attachments)
         self.assertEqual(0, dist_agg_data.min)
         self.assertEqual(3, dist_agg_data.max)
         self.assertEqual(2, dist_agg_data.count_data)
         self.assertEqual(2.0, dist_agg_data.mean_data)
-        self.assertEqual(3, dist_agg_data.exemplars[4].value)
+        self.assertEqual(3, dist_agg_data.exemplars[3].value)
 
         count_data = 4
         dist_agg_data = aggregation_data_module.DistributionAggregationData(

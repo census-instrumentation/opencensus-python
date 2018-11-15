@@ -43,7 +43,7 @@ VIDEO_SIZE_MEASURE_FLOAT = measure_module.MeasureFloat(
 
 VIDEO_SIZE_VIEW_NAME = "my.org/views/video_size_test2"
 VIDEO_SIZE_DISTRIBUTION = aggregation_module.DistributionAggregation(
-    [0.0, 16.0 * MiB, 256.0 * MiB])
+    [16.0 * MiB, 256.0 * MiB])
 VIDEO_SIZE_VIEW = view_module.View(
     VIDEO_SIZE_VIEW_NAME, "processed video size over time", [FRONTEND_KEY],
     VIDEO_SIZE_MEASURE, VIDEO_SIZE_DISTRIBUTION)
