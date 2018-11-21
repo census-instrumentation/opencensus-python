@@ -25,7 +25,7 @@ from opencensus.common.monitored_resource_util.monitored_resource_util \
     import MonitoredResourceUtil
 
 # OpenCensus Version
-VERSION = '0.1.8'
+VERSION = '0.1.9'
 
 # Agent
 AGENT = 'opencensus-python [{}]'.format(VERSION)
