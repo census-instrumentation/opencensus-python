@@ -19,6 +19,7 @@ import mock
 
 from opencensus.__version__ import __version__
 from opencensus.stats import aggregation as aggregation_module
+from opencensus.stats import aggregation_data as aggregation_data_module
 from opencensus.stats import measure as measure_module
 from opencensus.stats import stats as stats_module
 from opencensus.stats import view as view_module
@@ -620,6 +621,43 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         self.assertEquals(time_series.metric.type,
                           "custom.googleapis.com/opencensus/view-name2")
         self.assertIsNotNone(time_series)
+
+    def test_create_timeseries_from_distribution(self):
+        """Check for explicit 0-bound bucket for SD export."""
+
+        v_data = mock.Mock(spec=view_data_module.ViewData)
+        v_data.view.name = "example.org/test_view"
+        v_data.start_time = '2018-11-21T00:12:34.56Z'
+        v_data.end_time = '2018-11-21T00:23:45.67Z'
+
+        # Aggregation over (10 * range(10)) for buckets [2, 4, 6, 8]
+        dad = aggregation_data_module.DistributionAggregationData(
+            mean_data=4.5,
+            count_data=100,
+            min_=0,
+            max_=9,
+            sum_of_sqd_deviations=825,
+            counts_per_bucket=[20, 20, 20, 20, 20],
+            bounds=[2, 4, 6, 8],
+            exemplars={mock.Mock() for ii in range(5)}
+        )
+        v_data.tag_value_aggregation_data_map = ({'tag_key': dad})
+
+        exporter = stackdriver.StackdriverStatsExporter(
+            options=mock.Mock(),
+            client=mock.Mock(),
+        )
+        time_series = exporter.create_time_series_list(v_data, "", "")
+
+        self.assertEqual(len(time_series.points), 1)
+        [point] = time_series.points
+        dv = point.value.distribution_value
+        self.assertEqual(100, dv.count)
+        self.assertEqual(4.5, dv.mean)
+        self.assertEqual(825.0, dv.sum_of_squared_deviation)
+        self.assertEqual([0, 20, 20, 20, 20, 20], dv.bucket_counts)
+        self.assertEqual([0, 2, 4, 6, 8],
+                         dv.bucket_options.explicit_buckets.bounds)
 
     def test_create_metric_descriptor_count(self):
         client = mock.Mock()

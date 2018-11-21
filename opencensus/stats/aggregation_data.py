@@ -133,15 +133,13 @@ class DistributionAggregationData(BaseAggregationData):
             bounds = []
         else:
             assert bounds == list(sorted(set(bounds)))
+            assert all(bb > 0 for bb in bounds)
 
         if counts_per_bucket is None:
             counts_per_bucket = [0 for ii in range(len(bounds) + 1)]
         else:
             assert all(cc >= 0 for cc in counts_per_bucket)
             assert len(counts_per_bucket) == len(bounds) + 1
-
-        assert bounds == sorted(bounds)
-        assert all(bb > 0 for bb in bounds)
 
         self._counts_per_bucket = counts_per_bucket
         self._bounds = bucket_boundaries.BucketBoundaries(

@@ -219,9 +219,14 @@ class StackdriverStatsExporter(base.StatsExporter):
                 # point.value.distribution_value.range.min = agg_data.min
                 # point.value.distribution_value.range.max = agg_data.max
                 bounds = dist_value.bucket_options.explicit_buckets.bounds
+                # Stackdriver expects an "underflow" bucket for samples in
+                # (-inf, 0), DistributionAggregationData has all positive
+                # values.
+                bounds.extend([0])
                 bounds.extend(list(map(float, agg_data.bounds)))
 
                 buckets = dist_value.bucket_counts
+                buckets.extend([0])
                 buckets.extend(list(map(int, agg_data.counts_per_bucket)))
             else:
                 convFloat, isFloat = as_float(tag_value[0])
