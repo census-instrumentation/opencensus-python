@@ -11,6 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""
+The classes in this module implement the spec for v1 Metrics as of
+opencensus-proto release v0.0.2. See opencensus-proto for details:
+
+https://github.com/census-instrumentation/opencensus-proto/blob/24333298e36590ea0716598caacc8959fc393c48/src/opencensus/proto/metrics/v1/metrics.proto
+"""  # noqa
 
 from copy import copy
 
