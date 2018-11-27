@@ -48,68 +48,79 @@ class TestValue(unittest.TestCase):
 VD_COUNT = 100
 VD_SUM = 1000.0
 VD_SUM_OF_SQUARED_DEVIATION = 10.0
-BUCKET_BOUNDS = list(range(11))
+BOUNDS = list(range(1, 10))
+BUCKET_OPTIONS = value_module.BucketOptions(value_module.Explicit(BOUNDS))
 BUCKETS = [value_module.Bucket(10, None) for ii in range(10)]
 
 
 class TestValueDistribution(unittest.TestCase):
     def test_init(self):
         distribution = value_module.ValueDistribution(
-            VD_COUNT, VD_SUM, VD_SUM_OF_SQUARED_DEVIATION, BUCKET_BOUNDS,
+            VD_COUNT, VD_SUM, VD_SUM_OF_SQUARED_DEVIATION, BUCKET_OPTIONS,
             BUCKETS)
         self.assertEqual(distribution.count, VD_COUNT)
         self.assertEqual(distribution.sum, VD_SUM)
         self.assertEqual(distribution.sum_of_squared_deviation,
                          VD_SUM_OF_SQUARED_DEVIATION)
-        self.assertEqual(distribution.bucket_bounds, BUCKET_BOUNDS)
+        self.assertEqual(distribution.bucket_options, BUCKET_OPTIONS)
+        self.assertEqual(distribution.bucket_options.type_.bounds, BOUNDS)
         self.assertEqual(distribution.buckets, BUCKETS)
 
     def test_init_no_histogram(self):
         distribution = value_module.ValueDistribution(
-            VD_COUNT, VD_SUM, VD_SUM_OF_SQUARED_DEVIATION, [], None)
+            VD_COUNT, VD_SUM, VD_SUM_OF_SQUARED_DEVIATION,
+            value_module.BucketOptions(), None)
         self.assertEqual(distribution.count, VD_COUNT)
         self.assertEqual(distribution.sum, VD_SUM)
         self.assertEqual(distribution.sum_of_squared_deviation,
                          VD_SUM_OF_SQUARED_DEVIATION)
-        self.assertEqual(distribution.bucket_bounds, [])
+        self.assertIsNone(distribution.bucket_options.type_)
         self.assertEqual(distribution.buckets, None)
 
     def test_init_bad_args(self):
+        value_module.ValueDistribution(VD_COUNT, VD_SUM,
+                                       VD_SUM_OF_SQUARED_DEVIATION,
+                                       BUCKET_OPTIONS, BUCKETS)
 
         with self.assertRaises(ValueError):
             value_module.ValueDistribution(-1, VD_SUM,
                                            VD_SUM_OF_SQUARED_DEVIATION,
-                                           BUCKET_BOUNDS, BUCKETS)
+                                           BUCKET_OPTIONS, BUCKETS)
 
         with self.assertRaises(ValueError):
-            value_module.ValueDistribution(
-                0, VD_SUM, VD_SUM_OF_SQUARED_DEVIATION, BUCKET_BOUNDS, BUCKETS)
+            value_module.ValueDistribution(0, VD_SUM,
+                                           VD_SUM_OF_SQUARED_DEVIATION,
+                                           BUCKET_OPTIONS, BUCKETS)
 
         with self.assertRaises(ValueError):
             value_module.ValueDistribution(0, 0, VD_SUM_OF_SQUARED_DEVIATION,
-                                           BUCKET_BOUNDS, BUCKETS)
+                                           BUCKET_OPTIONS, BUCKETS)
 
         with self.assertRaises(ValueError):
             value_module.ValueDistribution(
                 VD_COUNT, VD_SUM, VD_SUM_OF_SQUARED_DEVIATION, None, BUCKETS)
 
         with self.assertRaises(ValueError):
-            value_module.ValueDistribution(
-                VD_COUNT, VD_SUM, VD_SUM_OF_SQUARED_DEVIATION, [], BUCKETS)
-
-        with self.assertRaises(ValueError):
-            value_module.ValueDistribution(0, 0, 0, BUCKET_BOUNDS, BUCKETS)
-
-        with self.assertRaises(ValueError):
-            value_module.ValueDistribution(
-                VD_COUNT, VD_SUM, VD_SUM_OF_SQUARED_DEVIATION, [1, 1],
-                [value_module.Bucket(1, None),
-                 value_module.Bucket(1, None)])
+            value_module.ValueDistribution(0, 0, 0, BUCKET_OPTIONS, BUCKETS)
 
         with self.assertRaises(ValueError):
             value_module.ValueDistribution(VD_COUNT - 1, VD_SUM,
                                            VD_SUM_OF_SQUARED_DEVIATION,
-                                           BUCKET_BOUNDS, BUCKETS)
+                                           BUCKET_OPTIONS, BUCKETS)
+
+        with self.assertRaises(ValueError):
+            value_module.ValueDistribution(VD_COUNT, VD_SUM,
+                                           VD_SUM_OF_SQUARED_DEVIATION,
+                                           value_module.BucketOptions(),
+                                           BUCKETS)
+
+        with self.assertRaises(ValueError):
+            value_module.ValueDistribution(VD_COUNT, VD_SUM,
+                                           VD_SUM_OF_SQUARED_DEVIATION,
+                                           BUCKET_OPTIONS, BUCKETS[:-1])
+
+    def test_init_empty_buckets_null_bucket_options(self):
+        pass
 
 
 EX_VALUE = 1.0
@@ -135,3 +146,22 @@ class TestBucket(unittest.TestCase):
         bucket = value_module.Bucket(1, self.exemplar)
         self.assertEqual(bucket.count, 1)
         self.assertEqual(bucket.exemplar, self.exemplar)
+
+
+class TestExplicit(unittest.TestCase):
+    def test_init(self):
+        bounds = [1, 2]
+        explicit = value_module.Explicit(bounds)
+        self.assertEqual(explicit.bounds, bounds)
+
+    def test_bad_init(self):
+        with self.assertRaises(ValueError):
+            value_module.Explicit(None)
+        with self.assertRaises(ValueError):
+            value_module.Explicit([])
+        with self.assertRaises(ValueError):
+            value_module.Explicit([0, 1, 2])
+        with self.assertRaises(ValueError):
+            value_module.Explicit([1, 1])
+        with self.assertRaises(ValueError):
+            value_module.Explicit([2, 1])
