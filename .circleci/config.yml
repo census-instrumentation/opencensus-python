@@ -6,6 +6,9 @@ version: 2
 
 jobs:
   build:
+    branches:
+      ignore:
+        - gh-pages
     docker:
       - image: googleapis/nox:0.17.0
       - image: mysql:5.7
