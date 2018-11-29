@@ -34,9 +34,8 @@ class TestTracer(unittest.TestCase):
         assert isinstance(tracer.span_context, SpanContext)
         assert isinstance(tracer.sampler, AlwaysOnSampler)
         assert isinstance(tracer.exporter, print_exporter.PrintExporter)
-        assert isinstance(
-            tracer.propagator,
-            google_cloud_format.GoogleCloudFormatPropagator)
+        assert isinstance(tracer.propagator,
+                          google_cloud_format.GoogleCloudFormatPropagator)
         assert isinstance(tracer.tracer, context_tracer.ContextTracer)
 
     def test_constructor_explicit(self):
@@ -75,7 +74,7 @@ class TestTracer(unittest.TestCase):
         self.assertFalse(sampled)
 
     def test_should_sample_sampled(self):
-        sampler =mock.Mock()
+        sampler = mock.Mock()
         sampler.should_sample.return_value = True
         tracer = tracer_module.Tracer(sampler=sampler)
         sampled = tracer.should_sample()
@@ -203,8 +202,7 @@ class TestTracer(unittest.TestCase):
         span_context = mock.Mock()
         span_context.trace_options.enabled = False
         tracer = tracer_module.Tracer(
-            sampler=sampler,
-            span_context=span_context)
+            sampler=sampler, span_context=span_context)
 
         tracer.end_span()
 
@@ -221,12 +219,11 @@ class TestTracer(unittest.TestCase):
         span.time_events = []
         span.links = []
         span.children = []
-        span.__iter__ = mock.Mock(
-            return_value=iter([span]))
+        span.__iter__ = mock.Mock(return_value=iter([span]))
         execution_context.set_current_span(span)
 
-        patch = mock.patch(
-            'opencensus.trace.span._get_truncatable_str', mock.Mock())
+        patch = mock.patch('opencensus.trace.span._get_truncatable_str',
+                           mock.Mock())
 
         with patch:
             tracer.end_span()

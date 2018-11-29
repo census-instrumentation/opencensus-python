@@ -23,6 +23,7 @@ QUERY_WRAP_METHODS = ['execute', 'executemany']
 
 def wrap_conn(conn_func):
     """Wrap the mysql conn object with TraceConnection."""
+
     def call(*args, **kwargs):
         try:
             conn = conn_func(*args, **kwargs)
@@ -33,10 +34,12 @@ def wrap_conn(conn_func):
         except Exception:  # pragma: NO COVER
             logging.warning('Fail to wrap conn, mysql not traced.')
             return conn_func(*args, **kwargs)
+
     return call
 
 
 def wrap_cursor(cursor_func):
+
     def call(*args, **kwargs):
         try:
             cursor = cursor_func(*args, **kwargs)
@@ -48,22 +51,24 @@ def wrap_cursor(cursor_func):
         except Exception:  # pragma: NO COVER
             logging.warning('Fail to wrap cursor, mysql not traced.')
             return cursor_func(*args, **kwargs)
+
     return call
 
 
 def trace_cursor_query(query_func):
+
     def call(query, *args, **kwargs):
         _tracer = execution_context.get_opencensus_tracer()
         _span = _tracer.start_span()
         _span.name = 'mysql.query'
         _span.span_kind = span_module.SpanKind.CLIENT
         _tracer.add_attribute_to_current_span('mysql.query', query)
-        _tracer.add_attribute_to_current_span(
-            'mysql.cursor.method.name',
-            query_func.__name__)
+        _tracer.add_attribute_to_current_span('mysql.cursor.method.name',
+                                              query_func.__name__)
 
         result = query_func(query, *args, **kwargs)
 
         _tracer.end_span()
         return result
+
     return call

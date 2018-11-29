@@ -25,6 +25,7 @@ class ProbabilitySampler(Sampler):
     :type rate: float
     :param rate: The rate of sampling.
     """
+
     def __init__(self, rate=None):
         if rate is None:
             rate = DEFAULT_SAMPLING_RATE

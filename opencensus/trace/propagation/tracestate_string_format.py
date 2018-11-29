@@ -25,6 +25,7 @@ _MEMBER_FORMAT_RE = re.compile(_MEMBER_FORMAT)
 
 
 class TracestateStringFormatter(object):
+
     def from_string(self, string):
         tracestate = Tracestate()
         for member in re.split(_DELIMITER_FORMAT_RE, string):
@@ -38,7 +39,5 @@ class TracestateStringFormatter(object):
         return tracestate
 
     def to_string(self, tracestate):
-        return ','.join(map(
-            lambda key: key + '=' + tracestate[key],
-            tracestate
-        ))
+        return ','.join(
+            map(lambda key: key + '=' + tracestate[key], tracestate))

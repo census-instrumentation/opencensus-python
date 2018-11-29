@@ -40,21 +40,20 @@ class BlankSpan(base_span.BaseSpan):
                            the finish method in the Span class.
     """
 
-    def __init__(
-            self,
-            name=None,
-            parent_span=None,
-            attributes=None,
-            start_time=None,
-            end_time=None,
-            span_id=None,
-            stack_trace=None,
-            time_events=None,
-            links=None,
-            status=None,
-            same_process_as_parent_span=None,
-            context_tracer=None,
-            span_kind=None):
+    def __init__(self,
+                 name=None,
+                 parent_span=None,
+                 attributes=None,
+                 start_time=None,
+                 end_time=None,
+                 span_id=None,
+                 stack_trace=None,
+                 time_events=None,
+                 links=None,
+                 status=None,
+                 same_process_as_parent_span=None,
+                 context_tracer=None,
+                 span_kind=None):
         self.name = name
         self.parent_span = parent_span
         self.start_time = start_time
@@ -126,8 +125,9 @@ class BlankSpan(base_span.BaseSpan):
         :param time_event: A TimeEvent object.
         """
         if not isinstance(time_event, time_event_module.TimeEvent):
-            raise TypeError("Type Error: received {}, but requires TimeEvent.".
-                            format(type(time_event).__name__))
+            raise TypeError(
+                "Type Error: received {}, but requires TimeEvent.".format(
+                    type(time_event).__name__))
 
     def add_link(self, link):
         """No-op implementation of this method.

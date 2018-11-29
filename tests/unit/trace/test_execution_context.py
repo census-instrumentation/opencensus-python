@@ -53,18 +53,22 @@ class Test__get_opencensus_attr(unittest.TestCase):
 
         self.assertEqual(mock_tracer_get, tracer)
         self.assertEqual(mock_span_get, span)
-        self.assertEqual({"test":"test_value"}, attrs)
+        self.assertEqual({"test": "test_value"}, attrs)
 
         mock_tracer_set = mock.Mock()
         mock_span_set = mock.Mock()
 
-        execution_context.set_opencensus_full_context(mock_tracer_set, mock_span_set, None)
-        self.assertEqual(mock_tracer_set, execution_context.get_opencensus_tracer())
+        execution_context.set_opencensus_full_context(mock_tracer_set,
+                                                      mock_span_set, None)
+        self.assertEqual(mock_tracer_set,
+                         execution_context.get_opencensus_tracer())
         self.assertEqual(mock_span_set, execution_context.get_current_span())
         self.assertEqual({}, execution_context.get_opencensus_attrs())
 
-        execution_context.set_opencensus_full_context(mock_tracer_set, mock_span_set, {"test": "test_value"})
-        self.assertEqual("test_value", execution_context.get_opencensus_attr("test"))
+        execution_context.set_opencensus_full_context(
+            mock_tracer_set, mock_span_set, {"test": "test_value"})
+        self.assertEqual("test_value",
+                         execution_context.get_opencensus_attr("test"))
 
     def test_clean_tracer(self):
         mock_tracer = mock.Mock()
@@ -76,8 +80,10 @@ class Test__get_opencensus_attr(unittest.TestCase):
 
         execution_context.clean()
 
-        self.assertNotEqual(mock_tracer, execution_context.get_opencensus_tracer())
-        self.assertEqual(some_value, getattr(thread_local, 'random_non_oc_attr'))
+        self.assertNotEqual(mock_tracer,
+                            execution_context.get_opencensus_tracer())
+        self.assertEqual(some_value, getattr(thread_local,
+                                             'random_non_oc_attr'))
 
     def test_clean_span(self):
         mock_span = mock.Mock()
@@ -90,10 +96,5 @@ class Test__get_opencensus_attr(unittest.TestCase):
         execution_context.clean()
 
         self.assertNotEqual(mock_span, execution_context.get_current_span())
-        self.assertEqual(some_value, getattr(thread_local, 'random_non_oc_attr'))
-
-
-
-
-
-
+        self.assertEqual(some_value, getattr(thread_local,
+                                             'random_non_oc_attr'))

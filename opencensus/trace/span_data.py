@@ -126,14 +126,15 @@ def _format_legacy_span_json(span_data):
 
     if span_data.time_events:
         span_json['timeEvents'] = {
-            'timeEvent': [time_event.format_time_event_json()
-                          for time_event in span_data.time_events]
+            'timeEvent': [
+                time_event.format_time_event_json()
+                for time_event in span_data.time_events
+            ]
         }
 
     if span_data.links:
         span_json['links'] = {
-            'link': [
-                link.format_link_json() for link in span_data.links]
+            'link': [link.format_link_json() for link in span_data.links]
         }
 
     if span_data.status is not None:

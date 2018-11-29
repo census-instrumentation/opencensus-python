@@ -27,6 +27,7 @@ class BaseMeasure(object):
     :param unit: the units in which the measure values are measured
 
     """
+
     def __init__(self, name, description, unit=None):
         self._name = name
         self._description = description
@@ -50,11 +51,13 @@ class BaseMeasure(object):
 
 class MeasureInt(BaseMeasure):
     """Creates an Integer Measure"""
+
     def __init__(self, name, description, unit=None):
         super(MeasureInt, self).__init__(name, description, unit)
 
 
 class MeasureFloat(BaseMeasure):
     """Creates a Float Measure"""
+
     def __init__(self, name, description, unit=None):
         super(MeasureFloat, self).__init__(name, description, unit)

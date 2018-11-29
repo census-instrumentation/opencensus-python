@@ -16,13 +16,14 @@ import unittest
 
 import mock
 
-from opencensus.trace import (attributes, link, span_context, span_data,
-                              status, time_event)
+from opencensus.trace import (attributes, link, span_context, span_data, status,
+                              time_event)
 from opencensus.trace.exporters import jaeger_exporter
 from opencensus.trace.exporters.gen.jaeger import jaeger
 
 
 class TestJaegerExporter(unittest.TestCase):
+
     def test_constructor_default(self):
         service_name = 'my_service'
         host_name = 'localhost'
@@ -174,7 +175,7 @@ class TestJaegerExporter(unittest.TestCase):
         self.maxDiff = None
         trace_id_high = '6e0c63257de34c92'
         trace_id_low = 'bf9efcd03927272e'
-        trace_id= trace_id_high + trace_id_low
+        trace_id = trace_id_high + trace_id_low
         span_id = '6e0c63257de34c92'
         parent_span_id = '1111111111111111'
 
@@ -213,8 +214,7 @@ class TestJaegerExporter(unittest.TestCase):
             time_event.TimeEvent(
                 timestamp=time,
                 annotation=time_event.Annotation(
-                    description='First Annotation',
-                    attributes=None)),
+                    description='First Annotation', attributes=None)),
             time_event.TimeEvent(
                 timestamp=time,
                 message_event=time_event.MessageEvent(
@@ -312,8 +312,7 @@ class TestJaegerExporter(unittest.TestCase):
                 flags=1,
                 tags=[
                     jaeger.Tag(
-                        key='key_bool', vType=jaeger.TagType.BOOL,
-                        vBool=False),
+                        key='key_bool', vType=jaeger.TagType.BOOL, vBool=False),
                     jaeger.Tag(
                         key='key_string',
                         vType=jaeger.TagType.STRING,
@@ -321,8 +320,7 @@ class TestJaegerExporter(unittest.TestCase):
                     jaeger.Tag(
                         key='key_int', vType=jaeger.TagType.LONG, vLong=3),
                     jaeger.Tag(
-                        key='status.code',
-                        vType=jaeger.TagType.LONG,
+                        key='status.code', vType=jaeger.TagType.LONG,
                         vLong=200),
                     jaeger.Tag(
                         key='status.message',
@@ -381,8 +379,7 @@ class TestJaegerExporter(unittest.TestCase):
                                 vType=jaeger.TagType.STRING,
                                 vStr='First Annotation')
                         ])
-                ]
-            ),
+                ]),
             jaeger.Span(
                 operationName="test3",
                 traceIdHigh=7929822056569588882,
@@ -391,8 +388,7 @@ class TestJaegerExporter(unittest.TestCase):
                 parentSpanId=0,
                 startTime=1502820146071158,
                 duration=10000000,
-                logs=[]
-            )
+                logs=[])
         ]
 
         spans_json = [span.format_span_json() for span in spans]
@@ -438,11 +434,13 @@ class TestJaegerExporter(unittest.TestCase):
 
 
 class MockBatch(object):
+
     def write(self, iprot):
         return None
 
 
 class MockTransport(object):
+
     def __init__(self, exporter=None, uri_or_host=None):
         self.export_called = False
         self.headers_set = False
@@ -468,6 +466,7 @@ class MockTransport(object):
 
 
 class MockClient(object):
+
     def __init__(self, iprot=None):
         self.emit_called = False
         self.iprot = iprot

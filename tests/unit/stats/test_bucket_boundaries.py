@@ -24,24 +24,27 @@ class TestBucketBoundaries(unittest.TestCase):
         self.assertEqual([], bucket_boundaries.boundaries)
 
     def test_constructor_explicit(self):
-        boundaries = [1/4]
-        bucket_boundaries = bucket_boundaries_module.BucketBoundaries(boundaries=boundaries)
+        boundaries = [1 / 4]
+        bucket_boundaries = bucket_boundaries_module.BucketBoundaries(
+            boundaries=boundaries)
         self.assertTrue(bucket_boundaries.is_valid_boundaries(boundaries))
         self.assertEqual(boundaries, bucket_boundaries.boundaries)
 
     def test_is_valid_boundaries(self):
-        boundaries = [0, 1/4, 1/2]
-        bucket_boundaries = bucket_boundaries_module.BucketBoundaries(boundaries=boundaries)
-        self.assertTrue(bucket_boundaries.is_valid_boundaries(boundaries=boundaries))
+        boundaries = [0, 1 / 4, 1 / 2]
+        bucket_boundaries = bucket_boundaries_module.BucketBoundaries(
+            boundaries=boundaries)
+        self.assertTrue(
+            bucket_boundaries.is_valid_boundaries(boundaries=boundaries))
 
         boundaries = [2, 1, 0]
         bucket_boundaries = bucket_boundaries_module.BucketBoundaries(
             boundaries=boundaries)
-        self.assertFalse(bucket_boundaries.is_valid_boundaries(
-            boundaries=boundaries))
+        self.assertFalse(
+            bucket_boundaries.is_valid_boundaries(boundaries=boundaries))
 
         boundaries = None
         bucket_boundaries = bucket_boundaries_module.BucketBoundaries(
-            boundaries=boundaries
-        )
-        self.assertFalse(bucket_boundaries.is_valid_boundaries(boundaries=boundaries))
+            boundaries=boundaries)
+        self.assertFalse(
+            bucket_boundaries.is_valid_boundaries(boundaries=boundaries))

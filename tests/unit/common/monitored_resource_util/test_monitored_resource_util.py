@@ -24,7 +24,8 @@ from opencensus.common.monitored_resource_util.monitored_resource import AwsMoni
 class TestMonitoredResourceUtil(unittest.TestCase):
 
     def test_gke_environment(self):
-        patch = mock.patch.dict(os.environ, {'KUBERNETES_SERVICE_HOST': '127.0.0.1'})
+        patch = mock.patch.dict(os.environ,
+                                {'KUBERNETES_SERVICE_HOST': '127.0.0.1'})
 
         with patch:
             monitored_resource = MonitoredResourceUtil.get_instance()
@@ -33,10 +34,11 @@ class TestMonitoredResourceUtil(unittest.TestCase):
             self.assertIsInstance(monitored_resource, GcpGkeMonitoredResource)
 
     def test_gce_environment(self):
-        patch = mock.patch('opencensus.common.monitored_resource_util.'
-                           'gcp_metadata_config.GcpMetadataConfig.'
-                           'is_running_on_gcp',
-                           return_value=True)
+        patch = mock.patch(
+            'opencensus.common.monitored_resource_util.'
+            'gcp_metadata_config.GcpMetadataConfig.'
+            'is_running_on_gcp',
+            return_value=True)
         with patch:
             monitored_resource = MonitoredResourceUtil.get_instance()
 

@@ -27,6 +27,7 @@ from opencensus.stats import view
 
 
 class TestMetricUtils(unittest.TestCase):
+
     def test_get_metric_type(self):
         measure_int = mock.Mock(spec=measure.MeasureInt)
         measure_float = mock.Mock(spec=measure.MeasureFloat)

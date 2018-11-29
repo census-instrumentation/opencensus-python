@@ -71,9 +71,8 @@ class TestFlaskMiddleware(unittest.TestCase):
         self.assertTrue(app.after_request.called)
         assert isinstance(middleware.sampler, always_on.AlwaysOnSampler)
         assert isinstance(middleware.exporter, print_exporter.PrintExporter)
-        assert isinstance(
-            middleware.propagator,
-            google_cloud_format.GoogleCloudFormatPropagator)
+        assert isinstance(middleware.propagator,
+                          google_cloud_format.GoogleCloudFormatPropagator)
 
     def test_constructor_explicit(self):
         app = mock.Mock(config={})
@@ -82,10 +81,7 @@ class TestFlaskMiddleware(unittest.TestCase):
         propagator = mock.Mock()
 
         middleware = flask_middleware.FlaskMiddleware(
-            app=app,
-            sampler=sampler,
-            exporter=exporter,
-            propagator=propagator)
+            app=app, sampler=sampler, exporter=exporter, propagator=propagator)
 
         self.assertIs(middleware.app, app)
         self.assertIs(middleware.sampler, sampler)
@@ -124,12 +120,12 @@ class TestFlaskMiddleware(unittest.TestCase):
         }
 
         class StackdriverExporter(object):
+
             def __init__(self, *args, **kwargs):
                 pass
 
         middleware = flask_middleware.FlaskMiddleware(
-            exporter=StackdriverExporter
-        )
+            exporter=StackdriverExporter)
         middleware.init_app(app)
 
         self.assertIs(middleware.app, app)
@@ -163,8 +159,7 @@ class TestFlaskMiddleware(unittest.TestCase):
         self.assertTrue(app.before_request.called)
         self.assertTrue(app.after_request.called)
 
-        assert isinstance(
-            middleware.exporter, zipkin_exporter.ZipkinExporter)
+        assert isinstance(middleware.exporter, zipkin_exporter.ZipkinExporter)
         self.assertEqual(middleware.exporter.service_name, service_name)
         self.assertEqual(middleware.exporter.host_name, host_name)
         self.assertEqual(middleware.exporter.port, port)
@@ -196,8 +191,7 @@ class TestFlaskMiddleware(unittest.TestCase):
         self.assertTrue(app.before_request.called)
         self.assertTrue(app.after_request.called)
 
-        assert isinstance(
-            middleware.exporter, zipkin_exporter.ZipkinExporter)
+        assert isinstance(middleware.exporter, zipkin_exporter.ZipkinExporter)
         self.assertEqual(middleware.exporter.service_name, service_name)
         self.assertEqual(middleware.exporter.host_name, host_name)
         self.assertEqual(middleware.exporter.port, port)
@@ -223,8 +217,7 @@ class TestFlaskMiddleware(unittest.TestCase):
         self.assertTrue(app.before_request.called)
         self.assertTrue(app.after_request.called)
 
-        assert isinstance(
-            middleware.exporter, jaeger_exporter.JaegerExporter)
+        assert isinstance(middleware.exporter, jaeger_exporter.JaegerExporter)
         self.assertEqual(middleware.exporter.service_name, service_name)
 
     def test_init_app_config_ocagent_trace_exporter(self):
@@ -245,8 +238,7 @@ class TestFlaskMiddleware(unittest.TestCase):
         middleware.init_app(app)
 
         self.assertIs(middleware.app, app)
-        assert isinstance(
-            middleware.exporter, trace_exporter.TraceExporter)
+        assert isinstance(middleware.exporter, trace_exporter.TraceExporter)
         self.assertEqual(middleware.exporter.service_name, 'foo')
         self.assertEqual(middleware.exporter.endpoint, 'localhost:50001')
 
@@ -270,8 +262,7 @@ class TestFlaskMiddleware(unittest.TestCase):
         middleware.init_app(app)
 
         self.assertIs(middleware.app, app)
-        assert isinstance(
-            middleware.exporter, trace_exporter.TraceExporter)
+        assert isinstance(middleware.exporter, trace_exporter.TraceExporter)
         self.assertEqual(middleware.exporter.service_name, 'foo')
         self.assertEqual(middleware.exporter.endpoint,
                          trace_exporter.DEFAULT_ENDPOINT)
@@ -290,8 +281,7 @@ class TestFlaskMiddleware(unittest.TestCase):
         app = self.create_app()
         flask_middleware.FlaskMiddleware(app=app)
         context = app.test_request_context(
-            path='/',
-            headers={flask_trace_header: flask_trace_id})
+            path='/', headers={flask_trace_header: flask_trace_id})
 
         with context:
             app.preprocess_request()
@@ -321,8 +311,7 @@ class TestFlaskMiddleware(unittest.TestCase):
         app = self.create_app()
         flask_middleware.FlaskMiddleware(app=app)
         context = app.test_request_context(
-            path='/_ah/health',
-            headers={flask_trace_header: flask_trace_id})
+            path='/_ah/health', headers={flask_trace_header: flask_trace_id})
 
         with context:
             app.preprocess_request()
@@ -348,8 +337,7 @@ class TestFlaskMiddleware(unittest.TestCase):
         app = self.create_app()
         flask_middleware.FlaskMiddleware(app=app)
         context = app.test_request_context(
-            path='/',
-            headers={flask_trace_header: flask_trace_id})
+            path='/', headers={flask_trace_header: flask_trace_id})
 
         with context:
             app.preprocess_request()
@@ -372,8 +360,7 @@ class TestFlaskMiddleware(unittest.TestCase):
     def test_header_is_none(self):
         app = self.create_app()
         flask_middleware.FlaskMiddleware(app=app)
-        context = app.test_request_context(
-            path='/')
+        context = app.test_request_context(path='/')
 
         with context:
             app.preprocess_request()
@@ -401,8 +388,7 @@ class TestFlaskMiddleware(unittest.TestCase):
         flask_middleware.FlaskMiddleware(app=app, sampler=sampler)
 
         response = app.test_client().get(
-            '/',
-            headers={flask_trace_header: flask_trace_id})
+            '/', headers={flask_trace_header: flask_trace_id})
 
         self.assertEqual(response.status_code, 200)
 
@@ -416,8 +402,7 @@ class TestFlaskMiddleware(unittest.TestCase):
         flask_middleware.FlaskMiddleware(app=app)
 
         response = app.test_client().get(
-            '/',
-            headers={flask_trace_header: flask_trace_id})
+            '/', headers={flask_trace_header: flask_trace_id})
 
         self.assertEqual(response.status_code, 200)
 
@@ -431,8 +416,7 @@ class TestFlaskMiddleware(unittest.TestCase):
         flask_middleware.FlaskMiddleware(app=app)
 
         response = app.test_client().get(
-            '/_ah/health',
-            headers={flask_trace_header: flask_trace_id})
+            '/_ah/health', headers={flask_trace_header: flask_trace_id})
 
         tracer = execution_context.get_opencensus_tracer()
 
@@ -466,8 +450,7 @@ class TestFlaskMiddleware(unittest.TestCase):
         self.assertIsInstance(exported_spandata.status, status.Status)
         self.assertEqual(exported_spandata.status.code, code_pb2.UNKNOWN)
         self.assertEqual(exported_spandata.status.message, 'error')
-        self.assertIsInstance(
-            exported_spandata.stack_trace, stack_trace.StackTrace
-        )
+        self.assertIsInstance(exported_spandata.stack_trace,
+                              stack_trace.StackTrace)
         self.assertIsNotNone(exported_spandata.stack_trace.stack_trace_hash_id)
         self.assertNotEqual(exported_spandata.stack_trace.stack_frames, [])

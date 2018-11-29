@@ -47,20 +47,21 @@ class Test_google_cloud_clientlibs_trace(unittest.TestCase):
 
         mock_make_secure_channel_func = mock.Mock()
         mock_make_secure_channel_func.__name__ = 'make_secure_channel'
-        setattr(
-            mock__helpers,
-            'make_secure_channel',
-            mock_make_secure_channel_func)
+        setattr(mock__helpers, 'make_secure_channel',
+                mock_make_secure_channel_func)
 
         patch_wrap = mock.patch(
-            'opencensus.trace.ext.google_cloud_clientlibs.trace.wrap_make_secure_channel', mock_wrap)
+            'opencensus.trace.ext.google_cloud_clientlibs.trace.wrap_make_secure_channel',
+            mock_wrap)
         patch__helpers = mock.patch(
-            'opencensus.trace.ext.google_cloud_clientlibs.trace._helpers', mock__helpers)
+            'opencensus.trace.ext.google_cloud_clientlibs.trace._helpers',
+            mock__helpers)
 
         with patch_wrap, patch__helpers:
             trace.trace_integration()
 
-        self.assertEqual(getattr(mock__helpers, 'make_secure_channel'), wrap_result)
+        self.assertEqual(
+            getattr(mock__helpers, 'make_secure_channel'), wrap_result)
 
     def test_trace_http(self):
         mock_trace_requests = mock.Mock()

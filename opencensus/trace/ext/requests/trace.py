@@ -54,12 +54,13 @@ def trace_integration(tracer=None):
         setattr(requests, requests_func.__name__, wrapped)
 
     # Wrap Session class
-    wrapt.wrap_function_wrapper(
-        MODULE_NAME, 'Session.request', wrap_session_request)
+    wrapt.wrap_function_wrapper(MODULE_NAME, 'Session.request',
+                                wrap_session_request)
 
 
 def wrap_requests(requests_func):
     """Wrap the requests function to trace it."""
+
     def call(url, *args, **kwargs):
         blacklist_hostnames = execution_context.get_opencensus_attr(
             'blacklist_hostnames')
@@ -82,8 +83,8 @@ def wrap_requests(requests_func):
         result = requests_func(url, *args, **kwargs)
 
         # Add the status code to attributes
-        _tracer.add_attribute_to_current_span(
-            HTTP_STATUS_CODE, str(result.status_code))
+        _tracer.add_attribute_to_current_span(HTTP_STATUS_CODE,
+                                              str(result.status_code))
 
         _tracer.end_span()
         return result
@@ -112,11 +113,9 @@ def wrap_session_request(wrapped, instance, args, kwargs):
     _span.name = '[requests]{}'.format(method)
     _span.span_kind = span_module.SpanKind.CLIENT
 
-    tracer_headers = _tracer.propagator.to_headers(
-        _tracer.span_context)
+    tracer_headers = _tracer.propagator.to_headers(_tracer.span_context)
 
-    kwargs.setdefault('headers', {}).update(
-        tracer_headers)
+    kwargs.setdefault('headers', {}).update(tracer_headers)
 
     # Add the requests url to attributes
     _tracer.add_attribute_to_current_span(HTTP_URL, url)
@@ -124,8 +123,8 @@ def wrap_session_request(wrapped, instance, args, kwargs):
     result = wrapped(*args, **kwargs)
 
     # Add the status code to attributes
-    _tracer.add_attribute_to_current_span(
-        HTTP_STATUS_CODE, str(result.status_code))
+    _tracer.add_attribute_to_current_span(HTTP_STATUS_CODE,
+                                          str(result.status_code))
 
     _tracer.end_span()
     return result

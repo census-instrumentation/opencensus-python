@@ -23,8 +23,8 @@ from opencensus.trace import execution_context
 from opencensus.trace.ext.grpc.client_interceptor import (
     OpenCensusClientInterceptor)
 
-from opencensus.trace.ext.requests.trace import (
-    trace_integration as trace_requests)
+from opencensus.trace.ext.requests.trace import (trace_integration as
+                                                 trace_requests)
 
 log = logging.getLogger(__name__)
 
@@ -54,27 +54,18 @@ def trace_grpc(tracer=None):
     make_secure_channel_func = getattr(_helpers, MAKE_SECURE_CHANNEL)
     make_secure_channel_wrapped = wrap_make_secure_channel(
         make_secure_channel_func, tracer)
-    setattr(
-        _helpers,
-        MAKE_SECURE_CHANNEL,
-        make_secure_channel_wrapped)
+    setattr(_helpers, MAKE_SECURE_CHANNEL, make_secure_channel_wrapped)
 
     # Wrap the grpc.insecure_channel.
     insecure_channel_func = getattr(grpc, INSECURE_CHANNEL)
-    insecure_channel_wrapped = wrap_insecure_channel(
-        insecure_channel_func, tracer)
-    setattr(
-        grpc,
-        INSECURE_CHANNEL,
-        insecure_channel_wrapped)
+    insecure_channel_wrapped = wrap_insecure_channel(insecure_channel_func,
+                                                     tracer)
+    setattr(grpc, INSECURE_CHANNEL, insecure_channel_wrapped)
 
     # Wrap google.api_core.grpc_helpers.create_channel
     create_channel_func = getattr(grpc_helpers, CREATE_CHANNEL)
     create_channel_wrapped = wrap_create_channel(create_channel_func, tracer)
-    setattr(
-        grpc_helpers,
-        CREATE_CHANNEL,
-        create_channel_wrapped)
+    setattr(grpc_helpers, CREATE_CHANNEL, create_channel_wrapped)
 
 
 def trace_http(tracer=None):
@@ -84,6 +75,7 @@ def trace_http(tracer=None):
 
 def wrap_make_secure_channel(make_secure_channel_func, tracer=None):
     """Wrap the google.cloud._helpers.make_secure_channel."""
+
     def call(*args, **kwargs):
         channel = make_secure_channel_func(*args, **kwargs)
 
@@ -98,15 +90,16 @@ def wrap_make_secure_channel(make_secure_channel_func, tracer=None):
                 channel, tracer_interceptor)
             return intercepted_channel  # pragma: NO COVER
         except Exception:
-            log.warning(
-                'Failed to wrap secure channel, '
-                'clientlibs grpc calls not traced.')
+            log.warning('Failed to wrap secure channel, '
+                        'clientlibs grpc calls not traced.')
             return channel
+
     return call
 
 
 def wrap_insecure_channel(insecure_channel_func, tracer=None):
     """Wrap the grpc.insecure_channel."""
+
     def call(*args, **kwargs):
         channel = insecure_channel_func(*args, **kwargs)
 
@@ -121,15 +114,16 @@ def wrap_insecure_channel(insecure_channel_func, tracer=None):
                 channel, tracer_interceptor)
             return intercepted_channel  # pragma: NO COVER
         except Exception:
-            log.warning(
-                'Failed to wrap insecure channel, '
-                'clientlibs grpc calls not traced.')
+            log.warning('Failed to wrap insecure channel, '
+                        'clientlibs grpc calls not traced.')
             return channel
+
     return call
 
 
 def wrap_create_channel(create_channel_func, tracer=None):
     """Wrap the google.api_core.grpc_helpers.create_channel."""
+
     def call(*args, **kwargs):
         channel = create_channel_func(*args, **kwargs)
 
@@ -144,8 +138,8 @@ def wrap_create_channel(create_channel_func, tracer=None):
                 channel, tracer_interceptor)
             return intercepted_channel  # pragma: NO COVER
         except Exception:
-            log.warning(
-                'Failed to wrap create_channel, '
-                'clientlibs grpc calls not traced.')
+            log.warning('Failed to wrap create_channel, '
+                        'clientlibs grpc calls not traced.')
             return channel
+
     return call

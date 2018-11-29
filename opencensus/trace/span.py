@@ -99,21 +99,20 @@ class Span(base_span.BaseSpan):
                         `opencensus.trace.span.SpanKind`)
     """
 
-    def __init__(
-            self,
-            name,
-            parent_span=None,
-            attributes=None,
-            start_time=None,
-            end_time=None,
-            span_id=None,
-            stack_trace=None,
-            time_events=None,
-            links=None,
-            status=None,
-            same_process_as_parent_span=None,
-            context_tracer=None,
-            span_kind=SpanKind.UNSPECIFIED):
+    def __init__(self,
+                 name,
+                 parent_span=None,
+                 attributes=None,
+                 start_time=None,
+                 end_time=None,
+                 span_id=None,
+                 stack_trace=None,
+                 time_events=None,
+                 links=None,
+                 status=None,
+                 same_process_as_parent_span=None,
+                 context_tracer=None,
+                 span_kind=SpanKind.UNSPECIFIED):
         self.name = name
         self.parent_span = parent_span
         self.start_time = start_time
@@ -196,8 +195,10 @@ class Span(base_span.BaseSpan):
         :param attrs: keyworded arguments e.g. failed=True, name='Caching'
         """
         at = attributes.Attributes(attrs)
-        self.add_time_event(time_event_module.TimeEvent(datetime.utcnow(),
-                            time_event_module.Annotation(description, at)))
+        self.add_time_event(
+            time_event_module.TimeEvent(
+                datetime.utcnow(), time_event_module.Annotation(
+                    description, at)))
 
     def add_time_event(self, time_event):
         """Add a TimeEvent.
@@ -208,8 +209,9 @@ class Span(base_span.BaseSpan):
         if isinstance(time_event, time_event_module.TimeEvent):
             self.time_events.append(time_event)
         else:
-            raise TypeError("Type Error: received {}, but requires TimeEvent.".
-                            format(type(time_event).__name__))
+            raise TypeError(
+                "Type Error: received {}, but requires TimeEvent.".format(
+                    type(time_event).__name__))
 
     def add_link(self, link):
         """Add a Link.
@@ -220,8 +222,9 @@ class Span(base_span.BaseSpan):
         if isinstance(link, link_module.Link):
             self.links.append(link)
         else:
-            raise TypeError("Type Error: received {}, but requires Link.".
-                            format(type(link).__name__))
+            raise TypeError(
+                "Type Error: received {}, but requires Link.".format(
+                    type(link).__name__))
 
     def start(self):
         """Set the start time for a span."""
@@ -289,14 +292,15 @@ def format_span_json(span):
 
     if span.time_events:
         span_json['timeEvents'] = {
-            'timeEvent': [time_event.format_time_event_json()
-                          for time_event in span.time_events]
+            'timeEvent': [
+                time_event.format_time_event_json()
+                for time_event in span.time_events
+            ]
         }
 
     if span.links:
         span_json['links'] = {
-            'link': [
-                link.format_link_json() for link in span.links]
+            'link': [link.format_link_json() for link in span.links]
         }
 
     if span.status is not None:

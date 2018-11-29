@@ -23,8 +23,7 @@ class _MetricDescriptorTypeMeta(type):
 
     def __contains__(cls, item):
         return item in {
-            MetricDescriptorType.GAUGE_INT64,
-            MetricDescriptorType.GAUGE_DOUBLE,
+            MetricDescriptorType.GAUGE_INT64, MetricDescriptorType.GAUGE_DOUBLE,
             MetricDescriptorType.GAUGE_DISTRIBUTION,
             MetricDescriptorType.CUMULATIVE_INT64,
             MetricDescriptorType.CUMULATIVE_DOUBLE,

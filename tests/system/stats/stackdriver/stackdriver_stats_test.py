@@ -35,6 +35,7 @@ PROJECT = os.environ.get('GCLOUD_PROJECT_PYTHON')
 RETRY_WAIT_PERIOD = 10000  # Wait 10 seconds between each retry
 RETRY_MAX_ATTEMPT = 10  # Retry 10 times
 
+
 class TestBasicStats(unittest.TestCase):
 
     def test_stats_record_sync(self):
@@ -52,21 +53,20 @@ class TestBasicStats(unittest.TestCase):
             measure_name, measure_description, "By")
         VIDEO_SIZE_VIEW_NAME = view_name
         VIDEO_SIZE_DISTRIBUTION = aggregation_module.DistributionAggregation(
-                                    [0.0, 16.0 * MiB, 256.0 * MiB])
-        VIDEO_SIZE_VIEW = view_module.View(VIDEO_SIZE_VIEW_NAME,
-                                        view_description,
-                                        [FRONTEND_KEY],
-                                        VIDEO_SIZE_MEASURE,
-                                        VIDEO_SIZE_DISTRIBUTION)
+            [0.0, 16.0 * MiB, 256.0 * MiB])
+        VIDEO_SIZE_VIEW = view_module.View(
+            VIDEO_SIZE_VIEW_NAME, view_description, [FRONTEND_KEY],
+            VIDEO_SIZE_MEASURE, VIDEO_SIZE_DISTRIBUTION)
 
         stats = stats_module.Stats()
         view_manager = stats.view_manager
         stats_recorder = stats.stats_recorder
 
         client = monitoring_v3.MetricServiceClient()
-        exporter = stackdriver.StackdriverStatsExporter(options=stackdriver.Options(project_id=PROJECT),
-                                                        client=client,
-                                                        transport=sync.SyncTransport)
+        exporter = stackdriver.StackdriverStatsExporter(
+            options=stackdriver.Options(project_id=PROJECT),
+            client=client,
+            transport=sync.SyncTransport)
         view_manager.register_exporter(exporter)
 
         # Register view.
@@ -88,12 +88,16 @@ class TestBasicStats(unittest.TestCase):
         # Sleep for [0, 10] milliseconds to fake wait.
         time.sleep(random.randint(1, 10) / 1000.0)
 
-        @retry(wait_fixed=RETRY_WAIT_PERIOD, stop_max_attempt_number=RETRY_MAX_ATTEMPT)
+        @retry(
+            wait_fixed=RETRY_WAIT_PERIOD,
+            stop_max_attempt_number=RETRY_MAX_ATTEMPT)
         def get_metric_descriptors(self, exporter, view_description):
             name = exporter.client.project_path(PROJECT)
-            list_metrics_descriptors = exporter.client.list_metric_descriptors(name)
-            element = next((element for element in list_metrics_descriptors if element.description == view_description), None)
-        
+            list_metrics_descriptors = exporter.client.list_metric_descriptors(
+                name)
+            element = next((element for element in list_metrics_descriptors
+                            if element.description == view_description), None)
+
             self.assertIsNotNone(element)
             self.assertEqual(element.description, view_description)
             self.assertEqual(element.unit, "By")
@@ -115,18 +119,17 @@ class TestBasicStats(unittest.TestCase):
             measure_name, measure_description, "By")
         VIDEO_SIZE_VIEW_NAME_ASYNC = view_name
         VIDEO_SIZE_DISTRIBUTION_ASYNC = aggregation_module.DistributionAggregation(
-                                    [0.0, 16.0 * MiB, 256.0 * MiB])
-        VIDEO_SIZE_VIEW_ASYNC = view_module.View(VIDEO_SIZE_VIEW_NAME_ASYNC,
-                                        view_description,
-                                        [FRONTEND_KEY_ASYNC],
-                                        VIDEO_SIZE_MEASURE_ASYNC,
-                                        VIDEO_SIZE_DISTRIBUTION_ASYNC)
+            [0.0, 16.0 * MiB, 256.0 * MiB])
+        VIDEO_SIZE_VIEW_ASYNC = view_module.View(
+            VIDEO_SIZE_VIEW_NAME_ASYNC, view_description, [FRONTEND_KEY_ASYNC],
+            VIDEO_SIZE_MEASURE_ASYNC, VIDEO_SIZE_DISTRIBUTION_ASYNC)
 
         stats = stats_module.Stats()
         view_manager = stats.view_manager
         stats_recorder = stats.stats_recorder
 
-        exporter = stackdriver.new_stats_exporter(stackdriver.Options(project_id=PROJECT))
+        exporter = stackdriver.new_stats_exporter(
+            stackdriver.Options(project_id=PROJECT))
         view_manager.register_exporter(exporter)
 
         # Register view.
@@ -145,11 +148,15 @@ class TestBasicStats(unittest.TestCase):
 
         measure_map.record(tag_map)
 
-        @retry(wait_fixed=RETRY_WAIT_PERIOD, stop_max_attempt_number=RETRY_MAX_ATTEMPT)
+        @retry(
+            wait_fixed=RETRY_WAIT_PERIOD,
+            stop_max_attempt_number=RETRY_MAX_ATTEMPT)
         def get_metric_descriptors(self, exporter, view_description):
             name = exporter.client.project_path(PROJECT)
-            list_metrics_descriptors = exporter.client.list_metric_descriptors(name)
-            element = next((element for element in list_metrics_descriptors if element.description == view_description), None)
+            list_metrics_descriptors = exporter.client.list_metric_descriptors(
+                name)
+            element = next((element for element in list_metrics_descriptors
+                            if element.description == view_description), None)
             self.assertIsNotNone(element)
             self.assertEqual(element.description, view_description)
             self.assertEqual(element.unit, "By")

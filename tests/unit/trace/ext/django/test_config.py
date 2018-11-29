@@ -37,9 +37,8 @@ class TestDjangoTraceSettings(unittest.TestCase):
 
         django_trace_settings = config.DjangoTraceSettings()
 
-        self.assertEqual(
-            django_trace_settings.settings,
-            config.DEFAULT_DJANGO_TRACER_CONFIG)
+        self.assertEqual(django_trace_settings.settings,
+                         config.DEFAULT_DJANGO_TRACER_CONFIG)
 
     def test__getattr___invalid(self):
         from opencensus.trace.ext.django import config
@@ -67,17 +66,20 @@ class Test__set_default_configs(unittest.TestCase):
 
         custom_django_params = {
             'SAMPLING_RATE': 0.6,
-            'BLACKLIST_PATHS': ['_ah/health', ],
+            'BLACKLIST_PATHS': [
+                '_ah/health',
+            ],
             'TRANSPORT':
-                'opencensus.trace.exporters.transports.sync.SyncTransport',
+            'opencensus.trace.exporters.transports.sync.SyncTransport',
         }
 
         params = config._set_default_configs(
-            custom_django_params,
-            config.DEFAULT_DJANGO_TRACER_PARAMS)
+            custom_django_params, config.DEFAULT_DJANGO_TRACER_PARAMS)
 
         expected_params = {
-            'BLACKLIST_PATHS': ['_ah/health', ],
+            'BLACKLIST_PATHS': [
+                '_ah/health',
+            ],
             'GCP_EXPORTER_PROJECT': None,
             'SAMPLING_RATE': 0.6,
             'SERVICE_NAME': 'my_service',
@@ -88,7 +90,7 @@ class Test__set_default_configs(unittest.TestCase):
             'OCAGENT_TRACE_EXPORTER_ENDPOINT': None,
             'BLACKLIST_HOSTNAMES': None,
             'TRANSPORT':
-                'opencensus.trace.exporters.transports.sync.SyncTransport',
+            'opencensus.trace.exporters.transports.sync.SyncTransport',
         }
 
         self.assertEqual(params, expected_params)
@@ -110,8 +112,8 @@ class Test_convert_to_import(unittest.TestCase):
         mock_import_module.return_value = mock_module
         mock_importlib.import_module = mock_import_module
 
-        patch = mock.patch(
-            'opencensus.trace.ext.django.config.importlib', mock_importlib)
+        patch = mock.patch('opencensus.trace.ext.django.config.importlib',
+                           mock_importlib)
 
         with patch:
             result = config.convert_to_import(path)

@@ -62,8 +62,7 @@ class TestLoggingExporter(unittest.TestCase):
         exporter.emit(span_datas)
 
         logger.info.assert_called_once_with(
-            span_data_module.format_legacy_trace_json(span_datas)
-        )
+            span_data_module.format_legacy_trace_json(span_datas))
 
     def test_export(self):
         exporter = logging_exporter.LoggingExporter(transport=MockTransport)
@@ -80,6 +79,7 @@ class TestLoggingExporter(unittest.TestCase):
 
 
 class MockTransport(object):
+
     def __init__(self, exporter=None):
         self.export_called = False
         self.exporter = exporter
@@ -89,6 +89,7 @@ class MockTransport(object):
 
 
 class _Handler(object):
+
     def __init__(self, level):
         self.level = level
 

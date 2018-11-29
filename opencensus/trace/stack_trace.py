@@ -65,15 +65,9 @@ class StackFrame(object):
     :param source_version: The version of the deployed source code
                            (up to 128 bytes).
     """
-    def __init__(self,
-                 func_name,
-                 original_func_name,
-                 file_name,
-                 line_num,
-                 col_num,
-                 load_module,
-                 build_id,
-                 source_version):
+
+    def __init__(self, func_name, original_func_name, file_name, line_num,
+                 col_num, load_module, build_id, source_version):
         self.func_name = func_name
         self.original_func_name = original_func_name
         self.file_name = file_name
@@ -86,8 +80,7 @@ class StackFrame(object):
     def format_stack_frame_json(self):
         """Convert StackFrame object to json format."""
         stack_frame_json = {}
-        stack_frame_json['function_name'] = _get_truncatable_str(
-            self.func_name)
+        stack_frame_json['function_name'] = _get_truncatable_str(self.func_name)
         stack_frame_json['original_function_name'] = _get_truncatable_str(
             self.original_func_name)
         stack_frame_json['file_name'] = _get_truncatable_str(self.file_name)
@@ -115,6 +108,7 @@ class StackTrace(object):
                                 bandwidth for duplicate stack traces within a
                                 single trace.
     """
+
     def __init__(self, stack_frames=None, stack_trace_hash_id=None):
         if stack_frames is None:
             stack_frames = []
@@ -134,8 +128,7 @@ class StackTrace(object):
     def from_traceback(cls, tb):
         """Initializes a StackTrace from a python traceback instance"""
         stack_trace = cls(
-            stack_trace_hash_id=generate_hash_id_from_traceback(tb)
-        )
+            stack_trace_hash_id=generate_hash_id_from_traceback(tb))
         # use the add_stack_frame so that json formatting is applied
         for tb_frame_info in traceback.extract_tb(tb):
             filename, line_num, fn_name, _ = tb_frame_info
@@ -148,9 +141,7 @@ class StackTrace(object):
                     col_num=0,  # I don't think this is available in python
                     load_module=filename,
                     build_id=BUILD_ID,
-                    source_version=SOURCE_VERSION
-                )
-            )
+                    source_version=SOURCE_VERSION))
         return stack_trace
 
     def add_stack_frame(self, stack_frame):

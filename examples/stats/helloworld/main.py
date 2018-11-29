@@ -28,16 +28,14 @@ from pprint import pprint
 
 MiB = 1 << 20
 FRONTEND_KEY = tag_key_module.TagKey("my.org/keys/frontend")
-VIDEO_SIZE_MEASURE = measure_module.MeasureInt(
-    "my.org/measures/video_size", "size of processed videos", "By")
+VIDEO_SIZE_MEASURE = measure_module.MeasureInt("my.org/measures/video_size",
+                                               "size of processed videos", "By")
 VIDEO_SIZE_VIEW_NAME = "my.org/views/video_size"
 VIDEO_SIZE_DISTRIBUTION = aggregation_module.DistributionAggregation(
     [0.0, 16.0 * MiB, 256.0 * MiB])
-VIDEO_SIZE_VIEW = view_module.View(VIDEO_SIZE_VIEW_NAME,
-                                   "processed video size over time",
-                                   [FRONTEND_KEY],
-                                   VIDEO_SIZE_MEASURE,
-                                   VIDEO_SIZE_DISTRIBUTION)
+VIDEO_SIZE_VIEW = view_module.View(
+    VIDEO_SIZE_VIEW_NAME, "processed video size over time", [FRONTEND_KEY],
+    VIDEO_SIZE_MEASURE, VIDEO_SIZE_DISTRIBUTION)
 
 
 def main():
@@ -64,8 +62,8 @@ def main():
     view_data = view_manager.get_view(VIDEO_SIZE_VIEW_NAME)
     pprint(vars(view_data))
     for k, v in view_data._tag_value_aggregation_data_map.items():
-      pprint(k)
-      pprint(vars(v))
+        pprint(k)
+        pprint(vars(v))
 
 
 if __name__ == '__main__':

@@ -29,6 +29,7 @@ LABEL_KEYS = (LABEL_KEY1, LABEL_KEY2)
 
 
 class TestMetricDescriptor(unittest.TestCase):
+
     def test_init(self):
         metric_descriptor = MetricDescriptor(NAME, DESCRIPTION, UNIT,
                                              MetricDescriptorType.GAUGE_DOUBLE,
@@ -43,7 +44,7 @@ class TestMetricDescriptor(unittest.TestCase):
 
     def test_bogus_type(self):
         with self.assertRaises(ValueError):
-            MetricDescriptor(NAME, DESCRIPTION, UNIT, 0, (LABEL_KEY1, ))
+            MetricDescriptor(NAME, DESCRIPTION, UNIT, 0, (LABEL_KEY1,))
 
     def test_null_label_keys(self):
         with self.assertRaises(ValueError):
@@ -53,7 +54,7 @@ class TestMetricDescriptor(unittest.TestCase):
     def test_null_label_key_values(self):
         with self.assertRaises(ValueError):
             MetricDescriptor(NAME, DESCRIPTION, UNIT,
-                             MetricDescriptorType.GAUGE_DOUBLE, (None, ))
+                             MetricDescriptorType.GAUGE_DOUBLE, (None,))
 
     def test_to_type_class(self):
         self.assertEqual(

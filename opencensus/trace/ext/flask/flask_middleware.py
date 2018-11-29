@@ -57,7 +57,6 @@ class FlaskMiddleware(object):
     DEFAULT_SAMPLER = always_on.AlwaysOnSampler
     DEFAULT_EXPORTER = print_exporter.PrintExporter
     DEFAULT_PROPAGATOR = google_cloud_format.GoogleCloudFormatPropagator
-
     """Flask middleware to automatically trace requests.
 
     :type app: :class: `~flask.Flask`
@@ -86,8 +85,12 @@ class FlaskMiddleware(object):
                        :class:`.TraceContextPropagator`.
     """
 
-    def __init__(self, app=None, blacklist_paths=None, sampler=None,
-                 exporter=None, propagator=None):
+    def __init__(self,
+                 app=None,
+                 blacklist_paths=None,
+                 sampler=None,
+                 exporter=None,
+                 propagator=None):
         self.app = app
         self.blacklist_paths = blacklist_paths
         self.sampler = sampler
@@ -103,28 +106,23 @@ class FlaskMiddleware(object):
         # get settings from app config
         settings = self.app.config.get('OPENCENSUS_TRACE', {})
 
-        self.sampler = (self.sampler
-                        or settings.get('SAMPLER',
-                                        self.DEFAULT_SAMPLER))
-        self.exporter = (self.exporter
-                         or settings.get('EXPORTER',
-                                         self.DEFAULT_EXPORTER))
-        self.propagator = (self.propagator
-                           or settings.get('PROPAGATOR',
-                                           self.DEFAULT_PROPAGATOR))
+        self.sampler = (self.sampler or
+                        settings.get('SAMPLER', self.DEFAULT_SAMPLER))
+        self.exporter = (self.exporter or
+                         settings.get('EXPORTER', self.DEFAULT_EXPORTER))
+        self.propagator = (self.propagator or
+                           settings.get('PROPAGATOR', self.DEFAULT_PROPAGATOR))
 
         # get params from app config
         params = self.app.config.get('OPENCENSUS_TRACE_PARAMS', {})
 
-        self.blacklist_paths = params.get(BLACKLIST_PATHS,
-                                          self.blacklist_paths)
+        self.blacklist_paths = params.get(BLACKLIST_PATHS, self.blacklist_paths)
 
         # Initialize the sampler
         if not inspect.isclass(self.sampler):
             pass  # handling of instantiated sampler
         elif self.sampler.__name__ == 'ProbabilitySampler':
-            _rate = params.get(SAMPLING_RATE,
-                               probability.DEFAULT_SAMPLING_RATE)
+            _rate = params.get(SAMPLING_RATE, probability.DEFAULT_SAMPLING_RATE)
             self.sampler = self.sampler(_rate)
         else:
             self.sampler = self.sampler()
@@ -137,14 +135,12 @@ class FlaskMiddleware(object):
         elif self.exporter.__name__ == 'StackdriverExporter':
             _project_id = params.get(GCP_EXPORTER_PROJECT, None)
             self.exporter = self.exporter(
-                project_id=_project_id,
-                transport=transport)
+                project_id=_project_id, transport=transport)
         elif self.exporter.__name__ == 'JaegerExporter':
             _service_name = self._get_service_name(params)
-            _jaeger_host_name = params.get(
-                JAEGER_EXPORTER_HOST_NAME, 'localhost')
-            _jaeger_port = params.get(
-                JAEGER_EXPORTER_PORT, 14268)
+            _jaeger_host_name = params.get(JAEGER_EXPORTER_HOST_NAME,
+                                           'localhost')
+            _jaeger_port = params.get(JAEGER_EXPORTER_PORT, 14268)
             self.exporter = self.exporter(
                 service_name=_service_name,
                 host_name=_jaeger_host_name,
@@ -152,12 +148,10 @@ class FlaskMiddleware(object):
                 transport=transport)
         elif self.exporter.__name__ == 'ZipkinExporter':
             _service_name = self._get_service_name(params)
-            _zipkin_host_name = params.get(
-                ZIPKIN_EXPORTER_HOST_NAME, 'localhost')
-            _zipkin_port = params.get(
-                ZIPKIN_EXPORTER_PORT, 9411)
-            _zipkin_protocol = params.get(
-                ZIPKIN_EXPORTER_PROTOCOL, 'http')
+            _zipkin_host_name = params.get(ZIPKIN_EXPORTER_HOST_NAME,
+                                           'localhost')
+            _zipkin_port = params.get(ZIPKIN_EXPORTER_PORT, 9411)
+            _zipkin_protocol = params.get(ZIPKIN_EXPORTER_PROTOCOL, 'http')
             self.exporter = self.exporter(
                 service_name=_service_name,
                 host_name=_zipkin_host_name,
@@ -166,8 +160,7 @@ class FlaskMiddleware(object):
                 transport=transport)
         elif self.exporter.__name__ == 'TraceExporter':
             _service_name = self._get_service_name(params)
-            _endpoint = params.get(
-                OCAGENT_TRACE_EXPORTER_ENDPOINT, None)
+            _endpoint = params.get(OCAGENT_TRACE_EXPORTER_ENDPOINT, None)
             self.exporter = self.exporter(
                 service_name=_service_name,
                 endpoint=_endpoint,
@@ -208,16 +201,13 @@ class FlaskMiddleware(object):
             span = tracer.start_span()
             span.span_kind = span_module.SpanKind.SERVER
             # Set the span name as the name of the current module name
-            span.name = '[{}]{}'.format(
-                flask.request.method,
-                flask.request.url)
-            tracer.add_attribute_to_current_span(
-                HTTP_METHOD, flask.request.method)
-            tracer.add_attribute_to_current_span(
-                HTTP_URL, str(flask.request.url))
-            execution_context.set_opencensus_attr(
-                'blacklist_hostnames',
-                self.blacklist_hostnames)
+            span.name = '[{}]{}'.format(flask.request.method, flask.request.url)
+            tracer.add_attribute_to_current_span(HTTP_METHOD,
+                                                 flask.request.method)
+            tracer.add_attribute_to_current_span(HTTP_URL,
+                                                 str(flask.request.url))
+            execution_context.set_opencensus_attr('blacklist_hostnames',
+                                                  self.blacklist_hostnames)
         except Exception:  # pragma: NO COVER
             log.error('Failed to trace request', exc_info=True)
 
@@ -232,9 +222,8 @@ class FlaskMiddleware(object):
 
         try:
             tracer = execution_context.get_opencensus_tracer()
-            tracer.add_attribute_to_current_span(
-                HTTP_STATUS_CODE,
-                str(response.status_code))
+            tracer.add_attribute_to_current_span(HTTP_STATUS_CODE,
+                                                 str(response.status_code))
         except Exception:  # pragma: NO COVER
             log.error('Failed to trace request', exc_info=True)
         finally:
@@ -251,17 +240,14 @@ class FlaskMiddleware(object):
             if exception is not None:
                 span = execution_context.get_current_span()
                 span.status = status.Status(
-                    code=code_pb2.UNKNOWN,
-                    message=str(exception)
-                )
+                    code=code_pb2.UNKNOWN, message=str(exception))
                 # try attaching the stack trace to the span, only populated if
                 # the app has 'PROPAGATE_EXCEPTIONS', 'DEBUG', or 'TESTING'
                 # enabled
                 exc_type, _, exc_traceback = sys.exc_info()
                 if exc_traceback is not None:
                     span.stack_trace = stack_trace.StackTrace.from_traceback(
-                        exc_traceback
-                    )
+                        exc_traceback)
 
             tracer.end_span()
             tracer.finish()
@@ -269,11 +255,10 @@ class FlaskMiddleware(object):
             log.error('Failed to trace request', exc_info=True)
 
     def _get_service_name(self, params):
-        _service_name = params.get(
-            SERVICE_NAME, None)
+        _service_name = params.get(SERVICE_NAME, None)
 
         if _service_name is None:
-            _service_name = params.get(
-                ZIPKIN_EXPORTER_SERVICE_NAME, 'my_service')
+            _service_name = params.get(ZIPKIN_EXPORTER_SERVICE_NAME,
+                                       'my_service')
 
         return _service_name

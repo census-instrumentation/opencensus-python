@@ -19,6 +19,7 @@ from opencensus.metrics.export import value as value_module
 
 
 class TestPoint(unittest.TestCase):
+
     def setUp(self):
         self.double_value = value_module.Value.double_value(55.5)
         self.long_value = value_module.Value.long_value(9876543210)

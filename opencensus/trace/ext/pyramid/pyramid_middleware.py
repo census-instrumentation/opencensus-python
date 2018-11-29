@@ -28,7 +28,6 @@ HTTP_STATUS_CODE = attributes_helper.COMMON_ATTRIBUTES['HTTP_STATUS_CODE']
 
 BLACKLIST_PATHS = 'BLACKLIST_PATHS'
 
-
 log = logging.getLogger(__name__)
 
 
@@ -88,17 +87,13 @@ class OpenCensusTweenFactory(object):
             span = tracer.start_span()
 
             # Set the span name as the name of the current module name
-            span.name = '[{}]{}'.format(
-                request.method,
-                request.path)
+            span.name = '[{}]{}'.format(request.method, request.path)
 
             span.span_kind = span_module.SpanKind.SERVER
             tracer.add_attribute_to_current_span(
-                attribute_key=HTTP_METHOD,
-                attribute_value=request.method)
+                attribute_key=HTTP_METHOD, attribute_value=request.method)
             tracer.add_attribute_to_current_span(
-                attribute_key=HTTP_URL,
-                attribute_value=request.path)
+                attribute_key=HTTP_URL, attribute_value=request.path)
         except Exception:  # pragma: NO COVER
             log.error('Failed to trace request', exc_info=True)
 
@@ -108,9 +103,8 @@ class OpenCensusTweenFactory(object):
 
         try:
             tracer = execution_context.get_opencensus_tracer()
-            tracer.add_attribute_to_current_span(
-                HTTP_STATUS_CODE,
-                str(response.status_code))
+            tracer.add_attribute_to_current_span(HTTP_STATUS_CODE,
+                                                 str(response.status_code))
 
             tracer.end_span()
             tracer.finish()

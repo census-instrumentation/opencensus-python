@@ -20,6 +20,7 @@ from datetime import datetime
 class ViewManager(object):
     """View Manager allows the registering of Views for collecting stats
     and receiving stats data as View Data"""
+
     def __init__(self):
         self.time = datetime.utcnow().isoformat() + 'Z'
         if execution_context.get_measure_to_view_map() == {}:
@@ -38,8 +39,8 @@ class ViewManager(object):
 
     def get_view(self, view_name):
         """gets the view given the view name """
-        return self.measure_to_view_map.get_view(view_name=view_name,
-                                                 timestamp=self.time)
+        return self.measure_to_view_map.get_view(
+            view_name=view_name, timestamp=self.time)
 
     def get_all_exported_views(self):
         """returns all of the exported views for the current measure to view

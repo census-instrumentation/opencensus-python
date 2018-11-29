@@ -38,6 +38,7 @@ class Attributes(object):
                        to 128 bytes long. The value can be a string up to 256
                        bytes, an integer, or the Boolean values true and false.
     """
+
     def __init__(self, attributes=None):
         self.attributes = attributes or {}
 
@@ -64,8 +65,6 @@ class Attributes(object):
             if value is not None:
                 attributes_json[key] = value
 
-        result = {
-            'attributeMap': attributes_json
-        }
+        result = {'attributeMap': attributes_json}
 
         return result

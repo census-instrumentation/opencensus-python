@@ -14,6 +14,7 @@
 
 import unittest
 
+
 class TestCommonBaseTransport(unittest.TestCase):
 
     def test_export_abstract(self):

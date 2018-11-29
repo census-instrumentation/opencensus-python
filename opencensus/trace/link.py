@@ -48,6 +48,7 @@ class Link(object):
     :param attributes: A set of attributes on the link. You have have up to 32
                        attributes per link.
     """
+
     def __init__(self, trace_id, span_id, type=None, attributes=None):
         self.trace_id = trace_id
         self.span_id = span_id

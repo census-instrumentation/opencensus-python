@@ -47,6 +47,7 @@ def connect(*args, **kwargs):
 
 
 def trace_cursor_query(query_func):
+
     def call(query, *args, **kwargs):
         _tracer = execution_context.get_opencensus_tracer()
         if _tracer is not None:

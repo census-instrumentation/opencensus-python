@@ -17,7 +17,6 @@ import logging
 from sqlalchemy import engine
 from sqlalchemy import event
 
-
 from opencensus.trace import execution_context
 from opencensus.trace import span as span_module
 
@@ -43,8 +42,8 @@ def trace_engine(engine):
     event.listen(engine, 'after_cursor_execute', _after_cursor_execute)
 
 
-def _before_cursor_execute(conn, cursor, statement, parameters,
-                           context, executemany):
+def _before_cursor_execute(conn, cursor, statement, parameters, context,
+                           executemany):
     """Intercept low-level cursor execute() events before execution.
     If executemany is True, this is an executemany call, else an execute call.
 
@@ -67,8 +66,8 @@ def _before_cursor_execute(conn, cursor, statement, parameters,
     _span.span_kind = span_module.SpanKind.CLIENT
 
     # Set query statement attribute
-    _tracer.add_attribute_to_current_span(
-        '{}.query'.format(MODULE_NAME), statement)
+    _tracer.add_attribute_to_current_span('{}.query'.format(MODULE_NAME),
+                                          statement)
 
     # Set query parameters attribute
     _tracer.add_attribute_to_current_span(
@@ -76,12 +75,11 @@ def _before_cursor_execute(conn, cursor, statement, parameters,
 
     # Set query function attribute
     _tracer.add_attribute_to_current_span(
-        '{}.cursor.method.name'.format(MODULE_NAME),
-        query_func)
+        '{}.cursor.method.name'.format(MODULE_NAME), query_func)
 
 
-def _after_cursor_execute(conn, cursor, statement, parameters,
-                          context, executemany):
+def _after_cursor_execute(conn, cursor, statement, parameters, context,
+                          executemany):
     """Intercept low-level cursor execute() events after execution.
     If executemany is True, this is an executemany call, else an execute call.
 

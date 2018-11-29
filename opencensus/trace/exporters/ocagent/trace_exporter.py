@@ -60,13 +60,12 @@ class TraceExporter(base.Exporter):
                       :class:`.BackgroundThreadTransport`.
     """
 
-    def __init__(
-            self,
-            service_name,
-            host_name=None,
-            endpoint=None,
-            client=None,
-            transport=sync.SyncTransport):
+    def __init__(self,
+                 service_name,
+                 host_name=None,
+                 endpoint=None,
+                 client=None,
+                 transport=sync.SyncTransport):
         self.transport = transport(self)
         self.endpoint = DEFAULT_ENDPOINT if endpoint is None else endpoint
 
@@ -80,17 +79,15 @@ class TraceExporter(base.Exporter):
         self.service_name = service_name
         self.node = common_pb2.Node(
             identifier=common_pb2.ProcessIdentifier(
-                host_name=socket.gethostname() if host_name is None
-                else host_name,
+                host_name=socket.gethostname()
+                if host_name is None else host_name,
                 pid=os.getpid(),
                 start_timestamp=utils.proto_ts_from_datetime(
-                    datetime.datetime.now())
-            ),
+                    datetime.datetime.now())),
             library_info=common_pb2.LibraryInfo(
                 language=common_pb2.LibraryInfo.Language.Value('PYTHON'),
                 exporter_version=EXPORTER_VERSION,
-                core_library_version=__version__
-            ),
+                core_library_version=__version__),
             service_info=common_pb2.ServiceInfo(name=self.service_name))
 
     def emit(self, span_datas):
@@ -143,13 +140,14 @@ class TraceExporter(base.Exporter):
         :returns: List of span export requests.
         """
 
-        pb_spans = [utils.translate_to_trace_proto(
-            span_data) for span_data in span_datas]
+        pb_spans = [
+            utils.translate_to_trace_proto(span_data)
+            for span_data in span_datas
+        ]
 
         # TODO: send node once per channel
         yield trace_service_pb2.ExportTraceServiceRequest(
-            node=self.node,
-            spans=pb_spans)
+            node=self.node, spans=pb_spans)
 
     # TODO: better support for receiving config updates
     def update_config(self, config):
@@ -188,7 +186,6 @@ class TraceExporter(base.Exporter):
 
         # TODO: send node once per channel
         request = trace_service_pb2.CurrentLibraryConfig(
-            node=self.node,
-            config=config)
+            node=self.node, config=config)
 
         yield request

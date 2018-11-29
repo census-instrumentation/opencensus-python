@@ -92,8 +92,8 @@ class MeasureToViewMap(object):
         if registered_measure is None:
             self._registered_measures[measure.name] = measure
         self._measure_to_view_data_list_map[view.measure.name].append(
-            view_data_module.ViewData(view=view, start_time=timestamp,
-                                      end_time=timestamp))
+            view_data_module.ViewData(
+                view=view, start_time=timestamp, end_time=timestamp))
 
     def record(self, tags, measurement_map, timestamp, attachments=None):
         """records stats with a set of tags"""
@@ -108,7 +108,9 @@ class MeasureToViewMap(object):
                     view_datas.extend(view_data_list)
             for view_data in view_datas:
                 view_data.record(
-                    context=tags, value=value, timestamp=timestamp,
+                    context=tags,
+                    value=value,
+                    timestamp=timestamp,
                     attachments=attachments)
             self.export(view_datas)
 

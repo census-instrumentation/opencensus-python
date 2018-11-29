@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Export the trace spans to a local file."""
 
 import json
@@ -41,7 +40,8 @@ class FileExporter(base.Exporter):
 
     """
 
-    def __init__(self, file_name=DEFAULT_FILENAME,
+    def __init__(self,
+                 file_name=DEFAULT_FILENAME,
                  transport=sync.SyncTransport,
                  file_mode='w+'):
         self.file_name = file_name

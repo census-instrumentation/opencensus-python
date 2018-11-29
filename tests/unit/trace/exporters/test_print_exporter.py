@@ -40,6 +40,7 @@ class TestPrintExporter(unittest.TestCase):
 
 
 class MockTransport(object):
+
     def __init__(self, exporter=None):
         self.export_called = False
         self.exporter = exporter

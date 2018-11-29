@@ -35,9 +35,8 @@ class Test_pymysql_trace(unittest.TestCase):
         patch_wrap = mock.patch(
             'opencensus.trace.ext.pymysql.trace.trace.wrap_conn',
             side_effect=mock_wrap)
-        patch_inspect = mock.patch(
-            'opencensus.trace.ext.pymysql.trace.inspect',
-            mock_inspect)
+        patch_inspect = mock.patch('opencensus.trace.ext.pymysql.trace.inspect',
+                                   mock_inspect)
 
         with patch_wrap, patch_inspect:
             trace.trace_integration()

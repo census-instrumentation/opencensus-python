@@ -27,8 +27,8 @@ def _get_truncatable_str(str_to_convert):
     """Truncate a string if exceed limit and record the truncated bytes
     count.
     """
-    truncated, truncated_byte_count = check_str_length(
-        str_to_convert, MAX_LENGTH)
+    truncated, truncated_byte_count = check_str_length(str_to_convert,
+                                                       MAX_LENGTH)
 
     result = {
         'value': truncated,

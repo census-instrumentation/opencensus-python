@@ -21,11 +21,11 @@ from concurrent.futures import ThreadPoolExecutor
 from opencensus.trace.ext.threading import trace
 from opencensus.trace import execution_context, tracer
 
+
 class Test_threading_trace(unittest.TestCase):
 
     def tearDown(self):
         execution_context.clear()
-
 
     def test_trace_integration(self):
         mock_wrap_start = mock.Mock()
@@ -63,18 +63,17 @@ class Test_threading_trace(unittest.TestCase):
             mock_wrap_apply_async)
         patch_threading = mock.patch(
             'opencensus.trace.ext.threading.trace.threading', mock_threading)
-        patch_pool = mock.patch(
-            'opencensus.trace.ext.threading.trace.pool', mock_pool)
+        patch_pool = mock.patch('opencensus.trace.ext.threading.trace.pool',
+                                mock_pool)
 
         with patch_wrap_start, patch_wrap_run, patch_wrap_apply_async, patch_threading, patch_pool:
             trace.trace_integration()
 
-        self.assertEqual(getattr(mock_threading.Thread, 'start'),
-                         wrap_start_result)
-        self.assertEqual(getattr(mock_threading.Thread, 'run'),
-                         wrap_run_result)
-        self.assertEqual(getattr(mock_pool.Pool, 'apply_async'),
-                         wrap_apply_async_result)
+        self.assertEqual(
+            getattr(mock_threading.Thread, 'start'), wrap_start_result)
+        self.assertEqual(getattr(mock_threading.Thread, 'run'), wrap_run_result)
+        self.assertEqual(
+            getattr(mock_pool.Pool, 'apply_async'), wrap_apply_async_result)
 
     def test_wrap_threading(self):
         global global_tracer
@@ -131,6 +130,7 @@ def fake_pooled_func():
 
 
 class MockTracer(object):
+
     def __init__(self, span=None):
         self.span = span
 

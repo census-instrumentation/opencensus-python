@@ -26,7 +26,6 @@ from opencensus.tags import tag_key as tag_key_module
 from opencensus.tags import tag_map as tag_map_module
 from opencensus.tags import tag_value as tag_value_module
 
-
 MiB = 1 << 20
 FRONTEND_KEY = tag_key_module.TagKey("my.org/keys/frontend")
 FRONTEND_KEY_FLOAT = tag_key_module.TagKey("my.org/keys/frontend-FLOAT")
@@ -64,6 +63,7 @@ REGISTERED_VIEW2 = {
 
 
 class TestOptionsPrometheus(unittest.TestCase):
+
     def test_options_constructor(self):
         option = prometheus.Options("test1")
         self.assertEqual(option.namespace, "test1")
@@ -78,6 +78,7 @@ class TestOptionsPrometheus(unittest.TestCase):
 
 
 class TestCollectorPrometheus(unittest.TestCase):
+
     def test_collector_constructor(self):
         options = prometheus.Options("test1")
         self.assertEqual(options.namespace, "test1")
@@ -217,8 +218,7 @@ class TestCollectorPrometheus(unittest.TestCase):
         options = prometheus.Options("test2", 8001, "localhost", registry)
         collector = prometheus.Collector(options=options, view_data=view_data)
         collector.register_view(view)
-        desc = collector.registered_views[
-            'test2_new_view-my.org/keys/frontend']
+        desc = collector.registered_views['test2_new_view-my.org/keys/frontend']
         collector.to_metric(desc=desc, view=view)
 
         registry = mock.Mock()
@@ -236,6 +236,7 @@ class TestCollectorPrometheus(unittest.TestCase):
 
 
 class TestPrometheusStatsExporter(unittest.TestCase):
+
     def test_exporter_constructor_no_namespace(self):
         with self.assertRaisesRegexp(ValueError,
                                      'Namespace can not be empty string.'):

@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Export the spans data to Zipkin Collector."""
 
 import json
@@ -67,16 +66,15 @@ class ZipkinExporter(base.Exporter):
                       :class:`.BackgroundThreadTransport`.
     """
 
-    def __init__(
-            self,
-            service_name='my_service',
-            host_name=DEFAULT_HOST_NAME,
-            port=DEFAULT_PORT,
-            endpoint=DEFAULT_ENDPOINT,
-            protocol=DEFAULT_PROTOCOL,
-            transport=sync.SyncTransport,
-            ipv4=None,
-            ipv6=None):
+    def __init__(self,
+                 service_name='my_service',
+                 host_name=DEFAULT_HOST_NAME,
+                 port=DEFAULT_PORT,
+                 endpoint=DEFAULT_ENDPOINT,
+                 protocol=DEFAULT_PROTOCOL,
+                 transport=sync.SyncTransport,
+                 ipv4=None,
+                 ipv6=None):
         self.service_name = service_name
         self.host_name = host_name
         self.port = port
@@ -89,11 +87,8 @@ class ZipkinExporter(base.Exporter):
 
     @property
     def get_url(self):
-        return '{}://{}:{}{}'.format(
-            self.protocol,
-            self.host_name,
-            self.port,
-            self.endpoint)
+        return '{}://{}:{}{}'.format(self.protocol, self.host_name, self.port,
+                                     self.endpoint)
 
     def emit(self, span_datas):
         """Send SpanData tuples to Zipkin server, default using the v2 API.
@@ -113,8 +108,8 @@ class ZipkinExporter(base.Exporter):
 
             if result.status_code not in SUCCESS_STATUS_CODE:
                 logging.error(
-                    "Failed to send spans to Zipkin server! Spans are {}"
-                    .format(zipkin_spans))
+                    "Failed to send spans to Zipkin server! Spans are {}".
+                    format(zipkin_spans))
         except Exception as e:  # pragma: NO COVER
             logging.error(getattr(e, 'message', e))
 
@@ -210,7 +205,9 @@ def _extract_annotations_from_span(span):
             continue
 
         event_timestamp_mus = timestamp_to_microseconds(time_event.timestamp)
-        annotations.append({'timestamp': int(round(event_timestamp_mus)),
-                            'value': annotation.description})
+        annotations.append({
+            'timestamp': int(round(event_timestamp_mus)),
+            'value': annotation.description
+        })
 
     return annotations

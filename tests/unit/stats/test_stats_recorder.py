@@ -37,4 +37,7 @@ class TestStatsRecorder(unittest.TestCase):
         stats_recorder = stats_recorder_module.StatsRecorder()
         measurement_map = stats_recorder.new_measurement_map()
 
-        self.assertEqual(measurement_map.measurement_map, MeasurementMap(measure_to_view_map=measure_to_view_map).measurement_map)
+        self.assertEqual(
+            measurement_map.measurement_map,
+            MeasurementMap(
+                measure_to_view_map=measure_to_view_map).measurement_map)

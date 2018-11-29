@@ -66,15 +66,9 @@ class Test_from_carrier(unittest.TestCase):
         propagator = text_format.TextFormatPropagator()
         carrier = propagator.to_carrier(span_context, carrier)
 
-        self.assertEqual(
-            carrier[text_format._TRACE_ID_KEY],
-            test_trace_id)
-        self.assertEqual(
-            carrier[text_format._SPAN_ID_KEY],
-            str(test_span_id))
-        self.assertEqual(
-            carrier[text_format._TRACE_OPTIONS_KEY],
-            test_options)
+        self.assertEqual(carrier[text_format._TRACE_ID_KEY], test_trace_id)
+        self.assertEqual(carrier[text_format._SPAN_ID_KEY], str(test_span_id))
+        self.assertEqual(carrier[text_format._TRACE_OPTIONS_KEY], test_options)
 
     def test_to_carrier_no_span_id(self):
         test_trace_id = '6e0c63257de34c92bf9efcd03927272e'
@@ -89,11 +83,6 @@ class Test_from_carrier(unittest.TestCase):
         propagator = text_format.TextFormatPropagator()
         carrier = propagator.to_carrier(span_context, carrier)
 
-        self.assertEqual(
-            carrier[text_format._TRACE_ID_KEY],
-            test_trace_id)
-        self.assertIsNone(
-            carrier.get(text_format._SPAN_ID_KEY))
-        self.assertEqual(
-            carrier[text_format._TRACE_OPTIONS_KEY],
-            test_options)
+        self.assertEqual(carrier[text_format._TRACE_ID_KEY], test_trace_id)
+        self.assertIsNone(carrier.get(text_format._SPAN_ID_KEY))
+        self.assertEqual(carrier[text_format._TRACE_OPTIONS_KEY], test_options)

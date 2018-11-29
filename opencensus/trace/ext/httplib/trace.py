@@ -43,14 +43,12 @@ def trace_integration(tracer=None):
     log.info('Integrated module: {}'.format(MODULE_NAME))
 
     # Wrap the httplib request function
-    request_func = getattr(
-        httplib.HTTPConnection, HTTPLIB_REQUEST_FUNC)
+    request_func = getattr(httplib.HTTPConnection, HTTPLIB_REQUEST_FUNC)
     wrapped_request = wrap_httplib_request(request_func)
     setattr(httplib.HTTPConnection, request_func.__name__, wrapped_request)
 
     # Wrap the httplib response function
-    response_func = getattr(
-        httplib.HTTPConnection, HTTPLIB_RESPONSE_FUNC)
+    response_func = getattr(httplib.HTTPConnection, HTTPLIB_RESPONSE_FUNC)
     wrapped_response = wrap_httplib_response(response_func)
     setattr(httplib.HTTPConnection, response_func.__name__, wrapped_response)
 
@@ -66,8 +64,8 @@ def wrap_httplib_request(request_func):
             'blacklist_hostnames')
         dest_url = '{}:{}'.format(self._dns_host, self.port)
         if utils.disable_tracing_hostname(dest_url, blacklist_hostnames):
-            return request_func(self, method, url, body,
-                                headers, *args, **kwargs)
+            return request_func(self, method, url, body, headers, *args,
+                                **kwargs)
         _span = _tracer.start_span()
         _span.span_kind = span_module.SpanKind.CLIENT
         _span.name = '[httplib]{}'.format(request_func.__name__)
@@ -79,12 +77,13 @@ def wrap_httplib_request(request_func):
         _tracer.add_attribute_to_current_span(HTTP_METHOD, method)
 
         # Store the current span id to thread local.
-        execution_context.set_opencensus_attr(
-            'httplib/current_span_id', _span.span_id)
+        execution_context.set_opencensus_attr('httplib/current_span_id',
+                                              _span.span_id)
         try:
             headers = headers.copy()
-            headers.update(_tracer.propagator.to_headers(
-                _span.context_tracer.span_context))
+            headers.update(
+                _tracer.propagator.to_headers(
+                    _span.context_tracer.span_context))
         except Exception:  # pragma: NO COVER
             pass
         return request_func(self, method, url, body, headers, *args, **kwargs)
@@ -113,8 +112,8 @@ def wrap_httplib_response(response_func):
         result = response_func(self, *args, **kwargs)
 
         # Add the status code to attributes
-        _tracer.add_attribute_to_current_span(
-            HTTP_STATUS_CODE, str(result.status))
+        _tracer.add_attribute_to_current_span(HTTP_STATUS_CODE,
+                                              str(result.status))
 
         _tracer.end_span()
         return result

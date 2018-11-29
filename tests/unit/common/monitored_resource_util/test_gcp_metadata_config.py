@@ -60,6 +60,7 @@ class TestGcpMetadataConfig(unittest.TestCase):
         """
         At least in python 3 binary strings are returned from urllib
         """
+
         def assign_attribute_value(*args, **kwargs):
             attribute_uri = args[0].split('/')[-1]
             if attribute_uri == 'id':
@@ -88,12 +89,14 @@ class TestGcpMetadataConfig(unittest.TestCase):
 
         self.assertEquals(labels_list, expected_labels)
 
-    @mock.patch.dict(os.environ,
-                     {'KUBERNETES_SERVICE_HOST': '127.0.0.1',
-                      'CONTAINER_NAME': 'container',
-                      'NAMESPACE': 'namespace',
-                      'HOSTNAME': 'localhost'}, clear=True
-                     )
+    @mock.patch.dict(
+        os.environ, {
+            'KUBERNETES_SERVICE_HOST': '127.0.0.1',
+            'CONTAINER_NAME': 'container',
+            'NAMESPACE': 'namespace',
+            'HOSTNAME': 'localhost'
+        },
+        clear=True)
     @mock.patch('opencensus.common.monitored_resource_util.'
                 'gcp_metadata_config.get_request')
     def test_get_gke_metadata(self, http_request_mock):
@@ -132,11 +135,13 @@ class TestGcpMetadataConfig(unittest.TestCase):
 
         self.assertEquals(labels_list, expected_labels)
 
-    @mock.patch.dict(os.environ,
-                     {'KUBERNETES_SERVICE_HOST': '127.0.0.1',
-                      'NAMESPACE': 'namespace',
-                      'HOSTNAME': 'localhost'}, clear=True
-                     )
+    @mock.patch.dict(
+        os.environ, {
+            'KUBERNETES_SERVICE_HOST': '127.0.0.1',
+            'NAMESPACE': 'namespace',
+            'HOSTNAME': 'localhost'
+        },
+        clear=True)
     @mock.patch('opencensus.common.monitored_resource_util.'
                 'gcp_metadata_config.get_request')
     def test_get_gke_metadata_container_empty(self, http_request_mock):

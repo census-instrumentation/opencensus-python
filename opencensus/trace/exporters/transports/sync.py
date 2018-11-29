@@ -16,6 +16,7 @@ from opencensus.trace.exporters.transports import base
 
 
 class SyncTransport(base.Transport):
+
     def __init__(self, exporter):
         self.exporter = exporter
 

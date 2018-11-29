@@ -18,11 +18,13 @@ import logging
 from django.conf import settings as django_settings
 
 DEFAULT_DJANGO_TRACER_CONFIG = {
-    'SAMPLER': 'opencensus.trace.samplers.always_on.AlwaysOnSampler',
+    'SAMPLER':
+    'opencensus.trace.samplers.always_on.AlwaysOnSampler',
     'EXPORTER':
-        'opencensus.trace.exporters.print_exporter.PrintExporter',
-    'PROPAGATOR': 'opencensus.trace.propagation.google_cloud_format.'
-                  'GoogleCloudFormatPropagator',
+    'opencensus.trace.exporters.print_exporter.PrintExporter',
+    'PROPAGATOR':
+    'opencensus.trace.propagation.google_cloud_format.'
+    'GoogleCloudFormatPropagator',
 }
 
 DEFAULT_DJANGO_TRACER_PARAMS = {
@@ -41,7 +43,6 @@ DEFAULT_DJANGO_TRACER_PARAMS = {
     'TRANSPORT': 'opencensus.trace.exporters.transports.sync.SyncTransport',
 }
 
-
 PATH_DELIMITER = '.'
 TRANSPORT = 'TRANSPORT'
 
@@ -56,15 +57,11 @@ class DjangoTraceSettings(object):
 
     def __init__(self):
         # Try to read the user settings from django settings file
-        self.settings = getattr(
-            django_settings,
-            'OPENCENSUS_TRACE',
-            DEFAULT_DJANGO_TRACER_CONFIG)
+        self.settings = getattr(django_settings, 'OPENCENSUS_TRACE',
+                                DEFAULT_DJANGO_TRACER_CONFIG)
 
-        self.params = getattr(
-            django_settings,
-            'OPENCENSUS_TRACE_PARAMS',
-            DEFAULT_DJANGO_TRACER_PARAMS)
+        self.params = getattr(django_settings, 'OPENCENSUS_TRACE_PARAMS',
+                              DEFAULT_DJANGO_TRACER_PARAMS)
 
         # Set default value for the tracer config if user not specified
         _set_default_configs(self.settings, DEFAULT_DJANGO_TRACER_CONFIG)

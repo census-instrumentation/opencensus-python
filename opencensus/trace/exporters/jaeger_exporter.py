@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Export the spans data to Jaeger."""
 
 import logging
@@ -74,18 +73,17 @@ class JaegerExporter(base.Exporter):
                       :class:`.BackgroundThreadTransport`.
     """
 
-    def __init__(
-            self,
-            service_name='my_service',
-            host_name=None,
-            port=None,
-            username=None,
-            password=None,
-            endpoint='',
-            agent_host_name=DEFAULT_HOST_NAME,
-            agent_port=DEFAULT_AGENT_PORT,
-            agent_endpoint=DEFAULT_ENDPOINT,
-            transport=sync.SyncTransport):
+    def __init__(self,
+                 service_name='my_service',
+                 host_name=None,
+                 port=None,
+                 username=None,
+                 password=None,
+                 endpoint='',
+                 agent_host_name=DEFAULT_HOST_NAME,
+                 agent_port=DEFAULT_AGENT_PORT,
+                 agent_endpoint=DEFAULT_ENDPOINT,
+                 transport=sync.SyncTransport):
         self.transport = transport(self)
         self.service_name = service_name
         self.host_name = host_name
@@ -102,8 +100,7 @@ class JaegerExporter(base.Exporter):
     def agent_client(self):
         if self._agent_client is None:
             self._agent_client = AgentClientUDP(
-                host_name=self.agent_host_name,
-                port=self.agent_port)
+                host_name=self.agent_host_name, port=self.agent_port)
         return self._agent_client
 
     @property
@@ -114,17 +111,14 @@ class JaegerExporter(base.Exporter):
         if self.host_name is None or self.port is None:
             return None
 
-        thrift_url = 'http://{}:{}{}'.format(
-            self.host_name,
-            self.port,
-            self.endpoint or DEFAULT_ENDPOINT)
+        thrift_url = 'http://{}:{}{}'.format(self.host_name, self.port,
+                                             self.endpoint or DEFAULT_ENDPOINT)
 
         auth = None
         if self.username is not None and self.password is not None:
             auth = (self.username, self.password)
 
-        self._collector = Collector(
-            thrift_url=thrift_url, auth=auth)
+        self._collector = Collector(thrift_url=thrift_url, auth=auth)
         return self._collector
 
     def emit(self, span_datas):
@@ -181,15 +175,17 @@ class JaegerExporter(base.Exporter):
 
             status = span.status
             if status is not None:
-                tags.append(jaeger.Tag(
-                    key='status.code',
-                    vType=jaeger.TagType.LONG,
-                    vLong=status.code))
+                tags.append(
+                    jaeger.Tag(
+                        key='status.code',
+                        vType=jaeger.TagType.LONG,
+                        vLong=status.code))
 
-                tags.append(jaeger.Tag(
-                    key='status.message',
-                    vType=jaeger.TagType.STRING,
-                    vStr=status.message))
+                tags.append(
+                    jaeger.Tag(
+                        key='status.message',
+                        vType=jaeger.TagType.STRING,
+                        vStr=status.message))
 
             refs = _extract_refs_from_span(span)
             logs = _extract_logs_from_span(span)
@@ -227,11 +223,12 @@ def _extract_refs_from_span(span):
     refs = []
     for link in span.links:
         trace_id = link.trace_id
-        refs.append(jaeger.SpanRef(
-            refType=_convert_reftype_to_jaeger_reftype(link.type),
-            traceIdHigh=_convert_hex_str_to_int(trace_id[0:16]),
-            traceIdLow=_convert_hex_str_to_int(trace_id[16:32]),
-            spanId=_convert_hex_str_to_int(link.span_id)))
+        refs.append(
+            jaeger.SpanRef(
+                refType=_convert_reftype_to_jaeger_reftype(link.type),
+                traceIdHigh=_convert_hex_str_to_int(trace_id[0:16]),
+                traceIdLow=_convert_hex_str_to_int(trace_id[16:32]),
+                spanId=_convert_hex_str_to_int(link.span_id)))
     return refs
 
 
@@ -272,14 +269,15 @@ def _extract_logs_from_span(span):
         if annotation.attributes is not None:
             fields = _extract_tags(annotation.attributes.attributes)
 
-        fields.append(jaeger.Tag(
-            key='message',
-            vType=jaeger.TagType.STRING,
-            vStr=annotation.description))
+        fields.append(
+            jaeger.Tag(
+                key='message',
+                vType=jaeger.TagType.STRING,
+                vStr=annotation.description))
 
         event_timestamp = timestamp_to_microseconds(time_event.timestamp)
-        logs.append(jaeger.Log(timestamp=int(round(event_timestamp)),
-                               fields=fields))
+        logs.append(
+            jaeger.Log(timestamp=int(round(event_timestamp)), fields=fields))
     return logs
 
 
@@ -298,20 +296,11 @@ def _extract_tags(attr):
 def _convert_attribute_to_tag(key, attr):
     """Convert the attributes to jaeger tags."""
     if isinstance(attr, bool):
-        return jaeger.Tag(
-            key=key,
-            vBool=attr,
-            vType=jaeger.TagType.BOOL)
+        return jaeger.Tag(key=key, vBool=attr, vType=jaeger.TagType.BOOL)
     if isinstance(attr, str):
-        return jaeger.Tag(
-            key=key,
-            vStr=attr,
-            vType=jaeger.TagType.STRING)
+        return jaeger.Tag(key=key, vStr=attr, vType=jaeger.TagType.STRING)
     if isinstance(attr, int):
-        return jaeger.Tag(
-            key=key,
-            vLong=attr,
-            vType=jaeger.TagType.LONG)
+        return jaeger.Tag(key=key, vLong=attr, vType=jaeger.TagType.LONG)
     logging.warn('Could not serialize attribute \
             {}:{} to tag'.format(key, attr))
     return None
@@ -339,13 +328,12 @@ class Collector(base.Exporter):
                            HTTP server.
     """
 
-    def __init__(
-            self,
-            thrift_url='',
-            auth=None,
-            client=jaeger.Client,
-            transport=sync.SyncTransport,
-            http_transport=THttpClient.THttpClient):
+    def __init__(self,
+                 thrift_url='',
+                 auth=None,
+                 client=jaeger.Client,
+                 transport=sync.SyncTransport,
+                 http_transport=THttpClient.THttpClient):
         self.transport = transport(self)
         self.thrift_url = thrift_url
         self.auth = auth
@@ -417,13 +405,12 @@ class AgentClientUDP(base.Exporter):
                       :class:`.BackgroundThreadTransport`.
     """
 
-    def __init__(
-            self,
-            host_name=DEFAULT_HOST_NAME,
-            port=DEFAULT_AGENT_PORT,
-            max_packet_size=UDP_PACKET_MAX_LENGTH,
-            client=agent.Client,
-            transport=sync.SyncTransport):
+    def __init__(self,
+                 host_name=DEFAULT_HOST_NAME,
+                 port=DEFAULT_AGENT_PORT,
+                 max_packet_size=UDP_PACKET_MAX_LENGTH,
+                 client=agent.Client,
+                 transport=sync.SyncTransport):
         self.transport = transport(self)
         self.address = (host_name, port)
         self.max_packet_size = max_packet_size

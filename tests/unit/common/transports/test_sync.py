@@ -16,6 +16,7 @@ import unittest
 import mock
 from opencensus.common.transports import sync
 
+
 class TestSyncTransport(unittest.TestCase):
 
     def test_constructor(self):

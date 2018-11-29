@@ -29,10 +29,8 @@ class ViewData(object):
     :param end_time: the end time for this view data
 
     """
-    def __init__(self,
-                 view,
-                 start_time,
-                 end_time):
+
+    def __init__(self, view, start_time, end_time):
         self._view = view
         self._start_time = start_time
         self._end_time = end_time
@@ -81,8 +79,8 @@ class ViewData(object):
 
     def record(self, context, value, timestamp, attachments=None):
         """records the view data against context"""
-        tag_values = self.get_tag_values(tags=context.map,
-                                         columns=self.view.columns)
+        tag_values = self.get_tag_values(
+            tags=context.map, columns=self.view.columns)
         tuple_vals = tuple(tag_values)
         if tuple_vals not in self.tag_value_aggregation_data_map:
             self.tag_value_aggregation_data_map[tuple_vals] = copy.deepcopy(

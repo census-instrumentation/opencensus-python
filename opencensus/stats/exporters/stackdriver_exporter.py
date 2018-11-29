@@ -42,6 +42,7 @@ GLOBAL_RESOURCE_TYPE = 'global'
 class Options(object):
     """ Options contains options for configuring the exporter.
     """
+
     def __init__(self,
                  project_id="",
                  resource="",
@@ -109,6 +110,7 @@ class Options(object):
 class StackdriverStatsExporter(base.StatsExporter):
     """ StackdriverStatsExporter exports stats
     to the Stackdriver Monitoring."""
+
     def __init__(self,
                  options=Options(),
                  client=None,
@@ -239,7 +241,7 @@ class StackdriverStatsExporter(base.StatsExporter):
             point.interval.end_time.seconds = int(timestamp_end)
 
             secs = point.interval.end_time.seconds
-            point.interval.end_time.nanos = int((timestamp_end-secs)*10**9)
+            point.interval.end_time.nanos = int((timestamp_end - secs) * 10**9)
 
             if type(agg) is not aggregation.aggregation_data.\
                     LastValueAggregationData:  # pragma: NO COVER
@@ -295,8 +297,8 @@ class StackdriverStatsExporter(base.StatsExporter):
             if isinstance(view_measure, measure.MeasureFloat):
                 value_type = metric_desc.ValueType.DOUBLE
         else:
-            raise Exception("unsupported aggregation type: %s"
-                            % type(view_aggregation))
+            raise Exception(
+                "unsupported aggregation type: %s" % type(view_aggregation))
 
         display_name_prefix = DEFAULT_DISPLAY_NAME_PREFIX
         if self.options.metric_prefix != "":
@@ -345,8 +347,7 @@ def set_monitored_resource(series, option_resource_type):
                                     'namespace_name')
                 set_attribute_label(series, resource_labels, 'pod_id',
                                     'pod_name')
-                set_attribute_label(series, resource_labels, 'zone',
-                                    'location')
+                set_attribute_label(series, resource_labels, 'zone', 'location')
 
             elif monitored_resource.resource_type == 'gce_instance':
                 resource_type = monitored_resource.resource_type
@@ -358,15 +359,21 @@ def set_monitored_resource(series, option_resource_type):
                 resource_type = monitored_resource.resource_type
                 set_attribute_label(series, resource_labels, 'aws_account')
                 set_attribute_label(series, resource_labels, 'instance_id')
-                set_attribute_label(series, resource_labels, 'region',
-                                    label_value_prefix='aws:')
+                set_attribute_label(
+                    series,
+                    resource_labels,
+                    'region',
+                    label_value_prefix='aws:')
     else:
         resource_type = option_resource_type
     series.resource.type = resource_type
 
 
-def set_attribute_label(series, resource_labels, attribute_key,
-                        canonical_key=None, label_value_prefix=''):
+def set_attribute_label(series,
+                        resource_labels,
+                        attribute_key,
+                        canonical_key=None,
+                        label_value_prefix=''):
     """Set a label to timeseries that can be used for monitoring
     :param series: TimeSeries object based on view data
     :param resource_labels: collection of labels

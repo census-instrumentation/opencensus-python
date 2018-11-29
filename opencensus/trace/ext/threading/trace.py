@@ -31,9 +31,8 @@ def trace_integration(tracer=None):
     log.info("Integrated module: {}".format(MODULE_NAME))
     # Wrap the threading start function
     start_func = getattr(threading.Thread, "start")
-    setattr(
-        threading.Thread, start_func.__name__, wrap_threading_start(start_func)
-    )
+    setattr(threading.Thread, start_func.__name__,
+            wrap_threading_start(start_func))
 
     # Wrap the threading run function
     run_func = getattr(threading.Thread, "run")
@@ -63,8 +62,7 @@ def wrap_threading_start(start_func):
 
     def call(self):
         self._opencensus_context = (
-            execution_context.get_opencensus_full_context()
-        )
+            execution_context.get_opencensus_full_context())
         return start_func(self)
 
     return call
@@ -76,9 +74,7 @@ def wrap_threading_run(run_func):
     """
 
     def call(self):
-        execution_context.set_opencensus_full_context(
-            *self._opencensus_context
-        )
+        execution_context.set_opencensus_full_context(*self._opencensus_context)
         return run_func(self)
 
     return call
@@ -96,16 +92,14 @@ def wrap_apply_async(apply_async_func):
         wrapped_kwargs = {}
         print(_tracer)
         wrapped_kwargs["span_context_binary"] = propagator.to_header(
-            _tracer.span_context
-        )
+            _tracer.span_context)
         wrapped_kwargs["kwds"] = kwds
         wrapped_kwargs["sampler"] = _tracer.sampler
         wrapped_kwargs["exporter"] = _tracer.exporter
         wrapped_kwargs["propagator"] = _tracer.propagator
 
         return apply_async_func(
-            self, wrapped_func, args=args, kwds=wrapped_kwargs, **kwargs
-        )
+            self, wrapped_func, args=args, kwds=wrapped_kwargs, **kwargs)
 
     return call
 
@@ -121,8 +115,7 @@ def wrap_submit(submit_func):
 
         wrapped_kwargs = {}
         wrapped_kwargs["span_context_binary"] = propagator.to_header(
-            _tracer.span_context
-        )
+            _tracer.span_context)
         wrapped_kwargs["kwds"] = kwargs
         wrapped_kwargs["sampler"] = _tracer.sampler
         wrapped_kwargs["exporter"] = _tracer.exporter

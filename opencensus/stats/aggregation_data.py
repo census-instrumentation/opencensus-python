@@ -16,7 +16,6 @@ import logging
 
 from opencensus.stats import bucket_boundaries
 
-
 logger = logging.getLogger(__name__)
 
 

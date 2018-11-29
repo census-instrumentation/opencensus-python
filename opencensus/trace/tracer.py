@@ -40,12 +40,12 @@ class Tracer(object):
                      :class:`.Loggingexporter`, :class:`.Zipkinexporter`,
                      :class:`.GoogleCloudexporter`
     """
-    def __init__(
-            self,
-            span_context=None,
-            sampler=None,
-            exporter=None,
-            propagator=None):
+
+    def __init__(self,
+                 span_context=None,
+                 sampler=None,
+                 exporter=None,
+                 propagator=None):
         if span_context is None:
             span_context = SpanContext()
 
@@ -83,8 +83,7 @@ class Tracer(object):
         if sampled:
             self.span_context.trace_options.set_enabled(True)
             return context_tracer.ContextTracer(
-                exporter=self.exporter,
-                span_context=self.span_context)
+                exporter=self.exporter, span_context=self.span_context)
         else:
             return noop_tracer.NoopTracer()
 
@@ -129,8 +128,8 @@ class Tracer(object):
         :type attribute_value:str
         :param attribute_value: Attribute value.
         """
-        self.tracer.add_attribute_to_current_span(
-            attribute_key, attribute_value)
+        self.tracer.add_attribute_to_current_span(attribute_key,
+                                                  attribute_value)
 
     def trace_decorator(self):
         """Decorator to trace a function."""

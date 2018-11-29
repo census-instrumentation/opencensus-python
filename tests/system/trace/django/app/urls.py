@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """project_name URL Configuration
 
 The `urlpatterns` list routes URLs to views. For more information please see:
@@ -31,7 +30,6 @@ from django.conf.urls import include, url
 from django.contrib import admin
 
 import app.views
-
 
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),

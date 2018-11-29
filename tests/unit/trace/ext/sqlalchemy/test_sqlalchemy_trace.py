@@ -67,8 +67,8 @@ class Test_sqlalchemy_trace(unittest.TestCase):
         parameters = 'test'
 
         with patch:
-            trace._before_cursor_execute(None, None, query,
-                                         parameters, None, False)
+            trace._before_cursor_execute(None, None, query, parameters, None,
+                                         False)
 
         expected_attributes = {
             'sqlalchemy.query': query,
@@ -96,8 +96,8 @@ class Test_sqlalchemy_trace(unittest.TestCase):
         parameters = 'test'
 
         with patch:
-            trace._before_cursor_execute(None, None, query,
-                                         parameters, None, True)
+            trace._before_cursor_execute(None, None, query, parameters, None,
+                                         True)
 
         expected_attributes = {
             'sqlalchemy.query': query,
@@ -126,6 +126,7 @@ class Test_sqlalchemy_trace(unittest.TestCase):
 
 
 class MockTracer(object):
+
     def __init__(self):
         self.current_span = None
 

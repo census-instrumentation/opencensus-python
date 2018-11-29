@@ -48,7 +48,10 @@ class _Worker(object):
     :param max_batch_size: The maximum number of items to send at a time
                            in the background thread.
     """
-    def __init__(self, exporter, grace_period=_DEFAULT_GRACE_PERIOD,
+
+    def __init__(self,
+                 exporter,
+                 grace_period=_DEFAULT_GRACE_PERIOD,
                  max_batch_size=_DEFAULT_MAX_BATCH_SIZE):
         self.exporter = exporter
         self._grace_period = grace_period
@@ -110,8 +113,7 @@ class _Worker(object):
                     logging.exception(
                         '%s failed to emit spans.'
                         'Dropping %s spans from queue.',
-                        self.exporter.__class__.__name__,
-                        len(span_datas))
+                        self.exporter.__class__.__name__, len(span_datas))
                     pass
 
             for _ in range(len(items)):
@@ -212,7 +214,9 @@ class BackgroundThreadTransport(base.Transport):
                            in the background thread.
     """
 
-    def __init__(self, exporter, grace_period=_DEFAULT_GRACE_PERIOD,
+    def __init__(self,
+                 exporter,
+                 grace_period=_DEFAULT_GRACE_PERIOD,
                  max_batch_size=_DEFAULT_MAX_BATCH_SIZE):
         self.exporter = exporter
         self.worker = _Worker(exporter, grace_period, max_batch_size)

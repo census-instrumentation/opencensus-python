@@ -19,6 +19,7 @@ from opencensus.stats import aggregation as aggregation_module
 
 
 class TestBaseAggregation(unittest.TestCase):
+
     def test_constructor_defaults(self):
         base_aggregation = aggregation_module.BaseAggregation()
 
@@ -37,6 +38,7 @@ class TestBaseAggregation(unittest.TestCase):
 
 
 class TestSumAggregation(unittest.TestCase):
+
     def test_constructor_defaults(self):
         sum_aggregation = aggregation_module.SumAggregation()
 
@@ -55,6 +57,7 @@ class TestSumAggregation(unittest.TestCase):
 
 
 class TestCountAggregation(unittest.TestCase):
+
     def test_constructor_defaults(self):
         count_aggregation = aggregation_module.CountAggregation()
 
@@ -73,6 +76,7 @@ class TestCountAggregation(unittest.TestCase):
 
 
 class TestLastValueAggregation(unittest.TestCase):
+
     def test_constructor_defaults(self):
         last_value_aggregation = aggregation_module.LastValueAggregation()
 
@@ -91,6 +95,7 @@ class TestLastValueAggregation(unittest.TestCase):
 
 
 class TestDistributionAggregation(unittest.TestCase):
+
     def test_constructor_defaults(self):
         distribution_aggregation = aggregation_module.DistributionAggregation()
 
@@ -105,8 +110,7 @@ class TestDistributionAggregation(unittest.TestCase):
         distribution_aggregation = aggregation_module.DistributionAggregation(
             boundaries=boundaries, distribution=distribution)
 
-        self.assertEqual([1, 2],
-                         distribution_aggregation.boundaries.boundaries)
+        self.assertEqual([1, 2], distribution_aggregation.boundaries.boundaries)
         self.assertEqual([0, 1, 2], distribution_aggregation.distribution)
         self.assertEqual(aggregation_module.Type.DISTRIBUTION,
                          distribution_aggregation.aggregation_type)

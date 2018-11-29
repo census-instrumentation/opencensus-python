@@ -25,39 +25,32 @@ from opencensus.trace import span_data as span_data_module
 from opencensus.trace.exporters.gen.opencensus.trace.v1 import trace_config_pb2
 from opencensus.trace.exporters.ocagent.trace_exporter import TraceExporter
 
-
 SERVICE_NAME = 'my-service'
 
 
 class TestTraceExporter(unittest.TestCase):
 
     def test_constructor(self):
-        exporter = TraceExporter(
-            service_name=SERVICE_NAME)
+        exporter = TraceExporter(service_name=SERVICE_NAME)
 
         self.assertEqual(exporter.endpoint, 'localhost:55678')
 
     def test_constructor_with_endpoint(self):
         expected_endpoint = '0.0.0.0:50000'
         exporter = TraceExporter(
-            service_name=SERVICE_NAME,
-            endpoint=expected_endpoint)
+            service_name=SERVICE_NAME, endpoint=expected_endpoint)
 
         self.assertEqual(exporter.endpoint, expected_endpoint)
 
     def test_constructor_with_client(self):
         client = mock.Mock()
         exporter = TraceExporter(
-            service_name=SERVICE_NAME,
-            client=client,
-            transport=MockTransport)
+            service_name=SERVICE_NAME, client=client, transport=MockTransport)
 
         self.assertEqual(exporter.client, client)
 
     def test_constructor_node_host(self):
-        exporter = TraceExporter(
-            service_name=SERVICE_NAME,
-            host_name='my host')
+        exporter = TraceExporter(service_name=SERVICE_NAME, host_name='my host')
 
         self.assertEqual(exporter.node.service_info.name, SERVICE_NAME)
         self.assertEqual(exporter.node.library_info.language, 8)
@@ -71,8 +64,7 @@ class TestTraceExporter(unittest.TestCase):
         self.assertGreater(exporter.node.identifier.start_timestamp.seconds, 0)
 
     def test_constructor_node(self):
-        exporter = TraceExporter(
-            service_name=SERVICE_NAME)
+        exporter = TraceExporter(service_name=SERVICE_NAME)
 
         self.assertEqual(exporter.node.service_info.name, SERVICE_NAME)
         self.assertEqual(exporter.node.library_info.language, 8)
@@ -89,8 +81,7 @@ class TestTraceExporter(unittest.TestCase):
 
     def test_export(self):
         exporter = TraceExporter(
-            service_name=SERVICE_NAME,
-            transport=MockTransport)
+            service_name=SERVICE_NAME, transport=MockTransport)
         exporter.export({})
 
         self.assertTrue(exporter.transport.export_called)
@@ -99,9 +90,7 @@ class TestTraceExporter(unittest.TestCase):
         client = mock.Mock()
         client.Export.return_value = iter([1])
         exporter = TraceExporter(
-            service_name=SERVICE_NAME,
-            client=client,
-            transport=MockTransport)
+            service_name=SERVICE_NAME, client=client, transport=MockTransport)
 
         exporter.emit({})
 
@@ -111,9 +100,7 @@ class TestTraceExporter(unittest.TestCase):
         client = mock.Mock()
         client.Export.side_effect = grpc.RpcError()
         exporter = TraceExporter(
-            service_name=SERVICE_NAME,
-            client=client,
-            transport=MockTransport)
+            service_name=SERVICE_NAME, client=client, transport=MockTransport)
 
         # does not throw
         exporter.emit({})
@@ -163,8 +150,7 @@ class TestTraceExporter(unittest.TestCase):
         ]
 
         exporter = TraceExporter(
-            service_name=SERVICE_NAME,
-            transport=MockTransport)
+            service_name=SERVICE_NAME, transport=MockTransport)
         export_requests = list(exporter.generate_span_requests(span_datas))
 
         self.assertEqual(len(export_requests), 1)
@@ -173,14 +159,18 @@ class TestTraceExporter(unittest.TestCase):
 
         self.assertEqual(export_requests[0].spans[0].name.value, 'name0')
         self.assertEqual(export_requests[0].spans[1].name.value, 'name1')
-        self.assertEqual(hex_encoder(export_requests[0].spans[0].trace_id)[
-                         0], b'0e0c63257de34c92bf9efcd03927272e')
-        self.assertEqual(hex_encoder(export_requests[0].spans[0].span_id)[
-                         0], b'0e0c63257de34c92')
-        self.assertEqual(hex_encoder(export_requests[0].spans[1].trace_id)[
-                         0], b'1e0c63257de34c92bf9efcd03927272e')
-        self.assertEqual(hex_encoder(export_requests[0].spans[1].span_id)[
-                         0], b'1e0c63257de34c92')
+        self.assertEqual(
+            hex_encoder(export_requests[0].spans[0].trace_id)[0],
+            b'0e0c63257de34c92bf9efcd03927272e')
+        self.assertEqual(
+            hex_encoder(export_requests[0].spans[0].span_id)[0],
+            b'0e0c63257de34c92')
+        self.assertEqual(
+            hex_encoder(export_requests[0].spans[1].trace_id)[0],
+            b'1e0c63257de34c92bf9efcd03927272e')
+        self.assertEqual(
+            hex_encoder(export_requests[0].spans[1].span_id)[0],
+            b'1e0c63257de34c92')
 
     def test_basic_spans_emit(self):
         hex_encoder = codecs.getencoder('hex')
@@ -222,9 +212,7 @@ class TestTraceExporter(unittest.TestCase):
             span_kind=0)
 
         exporter = TraceExporter(
-            service_name=SERVICE_NAME,
-            client=client,
-            transport=MockTransport)
+            service_name=SERVICE_NAME, client=client, transport=MockTransport)
 
         exporter.emit([span_data0])
 
@@ -233,8 +221,9 @@ class TestTraceExporter(unittest.TestCase):
 
         pb_span0 = actual_request0.spans[0]
         self.assertEqual(pb_span0.name.value, "name0")
-        self.assertEqual(hex_encoder(pb_span0.trace_id)[
-                         0], b'0e0c63257de34c92bf9efcd03927272e')
+        self.assertEqual(
+            hex_encoder(pb_span0.trace_id)[0],
+            b'0e0c63257de34c92bf9efcd03927272e')
         self.assertEqual(hex_encoder(pb_span0.span_id)[0], b'0e0c63257de34c92')
 
         exporter.emit([span_data1])
@@ -244,8 +233,9 @@ class TestTraceExporter(unittest.TestCase):
         self.assertEqual(actual_request1.node, exporter.node)
         pb_span1 = actual_request1.spans[0]
         self.assertEqual(pb_span1.name.value, "name1")
-        self.assertEqual(hex_encoder(pb_span1.trace_id)[
-                         0], b'1e0c63257de34c92bf9efcd03927272e')
+        self.assertEqual(
+            hex_encoder(pb_span1.trace_id)[0],
+            b'1e0c63257de34c92bf9efcd03927272e')
         self.assertEqual(hex_encoder(pb_span1.span_id)[0], b'1e0c63257de34c92')
 
     def test_span_emit_exception(self):
@@ -269,9 +259,7 @@ class TestTraceExporter(unittest.TestCase):
             span_kind=0)
 
         exporter = TraceExporter(
-            service_name=SERVICE_NAME,
-            client=client,
-            transport=MockTransport)
+            service_name=SERVICE_NAME, client=client, transport=MockTransport)
 
         client.Export.side_effect = grpc.RpcError()
 
@@ -289,14 +277,11 @@ class TestTraceExporter(unittest.TestCase):
     def test_config_generator(self):
 
         config = trace_config_pb2.TraceConfig(
-            constant_sampler=trace_config_pb2.ConstantSampler(
-                decision=True))
+            constant_sampler=trace_config_pb2.ConstantSampler(decision=True))
         exporter = TraceExporter(
-            service_name=SERVICE_NAME,
-            transport=MockTransport)
+            service_name=SERVICE_NAME, transport=MockTransport)
 
-        config_requests = list(exporter.generate_config_request(
-            config))
+        config_requests = list(exporter.generate_config_request(config))
 
         self.assertEqual(len(config_requests), 1)
         self.assertEqual(config_requests[0].node, exporter.node)
@@ -306,13 +291,10 @@ class TestTraceExporter(unittest.TestCase):
         client = mock.Mock()
 
         config = trace_config_pb2.TraceConfig(
-            constant_sampler=trace_config_pb2.ConstantSampler(
-                decision=True))
+            constant_sampler=trace_config_pb2.ConstantSampler(decision=True))
 
         exporter = TraceExporter(
-            service_name=SERVICE_NAME,
-            client=client,
-            transport=MockTransport)
+            service_name=SERVICE_NAME, client=client, transport=MockTransport)
 
         client.Config.side_effect = grpc.RpcError()
         with self.assertRaises(grpc.RpcError):
@@ -330,17 +312,14 @@ class TestTraceExporter(unittest.TestCase):
         client = mock.Mock()
 
         client_config = trace_config_pb2.TraceConfig(
-            constant_sampler=trace_config_pb2.ConstantSampler(
-                decision=True))
+            constant_sampler=trace_config_pb2.ConstantSampler(decision=True))
 
         agent_config = trace_config_pb2.TraceConfig(
             probability_sampler=trace_config_pb2.ProbabilitySampler(
                 samplingProbability=0.1))
 
         exporter = TraceExporter(
-            service_name=SERVICE_NAME,
-            client=client,
-            transport=MockTransport)
+            service_name=SERVICE_NAME, client=client, transport=MockTransport)
 
         client.Config.return_value = iter([agent_config])
         actual_response = exporter.update_config(client_config)
@@ -349,6 +328,7 @@ class TestTraceExporter(unittest.TestCase):
 
 
 class MockTransport(object):
+
     def __init__(self, exporter=None):
         self.export_called = False
         self.exporter = exporter

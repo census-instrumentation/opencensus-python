@@ -21,7 +21,9 @@ from opencensus.common.monitored_resource_util.monitored_resource import AwsMoni
 
 class TestMonitoredResource(unittest.TestCase):
 
-    @mock.patch('opencensus.common.monitored_resource_util.monitored_resource.GcpMetadataConfig')
+    @mock.patch(
+        'opencensus.common.monitored_resource_util.monitored_resource.GcpMetadataConfig'
+    )
     def test_GcpGceMonitoredResource(self, gcp_metadata_mock):
         mocked_labels = {
             'instance_id': 'my-instance',
@@ -35,7 +37,9 @@ class TestMonitoredResource(unittest.TestCase):
         self.assertEquals(resource.resource_type, 'gce_instance')
         self.assertEquals(resource.get_resource_labels(), mocked_labels)
 
-    @mock.patch('opencensus.common.monitored_resource_util.monitored_resource.GcpMetadataConfig')
+    @mock.patch(
+        'opencensus.common.monitored_resource_util.monitored_resource.GcpMetadataConfig'
+    )
     def test_GcpGkeMonitoredResource(self, gcp_metadata_mock):
 
         mocked_labels = {
@@ -54,7 +58,9 @@ class TestMonitoredResource(unittest.TestCase):
         self.assertEquals(resource.resource_type, 'gke_container')
         self.assertEquals(resource.get_resource_labels(), mocked_labels)
 
-    @mock.patch('opencensus.common.monitored_resource_util.monitored_resource.AwsIdentityDocumentUtils')
+    @mock.patch(
+        'opencensus.common.monitored_resource_util.monitored_resource.AwsIdentityDocumentUtils'
+    )
     def test_AwsMonitoredResource(self, aws_metadata_mock):
 
         mocked_labels = {

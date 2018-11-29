@@ -94,30 +94,37 @@ def set_monitored_resource_attributes(span):
                                 'container_name')
             set_attribute_label(span, resource_type, resource_labels,
                                 'namespace_id', 'namespace_name')
-            set_attribute_label(span, resource_type, resource_labels,
-                                'pod_id', 'pod_name')
-            set_attribute_label(span, resource_type, resource_labels,
-                                'zone', 'location')
+            set_attribute_label(span, resource_type, resource_labels, 'pod_id',
+                                'pod_name')
+            set_attribute_label(span, resource_type, resource_labels, 'zone',
+                                'location')
 
         elif resource_type == 'gce_instance':
             set_attribute_label(span, resource_type, resource_labels,
                                 'project_id')
             set_attribute_label(span, resource_type, resource_labels,
                                 'instance_id')
-            set_attribute_label(span, resource_type, resource_labels,
-                                'zone')
+            set_attribute_label(span, resource_type, resource_labels, 'zone')
 
         elif resource_type == 'aws_ec2_instance':
             set_attribute_label(span, resource_type, resource_labels,
                                 'aws_account')
             set_attribute_label(span, resource_type, resource_labels,
                                 'instance_id')
-            set_attribute_label(span, resource_type, resource_labels,
-                                'region', label_value_prefix='aws:')
+            set_attribute_label(
+                span,
+                resource_type,
+                resource_labels,
+                'region',
+                label_value_prefix='aws:')
 
 
-def set_attribute_label(span, resource_type, resource_labels, attribute_key,
-                        canonical_key=None, label_value_prefix=''):
+def set_attribute_label(span,
+                        resource_type,
+                        resource_labels,
+                        attribute_key,
+                        canonical_key=None,
+                        label_value_prefix=''):
     """Set a label to span that can be used for tracing.
     :param span: Span object
     :param resource_type: resource type
@@ -131,9 +138,10 @@ def set_attribute_label(span, resource_type, resource_labels, attribute_key,
         if canonical_key is None:
             canonical_key = attribute_key
 
-        pair = {RESOURCE_LABEL % (resource_type, canonical_key):
-                label_value_prefix + resource_labels[attribute_key]
-                }
+        pair = {
+            RESOURCE_LABEL % (resource_type, canonical_key):
+            label_value_prefix + resource_labels[attribute_key]
+        }
         pair_attrs = Attributes(pair).format_attributes_json()\
             .get('attributeMap')
 
@@ -191,7 +199,9 @@ class StackdriverExporter(base.Exporter):
                       :class:`.BackgroundThreadTransport`.
     """
 
-    def __init__(self, client=None, project_id=None,
+    def __init__(self,
+                 client=None,
+                 project_id=None,
                  transport=sync.SyncTransport):
         # The client will handle the case when project_id is None
         if client is None:
@@ -300,22 +310,17 @@ ATTRIBUTE_MAPPING = {
     'http.client_country': '/http/client_country',
     'http.client_protocol': '/http/client_protocol',
     'http.client_region': '/http/client_region',
-
     'http.host': '/http/host',
     'http.method': '/http/method',
-
     'http.redirected_url': '/http/redirected_url',
     'http.request_size': '/http/request/size',
     'http.response_size': '/http/response/size',
-
     'http.status_code': '/http/status_code',
     'http.url': '/http/url',
     'http.user_agent': '/http/user_agent',
-
     'pid': '/pid',
     'stacktrace': '/stacktrace',
     'tid': '/tid',
-
     'grpc.host_port': '/grpc/host_port',
     'grpc.method': '/grpc/method',
 }

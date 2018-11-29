@@ -17,7 +17,6 @@ import logging
 
 from opencensus.tags import execution_context
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -34,6 +33,7 @@ class MeasurementMap(object):
     :param attachments: the contextual information about the attachment value.
 
     """
+
     def __init__(self, measure_to_view_map, attachments=None):
         self._measurement_map = {}
         self._measure_to_view_map = measure_to_view_map
@@ -107,13 +107,12 @@ class MeasurementMap(object):
                 logger.warning("Dropping values, value to record must be "
                                "non-negative")
                 logger.info("Measure '{}' has negative value ({}), refusing "
-                            "to record measurements from {}"
-                            .format(measure.name, value, self))
+                            "to record measurements from {}".format(
+                                measure.name, value, self))
                 return
 
         self.measure_to_view_map.record(
-                tags=tag_map_tags,
-                measurement_map=self.measurement_map,
-                timestamp=datetime.utcnow().isoformat() + 'Z',
-                attachments=self.attachments
-        )
+            tags=tag_map_tags,
+            measurement_map=self.measurement_map,
+            timestamp=datetime.utcnow().isoformat() + 'Z',
+            attachments=self.attachments)

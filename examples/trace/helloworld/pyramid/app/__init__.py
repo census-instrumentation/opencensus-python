@@ -37,9 +37,10 @@ def main(global_config, **settings):
     config.add_route('hello', '/')
     config.add_route('trace_requests', '/requests')
 
-    config.add_tween('opencensus.trace.ext.pyramid'
-                     '.pyramid_middleware.OpenCensusTweenFactory',
-                     over=MAIN)
+    config.add_tween(
+        'opencensus.trace.ext.pyramid'
+        '.pyramid_middleware.OpenCensusTweenFactory',
+        over=MAIN)
 
     config.scan()
 

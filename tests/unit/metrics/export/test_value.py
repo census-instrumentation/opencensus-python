@@ -19,6 +19,7 @@ from opencensus.metrics.export import value as value_module
 
 
 class TestValue(unittest.TestCase):
+
     def test_create_double_value(self):
         double_value = value_module.Value.double_value(-34.56)
 
@@ -53,6 +54,7 @@ BUCKETS = [value_module.Bucket(10, None) for ii in range(10)]
 
 
 class TestValueDistribution(unittest.TestCase):
+
     def test_init(self):
         distribution = value_module.ValueDistribution(
             VD_COUNT, VD_SUM, VD_SUM_OF_SQUARED_DEVIATION, BUCKET_BOUNDS,
@@ -77,9 +79,8 @@ class TestValueDistribution(unittest.TestCase):
     def test_init_bad_args(self):
 
         with self.assertRaises(ValueError):
-            value_module.ValueDistribution(-1, VD_SUM,
-                                           VD_SUM_OF_SQUARED_DEVIATION,
-                                           BUCKET_BOUNDS, BUCKETS)
+            value_module.ValueDistribution(
+                -1, VD_SUM, VD_SUM_OF_SQUARED_DEVIATION, BUCKET_BOUNDS, BUCKETS)
 
         with self.assertRaises(ValueError):
             value_module.ValueDistribution(
@@ -118,15 +119,16 @@ EX_ATTACHMENTS = {'attach': 'ments'}
 
 
 class TestExemplar(unittest.TestCase):
+
     def test_init(self):
-        exemplar = value_module.Exemplar(EX_VALUE, EX_TIMESTAMP,
-                                         EX_ATTACHMENTS)
+        exemplar = value_module.Exemplar(EX_VALUE, EX_TIMESTAMP, EX_ATTACHMENTS)
         self.assertEqual(exemplar.value, EX_VALUE)
         self.assertEqual(exemplar.timestamp, EX_TIMESTAMP)
         self.assertEqual(exemplar.attachments, EX_ATTACHMENTS)
 
 
 class TestBucket(unittest.TestCase):
+
     def setUp(self):
         self.exemplar = value_module.Exemplar(EX_VALUE, EX_TIMESTAMP,
                                               EX_ATTACHMENTS)

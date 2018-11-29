@@ -27,6 +27,7 @@ _VALUE_VALIDATION_RE = re.compile('^' + _VALUE_FORMAT + '$')
 
 
 class Tracestate(OrderedDict):
+
     def __setitem__(self, key, value):
         if not isinstance(key, str):
             raise ValueError('key must be an instance of str')

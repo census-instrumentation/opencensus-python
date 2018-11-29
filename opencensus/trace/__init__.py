@@ -14,5 +14,4 @@
 
 from opencensus.trace.span import Span
 
-
 __all__ = ['Span']

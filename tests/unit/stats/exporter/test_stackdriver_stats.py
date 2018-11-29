@@ -50,11 +50,13 @@ VIDEO_SIZE_VIEW = view_module.View(
 
 
 class _Client(object):
+
     def __init__(self, client_info=None):
         self.client_info = client_info
 
 
 class TestOptions(unittest.TestCase):
+
     def test_options_blank(self):
         option = stackdriver.Options()
 
@@ -78,6 +80,7 @@ class TestOptions(unittest.TestCase):
 
 
 class TestStackdriverStatsExporter(unittest.TestCase):
+
     def test_constructor(self):
         exporter = stackdriver.StackdriverStatsExporter()
 
@@ -156,8 +159,7 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         default_labels = {'key1': 'value1'}
         patch_client = mock.patch(
             ('opencensus.stats.exporters.stackdriver_exporter'
-             '.monitoring_v3.MetricServiceClient'),
-            _Client)
+             '.monitoring_v3.MetricServiceClient'), _Client)
 
         with patch_client:
             exporter_created = stackdriver.new_stats_exporter(
@@ -184,8 +186,8 @@ class TestStackdriverStatsExporter(unittest.TestCase):
 
     def test_namespacedviews(self):
         view_name = "view-1"
-        expected_view_name_namespaced = ("custom.googleapis.com/opencensus/{}"
-                                         .format(view_name))
+        expected_view_name_namespaced = (
+            "custom.googleapis.com/opencensus/{}".format(view_name))
         view_name_namespaced = stackdriver.namespaced_view_name(view_name, "")
         self.assertEqual(expected_view_name_namespaced, view_name_namespaced)
 
@@ -461,8 +463,7 @@ class TestStackdriverStatsExporter(unittest.TestCase):
                           'my-instance')
         self.assertEquals(time_series.resource.labels['aws_account'],
                           'my-project')
-        self.assertEquals(time_series.resource.labels['region'],
-                          'aws:us-east1')
+        self.assertEquals(time_series.resource.labels['region'], 'aws:us-east1')
 
         # check for out of box monitored resource
         monitor_resource_mock.return_value = mock.Mock()
@@ -643,8 +644,8 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         view_name_sum_int = "view-sum-int"
         agg_sum = aggregation_module.SumAggregation(sum=2)
         view_sum_int = view_module.View(
-            view_name_sum_int, "processed video size over time",
-            [FRONTEND_KEY], VIDEO_SIZE_MEASURE, agg_sum)
+            view_name_sum_int, "processed video size over time", [FRONTEND_KEY],
+            VIDEO_SIZE_MEASURE, agg_sum)
         exporter = stackdriver.StackdriverStatsExporter(
             options=option, client=client)
         desc = exporter.create_metric_descriptor(view_sum_int)

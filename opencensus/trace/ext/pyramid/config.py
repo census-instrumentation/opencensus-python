@@ -22,7 +22,6 @@ DEFAULT_PYRAMID_TRACER_CONFIG = {
     'PROPAGATOR': google_cloud_format.GoogleCloudFormatPropagator()
 }
 
-
 DEFAULT_PYRAMID_TRACER_PARAMS = {
     # https://cloud.google.com/appengine/docs/flexible/python/
     # how-instances-are-managed#health_checking
@@ -31,14 +30,13 @@ DEFAULT_PYRAMID_TRACER_PARAMS = {
 
 
 class PyramidTraceSettings(object):
-    def __init__(self, registry):
-        self.settings = registry.settings.get(
-            'OPENCENSUS_TRACE',
-            DEFAULT_PYRAMID_TRACER_CONFIG)
 
-        self.params = registry.settings.get(
-            'OPENCENSUS_TRACE_PARAMS',
-            DEFAULT_PYRAMID_TRACER_PARAMS)
+    def __init__(self, registry):
+        self.settings = registry.settings.get('OPENCENSUS_TRACE',
+                                              DEFAULT_PYRAMID_TRACER_CONFIG)
+
+        self.params = registry.settings.get('OPENCENSUS_TRACE_PARAMS',
+                                            DEFAULT_PYRAMID_TRACER_PARAMS)
 
         _set_default_configs(self.settings, DEFAULT_PYRAMID_TRACER_CONFIG)
 

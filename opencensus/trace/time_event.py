@@ -40,6 +40,7 @@ class Annotation(object):
     :param attributes: A set of attributes on the annotation.
                        You can have up to 4 attributes per Annotation.
     """
+
     def __init__(self, description, attributes=None):
         self.description = description
         self.attributes = attributes
@@ -76,7 +77,11 @@ class MessageEvent(object):
                                   size as uncompressed.
 
     """
-    def __init__(self, id, type=None, uncompressed_size_bytes=None,
+
+    def __init__(self,
+                 id,
+                 type=None,
+                 uncompressed_size_bytes=None,
                  compressed_size_bytes=None):
         if type is None:
             type = Type.TYPE_UNSPECIFIED
@@ -125,6 +130,7 @@ class TimeEvent(object):
     :param message_event: An event describing a message sent/received between
                           spans.
     """
+
     def __init__(self, timestamp, annotation=None, message_event=None):
         self.timestamp = timestamp.isoformat() + 'Z'
 

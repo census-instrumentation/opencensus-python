@@ -20,6 +20,7 @@ from opencensus.trace import link as link_module
 
 
 class TestLink(unittest.TestCase):
+
     def test_constructor_default(self):
         trace_id = 'test trace id'
         span_id = 'test span id'
@@ -27,9 +28,7 @@ class TestLink(unittest.TestCase):
         attributes = mock.Mock()
 
         link = link_module.Link(
-            trace_id=trace_id,
-            span_id=span_id,
-            attributes=attributes)
+            trace_id=trace_id, span_id=span_id, attributes=attributes)
 
         self.assertEqual(link.trace_id, trace_id)
         self.assertEqual(link.span_id, span_id)
@@ -52,7 +51,6 @@ class TestLink(unittest.TestCase):
         self.assertEqual(link.span_id, span_id)
         self.assertEqual(link.type, type)
         self.assertEqual(link.attributes, attributes)
-
 
     def test_format_link_json_with_attributes(self):
         trace_id = 'test trace id'
@@ -82,10 +80,7 @@ class TestLink(unittest.TestCase):
         span_id = 'test span id'
         type = link_module.Type.CHILD_LINKED_SPAN
 
-        link = link_module.Link(
-            trace_id=trace_id,
-            span_id=span_id,
-            type=type)
+        link = link_module.Link(trace_id=trace_id, span_id=span_id, type=type)
 
         link_json = link.format_link_json()
 

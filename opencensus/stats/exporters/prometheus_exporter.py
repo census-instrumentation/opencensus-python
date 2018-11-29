@@ -44,6 +44,7 @@ class Options(object):
     :type registry: :class:`~prometheus_client.core.CollectorRegistry`
     :param registry: A Prometheus collector registry instance.
     """
+
     def __init__(self,
                  namespace='',
                  port=8000,
@@ -82,6 +83,7 @@ class Options(object):
 class Collector(object):
     """ Collector represents the Prometheus Collector object
     """
+
     def __init__(self, options=Options(), view_data={}):
         self._options = options
         self._registry = options.registry
@@ -122,9 +124,11 @@ class Collector(object):
         signature = view_signature(self.options.namespace, view)
 
         if signature not in self.registered_views:
-            desc = {'name': view_name(self.options.namespace, view),
-                    'documentation': view.description,
-                    'labels': tag_keys_to_labels(view.columns)}
+            desc = {
+                'name': view_name(self.options.namespace, view),
+                'documentation': view.description,
+                'labels': tag_keys_to_labels(view.columns)
+            }
             self.registered_views[signature] = desc
             count += 1
             self.registry.register(self)
@@ -158,45 +162,48 @@ class Collector(object):
 
         if isinstance(agg_data, aggregation_data_module.CountAggregationData):
             labels = desc['labels'] if agg_data.count_data is None else None
-            return CounterMetricFamily(name=desc['name'],
-                                       documentation=desc['documentation'],
-                                       value=float(agg_data.count_data),
-                                       labels=labels)
+            return CounterMetricFamily(
+                name=desc['name'],
+                documentation=desc['documentation'],
+                value=float(agg_data.count_data),
+                labels=labels)
         elif isinstance(agg_data,
                         aggregation_data_module.DistributionAggregationData):
 
-            assert(agg_data.bounds == sorted(agg_data.bounds))
+            assert (agg_data.bounds == sorted(agg_data.bounds))
             points = {}
             cum_count = 0
             for ii, bound in enumerate(agg_data.bounds):
                 cum_count += agg_data.counts_per_bucket[ii]
                 points[str(bound)] = cum_count
             labels = desc['labels'] if points is None else None
-            return HistogramMetricFamily(name=desc['name'],
-                                         documentation=desc['documentation'],
-                                         buckets=list(points.items()),
-                                         sum_value=agg_data.sum,
-                                         labels=labels)
+            return HistogramMetricFamily(
+                name=desc['name'],
+                documentation=desc['documentation'],
+                buckets=list(points.items()),
+                sum_value=agg_data.sum,
+                labels=labels)
 
         elif isinstance(agg_data,
                         aggregation_data_module.SumAggregationDataFloat):
             labels = desc['labels'] if agg_data.sum_data is None else None
-            return UntypedMetricFamily(name=desc['name'],
-                                       documentation=desc['documentation'],
-                                       value=agg_data.sum_data,
-                                       labels=labels)
+            return UntypedMetricFamily(
+                name=desc['name'],
+                documentation=desc['documentation'],
+                value=agg_data.sum_data,
+                labels=labels)
 
         elif isinstance(agg_data,
                         aggregation_data_module.LastValueAggregationData):
             labels = desc['labels'] if agg_data.value is None else None
-            return GaugeMetricFamily(name=desc['name'],
-                                     documentation=desc['documentation'],
-                                     value=agg_data.value,
-                                     labels=labels)
+            return GaugeMetricFamily(
+                name=desc['name'],
+                documentation=desc['documentation'],
+                value=agg_data.value,
+                labels=labels)
 
         else:
-            raise ValueError("unsupported aggregation type %s"
-                             % type(agg_data))
+            raise ValueError("unsupported aggregation type %s" % type(agg_data))
 
     def collect(self):  # pragma: NO COVER
         """Collect fetches the statistics from OpenCensus
@@ -208,8 +215,7 @@ class Collector(object):
             signature = view_signature(self.options.namespace,
                                        self.view_data[v_data].view)
             desc = self.registered_views[signature]
-            metric = self.to_metric(desc,
-                                    self.view_data[v_data].view)
+            metric = self.to_metric(desc, self.view_data[v_data].view)
             yield metric
 
     def describe(self):
@@ -223,8 +229,7 @@ class Collector(object):
             if not isinstance(v_data, str):
                 signature = view_signature(self.options.namespace, v_data.view)
                 desc = self.registered_views[signature]
-                metric = self.to_metric(desc,
-                                        self.view_data[v_data].view)
+                metric = self.to_metric(desc, self.view_data[v_data].view)
                 yield metric
 
 
@@ -250,6 +255,7 @@ class PrometheusStatsExporter(base.StatsExporter):
         :class:`~opencensus.stats.exporters.prometheus_exporters.Collector`
     :param collector: An instance of the Prometheus Collector object.
     """
+
     def __init__(self,
                  options,
                  gatherer,
@@ -313,8 +319,8 @@ class PrometheusStatsExporter(base.StatsExporter):
     def serve_http(self):
         """ serve_http serves the Prometheus endpoint.
         """
-        start_http_server(port=self.options.port,
-                          addr=str(self.options.address))
+        start_http_server(
+            port=self.options.port, addr=str(self.options.address))
 
 
 def new_stats_exporter(option):
@@ -326,9 +332,8 @@ def new_stats_exporter(option):
 
     collector = new_collector(option)
 
-    exporter = PrometheusStatsExporter(options=option,
-                                       gatherer=option.registry,
-                                       collector=collector)
+    exporter = PrometheusStatsExporter(
+        options=option, gatherer=option.registry, collector=collector)
     return exporter
 
 

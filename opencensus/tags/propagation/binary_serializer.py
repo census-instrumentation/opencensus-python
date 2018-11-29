@@ -30,6 +30,7 @@ TAG_MAP_SERIALIZED_SIZE_LIMIT = 8192
 
 
 class BinarySerializer(object):
+
     def from_byte_array(self, binary):
         if len(binary) <= 0:
             logging.warning("Input byte[] cannot be empty/")
@@ -51,8 +52,7 @@ class BinarySerializer(object):
             tag_key, tag_value = tag
             total_chars += len(tag_key)
             total_chars += len(tag_value)
-            encoded_bytes = self._encode_tag(
-                tag_key, tag_value, encoded_bytes)
+            encoded_bytes = self._encode_tag(tag_key, tag_value, encoded_bytes)
         if total_chars <= TAG_MAP_SERIALIZED_SIZE_LIMIT:
             return encoded_bytes
         else:  # pragma: NO COVER

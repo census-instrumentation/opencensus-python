@@ -34,7 +34,6 @@ COMMON_ATTRIBUTES = {
     'TID': 'tid',
 }
 
-
 GRPC_ATTRIBUTES = {
     'GRPC_HOST_PORT': 'grpc.host_port',
     'GRPC_METHOD': 'grpc.method',

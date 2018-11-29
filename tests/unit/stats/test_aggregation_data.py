@@ -21,6 +21,7 @@ from opencensus.stats import aggregation_data as aggregation_data_module
 
 
 class TestBaseAggregationData(unittest.TestCase):
+
     def test_constructor(self):
         aggregation_data = 0
         base_aggregation_data = aggregation_data_module.BaseAggregationData(
@@ -30,6 +31,7 @@ class TestBaseAggregationData(unittest.TestCase):
 
 
 class TestSumAggregationData(unittest.TestCase):
+
     def test_constructor(self):
         sum_data = 1
         sum_aggregation_data = aggregation_data_module.SumAggregationDataFloat(
@@ -48,6 +50,7 @@ class TestSumAggregationData(unittest.TestCase):
 
 
 class TestCountAggregationData(unittest.TestCase):
+
     def test_constructor(self):
         count_data = 0
         count_aggregation_data = aggregation_data_module.CountAggregationData(
@@ -65,6 +68,7 @@ class TestCountAggregationData(unittest.TestCase):
 
 
 class TestLastValueAggregationData(unittest.TestCase):
+
     def test_constructor(self):
         value_data = 0
         last_value_aggregation_data =\
@@ -82,6 +86,7 @@ class TestLastValueAggregationData(unittest.TestCase):
 
 
 class TestDistributionAggregationData(unittest.TestCase):
+
     def test_constructor(self):
         mean_data = 1
         count_data = 0
@@ -182,10 +187,8 @@ class TestDistributionAggregationData(unittest.TestCase):
     def test_constructor_with_exemplar(self):
         timestamp = time.time()
         attachments = {"One": "one", "Two": "two"}
-        exemplar_1 = aggregation_data_module.Exemplar(4, timestamp,
-                                                      attachments)
-        exemplar_2 = aggregation_data_module.Exemplar(5, timestamp,
-                                                      attachments)
+        exemplar_1 = aggregation_data_module.Exemplar(4, timestamp, attachments)
+        exemplar_2 = aggregation_data_module.Exemplar(5, timestamp, attachments)
         mean_data = 1
         count_data = 0
         _min = 0
@@ -358,8 +361,7 @@ class TestDistributionAggregationData(unittest.TestCase):
         value = 3
         timestamp = time.time()
         attachments = {"One": "one", "Two": "two"}
-        exemplar_1 = aggregation_data_module.Exemplar(4, timestamp,
-                                                      attachments)
+        exemplar_1 = aggregation_data_module.Exemplar(4, timestamp, attachments)
 
         dist_agg_data = aggregation_data_module.DistributionAggregationData(
             mean_data=mean_data,

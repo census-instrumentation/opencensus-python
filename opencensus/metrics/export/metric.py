@@ -15,7 +15,6 @@
 from opencensus.metrics.export import metric_descriptor
 from opencensus.metrics.export import value
 
-
 DESCRIPTOR_VALUE = {
     metric_descriptor.MetricDescriptorType.GAUGE_INT64:
     value.ValueLong,

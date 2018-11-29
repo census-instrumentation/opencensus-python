@@ -77,7 +77,9 @@ def view_to_metric_descriptor(view):
     :param view: the view data to for which to build a metric descriptor
     """
     return metric_descriptor.MetricDescriptor(
-        view.name, view.description, view.measure.unit,
+        view.name,
+        view.description,
+        view.measure.unit,
         get_metric_type(view.measure, view.aggregation),
         # TODO: add label key description
         [label_key.LabelKey(tk, "") for tk in view.columns])

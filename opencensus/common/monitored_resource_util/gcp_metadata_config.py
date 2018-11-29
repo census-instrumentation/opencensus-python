@@ -145,9 +145,9 @@ class GcpMetadataConfig(object):
         computeMetadata/v1 prefix
         :return:  The value read from the metadata service or None
         """
-        attribute_value = get_request(_GCP_METADATA_URI +
-                                      _GKE_ATTRIBUTES[attribute_key],
-                                      _GCP_METADATA_URI_HEADER)
+        attribute_value = get_request(
+            _GCP_METADATA_URI + _GKE_ATTRIBUTES[attribute_key],
+            _GCP_METADATA_URI_HEADER)
 
         if attribute_value is not None and isinstance(attribute_value, bytes):
             # At least in python3, bytes are are returned from

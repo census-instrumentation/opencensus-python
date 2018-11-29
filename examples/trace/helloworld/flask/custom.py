@@ -71,9 +71,7 @@ def trace_requests():
 def mysql_query():
     try:
         conn = mysql.connector.connect(
-            host=DB_HOST,
-            user='root',
-            password=MYSQL_PASSWORD)
+            host=DB_HOST, user='root', password=MYSQL_PASSWORD)
         cursor = conn.cursor()
 
         query = 'SELECT 2*3'
@@ -126,8 +124,8 @@ def postgresql_query():
 def sqlalchemy_mysql_query():
     try:
         engine = sqlalchemy.create_engine(
-            'mysql+mysqlconnector://{}:{}@{}'.format(
-                'root', MYSQL_PASSWORD, DB_HOST))
+            'mysql+mysqlconnector://{}:{}@{}'.format('root', MYSQL_PASSWORD,
+                                                     DB_HOST))
         conn = engine.connect()
 
         query = 'SELECT 2*3'
@@ -149,10 +147,8 @@ def sqlalchemy_mysql_query():
 @app.route('/sqlalchemy-postgresql')
 def sqlalchemy_postgresql_query():
     try:
-        engine = sqlalchemy.create_engine(
-            'postgresql://{}:{}@{}/{}'.format(
-                'postgres', POSTGRES_PASSWORD,
-                DB_HOST, 'postgres'))
+        engine = sqlalchemy.create_engine('postgresql://{}:{}@{}/{}'.format(
+            'postgres', POSTGRES_PASSWORD, DB_HOST, 'postgres'))
         conn = engine.connect()
 
         query = 'SELECT 2*3'
@@ -173,9 +169,8 @@ def sqlalchemy_postgresql_query():
 
 @app.route('/greet/<name>')
 def greet(name):
-    stub = _get_grpc_stub(
-        hello_world_pb2_grpc.GreeterStub, HELLO_WORLD_HOST_PORT
-    )
+    stub = _get_grpc_stub(hello_world_pb2_grpc.GreeterStub,
+                          HELLO_WORLD_HOST_PORT)
     response = stub.SayHello(hello_world_pb2.HelloRequest(name=name))
     return str(response)
 
@@ -187,8 +182,7 @@ def _get_grpc_stub(stub_cls, host_port):
 
     channel = grpc.insecure_channel(host_port)
     tracer_interceptor = client_interceptor.OpenCensusClientInterceptor(
-        host_port=HELLO_WORLD_HOST_PORT
-    )
+        host_port=HELLO_WORLD_HOST_PORT)
     channel = grpc.intercept_channel(channel, tracer_interceptor)
     stub = stub_cls(channel)
     _stub_cache[(stub_cls, host_port)] = stub

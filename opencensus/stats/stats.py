@@ -20,6 +20,7 @@ class Stats(object):
     """Stats defines a View Manager and a Stats Recorder in order for the
     collection of Stats
     """
+
     def __init__(self):
         self._stats_recorder = StatsRecorder()
         self._view_manager = ViewManager()

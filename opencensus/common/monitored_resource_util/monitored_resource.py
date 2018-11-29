@@ -77,6 +77,7 @@ class AwsMonitoredResource(MonitoredResource):
     For definition refer to
     https://cloud.google.com/monitoring/api/resources#tag_aws_ec2_instance
     """
+
     @property
     def resource_type(self):
         return _AWS_EC2_INSTANCE

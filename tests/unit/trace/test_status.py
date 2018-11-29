@@ -20,6 +20,7 @@ from opencensus.trace import status as status_module
 
 
 class TestStatus(unittest.TestCase):
+
     def test_constructor(self):
         code = 100
         message = 'test message'
@@ -57,10 +58,7 @@ class TestStatus(unittest.TestCase):
         status = status_module.Status(code=code, message=message)
         status_json = status.format_status_json()
 
-        expected_status_json = {
-            'code': code,
-            'message': message
-        }
+        expected_status_json = {'code': code, 'message': message}
 
         self.assertEqual(expected_status_json, status_json)
 

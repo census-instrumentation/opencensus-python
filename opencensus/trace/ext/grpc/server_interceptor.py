@@ -36,12 +36,15 @@ RECV_PREFIX = 'Recv'
 
 
 class OpenCensusServerInterceptor(grpc.ServerInterceptor):
+
     def __init__(self, sampler=None, exporter=None):
         self.sampler = sampler
         self.exporter = exporter
 
     def intercept_service(self, continuation, handler_call_details):
+
         def trace_wrapper(behavior, request_streaming, response_streaming):
+
             def new_behavior(request_or_iterator, servicer_context):
                 span = self._start_server_span(servicer_context)
                 try:
@@ -49,8 +52,7 @@ class OpenCensusServerInterceptor(grpc.ServerInterceptor):
                         request_or_iterator = grpc_utils.wrap_iter_with_message_events(  # noqa: E501
                             request_or_response_iter=request_or_iterator,
                             span=span,
-                            message_event_type=time_event.Type.RECEIVED
-                        )
+                            message_event_type=time_event.Type.RECEIVED)
                     else:
                         grpc_utils.add_message_event(
                             proto_message=request_or_iterator,
@@ -64,8 +66,7 @@ class OpenCensusServerInterceptor(grpc.ServerInterceptor):
                         response_or_iterator = grpc_utils.wrap_iter_with_message_events(  # noqa: E501
                             request_or_response_iter=response_or_iterator,
                             span=span,
-                            message_event_type=time_event.Type.SENT
-                        )
+                            message_event_type=time_event.Type.SENT)
                         response_or_iterator = grpc_utils.wrap_iter_with_end_span(  # noqa: E501
                             response_or_iterator)
                     else:
@@ -88,9 +89,7 @@ class OpenCensusServerInterceptor(grpc.ServerInterceptor):
             return new_behavior
 
         return _wrap_rpc_behavior(
-            continuation(handler_call_details),
-            trace_wrapper
-        )
+            continuation(handler_call_details), trace_wrapper)
 
     def _start_server_span(self, servicer_context):
         metadata = servicer_context.invocation_metadata()
@@ -103,13 +102,12 @@ class OpenCensusServerInterceptor(grpc.ServerInterceptor):
 
             span_context = propagator.from_header(trace_header)
 
-        tracer = tracer_module.Tracer(span_context=span_context,
-                                      sampler=self.sampler,
-                                      exporter=self.exporter)
+        tracer = tracer_module.Tracer(
+            span_context=span_context,
+            sampler=self.sampler,
+            exporter=self.exporter)
 
-        span = tracer.start_span(
-            name=_get_span_name(servicer_context)
-        )
+        span = tracer.start_span(name=_get_span_name(servicer_context))
 
         span.span_kind = span_module.SpanKind.SERVER
         tracer.add_attribute_to_current_span(
@@ -125,15 +123,10 @@ class OpenCensusServerInterceptor(grpc.ServerInterceptor):
 def _add_exc_info(span):
     exc_type, exc_value, tb = sys.exc_info()
     span.add_attribute(
-        attributes_helper.COMMON_ATTRIBUTES.get(
-            ATTRIBUTE_ERROR_MESSAGE),
-        str(exc_value)
-    )
+        attributes_helper.COMMON_ATTRIBUTES.get(ATTRIBUTE_ERROR_MESSAGE),
+        str(exc_value))
     span.stack_trace = stack_trace.StackTrace.from_traceback(tb)
-    span.status = status.Status(
-        code=code_pb2.UNKNOWN,
-        message=str(exc_value)
-    )
+    span.status = status.Status(code=code_pb2.UNKNOWN, message=str(exc_value))
 
 
 def _wrap_rpc_behavior(handler, fn):
@@ -155,11 +148,9 @@ def _wrap_rpc_behavior(handler, fn):
         handler_factory = grpc.unary_unary_rpc_method_handler
 
     return handler_factory(
-        fn(behavior_fn, handler.request_streaming,
-           handler.response_streaming),
+        fn(behavior_fn, handler.request_streaming, handler.response_streaming),
         request_deserializer=handler.request_deserializer,
-        response_serializer=handler.response_serializer
-    )
+        response_serializer=handler.response_serializer)
 
 
 def _get_span_name(servicer_context):

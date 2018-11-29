@@ -30,8 +30,8 @@ def main():
     tracer = Tracer(sampler=sampler, exporter=exporter)
 
     with tracer.span(name='root') as root_span:
-        tracer.add_attribute_to_current_span(attribute_key='example key',
-                                             attribute_value='example value')
+        tracer.add_attribute_to_current_span(
+            attribute_key='example key', attribute_value='example value')
         function_to_trace()
         with tracer.span(name='child') as child_span:
             function_to_trace()

@@ -26,8 +26,7 @@ class NoopTracer(base.Tracer):
     def __init__(self):
 
         self.span_context = SpanContext(
-            trace_options=trace_options.TraceOptions(0)
-        )
+            trace_options=trace_options.TraceOptions(0))
 
     def finish(self):
         """End spans and send to reporter."""

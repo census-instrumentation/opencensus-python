@@ -58,9 +58,7 @@ def hello():
 def mysql_query():
     try:
         conn = mysql.connector.connect(
-            host=DB_HOST,
-            user='root',
-            password=MYSQL_PASSWORD)
+            host=DB_HOST, user='root', password=MYSQL_PASSWORD)
         cursor = conn.cursor()
 
         query = 'SELECT 2*3'
@@ -113,8 +111,8 @@ def postgresql_query():
 def sqlalchemy_mysql_query():
     try:
         engine = sqlalchemy.create_engine(
-            'mysql+mysqlconnector://{}:{}@{}'.format(
-                'root', MYSQL_PASSWORD, DB_HOST))
+            'mysql+mysqlconnector://{}:{}@{}'.format('root', MYSQL_PASSWORD,
+                                                     DB_HOST))
         conn = engine.connect()
 
         query = 'SELECT 2*3'
@@ -136,10 +134,8 @@ def sqlalchemy_mysql_query():
 @app.route('/sqlalchemy-postgresql')
 def sqlalchemy_postgresql_query():
     try:
-        engine = sqlalchemy.create_engine(
-            'postgresql://{}:{}@{}/{}'.format(
-                'postgres', POSTGRES_PASSWORD,
-                DB_HOST, 'postgres'))
+        engine = sqlalchemy.create_engine('postgresql://{}:{}@{}/{}'.format(
+            'postgres', POSTGRES_PASSWORD, DB_HOST, 'postgres'))
         conn = engine.connect()
 
         query = 'SELECT 2*3'

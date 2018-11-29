@@ -23,6 +23,7 @@ from opencensus.trace.exporters import zipkin_exporter
 
 
 class TestZipkinExporter(unittest.TestCase):
+
     def test_constructor(self):
         service_name = 'my_service'
         host_name = '0.0.0.0'
@@ -54,8 +55,7 @@ class TestZipkinExporter(unittest.TestCase):
         self.assertTrue(exporter.transport.export_called)
 
     @mock.patch('requests.post')
-    @mock.patch.object(zipkin_exporter.ZipkinExporter,
-                       'translate_to_zipkin')
+    @mock.patch.object(zipkin_exporter.ZipkinExporter, 'translate_to_zipkin')
     def test_emit_succeeded(self, translate_mock, requests_mock):
         import json
 
@@ -74,8 +74,7 @@ class TestZipkinExporter(unittest.TestCase):
             headers=zipkin_exporter.ZIPKIN_HEADERS)
 
     @mock.patch('requests.post')
-    @mock.patch.object(zipkin_exporter.ZipkinExporter,
-                       'translate_to_zipkin')
+    @mock.patch.object(zipkin_exporter.ZipkinExporter, 'translate_to_zipkin')
     def test_emit_failed(self, translate_mock, requests_mock):
         import json
 
@@ -179,7 +178,9 @@ class TestZipkinExporter(unittest.TestCase):
                 'timestamp': 1502820146071158,
                 'duration': 10000000,
                 'localEndpoint': local_endpoint_ipv4,
-                'tags': {'test_key': 'test_value'},
+                'tags': {
+                    'test_key': 'test_value'
+                },
                 'annotations': [],
             },
             {
@@ -190,7 +191,9 @@ class TestZipkinExporter(unittest.TestCase):
                 'timestamp': 1502820146071158,
                 'duration': 10000000,
                 'localEndpoint': local_endpoint_ipv4,
-                'tags': {'test_key': '1'},
+                'tags': {
+                    'test_key': '1'
+                },
                 'annotations': [],
             },
         ]
@@ -203,7 +206,10 @@ class TestZipkinExporter(unittest.TestCase):
                 'timestamp': 1502820146071158,
                 'duration': 10000000,
                 'localEndpoint': local_endpoint_ipv6,
-                'tags': {'test_key': 'False', 'test_key2': 'raw_value'},
+                'tags': {
+                    'test_key': 'False',
+                    'test_key2': 'raw_value'
+                },
                 'kind': 'SERVER',
                 'annotations': [],
             },
@@ -326,55 +332,77 @@ class TestZipkinExporter(unittest.TestCase):
 
         expected_zipkin_spans_ipv4 = [
             {
-                'traceId': '6e0c63257de34c92bf9efcd03927272e',
-                'id': '6e0c63257de34c92',
-                'parentId': '6e0c63257de34c93',
-                'name': 'child_span',
-                'timestamp': 1502820146071158,
-                'duration': 10000000,
-                'localEndpoint': local_endpoint_ipv4,
-                'tags': {'test_key': 'test_value'},
-                'annotations': [
-                    {
-                        'timestamp': 1502820146071158,
-                        'value': 'First Annotation'
-                    }
-                ]
+                'traceId':
+                '6e0c63257de34c92bf9efcd03927272e',
+                'id':
+                '6e0c63257de34c92',
+                'parentId':
+                '6e0c63257de34c93',
+                'name':
+                'child_span',
+                'timestamp':
+                1502820146071158,
+                'duration':
+                10000000,
+                'localEndpoint':
+                local_endpoint_ipv4,
+                'tags': {
+                    'test_key': 'test_value'
+                },
+                'annotations': [{
+                    'timestamp': 1502820146071158,
+                    'value': 'First Annotation'
+                }]
             },
             {
-                'traceId': '6e0c63257de34c92bf9efcd03927272e',
-                'id': '6e0c63257de34c92',
-                'parentId': '6e0c63257de34c93',
-                'name': 'child_span',
-                'timestamp': 1502820146071158,
-                'duration': 10000000,
-                'localEndpoint': local_endpoint_ipv4,
-                'tags': {'test_key': '1'},
-                'annotations': [
-                    {
-                        'timestamp': 1502820146071158,
-                        'value': 'First Annotation'
-                    }
-                ]
+                'traceId':
+                '6e0c63257de34c92bf9efcd03927272e',
+                'id':
+                '6e0c63257de34c92',
+                'parentId':
+                '6e0c63257de34c93',
+                'name':
+                'child_span',
+                'timestamp':
+                1502820146071158,
+                'duration':
+                10000000,
+                'localEndpoint':
+                local_endpoint_ipv4,
+                'tags': {
+                    'test_key': '1'
+                },
+                'annotations': [{
+                    'timestamp': 1502820146071158,
+                    'value': 'First Annotation'
+                }]
             },
         ]
 
         expected_zipkin_spans_ipv6 = [
             {
-                'traceId': '6e0c63257de34c92bf9efcd03927272e',
-                'id': '6e0c63257de34c92',
-                'name': 'child_span',
-                'timestamp': 1502820146071158,
-                'duration': 10000000,
-                'localEndpoint': local_endpoint_ipv6,
-                'tags': {'test_key': 'False', 'test_key2': 'raw_value'},
-                'kind': 'SERVER',
-                'annotations': [
-                    {
-                        'timestamp': 1502820146071158,
-                        'value': 'First Annotation'
-                    }
-                ]
+                'traceId':
+                '6e0c63257de34c92bf9efcd03927272e',
+                'id':
+                '6e0c63257de34c92',
+                'name':
+                'child_span',
+                'timestamp':
+                1502820146071158,
+                'duration':
+                10000000,
+                'localEndpoint':
+                local_endpoint_ipv6,
+                'tags': {
+                    'test_key': 'False',
+                    'test_key2': 'raw_value'
+                },
+                'kind':
+                'SERVER',
+                'annotations': [{
+                    'timestamp': 1502820146071158,
+                    'value': 'First Annotation'
+                }]
             },
         ]
 
@@ -396,13 +424,16 @@ class TestZipkinExporter(unittest.TestCase):
 
     def test_ignore_incorrect_spans(self):
         attributes = {'float_value': 0.1}
-        self.assertEqual(zipkin_exporter._extract_tags_from_span(attributes), {})
+        self.assertEqual(
+            zipkin_exporter._extract_tags_from_span(attributes), {})
 
         attributes = None
-        self.assertEqual(zipkin_exporter._extract_tags_from_span(attributes), {})
+        self.assertEqual(
+            zipkin_exporter._extract_tags_from_span(attributes), {})
 
 
 class MockTransport(object):
+
     def __init__(self, exporter=None):
         self.export_called = False
         self.exporter = exporter

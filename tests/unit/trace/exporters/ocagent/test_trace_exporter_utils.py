@@ -32,6 +32,7 @@ from opencensus.trace.exporters.gen.opencensus.trace.v1 import trace_pb2
 
 
 class TestTraceExporterUtils(unittest.TestCase):
+
     def test_basic_span_translation(self):
         hex_encoder = codecs.getencoder('hex')
 
@@ -41,8 +42,11 @@ class TestTraceExporterUtils(unittest.TestCase):
                 trace_id='6e0c63257de34c92bf9efcd03927272e'),
             span_id='6e0c63257de34c92',
             parent_span_id='6e0c63257de34c93',
-            attributes={'test_str_key': 'test_str_value',
-                        'test_int_key': 1, 'test_bool_key': False},
+            attributes={
+                'test_str_key': 'test_str_value',
+                'test_int_key': 1,
+                'test_bool_key': False
+            },
             start_time='2017-08-15T18:02:26.071158Z',
             end_time='2017-08-15T18:02:36.071158Z',
             child_span_count=None,
@@ -56,21 +60,25 @@ class TestTraceExporterUtils(unittest.TestCase):
         pb_span = utils.translate_to_trace_proto(span_data)
 
         self.assertEqual(pb_span.name.value, "name")
-        self.assertEqual(hex_encoder(pb_span.trace_id)[
-                         0], b'6e0c63257de34c92bf9efcd03927272e')
+        self.assertEqual(
+            hex_encoder(pb_span.trace_id)[0],
+            b'6e0c63257de34c92bf9efcd03927272e')
         self.assertEqual(hex_encoder(pb_span.span_id)[0], b'6e0c63257de34c92')
-        self.assertEqual(hex_encoder(pb_span.parent_span_id)
-                         [0], b'6e0c63257de34c93')
+        self.assertEqual(
+            hex_encoder(pb_span.parent_span_id)[0], b'6e0c63257de34c93')
         self.assertEqual(pb_span.kind, 0)
 
         self.assertEqual(len(pb_span.attributes.attribute_map), 3)
-        self.assertEqual(pb_span.attributes.attribute_map['test_str_key'],
-                         trace_pb2.AttributeValue(string_value=trace_pb2.TruncatableString(value='test_str_value')))
+        self.assertEqual(
+            pb_span.attributes.attribute_map['test_str_key'],
+            trace_pb2.AttributeValue(
+                string_value=trace_pb2.TruncatableString(
+                    value='test_str_value')))
 
-        self.assertEqual(
-            pb_span.attributes.attribute_map['test_int_key'], trace_pb2.AttributeValue(int_value=1))
-        self.assertEqual(
-            pb_span.attributes.attribute_map['test_bool_key'], trace_pb2.AttributeValue(bool_value=False))
+        self.assertEqual(pb_span.attributes.attribute_map['test_int_key'],
+                         trace_pb2.AttributeValue(int_value=1))
+        self.assertEqual(pb_span.attributes.attribute_map['test_bool_key'],
+                         trace_pb2.AttributeValue(bool_value=False))
 
         self.assertEqual(pb_span.start_time.ToJsonString(),
                          '2017-08-15T18:02:26.071158Z')
@@ -170,17 +178,24 @@ class TestTraceExporterUtils(unittest.TestCase):
                 trace_id='6e0c63257de34c92bf9efcd03927272e'),
             span_id='6e0c63257de34c92',
             links=[
-                link_module.Link(trace_id='0e0c63257de34c92bf9efcd03927272e',
-                                 span_id='0e0c63257de34c92',
-                                 type=link_module.Type.TYPE_UNSPECIFIED,
-                                 attributes=attributes_module.Attributes(
-                                     attributes={'test_str_key': 'test_str_value', 'test_int_key': 1, 'test_bool_key': False})),
-                link_module.Link(trace_id='1e0c63257de34c92bf9efcd03927272e',
-                                 span_id='1e0c63257de34c92',
-                                 type=link_module.Type.CHILD_LINKED_SPAN),
-                link_module.Link(trace_id='2e0c63257de34c92bf9efcd03927272e',
-                                 span_id='2e0c63257de34c92',
-                                 type=link_module.Type.PARENT_LINKED_SPAN)
+                link_module.Link(
+                    trace_id='0e0c63257de34c92bf9efcd03927272e',
+                    span_id='0e0c63257de34c92',
+                    type=link_module.Type.TYPE_UNSPECIFIED,
+                    attributes=attributes_module.Attributes(
+                        attributes={
+                            'test_str_key': 'test_str_value',
+                            'test_int_key': 1,
+                            'test_bool_key': False
+                        })),
+                link_module.Link(
+                    trace_id='1e0c63257de34c92bf9efcd03927272e',
+                    span_id='1e0c63257de34c92',
+                    type=link_module.Type.CHILD_LINKED_SPAN),
+                link_module.Link(
+                    trace_id='2e0c63257de34c92bf9efcd03927272e',
+                    span_id='2e0c63257de34c92',
+                    type=link_module.Type.PARENT_LINKED_SPAN)
             ],
             span_kind=span_module.SpanKind.SERVER,
             status=None,
@@ -197,38 +212,43 @@ class TestTraceExporterUtils(unittest.TestCase):
         pb_span = utils.translate_to_trace_proto(span_data)
 
         self.assertEqual(len(pb_span.links.link), 3)
-        self.assertEqual(hex_encoder(pb_span.links.link[0].trace_id)[
-                         0], b'0e0c63257de34c92bf9efcd03927272e')
-        self.assertEqual(hex_encoder(pb_span.links.link[1].trace_id)[
-                         0], b'1e0c63257de34c92bf9efcd03927272e')
-        self.assertEqual(hex_encoder(pb_span.links.link[2].trace_id)[
-                         0], b'2e0c63257de34c92bf9efcd03927272e')
+        self.assertEqual(
+            hex_encoder(pb_span.links.link[0].trace_id)[0],
+            b'0e0c63257de34c92bf9efcd03927272e')
+        self.assertEqual(
+            hex_encoder(pb_span.links.link[1].trace_id)[0],
+            b'1e0c63257de34c92bf9efcd03927272e')
+        self.assertEqual(
+            hex_encoder(pb_span.links.link[2].trace_id)[0],
+            b'2e0c63257de34c92bf9efcd03927272e')
 
-        self.assertEqual(hex_encoder(pb_span.links.link[0].span_id)[
-                         0], b'0e0c63257de34c92')
-        self.assertEqual(hex_encoder(pb_span.links.link[1].span_id)[
-                         0], b'1e0c63257de34c92')
-        self.assertEqual(hex_encoder(pb_span.links.link[2].span_id)[
-                         0], b'2e0c63257de34c92')
+        self.assertEqual(
+            hex_encoder(pb_span.links.link[0].span_id)[0], b'0e0c63257de34c92')
+        self.assertEqual(
+            hex_encoder(pb_span.links.link[1].span_id)[0], b'1e0c63257de34c92')
+        self.assertEqual(
+            hex_encoder(pb_span.links.link[2].span_id)[0], b'2e0c63257de34c92')
 
         self.assertEqual(pb_span.links.link[0].type, 0)
         self.assertEqual(pb_span.links.link[1].type, 1)
         self.assertEqual(pb_span.links.link[2].type, 2)
 
-        self.assertEqual(
-            len(pb_span.links.link[0].attributes.attribute_map), 3)
-        self.assertEqual(
-            len(pb_span.links.link[1].attributes.attribute_map), 0)
-        self.assertEqual(
-            len(pb_span.links.link[2].attributes.attribute_map), 0)
-
-        self.assertEqual(pb_span.links.link[0].attributes.attribute_map['test_str_key'],
-                         trace_pb2.AttributeValue(string_value=trace_pb2.TruncatableString(value='test_str_value')))
+        self.assertEqual(len(pb_span.links.link[0].attributes.attribute_map), 3)
+        self.assertEqual(len(pb_span.links.link[1].attributes.attribute_map), 0)
+        self.assertEqual(len(pb_span.links.link[2].attributes.attribute_map), 0)
 
         self.assertEqual(
-            pb_span.links.link[0].attributes.attribute_map['test_int_key'], trace_pb2.AttributeValue(int_value=1))
+            pb_span.links.link[0].attributes.attribute_map['test_str_key'],
+            trace_pb2.AttributeValue(
+                string_value=trace_pb2.TruncatableString(
+                    value='test_str_value')))
+
         self.assertEqual(
-            pb_span.links.link[0].attributes.attribute_map['test_bool_key'], trace_pb2.AttributeValue(bool_value=False))
+            pb_span.links.link[0].attributes.attribute_map['test_int_key'],
+            trace_pb2.AttributeValue(int_value=1))
+        self.assertEqual(
+            pb_span.links.link[0].attributes.attribute_map['test_bool_key'],
+            trace_pb2.AttributeValue(bool_value=False))
 
     def test_translate_time_events(self):
 
@@ -248,9 +268,15 @@ class TestTraceExporterUtils(unittest.TestCase):
                     annotation=time_event_module.Annotation(
                         description="hi there0",
                         attributes=attributes_module.Attributes(
-                            attributes={'test_str_key': 'test_str_value', 'test_int_key': 1, 'test_bool_key': False}))),
+                            attributes={
+                                'test_str_key': 'test_str_value',
+                                'test_int_key': 1,
+                                'test_bool_key': False
+                            }))),
                 time_event_module.TimeEvent(
-                    timestamp=annotation1_ts, annotation=time_event_module.Annotation(description="hi there1")),
+                    timestamp=annotation1_ts,
+                    annotation=time_event_module.Annotation(
+                        description="hi there1")),
                 time_event_module.TimeEvent(
                     timestamp=message0_ts,
                     message_event=time_event_module.MessageEvent(
@@ -260,16 +286,18 @@ class TestTraceExporterUtils(unittest.TestCase):
                         compressed_size_bytes=1)),
                 time_event_module.TimeEvent(
                     timestamp=message1_ts,
-                    message_event=time_event_module.MessageEvent(id=1,
-                                                                 type=time_event_module.Type.RECEIVED,
-                                                                 uncompressed_size_bytes=20,
-                                                                 compressed_size_bytes=2)),
+                    message_event=time_event_module.MessageEvent(
+                        id=1,
+                        type=time_event_module.Type.RECEIVED,
+                        uncompressed_size_bytes=20,
+                        compressed_size_bytes=2)),
                 time_event_module.TimeEvent(
                     timestamp=message2_ts,
-                    message_event=time_event_module.MessageEvent(id=2,
-                                                                 type=time_event_module.Type.TYPE_UNSPECIFIED,
-                                                                 uncompressed_size_bytes=30,
-                                                                 compressed_size_bytes=3))
+                    message_event=time_event_module.MessageEvent(
+                        id=2,
+                        type=time_event_module.Type.TYPE_UNSPECIFIED,
+                        uncompressed_size_bytes=30,
+                        compressed_size_bytes=3))
             ],
             span_kind=span_module.SpanKind.SERVER,
             status=None,
@@ -304,13 +332,18 @@ class TestTraceExporterUtils(unittest.TestCase):
         self.assertEqual(len(event0.annotation.attributes.attribute_map), 3)
         self.assertEqual(len(event1.annotation.attributes.attribute_map), 0)
 
-        self.assertEqual(event0.annotation.attributes.attribute_map['test_str_key'],
-                         trace_pb2.AttributeValue(string_value=trace_pb2.TruncatableString(value='test_str_value')))
+        self.assertEqual(
+            event0.annotation.attributes.attribute_map['test_str_key'],
+            trace_pb2.AttributeValue(
+                string_value=trace_pb2.TruncatableString(
+                    value='test_str_value')))
 
         self.assertEqual(
-            event0.annotation.attributes.attribute_map['test_int_key'], trace_pb2.AttributeValue(int_value=1))
+            event0.annotation.attributes.attribute_map['test_int_key'],
+            trace_pb2.AttributeValue(int_value=1))
         self.assertEqual(
-            event0.annotation.attributes.attribute_map['test_bool_key'], trace_pb2.AttributeValue(bool_value=False))
+            event0.annotation.attributes.attribute_map['test_bool_key'],
+            trace_pb2.AttributeValue(bool_value=False))
 
         self.assertEqual(event2.message_event.id, 0)
         self.assertEqual(event3.message_event.id, 1)
@@ -336,8 +369,7 @@ class TestTraceExporterUtils(unittest.TestCase):
             context=span_context_module.SpanContext(
                 trace_id='6e0c63257de34c92bf9efcd03927272e'),
             span_id='6e0c63257de34c92',
-            time_events=[
-                time_event_module.TimeEvent(timestamp=ts)],
+            time_events=[time_event_module.TimeEvent(timestamp=ts)],
             span_kind=span_module.SpanKind.SERVER,
             status=None,
             start_time=None,
@@ -363,7 +395,8 @@ class TestTraceExporterUtils(unittest.TestCase):
 
         client_span_data = span_data_module.SpanData(
             context=span_context_module.SpanContext(
-                trace_id='6e0c63257de34c92bf9efcd03927272e', tracestate=tracestate),
+                trace_id='6e0c63257de34c92bf9efcd03927272e',
+                tracestate=tracestate),
             span_id='6e0c63257de34c92',
             start_time='2017-08-15T18:02:26.071158Z',
             end_time='2017-08-15T18:02:36.071158Z',
@@ -392,26 +425,28 @@ class TestTraceExporterUtils(unittest.TestCase):
         pb_span = trace_pb2.Span()
 
         utils.add_proto_attribute_value(pb_span.attributes, 'int_key', 42)
-        utils.add_proto_attribute_value(
-            pb_span.attributes, 'bool_key', True)
-        utils.add_proto_attribute_value(
-            pb_span.attributes, 'string_key', 'value')
-        utils.add_proto_attribute_value(
-            pb_span.attributes, 'unicode_key', u'uvalue')
-        utils.add_proto_attribute_value(
-            pb_span.attributes, 'dict_key', {"a": "b"})
+        utils.add_proto_attribute_value(pb_span.attributes, 'bool_key', True)
+        utils.add_proto_attribute_value(pb_span.attributes, 'string_key',
+                                        'value')
+        utils.add_proto_attribute_value(pb_span.attributes, 'unicode_key',
+                                        u'uvalue')
+        utils.add_proto_attribute_value(pb_span.attributes, 'dict_key',
+                                        {"a": "b"})
 
         self.assertEqual(len(pb_span.attributes.attribute_map), 5)
-        self.assertEqual(
-            pb_span.attributes.attribute_map['int_key'].int_value, 42)
+        self.assertEqual(pb_span.attributes.attribute_map['int_key'].int_value,
+                         42)
         self.assertEqual(
             pb_span.attributes.attribute_map['bool_key'].bool_value, True)
         self.assertEqual(
-            pb_span.attributes.attribute_map['string_key'].string_value.value, 'value')
+            pb_span.attributes.attribute_map['string_key'].string_value.value,
+            'value')
         self.assertEqual(
-            pb_span.attributes.attribute_map['unicode_key'].string_value.value, 'uvalue')
+            pb_span.attributes.attribute_map['unicode_key'].string_value.value,
+            'uvalue')
         self.assertEqual(
-            pb_span.attributes.attribute_map['dict_key'].string_value.value, "{'a': 'b'}")
+            pb_span.attributes.attribute_map['dict_key'].string_value.value,
+            "{'a': 'b'}")
 
     def test_set_proto_event(self):
         pb_span = trace_pb2.Span()
@@ -437,18 +472,27 @@ class TestTraceExporterUtils(unittest.TestCase):
         annotation = time_event_module.Annotation(
             description="hi there",
             attributes=attributes_module.Attributes(
-                        attributes={'test_str_key': 'test_str_value', 'test_int_key': 1, 'test_bool_key': False}))
+                attributes={
+                    'test_str_key': 'test_str_value',
+                    'test_int_key': 1,
+                    'test_bool_key': False
+                }))
 
         utils.set_proto_annotation(pb_event.annotation, annotation)
 
         self.assertEqual(pb_event.annotation.description.value, "hi there")
         self.assertEqual(len(pb_event.annotation.attributes.attribute_map), 3)
-        self.assertEqual(pb_event.annotation.attributes.attribute_map['test_str_key'],
-                         trace_pb2.AttributeValue(string_value=trace_pb2.TruncatableString(value='test_str_value')))
         self.assertEqual(
-            pb_event.annotation.attributes.attribute_map['test_int_key'], trace_pb2.AttributeValue(int_value=1))
+            pb_event.annotation.attributes.attribute_map['test_str_key'],
+            trace_pb2.AttributeValue(
+                string_value=trace_pb2.TruncatableString(
+                    value='test_str_value')))
         self.assertEqual(
-            pb_event.annotation.attributes.attribute_map['test_bool_key'], trace_pb2.AttributeValue(bool_value=False))
+            pb_event.annotation.attributes.attribute_map['test_int_key'],
+            trace_pb2.AttributeValue(int_value=1))
+        self.assertEqual(
+            pb_event.annotation.attributes.attribute_map['test_bool_key'],
+            trace_pb2.AttributeValue(bool_value=False))
 
     def test_set_annotation_without_attributes(self):
         pb_span = trace_pb2.Span()
@@ -495,10 +539,9 @@ class TestTraceExporterUtils(unittest.TestCase):
     def test_hex_str_to_proto_bytes_conversion(self):
         hex_encoder = codecs.getencoder('hex')
 
-        proto_bytes = utils.hex_str_to_bytes_str(
-            '00010203040506070a0b0c0d0eff')
-        self.assertEqual(hex_encoder(proto_bytes)[0],
-                         b'00010203040506070a0b0c0d0eff')
+        proto_bytes = utils.hex_str_to_bytes_str('00010203040506070a0b0c0d0eff')
+        self.assertEqual(
+            hex_encoder(proto_bytes)[0], b'00010203040506070a0b0c0d0eff')
 
     def test_datetime_to_proto_ts_conversion_none(self):
         proto_ts = utils.proto_ts_from_datetime(None)

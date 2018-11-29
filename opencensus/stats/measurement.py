@@ -23,6 +23,7 @@ class Measurement(object):
     :param value: value of the measurement
 
     """
+
     def __init__(self, measure, value):
         self._measure = measure
         self._value = value
@@ -40,11 +41,13 @@ class Measurement(object):
 
 class MeasurementInt(Measurement):
     """ Creates a new Integer Measurement """
+
     def __init__(self, measure, value):
         super(MeasurementInt, self).__init__(measure, value)
 
 
 class MeasurementFloat(Measurement):
     """ Creates a new Float Measurement """
+
     def __init__(self, measure, value):
         super(MeasurementFloat, self).__init__(measure, value)

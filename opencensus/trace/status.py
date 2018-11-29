@@ -39,6 +39,7 @@ class Status(object):
                     See: https://cloud.google.com/trace/docs/reference/v2/
                          rest/v2/Status#FIELDS.details
     """
+
     def __init__(self, code, message, details=None):
         self.code = code
         self.message = message
@@ -58,7 +59,4 @@ class Status(object):
 
     @classmethod
     def from_exception(cls, exc):
-        return cls(
-            code=code_pb2.UNKNOWN,
-            message=str(exc)
-        )
+        return cls(code=code_pb2.UNKNOWN, message=str(exc))

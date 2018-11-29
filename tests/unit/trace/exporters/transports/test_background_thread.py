@@ -18,6 +18,7 @@ import mock
 
 from opencensus.trace.exporters.transports import background_thread
 
+
 class Test_Worker(unittest.TestCase):
 
     def _start_worker(self, worker):
@@ -34,8 +35,8 @@ class Test_Worker(unittest.TestCase):
         grace_period = 10
         max_batch_size = 20
 
-        worker = background_thread._Worker(exporter, grace_period=grace_period,
-                                           max_batch_size=max_batch_size)
+        worker = background_thread._Worker(
+            exporter, grace_period=grace_period, max_batch_size=max_batch_size)
 
         self.assertEqual(worker.exporter, exporter)
         self.assertEqual(worker._grace_period, grace_period)
@@ -53,8 +54,8 @@ class Test_Worker(unittest.TestCase):
         self.assertIsNotNone(worker._thread)
         self.assertTrue(worker._thread.daemon)
         self.assertEqual(worker._thread._target, worker._thread_main)
-        self.assertEqual(
-            worker._thread._name, background_thread._WORKER_THREAD_NAME)
+        self.assertEqual(worker._thread._name,
+                         background_thread._WORKER_THREAD_NAME)
         mock_atexit.assert_called_once_with(worker._export_pending_spans)
 
         cur_thread = worker._thread
@@ -72,8 +73,8 @@ class Test_Worker(unittest.TestCase):
         worker.stop()
 
         self.assertEqual(worker._queue.qsize(), 1)
-        self.assertEqual(
-            worker._queue.get(), background_thread._WORKER_TERMINATOR)
+        self.assertEqual(worker._queue.get(),
+                         background_thread._WORKER_TERMINATOR)
         self.assertFalse(worker.is_alive)
         self.assertIsNone(worker._thread)
 
@@ -119,7 +120,7 @@ class Test_Worker(unittest.TestCase):
         trace1 = {
             'traceId': 'test1',
             'spans': [{}, {}],
-            }
+        }
         trace2 = {
             'traceId': 'test2',
             'spans': [{}],
@@ -171,6 +172,7 @@ class Test_Worker(unittest.TestCase):
     def test__thread_main_terminate_before_finish(self):
 
         class Exporter(object):
+
             def __init__(self):
                 self.exported = []
 
@@ -204,6 +206,7 @@ class Test_Worker(unittest.TestCase):
     def test__thread_main_alive_on_emit_failed(self, mock):
 
         class Exporter(object):
+
             def __init__(self):
                 self.exported = []
 

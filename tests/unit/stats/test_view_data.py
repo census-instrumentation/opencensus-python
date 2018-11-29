@@ -22,6 +22,7 @@ from opencensus.stats import view as view_module
 
 
 class TestViewData(unittest.TestCase):
+
     def test_constructor(self):
         view = mock.Mock()
         start_time = datetime.utcnow()
@@ -97,8 +98,7 @@ class TestViewData(unittest.TestCase):
         self.assertIsNotNone(
             view_data.tag_value_aggregation_data_map[tuple_vals])
         self.assertIsNotNone(
-            view_data.tag_value_aggregation_data_map.get(tuple_vals).add(
-                value))
+            view_data.tag_value_aggregation_data_map.get(tuple_vals).add(value))
 
         view_data.record(context=context, value=value, timestamp=time)
         tag_values.append('val2')

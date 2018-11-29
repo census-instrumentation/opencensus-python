@@ -86,9 +86,7 @@ class ContextTracer(base.Tracer):
                 span_id=self.span_context.span_id)
 
         span = trace_span.Span(
-            name,
-            parent_span=parent_span,
-            context_tracer=self)
+            name, parent_span=parent_span, context_tracer=self)
         with self._spans_list_condition:
             self._spans_list.append(span)
         self.span_context.span_id = span.span_id
@@ -158,8 +156,8 @@ class ContextTracer(base.Tracer):
                 name=span.name,
                 context=self.span_context,
                 span_id=span.span_id,
-                parent_span_id=span.parent_span.span_id if
-                span.parent_span else None,
+                parent_span_id=span.parent_span.span_id
+                if span.parent_span else None,
                 attributes=span.attributes,
                 start_time=span.start_time,
                 end_time=span.end_time,
@@ -169,10 +167,7 @@ class ContextTracer(base.Tracer):
                 links=span.links,
                 status=span.status,
                 same_process_as_parent_span=span.same_process_as_parent_span,
-                span_kind=span.span_kind
-
-            )
-            for span in span_tree
+                span_kind=span.span_kind) for span in span_tree
         ]
 
         return span_datas

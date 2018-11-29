@@ -20,6 +20,7 @@ from opencensus.stats.measure_to_view_map import MeasureToViewMap
 
 
 class TestViewManager(unittest.TestCase):
+
     def test_constructor(self):
         execution_context.clear()
         self.assertEqual({}, execution_context.get_measure_to_view_map())
@@ -55,9 +56,9 @@ class TestViewManager(unittest.TestCase):
         execution_context.set_measure_to_view_map(MeasureToViewMap())
         view_manager = view_manager_module.ViewManager()
         view_manager.register_exporter(exporter)
-        count_registered_exporters = len(view_manager.measure_to_view_map.exporters)
+        count_registered_exporters = len(
+            view_manager.measure_to_view_map.exporters)
         self.assertEqual(1, count_registered_exporters)
-
 
     def test_unregister_exporter(self):
         exporter = mock.Mock()
@@ -65,11 +66,13 @@ class TestViewManager(unittest.TestCase):
         execution_context.set_measure_to_view_map(MeasureToViewMap())
         view_manager = view_manager_module.ViewManager()
         view_manager.register_exporter(exporter)
-        count_registered_exporters = len(view_manager.measure_to_view_map.exporters)
+        count_registered_exporters = len(
+            view_manager.measure_to_view_map.exporters)
         self.assertEqual(1, count_registered_exporters)
 
         view_manager.unregister_exporter(exporter)
-        count_registered_exporters = len(view_manager.measure_to_view_map.exporters)
+        count_registered_exporters = len(
+            view_manager.measure_to_view_map.exporters)
         self.assertEqual(0, count_registered_exporters)
 
     def test_get_view(self):

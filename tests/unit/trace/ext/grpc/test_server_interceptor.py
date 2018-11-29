@@ -23,6 +23,7 @@ from opencensus.trace.ext.grpc import server_interceptor
 
 
 class TestOpenCensusServerInterceptor(unittest.TestCase):
+
     def test_constructor(self):
         sampler = mock.Mock()
         exporter = mock.Mock()
@@ -38,17 +39,16 @@ class TestOpenCensusServerInterceptor(unittest.TestCase):
         mock_context = mock.Mock()
         mock_context.invocation_metadata = mock.Mock(return_value=None)
         mock_context._rpc_event.call_details.method = 'hello'
-        interceptor = server_interceptor.OpenCensusServerInterceptor(
-            None, None)
+        interceptor = server_interceptor.OpenCensusServerInterceptor(None, None)
         mock_handler = mock.Mock()
         mock_handler.request_streaming = False
         mock_handler.response_streaming = False
         mock_continuation = mock.Mock(return_value=mock_handler)
 
         with patch:
-            interceptor.intercept_service(
-                mock_continuation, mock.Mock()
-            ).unary_unary(mock.Mock(), mock_context)
+            interceptor.intercept_service(mock_continuation,
+                                          mock.Mock()).unary_unary(
+                                              mock.Mock(), mock_context)
 
         expected_attributes = {
             'component': 'grpc',
@@ -71,8 +71,7 @@ class TestOpenCensusServerInterceptor(unittest.TestCase):
                 MockTracer)
             mock_context = mock.Mock()
             mock_context.invocation_metadata = mock.Mock(
-                return_value=(('test_key', b'test_value'),)
-            )
+                return_value=(('test_key', b'test_value'),))
             mock_handler = mock.Mock()
             mock_handler.request_streaming = request_streaming
             mock_handler.response_streaming = response_streaming
@@ -83,9 +82,8 @@ class TestOpenCensusServerInterceptor(unittest.TestCase):
                 None, None)
 
             with patch:
-                handler = interceptor.intercept_service(
-                    mock_continuation, mock.Mock()
-                )
+                handler = interceptor.intercept_service(mock_continuation,
+                                                        mock.Mock())
                 getattr(handler, rpc_fn_name)(mock.Mock(), mock_context)
 
             expected_attributes = {
@@ -93,8 +91,8 @@ class TestOpenCensusServerInterceptor(unittest.TestCase):
             }
 
             self.assertEqual(
-                execution_context.get_opencensus_tracer().current_span().attributes,
-                expected_attributes)
+                execution_context.get_opencensus_tracer().current_span().
+                attributes, expected_attributes)
 
     def test_intercept_handler_exception(self):
         test_dimensions = [
@@ -122,20 +120,18 @@ class TestOpenCensusServerInterceptor(unittest.TestCase):
             # mock_continuation.unary_unary = mock.Mock())
             with patch:
                 # patch the wrapper's handler to return an exception
-                handler = interceptor.intercept_service(
-                    mock_continuation, mock.Mock())
+                handler = interceptor.intercept_service(mock_continuation,
+                                                        mock.Mock())
                 with self.assertRaises(Exception):
                     getattr(handler, rpc_fn_name)(mock.Mock(), mock_context)
 
-            expected_attributes = {
-                'component': 'grpc',
-                'error.message': 'Test'
-            }
+            expected_attributes = {'component': 'grpc', 'error.message': 'Test'}
 
-            current_span = execution_context.get_opencensus_tracer().current_span()
+            current_span = execution_context.get_opencensus_tracer(
+            ).current_span()
             self.assertEqual(
-                execution_context.get_opencensus_tracer().current_span().attributes,
-                expected_attributes)
+                execution_context.get_opencensus_tracer().current_span().
+                attributes, expected_attributes)
 
             self.assertEqual(current_span.span_kind,
                              span_module.SpanKind.SERVER)
@@ -156,6 +152,7 @@ class TestOpenCensusServerInterceptor(unittest.TestCase):
 
 
 class MockTracer(object):
+
     def __init__(self, *args, **kwargs):
         self._current_span = span_module.Span('mock_span')
         execution_context.set_opencensus_tracer(self)

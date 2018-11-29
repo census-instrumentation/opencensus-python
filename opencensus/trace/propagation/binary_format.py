@@ -59,8 +59,7 @@ BINARY_FORMAT = '{big_endian}{version_id}' \
         trace_option=UNSIGNED_CHAR)
 
 Header = collections.namedtuple(
-    'Header',
-    'version_id '
+    'Header', 'version_id '
     'trace_id_field_id '
     'trace_id '
     'span_id_field_id '
@@ -92,6 +91,7 @@ class BinaryFormatPropagator(object):
             trace_option: Byte with length 1.
                 e.g. b'\x01'
     """
+
     def from_header(self, binary):
         """Generate a SpanContext object using the trace context header.
         The value of enabled parsed from header is int. Need to convert to
@@ -116,9 +116,7 @@ class BinaryFormatPropagator(object):
             logging.warning(
                 'Cannot parse the incoming binary data {}, '
                 'wrong format. Total bytes length should be {}.'.format(
-                    binary, FORMAT_LENGTH
-                )
-            )
+                    binary, FORMAT_LENGTH))
             return span_context_module.SpanContext(from_header=False)
 
         # data.trace_id is in bytes with length 16, hexlify it to hex bytes
@@ -128,10 +126,10 @@ class BinaryFormatPropagator(object):
         trace_options = TraceOptions(data.trace_option)
 
         span_context = span_context_module.SpanContext(
-                trace_id=trace_id,
-                span_id=span_id,
-                trace_options=trace_options,
-                from_header=True)
+            trace_id=trace_id,
+            span_id=span_id,
+            trace_options=trace_options,
+            from_header=True)
 
         return span_context
 
@@ -157,12 +155,7 @@ class BinaryFormatPropagator(object):
         # Convert trace_id to bytes with length 16, treat span_id as 64 bit
         # integer which is unsigned long long type and convert it to bytes with
         # length 8, trace_option is integer with length 1.
-        return struct.pack(
-            BINARY_FORMAT,
-            VERSION_ID,
-            TRACE_ID_FIELD_ID,
-            binascii.unhexlify(trace_id),
-            SPAN_ID_FIELD_ID,
-            binascii.unhexlify(span_id),
-            TRACE_OPTION_FIELD_ID,
-            trace_options)
+        return struct.pack(BINARY_FORMAT, VERSION_ID, TRACE_ID_FIELD_ID,
+                           binascii.unhexlify(trace_id), SPAN_ID_FIELD_ID,
+                           binascii.unhexlify(span_id), TRACE_OPTION_FIELD_ID,
+                           trace_options)

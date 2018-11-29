@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Django middleware helper to capture and trace a request."""
 import logging
 
@@ -118,8 +117,8 @@ class OpencensusMiddleware(MiddlewareMixin):
 
         # Initialize the sampler
         if self._sampler.__name__ == 'ProbabilitySampler':
-            _rate = settings.params.get(
-                SAMPLING_RATE, probability.DEFAULT_SAMPLING_RATE)
+            _rate = settings.params.get(SAMPLING_RATE,
+                                        probability.DEFAULT_SAMPLING_RATE)
             self.sampler = self._sampler(_rate)
         else:
             self.sampler = self._sampler()
@@ -130,16 +129,14 @@ class OpencensusMiddleware(MiddlewareMixin):
         if self._exporter.__name__ == 'GoogleCloudExporter':
             _project_id = settings.params.get(GCP_EXPORTER_PROJECT, None)
             self.exporter = self._exporter(
-                project_id=_project_id,
-                transport=transport)
+                project_id=_project_id, transport=transport)
         elif self._exporter.__name__ == 'ZipkinExporter':
             _service_name = self._get_service_name(settings.params)
-            _zipkin_host_name = settings.params.get(
-                ZIPKIN_EXPORTER_HOST_NAME, 'localhost')
-            _zipkin_port = settings.params.get(
-                ZIPKIN_EXPORTER_PORT, 9411)
-            _zipkin_protocol = settings.params.get(
-                ZIPKIN_EXPORTER_PROTOCOL, 'http')
+            _zipkin_host_name = settings.params.get(ZIPKIN_EXPORTER_HOST_NAME,
+                                                    'localhost')
+            _zipkin_port = settings.params.get(ZIPKIN_EXPORTER_PORT, 9411)
+            _zipkin_protocol = settings.params.get(ZIPKIN_EXPORTER_PROTOCOL,
+                                                   'http')
             self.exporter = self._exporter(
                 service_name=_service_name,
                 host_name=_zipkin_host_name,
@@ -148,8 +145,8 @@ class OpencensusMiddleware(MiddlewareMixin):
                 transport=transport)
         elif self._exporter.__name__ == 'TraceExporter':
             _service_name = self._get_service_name(settings.params)
-            _endpoint = settings.params.get(
-                OCAGENT_TRACE_EXPORTER_ENDPOINT, None)
+            _endpoint = settings.params.get(OCAGENT_TRACE_EXPORTER_ENDPOINT,
+                                            None)
             self.exporter = self._exporter(
                 service_name=_service_name,
                 endpoint=_endpoint,
@@ -157,13 +154,12 @@ class OpencensusMiddleware(MiddlewareMixin):
         elif self._exporter.__name__ == 'JaegerExporter':
             _service_name = self._get_service_name(settings.params)
             self.exporter = self._exporter(
-                service_name=_service_name,
-                transport=transport)
+                service_name=_service_name, transport=transport)
         else:
             self.exporter = self._exporter(transport=transport)
 
-        self.blacklist_hostnames = settings.params.get(
-            BLACKLIST_HOSTNAMES, None)
+        self.blacklist_hostnames = settings.params.get(BLACKLIST_HOSTNAMES,
+                                                       None)
 
         # Initialize the propagator
         self.propagator = self._propagator()
@@ -179,13 +175,10 @@ class OpencensusMiddleware(MiddlewareMixin):
             return
 
         # Add the request to thread local
-        execution_context.set_opencensus_attr(
-            REQUEST_THREAD_LOCAL_KEY,
-            request)
+        execution_context.set_opencensus_attr(REQUEST_THREAD_LOCAL_KEY, request)
 
-        execution_context.set_opencensus_attr(
-            'blacklist_hostnames',
-            self.blacklist_hostnames)
+        execution_context.set_opencensus_attr('blacklist_hostnames',
+                                              self.blacklist_hostnames)
 
         try:
             # Start tracing this request
@@ -203,20 +196,16 @@ class OpencensusMiddleware(MiddlewareMixin):
             span = tracer.start_span()
             span.span_kind = span_module.SpanKind.SERVER
             tracer.add_attribute_to_current_span(
-                attribute_key=HTTP_METHOD,
-                attribute_value=request.method)
+                attribute_key=HTTP_METHOD, attribute_value=request.method)
             tracer.add_attribute_to_current_span(
-                attribute_key=HTTP_URL,
-                attribute_value=request.path)
+                attribute_key=HTTP_URL, attribute_value=request.path)
 
             # Add the span to thread local
             # in some cases (exceptions, timeouts) currentspan in
             # response event will be one of a child spans.
             # let's keep reference to 'django' span and
             # use it in response event
-            execution_context.set_opencensus_attr(
-                SPAN_THREAD_LOCAL_KEY,
-                span)
+            execution_context.set_opencensus_attr(SPAN_THREAD_LOCAL_KEY, span)
 
         except Exception:  # pragma: NO COVER
             log.error('Failed to trace request', exc_info=True)
@@ -261,11 +250,10 @@ class OpencensusMiddleware(MiddlewareMixin):
             return response
 
     def _get_service_name(self, params):
-        _service_name = params.get(
-            SERVICE_NAME, None)
+        _service_name = params.get(SERVICE_NAME, None)
 
         if _service_name is None:
-            _service_name = params.get(
-                ZIPKIN_EXPORTER_SERVICE_NAME, 'my_service')
+            _service_name = params.get(ZIPKIN_EXPORTER_SERVICE_NAME,
+                                       'my_service')
 
         return _service_name

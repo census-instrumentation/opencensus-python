@@ -21,7 +21,6 @@ except ImportError:
     from urllib2 import urlopen, Request
     from urllib2 import HTTPError, URLError
 
-
 import socket
 
 _REQUEST_TIMEOUT = 2  # in secs

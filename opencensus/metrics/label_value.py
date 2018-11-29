@@ -19,6 +19,7 @@ class LabelValue(object):
     :type value: str
     :param value: the value for the label
     """
+
     def __init__(self, value=None):
         self._value = value
 

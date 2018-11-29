@@ -19,6 +19,7 @@ from opencensus.metrics import label_value as label_value_module
 
 
 class TestLabelValue(unittest.TestCase):
+
     def test_constructor(self):
         value = 'value1'
         label_value = label_value_module.LabelValue(value)

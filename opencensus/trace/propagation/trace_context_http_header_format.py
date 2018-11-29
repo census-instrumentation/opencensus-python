@@ -101,11 +101,8 @@ class TraceContextPropagator(object):
         trace_options = '01' if trace_options else '00'
 
         headers = {
-            _TRACEPARENT_HEADER_NAME: '00-{}-{}-{}'.format(
-                trace_id,
-                span_id,
-                trace_options
-            ),
+            _TRACEPARENT_HEADER_NAME:
+            '00-{}-{}-{}'.format(trace_id, span_id, trace_options),
         }
         tracestate = span_context.tracestate
         if tracestate:

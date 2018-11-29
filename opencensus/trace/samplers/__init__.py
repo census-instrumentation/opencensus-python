@@ -17,6 +17,6 @@ from opencensus.trace.samplers.always_on import AlwaysOnSampler
 from opencensus.trace.samplers.base import Sampler
 from opencensus.trace.samplers.probability import ProbabilitySampler
 
-
-__all__ = ['Sampler', 'AlwaysOnSampler', 'AlwaysOffSampler',
-           'ProbabilitySampler']
+__all__ = [
+    'Sampler', 'AlwaysOnSampler', 'AlwaysOffSampler', 'ProbabilitySampler'
+]

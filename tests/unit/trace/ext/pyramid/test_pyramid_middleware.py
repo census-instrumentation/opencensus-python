@@ -35,6 +35,7 @@ from opencensus.trace.tracers import noop_tracer
 
 
 class TestPyramidMiddleware(unittest.TestCase):
+
     def tearDown(self):
         from opencensus.trace import execution_context
 
@@ -54,7 +55,8 @@ class TestPyramidMiddleware(unittest.TestCase):
         mock_registry = mock.Mock(spec=Registry)
         mock_registry.settings = {}
         mock_registry.settings['OPENCENSUS_TRACE'] = {
-            'EXPORTER': print_exporter.PrintExporter()}
+            'EXPORTER': print_exporter.PrintExporter()
+        }
 
         middleware = pyramid_middleware.OpenCensusTweenFactory(
             dummy_handler,
@@ -62,11 +64,9 @@ class TestPyramidMiddleware(unittest.TestCase):
         )
 
         assert isinstance(middleware.sampler, always_on.AlwaysOnSampler)
-        assert isinstance(
-            middleware.exporter, print_exporter.PrintExporter)
-        assert isinstance(
-            middleware.propagator,
-            google_cloud_format.GoogleCloudFormatPropagator)
+        assert isinstance(middleware.exporter, print_exporter.PrintExporter)
+        assert isinstance(middleware.propagator,
+                          google_cloud_format.GoogleCloudFormatPropagator)
 
         # Just a smoke test to make sure things work
         request = DummyRequest(
@@ -91,8 +91,7 @@ class TestPyramidMiddleware(unittest.TestCase):
             service_name=service_name,
             host_name=host_name,
             port=port,
-            transport=sync.SyncTransport
-        )
+            transport=sync.SyncTransport)
 
         mock_registry = mock.Mock(spec=Registry)
         mock_registry.settings = {}
@@ -106,11 +105,9 @@ class TestPyramidMiddleware(unittest.TestCase):
         )
 
         assert isinstance(middleware.sampler, always_on.AlwaysOnSampler)
-        assert isinstance(
-            middleware.exporter, zipkin_exporter.ZipkinExporter)
-        assert isinstance(
-            middleware.propagator,
-            google_cloud_format.GoogleCloudFormatPropagator)
+        assert isinstance(middleware.exporter, zipkin_exporter.ZipkinExporter)
+        assert isinstance(middleware.propagator,
+                          google_cloud_format.GoogleCloudFormatPropagator)
 
         self.assertEqual(middleware.exporter.service_name, service_name)
         self.assertEqual(middleware.exporter.host_name, host_name)

@@ -18,6 +18,7 @@ class Tracer(object):
 
     Subclasses of :class:`Tracer` must implement the below methods.
     """
+
     def finish(self):
         """End the spans and send to reporters."""
         raise NotImplementedError
@@ -67,6 +68,7 @@ class NullContextManager(object):
     """Empty object as a helper for faking Trace and Span when tracing is
     disabled.
     """
+
     def __init__(self, span_id=None, context_tracer=None):
         self.name = None
         self.span_id = span_id

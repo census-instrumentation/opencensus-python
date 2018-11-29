@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """SpanContext encapsulates the current context within the request's trace."""
 
 import logging
@@ -53,13 +52,13 @@ class SpanContext(object):
     :param from_header: (Optional) Indicates whether the trace context is
                         generated from request header.
     """
-    def __init__(
-            self,
-            trace_id=None,
-            span_id=None,
-            trace_options=None,
-            tracestate=None,
-            from_header=False):
+
+    def __init__(self,
+                 trace_id=None,
+                 span_id=None,
+                 trace_options=None,
+                 tracestate=None,
+                 from_header=False):
         if trace_id is None:
             trace_id = generate_trace_id()
 
@@ -113,9 +112,8 @@ class SpanContext(object):
         if match:
             return span_id
         else:
-            logging.warning(
-                'Span_id {} does not the match the '
-                'required format'.format(span_id))
+            logging.warning('Span_id {} does not the match the '
+                            'required format'.format(span_id))
             self.from_header = False
             return None
 
@@ -133,9 +131,8 @@ class SpanContext(object):
         assert isinstance(trace_id, str)
 
         if trace_id is _INVALID_TRACE_ID:
-            logging.warning(
-                'Trace_id {} is invalid (cannot be all zero), '
-                'generating a new one.'.format(trace_id))
+            logging.warning('Trace_id {} is invalid (cannot be all zero), '
+                            'generating a new one.'.format(trace_id))
             self.from_header = False
             return generate_trace_id()
 

@@ -17,7 +17,6 @@ import logging
 from opencensus.stats import bucket_boundaries
 from opencensus.stats import aggregation_data
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -51,6 +50,7 @@ class BaseAggregation(object):
     :param aggregation_type: represents the type of this aggregation
 
     """
+
     def __init__(self, buckets=None, aggregation_type=Type.NONE):
         self._aggregation_type = aggregation_type
         self._buckets = buckets or []
@@ -78,6 +78,7 @@ class SumAggregation(BaseAggregation):
     :param aggregation_type: represents the type of this aggregation
 
     """
+
     def __init__(self, sum=None, aggregation_type=Type.SUM):
         super(SumAggregation, self).__init__(aggregation_type=aggregation_type)
         self._sum = aggregation_data.SumAggregationDataFloat(
@@ -101,9 +102,10 @@ class CountAggregation(BaseAggregation):
     :param aggregation_type: represents the type of this aggregation
 
     """
+
     def __init__(self, count=0, aggregation_type=Type.COUNT):
-        super(CountAggregation, self).__init__(
-            aggregation_type=aggregation_type)
+        super(CountAggregation,
+              self).__init__(aggregation_type=aggregation_type)
         self._count = aggregation_data.CountAggregationData(count)
         self.aggregation_data = self._count
 
@@ -144,8 +146,7 @@ class DistributionAggregation(BaseAggregation):
                 ii += 1
             if ii:
                 logger.warning("Dropping {} negative bucket boundaries, the "
-                               "values must be strictly > 0"
-                               .format(ii))
+                               "values must be strictly > 0".format(ii))
             boundaries = boundaries[ii:]
 
         super(DistributionAggregation, self).__init__(
@@ -177,11 +178,12 @@ class LastValueAggregation(BaseAggregation):
     :param aggregation_type: represents the type of this aggregation
 
     """
+
     def __init__(self, value=0, aggregation_type=Type.LASTVALUE):
-        super(LastValueAggregation, self).__init__(
-            aggregation_type=aggregation_type)
+        super(LastValueAggregation,
+              self).__init__(aggregation_type=aggregation_type)
         self.aggregation_data = aggregation_data.LastValueAggregationData(
-                                                                value=value)
+            value=value)
         self._value = value
 
     @property

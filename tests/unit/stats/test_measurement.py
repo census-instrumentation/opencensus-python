@@ -23,7 +23,8 @@ class TestMeasurement(unittest.TestCase):
         measure = "testMeasure"
         value = 0
 
-        measurement = measurement_module.Measurement(measure=measure, value=value)
+        measurement = measurement_module.Measurement(
+            measure=measure, value=value)
 
         self.assertEqual("testMeasure", measurement.measure)
         self.assertEqual(0, measurement.value)
@@ -35,7 +36,8 @@ class TestMeasurementInt(unittest.TestCase):
         measure = "testIntMeasure"
         value = 10
 
-        measurement = measurement_module.MeasurementInt(measure=measure, value=value)
+        measurement = measurement_module.MeasurementInt(
+            measure=measure, value=value)
 
         self.assertEqual("testIntMeasure", measurement.measure)
         self.assertEqual(10, measurement.value)
@@ -47,7 +49,8 @@ class TestMeasurementFloat(unittest.TestCase):
         measure = "testFloatMeasure"
         value = 10.00
 
-        measurement = measurement_module.MeasurementFloat(measure=measure, value=value)
+        measurement = measurement_module.MeasurementFloat(
+            measure=measure, value=value)
 
         self.assertEqual("testFloatMeasure", measurement.measure)
         self.assertEqual(10.00, measurement.value)

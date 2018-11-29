@@ -21,6 +21,7 @@ class StatsRecorder(object):
     """Stats Recorder provides methods to record stats against tags
 
     """
+
     def __init__(self):
         if execution_context.get_measure_to_view_map() == {}:
             execution_context.set_measure_to_view_map(MeasureToViewMap())

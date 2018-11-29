@@ -30,8 +30,7 @@ def main():
     exporter = stackdriver_exporter.StackdriverExporter()
     tracer = Tracer(exporter=exporter)
     tracer_interceptor = client_interceptor.OpenCensusClientInterceptor(
-        tracer,
-        host_port=HOST_PORT)
+        tracer, host_port=HOST_PORT)
     channel = grpc.insecure_channel(HOST_PORT)
     channel = grpc.intercept_channel(channel, tracer_interceptor)
     stub = hello_world_pb2_grpc.GreeterStub(channel)

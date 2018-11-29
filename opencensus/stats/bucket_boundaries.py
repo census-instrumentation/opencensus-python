@@ -20,6 +20,7 @@ class BucketBoundaries(object):
     :param boundaries: boundaries for the buckets in the underlying histogram
 
     """
+
     def __init__(self, boundaries=None):
         self._boundaries = list(boundaries or [])
 

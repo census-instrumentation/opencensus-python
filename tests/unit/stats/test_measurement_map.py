@@ -18,7 +18,6 @@ import unittest
 from opencensus.stats import measurement_map as measurement_map_module
 from opencensus.tags import execution_context
 
-
 logger_patch = mock.patch('opencensus.stats.measurement_map.logger')
 
 
@@ -59,7 +58,9 @@ class TestMeasurementMap(unittest.TestCase):
         test_value = 'testValue'
         measurement_map = measurement_map_module.MeasurementMap(
             measure_to_view_map=measure_to_view_map, attachments={})
-        with self.assertRaisesRegexp(TypeError, 'attachment key should not be empty and should be a string'):
+        with self.assertRaisesRegexp(
+                TypeError,
+                'attachment key should not be empty and should be a string'):
             measurement_map.measure_put_attachment(test_key, test_value)
 
     def test_put_attachment_none_value(self):
@@ -68,7 +69,9 @@ class TestMeasurementMap(unittest.TestCase):
         test_value = None
         measurement_map = measurement_map_module.MeasurementMap(
             measure_to_view_map=measure_to_view_map, attachments={})
-        with self.assertRaisesRegexp(TypeError, 'attachment value should not be empty and should be a string'):
+        with self.assertRaisesRegexp(
+                TypeError,
+                'attachment value should not be empty and should be a string'):
             measurement_map.measure_put_attachment(test_key, test_value)
 
     def test_put_attachment_int_key(self):
@@ -77,7 +80,9 @@ class TestMeasurementMap(unittest.TestCase):
         test_value = 'testValue'
         measurement_map = measurement_map_module.MeasurementMap(
             measure_to_view_map=measure_to_view_map, attachments={})
-        with self.assertRaisesRegexp(TypeError, 'attachment key should not be empty and should be a string'):
+        with self.assertRaisesRegexp(
+                TypeError,
+                'attachment key should not be empty and should be a string'):
             measurement_map.measure_put_attachment(test_key, test_value)
 
     def test_put_attachment_int_value(self):
@@ -86,7 +91,9 @@ class TestMeasurementMap(unittest.TestCase):
         test_value = 42
         measurement_map = measurement_map_module.MeasurementMap(
             measure_to_view_map=measure_to_view_map, attachments={})
-        with self.assertRaisesRegexp(TypeError, 'attachment value should not be empty and should be a string'):
+        with self.assertRaisesRegexp(
+                TypeError,
+                'attachment value should not be empty and should be a string'):
             measurement_map.measure_put_attachment(test_key, test_value)
 
     def test_put_attachment(self):

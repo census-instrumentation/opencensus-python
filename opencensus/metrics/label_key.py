@@ -22,6 +22,7 @@ class LabelKey(object):
     :type description: str
     :param description: description of the label
     """
+
     def __init__(self, key, description):
         self._key = key
         self._description = description

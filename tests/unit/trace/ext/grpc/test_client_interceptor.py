@@ -33,8 +33,9 @@ class TestOpenCensusClientInterceptor(unittest.TestCase):
 
         self.assertIsNone(interceptor._tracer)
         self.assertIsNone(interceptor.host_port)
-        self.assertTrue(isinstance(
-            interceptor._propagator, binary_format.BinaryFormatPropagator))
+        self.assertTrue(
+            isinstance(interceptor._propagator,
+                       binary_format.BinaryFormatPropagator))
 
     def test_constructor_explicit(self):
         from opencensus.trace.propagation import binary_format
@@ -46,8 +47,9 @@ class TestOpenCensusClientInterceptor(unittest.TestCase):
 
         self.assertEqual(interceptor._tracer, tracer)
         self.assertEqual(interceptor.host_port, host_port)
-        self.assertTrue(isinstance(
-            interceptor._propagator, binary_format.BinaryFormatPropagator))
+        self.assertTrue(
+            isinstance(interceptor._propagator,
+                       binary_format.BinaryFormatPropagator))
 
     def test__start_client_span(self):
         tracer = mock.Mock()
@@ -89,9 +91,7 @@ class TestOpenCensusClientInterceptor(unittest.TestCase):
         mock_client_call_details.method = '/hello'
 
         client_call_details, request_iterator, current_span = interceptor._intercept_call(
-            mock_client_call_details,
-            mock.Mock(),
-            'unary_unary')
+            mock_client_call_details, mock.Mock(), 'unary_unary')
 
         expected_metadata = (('grpc-trace-bin', test_header),)
 
@@ -111,9 +111,7 @@ class TestOpenCensusClientInterceptor(unittest.TestCase):
         mock_client_call_details.method = '/hello'
 
         client_call_details, request_iterator, current_span = interceptor._intercept_call(
-            mock_client_call_details,
-            mock.Mock(),
-            'unary_unary')
+            mock_client_call_details, mock.Mock(), 'unary_unary')
 
         expected_metadata = (('grpc-trace-bin', test_header),)
 
@@ -130,16 +128,18 @@ class TestOpenCensusClientInterceptor(unittest.TestCase):
             tracer=tracer, host_port='test')
         interceptor._propagator = mock_propagator
         mock_client_call_details = mock.Mock()
-        mock_client_call_details.metadata = [('test_key', 'test_value'), ]
+        mock_client_call_details.metadata = [
+            ('test_key', 'test_value'),
+        ]
         mock_client_call_details.method = '/hello'
 
         client_call_details, request_iterator, current_span = interceptor._intercept_call(
-            mock_client_call_details,
-            mock.Mock(),
-            'unary_unary')
+            mock_client_call_details, mock.Mock(), 'unary_unary')
 
-        expected_metadata = [('test_key', 'test_value'),
-                             ('grpc-trace-bin', test_header), ]
+        expected_metadata = [
+            ('test_key', 'test_value'),
+            ('grpc-trace-bin', test_header),
+        ]
 
         self.assertEqual(expected_metadata, client_call_details.metadata)
 
@@ -158,12 +158,12 @@ class TestOpenCensusClientInterceptor(unittest.TestCase):
         mock_client_call_details.method = '/hello'
 
         client_call_details, request_iterator, current_span = interceptor._intercept_call(
-            mock_client_call_details,
-            mock.Mock(),
-            'unary_unary')
+            mock_client_call_details, mock.Mock(), 'unary_unary')
 
-        expected_metadata = (('test_key', 'test_value'),
-                             ('grpc-trace-bin', test_header),)
+        expected_metadata = (
+            ('test_key', 'test_value'),
+            ('grpc-trace-bin', test_header),
+        )
 
         self.assertEqual(expected_metadata, client_call_details.metadata)
 
@@ -221,16 +221,14 @@ class TestOpenCensusClientInterceptor(unittest.TestCase):
         interceptor, continuation, mock_response = self._unary_helper()
         client_call_details = mock.Mock()
         client_call_details.method = 'test'
-        interceptor.intercept_unary_unary(
-            continuation, client_call_details, [])
+        interceptor.intercept_unary_unary(continuation, client_call_details, [])
         self.assertTrue(mock_response.add_done_callback.called)
 
     def test_intercept_unary_unary_not_trace(self):
         interceptor, continuation, mock_response = self._unary_helper()
         client_call_details = mock.Mock()
         client_call_details.method = 'google.devtools.cloudtrace'
-        interceptor.intercept_unary_unary(
-            continuation, client_call_details, [])
+        interceptor.intercept_unary_unary(continuation, client_call_details, [])
         # Should skip tracing the cloud trace activities
         self.assertFalse(mock_response.add_done_callback.called)
 
@@ -240,8 +238,7 @@ class TestOpenCensusClientInterceptor(unittest.TestCase):
         client_call_details = mock.Mock()
         client_call_details.method = 'test'
         response_iter = interceptor.intercept_unary_stream(
-            continuation, client_call_details, []
-        )
+            continuation, client_call_details, [])
         for _ in response_iter:
             pass
         self.assertTrue(mock_tracer.end_span.called)
@@ -250,8 +247,8 @@ class TestOpenCensusClientInterceptor(unittest.TestCase):
         interceptor, continuation, mock_tracer = self._stream_helper()
         client_call_details = mock.Mock()
         client_call_details.method = 'google.devtools.cloudtrace'
-        interceptor.intercept_unary_stream(
-            continuation, client_call_details, [])
+        interceptor.intercept_unary_stream(continuation, client_call_details,
+                                           [])
         # Should skip tracing the cloud trace activities
         self.assertFalse(mock_tracer.end_span.called)
 
@@ -259,16 +256,16 @@ class TestOpenCensusClientInterceptor(unittest.TestCase):
         interceptor, continuation, mock_response = self._unary_helper()
         client_call_details = mock.Mock()
         client_call_details.method = 'test'
-        interceptor.intercept_stream_unary(
-            continuation, client_call_details, [])
+        interceptor.intercept_stream_unary(continuation, client_call_details,
+                                           [])
         self.assertTrue(mock_response.add_done_callback.called)
 
     def test_intercept_stream_unary_not_trace(self):
         interceptor, continuation, mock_tracer = self._stream_helper()
         client_call_details = mock.Mock()
         client_call_details.method = 'google.devtools.cloudtrace'
-        interceptor.intercept_stream_unary(
-            continuation, client_call_details, [])
+        interceptor.intercept_stream_unary(continuation, client_call_details,
+                                           [])
         # Should skip tracing the cloud trace activities
         self.assertFalse(mock_tracer.end_span.called)
 
@@ -278,8 +275,7 @@ class TestOpenCensusClientInterceptor(unittest.TestCase):
         client_call_details = mock.Mock()
         client_call_details.method = 'test'
         response_iter = interceptor.intercept_stream_stream(
-            continuation, client_call_details, []
-        )
+            continuation, client_call_details, [])
         for _ in response_iter:
             pass
 
@@ -289,13 +285,14 @@ class TestOpenCensusClientInterceptor(unittest.TestCase):
         interceptor, continuation, mock_tracer = self._stream_helper()
         client_call_details = mock.Mock()
         client_call_details.method = 'google.devtools.cloudtrace'
-        interceptor.intercept_stream_stream(
-            continuation, client_call_details, [])
+        interceptor.intercept_stream_stream(continuation, client_call_details,
+                                            [])
         # Should skip tracing the cloud trace activities
         self.assertFalse(mock_tracer.end_span.called)
 
 
 class MockTracer(object):
+
     def __init__(self, current_span):
         self.current_span = current_span
 

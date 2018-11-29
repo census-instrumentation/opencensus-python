@@ -20,9 +20,7 @@ from opencensus.trace.samplers import probability
 
 from app import main
 
-
 INTEGRATIONS = ['requests']
-
 
 config_integration.trace_integrations(INTEGRATIONS)
 

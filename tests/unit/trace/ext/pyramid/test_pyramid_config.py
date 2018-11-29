@@ -19,6 +19,7 @@ from opencensus.trace.ext.pyramid import config
 
 
 class TestPyramidTraceSettings(unittest.TestCase):
+
     def test_trace_settings_default(self):
         registry = mock.Mock()
         registry.settings = {}
@@ -30,7 +31,8 @@ class TestPyramidTraceSettings(unittest.TestCase):
         assert trace_settings.PROPAGATOR == default_config['PROPAGATOR']
 
         default_params = config.DEFAULT_PYRAMID_TRACER_PARAMS
-        assert trace_settings.params['BLACKLIST_PATHS'] == default_params['BLACKLIST_PATHS']
+        assert trace_settings.params['BLACKLIST_PATHS'] == default_params[
+            'BLACKLIST_PATHS']
 
     def test_trace_settings_override(self):
         mock_sampler = mock.Mock()

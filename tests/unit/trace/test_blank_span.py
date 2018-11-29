@@ -75,7 +75,8 @@ class TestBlankSpan(unittest.TestCase):
             'endTime': None,
             'displayName': {
                 'truncated_byte_count': 0,
-                'value': 'test_span_name'},
+                'value': 'test_span_name'
+            },
             'childSpanCount': 0,
         }
         span_json = format_span_json(span)
@@ -157,9 +158,11 @@ class TestBlankSpan(unittest.TestCase):
         span = self._make_one('span1')
         self.assertFalse(self.on_create_called)
         try:
+
             @BlankSpan.on_create
             def callback(span):
                 self.on_create_called = True
+
             span = self._make_one('span2')
         finally:
             BlankSpan._on_create_callbacks = []

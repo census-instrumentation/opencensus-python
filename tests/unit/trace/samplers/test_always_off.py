@@ -14,6 +14,7 @@
 
 import unittest
 
+
 class TestAlwaysOffSampler(unittest.TestCase):
 
     def test_should_sample(self):

@@ -101,7 +101,7 @@ class TestGoogleCloudFormatPropagator(unittest.TestCase):
         # Trace option is enabled.
         headers = {
             'X-Cloud-Trace-Context':
-                '6e0c63257de34c92bf9efcd03927272e/00f067aa0ba902b7;o=1',
+            '6e0c63257de34c92bf9efcd03927272e/00f067aa0ba902b7;o=1',
         }
         expected_trace_id = '6e0c63257de34c92bf9efcd03927272e'
         expected_span_id = '00f067aa0ba902b7'
@@ -127,8 +127,7 @@ class TestGoogleCloudFormatPropagator(unittest.TestCase):
         propagator = google_cloud_format.GoogleCloudFormatPropagator()
 
         header = propagator.to_header(span_context)
-        expected_header = '{}/{};o={}'.format(
-            trace_id, span_id, 1)
+        expected_header = '{}/{};o={}'.format(trace_id, span_id, 1)
 
         self.assertEqual(header, expected_header)
 

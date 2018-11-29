@@ -32,7 +32,8 @@ class TestBaseMeasure(unittest.TestCase):
         description = "testMeasure"
         unit = "testUnit"
 
-        measure = measure_module.BaseMeasure(name=name, description=description, unit=unit)
+        measure = measure_module.BaseMeasure(
+            name=name, description=description, unit=unit)
 
         self.assertEqual("testName", measure.name)
         self.assertEqual("testMeasure", measure.description)
@@ -54,7 +55,8 @@ class TestMeasureInt(unittest.TestCase):
         description = "testMeasure"
         unit = "testUnit"
 
-        measure = measure_module.MeasureInt(name=name, description=description, unit=unit)
+        measure = measure_module.MeasureInt(
+            name=name, description=description, unit=unit)
 
         self.assertEqual("testName", measure.name)
         self.assertEqual("testMeasure", measure.description)
@@ -67,7 +69,8 @@ class TestMeasureFloat(unittest.TestCase):
         name = "testName"
         description = "testMeasure"
 
-        measure = measure_module.MeasureFloat(name=name, description=description)
+        measure = measure_module.MeasureFloat(
+            name=name, description=description)
 
         self.assertEqual(None, measure.unit)
 
@@ -76,7 +79,8 @@ class TestMeasureFloat(unittest.TestCase):
         description = "testMeasure"
         unit = "testUnit"
 
-        measure = measure_module.MeasureFloat(name=name, description=description, unit=unit)
+        measure = measure_module.MeasureFloat(
+            name=name, description=description, unit=unit)
 
         self.assertEqual("testName", measure.name)
         self.assertEqual("testMeasure", measure.description)

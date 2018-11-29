@@ -28,6 +28,7 @@ class TextFormatPropagator(object):
     information from a carrier which is a dict to form a SpanContext. And
     generating a dict using the provided SpanContext.
     """
+
     def from_carrier(self, carrier):
         """Generate a SpanContext object using the information in the carrier.
 

@@ -23,14 +23,12 @@ from opencensus.trace import utils
 
 
 class TestUtils(unittest.TestCase):
+
     def test__get_truncatable_str(self):
         str_to_convert = 'test string'
         truncatable_str = utils._get_truncatable_str(str_to_convert)
 
-        expected_str = {
-            'value': str_to_convert,
-            'truncated_byte_count': 0
-        }
+        expected_str = {'value': str_to_convert, 'truncated_byte_count': 0}
 
         self.assertEqual(expected_str, truncatable_str)
 
@@ -42,10 +40,7 @@ class TestUtils(unittest.TestCase):
         with patch:
             truncatable_str = utils._get_truncatable_str(str_to_convert)
 
-        expected_str = {
-            'value': 'lengt',
-            'truncated_byte_count': 10
-        }
+        expected_str = {'value': 'lengt', 'truncated_byte_count': 10}
 
         self.assertEqual(expected_str, truncatable_str)
 

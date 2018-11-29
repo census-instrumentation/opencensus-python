@@ -35,6 +35,7 @@ class TestBaseSpan(unittest.TestCase):
         span = BaseSpan()
 
         with self.assertRaises(NotImplementedError):
+
             @BaseSpan.on_create
             def callback(span):
                 pass
@@ -97,5 +98,3 @@ class TestBaseSpan(unittest.TestCase):
 
         with self.assertRaises(NotImplementedError):
             span.__exit__(None, None, None)
-
-

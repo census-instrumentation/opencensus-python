@@ -26,8 +26,10 @@ class TestTagMap(unittest.TestCase):
         self.assertEqual(tag_map.map, {})
 
     def test_constructor_explicit(self):
-        tags_list = [Tag(TagKey('key1'), TagValue('value1')),
-                     Tag(TagKey('key2'), TagValue('value2'))]
+        tags_list = [
+            Tag(TagKey('key1'), TagValue('value1')),
+            Tag(TagKey('key2'), TagValue('value2'))
+        ]
         tag_map = TagMap(tags=tags_list)
         self.assertEqual(tag_map.map, dict(tags_list))
 
@@ -42,7 +44,8 @@ class TestTagMap(unittest.TestCase):
         tag_map.insert(key=test_key, value=test_value)
         self.assertEqual({test_key: test_value}, tag_map.map)
 
-        self.assertRaises(ValueError, tag_map.insert, key='Æ!01kr', value=test_value)
+        self.assertRaises(
+            ValueError, tag_map.insert, key='Æ!01kr', value=test_value)
 
     def test_delete(self):
         key = TagKey('key1')

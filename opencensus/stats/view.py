@@ -33,6 +33,7 @@ class View(object):
     :param aggregation: the aggregation the view will support
 
     """
+
     def __init__(self, name, description, columns, measure, aggregation):
         self._name = name
         self._description = description

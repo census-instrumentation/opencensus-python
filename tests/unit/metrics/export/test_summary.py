@@ -19,6 +19,7 @@ from opencensus.metrics.export import summary as summary_module
 
 
 class TestSummary(unittest.TestCase):
+
     def setUp(self):
         value_at_percentile = [summary_module.ValueAtPercentile(99.5, 10.2)]
         self.snapshot = summary_module.Snapshot(10, 87.07, value_at_percentile)
@@ -52,14 +53,14 @@ class TestSummary(unittest.TestCase):
 
 
 class TestSnapshot(unittest.TestCase):
+
     def setUp(self):
         self.value_at_percentile = [
             summary_module.ValueAtPercentile(99.5, 10.2)
         ]
 
         # Invalid value_at_percentile
-        self.value_at_percentile1 = summary_module.ValueAtPercentile(
-            99.5, 10.2)
+        self.value_at_percentile1 = summary_module.ValueAtPercentile(99.5, 10.2)
 
     def test_constructor(self):
         snapshot = summary_module.Snapshot(10, 87.07, self.value_at_percentile)
@@ -101,8 +102,7 @@ class TestSnapshot(unittest.TestCase):
         summary_module.Snapshot(0, 0, self.value_at_percentile)
 
     def test_constructor_with_none_count_sum(self):
-        snapshot = summary_module.Snapshot(None, None,
-                                           self.value_at_percentile)
+        snapshot = summary_module.Snapshot(None, None, self.value_at_percentile)
 
         self.assertIsNotNone(snapshot)
         self.assertIsNone(snapshot.count)
@@ -112,6 +112,7 @@ class TestSnapshot(unittest.TestCase):
 
 
 class TestValueAtPercentile(unittest.TestCase):
+
     def test_constructor(self):
         value_at_percentile = summary_module.ValueAtPercentile(99.5, 10.2)
 
