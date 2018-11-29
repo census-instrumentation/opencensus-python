@@ -32,17 +32,9 @@ def unit(session, py):
     session.install('-e', '.')
 
     # Run py.test against the unit tests.
-    session.run(
-        'py.test',
-        '--quiet',
-        '--cov=opencensus',
-        '--cov-append',
-        '--cov-config=.coveragerc',
-        '--cov-report=',
-        '--cov-fail-under=97',
-        'tests/unit/',
-        *session.posargs
-    )
+    session.run('py.test', '--quiet', '--cov=opencensus', '--cov-append',
+                '--cov-config=.coveragerc', '--cov-report=',
+                '--cov-fail-under=97', 'tests/unit/', *session.posargs)
 
 
 @nox.session
@@ -66,12 +58,7 @@ def system(session, py):
     session.install('.')
 
     # Run py.test against the system tests.
-    session.run(
-        'py.test',
-        '-s',
-        'tests/system/',
-        *session.posargs
-    )
+    session.run('py.test', '-s', 'tests/system/', *session.posargs)
 
 
 @nox.session
@@ -83,10 +70,8 @@ def lint(session):
     session.interpreter = 'python3.6'
     session.install('flake8')
     session.install('.')
-    session.run(
-        'flake8',
-        '--exclude=opencensus/trace/exporters/gen/opencensus/',
-        'opencensus/')
+    session.run('flake8', '--exclude=opencensus/trace/exporters/gen/',
+                'opencensus/')
 
 
 @nox.session
@@ -94,8 +79,16 @@ def lint_setup_py(session):
     """Verify that setup.py is valid (including RST check)."""
     session.interpreter = 'python3.6'
     session.install('docutils', 'pygments')
-    session.run(
-        'python', 'setup.py', 'check', '--restructuredtext', '--strict')
+    session.run('python', 'setup.py', 'check', '--restructuredtext', '--strict')
+
+
+@nox.session
+def yapf(session):
+    """Returns a failure if yapf finds formatting errors."""
+    session.interpreter = 'python3.6'
+    session.install('yapf')
+    session.run('yapf', '--recursive', '--diff', '--style=google',
+                '--exclude=opencensus/trace/exporters/gen/', '.')
 
 
 @nox.session
@@ -125,5 +118,4 @@ def docs(session):
     session.install('-r', os.path.join('docs', 'requirements.txt'))
 
     # Build the docs!
-    session.run(
-        'bash', os.path.join('.', 'scripts', 'update_docs.sh'))
+    session.run('bash', os.path.join('.', 'scripts', 'update_docs.sh'))
