@@ -6,6 +6,9 @@ version: 2
 
 jobs:
   build:
+    branches:
+      ignore:
+        - gh-pages
     docker:
       - image: googleapis/nox:0.17.0
       - image: mysql:5.7
@@ -44,6 +47,7 @@ jobs:
 
 deployment:
   tag_build_for_cci2:
-    tag: /(([a-z]+)-)*([0-9]+)\.([0-9]+)\.([0-9]+)/
+    branch: /v([0-9]+)\.([0-9]+)\.([0-9]+)/
+    tag: /v([0-9]+)\.([0-9]+)\.([0-9]+)/
     commands:
       - true
