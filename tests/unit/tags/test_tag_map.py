@@ -16,65 +16,67 @@
 
 import unittest
 
-from opencensus.tags import *
+from opencensus import tags
 
 
 class TestTagMap(unittest.TestCase):
-
     def test_constructor_defaults(self):
-        tag_map = TagMap()
+        tag_map = tags.TagMap()
         self.assertEqual(tag_map.map, {})
 
     def test_constructor_explicit(self):
-        tags_list = [Tag(TagKey('key1'), TagValue('value1')),
-                     Tag(TagKey('key2'), TagValue('value2'))]
-        tag_map = TagMap(tags=tags_list)
+        tags_list = [
+            tags.Tag(tags.TagKey('key1'), tags.TagValue('value1')),
+            tags.Tag(tags.TagKey('key2'), tags.TagValue('value2'))
+        ]
+        tag_map = tags.TagMap(tags=tags_list)
         self.assertEqual(tag_map.map, dict(tags_list))
 
     def test_insert(self):
-        test_key = TagKey('key1')
-        test_value = TagValue('value1')
+        test_key = tags.TagKey('key1')
+        test_value = tags.TagValue('value1')
 
-        tag_map = TagMap()
+        tag_map = tags.TagMap()
         tag_map.insert(key=test_key, value=test_value)
         self.assertEqual({test_key: test_value}, tag_map.map)
 
         tag_map.insert(key=test_key, value=test_value)
         self.assertEqual({test_key: test_value}, tag_map.map)
 
-        self.assertRaises(ValueError, tag_map.insert, key='Æ!01kr', value=test_value)
+        self.assertRaises(
+            ValueError, tag_map.insert, key='Æ!01kr', value=test_value)
 
     def test_delete(self):
-        key = TagKey('key1')
-        tag1 = Tag(TagKey('key1'), TagValue('value1'))
-        tag2 = Tag(TagKey('key2'), TagValue('value2'))
-        tags = [tag1, tag2]
+        key = tags.TagKey('key1')
+        tag1 = tags.Tag(tags.TagKey('key1'), tags.TagValue('value1'))
+        tag2 = tags.Tag(tags.TagKey('key2'), tags.TagValue('value2'))
+        tt = [tag1, tag2]
 
-        tag_map = TagMap(tags=tags)
+        tag_map = tags.TagMap(tags=tt)
         tag_map.delete(key=key)
         self.assertEqual(tag_map.map, {tag2.key: tag2.value})
 
     def test_update(self):
-        key_1 = TagKey('key1')
-        val1 = TagValue('value1')
-        tag = Tag(key_1, val1)
-        tag_map = TagMap([tag])
+        key_1 = tags.TagKey('key1')
+        val1 = tags.TagValue('value1')
+        tag = tags.Tag(key_1, val1)
+        tag_map = tags.TagMap([tag])
 
         tag_map.update(key=key_1, value=val1)
         self.assertEqual({'key1': 'value1'}, tag_map.map)
 
-        key_2 = TagKey('key2')
+        key_2 = tags.TagKey('key2')
         tag_map.update(key=key_2, value=val1)
         self.assertEqual({'key1': 'value1'}, tag_map.map)
 
-        val_2 = TagValue('value2')
+        val_2 = tags.TagValue('value2')
         tag_map.update(key=key_1, value=val_2)
         self.assertEqual({'key1': 'value2'}, tag_map.map)
 
     def test_tag_key_exists(self):
-        key = TagKey('key1')
-        value = TagValue('val1')
-        tag_map = TagMap(tags=[Tag(key, value)])
+        key = tags.TagKey('key1')
+        value = tags.TagValue('val1')
+        tag_map = tags.TagMap(tags=[tags.Tag(key, value)])
 
         self.assertTrue(tag_map.tag_key_exists(key))
         self.assertFalse(tag_map.tag_key_exists('nokey'))
@@ -82,7 +84,7 @@ class TestTagMap(unittest.TestCase):
     def test_value(self):
         key = 'key1'
         value = 'value1'
-        tag_map = TagMap(tags=[Tag(key, value)])
+        tag_map = tags.TagMap(tags=[tags.Tag(key, value)])
         test_val = tag_map.get_value(key)
         self.assertEqual(test_val, value)
 

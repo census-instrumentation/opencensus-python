@@ -14,9 +14,7 @@
 
 import flask
 
-from opencensus.trace.exporters import stackdriver_exporter
 from opencensus.trace.ext.flask.flask_middleware import FlaskMiddleware
-
 
 app = flask.Flask(__name__)
 

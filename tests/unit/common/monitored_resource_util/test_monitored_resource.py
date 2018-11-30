@@ -12,16 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import unittest
 import mock
-from opencensus.common.monitored_resource_util.monitored_resource import GcpGkeMonitoredResource
-from opencensus.common.monitored_resource_util.monitored_resource import GcpGceMonitoredResource
-from opencensus.common.monitored_resource_util.monitored_resource import AwsMonitoredResource
+import unittest
+
+from opencensus.common.monitored_resource_util import monitored_resource
 
 
 class TestMonitoredResource(unittest.TestCase):
-
-    @mock.patch('opencensus.common.monitored_resource_util.monitored_resource.GcpMetadataConfig')
+    @mock.patch('opencensus.common.monitored_resource_util.monitored_resource'
+                '.GcpMetadataConfig')
     def test_GcpGceMonitoredResource(self, gcp_metadata_mock):
         mocked_labels = {
             'instance_id': 'my-instance',
@@ -30,12 +29,14 @@ class TestMonitoredResource(unittest.TestCase):
         }
 
         gcp_metadata_mock.return_value = mock.Mock()
-        gcp_metadata_mock.return_value.get_gce_metadata.return_value = mocked_labels
-        resource = GcpGceMonitoredResource()
+        gcp_metadata_mock.return_value.get_gce_metadata.return_value =\
+            mocked_labels
+        resource = monitored_resource.GcpGceMonitoredResource()
         self.assertEquals(resource.resource_type, 'gce_instance')
         self.assertEquals(resource.get_resource_labels(), mocked_labels)
 
-    @mock.patch('opencensus.common.monitored_resource_util.monitored_resource.GcpMetadataConfig')
+    @mock.patch('opencensus.common.monitored_resource_util.monitored_resource'
+                '.GcpMetadataConfig')
     def test_GcpGkeMonitoredResource(self, gcp_metadata_mock):
 
         mocked_labels = {
@@ -49,12 +50,14 @@ class TestMonitoredResource(unittest.TestCase):
         }
 
         gcp_metadata_mock.return_value = mock.Mock()
-        gcp_metadata_mock.return_value.get_gke_metadata.return_value = mocked_labels
-        resource = GcpGkeMonitoredResource()
+        gcp_metadata_mock.return_value.get_gke_metadata.return_value =\
+            mocked_labels
+        resource = monitored_resource.GcpGkeMonitoredResource()
         self.assertEquals(resource.resource_type, 'gke_container')
         self.assertEquals(resource.get_resource_labels(), mocked_labels)
 
-    @mock.patch('opencensus.common.monitored_resource_util.monitored_resource.AwsIdentityDocumentUtils')
+    @mock.patch('opencensus.common.monitored_resource_util.monitored_resource'
+                '.AwsIdentityDocumentUtils')
     def test_AwsMonitoredResource(self, aws_metadata_mock):
 
         mocked_labels = {
@@ -64,8 +67,9 @@ class TestMonitoredResource(unittest.TestCase):
         }
 
         aws_metadata_mock.return_value = mock.Mock()
-        aws_metadata_mock.return_value.get_aws_metadata.return_value = mocked_labels
+        aws_metadata_mock.return_value.get_aws_metadata.return_value =\
+            mocked_labels
 
-        resource = AwsMonitoredResource()
+        resource = monitored_resource.AwsMonitoredResource()
         self.assertEquals(resource.resource_type, 'aws_ec2_instance')
         self.assertEquals(resource.get_resource_labels(), mocked_labels)

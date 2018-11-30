@@ -41,8 +41,7 @@ class TestSpan(unittest.TestCase):
         span_name = 'test_span_name'
 
         patch = mock.patch(
-            'opencensus.trace.span.generate_span_id',
-            return_value=span_id)
+            'opencensus.trace.span.generate_span_id', return_value=span_id)
 
         with patch:
             span = self._make_one(span_name)
@@ -108,8 +107,7 @@ class TestSpan(unittest.TestCase):
         root_span._child_spans = []
 
         patch = mock.patch(
-            'opencensus.trace.span.generate_span_id',
-            return_value=span_id)
+            'opencensus.trace.span.generate_span_id', return_value=span_id)
 
         with patch:
             with root_span:
@@ -216,13 +214,15 @@ class TestSpan(unittest.TestCase):
     def test_on_create(self):
         from opencensus.trace.span import Span
         self.on_create_called = False
-        span = self._make_one('span1')
+        self._make_one('span1')
         self.assertFalse(self.on_create_called)
         try:
+
             @Span.on_create
             def callback(span):
                 self.on_create_called = True
-            span = self._make_one('span2')
+
+            self._make_one('span2')
         finally:
             Span._on_create_callbacks = []
         self.assertTrue(self.on_create_called)
@@ -264,16 +264,12 @@ class TestSpan(unittest.TestCase):
 
         stack_frame = stack_trace.stack_frames[0]
         self.assertEqual(stack_frame['file_name']['value'], __file__)
-        self.assertEqual(
-            stack_frame['function_name']['value'], 'test_exception_in_span'
-        )
-        self.assertEqual(
-            stack_frame['load_module']['module']['value'], __file__
-        )
-        self.assertEqual(
-            stack_frame['original_function_name']['value'],
-            'test_exception_in_span'
-        )
+        self.assertEqual(stack_frame['function_name']['value'],
+                         'test_exception_in_span')
+        self.assertEqual(stack_frame['load_module']['module']['value'],
+                         __file__)
+        self.assertEqual(stack_frame['original_function_name']['value'],
+                         'test_exception_in_span')
         self.assertIsNotNone(stack_frame['source_version']['value'])
         self.assertIsNotNone(stack_frame['load_module']['build_id']['value'])
 
@@ -283,7 +279,6 @@ class TestSpan(unittest.TestCase):
 
 
 class Test_format_span_json(unittest.TestCase):
-
     def test_format_span_json_no_parent_span(self):
         from opencensus.trace.span import format_span_json
 
@@ -312,7 +307,8 @@ class Test_format_span_json(unittest.TestCase):
             'endTime': end_time,
             'displayName': {
                 'truncated_byte_count': 0,
-                'value': 'test span'},
+                'value': 'test span'
+            },
             'childSpanCount': 0,
         }
 
@@ -322,8 +318,8 @@ class Test_format_span_json(unittest.TestCase):
     @mock.patch.object(StackTrace, 'format_stack_trace_json')
     @mock.patch.object(Status, 'format_status_json')
     @mock.patch.object(TimeEvent, 'format_time_event_json')
-    def test_format_span_json_with_parent_span(
-            self, time_event_mock, status_mock, stack_trace_mock):
+    def test_format_span_json_with_parent_span(self, time_event_mock,
+                                               status_mock, stack_trace_mock):
         import datetime
 
         from opencensus.trace.link import Link
@@ -401,12 +397,12 @@ class Test_format_span_json(unittest.TestCase):
             'stackTrace': mock_stack_trace,
             'status': mock_status,
             'timeEvents': {
-                'timeEvent':
-                    [mock_time_event]
+                'timeEvent': [mock_time_event]
             },
             'displayName': {
                 'truncated_byte_count': 0,
-                'value': 'test span'},
+                'value': 'test span'
+            },
             'childSpanCount': 0,
             'sameProcessAsParentSpan': True
         }

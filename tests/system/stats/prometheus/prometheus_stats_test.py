@@ -12,24 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import random
+import sys
+import time
 import unittest
+
+from opencensus.stats import aggregation as aggregation_module
+from opencensus.stats import measure as measure_module
+from opencensus.stats import stats as stats_module
+from opencensus.stats import view as view_module
+from opencensus.stats.exporters import prometheus_exporter as prometheus
+from opencensus.tags import tag_key as tag_key_module
+from opencensus.tags import tag_map as tag_map_module
+from opencensus.tags import tag_value as tag_value_module
 
 
 class TestPrometheusStats(unittest.TestCase):
-
     def test_prometheus_stats(self):
-        import random
-        import time
-        import sys
-
-        from opencensus.stats import aggregation as aggregation_module
-        from opencensus.stats.exporters import prometheus_exporter as prometheus
-        from opencensus.stats import measure as measure_module
-        from opencensus.stats import stats as stats_module
-        from opencensus.stats import view as view_module
-        from opencensus.tags import tag_key as tag_key_module
-        from opencensus.tags import tag_map as tag_map_module
-        from opencensus.tags import tag_value as tag_value_module
 
         MiB = 1 << 20
         FRONTEND_KEY = tag_key_module.TagKey("my.org/keys/frontend")
@@ -38,16 +37,15 @@ class TestPrometheusStats(unittest.TestCase):
         VIDEO_SIZE_VIEW_NAME = "my.org/views/video_size"
         VIDEO_SIZE_DISTRIBUTION = aggregation_module.CountAggregation(
             256.0 * MiB)
-        VIDEO_SIZE_VIEW = view_module.View(VIDEO_SIZE_VIEW_NAME,
-                                           "processed video size over time",
-                                           [FRONTEND_KEY],
-                                           VIDEO_SIZE_MEASURE,
-                                           VIDEO_SIZE_DISTRIBUTION)
+        VIDEO_SIZE_VIEW = view_module.View(
+            VIDEO_SIZE_VIEW_NAME, "processed video size over time",
+            [FRONTEND_KEY], VIDEO_SIZE_MEASURE, VIDEO_SIZE_DISTRIBUTION)
         stats = stats_module.Stats()
         view_manager = stats.view_manager
         stats_recorder = stats.stats_recorder
 
-        exporter = prometheus.new_stats_exporter(prometheus.Options(namespace="opencensus", port=9303))
+        exporter = prometheus.new_stats_exporter(
+            prometheus.Options(namespace="opencensus", port=9303))
         view_manager.register_exporter(exporter)
 
         view_manager.register_view(VIDEO_SIZE_VIEW)
@@ -63,10 +61,13 @@ class TestPrometheusStats(unittest.TestCase):
 
         if sys.version_info > (3, 0):
             import urllib.request
-            contents = urllib.request.urlopen("http://localhost:9303/metrics").read()
+            contents = urllib.request.urlopen(
+                "http://localhost:9303/metrics").read()
         else:
             import urllib2
             contents = urllib2.urlopen("http://localhost:9303/metrics").read()
 
-        self.assertIn(b'# TYPE opencensus_my.org/views/video_size counter', contents)
-        self.assertIn(b'opencensus_my.org/views/video_size 268435456.0', contents)
+        self.assertIn(b'# TYPE opencensus_my.org/views/video_size counter',
+                      contents)
+        self.assertIn(b'opencensus_my.org/views/video_size 268435456.0',
+                      contents)

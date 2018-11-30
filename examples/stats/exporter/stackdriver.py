@@ -29,20 +29,17 @@ VIDEO_SIZE_MEASURE = measure_module.MeasureInt(
     "my.org/measure/video_size_test2", "size of processed videos", "By")
 VIDEO_SIZE_VIEW_NAME = "my.org/views/video_size_test2"
 VIDEO_SIZE_DISTRIBUTION = aggregation_module.DistributionAggregation(
-                            [0.0, 16.0 * MiB, 256.0 * MiB])
-VIDEO_SIZE_VIEW = view_module.View(VIDEO_SIZE_VIEW_NAME,
-                                "processed video size over time",
-                                [FRONTEND_KEY],
-                                VIDEO_SIZE_MEASURE,
-                                VIDEO_SIZE_DISTRIBUTION)
-
-
+    [0.0, 16.0 * MiB, 256.0 * MiB])
+VIDEO_SIZE_VIEW = view_module.View(
+    VIDEO_SIZE_VIEW_NAME, "processed video size over time", [FRONTEND_KEY],
+    VIDEO_SIZE_MEASURE, VIDEO_SIZE_DISTRIBUTION)
 
 stats = stats_module.Stats()
 view_manager = stats.view_manager
 stats_recorder = stats.stats_recorder
 
-exporter = stackdriver.new_stats_exporter(stackdriver.Options(project_id="opencenus-node"))
+exporter = stackdriver.new_stats_exporter(
+    stackdriver.Options(project_id="opencenus-node"))
 view_manager.register_exporter(exporter)
 
 # Register view.

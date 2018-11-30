@@ -14,8 +14,8 @@
 
 import unittest
 
-class TestAlwaysOffSampler(unittest.TestCase):
 
+class TestAlwaysOffSampler(unittest.TestCase):
     def test_should_sample(self):
         from opencensus.trace.samplers import always_off
 
