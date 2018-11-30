@@ -31,14 +31,14 @@ class ContextTracer(base.Tracer):
                          the request's trace.
     """
 
-    def __init__(self, exporter=None, span_context=None):
-        if exporter is None:
-            exporter = print_exporter.PrintExporter()
+    def __init__(self, exporters=None, span_context=None):
+        if exporters is None:
+            exporters = [print_exporter.PrintExporter()]
 
         if span_context is None:
             span_context = SpanContext()
 
-        self.exporter = exporter
+        self.exporters = exporters
         self.span_context = span_context
         self.trace_id = span_context.trace_id
         self.root_span_id = span_context.span_id
@@ -120,7 +120,8 @@ class ContextTracer(base.Tracer):
         with self._spans_list_condition:
             if cur_span in self._spans_list:
                 span_datas = self.get_span_datas(cur_span)
-                self.exporter.export(span_datas)
+                for exporter in self.exporters:
+                    exporter.export(span_datas)
                 self._spans_list.remove(cur_span)
 
         return cur_span

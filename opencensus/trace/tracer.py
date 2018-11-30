@@ -33,34 +33,48 @@ class Tracer(object):
                     :class:`.AlwaysOnSampler`. The rest options are
                     :class:`.AlwaysOffSampler`, :class:`.FixedRateSampler`.
 
-    :type exporter: :class:`~opencensus.trace.exporters.base.exporter`
-    :param exporter: Instances of exporter objects. Default to
-                     :class:`.Printexporter`. The rest options are
-                     :class:`.Fileexporter`, :class:`.Printexporter`,
-                     :class:`.Loggingexporter`, :class:`.Zipkinexporter`,
-                     :class:`.GoogleCloudexporter`
-    """
+    :type exporters: class:`~opencensus.trace.exporters.base.exporter`
+    :param exporters: Provided for backwards compatibility, new callers should
+                      use the `exporters` arg instead.
+
+    :type propagator: :class:`object`
+    :param propagator: An optional propagator, defaults to a
+                       :class:`.GoogleCloudFormatPropagator.
+
+    :type exporters: list(:class:`~opencensus.trace.exporters.base.exporter`)
+    :param exporters: A list of instances of exporter objects. Default to
+                      :class:`.Printexporter`. The rest options are
+                      :class:`.Fileexporter`, :class:`.Printexporter`,
+                      :class:`.Loggingexporter`, :class:`.Zipkinexporter`,
+                      :class:`.GoogleCloudexporter`
+    """  # noqa
     def __init__(
             self,
             span_context=None,
             sampler=None,
             exporter=None,
-            propagator=None):
+            propagator=None,
+            exporters=None):
         if span_context is None:
             span_context = SpanContext()
 
         if sampler is None:
             sampler = always_on.AlwaysOnSampler()
 
-        if exporter is None:
-            exporter = print_exporter.PrintExporter()
+        if exporters is None:
+            if exporter is None:
+                exporters = [print_exporter.PrintExporter()]
+            else:
+                exporters = [exporter]
+        elif exporter is not None:
+            raise ValueError("One of 'exporter' or 'exporters' must be null")
 
         if propagator is None:
             propagator = google_cloud_format.GoogleCloudFormatPropagator()
 
         self.span_context = span_context
         self.sampler = sampler
-        self.exporter = exporter
+        self.exporters = exporters
         self.propagator = propagator
         self.tracer = self.get_tracer()
         self.store_tracer()
@@ -83,7 +97,7 @@ class Tracer(object):
         if sampled:
             self.span_context.trace_options.set_enabled(True)
             return context_tracer.ContextTracer(
-                exporter=self.exporter,
+                exporters=self.exporters,
                 span_context=self.span_context)
         else:
             return noop_tracer.NoopTracer()
@@ -112,7 +126,8 @@ class Tracer(object):
 
     def end_span(self):
         """End a span. Update the span_id in SpanContext to the current span's
-        parent span id; Update the current span; Send the span to exporter.
+        parent span id; Update the current span; Send the span to each
+        exporter.
         """
         self.tracer.end_span()
 

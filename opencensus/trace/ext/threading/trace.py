@@ -100,7 +100,7 @@ def wrap_apply_async(apply_async_func):
         )
         wrapped_kwargs["kwds"] = kwds
         wrapped_kwargs["sampler"] = _tracer.sampler
-        wrapped_kwargs["exporter"] = _tracer.exporter
+        wrapped_kwargs["exporters"] = _tracer.exporters
         wrapped_kwargs["propagator"] = _tracer.propagator
 
         return apply_async_func(
@@ -125,7 +125,7 @@ def wrap_submit(submit_func):
         )
         wrapped_kwargs["kwds"] = kwargs
         wrapped_kwargs["sampler"] = _tracer.sampler
-        wrapped_kwargs["exporter"] = _tracer.exporter
+        wrapped_kwargs["exporters"] = _tracer.exporters
         wrapped_kwargs["propagator"] = _tracer.propagator
 
         return submit_func(self, wrapped_func, *args, **wrapped_kwargs)
