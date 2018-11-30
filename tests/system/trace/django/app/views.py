@@ -23,7 +23,6 @@ import mysql.connector
 import psycopg2
 import sqlalchemy
 
-import time
 import os
 
 DB_HOST = 'localhost'
@@ -50,8 +49,7 @@ def greetings(request):
         if form.is_valid():
             first_name = form.cleaned_data['fname']
             last_name = form.cleaned_data['lname']
-            return HttpResponse(
-                "Hello, {} {}".format(first_name, last_name))
+            return HttpResponse("Hello, {} {}".format(first_name, last_name))
         else:
             return render(request, 'home.html')
 
@@ -61,9 +59,7 @@ def greetings(request):
 def mysql_trace(request):
     try:
         conn = mysql.connector.connect(
-            host=DB_HOST,
-            user='root',
-            password=MYSQL_PASSWORD)
+            host=DB_HOST, user='root', password=MYSQL_PASSWORD)
         cursor = conn.cursor()
 
         query = 'SELECT 2*3'
@@ -108,8 +104,8 @@ def postgresql_trace(request):
 def sqlalchemy_mysql_trace(request):
     try:
         engine = sqlalchemy.create_engine(
-            'mysql+mysqlconnector://{}:{}@{}'.format(
-                'root', MYSQL_PASSWORD, DB_HOST))
+            'mysql+mysqlconnector://{}:{}@{}'.format('root', MYSQL_PASSWORD,
+                                                     DB_HOST))
         conn = engine.connect()
 
         query = 'SELECT 2*3'
@@ -130,10 +126,8 @@ def sqlalchemy_mysql_trace(request):
 
 def sqlalchemy_postgresql_trace(request):
     try:
-        engine = sqlalchemy.create_engine(
-            'postgresql://{}:{}@{}/{}'.format(
-                'postgres', POSTGRES_PASSWORD,
-                DB_HOST, 'postgres'))
+        engine = sqlalchemy.create_engine('postgresql://{}:{}@{}/{}'.format(
+            'postgres', POSTGRES_PASSWORD, DB_HOST, 'postgres'))
         conn = engine.connect()
 
         query = 'SELECT 2*3'

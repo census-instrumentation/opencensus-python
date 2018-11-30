@@ -16,8 +16,8 @@ import unittest
 
 from opencensus.trace import trace_options as trace_opt
 
-class TestTraceOptions(unittest.TestCase):
 
+class TestTraceOptions(unittest.TestCase):
     def test_constructor_default(self):
         trace_options = trace_opt.TraceOptions()
 

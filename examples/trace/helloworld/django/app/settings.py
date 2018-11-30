@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Django settings for test app."""
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -66,10 +65,13 @@ TEMPLATES = [
 ]
 
 OPENCENSUS_TRACE = {
-    'SAMPLER': 'opencensus.trace.samplers.always_on.AlwaysOnSampler',
-    'EXPORTER': 'opencensus.trace.exporters.stackdriver_exporter.StackdriverExporter',
-    'PROPAGATOR': 'opencensus.trace.propagation.google_cloud_format.'
-                  'GoogleCloudFormatPropagator',
+    'SAMPLER':
+    'opencensus.trace.samplers.always_on.AlwaysOnSampler',
+    'EXPORTER':
+    'opencensus.trace.exporters.stackdriver_exporter.StackdriverExporter',
+    'PROPAGATOR':
+    'opencensus.trace.propagation.google_cloud_format.'
+    'GoogleCloudFormatPropagator',
 }
 
 OPENCENSUS_TRACE_PARAMS = {
@@ -88,7 +90,6 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.8/howto/static-files/

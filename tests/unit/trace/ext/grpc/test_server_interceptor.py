@@ -33,8 +33,8 @@ class TestOpenCensusServerInterceptor(unittest.TestCase):
 
     def test_intercept_service_no_metadata(self):
         patch = mock.patch(
-            'opencensus.trace.ext.grpc.server_interceptor.tracer_module.Tracer',
-            MockTracer)
+            'opencensus.trace.ext.grpc.server_interceptor'
+            '.tracer_module.Tracer', MockTracer)
         mock_context = mock.Mock()
         mock_context.invocation_metadata = mock.Mock(return_value=None)
         mock_context._rpc_event.call_details.method = 'hello'
@@ -46,17 +46,17 @@ class TestOpenCensusServerInterceptor(unittest.TestCase):
         mock_continuation = mock.Mock(return_value=mock_handler)
 
         with patch:
-            interceptor.intercept_service(
-                mock_continuation, mock.Mock()
-            ).unary_unary(mock.Mock(), mock_context)
+            interceptor.intercept_service(mock_continuation,
+                                          mock.Mock()).unary_unary(
+                                              mock.Mock(), mock_context)
 
         expected_attributes = {
             'component': 'grpc',
         }
 
         self.assertEqual(
-            execution_context.get_opencensus_tracer().current_span().attributes,
-            expected_attributes)
+            execution_context.get_opencensus_tracer().current_span().
+            attributes, expected_attributes)
 
     def test_intercept_service(self):
         test_dimensions = [
@@ -65,17 +65,16 @@ class TestOpenCensusServerInterceptor(unittest.TestCase):
             ['stream_unary', True, False],
             ['stream_stream', True, True],
         ]
-        for rpc_fn_name, request_streaming, response_streaming in test_dimensions:
+        for rpc_fn_name, req_streaming, rsp_streaming in test_dimensions:
             patch = mock.patch(
-                'opencensus.trace.ext.grpc.server_interceptor.tracer_module.Tracer',
-                MockTracer)
+                'opencensus.trace.ext.grpc.server_interceptor.tracer_module'
+                '.Tracer', MockTracer)
             mock_context = mock.Mock()
             mock_context.invocation_metadata = mock.Mock(
-                return_value=(('test_key', b'test_value'),)
-            )
+                return_value=(('test_key', b'test_value'), ))
             mock_handler = mock.Mock()
-            mock_handler.request_streaming = request_streaming
-            mock_handler.response_streaming = response_streaming
+            mock_handler.request_streaming = req_streaming
+            mock_handler.response_streaming = rsp_streaming
             mock_continuation = mock.Mock(return_value=mock_handler)
 
             mock_context._rpc_event.call_details.method = 'hello'
@@ -84,8 +83,7 @@ class TestOpenCensusServerInterceptor(unittest.TestCase):
 
             with patch:
                 handler = interceptor.intercept_service(
-                    mock_continuation, mock.Mock()
-                )
+                    mock_continuation, mock.Mock())
                 getattr(handler, rpc_fn_name)(mock.Mock(), mock_context)
 
             expected_attributes = {
@@ -93,8 +91,8 @@ class TestOpenCensusServerInterceptor(unittest.TestCase):
             }
 
             self.assertEqual(
-                execution_context.get_opencensus_tracer().current_span().attributes,
-                expected_attributes)
+                execution_context.get_opencensus_tracer().current_span().
+                attributes, expected_attributes)
 
     def test_intercept_handler_exception(self):
         test_dimensions = [
@@ -103,18 +101,18 @@ class TestOpenCensusServerInterceptor(unittest.TestCase):
             ['stream_unary', True, False],
             ['stream_stream', True, True],
         ]
-        for rpc_fn_name, request_streaming, response_streaming in test_dimensions:
+        for rpc_fn_name, req_streaming, rsp_streaming in test_dimensions:
             patch = mock.patch(
-                'opencensus.trace.ext.grpc.server_interceptor.tracer_module.Tracer',
-                MockTracer)
+                'opencensus.trace.ext.grpc.server_interceptor'
+                '.tracer_module.Tracer', MockTracer)
             interceptor = server_interceptor.OpenCensusServerInterceptor(
                 None, None)
             mock_context = mock.Mock()
             mock_context.invocation_metadata = mock.Mock(return_value=None)
             mock_context._rpc_event.call_details.method = 'hello'
             mock_handler = mock.Mock()
-            mock_handler.request_streaming = request_streaming
-            mock_handler.response_streaming = response_streaming
+            mock_handler.request_streaming = req_streaming
+            mock_handler.response_streaming = rsp_streaming
             setattr(mock_handler, rpc_fn_name,
                     mock.Mock(side_effect=Exception('Test')))
             mock_continuation = mock.Mock(return_value=mock_handler)
@@ -132,10 +130,11 @@ class TestOpenCensusServerInterceptor(unittest.TestCase):
                 'error.message': 'Test'
             }
 
-            current_span = execution_context.get_opencensus_tracer().current_span()
+            current_span = execution_context.get_opencensus_tracer(
+            ).current_span()
             self.assertEqual(
-                execution_context.get_opencensus_tracer().current_span().attributes,
-                expected_attributes)
+                execution_context.get_opencensus_tracer().current_span().
+                attributes, expected_attributes)
 
             self.assertEqual(current_span.span_kind,
                              span_module.SpanKind.SERVER)
