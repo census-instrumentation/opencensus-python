@@ -160,6 +160,8 @@ class TestExplicit(unittest.TestCase):
         with self.assertRaises(ValueError):
             value_module.Explicit([])
         with self.assertRaises(ValueError):
+            value_module.Explicit([-1, 1, 2])
+        with self.assertRaises(ValueError):
             value_module.Explicit([0, 1, 2])
         with self.assertRaises(ValueError):
             value_module.Explicit([1, 1])
