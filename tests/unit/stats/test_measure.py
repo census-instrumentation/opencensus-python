@@ -13,17 +13,17 @@
 # limitations under the License.
 
 import unittest
-import mock
+
 from opencensus.stats import measure as measure_module
 
 
 class TestBaseMeasure(unittest.TestCase):
-
     def test_constructor_defaults(self):
         name = "testName"
         description = "testMeasure"
 
-        measure = measure_module.BaseMeasure(name=name, description=description)
+        measure = measure_module.BaseMeasure(
+            name=name, description=description)
 
         self.assertEqual(None, measure.unit)
 
@@ -32,7 +32,8 @@ class TestBaseMeasure(unittest.TestCase):
         description = "testMeasure"
         unit = "testUnit"
 
-        measure = measure_module.BaseMeasure(name=name, description=description, unit=unit)
+        measure = measure_module.BaseMeasure(
+            name=name, description=description, unit=unit)
 
         self.assertEqual("testName", measure.name)
         self.assertEqual("testMeasure", measure.description)
@@ -40,7 +41,6 @@ class TestBaseMeasure(unittest.TestCase):
 
 
 class TestMeasureInt(unittest.TestCase):
-
     def test_constructor_defaults(self):
         name = "testName"
         description = "testMeasure"
@@ -54,7 +54,8 @@ class TestMeasureInt(unittest.TestCase):
         description = "testMeasure"
         unit = "testUnit"
 
-        measure = measure_module.MeasureInt(name=name, description=description, unit=unit)
+        measure = measure_module.MeasureInt(
+            name=name, description=description, unit=unit)
 
         self.assertEqual("testName", measure.name)
         self.assertEqual("testMeasure", measure.description)
@@ -62,12 +63,12 @@ class TestMeasureInt(unittest.TestCase):
 
 
 class TestMeasureFloat(unittest.TestCase):
-
     def test_constructor_defaults(self):
         name = "testName"
         description = "testMeasure"
 
-        measure = measure_module.MeasureFloat(name=name, description=description)
+        measure = measure_module.MeasureFloat(
+            name=name, description=description)
 
         self.assertEqual(None, measure.unit)
 
@@ -76,7 +77,8 @@ class TestMeasureFloat(unittest.TestCase):
         description = "testMeasure"
         unit = "testUnit"
 
-        measure = measure_module.MeasureFloat(name=name, description=description, unit=unit)
+        measure = measure_module.MeasureFloat(
+            name=name, description=description, unit=unit)
 
         self.assertEqual("testName", measure.name)
         self.assertEqual("testMeasure", measure.description)

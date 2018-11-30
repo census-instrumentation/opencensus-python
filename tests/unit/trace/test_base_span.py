@@ -18,7 +18,6 @@ from opencensus.trace.base_span import BaseSpan
 
 
 class TestBaseSpan(unittest.TestCase):
-
     def test_span_abstract(self):
         span = BaseSpan()
 
@@ -32,9 +31,8 @@ class TestBaseSpan(unittest.TestCase):
             span.children
 
     def test_create_abstract(self):
-        span = BaseSpan()
-
         with self.assertRaises(NotImplementedError):
+
             @BaseSpan.on_create
             def callback(span):
                 pass
@@ -97,5 +95,3 @@ class TestBaseSpan(unittest.TestCase):
 
         with self.assertRaises(NotImplementedError):
             span.__exit__(None, None, None)
-
-

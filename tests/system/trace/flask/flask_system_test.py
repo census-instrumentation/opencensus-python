@@ -13,11 +13,9 @@
 # limitations under the License.
 
 import os
-import random
 import requests
 import signal
 import subprocess
-import time
 import uuid
 
 from retrying import retry
@@ -54,15 +52,11 @@ def run_application():
     """Start running the flask application."""
     cmd = 'python tests/system/trace/flask/main.py'
     process = subprocess.Popen(
-        cmd,
-        stdout=subprocess.PIPE,
-        shell=True,
-        preexec_fn=os.setsid)
+        cmd, stdout=subprocess.PIPE, shell=True, preexec_fn=os.setsid)
     return process
 
 
 class TestFlaskTrace(unittest.TestCase):
-
     def setUp(self):
         from google.cloud.trace.v1 import client as client_module
 
@@ -78,8 +72,8 @@ class TestFlaskTrace(unittest.TestCase):
         self.process = run_application()
 
         self.headers_trace = {
-            'X-Cloud-Trace-Context': '{}/{};o={}'.format(
-                self.trace_id, self.span_id, 1)
+            'X-Cloud-Trace-Context':
+            '{}/{};o={}'.format(self.trace_id, self.span_id, 1)
         }
 
         # Wait the application to start
@@ -93,11 +87,11 @@ class TestFlaskTrace(unittest.TestCase):
         os.killpg(os.getpgid(self.process.pid), signal.SIGTERM)
 
     def test_flask_request_trace(self):
-        requests.get(
-            BASE_URL,
-            headers=self.headers_trace)
+        requests.get(BASE_URL, headers=self.headers_trace)
 
-        @retry(wait_fixed=RETRY_WAIT_PERIOD, stop_max_attempt_number=RETRY_MAX_ATTEMPT)
+        @retry(
+            wait_fixed=RETRY_WAIT_PERIOD,
+            stop_max_attempt_number=RETRY_MAX_ATTEMPT)
         def test_with_retry(self):
             trace = self.client.get_trace(trace_id=self.trace_id)
             spans = trace.get('spans')
@@ -113,11 +107,11 @@ class TestFlaskTrace(unittest.TestCase):
         test_with_retry(self)
 
     def test_mysql_trace(self):
-        requests.get(
-            '{}mysql'.format(BASE_URL),
-            headers=self.headers_trace)
+        requests.get('{}mysql'.format(BASE_URL), headers=self.headers_trace)
 
-        @retry(wait_fixed=RETRY_WAIT_PERIOD, stop_max_attempt_number=RETRY_MAX_ATTEMPT)
+        @retry(
+            wait_fixed=RETRY_WAIT_PERIOD,
+            stop_max_attempt_number=RETRY_MAX_ATTEMPT)
         def test_with_retry(self):
             trace = self.client.get_trace(trace_id=self.trace_id)
             spans = trace.get('spans')
@@ -137,8 +131,8 @@ class TestFlaskTrace(unittest.TestCase):
                     request_succeeded = True
 
                 if span.get('name') == '[mysql.query]SELECT 2*3':
-                    self.assertEqual(labels.get(
-                        'mysql.cursor.method.name'), 'execute')
+                    self.assertEqual(
+                        labels.get('mysql.cursor.method.name'), 'execute')
                     self.assertEqual(labels.get('mysql.query'), 'SELECT 2*3')
 
             self.assertTrue(request_succeeded)
@@ -147,10 +141,11 @@ class TestFlaskTrace(unittest.TestCase):
 
     def test_postgresql_trace(self):
         requests.get(
-            '{}postgresql'.format(BASE_URL),
-            headers=self.headers_trace)
+            '{}postgresql'.format(BASE_URL), headers=self.headers_trace)
 
-        @retry(wait_fixed=RETRY_WAIT_PERIOD, stop_max_attempt_number=RETRY_MAX_ATTEMPT)
+        @retry(
+            wait_fixed=RETRY_WAIT_PERIOD,
+            stop_max_attempt_number=RETRY_MAX_ATTEMPT)
         def test_with_retry(self):
             trace = self.client.get_trace(trace_id=self.trace_id)
             spans = trace.get('spans')
@@ -158,7 +153,8 @@ class TestFlaskTrace(unittest.TestCase):
             self.assertEqual(trace.get('projectId'), PROJECT)
             self.assertEqual(trace.get('traceId'), str(self.trace_id))
 
-            # Should have 2 spans, one for flask request, one for postgresql query
+            # Should have 2 spans, one for flask request, one for postgresql
+            # query
             self.assertEqual(len(spans), 2)
 
             request_succeeded = False
@@ -170,10 +166,10 @@ class TestFlaskTrace(unittest.TestCase):
                     request_succeeded = True
 
                 if span.get('name') == '[postgresql.query]SELECT 2*3':
-                    self.assertEqual(labels.get(
-                        'postgresql.cursor.method.name'), 'execute')
-                    self.assertEqual(labels.get(
-                        'postgresql.query'), 'SELECT 2*3')
+                    self.assertEqual(
+                        labels.get('postgresql.cursor.method.name'), 'execute')
+                    self.assertEqual(
+                        labels.get('postgresql.query'), 'SELECT 2*3')
 
             self.assertTrue(request_succeeded)
 
@@ -181,10 +177,11 @@ class TestFlaskTrace(unittest.TestCase):
 
     def test_sqlalchemy_mysql_trace(self):
         requests.get(
-            '{}sqlalchemy-mysql'.format(BASE_URL),
-            headers=self.headers_trace)
+            '{}sqlalchemy-mysql'.format(BASE_URL), headers=self.headers_trace)
 
-        @retry(wait_fixed=RETRY_WAIT_PERIOD, stop_max_attempt_number=RETRY_MAX_ATTEMPT)
+        @retry(
+            wait_fixed=RETRY_WAIT_PERIOD,
+            stop_max_attempt_number=RETRY_MAX_ATTEMPT)
         def test_with_retry(self):
             trace = self.client.get_trace(trace_id=self.trace_id)
             spans = trace.get('spans')
@@ -210,7 +207,9 @@ class TestFlaskTrace(unittest.TestCase):
             '{}sqlalchemy-postgresql'.format(BASE_URL),
             headers=self.headers_trace)
 
-        @retry(wait_fixed=RETRY_WAIT_PERIOD, stop_max_attempt_number=RETRY_MAX_ATTEMPT)
+        @retry(
+            wait_fixed=RETRY_WAIT_PERIOD,
+            stop_max_attempt_number=RETRY_MAX_ATTEMPT)
         def test_with_retry(self):
             trace = self.client.get_trace(trace_id=self.trace_id)
             spans = trace.get('spans')

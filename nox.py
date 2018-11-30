@@ -85,8 +85,8 @@ def lint(session):
     session.install('.')
     session.run(
         'flake8',
-        '--exclude=opencensus/trace/exporters/gen/opencensus/',
-        'opencensus/')
+        '--exclude=opencensus/trace/exporters/gen/',
+        'opencensus/', 'tests/', 'examples/')
 
 
 @nox.session

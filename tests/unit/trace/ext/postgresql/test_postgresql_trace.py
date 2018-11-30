@@ -20,7 +20,6 @@ from opencensus.trace.ext.postgresql import trace
 
 
 class Test_postgresql_trace(unittest.TestCase):
-
     def test_trace_integration(self):
         mock_return = 'test connect'
 
@@ -35,9 +34,7 @@ class Test_postgresql_trace(unittest.TestCase):
             'opencensus.trace.ext.postgresql.trace.connect',
             side_effect=mock_connect)
         patch_inspect = mock.patch(
-            'opencensus.trace.ext.postgresql.trace.inspect',
-            mock_inspect)
-
+            'opencensus.trace.ext.postgresql.trace.inspect', mock_inspect)
 
         with patch_connect, patch_inspect:
             trace.trace_integration()
@@ -56,8 +53,7 @@ class Test_postgresql_trace(unittest.TestCase):
             'opencensus.trace.ext.postgresql.trace.pg_connect',
             mock_pg_connect)
         patch_cursor = mock.patch(
-            'opencensus.trace.ext.postgresql.trace.TraceCursor',
-            mock_cursor)
+            'opencensus.trace.ext.postgresql.trace.TraceCursor', mock_cursor)
 
         with patch_connect, patch_cursor:
             trace.connect()
@@ -110,8 +106,8 @@ class Test_postgresql_trace(unittest.TestCase):
         self.assertFalse(mock_tracer.add_attribute_to_current_span.called)
         self.assertFalse(mock_tracer.end_span.called)
 
-class TestTraceCursor(unittest.TestCase):
 
+class TestTraceCursor(unittest.TestCase):
     def test_constructor(self):
         wrap_func_name = 'wrap func: '
 
@@ -136,9 +132,8 @@ class TestTraceCursor(unittest.TestCase):
             trace.TraceCursor, '__init__', side_effect=mock___init__)
 
         with patch_init:
-            cursor = trace.TraceCursor(mock_cursor)
+            trace.TraceCursor(mock_cursor)
 
         for func in trace.QUERY_WRAP_METHODS:
             self.assertEqual(
-                getattr(mock_cursor, func, None),
-                wrap_func_name + func)
+                getattr(mock_cursor, func, None), wrap_func_name + func)

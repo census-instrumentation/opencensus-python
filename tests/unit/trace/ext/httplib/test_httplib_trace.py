@@ -22,7 +22,6 @@ from opencensus.trace.propagation import trace_context_http_header_format
 
 
 class Test_httplib_trace(unittest.TestCase):
-
     def tearDown(self):
         from opencensus.trace import execution_context
 
@@ -57,10 +56,12 @@ class Test_httplib_trace(unittest.TestCase):
         with patch_wrap_request, patch_wrap_response, patch_httplib:
             trace.trace_integration()
 
-        self.assertEqual(getattr(mock_httplib.HTTPConnection, 'request'),
-                         wrap_request_result)
-        self.assertEqual(getattr(mock_httplib.HTTPConnection, 'getresponse'),
-                         wrap_response_result)
+        self.assertEqual(
+            getattr(mock_httplib.HTTPConnection, 'request'),
+            wrap_request_result)
+        self.assertEqual(
+            getattr(mock_httplib.HTTPConnection, 'getresponse'),
+            wrap_response_result)
 
     def test_wrap_httplib_request(self):
         mock_span = mock.Mock()
@@ -86,20 +87,16 @@ class Test_httplib_trace(unittest.TestCase):
         with patch:
             wrapped(mock_self, method, url, body, headers)
 
-        expected_attributes = {
-            'http.url': url,
-            'http.method': method}
+        expected_attributes = {'http.url': url, 'http.method': method}
         expected_name = '[httplib]request'
 
-        mock_request_func.assert_called_with(
-            mock_self, method, url, body, {
-                'traceparent': '00-123-456-01',
-            }
-        )
-        self.assertEqual(expected_attributes,
-                         mock_tracer.span.attributes)
+        mock_request_func.assert_called_with(mock_self, method, url, body, {
+            'traceparent': '00-123-456-01',
+        })
+        self.assertEqual(expected_attributes, mock_tracer.span.attributes)
         self.assertEqual(expected_name, mock_tracer.span.name)
-        self.assertEqual(span_module.SpanKind.CLIENT, mock_tracer.span.span_kind)
+        self.assertEqual(span_module.SpanKind.CLIENT,
+                         mock_tracer.span.span_kind)
 
     def test_wrap_httplib_request_blacklist_ok(self):
         mock_span = mock.Mock()
@@ -129,16 +126,9 @@ class Test_httplib_trace(unittest.TestCase):
         with patch_tracer, patch_attr:
             wrapped(mock_self, method, url, body, headers)
 
-        expected_attributes = {
-            'http.url': url,
-            'http.method': method}
-        expected_name = '[httplib]request'
-
-        mock_request_func.assert_called_with(
-            mock_self, method, url, body, {
-                'traceparent': '00-123-456-01',
-            }
-        )
+        mock_request_func.assert_called_with(mock_self, method, url, body, {
+            'traceparent': '00-123-456-01',
+        })
 
     def test_wrap_httplib_request_blacklist_nok(self):
         mock_span = mock.Mock()
@@ -170,14 +160,7 @@ class Test_httplib_trace(unittest.TestCase):
         with patch_tracer, patch_attr:
             wrapped(mock_self, method, url, body, headers)
 
-        expected_attributes = {
-            'http.url': url,
-            'http.method': method}
-        expected_name = '[httplib]request'
-
-        mock_request_func.assert_called_with(
-            mock_self, method, url, body, {}
-        )
+        mock_request_func.assert_called_with(mock_self, method, url, body, {})
 
     def test_wrap_httplib_response(self):
         mock_span = mock.Mock()
@@ -194,20 +177,19 @@ class Test_httplib_trace(unittest.TestCase):
             'opencensus.trace.ext.requests.trace.execution_context.'
             'get_opencensus_tracer',
             return_value=mock_tracer)
-        patch_attr = mock.patch('opencensus.trace.ext.httplib.trace.'
-                                'execution_context.get_opencensus_attr',
-                                return_value=span_id)
+        patch_attr = mock.patch(
+            'opencensus.trace.ext.httplib.trace.'
+            'execution_context.get_opencensus_attr',
+            return_value=span_id)
 
         wrapped = trace.wrap_httplib_response(mock_response_func)
 
         with patch_tracer, patch_attr:
             wrapped(mock.Mock())
 
-        expected_attributes = {
-            'http.status_code': '200'}
+        expected_attributes = {'http.status_code': '200'}
 
-        self.assertEqual(expected_attributes,
-                         mock_tracer.span.attributes)
+        self.assertEqual(expected_attributes, mock_tracer.span.attributes)
 
     def test_wrap_httplib_response_no_open_span(self):
         mock_span = mock.Mock()
@@ -224,9 +206,10 @@ class Test_httplib_trace(unittest.TestCase):
             'opencensus.trace.ext.requests.trace.execution_context.'
             'get_opencensus_tracer',
             return_value=mock_tracer)
-        patch_attr = mock.patch('opencensus.trace.ext.httplib.trace.'
-                                'execution_context.get_opencensus_attr',
-                                return_value='1111')
+        patch_attr = mock.patch(
+            'opencensus.trace.ext.httplib.trace.'
+            'execution_context.get_opencensus_attr',
+            return_value='1111')
 
         wrapped = trace.wrap_httplib_response(mock_response_func)
 
@@ -236,16 +219,14 @@ class Test_httplib_trace(unittest.TestCase):
         # Attribute should be empty as there is no matching span
         expected_attributes = {}
 
-        self.assertEqual(expected_attributes,
-                         mock_tracer.span.attributes)
+        self.assertEqual(expected_attributes, mock_tracer.span.attributes)
 
 
 class MockTracer(object):
     def __init__(self, span=None):
         self.span = span
         self.propagator = (
-            trace_context_http_header_format.TraceContextPropagator()
-        )
+            trace_context_http_header_format.TraceContextPropagator())
 
     def current_span(self):
         return self.span

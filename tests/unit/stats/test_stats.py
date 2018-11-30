@@ -13,14 +13,11 @@
 # limitations under the License.
 
 import unittest
-import mock
+
 from opencensus.stats import stats as stats_module
-from opencensus.stats.view_manager import ViewManager
-from opencensus.stats.stats_recorder import StatsRecorder
 
 
 class TestStats(unittest.TestCase):
-
     def test_constructor(self):
         stats = stats_module.Stats()
 

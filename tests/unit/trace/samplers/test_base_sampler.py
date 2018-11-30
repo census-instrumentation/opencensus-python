@@ -14,8 +14,8 @@
 
 import unittest
 
-class TestBaseSampler(unittest.TestCase):
 
+class TestBaseSampler(unittest.TestCase):
     def test_should_sample_abstract(self):
         from opencensus.trace.samplers import base
 
