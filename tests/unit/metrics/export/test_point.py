@@ -32,7 +32,8 @@ class TestPoint(unittest.TestCase):
             100,
             1000.0,
             10.0,
-            list(range(11)),
+            value_module.BucketOptions(
+                value_module.Explicit(list(range(1, 10)))),
             [value_module.Bucket(10, None) for ii in range(10)],
         )
 

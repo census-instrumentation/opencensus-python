@@ -239,11 +239,10 @@ For Django, you can configure the blacklist in the ``OPENCENSUS_PARAMS`` in ``se
 Framework Integration
 ---------------------
 
-Census supports integration with popular web frameworks including
-Django, Flask, Pyramid, and Webapp2. When the application receives a HTTP request,
-the tracer will automatically generate a span context using the trace
-information extracted from the request headers and propagated to the
-child spans.
+Census supports integration with popular web frameworks including Django,
+Flask, and Pyramid. When the application receives a HTTP request, the tracer
+will automatically generate a span context using the trace information
+extracted from the request headers and propagated to the child spans.
 
 Flask
 ~~~~~
@@ -418,7 +417,28 @@ method, and status will be collected.
 
 You can enable Requests integration by specifying ``'requests'`` to ``trace_integrations``.
 
+It's possible to configure a list of URL you don't want traced. By default the request to exporter
+won't be traced. It's configurable by giving an array of hostname/port to the attribute
+``blacklist_hostnames`` in OpenCensus context's attributes:
+
+.. code:: python
+
+    execution_context.set_opencensus_attr('blacklist_hostnames',['hostname:port'])
+
+Only the hostname must be specified if only the hostname is specified in the URL request.
+
 .. _Requests package: https://pypi.python.org/pypi/requests
+
+Httplib
+~~~~~~~~
+
+Census can trace HTTP requests made with the httplib library.
+
+You can enable Requests integration by specifying ``'httplib'`` to ``trace_integrations``.
+
+It's possible to configure a list of URL you don't want traced. See requests integration
+for more information. The only difference is that you need to specify hostname and port
+every time.
 
 Google Cloud Client Libraries
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

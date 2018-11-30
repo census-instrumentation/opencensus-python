@@ -12,8 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
+
 from opencensus.stats import bucket_boundaries
 from opencensus.stats import aggregation_data
+
+
+logger = logging.getLogger(__name__)
 
 
 class Type(object):
@@ -123,17 +128,32 @@ class DistributionAggregation(BaseAggregation):
     :param aggregation_type: represents the type of this aggregation
 
     """
-    def __init__(
-            self,
-            boundaries=None,
-            distribution=None,
-            aggregation_type=Type.DISTRIBUTION):
+
+    def __init__(self,
+                 boundaries=None,
+                 distribution=None,
+                 aggregation_type=Type.DISTRIBUTION):
+        if boundaries:
+            if not all(boundaries[ii] < boundaries[ii + 1]
+                       for ii in range(len(boundaries) - 1)):
+                raise ValueError("bounds must be sorted in increasing order")
+            for ii, bb in enumerate(boundaries):
+                if bb > 0:
+                    break
+            else:
+                ii += 1
+            if ii:
+                logger.warning("Dropping {} negative bucket boundaries, the "
+                               "values must be strictly > 0"
+                               .format(ii))
+            boundaries = boundaries[ii:]
+
         super(DistributionAggregation, self).__init__(
             buckets=boundaries, aggregation_type=aggregation_type)
         self._boundaries = bucket_boundaries.BucketBoundaries(boundaries)
         self._distribution = distribution or {}
         self.aggregation_data = aggregation_data.DistributionAggregationData(
-            0, 0, 0, 0, 0, None, boundaries)
+            0, 0, float('inf'), float('-inf'), 0, None, boundaries)
 
     @property
     def boundaries(self):

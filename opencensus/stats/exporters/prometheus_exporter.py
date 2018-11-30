@@ -164,31 +164,13 @@ class Collector(object):
                                        labels=labels)
         elif isinstance(agg_data,
                         aggregation_data_module.DistributionAggregationData):
+
+            assert(agg_data.bounds == sorted(agg_data.bounds))
             points = {}
-            # Histograms are cumulative in Prometheus.
-            # 1. Sort buckets in ascending order but, retain
-            # their indices for reverse lookup later on.
-            # TODO: If there is a guarantee that distribution elements
-            # are always sorted, then skip the sorting.
-            indices_map = {}
-            buckets = []
-            i = 0
-            for boundarie in view.aggregation.boundaries.boundaries:
-                if boundarie not in indices_map \
-                        or indices_map == {}:  # pragma: NO COVER
-                    indices_map[str(boundarie)] = i
-                    buckets.append(str(boundarie))
-                i += 1
-
-            buckets.sort()
-
-            # 2. Now that the buckets are sorted by magnitude
-            # we can create cumulative indicesmap them back by reverse index
             cum_count = 0
-            for bucket in buckets:
-                i = indices_map[bucket]
-                cum_count += int(agg_data.counts_per_bucket[i])
-                points[bucket] = cum_count
+            for ii, bound in enumerate(agg_data.bounds):
+                cum_count += agg_data.counts_per_bucket[ii]
+                points[str(bound)] = cum_count
             labels = desc['labels'] if points is None else None
             return HistogramMetricFamily(name=desc['name'],
                                          documentation=desc['documentation'],
@@ -217,7 +199,7 @@ class Collector(object):
                              % type(agg_data))
 
     def collect(self):  # pragma: NO COVER
-        """	Collect fetches the statistics from OpenCensus
+        """Collect fetches the statistics from OpenCensus
         and delivers them as Prometheus Metrics.
         Collect is invoked everytime a prometheus.Gatherer is run
         for example when the HTTP endpoint is invoked by Prometheus.
