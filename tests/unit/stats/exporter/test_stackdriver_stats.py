@@ -184,7 +184,7 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         defaults = {'key1': 'value1'}
         keys = [FRONTEND_KEY]
         output = stackdriver.new_label_descriptors(defaults, keys)
-        self.assertEqual(len(output), 2)
+        self.assertEqual(len(output), 3)
 
     def test_namespacedviews(self):
         view_name = "view-1"
@@ -352,18 +352,20 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         v_data = measure_map.measure_to_view_map.get_view(
             VIDEO_SIZE_VIEW_NAME, None)
 
-        time_series = exporter.create_time_series_list(v_data, "", "")
-        self.assertEquals(time_series.resource.type, "global")
+        time_series_list = exporter.create_time_series_list(v_data, "", "")
+        self.assertEquals(len(time_series_list), 1)
+        self.assertEquals(time_series_list[0].resource.type, "global")
         self.assertEquals(
-            time_series.metric.type,
+            time_series_list[0].metric.type,
             "custom.googleapis.com/opencensus/my.org/views/video_size_test2")
-        self.assertIsNotNone(time_series)
+        self.assertIsNotNone(time_series_list[0])
 
-        time_series = exporter.create_time_series_list(v_data, "global",
-                                                       "kubernetes.io/myorg")
-        self.assertEquals(time_series.metric.type,
+        time_series_list = exporter.create_time_series_list(
+            v_data, "global", "kubernetes.io/myorg")
+        self.assertEquals(len(time_series_list), 1)
+        self.assertEquals(time_series_list[0].metric.type,
                           "kubernetes.io/myorg/my.org/views/video_size_test2")
-        self.assertIsNotNone(time_series)
+        self.assertIsNotNone(time_series_list[0])
 
     @mock.patch('opencensus.stats.exporters.stackdriver_exporter.'
                 'MonitoredResourceUtil.get_instance')
@@ -426,7 +428,10 @@ class TestStackdriverStatsExporter(unittest.TestCase):
                           'my-project')
         self.assertEquals(time_series.resource.labels['zone'], 'us-east1')
 
-        time_series = exporter.create_time_series_list(v_data, "global", "")
+        time_series_list = exporter.create_time_series_list(
+            v_data, "global", "")
+        self.assertEquals(len(time_series_list), 1)
+        time_series = time_series_list[0]
         self.assertEquals(
             time_series.metric.type,
             "custom.googleapis.com/opencensus/my.org/views/video_size_test2")
@@ -707,6 +712,7 @@ class TestStackdriverStatsExporter(unittest.TestCase):
 
         v_data = mock.Mock(spec=view_data_module.ViewData)
         v_data.view.name = "example.org/test_view"
+        v_data.view.columns = [tag_key_module.TagKey('tag_key')]
         v_data.start_time = '2018-11-21T00:12:34.56Z'
         v_data.end_time = '2018-11-21T00:23:45.67Z'
 
@@ -719,15 +725,16 @@ class TestStackdriverStatsExporter(unittest.TestCase):
             sum_of_sqd_deviations=825,
             counts_per_bucket=[20, 20, 20, 20, 20],
             bounds=[2, 4, 6, 8],
-            exemplars={mock.Mock()
-                       for ii in range(5)})
-        v_data.tag_value_aggregation_data_map = ({'tag_key': dad})
+            exemplars={mock.Mock() for ii in range(5)})
+        v_data.tag_value_aggregation_data_map = ({('tag_key',): dad})
 
         exporter = stackdriver.StackdriverStatsExporter(
             options=mock.Mock(),
             client=mock.Mock(),
         )
-        time_series = exporter.create_time_series_list(v_data, "", "")
+        time_series_list = exporter.create_time_series_list(v_data, "", "")
+        self.assertEqual(len(time_series_list), 1)
+        [time_series] = time_series_list
 
         self.assertEqual(len(time_series.points), 1)
         [point] = time_series.points
