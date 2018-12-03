@@ -43,7 +43,10 @@ class TestB3FormatPropagator(unittest.TestCase):
 
         self.assertEqual(span_context.trace_id, test_trace_id)
         self.assertEqual(span_context.span_id, test_span_id)
-        self.assertEqual(span_context.trace_options.enabled, bool(test_sampled))
+        self.assertEqual(
+            span_context.trace_options.enabled,
+            bool(test_sampled)
+        )
 
     def test_from_headers_keys_not_exist(self):
         propagator = b3_format.B3FormatPropagator()
@@ -104,14 +107,17 @@ class TestB3FormatPropagator(unittest.TestCase):
         self.assertEqual(headers[b3_format._SAMPLED_KEY], test_options)
 
     def test_from_single_header_keys_exist(self):
+        trace_id = "80f198ee56343ba864fe8b2a57d3eff7"
+        span_id = "e457b5a2e4d86bd1"
+
         headers = {
-            'b3': "80f198ee56343ba864fe8b2a57d3eff7-e457b5a2e4d86bd1-d-05e3ac9a4f6e3b90"
+            'b3': "{}-{}-d-05e3ac9a4f6e3b90".format(trace_id, span_id)
         }
         propagator = b3_format.B3FormatPropagator()
         span_context = propagator.from_headers(headers)
 
-        self.assertEqual(span_context.trace_id, "80f198ee56343ba864fe8b2a57d3eff7")
-        self.assertEqual(span_context.span_id, "e457b5a2e4d86bd1")
+        self.assertEqual(span_context.trace_id, trace_id)
+        self.assertEqual(span_context.span_id, span_id)
         self.assertEqual(span_context.trace_options.enabled, True)
 
     def test_from_headers_invalid_single_header(self):
@@ -142,14 +148,16 @@ class TestB3FormatPropagator(unittest.TestCase):
         self.assertEqual(span_context.trace_options.enabled, False)
 
     def test_from_single_header_defer_sampling(self):
+        trace_id = "80f198ee56343ba864fe8b2a57d3eff7"
+        span_id = "e457b5a2e4d86bd1"
         headers = {
-            'b3': "80f198ee56343ba864fe8b2a57d3eff7-e457b5a2e4d86bd1"
+            'b3': "{}-{}".format(trace_id, span_id)
         }
         propagator = b3_format.B3FormatPropagator()
         span_context = propagator.from_headers(headers)
 
-        self.assertEqual(span_context.trace_id, "80f198ee56343ba864fe8b2a57d3eff7")
-        self.assertEqual(span_context.span_id, "e457b5a2e4d86bd1")
+        self.assertEqual(span_context.trace_id, trace_id)
+        self.assertEqual(span_context.span_id, span_id)
 
     def test_from_single_header_precedence(self):
         headers = {
@@ -160,6 +168,9 @@ class TestB3FormatPropagator(unittest.TestCase):
         propagator = b3_format.B3FormatPropagator()
         span_context = propagator.from_headers(headers)
 
-        self.assertEqual(span_context.trace_id, "80f198ee56343ba864fe8b2a57d3eff7")
+        self.assertEqual(
+            span_context.trace_id,
+            "80f198ee56343ba864fe8b2a57d3eff7"
+        )
         self.assertEqual(span_context.span_id, "e457b5a2e4d86bd1")
         self.assertEqual(span_context.trace_options.enabled, True)
