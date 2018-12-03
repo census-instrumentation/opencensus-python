@@ -215,13 +215,16 @@ class StackdriverExporter(base.Exporter):
         for sd in span_datas:
             trace_span_map[sd.context.trace_id] += [sd]
 
+        stackdriver_spans = []
         # Write spans to Stackdriver
         for _, sds in trace_span_map.items():
             # convert to the legacy trace json for easier refactoring
             # TODO: refactor this to use the span data directly
             trace = span_data.format_legacy_trace_json(sds)
-            stackdriver_spans = self.translate_to_stackdriver(trace)
-            self.client.batch_write_spans(project, stackdriver_spans)
+            stackdriver_spans.extend(self.translate_to_stackdriver(trace))
+
+        # FIXME: batch up to quota (25000 spans)
+        self.client.batch_write_spans(project, {'spans': stackdriver_spans})
 
     def export(self, span_datas):
         """
@@ -247,7 +250,6 @@ class StackdriverExporter(base.Exporter):
         set_attributes(trace)
         spans_json = trace.get('spans')
         trace_id = trace.get('traceId')
-        spans_list = []
 
         for span in spans_json:
             span_name = 'projects/{}/traces/{}/spans/{}'.format(
@@ -272,10 +274,7 @@ class StackdriverExporter(base.Exporter):
                 parent_span_id = str(span.get('parentSpanId'))
                 span_json['parentSpanId'] = parent_span_id
 
-            spans_list.append(span_json)
-
-        spans = {'spans': spans_list}
-        return spans
+            yield span_json
 
     def map_attributes(self, attribute_map):
         if attribute_map is None:
