@@ -21,14 +21,12 @@ import pytest
 from django.test.utils import teardown_test_environment
 
 from opencensus.trace import execution_context
-from opencensus.trace.tracers.noop_tracer import NoopTracer
 
 
 class TestOpencensusDatabaseMiddleware(unittest.TestCase):
     def setUp(self):
         from django.conf import settings as django_settings
         from django.test.utils import setup_test_environment
-
 
         if not django_settings.configured:
             django_settings.configure()
@@ -44,9 +42,6 @@ class TestOpencensusDatabaseMiddleware(unittest.TestCase):
 
         from opencensus.trace.ext.django import middleware
 
-        tracer = middleware._get_current_tracer()
-        span = tracer.current_span()
-
         sql = "SELECT * FROM users"
 
         MockConnection = namedtuple('Connection', ('vendor'))
@@ -61,7 +56,8 @@ class TestOpencensusDatabaseMiddleware(unittest.TestCase):
             mock_execute, sql, params=[], many=False,
             context={'connection': connection})
 
-        mock_sql, mock_params, mock_many, mock_context = mock_execute.call_args[0]
+        (mock_sql, mock_params, mock_many,
+                mock_context) = mock_execute.call_args[0]
 
         self.assertEqual(mock_sql, sql)
         self.assertEqual(mock_params, [])
@@ -73,5 +69,6 @@ class TestOpencensusDatabaseMiddleware(unittest.TestCase):
             mock_execute, sql, params=[], many=True,
             context={'connection': connection})
 
-        mock_sql, mock_params, mock_many, mock_context = mock_execute.call_args[0]
+        (mock_sql, mock_params, mock_many,
+                mock_context) = mock_execute.call_args[0]
         self.assertEqual(mock_many, True)
