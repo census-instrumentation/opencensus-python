@@ -23,6 +23,7 @@ from opencensus.trace import tracer as tracer_module
 from opencensus.trace import utils
 from opencensus.trace.samplers import probability
 
+import django
 from django.db import connection
 try:
     from django.utils.deprecation import MiddlewareMixin
@@ -238,7 +239,8 @@ class OpencensusMiddleware(MiddlewareMixin):
                 SPAN_THREAD_LOCAL_KEY,
                 span)
 
-            connection.execute_wrappers.append(self._trace_db_call)
+            if django.VERSION >= (2,):
+                connection.execute_wrappers.append(self._trace_db_call)
 
         except Exception:  # pragma: NO COVER
             log.error('Failed to trace request', exc_info=True)
