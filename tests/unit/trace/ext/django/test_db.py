@@ -57,7 +57,7 @@ class TestOpencensusDatabaseMiddleware(unittest.TestCase):
             context={'connection': connection})
 
         (mock_sql, mock_params, mock_many,
-                mock_context) = mock_execute.call_args[0]
+            mock_context) = mock_execute.call_args[0]
 
         self.assertEqual(mock_sql, sql)
         self.assertEqual(mock_params, [])
@@ -70,5 +70,5 @@ class TestOpencensusDatabaseMiddleware(unittest.TestCase):
             context={'connection': connection})
 
         (mock_sql, mock_params, mock_many,
-                mock_context) = mock_execute.call_args[0]
+            mock_context) = mock_execute.call_args[0]
         self.assertEqual(mock_many, True)
