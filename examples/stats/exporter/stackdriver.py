@@ -12,13 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import time
 import random
+import time
+
+import google.auth
+
 from opencensus.stats import aggregation as aggregation_module
-from opencensus.stats.exporters import stackdriver_exporter as stackdriver
 from opencensus.stats import measure as measure_module
 from opencensus.stats import stats as stats_module
 from opencensus.stats import view as view_module
+from opencensus.stats.exporters import stackdriver_exporter as stackdriver
 from opencensus.tags import tag_key as tag_key_module
 from opencensus.tags import tag_map as tag_map_module
 from opencensus.tags import tag_value as tag_value_module
@@ -38,8 +41,14 @@ stats = stats_module.Stats()
 view_manager = stats.view_manager
 stats_recorder = stats.stats_recorder
 
+try:
+    _, project_id = google.auth.default()
+except google.auth.exceptions.DefaultCredentialsError:
+    raise ValueError("Couldn't find Google Cloud credentials, set the "
+                     "project ID with 'gcloud set project'")
+
 exporter = stackdriver.new_stats_exporter(
-    stackdriver.Options(project_id="opencenus-node"))
+    stackdriver.Options(project_id=project_id))
 view_manager.register_exporter(exporter)
 
 # Register view.
