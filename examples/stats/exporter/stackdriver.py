@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
 import random
 import time
 
@@ -42,14 +41,11 @@ stats = stats_module.Stats()
 view_manager = stats.view_manager
 stats_recorder = stats.stats_recorder
 
-project_id = os.environ.get('PROJECT_ID')
-if project_id is None:
-    try:
-        _, project_id = google.auth.default()
-    except google.auth.exceptions.DefaultCredentialsError:
-        raise ValueError("Couldn't find Google Cloud credentials, set the "
-                         "project ID with 'gcloud set project' or set the "
-                         "PROJECT_ID env var")
+try:
+    _, project_id = google.auth.default()
+except google.auth.exceptions.DefaultCredentialsError:
+    raise ValueError("Couldn't find Google Cloud credentials, set the "
+                     "project ID with 'gcloud set project'")
 
 exporter = stackdriver.new_stats_exporter(
     stackdriver.Options(project_id=project_id))
