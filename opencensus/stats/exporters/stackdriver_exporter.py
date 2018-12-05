@@ -46,11 +46,16 @@ class Options(object):
                  project_id="",
                  resource="",
                  metric_prefix="",
-                 default_monitoring_labels=None):
+                 default_monitoring_labels=None,
+                 resource_labels=None):
         self._project_id = project_id
         self._resource = resource
         self._metric_prefix = metric_prefix
         self._default_monitoring_labels = default_monitoring_labels
+        if resource_labels is not None:
+            self._resource_labels = resource_labels
+        else:
+            self._resource_labels = {}
 
     @property
     def project_id(self):
@@ -70,6 +75,17 @@ class Options(object):
         Optional.
         """
         return self._resource
+
+    @property
+    def resource_labels(self):
+        """ Resource is an optional field that represents the Stackdriver
+        MonitoredResource type, a resource that can be used for monitoring.
+        If no custom ResourceDescriptor is set, a default MonitoredResource
+        with type global and no resource labels will be used.
+        Optional.
+        """
+        return self._resource_labels
+
 
     @property
     def metric_prefix(self):
@@ -129,7 +145,7 @@ class StackdriverStatsExporter(base.StatsExporter):
                 self._resource_labels = {}
         else:
             self._resource_type = options.resource
-            self._resource_labels = options.default_monitoring_labels
+            self._resource_labels = options.resource_labels
 
     @property
     def options(self):

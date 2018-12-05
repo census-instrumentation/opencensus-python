@@ -77,6 +77,10 @@ class TestOptions(unittest.TestCase):
         option = stackdriver.Options(default_monitoring_labels=default_labels)
         self.assertEqual(option.default_monitoring_labels, default_labels)
 
+    def test_resource_labels(self):
+        resource_labels = {'key1': 'value1'}
+        option = stackdriver.Options(resource_labels=resource_labels)
+        self.assertEqual(option.resource_labels, resource_labels)
 
 class TestStackdriverStatsExporter(unittest.TestCase):
     def test_constructor(self):
@@ -362,7 +366,7 @@ class TestStackdriverStatsExporter(unittest.TestCase):
 
         option = stackdriver.Options(
             project_id="project-test", resource="k8s_container",
-            default_monitoring_labels=default_resource_labels)
+            resource_labels=default_resource_labels)
         exporter = stackdriver.StackdriverStatsExporter(
             options=option, client=client)
 
