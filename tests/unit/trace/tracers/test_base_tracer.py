@@ -18,7 +18,6 @@ from opencensus.trace.tracers import base
 
 
 class TestBaseTracer(unittest.TestCase):
-
     def test_finish_abstract(self):
         tracer = base.Tracer()
 
@@ -55,7 +54,8 @@ class TestBaseTracer(unittest.TestCase):
         attribute_value = 'value'
 
         with self.assertRaises(NotImplementedError):
-            tracer.add_attribute_to_current_span(attribute_key, attribute_value)
+            tracer.add_attribute_to_current_span(attribute_key,
+                                                 attribute_value)
 
     def test_list_collected_spans_abstract(self):
         tracer = base.Tracer()

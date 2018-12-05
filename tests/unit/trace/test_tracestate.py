@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import sys
 import unittest
 
 from opencensus.trace.tracestate import Tracestate
@@ -21,8 +20,8 @@ from opencensus.trace.propagation.tracestate_string_format \
 
 formatter = TracestateStringFormatter()
 
-class TestTracestate(unittest.TestCase):
 
+class TestTracestate(unittest.TestCase):
     def test_ctor_no_arg(self):
         state = Tracestate()
         self.assertEqual(formatter.to_string(state), '')
@@ -38,8 +37,8 @@ class TestTracestate(unittest.TestCase):
     def test_all_allowed_chars(self):
         header = ''.join([
             # key
-            ''.join(map(chr, range(0x61, 0x7A + 1))), # lcalpha
-            '0123456789', # DIGIT
+            ''.join(map(chr, range(0x61, 0x7A + 1))),  # lcalpha
+            '0123456789',  # DIGIT
             '_',
             '-',
             '*',
@@ -145,4 +144,5 @@ class TestTracestate(unittest.TestCase):
 
         state['foo'] = 'x' * 256
         # throw if value exceeds 256 bytes
-        self.assertRaises(ValueError, lambda: state.__setitem__('foo', 'x' * 257))
+        self.assertRaises(ValueError,
+                          lambda: state.__setitem__('foo', 'x' * 257))

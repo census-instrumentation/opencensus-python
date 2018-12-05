@@ -20,7 +20,6 @@ from opencensus.trace.ext.google_cloud_clientlibs import trace
 
 
 class Test_google_cloud_clientlibs_trace(unittest.TestCase):
-
     def test_trace_integration(self):
         mock_trace_grpc = mock.Mock()
         mock_trace_http = mock.Mock()
@@ -47,26 +46,27 @@ class Test_google_cloud_clientlibs_trace(unittest.TestCase):
 
         mock_make_secure_channel_func = mock.Mock()
         mock_make_secure_channel_func.__name__ = 'make_secure_channel'
-        setattr(
-            mock__helpers,
-            'make_secure_channel',
-            mock_make_secure_channel_func)
+        setattr(mock__helpers, 'make_secure_channel',
+                mock_make_secure_channel_func)
 
         patch_wrap = mock.patch(
-            'opencensus.trace.ext.google_cloud_clientlibs.trace.wrap_make_secure_channel', mock_wrap)
+            'opencensus.trace.ext.google_cloud_clientlibs.trace'
+            '.wrap_make_secure_channel', mock_wrap)
         patch__helpers = mock.patch(
-            'opencensus.trace.ext.google_cloud_clientlibs.trace._helpers', mock__helpers)
+            'opencensus.trace.ext.google_cloud_clientlibs.trace._helpers',
+            mock__helpers)
 
         with patch_wrap, patch__helpers:
             trace.trace_integration()
 
-        self.assertEqual(getattr(mock__helpers, 'make_secure_channel'), wrap_result)
+        self.assertEqual(
+            getattr(mock__helpers, 'make_secure_channel'), wrap_result)
 
     def test_trace_http(self):
         mock_trace_requests = mock.Mock()
         patch = mock.patch(
-            'opencensus.trace.ext.google_cloud_clientlibs.trace.trace_requests',
-            mock_trace_requests)
+            'opencensus.trace.ext.google_cloud_clientlibs.trace'
+            '.trace_requests', mock_trace_requests)
 
         with patch:
             trace.trace_http()
@@ -79,12 +79,13 @@ class Test_google_cloud_clientlibs_trace(unittest.TestCase):
         mock_func = mock.Mock()
 
         patch_tracer = mock.patch(
-            'opencensus.trace.ext.google_cloud_clientlibs.trace.execution_context.'
+            'opencensus.trace.ext.google_cloud_clientlibs.trace'
+            '.execution_context.'
             'get_opencensus_tracer',
             return_value=mock_tracer)
         patch_interceptor = mock.patch(
-            'opencensus.trace.ext.google_cloud_clientlibs.trace.OpenCensusClientInterceptor',
-            mock_interceptor)
+            'opencensus.trace.ext.google_cloud_clientlibs.trace'
+            '.OpenCensusClientInterceptor', mock_interceptor)
 
         wrapped = trace.wrap_make_secure_channel(mock_func)
 
@@ -99,12 +100,12 @@ class Test_google_cloud_clientlibs_trace(unittest.TestCase):
         mock_func = mock.Mock()
 
         patch_tracer = mock.patch(
-            'opencensus.trace.ext.google_cloud_clientlibs.trace.execution_context.'
-            'get_opencensus_tracer',
+            'opencensus.trace.ext.google_cloud_clientlibs.trace'
+            '.execution_context.get_opencensus_tracer',
             return_value=mock_tracer)
         patch_interceptor = mock.patch(
-            'opencensus.trace.ext.google_cloud_clientlibs.trace.OpenCensusClientInterceptor',
-            mock_interceptor)
+            'opencensus.trace.ext.google_cloud_clientlibs.trace'
+            '.OpenCensusClientInterceptor', mock_interceptor)
 
         wrapped = trace.wrap_insecure_channel(mock_func)
 
@@ -119,12 +120,12 @@ class Test_google_cloud_clientlibs_trace(unittest.TestCase):
         mock_func = mock.Mock()
 
         patch_tracer = mock.patch(
-            'opencensus.trace.ext.google_cloud_clientlibs.trace.execution_context.'
-            'get_opencensus_tracer',
+            'opencensus.trace.ext.google_cloud_clientlibs.trace'
+            '.execution_context.get_opencensus_tracer',
             return_value=mock_tracer)
         patch_interceptor = mock.patch(
-            'opencensus.trace.ext.google_cloud_clientlibs.trace.OpenCensusClientInterceptor',
-            mock_interceptor)
+            'opencensus.trace.ext.google_cloud_clientlibs.trace'
+            '.OpenCensusClientInterceptor', mock_interceptor)
 
         wrapped = trace.wrap_create_channel(mock_func)
 

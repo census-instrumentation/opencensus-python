@@ -15,11 +15,11 @@
 # limitations under the License.
 
 import unittest
+
 from opencensus.tags import TagKey
 
 
 class TestTagKey(unittest.TestCase):
-
     def test_constructor(self):
         key = 'key1'
         tag_key = TagKey(key)
@@ -33,7 +33,7 @@ class TestTagKey(unittest.TestCase):
         tag_key = TagKey('testKey')
         self.assertIsNotNone(tag_key)
 
-        long_name = 'e9nnb1ixRnvzBH1TUonCG5IsV3ba2PMKjAbSxdLFFpgxFKhZHfi92ajNH6EARaK9FGGShk2EeZ4XObwqIPBwi7j4ZSRR1ZWXtS15keA1h4c9CxeAdakcxxUN0YH6mLJ0BygwRbdbMSeOIPWLo7iyGCil4njKOxH6HF7k0aN4BQl03HQZoXe0t0gd5xKQW37ePNA4FRVZlbLbib3GCF7BeKeA0DKMtuRu27r2hDGEFAmvqh3JEnqOy4gDbhFubaLblr4R4GOHo'
+        long_name = 'e9nnb1ixRnvzBH1TUonCG5IsV3ba2PMKjAbSxdLFFpgxFKhZHfi92ajNH6EARaK9FGGShk2EeZ4XObwqIPBwi7j4ZSRR1ZWXtS15keA1h4c9CxeAdakcxxUN0YH6mLJ0BygwRbdbMSeOIPWLo7iyGCil4njKOxH6HF7k0aN4BQl03HQZoXe0t0gd5xKQW37ePNA4FRVZlbLbib3GCF7BeKeA0DKMtuRu27r2hDGEFAmvqh3JEnqOy4gDbhFubaLblr4R4GOHo'  # noqa
         self.assertRaises(ValueError, TagKey, long_name)
 
         invalid_chars_name = 'Æ!01kr'

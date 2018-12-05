@@ -22,7 +22,6 @@ from opencensus.common.monitored_resource_util import \
 
 
 class TestAwsIdentityDocumentUtils(unittest.TestCase):
-
     @mock.patch('opencensus.common.monitored_resource_util.'
                 'aws_identity_doc_utils.get_request')
     def test_get_aws_metadata(self, http_request_mock):
@@ -34,9 +33,7 @@ class TestAwsIdentityDocumentUtils(unittest.TestCase):
             'pendingTime': '2016-11-19T16:32:11Z',
             'accountId': '123456789012',
             'region': 'us-west-2',
-            'marketplaceProductCodes': [
-                "1abc2defghijklm3nopqrs4tu"
-            ],
+            'marketplaceProductCodes': ["1abc2defghijklm3nopqrs4tu"],
             'instanceType': 't2.micro',
             'version': '2017-09-30',
             'architecture': 'x86_64',
@@ -61,7 +58,6 @@ class TestAwsIdentityDocumentUtils(unittest.TestCase):
 
         self.assertEquals(labels_list, expected_labels)
 
-
     @mock.patch('opencensus.common.monitored_resource_util.'
                 'aws_identity_doc_utils.get_request')
     def test_get_aws_metadata_none_fields(self, http_request_mock):
@@ -72,9 +68,7 @@ class TestAwsIdentityDocumentUtils(unittest.TestCase):
             'pendingTime': '2016-11-19T16:32:11Z',
             'accountId': '123456789012',
             'region': 'us-west-2',
-            'marketplaceProductCodes': [
-                "1abc2defghijklm3nopqrs4tu"
-            ],
+            'marketplaceProductCodes': ["1abc2defghijklm3nopqrs4tu"],
             'instanceType': 't2.micro',
             'version': '2017-09-30',
             'architecture': 'x86_64',

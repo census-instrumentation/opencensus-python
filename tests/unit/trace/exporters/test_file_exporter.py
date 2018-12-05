@@ -17,7 +17,6 @@ import unittest
 
 
 class TestFileExporter(unittest.TestCase):
-
     @staticmethod
     def _get_target_class():
         from opencensus.trace.exporters.file_exporter import FileExporter
@@ -34,7 +33,6 @@ class TestFileExporter(unittest.TestCase):
         self.assertEqual(exporter.file_name, file_name)
 
     def test_emit(self):
-        import os
         traces = {}
         file_name = 'file_name'
         exporter = self._make_one(file_name=file_name)
@@ -53,7 +51,6 @@ class TestFileExporter(unittest.TestCase):
 
 
 class MockTransport(object):
-
     def __init__(self, exporter=None):
         self.export_called = False
         self.exporter = exporter

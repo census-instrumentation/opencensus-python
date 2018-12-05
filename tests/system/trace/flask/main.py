@@ -13,16 +13,16 @@
 # limitations under the License.
 
 import os
-import sys
 
 import flask
 import mysql.connector
 import psycopg2
 import sqlalchemy
 
-from opencensus.trace.ext.flask.flask_middleware import FlaskMiddleware
 from opencensus.trace import config_integration
 from opencensus.trace.exporters import stackdriver_exporter
+from opencensus.trace.exporters.transports import background_thread
+from opencensus.trace.ext.flask.flask_middleware import FlaskMiddleware
 
 INTEGRATIONS = ['mysql', 'postgresql', 'sqlalchemy']
 
@@ -38,10 +38,9 @@ POSTGRES_PASSWORD = os.environ.get('SYSTEST_POSTGRES_PASSWORD')
 
 app = flask.Flask(__name__)
 
-# Enable tracing, send traces to Stackdriver Trace using background thread transport.
-# This is intentionally different from the Django system test which is using sync
-# transport to test both.
-from opencensus.trace.exporters.transports import background_thread
+# Enable tracing, send traces to Stackdriver Trace using background thread
+# transport.  This is intentionally different from the Django system test which
+# is using sync transport to test both.
 exporter = stackdriver_exporter.StackdriverExporter(
     transport=background_thread.BackgroundThreadTransport)
 
@@ -58,9 +57,7 @@ def hello():
 def mysql_query():
     try:
         conn = mysql.connector.connect(
-            host=DB_HOST,
-            user='root',
-            password=MYSQL_PASSWORD)
+            host=DB_HOST, user='root', password=MYSQL_PASSWORD)
         cursor = conn.cursor()
 
         query = 'SELECT 2*3'
@@ -113,8 +110,8 @@ def postgresql_query():
 def sqlalchemy_mysql_query():
     try:
         engine = sqlalchemy.create_engine(
-            'mysql+mysqlconnector://{}:{}@{}'.format(
-                'root', MYSQL_PASSWORD, DB_HOST))
+            'mysql+mysqlconnector://{}:{}@{}'.format('root', MYSQL_PASSWORD,
+                                                     DB_HOST))
         conn = engine.connect()
 
         query = 'SELECT 2*3'
@@ -136,10 +133,8 @@ def sqlalchemy_mysql_query():
 @app.route('/sqlalchemy-postgresql')
 def sqlalchemy_postgresql_query():
     try:
-        engine = sqlalchemy.create_engine(
-            'postgresql://{}:{}@{}/{}'.format(
-                'postgres', POSTGRES_PASSWORD,
-                DB_HOST, 'postgres'))
+        engine = sqlalchemy.create_engine('postgresql://{}:{}@{}/{}'.format(
+            'postgres', POSTGRES_PASSWORD, DB_HOST, 'postgres'))
         conn = engine.connect()
 
         query = 'SELECT 2*3'

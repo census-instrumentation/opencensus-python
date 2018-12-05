@@ -20,7 +20,6 @@ from opencensus.trace.ext.dbapi import trace
 
 
 class TestDBAPITrace(unittest.TestCase):
-
     def test_wrap_conn(self):
         wrap_func_name = 'wrap func'
         cursor_func_name = 'cursor_func'
@@ -45,9 +44,7 @@ class TestDBAPITrace(unittest.TestCase):
 
         self.assertEqual(wrapped.__class__.__name__, 'function')
         self.assertEqual(
-            getattr(mock_return, cursor_func_name, None),
-            wrap_func_name)
-
+            getattr(mock_return, cursor_func_name, None), wrap_func_name)
 
     def test_wrap_cursor(self):
         wrap_func_name = 'wrap func'
@@ -76,9 +73,7 @@ class TestDBAPITrace(unittest.TestCase):
 
         for func in trace.QUERY_WRAP_METHODS:
             self.assertEqual(
-                getattr(mock_return, func, None),
-                wrap_func_name + func)
-
+                getattr(mock_return, func, None), wrap_func_name + func)
 
     def test_trace_cursor_query(self):
         return_value = 'trace test'

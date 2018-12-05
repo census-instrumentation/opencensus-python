@@ -20,7 +20,6 @@ from opencensus.trace.propagation import binary_format
 
 
 class TestBinaryFormat(unittest.TestCase):
-
     def test_from_header_wrong_format(self):
         binary_header = b'\x00\x00\xa0\xb7,\xa1\\\x1aK\xd1\x89b\xd0' \
                         b'\xacY\xdc\x90\xb9\x01g)U\xf6\xf5\x01\x12'
@@ -52,9 +51,8 @@ class TestBinaryFormat(unittest.TestCase):
 
         self.assertEqual(span_context.trace_id, expected_trace_id)
         self.assertEqual(span_context.span_id, expected_span_id)
-        self.assertEqual(
-            span_context.trace_options.enabled,
-            expected_trace_option)
+        self.assertEqual(span_context.trace_options.enabled,
+                         expected_trace_option)
 
     def test_to_header_span_id_zero(self):
         from opencensus.trace.span_context import SpanContext
@@ -94,8 +92,10 @@ class TestBinaryFormat(unittest.TestCase):
 
         binary_header = propagator.to_header(span_context)
 
-        expected_binary_header = b'\x00\x00\xa0\xb7,\xa1\\\x1aK' \
-                                 b'\xd1\x89b\xd0\xacY\xdc' \
-                                 b'\x90\xb9\x01\xa0\xb7,\xa1\\\x1aK\xd1\x02\x01'
+        expected_binary_header = (
+            b'\x00\x00\xa0\xb7,\xa1\\\x1aK'
+            b'\xd1\x89b\xd0\xacY\xdc'
+            b'\x90\xb9\x01\xa0\xb7,\xa1\\\x1aK\xd1\x02\x01'
+        )
 
         self.assertEqual(expected_binary_header, binary_header)

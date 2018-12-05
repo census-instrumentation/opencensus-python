@@ -12,14 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
 import random
 import time
+
+import google.auth
+
 from opencensus.stats import aggregation as aggregation_module
 from opencensus.stats import measure as measure_module
 from opencensus.stats import stats as stats_module
 from opencensus.stats import view as view_module
-from opencensus.stats.exporters import stackdriver_exporter as stackdriver_stats
+from opencensus.stats.exporters import stackdriver_exporter
 from opencensus.tags import tag_map as tag_map_module
 
 # Create the measures
@@ -31,21 +33,27 @@ stats = stats_module.Stats()
 view_manager = stats.view_manager
 stats_recorder = stats.stats_recorder
 
-latency_view = view_module.View("task_latency_distribution", "The distribution of the task latencies",
-                                [],
-                                m_latency_ms,
-                                # Latency in buckets: [>=0ms, >=100ms, >=200ms, >=400ms, >=1s, >=2s, >=4s]
-                                aggregation_module.DistributionAggregation(
-                                    [0.0, 100.0, 200.0, 400.0, 1000.0, 2000.0, 4000.0]))
+try:
+    _, project_id = google.auth.default()
+except google.auth.exceptions.DefaultCredentialsError:
+    raise ValueError("Couldn't find Google Cloud credentials, set the "
+                     "project ID with 'gcloud set project'")
+
+latency_view = view_module.View(
+    "task_latency_distribution",
+    "The distribution of the task latencies",
+    [],
+    m_latency_ms,
+    # Latency in buckets: [>=0ms, >=100ms, >=200ms, >=400ms, >=1s, >=2s, >=4s]
+    aggregation_module.DistributionAggregation(
+        [100.0, 200.0, 400.0, 1000.0, 2000.0, 4000.0]))
 
 
 def main():
-    gcp_project_id = os.environ.get('PROJECT_ID', 'opencensus-node')
-
     # Enable metrics
-    stackdriver_exporter = stackdriver_stats.new_stats_exporter(
-        stackdriver_stats.Options(project_id=gcp_project_id))
-    view_manager.register_exporter(stackdriver_exporter)
+    exporter = stackdriver_exporter.new_stats_exporter(
+        stackdriver_exporter.Options(project_id=project_id))
+    view_manager.register_exporter(exporter)
 
     view_manager.register_view(latency_view)
     mmap = stats_recorder.new_measurement_map()

@@ -406,7 +406,7 @@ def set_attribute_label(series, resource_labels, attribute_key,
 
 def get_user_agent_slug():
     """Get the UA fragment to identify this library version."""
-    return "opencensus-{}".format(__version__)
+    return "opencensus-python/{}".format(__version__)
 
 
 def new_stats_exporter(options):

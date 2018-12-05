@@ -116,7 +116,6 @@ class TestJaegerExporter(unittest.TestCase):
     @mock.patch('opencensus.trace.exporters.jaeger_exporter.logging')
     def test_collector_emit_failed(self, mock_logging):
         url = 'http://localhost:14268/api/traces?format=jaeger.thrift'
-        http_transport = MockTransport()
         collector = jaeger_exporter.Collector(
             thrift_url=url, http_transport=MockTransport, client=MockClient)
         collector.http_transport.is_open = False
@@ -174,7 +173,7 @@ class TestJaegerExporter(unittest.TestCase):
         self.maxDiff = None
         trace_id_high = '6e0c63257de34c92'
         trace_id_low = 'bf9efcd03927272e'
-        trace_id= trace_id_high + trace_id_low
+        trace_id = trace_id_high + trace_id_low
         span_id = '6e0c63257de34c92'
         parent_span_id = '1111111111111111'
 
