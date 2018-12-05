@@ -17,12 +17,12 @@ from setuptools import find_packages
 from setuptools import setup
 
 extras = {
-    "stackdriver": ['google-cloud-trace>=0.17.0, <0.20'],
+    "stackdriver": ['google-cloud-trace>=0.19.0, <0.20'],
     "prometheus_client": ['prometheus_client==0.3.1']
 }
 
 install_requires = [
-    'google-api-core >= 0.1.1, < 2.0.0',
+    'google-api-core >= 1.0.0, < 2.0.0',
 ]
 
 exec(open("opencensus/__version__.py").read())
