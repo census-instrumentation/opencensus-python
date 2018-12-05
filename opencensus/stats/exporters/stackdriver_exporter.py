@@ -122,7 +122,8 @@ class StackdriverStatsExporter(base.StatsExporter):
             monitored_resource = MonitoredResourceUtil.get_instance()
             if monitored_resource is not None:
                 self._resource_type = monitored_resource.resource_type
-                self._resource_labels = monitored_resource.get_resource_labels()
+                self._resource_labels =\
+                    monitored_resource.get_resource_labels()
             else:
                 self._resource_type = GLOBAL_RESOURCE_TYPE
                 self._resource_labels = ""
@@ -216,7 +217,8 @@ class StackdriverStatsExporter(base.StatsExporter):
         series = monitoring_v3.types.TimeSeries()
         series.metric.type = namespaced_view_name(v_data.view.name,
                                                   metric_prefix)
-        set_monitored_resource(series, self.resource_type, self.resource_labels)
+        set_monitored_resource(series, self.resource_type,
+                               self.resource_labels)
 
         tag_agg = v_data.tag_value_aggregation_data_map
         for tag_value, agg in tag_agg.items():
@@ -375,25 +377,20 @@ def set_monitored_resource(series, resource_type, resource_labels):
     elif resource_type == 'aws_ec2_instance':
         set_attribute_label(series, resource_labels, 'aws_account')
         set_attribute_label(series, resource_labels, 'instance_id')
-        set_attribute_label(series, resource_labels, 'region',
-                            label_value_prefix='aws:')
+        set_attribute_label(series, resource_labels, 'region', 'aws:')
     series.resource.type = resource_type
 
 
 def set_attribute_label(series, resource_labels, attribute_key,
-                        canonical_key=None, label_value_prefix=''):
+                        label_value_prefix=''):
     """Set a label to timeseries that can be used for monitoring
     :param series: TimeSeries object based on view data
     :param resource_labels: collection of labels
     :param attribute_key: actual label key
-    :param canonical_key: exporter specific label key, Optional
     :param label_value_prefix: exporter specific label value prefix, Optional
     """
     if attribute_key in resource_labels:
-        if canonical_key is None:
-            canonical_key = attribute_key
-
-        series.resource.labels[canonical_key] = \
+        series.resource.labels[attribute_key] = \
             label_value_prefix + resource_labels[attribute_key]
 
 
