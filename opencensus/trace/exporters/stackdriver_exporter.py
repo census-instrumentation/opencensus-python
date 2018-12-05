@@ -223,7 +223,6 @@ class StackdriverExporter(base.Exporter):
             trace = span_data.format_legacy_trace_json(sds)
             stackdriver_spans.extend(self.translate_to_stackdriver(trace))
 
-        # FIXME: batch up to quota (25000 spans)
         self.client.batch_write_spans(project, {'spans': stackdriver_spans})
 
     def export(self, span_datas):
