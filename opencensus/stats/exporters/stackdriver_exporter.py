@@ -126,7 +126,7 @@ class StackdriverStatsExporter(base.StatsExporter):
                     monitored_resource.get_resource_labels()
             else:
                 self._resource_type = GLOBAL_RESOURCE_TYPE
-                self._resource_labels = ""
+                self._resource_labels = {}
         else:
             self._resource_type = options.resource
             self._resource_labels = options.default_monitoring_labels
