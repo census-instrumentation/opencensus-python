@@ -60,7 +60,7 @@ def _update_attr_map(span, attrs):
     span['attributes']['attributeMap'] = attr_map
 
 
-def set_attributes(trace):
+def set_attributes(trace, monitored_resource):
     """Automatically set attributes for Google Cloud environment."""
     spans = trace.get('spans')
     for span in spans:
@@ -72,14 +72,13 @@ def set_attributes(trace):
 
         set_common_attributes(span)
 
-        set_monitored_resource_attributes(span)
+        set_monitored_resource_attributes(span, monitored_resource)
 
 
-def set_monitored_resource_attributes(span):
+def set_monitored_resource_attributes(span, monitored_resource):
     """Set labels to span that can be used for tracing.
     :param span: Span object
     """
-    monitored_resource = MonitoredResourceUtil.get_instance()
     if monitored_resource is not None:
         resource_type = monitored_resource.resource_type
         resource_labels = monitored_resource.get_resource_labels()
@@ -200,6 +199,7 @@ class StackdriverExporter(base.Exporter):
         self.client = client
         self.project_id = client.project
         self.transport = transport(self)
+        self.monitored_resource = MonitoredResourceUtil.get_instance()
 
     def emit(self, span_datas):
         """
@@ -244,7 +244,7 @@ class StackdriverExporter(base.Exporter):
         :rtype: dict
         :returns: Spans in Google Cloud StackDriver Trace format.
         """
-        set_attributes(trace)
+        set_attributes(trace, self.monitored_resource)
         spans_json = trace.get('spans')
         trace_id = trace.get('traceId')
         spans_list = []
