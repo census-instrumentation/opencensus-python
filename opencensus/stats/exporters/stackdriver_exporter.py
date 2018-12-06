@@ -86,7 +86,6 @@ class Options(object):
         """
         return self._resource_labels
 
-
     @property
     def metric_prefix(self):
         """ metric_prefix overrides the

@@ -82,6 +82,7 @@ class TestOptions(unittest.TestCase):
         option = stackdriver.Options(resource_labels=resource_labels)
         self.assertEqual(option.resource_labels, resource_labels)
 
+
 class TestStackdriverStatsExporter(unittest.TestCase):
     def test_constructor(self):
         exporter = stackdriver.StackdriverStatsExporter()
