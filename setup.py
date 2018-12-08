@@ -11,19 +11,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """A setup module for Open Source Census Instrumentation Library"""
 
-import io
-from setuptools import setup, find_packages
+from setuptools import find_packages
+from setuptools import setup
 
 extras = {
-    "stackdriver": ['google-cloud-trace>=0.17.0, <0.20'],
+    "stackdriver": ['google-cloud-trace>=0.20.1, <0.30'],
     "prometheus_client": ['prometheus_client==0.3.1']
 }
 
 install_requires = [
-    'google-api-core >= 0.1.1, < 2.0.0',
+    'google-api-core >= 1.0.0, < 2.0.0',
 ]
 
 setup(
