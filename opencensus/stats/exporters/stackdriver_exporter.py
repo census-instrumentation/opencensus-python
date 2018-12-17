@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import logging
-import random
 import os
 import platform
 import re
@@ -428,9 +427,9 @@ def new_stats_exporter(options):
 
 def get_task_value():
     """ getTaskValue returns a task label value in the format of
-     "py-<random_number>@<hostname>".
+     "py-<pid>@<hostname>".
     """
-    task_value = "py@" + str(random.randint(1, 5e5))
+    task_value = "py@" + str(os.getpid())
     hostname = platform.uname()[1]
     task_value += hostname if hostname is not None else "localhost"
     return task_value
