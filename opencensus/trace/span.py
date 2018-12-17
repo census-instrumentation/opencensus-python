@@ -15,6 +15,7 @@
 from datetime import datetime
 from itertools import chain
 
+from opencensus.common.utils import _get_truncatable_str
 from opencensus.trace import attributes
 from opencensus.trace import base_span
 from opencensus.trace import link as link_module
@@ -23,7 +24,6 @@ from opencensus.trace import status
 from opencensus.trace import time_event as time_event_module
 from opencensus.trace.span_context import generate_span_id
 from opencensus.trace.tracers import base
-from opencensus.trace.utils import _get_truncatable_str
 
 
 class SpanKind(object):

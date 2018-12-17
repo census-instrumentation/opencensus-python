@@ -13,7 +13,7 @@
 # limitations under the License.
 import six
 
-from opencensus.trace import utils
+from opencensus.common import utils
 
 
 def _format_attribute_value(value):

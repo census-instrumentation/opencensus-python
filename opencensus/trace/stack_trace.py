@@ -17,7 +17,7 @@ import os
 import random
 import traceback
 
-from opencensus.trace.utils import _get_truncatable_str
+from opencensus.common.utils import _get_truncatable_str
 
 MAX_FRAMES = 128
 

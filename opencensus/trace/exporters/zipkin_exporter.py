@@ -19,9 +19,10 @@ import logging
 
 import requests
 
+from opencensus.common.utils import check_str_length
+from opencensus.common.utils import timestamp_to_microseconds
 from opencensus.trace.exporters import base
 from opencensus.trace.exporters.transports import sync
-from opencensus.trace.utils import check_str_length, timestamp_to_microseconds
 
 DEFAULT_ENDPOINT = '/api/v2/spans'
 DEFAULT_HOST_NAME = 'localhost'
