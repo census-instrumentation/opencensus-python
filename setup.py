@@ -17,8 +17,9 @@ from setuptools import find_packages
 from setuptools import setup
 
 extras = {
-    "stackdriver": ['google-cloud-trace>=0.19.0, <0.20'],
-    "prometheus_client": ['prometheus_client==0.3.1']
+    "stackdriver": ['google-cloud-trace>=0.20.1, <0.30'],
+    "prometheus_client": ['prometheus_client==0.3.1'],
+    "requests": ['wrapt==1.10.11']
 }
 
 install_requires = [

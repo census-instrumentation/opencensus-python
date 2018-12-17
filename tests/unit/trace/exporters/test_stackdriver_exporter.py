@@ -200,63 +200,49 @@ class TestStackdriverExporter(unittest.TestCase):
         exporter = stackdriver_exporter.StackdriverExporter(
             client=client, project_id=project_id)
 
-        spans = exporter.translate_to_stackdriver(trace)
+        spans = list(exporter.translate_to_stackdriver(trace))
 
-        expected_traces = {
-            'spans': [{
-                'name':
-                'projects/{}/traces/{}/spans/{}'.format(
+        expected_traces = [{
+            'name': 'projects/{}/traces/{}/spans/{}'.format(
                     project_id, trace_id, span_id),
-                'displayName': {
-                    'value': span_name,
-                    'truncated_byte_count': 0
-                },
-                'attributes': {
-                    'attributeMap': {
-                        'g.co/agent': {
-                            'string_value': {
-                                'truncated_byte_count':
-                                0,
-                                'value':
+            'displayName': {
+                'value': span_name,
+                'truncated_byte_count': 0
+            },
+            'attributes': {
+                'attributeMap': {
+                    'g.co/agent': {
+                        'string_value': {
+                            'truncated_byte_count': 0,
+                            'value':
                                 'opencensus-python [{}]'.format(__version__)
-                            }
-                        },
-                        'key': {
-                            'string_value': {
-                                'truncated_byte_count': 0,
-                                'value': 'value'
-                            }
-                        },
-                        '/http/host': {
-                            'string_value': {
-                                'truncated_byte_count': 0,
-                                'value': 'host'
-                            }
+                        }
+                    },
+                    'key': {
+                        'string_value': {
+                            'truncated_byte_count': 0,
+                            'value': 'value'
+                        }
+                    },
+                    '/http/host': {
+                        'string_value': {
+                            'truncated_byte_count': 0,
+                            'value': 'host'
                         }
                     }
-                },
-                'spanId':
-                str(span_id),
-                'startTime':
-                start_time,
-                'endTime':
-                end_time,
-                'parentSpanId':
-                str(parent_span_id),
-                'status':
-                None,
-                'links':
-                None,
-                'stackTrace':
-                None,
-                'timeEvents':
-                None,
-                'childSpanCount':
-                0,
-                'sameProcessAsParentSpan':
-                None
-            }]
-        }
+                }
+            },
+            'spanId': str(span_id),
+            'startTime': start_time,
+            'endTime': end_time,
+            'parentSpanId': str(parent_span_id),
+            'status': None,
+            'links': None,
+            'stackTrace': None,
+            'timeEvents': None,
+            'childSpanCount': 0,
+            'sameProcessAsParentSpan': None
+        }]
 
         self.assertEqual(spans, expected_traces)
 
