@@ -53,6 +53,8 @@ VIDEO_SIZE_VIEW = view_module.View(
     VIDEO_SIZE_VIEW_NAME, "processed video size over time", [FRONTEND_KEY],
     VIDEO_SIZE_MEASURE, VIDEO_SIZE_DISTRIBUTION)
 
+TEST_TIME = datetime(2018, 12, 25, 1, 2, 3)
+
 
 class _Client(object):
     def __init__(self, client_info=None):
@@ -213,8 +215,7 @@ class TestStackdriverStatsExporter(unittest.TestCase):
                 return_value=None)
     def test_emit(self, monitor_resource_mock):
         client = mock.Mock()
-        start_time = datetime.utcnow()
-        end_time = datetime.utcnow()
+        start_time = end_time = TEST_TIME
         v_data = view_data_module.ViewData(
             view=VIDEO_SIZE_VIEW, start_time=start_time, end_time=end_time)
         view_data = [v_data]
@@ -237,8 +238,7 @@ class TestStackdriverStatsExporter(unittest.TestCase):
     def test_export_with_data(self):
         client = mock.Mock()
         transport = mock.Mock()
-        start_time = datetime.utcnow()
-        end_time = datetime.utcnow()
+        start_time = end_time = TEST_TIME
         v_data = view_data_module.ViewData(
             view=VIDEO_SIZE_VIEW, start_time=start_time, end_time=end_time)
         view_data = [v_data]
@@ -261,8 +261,7 @@ class TestStackdriverStatsExporter(unittest.TestCase):
                 return_value=None)
     def test_handle_upload_with_data(self, monitor_resource_mock):
         client = mock.Mock()
-        start_time = datetime.utcnow()
-        end_time = datetime.utcnow()
+        start_time = end_time = TEST_TIME
         v_data = view_data_module.ViewData(
             view=VIDEO_SIZE_VIEW, start_time=start_time, end_time=end_time)
         view_data = [v_data]
@@ -277,8 +276,7 @@ class TestStackdriverStatsExporter(unittest.TestCase):
                 return_value=None)
     def test_make_request(self, monitor_resource_mock):
         client = mock.Mock()
-        start_time = datetime.utcnow()
-        end_time = datetime.utcnow()
+        start_time = end_time = TEST_TIME
         v_data = view_data_module.ViewData(
             view=VIDEO_SIZE_VIEW, start_time=start_time, end_time=end_time)
         view_data = [v_data]
@@ -293,8 +291,7 @@ class TestStackdriverStatsExporter(unittest.TestCase):
                 return_value=None)
     def test_make_request_1(self, monitor_resource_mock):
         client = mock.Mock()
-        start_time = datetime.utcnow()
-        end_time = datetime.utcnow()
+        start_time = end_time = TEST_TIME
         v_data = view_data_module.ViewData(
             view=VIDEO_SIZE_VIEW, start_time=start_time, end_time=end_time)
         view_data = [v_data]
