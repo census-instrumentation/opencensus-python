@@ -22,6 +22,7 @@ from google.api_core.gapic_v1 import client_info
 from google.cloud import monitoring_v3
 
 from opencensus.__version__ import __version__
+from opencensus.common import utils
 from opencensus.common.monitored_resource_util.monitored_resource_util \
     import MonitoredResourceUtil
 from opencensus.common.transports import async_
@@ -166,7 +167,7 @@ class StackdriverStatsExporter(base.StatsExporter):
         """ It receives an array of view_data object
             and create time series for each value
         """
-        view_data_set = set(view_data)
+        view_data_set = utils.uniq(view_data)
         requests = self.make_request(view_data_set, MAX_TIME_SERIES_PER_UPLOAD)
         for request in requests:
             self.client.create_time_series(request[CONS_NAME],

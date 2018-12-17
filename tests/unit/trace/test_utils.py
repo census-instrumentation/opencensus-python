@@ -63,3 +63,7 @@ class TestUtils(unittest.TestCase):
         # truncated in the middle of a character.
         self.assertEqual(expected_result, result)
         self.assertEqual(truncated_byte_count, 5)
+
+    def test_uniq(self):
+        self.assertEqual(
+            list(utils.uniq(['a', 'b', 'a', 'c', 'c'])), ['a', 'b', 'c'])
