@@ -109,8 +109,8 @@ class Options(object):
 
 
 class StackdriverStatsExporter(base.StatsExporter):
-    """ StackdriverStatsExporter exports stats
-    to the Stackdriver Monitoring."""
+    """Stats exporter for the Stackdriver Monitoring backend."""
+
     def __init__(self,
                  options=Options(),
                  client=None,
@@ -210,8 +210,9 @@ class StackdriverStatsExporter(base.StatsExporter):
             set_monitored_resource(series, option_resource_type)
 
             point = series.points.add()
-            if type(agg) is \
-                    aggregation.aggregation_data.DistributionAggregationData:
+            if isinstance(
+                    agg,
+                    aggregation.aggregation_data.DistributionAggregationData):
                 agg_data = tag_agg.get(tag_value)
                 dist_value = point.value.distribution_value
                 dist_value.count = agg_data.count_data
@@ -233,14 +234,15 @@ class StackdriverStatsExporter(base.StatsExporter):
                 buckets.extend([0])
                 bounds.extend(list(map(float, agg_data.bounds)))
                 buckets.extend(list(map(int, agg_data.counts_per_bucket)))
-            elif type(agg) is \
-                    aggregation.aggregation_data.CountAggregationData:
+            elif isinstance(agg,
+                            aggregation.aggregation_data.CountAggregationData):
                 point.value.int64_value = agg.count_data
-            elif type(agg) is \
-                    aggregation.aggregation_data.SumAggregationDataFloat:
+            elif isinstance(
+                    agg, aggregation.aggregation_data.SumAggregationDataFloat):
                 point.value.double_value = agg.sum_data
-            elif type(agg) is not aggregation.aggregation_data. \
-                    LastValueAggregationData:  # pragma: NO COVER
+            elif not isinstance(
+                    agg, aggregation.aggregation_data
+                    .LastValueAggregationData):  # pragma: NO COVER
                 if isinstance(v_data.view.measure, measure.MeasureInt):
                     point.value.int64_value = int(agg.value)
                 elif isinstance(v_data.view.measure, measure.MeasureFloat):
@@ -257,7 +259,7 @@ class StackdriverStatsExporter(base.StatsExporter):
             point.interval.end_time.seconds = int(timestamp_end)
 
             secs = point.interval.end_time.seconds
-            point.interval.end_time.nanos = int((timestamp_end-secs)*10**9)
+            point.interval.end_time.nanos = int((timestamp_end - secs) * 10**9)
 
             if type(agg) is not aggregation.aggregation_data.\
                     LastValueAggregationData:  # pragma: NO COVER
@@ -316,8 +318,8 @@ class StackdriverStatsExporter(base.StatsExporter):
             if isinstance(view_measure, measure.MeasureFloat):
                 value_type = metric_desc.ValueType.DOUBLE
         else:
-            raise Exception("unsupported aggregation type: %s"
-                            % type(view_aggregation))
+            raise Exception(
+                "unsupported aggregation type: %s" % type(view_aggregation))
 
         display_name_prefix = DEFAULT_DISPLAY_NAME_PREFIX
         if self.options.metric_prefix != "":
@@ -468,10 +470,10 @@ def set_metric_labels(series, view, tag_values):
             "TagKeys and TagValues don't have same size."
         )  # pragma: NO COVER
 
-    for index in range(len(tag_values)):
-        if tag_values[index] is not None:
-            series.metric.labels[remove_non_alphanumeric(view.columns[index])]\
-                = tag_values[index]
+    for ii, tag_value in enumerate(tag_values):
+        if tag_value is not None:
+            metric_label = remove_non_alphanumeric(view.columns[ii])
+            series.metric.labels[metric_label] = tag_value
     series.metric.labels[OPENCENSUS_TASK] = get_task_value()
 
 
