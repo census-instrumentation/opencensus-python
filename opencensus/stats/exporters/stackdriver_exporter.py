@@ -202,6 +202,7 @@ class StackdriverStatsExporter(base.StatsExporter):
         """ Create the TimeSeries object based on the view data
         """
         time_series_list = []
+        aggregation_type = v_data.view.aggregation.aggregation_type
         tag_agg = v_data.tag_value_aggregation_data_map
         for tag_value, agg in tag_agg.items():
             series = monitoring_v3.types.TimeSeries()
@@ -211,15 +212,12 @@ class StackdriverStatsExporter(base.StatsExporter):
             set_monitored_resource(series, option_resource_type)
 
             point = series.points.add()
-            if isinstance(
-                    agg,
-                    aggregation.aggregation_data.DistributionAggregationData):
-                agg_data = tag_agg.get(tag_value)
+            if aggregation_type is aggregation.Type.DISTRIBUTION:
                 dist_value = point.value.distribution_value
-                dist_value.count = agg_data.count_data
-                dist_value.mean = agg_data.mean_data
+                dist_value.count = agg.count_data
+                dist_value.mean = agg.mean_data
 
-                sum_of_sqd = agg_data.sum_of_sqd_deviations
+                sum_of_sqd = agg.sum_of_sqd_deviations
                 dist_value.sum_of_squared_deviation = sum_of_sqd
 
                 # Uncomment this when stackdriver supports Range
@@ -233,17 +231,16 @@ class StackdriverStatsExporter(base.StatsExporter):
                 # [0, first_bound).
                 bounds.extend([0])
                 buckets.extend([0])
-                bounds.extend(list(map(float, agg_data.bounds)))
-                buckets.extend(list(map(int, agg_data.counts_per_bucket)))
-            elif isinstance(agg,
-                            aggregation.aggregation_data.CountAggregationData):
+                bounds.extend(list(map(float, agg.bounds)))
+                buckets.extend(list(map(int, agg.counts_per_bucket)))
+            elif aggregation_type is aggregation.Type.COUNT:
                 point.value.int64_value = agg.count_data
-            elif isinstance(
-                    agg, aggregation.aggregation_data.SumAggregationDataFloat):
-                point.value.double_value = agg.sum_data
-            elif not isinstance(
-                    agg, aggregation.aggregation_data
-                    .LastValueAggregationData):  # pragma: NO COVER
+            elif aggregation_type is aggregation.Type.SUM:
+                if isinstance(v_data.view.measure, measure.MeasureInt):
+                    point.value.int64_value = int(agg.sum_data)
+                if isinstance(v_data.view.measure, measure.MeasureFloat):
+                    point.value.double_value = float(agg.sum_data)
+            elif aggregation_type is not aggregation.Type.LASTVALUE:
                 if isinstance(v_data.view.measure, measure.MeasureInt):
                     point.value.int64_value = int(agg.value)
                 elif isinstance(v_data.view.measure, measure.MeasureFloat):
