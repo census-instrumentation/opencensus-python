@@ -94,7 +94,6 @@ def wrap_apply_async(apply_async_func):
         propagator = binary_format.BinaryFormatPropagator()
 
         wrapped_kwargs = {}
-        print(_tracer)
         wrapped_kwargs["span_context_binary"] = propagator.to_header(
             _tracer.span_context
         )
