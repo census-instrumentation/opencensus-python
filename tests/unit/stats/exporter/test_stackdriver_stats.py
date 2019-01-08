@@ -699,9 +699,14 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         time_series_list = exporter.create_time_series_list(
             v_data, "global", "")
         self.assertEquals(len(time_series_list), 1)
-        self.assertEquals(time_series_list[0].metric.type,
+        [time_series] = time_series_list
+        self.assertEquals(time_series.metric.type,
                           "custom.googleapis.com/opencensus/view-name3")
-        self.assertIsNotNone(time_series_list)
+
+        self.assertEquals(len(time_series.points), 1)
+        expected_value = monitoring_v3.types.TypedValue()
+        expected_value.double_value = 2.2
+        self.assertEquals(time_series.points[0].value, expected_value)
 
     def test_create_timeseries_from_distribution(self):
         """Check for explicit 0-bound bucket for SD export."""
