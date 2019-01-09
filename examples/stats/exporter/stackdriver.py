@@ -26,7 +26,8 @@ from opencensus.tags import tag_map as tag_map_module
 
 # Create the measures
 # The latency in milliseconds
-m_latency_ms = measure_module.MeasureFloat("task_latency", "The task latency in milliseconds", "ms")
+m_latency_ms = measure_module.MeasureFloat(
+    "task_latency", "The task latency in milliseconds", "ms")
 
 # The stats recorder
 stats = stats_module.Stats()
