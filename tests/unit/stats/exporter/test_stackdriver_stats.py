@@ -26,7 +26,6 @@ from opencensus.stats import stats as stats_module
 from opencensus.stats import view as view_module
 from opencensus.stats import view_data as view_data_module
 from opencensus.stats.exporters import stackdriver_exporter as stackdriver
-from opencensus.stats.exporters.stackdriver_exporter import set_metric_labels
 from opencensus.tags import tag_key as tag_key_module
 from opencensus.tags import tag_map as tag_map_module
 from opencensus.tags import tag_value as tag_value_module
@@ -783,7 +782,6 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         self.assertEqual(rs_ts.points[0].value.int64_value, 10)
         self.assertEqual(bc_ts.points[0].value.int64_value, 20)
 
-
     def test_create_metric_descriptor_count(self):
         client = mock.Mock()
         option = stackdriver.Options(
@@ -885,10 +883,10 @@ class TestStackdriverStatsExporter(unittest.TestCase):
     def test_set_metric_labels(self):
         series = monitoring_v3.types.TimeSeries()
         tag_value = tag_value_module.TagValue("1200")
-        set_metric_labels(series, VIDEO_SIZE_VIEW, [tag_value])
+        stackdriver.set_metric_labels(series, VIDEO_SIZE_VIEW, [tag_value])
         self.assertEquals(len(series.metric.labels), 2)
 
     def test_set_metric_labels_with_None(self):
         series = monitoring_v3.types.TimeSeries()
-        set_metric_labels(series, VIDEO_SIZE_VIEW, [None])
+        stackdriver.set_metric_labels(series, VIDEO_SIZE_VIEW, [None])
         self.assertEquals(len(series.metric.labels), 1)
