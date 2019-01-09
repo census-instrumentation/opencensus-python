@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
 import os
 import platform
 import re
@@ -21,6 +22,7 @@ from google.api_core.gapic_v1 import client_info
 from google.cloud import monitoring_v3
 
 from opencensus.__version__ import __version__
+from opencensus.common import utils
 from opencensus.common.monitored_resource_util.monitored_resource_util \
     import MonitoredResourceUtil
 from opencensus.common.transports import async_
@@ -29,6 +31,7 @@ from opencensus.stats import measure
 from opencensus.stats.exporters import base
 
 MAX_TIME_SERIES_PER_UPLOAD = 200
+OPENCENSUS_TASK = "opencensus_task"
 OPENCENSUS_TASK_DESCRIPTION = "Opencensus task identifier"
 DEFAULT_DISPLAY_NAME_PREFIX = "OpenCensus"
 ERROR_BLANK_PROJECT_ID = "expecting a non-blank ProjectID"
@@ -107,8 +110,8 @@ class Options(object):
 
 
 class StackdriverStatsExporter(base.StatsExporter):
-    """ StackdriverStatsExporter exports stats
-    to the Stackdriver Monitoring."""
+    """Stats exporter for the Stackdriver Monitoring backend."""
+
     def __init__(self,
                  options=Options(),
                  client=None,
@@ -164,7 +167,8 @@ class StackdriverStatsExporter(base.StatsExporter):
         """ It receives an array of view_data object
             and create time series for each value
         """
-        requests = self.make_request(view_data, MAX_TIME_SERIES_PER_UPLOAD)
+        view_data_set = utils.uniq(view_data)
+        requests = self.make_request(view_data_set, MAX_TIME_SERIES_PER_UPLOAD)
         for request in requests:
             self.client.create_time_series(request[CONS_NAME],
                                            request[CONS_TIME_SERIES])
@@ -181,7 +185,7 @@ class StackdriverStatsExporter(base.StatsExporter):
         for v_data in view_data:
             series = self.create_time_series_list(v_data, resource,
                                                   metric_prefix)
-            time_series.append(series)
+            time_series.extend(series)
 
             project_id = self.options.project_id
             request = {}
@@ -197,16 +201,19 @@ class StackdriverStatsExporter(base.StatsExporter):
                                 metric_prefix):
         """ Create the TimeSeries object based on the view data
         """
-        series = monitoring_v3.types.TimeSeries()
-        series.metric.type = namespaced_view_name(v_data.view.name,
-                                                  metric_prefix)
-        set_monitored_resource(series, option_resource_type)
-
+        time_series_list = []
         tag_agg = v_data.tag_value_aggregation_data_map
         for tag_value, agg in tag_agg.items():
+            series = monitoring_v3.types.TimeSeries()
+            series.metric.type = namespaced_view_name(v_data.view.name,
+                                                      metric_prefix)
+            set_metric_labels(series, v_data.view, tag_value)
+            set_monitored_resource(series, option_resource_type)
+
             point = series.points.add()
-            if type(agg) is \
-                    aggregation.aggregation_data.DistributionAggregationData:
+            if isinstance(
+                    agg,
+                    aggregation.aggregation_data.DistributionAggregationData):
                 agg_data = tag_agg.get(tag_value)
                 dist_value = point.value.distribution_value
                 dist_value.count = agg_data.count_data
@@ -228,12 +235,21 @@ class StackdriverStatsExporter(base.StatsExporter):
                 buckets.extend([0])
                 bounds.extend(list(map(float, agg_data.bounds)))
                 buckets.extend(list(map(int, agg_data.counts_per_bucket)))
+            elif isinstance(agg,
+                            aggregation.aggregation_data.CountAggregationData):
+                point.value.int64_value = agg.count_data
+            elif isinstance(
+                    agg, aggregation.aggregation_data.SumAggregationDataFloat):
+                point.value.double_value = agg.sum_data
+            elif not isinstance(
+                    agg, aggregation.aggregation_data
+                    .LastValueAggregationData):  # pragma: NO COVER
+                if isinstance(v_data.view.measure, measure.MeasureInt):
+                    point.value.int64_value = int(agg.value)
+                elif isinstance(v_data.view.measure, measure.MeasureFloat):
+                    point.value.double_value = float(agg.value)
             else:
-                convFloat, isFloat = as_float(tag_value[0])
-                if isFloat:  # pragma: NO COVER
-                    point.value.double_value = convFloat
-                else:  # pragma: NO COVER
-                    point.value.string_value = str(tag_value[0])
+                point.value.string_value = str(tag_value[0])
 
             start = datetime.strptime(v_data.start_time, EPOCH_PATTERN)
             end = datetime.strptime(v_data.end_time, EPOCH_PATTERN)
@@ -244,7 +260,7 @@ class StackdriverStatsExporter(base.StatsExporter):
             point.interval.end_time.seconds = int(timestamp_end)
 
             secs = point.interval.end_time.seconds
-            point.interval.end_time.nanos = int((timestamp_end-secs)*10**9)
+            point.interval.end_time.nanos = int((timestamp_end - secs) * 10**9)
 
             if type(agg) is not aggregation.aggregation_data.\
                     LastValueAggregationData:  # pragma: NO COVER
@@ -256,7 +272,10 @@ class StackdriverStatsExporter(base.StatsExporter):
             start_time.seconds = int(timestamp_start)
             start_secs = start_time.seconds
             start_time.nanos = int((timestamp_start - start_secs) * 1e9)
-        return series
+
+            time_series_list.append(series)
+
+        return time_series_list
 
     def create_metric_descriptor(self, view):
         """ it creates a MetricDescriptor
@@ -300,8 +319,8 @@ class StackdriverStatsExporter(base.StatsExporter):
             if isinstance(view_measure, measure.MeasureFloat):
                 value_type = metric_desc.ValueType.DOUBLE
         else:
-            raise Exception("unsupported aggregation type: %s"
-                            % type(view_aggregation))
+            raise Exception(
+                "unsupported aggregation type: %s" % type(view_aggregation))
 
         display_name_prefix = DEFAULT_DISPLAY_NAME_PREFIX
         if self.options.metric_prefix != "":
@@ -406,11 +425,6 @@ def new_stats_exporter(options):
 
     if options.default_monitoring_labels is not None:
         exporter.set_default_labels(options.default_monitoring_labels)
-    else:
-        label = {}
-        key = remove_non_alphanumeric(get_task_value())
-        label[key] = OPENCENSUS_TASK_DESCRIPTION
-        exporter.set_default_labels(label)
     return exporter
 
 
@@ -446,7 +460,22 @@ def new_label_descriptors(defaults, keys):
         label = {}
         label["key"] = remove_non_alphanumeric(tag_key)
         label_descriptors.append(label)
+    label_descriptors.append({"key": OPENCENSUS_TASK,
+                              "description": OPENCENSUS_TASK_DESCRIPTION})
     return label_descriptors
+
+
+def set_metric_labels(series, view, tag_values):
+    if len(view.columns) != len(tag_values):
+        logging.warning(
+            "TagKeys and TagValues don't have same size."
+        )  # pragma: NO COVER
+
+    for ii, tag_value in enumerate(tag_values):
+        if tag_value is not None:
+            metric_label = remove_non_alphanumeric(view.columns[ii])
+            series.metric.labels[metric_label] = tag_value
+    series.metric.labels[OPENCENSUS_TASK] = get_task_value()
 
 
 def remove_non_alphanumeric(text):

@@ -19,7 +19,7 @@ import unittest
 
 import mock
 
-from opencensus.trace import utils
+from opencensus.common import utils
 
 
 class TestUtils(unittest.TestCase):
@@ -37,7 +37,7 @@ class TestUtils(unittest.TestCase):
     def test__get_truncatable_str_length_exceeds(self):
         max_len = 5
         str_to_convert = 'length exceeded'
-        patch = mock.patch('opencensus.trace.utils.MAX_LENGTH', max_len)
+        patch = mock.patch('opencensus.common.utils.MAX_LENGTH', max_len)
 
         with patch:
             truncatable_str = utils._get_truncatable_str(str_to_convert)
@@ -63,3 +63,7 @@ class TestUtils(unittest.TestCase):
         # truncated in the middle of a character.
         self.assertEqual(expected_result, result)
         self.assertEqual(truncated_byte_count, 5)
+
+    def test_uniq(self):
+        self.assertEqual(
+            list(utils.uniq(['a', 'b', 'a', 'c', 'c'])), ['a', 'b', 'c'])
