@@ -767,10 +767,10 @@ class TestStackdriverStatsExporter(unittest.TestCase):
             "custom.googleapis.com/opencensus/my.org/views/video_size_test2")
 
         # Order isn't guaranteed, so compare them in a set.
-        self.assertItemsEqual(
-            [dict(time_series1.metric.labels),
-             dict(time_series2.metric.labels)],
-            [{FRONTEND_KEY_CLEAN: "1200"}, {FRONTEND_KEY_CLEAN: "1400"}])
+        self.assertEqual(
+            {time_series1.metric.labels[FRONTEND_KEY_CLEAN],
+             time_series2.metric.labels[FRONTEND_KEY_CLEAN]},
+            {"1200", "1400"})
         self.assertIsNotNone(time_series1.resource)
         self.assertIsNotNone(time_series2.resource)
 
@@ -782,9 +782,9 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         self.assertEquals(value2.distribution_value.count, 1)
 
         # Order isn't guaranteed, so compare them in a set.
-        self.assertItemsEqual(
-            [value1.distribution_value.mean, value2.distribution_value.mean],
-            [12 * MiB, 25 * MiB])
+        self.assertEqual(
+            {value1.distribution_value.mean, value2.distribution_value.mean},
+            {12 * MiB, 25 * MiB})
 
     @mock.patch('opencensus.stats.exporters.stackdriver_exporter.'
                 'MonitoredResourceUtil.get_instance',
