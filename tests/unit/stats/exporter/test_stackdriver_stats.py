@@ -752,33 +752,33 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         self.assertEquals(len(time_series_list), 2)
         [time_series1, time_series2] = time_series_list
 
-        # Verify first time series
         self.assertEquals(time_series1.resource.type, "global")
+        self.assertEquals(time_series2.resource.type, "global")
         self.assertEquals(
             time_series1.metric.type,
             "custom.googleapis.com/opencensus/my.org/views/video_size_test2")
-        self.assertEquals(dict(time_series1.metric.labels),
-                          {FRONTEND_KEY: "1200"})
-        self.assertIsNotNone(time_series1.resource)
-
-        self.assertEquals(len(time_series1.points), 1)
-        value = time_series1.points[0].value
-        self.assertEquals(value.distribution_value.count, 1)
-        self.assertEquals(value.distribution_value.mean, 25 * MiB)
-
-        # Verify second time series
-        self.assertEquals(time_series2.resource.type, "global")
         self.assertEquals(
             time_series2.metric.type,
             "custom.googleapis.com/opencensus/my.org/views/video_size_test2")
-        self.assertEquals(dict(time_series2.metric.labels),
-                          {FRONTEND_KEY: "1400"})
+
+        # Order isn't guaranteed, so compare them in a set.
+        self.assertEquals(set(dict(time_series1.metric.labels),
+                              dict(time_series2.metric.labels)),
+                          set({FRONTEND_KEY: "1200"}, {FRONTEND_KEY: "1400"}))
+        self.assertIsNotNone(time_series1.resource)
         self.assertIsNotNone(time_series2.resource)
 
+        self.assertEquals(len(time_series1.points), 1)
         self.assertEquals(len(time_series2.points), 1)
-        value = time_series2.points[0].value
-        self.assertEquals(value.distribution_value.count, 1)
-        self.assertEquals(value.distribution_value.mean, 12 * MiB)
+        value1 = time_series1.points[0].value
+        value2 = time_series2.points[0].value
+        self.assertEquals(value1.distribution_value.count, 1)
+        self.assertEquals(value2.distribution_value.count, 1)
+
+        # Order isn't guaranteed, so compare them in a set.
+        self.assertEquals(set(value1.distribution_value.mean,
+                              value2.distribution_value.mean),
+                          set(12 * MiB, 25 * MiB))
 
     @mock.patch('opencensus.stats.exporters.stackdriver_exporter.'
                 'MonitoredResourceUtil.get_instance',
