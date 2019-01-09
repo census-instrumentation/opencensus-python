@@ -167,35 +167,24 @@ class StackdriverStatsExporter(base.StatsExporter):
         """ It receives an array of view_data object
             and create time series for each value
         """
-        view_data_set = utils.uniq(view_data)
-        requests = self.make_request(view_data_set, MAX_TIME_SERIES_PER_UPLOAD)
-        for request in requests:
-            self.client.create_time_series(request[CONS_NAME],
-                                           request[CONS_TIME_SERIES])
+        time_series_lists = self.make_request(view_data, MAX_TIME_SERIES_PER_UPLOAD)
+        for time_series_list in time_series_lists:
+            self.client.create_time_series(
+                self.client.project_path(self.options.project_id),
+                time_series_list)
 
     def make_request(self, view_data, limit):
         """ Create the data structure that will be
             sent to Stackdriver Monitoring
         """
-        requests = []
-        time_series = []
+        full_time_series_list = [series for series in (self.create_time_series_list(
+            v_data, self.options.resource, self.options.metric_prefix) for v_data in view_data)]
+        time_series_lists = []
+        for i in range(0, len(full_time_series_list), limit):
+            time_series_lists.append(
+                [tsl for tsl in full_time_series_list[i:i + limit]])
 
-        resource = self.options.resource
-        metric_prefix = self.options.metric_prefix
-        for v_data in view_data:
-            series = self.create_time_series_list(v_data, resource,
-                                                  metric_prefix)
-            time_series.extend(series)
-
-            project_id = self.options.project_id
-            request = {}
-            request[CONS_NAME] = self.client.project_path(project_id)
-            request[CONS_TIME_SERIES] = time_series
-            requests.append(request)
-
-            if len(time_series) == int(limit):
-                time_series = []
-        return requests
+        return full_time_series_list
 
     def create_time_series_list(self, v_data, option_resource_type,
                                 metric_prefix):
@@ -237,6 +226,8 @@ class StackdriverStatsExporter(base.StatsExporter):
                 point.value.int64_value = agg.count_data
             elif aggregation_type is aggregation.Type.SUM:
                 if isinstance(v_data.view.measure, measure.MeasureInt):
+                    # TODO: Add implementation of sum aggregation that does not
+                    # store it's data as a float.
                     point.value.int64_value = int(agg.sum_data)
                 if isinstance(v_data.view.measure, measure.MeasureFloat):
                     point.value.double_value = float(agg.sum_data)
@@ -259,7 +250,7 @@ class StackdriverStatsExporter(base.StatsExporter):
             secs = point.interval.end_time.seconds
             point.interval.end_time.nanos = int((timestamp_end - secs) * 10**9)
 
-            if type(agg) is not aggregation.aggregation_data.\
+            if type(agg_data) is not aggregation.aggregation_data.\
                     LastValueAggregationData:  # pragma: NO COVER
                 if timestamp_start == timestamp_end:
                     # avoiding start_time and end_time to be equal
@@ -490,3 +481,6 @@ def as_float(value):
         return float(value), True
     except Exception:  # Catch all exception including ValueError
         return None, False
+
+def metric_labels_from_tags(columns, tag_values):
+    return {key: value for key, value in zip(columns, tag_values) if value is not None}
