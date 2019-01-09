@@ -37,6 +37,11 @@ FRONTEND_KEY_FLOAT = tag_key_module.TagKey("my.org/keys/frontend-FLOAT")
 FRONTEND_KEY_INT = tag_key_module.TagKey("my.org/keys/frontend-INT")
 FRONTEND_KEY_STR = tag_key_module.TagKey("my.org/keys/frontend-STR")
 
+FRONTEND_KEY_CLEAN = "myorgkeysfrontend"
+FRONTEND_KEY_FLOAT_CLEAN = "myorgkeysfrontendFLOAT"
+FRONTEND_KEY_INT_CLEAN = "myorgkeysfrontendINT"
+FRONTEND_KEY_STR_CLEAN = "myorgkeysfrontendSTR"
+
 VIDEO_SIZE_MEASURE = measure_module.MeasureInt(
     "my.org/measure/video_size_test2", "size of processed videos", "By")
 VIDEO_SIZE_MEASURE_2 = measure_module.MeasureInt(
@@ -395,7 +400,7 @@ class TestStackdriverStatsExporter(unittest.TestCase):
             time_series_list[0].metric.type,
             "custom.googleapis.com/opencensus/my.org/views/video_size_test2")
         self.assertEquals(dict(time_series.metric.labels),
-                          {FRONTEND_KEY: "1200"})
+                          {FRONTEND_KEY_CLEAN: "1200"})
         self.assertIsNotNone(time_series.resource)
 
         self.assertEquals(len(time_series.points), 1)
@@ -411,7 +416,7 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         self.assertEquals(time_series.metric.type,
                           "kubernetes.io/myorg/my.org/views/video_size_test2")
         self.assertEquals(dict(time_series.metric.labels),
-                          {FRONTEND_KEY: "1200"})
+                          {FRONTEND_KEY_CLEAN: "1200"})
         self.assertIsNotNone(time_series.resource)
 
         self.assertEquals(len(time_series.points), 1)
@@ -582,7 +587,7 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         self.assertEquals(time_series.metric.type,
                           "kubernetes.io/myorg/view-name1")
         self.assertEquals(dict(time_series.metric.labels),
-                          {FRONTEND_KEY_INT: "Abc"})
+                          {FRONTEND_KEY_INT_CLEAN: "Abc"})
         self.assertIsNotNone(time_series.resource)
 
         self.assertEquals(len(time_series.points), 1)
@@ -624,7 +629,7 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         self.assertEquals(time_series.metric.type,
                           "kubernetes.io/myorg/view-name1")
         self.assertEquals(dict(time_series.metric.labels),
-                          {FRONTEND_KEY_FLOAT: "Abc"})
+                          {FRONTEND_KEY_FLOAT_CLEAN: "Abc"})
         self.assertIsNotNone(time_series.resource)
 
         self.assertEquals(len(time_series.points), 1)
@@ -712,7 +717,7 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         self.assertEquals(time_series.metric.type,
                           "custom.googleapis.com/opencensus/view-name2")
         self.assertEquals(dict(time_series.metric.labels),
-                          {FRONTEND_KEY_FLOAT: "1200"})
+                          {FRONTEND_KEY_FLOAT_CLEAN: "1200"})
         self.assertIsNotNone(time_series.resource)
 
         self.assertEquals(len(time_series.points), 1)
@@ -765,7 +770,7 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         self.assertItemsEqual(
             [dict(time_series1.metric.labels),
              dict(time_series2.metric.labels)],
-            [{FRONTEND_KEY: "1200"}, {FRONTEND_KEY: "1400"}])
+            [{FRONTEND_KEY_CLEAN: "1200"}, {FRONTEND_KEY_CLEAN: "1400"}])
         self.assertIsNotNone(time_series1.resource)
         self.assertIsNotNone(time_series2.resource)
 
@@ -818,7 +823,7 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         self.assertEquals(time_series.metric.type,
                           "custom.googleapis.com/opencensus/" + view_name)
         self.assertEquals(dict(time_series.metric.labels),
-                          {FRONTEND_KEY: "1200"})
+                          {FRONTEND_KEY_CLEAN: "1200"})
         self.assertIsNotNone(time_series.resource)
 
         self.assertEquals(len(time_series.points), 1)
@@ -879,7 +884,7 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         [time_series] = time_series_list
 
         self.assertEquals(dict(time_series.metric.labels),
-                          {'tag_key': 'tag_value'})
+                          {'tagkey': 'tag_value'})
         self.assertEqual(len(time_series.points), 1)
         [point] = time_series.points
         dv = point.value.distribution_value

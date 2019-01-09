@@ -483,5 +483,5 @@ def remove_non_alphanumeric(text):
 
 
 def metric_labels_from_tags(columns, tag_values):
-    return {key: value for key, value
+    return {remove_non_alphanumeric(key): value for key, value
             in zip(columns, tag_values) if value is not None}
