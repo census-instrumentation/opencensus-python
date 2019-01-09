@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import logging
+import itertools
 import os
 import platform
 import re
@@ -167,24 +168,32 @@ class StackdriverStatsExporter(base.StatsExporter):
         """ It receives an array of view_data object
             and create time series for each value
         """
-        time_series_lists = self.make_request(view_data, MAX_TIME_SERIES_PER_UPLOAD)
-        for time_series_list in time_series_lists:
+        time_series_batches = self.create_batched_time_series(
+            view_data, MAX_TIME_SERIES_PER_UPLOAD)
+        for time_series_batch in time_series_batches:
             self.client.create_time_series(
                 self.client.project_path(self.options.project_id),
-                time_series_list)
+                time_series_batch)
 
-    def make_request(self, view_data, limit):
+    def create_batched_time_series(self, view_data, batch_size):
         """ Create the data structure that will be
             sent to Stackdriver Monitoring
         """
-        full_time_series_list = [series for series in (self.create_time_series_list(
-            v_data, self.options.resource, self.options.metric_prefix) for v_data in view_data)]
-        time_series_lists = []
-        for i in range(0, len(full_time_series_list), limit):
-            time_series_lists.append(
-                [tsl for tsl in full_time_series_list[i:i + limit]])
-
-        return full_time_series_list
+        full_time_series_list = itertools.chain.from_iterable(
+            self.create_time_series_list(
+                v_data, self.options.resource, self.options.metric_prefix)
+            for v_data in view_data)
+        time_series_batches = []
+        while True:
+            batch = []
+            for _ in range(batch_size):
+                time_series = next(full_time_series_list, None)
+                if time_series:
+                    batch.append(time_series)
+            time_series.append(batch)
+            if len(batch) < batch_size:
+                break
+        return time_series_batches
 
     def create_time_series_list(self, v_data, option_resource_type,
                                 metric_prefix):
@@ -250,7 +259,7 @@ class StackdriverStatsExporter(base.StatsExporter):
             secs = point.interval.end_time.seconds
             point.interval.end_time.nanos = int((timestamp_end - secs) * 10**9)
 
-            if type(agg_data) is not aggregation.aggregation_data.\
+            if aggregation_type is aggregation.Type.LASTVALUE:
                     LastValueAggregationData:  # pragma: NO COVER
                 if timestamp_start == timestamp_end:
                     # avoiding start_time and end_time to be equal
