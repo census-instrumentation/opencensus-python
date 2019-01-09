@@ -743,6 +743,47 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         self.assertEqual([0, 2, 4, 6, 8],
                          dv.bucket_options.explicit_buckets.bounds)
 
+    def test_create_timeseries_something(self):
+        """Check that exporter creates timeseries for multiple tag values.
+
+        create_time_series_list should return a time series for each set of
+        values in the tag value aggregation map.
+        """
+
+        v_data = mock.Mock(spec=view_data_module.ViewData)
+        v_data.view.name = "example.org/test_view"
+        v_data.view.columns = [tag_key_module.TagKey('color'),
+                               tag_key_module.TagKey('shape')]
+        v_data.start_time = '2019-01-09T00:12:34.56Z'
+        v_data.end_time = '2019-01-09T00:23:45.67Z'
+
+        rs_count = aggregation_data_module.CountAggregationData(10)
+        bc_count = aggregation_data_module.CountAggregationData(20)
+        v_data.tag_value_aggregation_data_map = {
+            ('red', 'square'): rs_count,
+            ('blue', 'circle'): bc_count,
+        }
+
+        exporter = stackdriver.StackdriverStatsExporter(
+            options=mock.Mock(),
+            client=mock.Mock(),
+        )
+        time_series_list = exporter.create_time_series_list(v_data, "", "")
+
+        self.assertEqual(len(time_series_list), 2)
+        self.assertEqual(len(time_series_list[0].points), 1)
+        self.assertEqual(len(time_series_list[1].points), 1)
+
+        ts_by_color = {ts.metric.labels.get('color'): ts
+                       for ts in time_series_list}
+        rs_ts = ts_by_color['red']
+        bc_ts = ts_by_color['blue']
+        self.assertEqual(rs_ts.metric.labels.get('shape'), 'square')
+        self.assertEqual(bc_ts.metric.labels.get('shape'), 'circle')
+        self.assertEqual(rs_ts.points[0].value.int64_value, 10)
+        self.assertEqual(bc_ts.points[0].value.int64_value, 20)
+
+
     def test_create_metric_descriptor_count(self):
         client = mock.Mock()
         option = stackdriver.Options(
