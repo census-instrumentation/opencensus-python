@@ -101,7 +101,7 @@ def _set_django_attributes(span, request):
         span.add_attribute('django.user.id', str(user_id))
 
     if user_name is not None:
-        span.add_attribute('django.user.name', user_name)
+        span.add_attribute('django.user.name', str(user_name))
 
 
 class OpencensusMiddleware(MiddlewareMixin):
@@ -207,7 +207,7 @@ class OpencensusMiddleware(MiddlewareMixin):
                 attribute_value=request.method)
             tracer.add_attribute_to_current_span(
                 attribute_key=HTTP_URL,
-                attribute_value=request.path)
+                attribute_value=str(request.path))
 
             # Add the span to thread local
             # in some cases (exceptions, timeouts) currentspan in
