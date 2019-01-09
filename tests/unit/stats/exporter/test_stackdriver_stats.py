@@ -53,7 +53,7 @@ VIDEO_SIZE_VIEW = view_module.View(
     VIDEO_SIZE_VIEW_NAME, "processed video size over time", [FRONTEND_KEY],
     VIDEO_SIZE_MEASURE, VIDEO_SIZE_DISTRIBUTION)
 
-TEST_TIME = datetime(2018, 12, 25, 1, 2, 3)
+TEST_TIME = datetime(2018, 12, 25, 1, 2, 3).isoformat() + 'Z'
 
 
 class _Client(object):
@@ -137,18 +137,6 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         self.assertIn(stackdriver.get_user_agent_slug(),
                       exporter.client.client_info.to_user_agent())
 
-    def test_as_float(self):
-        value = 1.5
-        result = stackdriver.as_float(value)
-        self.assertEqual(result[0], value)
-        self.assertEqual(result[1], True)
-
-    def test_is_not_float(self):
-        value = "a*7"
-        result = stackdriver.as_float(value)
-        self.assertEqual(result[0], None)
-        self.assertEqual(result[1], False)
-
     def test_remove_invalid_chars(self):
         invalid_chars = "@#$"
         valid_chars = "abc"
@@ -215,9 +203,10 @@ class TestStackdriverStatsExporter(unittest.TestCase):
                 return_value=None)
     def test_emit(self, monitor_resource_mock):
         client = mock.Mock()
-        start_time = end_time = TEST_TIME
         v_data = view_data_module.ViewData(
-            view=VIDEO_SIZE_VIEW, start_time=start_time, end_time=end_time)
+            view=VIDEO_SIZE_VIEW, start_time=TEST_TIME, end_time=TEST_TIME)
+        v_data.record(context=tag_map_module.TagMap(), value=2,
+                      timestamp=None)
         view_data = [v_data]
         option = stackdriver.Options(project_id="project-test")
         exporter = stackdriver.StackdriverStatsExporter(
@@ -238,9 +227,8 @@ class TestStackdriverStatsExporter(unittest.TestCase):
     def test_export_with_data(self):
         client = mock.Mock()
         transport = mock.Mock()
-        start_time = end_time = TEST_TIME
         v_data = view_data_module.ViewData(
-            view=VIDEO_SIZE_VIEW, start_time=start_time, end_time=end_time)
+            view=VIDEO_SIZE_VIEW, start_time=TEST_TIME, end_time=TEST_TIME)
         view_data = [v_data]
         option = stackdriver.Options(project_id="project-test")
         exporter = stackdriver.StackdriverStatsExporter(
@@ -261,9 +249,10 @@ class TestStackdriverStatsExporter(unittest.TestCase):
                 return_value=None)
     def test_handle_upload_with_data(self, monitor_resource_mock):
         client = mock.Mock()
-        start_time = end_time = TEST_TIME
         v_data = view_data_module.ViewData(
-            view=VIDEO_SIZE_VIEW, start_time=start_time, end_time=end_time)
+            view=VIDEO_SIZE_VIEW, start_time=TEST_TIME, end_time=TEST_TIME)
+        v_data.record(context=tag_map_module.TagMap(), value=2,
+                      timestamp=None)
         view_data = [v_data]
         option = stackdriver.Options(project_id="project-test")
         exporter = stackdriver.StackdriverStatsExporter(
@@ -274,17 +263,79 @@ class TestStackdriverStatsExporter(unittest.TestCase):
     @mock.patch('opencensus.stats.exporters.stackdriver_exporter.'
                 'MonitoredResourceUtil.get_instance',
                 return_value=None)
-    def test_make_request(self, monitor_resource_mock):
+    def test_create_batched_time_series(self, monitor_resource_mock):
         client = mock.Mock()
-        start_time = end_time = TEST_TIME
         v_data = view_data_module.ViewData(
-            view=VIDEO_SIZE_VIEW, start_time=start_time, end_time=end_time)
+            view=VIDEO_SIZE_VIEW, start_time=TEST_TIME, end_time=TEST_TIME)
+        v_data.record(context=tag_map_module.TagMap(), value=2,
+                      timestamp=None)
         view_data = [v_data]
+
         option = stackdriver.Options(project_id="project-test")
         exporter = stackdriver.StackdriverStatsExporter(
             options=option, client=client)
-        requests = exporter.make_request(view_data, 1)
-        self.assertEqual(len(requests), 1)
+
+        time_series_batches = exporter.create_batched_time_series(view_data, 1)
+
+        self.assertEqual(len(time_series_batches), 1)
+        [time_series_batch] = time_series_batches
+        self.assertEqual(len(time_series_batch), 1)
+        [time_series] = time_series_batch
+        self.assertEqual(
+            time_series.metric.type,
+            'custom.googleapis.com/opencensus/' + VIDEO_SIZE_VIEW_NAME)
+        self.assertEqual(dict(time_series.metric.labels), {})
+
+    @mock.patch('opencensus.stats.exporters.stackdriver_exporter.'
+                'MonitoredResourceUtil.get_instance',
+                return_value=None)
+    def test_create_batched_time_series_with_many(self, monitor_resource_mock):
+        client = mock.Mock()
+
+        # First view with 3
+        view_name1 = "view-name1"
+        view1 = view_module.View(view_name1, "test description",
+                                 ['test'], VIDEO_SIZE_MEASURE,
+                                 aggregation_module.LastValueAggregation())
+        v_data1 = view_data_module.ViewData(
+            view=view1, TEST_TIME=TEST_TIME, end_time=TEST_TIME)
+        v_data1.record(context=tag_map_module.TagMap({'test': '1'}), value=7,
+                       timestamp=None)
+        v_data1.record(context=tag_map_module.TagMap({'test': '2'}), value=5,
+                       timestamp=None)
+        v_data1.record(context=tag_map_module.TagMap({'test': '3'}), value=3,
+                       timestamp=None)
+
+        # Second view with 2
+        view_name2 = "view-name2"
+        view2 = view_module.View(view_name2, "test description",
+                                 ['test'], VIDEO_SIZE_MEASURE,
+                                 aggregation_module.LastValueAggregation())
+        v_data2 = view_data_module.ViewData(
+            view=view2, TEST_TIME=TEST_TIME, end_time=TEST_TIME)
+        v_data2.record(context=tag_map_module.TagMap({'test': '1'}), value=7,
+                       timestamp=None)
+        v_data2.record(context=tag_map_module.TagMap({'test': '2'}), value=5,
+                       timestamp=None)
+
+        view_data = [v_data1, v_data2]
+
+        option = stackdriver.Options(project_id="project-test")
+        exporter = stackdriver.StackdriverStatsExporter(
+            options=option, client=client)
+
+        time_series_batches = exporter.create_batched_time_series(view_data, 2)
+
+        self.assertEqual(len(time_series_batches), 3)
+        [tsb1, tsb2, tsb3] = time_series_batches
+        self.assertEqual(len(tsb1), 2)
+        self.assertEqual(len(tsb2), 2)
+        self.assertEqual(len(tsb3), 1)
+        # [time_series] = time_series_batch
+        # self.assertEqual(
+        #     time_series.metric.type,
+        #     'custom.googleapis.com/opencensus/' + VIDEO_SIZE_VIEW_NAME)
+        # self.assertEqual(dict(time_series.metric.labels), {})
 
     @mock.patch('opencensus.stats.exporters.stackdriver_exporter.'
                 'MonitoredResourceUtil.get_instance',

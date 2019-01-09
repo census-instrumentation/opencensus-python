@@ -43,6 +43,8 @@ class ViewData(object):
         """the current view in the view data"""
         return self._view
 
+    # TODO: `start_time` and `end_time` are sometimes a `datetime` object but
+    # should always be a `string`.
     @property
     def start_time(self):
         """the current start time in the view data"""

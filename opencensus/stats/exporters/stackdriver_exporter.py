@@ -190,7 +190,8 @@ class StackdriverStatsExporter(base.StatsExporter):
                 time_series = next(full_time_series_list, None)
                 if time_series:
                     batch.append(time_series)
-            time_series.append(batch)
+            if batch:
+                time_series_batches.append(batch)
             if len(batch) < batch_size:
                 break
         return time_series_batches
@@ -480,16 +481,6 @@ def remove_non_alphanumeric(text):
     """
     return str(re.sub('[^0-9a-zA-Z ]+', '', text)).replace(" ", "")
 
-
-def as_float(value):
-    """ Converts a value to a float if possible
-          On success, it returns (converted_value, True)
-          On failure, it returns (None, False)
-    """
-    try:
-        return float(value), True
-    except Exception:  # Catch all exception including ValueError
-        return None, False
 
 def metric_labels_from_tags(columns, tag_values):
     return {key: value for key, value in zip(columns, tag_values) if value is not None}
