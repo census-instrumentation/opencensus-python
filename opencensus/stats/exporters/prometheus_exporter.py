@@ -82,10 +82,10 @@ class Options(object):
 class Collector(object):
     """ Collector represents the Prometheus Collector object
     """
-    def __init__(self, options=Options(), view_data={}):
+    def __init__(self, options=Options(), signature_to_data_map={}):
         self._options = options
         self._registry = options.registry
-        self._view_data = view_data
+        self._signature_to_data_map = signature_to_data_map
         self._registered_views = {}
 
     @property
@@ -101,11 +101,11 @@ class Collector(object):
         return self._registry
 
     @property
-    def view_data(self):
+    def signature_to_data_map(self):
         """ Map with all view data objects
         that will be sent to Prometheus
         """
-        return self._view_data
+        return self._signature_to_data_map
 
     @property
     def registered_views(self):
@@ -117,8 +117,6 @@ class Collector(object):
         """ register_view will create the needed structure
         in order to be able to sent all data to Prometheus
         """
-        count = 0
-
         signature = view_signature(self.options.namespace, view)
 
         if signature not in self.registered_views:
@@ -126,7 +124,6 @@ class Collector(object):
                     'documentation': view.description,
                     'labels': tag_keys_to_labels(view.columns)}
             self.registered_views[signature] = desc
-            count += 1
             self.registry.register(self)
 
     def add_view_data(self, view_data):
@@ -134,14 +131,14 @@ class Collector(object):
         """
         self.register_view(view_data.view)
         signature = view_signature(self.options.namespace, view_data.view)
-        self.view_data[signature] = view_data
+        self.signature_to_data_map[signature] = view_data
 
-    def to_metric(self, desc, view):
+    def to_metric(self, desc, view_data):
         """ to_metric translate the data that OpenCensus create
         to Prometheus format, using Prometheus Metric object
 
-        :type desc: str
-        :param desc: The view descriptor
+        :type desc: dict
+        :param desc: The map that describes view definition
 
         :type view: object of :class:
             `~opencensus.stats.view.View`
@@ -201,32 +198,14 @@ class Collector(object):
     def collect(self):  # pragma: NO COVER
         """Collect fetches the statistics from OpenCensus
         and delivers them as Prometheus Metrics.
-        Collect is invoked everytime a prometheus.Gatherer is run
+        Collect is invoked every time a prometheus.Gatherer is run
         for example when the HTTP endpoint is invoked by Prometheus.
         """
-        for v_data in list(self.view_data):
-            signature = view_signature(self.options.namespace,
-                                       self.view_data[v_data].view)
+        for signature in list(self.signature_to_data_map):
             desc = self.registered_views[signature]
             metric = self.to_metric(desc,
-                                    self.view_data[v_data].view)
+                                    self.signature_to_data_map[signature])
             yield metric
-
-    def describe(self):
-        """ describe will be used by Prometheus Client
-        to retrieve all registered views.
-        """
-        registered = {}
-        for sign in self.registered_views:
-            registered[sign] = self.registered_views[sign]
-        for v_data in list(self.view_data):  # pragma: NO COVER
-            if not isinstance(v_data, str):
-                signature = view_signature(self.options.namespace, v_data.view)
-                desc = self.registered_views[signature]
-                metric = self.to_metric(desc,
-                                        self.view_data[v_data].view)
-                yield metric
-
 
 class PrometheusStatsExporter(base.StatsExporter):
     """ Exporter exports stats to Prometheus, users need
