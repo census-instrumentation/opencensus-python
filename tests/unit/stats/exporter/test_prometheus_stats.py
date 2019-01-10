@@ -47,7 +47,7 @@ VIDEO_SIZE_VIEW = view_module.View(
     VIDEO_SIZE_VIEW_NAME, "processed video size over time", [FRONTEND_KEY],
     VIDEO_SIZE_MEASURE, VIDEO_SIZE_DISTRIBUTION)
 REGISTERED_VIEW = {
-    'test1_my.org/views/video_size_test2-my.org/keys/frontend': {
+    'test1_my.org/views/video_size_test2': {
         'documentation': 'processed video size over time',
         'labels': ['my.org/keys/frontend'],
         'name': 'test1_my.org/views/video_size_test2'
@@ -55,7 +55,7 @@ REGISTERED_VIEW = {
 }
 
 REGISTERED_VIEW2 = {
-    'opencensus_my.org/views/video_size_test2-my.org/keys/frontend': {
+    'opencensus_my.org/views/video_size_test2': {
         'documentation': 'processed video size over time',
         'labels': ['my.org/keys/frontend'],
         'name': 'opencensus_my.org/views/video_size_test2'
@@ -86,24 +86,24 @@ class TestCollectorPrometheus(unittest.TestCase):
 
     def test_collector_constructor_with_params(self):
         registry = mock.Mock()
-        signature_to_data_map = mock.Mock()
+        view_name_to_data_map = mock.Mock()
         options = prometheus.Options("test1", 8001, "localhost", registry)
         self.assertEqual(options.namespace, "test1")
         self.assertEqual(options.port, 8001)
         self.assertEqual(options.address, "localhost")
         self.assertEqual(options.registry, registry)
 
-        collector = prometheus.Collector(options=options, signature_to_data_map=signature_to_data_map)
+        collector = prometheus.Collector(options=options, view_name_to_data_map=view_name_to_data_map)
         self.assertEqual(options, collector.options)
-        self.assertEqual(signature_to_data_map, collector.signature_to_data_map)
+        self.assertEqual(view_name_to_data_map, collector.view_name_to_data_map)
         self.assertEqual({}, collector.registered_views)
         self.assertEqual(registry, collector.registry)
 
     def test_collector_register_view(self):
         registry = mock.Mock()
-        signature_to_data_map = mock.Mock()
+        view_name_to_data_map = mock.Mock()
         options = prometheus.Options("test1", 8001, "localhost", registry)
-        collector = prometheus.Collector(options=options, signature_to_data_map=signature_to_data_map)
+        collector = prometheus.Collector(options=options, view_name_to_data_map=view_name_to_data_map)
         collector.register_view(VIDEO_SIZE_VIEW)
         collector.collect()
 
@@ -119,9 +119,9 @@ class TestCollectorPrometheus(unittest.TestCase):
         collector = prometheus.Collector(options=options)
         collector.register_view(VIDEO_SIZE_VIEW)
         collector.add_view_data(view_data)
-        signature_to_data_map = {list(REGISTERED_VIEW)[0]: view_data}
+        view_name_to_data_map = {list(REGISTERED_VIEW)[0]: view_data}
         collector.collect()
-        self.assertEqual(signature_to_data_map, collector.signature_to_data_map)
+        self.assertEqual(view_name_to_data_map, collector.view_name_to_data_map)
 
     def test_collector_to_metric_count(self):
         agg = aggregation_module.CountAggregation(256)
@@ -248,26 +248,12 @@ class TestPrometheusStatsExporter(unittest.TestCase):
         measure_map = stats_recorder.new_measurement_map()
         measure_map.measure_int_put(VIDEO_SIZE_MEASURE, 25 * MiB)
         measure_map.record(tag_map)
-        exporter.export([
-            exporter.collector.signature_to_data_map[(
-                'opencensus_my.org/views/video_size_test2-my.org'
-                '/keys/frontend')]
-        ])
 
-        self.assertIsInstance(
-            exporter.collector.signature_to_data_map[(
-                'opencensus_my.org/views/video_size_test2-my.org'
-                '/keys/frontend')], view_data_module.ViewData)
         self.assertEqual(REGISTERED_VIEW2, exporter.collector.registered_views)
         self.assertEqual(options, exporter.options)
         self.assertEqual(options.registry, exporter.gatherer)
         self.assertIsNotNone(exporter.collector)
         self.assertIsNotNone(exporter.transport)
-
-    def test_tag_keys_to_labels(self):
-        tags = ['One', 'Two', 'Three']
-        labels = prometheus.tag_keys_to_labels(tags)
-        self.assertEqual(tags, labels)
 
     def test_view_name(self):
         view_name = prometheus.view_name(
@@ -277,9 +263,3 @@ class TestPrometheusStatsExporter(unittest.TestCase):
     def test_view_name_without_namespace(self):
         view_name = prometheus.view_name(namespace="", view=VIDEO_SIZE_VIEW)
         self.assertEqual("my.org/views/video_size_test2", view_name)
-
-    def test_view_signature(self):
-        view_signature = prometheus.view_signature(
-            namespace="", view=VIDEO_SIZE_VIEW)
-        self.assertEqual("my.org/views/video_size_test2-my.org/keys/frontend",
-                         view_signature)

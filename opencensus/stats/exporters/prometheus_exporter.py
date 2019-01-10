@@ -16,7 +16,7 @@ from prometheus_client import start_http_server
 from prometheus_client.core import CollectorRegistry
 from prometheus_client.core import GaugeMetricFamily
 from prometheus_client.core import CounterMetricFamily
-from prometheus_client.core import UnknownMetricFamily
+from prometheus_client.core import UntypedMetricFamily
 from prometheus_client.core import HistogramMetricFamily
 from prometheus_client.core import REGISTRY
 from opencensus.stats.exporters import base
@@ -82,10 +82,10 @@ class Options(object):
 class Collector(object):
     """ Collector represents the Prometheus Collector object
     """
-    def __init__(self, options=Options(), signature_to_data_map={}):
+    def __init__(self, options=Options(), view_name_to_data_map={}):
         self._options = options
         self._registry = options.registry
-        self._signature_to_data_map = signature_to_data_map
+        self._view_name_to_data_map = view_name_to_data_map
         self._registered_views = {}
 
     @property
@@ -101,11 +101,11 @@ class Collector(object):
         return self._registry
 
     @property
-    def signature_to_data_map(self):
+    def view_name_to_data_map(self):
         """ Map with all view data objects
         that will be sent to Prometheus
         """
-        return self._signature_to_data_map
+        return self._view_name_to_data_map
 
     @property
     def registered_views(self):
@@ -117,21 +117,21 @@ class Collector(object):
         """ register_view will create the needed structure
         in order to be able to sent all data to Prometheus
         """
-        signature = view_signature(self.options.namespace, view)
+        view_name = view_name(self.options.namespace, view)
 
-        if signature not in self.registered_views:
+        if view_name not in self.registered_views:
             desc = {'name': view_name(self.options.namespace, view),
                     'documentation': view.description,
                     'labels': list(view.columns)}
-            self.registered_views[signature] = desc
+            self.registered_views[view_name] = desc
             self.registry.register(self)
 
     def add_view_data(self, view_data):
         """ Add view data object to be sent to server
         """
         self.register_view(view_data.view)
-        signature = view_signature(self.options.namespace, view_data.view)
-        self.signature_to_data_map[signature] = view_data
+        view_name = view_name(self.options.namespace, view_data.view)
+        self.view_name_to_data_map[view_name] = view_data
 
     # TODO: add start and end timestamp
     def to_metric(self, desc, tag_values, agg_data):
@@ -187,7 +187,7 @@ class Collector(object):
 
         elif isinstance(agg_data,
                         aggregation_data_module.SumAggregationDataFloat):
-            metric = UnknownMetricFamily(name=metric_name,
+            metric = UntypedMetricFamily(name=metric_name,
                                          documentation=metric_description,
                                          labels=label_keys)
             metric.add_metric(labels=list(tag_values),
@@ -213,9 +213,9 @@ class Collector(object):
         Collect is invoked every time a prometheus.Gatherer is run
         for example when the HTTP endpoint is invoked by Prometheus.
         """
-        for signature in list(self.signature_to_data_map):
-            desc = self.registered_views[signature]
-            view_data = self.signature_to_data_map[signature]
+        for view_name in list(self.view_name_to_data_map):
+            desc = self.registered_views[view_name]
+            view_data = self.view_name_to_data_map[view_name]
             for tag_values in view_data.tag_value_aggregation_data_map:
                 agg_data = view_data.tag_value_aggregation_data_map[tag_values]
                 metric = to_metric(desc, tag_values, agg_data)
@@ -339,12 +339,3 @@ def view_name(namespace, view):
     if namespace != "":
         name = namespace + "_"
     return name + view.name
-
-
-def view_signature(namespace, view):
-    """ create the signature for the view
-    """
-    sign = view_name(namespace, view)
-    for key in view.columns:
-        sign += "-" + key
-    return sign
