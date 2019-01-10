@@ -469,10 +469,9 @@ def set_metric_labels(series, view, tag_values):
             "TagKeys and TagValues don't have same size."
         )  # pragma: NO COVER
 
-    for ii, tag_value in enumerate(tag_values):
-        if tag_value is not None:
-            metric_label = remove_non_alphanumeric(view.columns[ii])
-            series.metric.labels[metric_label] = tag_value
+    for key, value in zip(view.columns, tag_values):
+        if value is not None:
+            series.metric.labels[remove_non_alphanumeric(key)] = value
     series.metric.labels[OPENCENSUS_TASK] = get_task_value()
 
 
@@ -480,8 +479,3 @@ def remove_non_alphanumeric(text):
     """ Remove characters not accepted in labels key
     """
     return str(re.sub('[^0-9a-zA-Z ]+', '', text)).replace(" ", "")
-
-
-def metric_labels_from_tags(columns, tag_values):
-    return {remove_non_alphanumeric(key): value for key, value
-            in zip(columns, tag_values) if value is not None}
