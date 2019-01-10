@@ -247,9 +247,6 @@ class StackdriverStatsExporter(base.StatsExporter):
                     point.value.int64_value = int(agg.value)
                 elif isinstance(v_data.view.measure, measure.MeasureFloat):
                     point.value.double_value = float(agg.value)
-            # Is this else useful?
-            else:
-                point.value.string_value = str(tag_value[0])
 
             start = datetime.strptime(v_data.start_time, EPOCH_PATTERN)
             end = datetime.strptime(v_data.end_time, EPOCH_PATTERN)

@@ -1041,3 +1041,17 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         series = monitoring_v3.types.TimeSeries()
         stackdriver.set_metric_labels(series, VIDEO_SIZE_VIEW, [None])
         self.assertEquals(len(series.metric.labels), 1)
+
+    @mock.patch('os.getpid', return_value=12345)
+    @mock.patch('platform.uname', return_value=('system', 'node', 'release',
+                                                'version', 'machine',
+                                                'processor'))
+    def test_get_task_value_with_hostname(self, mock_uname, mock_pid):
+        self.assertEquals(stackdriver.get_task_value(), "py-12345@node")
+
+    @mock.patch('os.getpid', return_value=12345)
+    @mock.patch('platform.uname', return_value=('system', '', 'release',
+                                                'version', 'machine',
+                                                'processor'))
+    def test_get_task_value_without_hostname(self, mock_uname, mock_pid):
+        self.assertEquals(stackdriver.get_task_value(), "py-12345@localhost")
