@@ -242,12 +242,12 @@ class StackdriverStatsExporter(base.StatsExporter):
                     point.value.int64_value = int(agg.sum_data)
                 if isinstance(v_data.view.measure, measure.MeasureFloat):
                     point.value.double_value = float(agg.sum_data)
-            # TODO: Why is not?????
-            elif aggregation_type is not aggregation.Type.LASTVALUE:
+            elif aggregation_type is aggregation.Type.LASTVALUE:
                 if isinstance(v_data.view.measure, measure.MeasureInt):
                     point.value.int64_value = int(agg.value)
                 elif isinstance(v_data.view.measure, measure.MeasureFloat):
                     point.value.double_value = float(agg.value)
+            # Is this else useful?
             else:
                 point.value.string_value = str(tag_value[0])
 
@@ -431,10 +431,10 @@ def get_task_value():
     """ getTaskValue returns a task label value in the format of
      "py-<pid>@<hostname>".
     """
-    task_value = "py@" + str(os.getpid())
     hostname = platform.uname()[1]
-    task_value += hostname if hostname is not None else "localhost"
-    return task_value
+    if not hostname:
+        hostname = "localhost"
+    return "py-%s@%s" % (os.getpid(), hostname)
 
 
 def namespaced_view_name(view_name, metric_prefix):
