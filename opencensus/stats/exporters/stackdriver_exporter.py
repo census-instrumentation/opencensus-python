@@ -168,8 +168,9 @@ class StackdriverStatsExporter(base.StatsExporter):
         """ It receives an array of view_data object
             and create time series for each value
         """
+        view_data_set = utils.uniq(view_data)
         time_series_batches = self.create_batched_time_series(
-            view_data, MAX_TIME_SERIES_PER_UPLOAD)
+            view_data_set, MAX_TIME_SERIES_PER_UPLOAD)
         for time_series_batch in time_series_batches:
             self.client.create_time_series(
                 self.client.project_path(self.options.project_id),
@@ -241,6 +242,7 @@ class StackdriverStatsExporter(base.StatsExporter):
                     point.value.int64_value = int(agg.sum_data)
                 if isinstance(v_data.view.measure, measure.MeasureFloat):
                     point.value.double_value = float(agg.sum_data)
+            # TODO: Why is not?????
             elif aggregation_type is not aggregation.Type.LASTVALUE:
                 if isinstance(v_data.view.measure, measure.MeasureInt):
                     point.value.int64_value = int(agg.value)
@@ -260,8 +262,7 @@ class StackdriverStatsExporter(base.StatsExporter):
             secs = point.interval.end_time.seconds
             point.interval.end_time.nanos = int((timestamp_end - secs) * 10**9)
 
-            if aggregation_type is aggregation.Type.LASTVALUE:
-                    LastValueAggregationData:  # pragma: NO COVER
+            if aggregation_type is not aggregation.Type.LASTVALUE:
                 if timestamp_start == timestamp_end:
                     # avoiding start_time and end_time to be equal
                     timestamp_start = timestamp_start - 1
