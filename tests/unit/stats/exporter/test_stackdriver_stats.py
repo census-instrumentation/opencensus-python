@@ -373,9 +373,9 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         tag_value = tag_value_module.TagValue("1200")
         tag_map = tag_map_module.TagMap()
         tag_map.insert(FRONTEND_KEY, tag_value)
+
         measure_map = stats_recorder.new_measurement_map()
         measure_map.measure_int_put(VIDEO_SIZE_MEASURE, 25 * MiB)
-
         measure_map.record(tag_map)
 
         v_data = measure_map.measure_to_view_map.get_view(
@@ -427,9 +427,9 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         tag_value = tag_value_module.TagValue("1200")
         tag_map = tag_map_module.TagMap()
         tag_map.insert(FRONTEND_KEY, tag_value)
+
         measure_map = stats_recorder.new_measurement_map()
         measure_map.measure_int_put(VIDEO_SIZE_MEASURE, 25 * MiB)
-
         measure_map.record(tag_map)
 
         v_data = measure_map.measure_to_view_map.get_view(
@@ -567,7 +567,6 @@ class TestStackdriverStatsExporter(unittest.TestCase):
 
         measure_map = stats_recorder.new_measurement_map()
         measure_map.measure_int_put(VIDEO_SIZE_MEASURE_2, 25 * MiB)
-
         measure_map.record(tag_map)
 
         v_data = measure_map.measure_to_view_map.get_view(view_name1, None)
@@ -610,7 +609,6 @@ class TestStackdriverStatsExporter(unittest.TestCase):
 
         measure_map = stats_recorder.new_measurement_map()
         measure_map.measure_int_put(VIDEO_SIZE_MEASURE_2, 25 * MiB)
-
         measure_map.record(tag_map)
 
         v_data = measure_map.measure_to_view_map.get_view(view_name1, None)
@@ -639,7 +637,7 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         view_manager, stats_recorder, exporter = \
             self.setup_create_timeseries_test()
 
-        agg_2 = aggregation_module.LastValueAggregation(value=2)
+        agg_2 = aggregation_module.LastValueAggregation(value=2.2 * MiB)
         view_name2 = "view-name2"
         new_view2 = view_module.View(
             view_name2, "processed video size over time", [FRONTEND_KEY_FLOAT],
@@ -647,15 +645,12 @@ class TestStackdriverStatsExporter(unittest.TestCase):
 
         view_manager.register_view(new_view2)
 
-        tag_value_int = tag_value_module.TagValue("Abc")
-
+        tag_value_float = tag_value_module.TagValue("Abc")
         tag_map = tag_map_module.TagMap()
-
-        tag_map.insert(FRONTEND_KEY_INT, tag_value_int)
+        tag_map.insert(FRONTEND_KEY_FLOAT, tag_value_float)
 
         measure_map = stats_recorder.new_measurement_map()
-        measure_map.measure_float_put(VIDEO_SIZE_MEASURE_FLOAT, 25 * MiB)
-
+        measure_map.measure_float_put(VIDEO_SIZE_MEASURE_FLOAT, 25.7 * MiB)
         measure_map.record(tag_map)
 
         v_data = measure_map.measure_to_view_map.get_view(view_name2, None)
@@ -663,6 +658,18 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         time_series_list = exporter.create_time_series_list(
             v_data, "global", "kubernetes.io/myorg")
         self.assertEquals(len(time_series_list), 1)
+        time_series = time_series_list[0]
+        self.assertEquals(time_series.metric.type,
+                          "kubernetes.io/myorg/view-name2")
+        self.assertCorrectLabels(time_series.metric.labels,
+                                 {FRONTEND_KEY_FLOAT_CLEAN: "Abc"},
+                                 include_opencensus=True)
+        self.assertIsNotNone(time_series.resource)
+
+        self.assertEquals(len(time_series.points), 1)
+        expected_value = monitoring_v3.types.TypedValue()
+        expected_value.double_value = 25.7 * MiB
+        self.assertEquals(time_series.points[0].value, expected_value)
 
     @mock.patch('opencensus.stats.exporters.stackdriver_exporter.'
                 'MonitoredResourceUtil.get_instance',
@@ -699,7 +706,6 @@ class TestStackdriverStatsExporter(unittest.TestCase):
 
         measure_map = stats_recorder.new_measurement_map()
         measure_map.measure_float_put(VIDEO_SIZE_MEASURE_FLOAT, 25 * MiB)
-
         measure_map.record(tag_map)
 
         v_data = measure_map.measure_to_view_map.get_view(view_name3, None)
@@ -796,9 +802,8 @@ class TestStackdriverStatsExporter(unittest.TestCase):
 
         view_manager.register_view(view)
 
-        measure_map = stats_recorder.new_measurement_map()
-
         # Add point with one tag in common and one different tag
+        measure_map = stats_recorder.new_measurement_map()
         tag_map = tag_map_module.TagMap()
         tag_map.insert(FRONTEND_KEY, tag_value_module.TagValue("1200"))
         tag_map.insert(FRONTEND_KEY_STR, tag_value_module.TagValue("1800"))
