@@ -117,21 +117,21 @@ class Collector(object):
         """ register_view will create the needed structure
         in order to be able to sent all data to Prometheus
         """
-        view_name = view_name(self.options.namespace, view)
+        v_name = view_name(self.options.namespace, view)
 
-        if view_name not in self.registered_views:
-            desc = {'name': view_name(self.options.namespace, view),
+        if v_name not in self.registered_views:
+            desc = {'name': v_name,
                     'documentation': view.description,
                     'labels': list(view.columns)}
-            self.registered_views[view_name] = desc
+            self.registered_views[v_name] = desc
             self.registry.register(self)
 
     def add_view_data(self, view_data):
         """ Add view data object to be sent to server
         """
         self.register_view(view_data.view)
-        view_name = view_name(self.options.namespace, view_data.view)
-        self.view_name_to_data_map[view_name] = view_data
+        v_name = view_name(self.options.namespace, view_data.view)
+        self.view_name_to_data_map[v_name] = view_data
 
     # TODO: add start and end timestamp
     def to_metric(self, desc, tag_values, agg_data):
@@ -213,13 +213,16 @@ class Collector(object):
         Collect is invoked every time a prometheus.Gatherer is run
         for example when the HTTP endpoint is invoked by Prometheus.
         """
-        for view_name in list(self.view_name_to_data_map):
-            desc = self.registered_views[view_name]
+        for v_name in list(self.view_name_to_data_map):
+            if v_name not in self.registered_views:
+                continue
+            desc = self.registered_views[v_name]
             view_data = self.view_name_to_data_map[view_name]
             for tag_values in view_data.tag_value_aggregation_data_map:
                 agg_data = view_data.tag_value_aggregation_data_map[tag_values]
-                metric = to_metric(desc, tag_values, agg_data)
+                metric = self.to_metric(desc, tag_values, agg_data)
                 yield metric
+
 
 class PrometheusStatsExporter(base.StatsExporter):
     """ Exporter exports stats to Prometheus, users need
@@ -323,6 +326,7 @@ def new_stats_exporter(option):
                                        gatherer=option.registry,
                                        collector=collector)
     return exporter
+
 
 def new_collector(options):
     """ new_collector should be used

@@ -93,9 +93,11 @@ class TestCollectorPrometheus(unittest.TestCase):
         self.assertEqual(options.address, "localhost")
         self.assertEqual(options.registry, registry)
 
-        collector = prometheus.Collector(options=options, view_name_to_data_map=view_name_to_data_map)
+        collector = prometheus.Collector(
+            options=options, view_name_to_data_map=view_name_to_data_map)
         self.assertEqual(options, collector.options)
-        self.assertEqual(view_name_to_data_map, collector.view_name_to_data_map)
+        self.assertEqual(
+            view_name_to_data_map, collector.view_name_to_data_map)
         self.assertEqual({}, collector.registered_views)
         self.assertEqual(registry, collector.registry)
 
@@ -103,7 +105,8 @@ class TestCollectorPrometheus(unittest.TestCase):
         registry = mock.Mock()
         view_name_to_data_map = mock.Mock()
         options = prometheus.Options("test1", 8001, "localhost", registry)
-        collector = prometheus.Collector(options=options, view_name_to_data_map=view_name_to_data_map)
+        collector = prometheus.Collector(
+            options=options, view_name_to_data_map=view_name_to_data_map)
         collector.register_view(VIDEO_SIZE_VIEW)
         collector.collect()
 
@@ -121,7 +124,8 @@ class TestCollectorPrometheus(unittest.TestCase):
         collector.add_view_data(view_data)
         view_name_to_data_map = {list(REGISTERED_VIEW)[0]: view_data}
         collector.collect()
-        self.assertEqual(view_name_to_data_map, collector.view_name_to_data_map)
+        self.assertEqual(
+            view_name_to_data_map, collector.view_name_to_data_map)
 
     def test_collector_to_metric_count(self):
         agg = aggregation_module.CountAggregation(256)
@@ -133,7 +137,8 @@ class TestCollectorPrometheus(unittest.TestCase):
         collector = prometheus.Collector(options=options)
         collector.register_view(view)
         desc = collector.registered_views[list(REGISTERED_VIEW)[0]]
-        metric = collector.to_metric(desc=desc, tag_values=[], agg_data=agg.aggregation_data)
+        metric = collector.to_metric(
+            desc=desc, tag_values=[], agg_data=agg.aggregation_data)
 
         self.assertEqual(desc['name'], metric.name)
         self.assertEqual(desc['documentation'], metric.documentation)
@@ -150,7 +155,8 @@ class TestCollectorPrometheus(unittest.TestCase):
         collector = prometheus.Collector(options=options)
         collector.register_view(view)
         desc = collector.registered_views[list(REGISTERED_VIEW)[0]]
-        metric = collector.to_metric(desc=desc, tag_values=[], agg_data=agg.aggregation_data)
+        metric = collector.to_metric(
+            desc=desc, tag_values=[], agg_data=agg.aggregation_data)
 
         self.assertEqual(desc['name'], metric.name)
         self.assertEqual(desc['documentation'], metric.documentation)
@@ -167,7 +173,8 @@ class TestCollectorPrometheus(unittest.TestCase):
         collector = prometheus.Collector(options=options)
         collector.register_view(view)
         desc = collector.registered_views[list(REGISTERED_VIEW)[0]]
-        metric = collector.to_metric(desc=desc, tag_values=[], agg_data=agg.aggregation_data)
+        metric = collector.to_metric(
+            desc=desc, tag_values=[], agg_data=agg.aggregation_data)
 
         self.assertEqual(desc['name'], metric.name)
         self.assertEqual(desc['documentation'], metric.documentation)
@@ -180,7 +187,10 @@ class TestCollectorPrometheus(unittest.TestCase):
         collector = prometheus.Collector(options=options)
         collector.register_view(VIDEO_SIZE_VIEW)
         desc = collector.registered_views[list(REGISTERED_VIEW)[0]]
-        metric = collector.to_metric(desc=desc, tag_values=[], agg_data=VIDEO_SIZE_DISTRIBUTION.aggregation_data)
+        metric = collector.to_metric(
+            desc=desc,
+            tag_values=[],
+            agg_data=VIDEO_SIZE_DISTRIBUTION.aggregation_data)
 
         self.assertEqual(desc['name'], metric.name)
         self.assertEqual(desc['documentation'], metric.documentation)
@@ -211,16 +221,19 @@ class TestCollectorPrometheus(unittest.TestCase):
         options = prometheus.Options("test2", 8001, "localhost", registry)
         collector = prometheus.Collector(options=options)
         collector.register_view(view)
-        desc = collector.registered_views[
-            'test2_new_view-my.org/keys/frontend']
-        collector.to_metric(desc=desc, tag_values=[], agg_data=agg.aggregation_data)
+        desc = collector.registered_views['test2_new_view']
+        collector.to_metric(
+            desc=desc, tag_values=[], agg_data=agg.aggregation_data)
 
         registry = mock.Mock()
         options = prometheus.Options("test1", 8001, "localhost", registry)
         collector = prometheus.Collector(options=options)
         collector.register_view(VIDEO_SIZE_VIEW)
         desc = collector.registered_views[list(REGISTERED_VIEW)[0]]
-        metric = collector.to_metric(desc=desc, tag_values=[], agg_data=VIDEO_SIZE_DISTRIBUTION.aggregation_data)
+        metric = collector.to_metric(
+            desc=desc,
+            tag_values=[],
+            agg_data=VIDEO_SIZE_DISTRIBUTION.aggregation_data)
 
         self.assertEqual(desc['name'], metric.name)
         self.assertEqual(desc['documentation'], metric.documentation)
@@ -248,7 +261,14 @@ class TestPrometheusStatsExporter(unittest.TestCase):
         measure_map = stats_recorder.new_measurement_map()
         measure_map.measure_int_put(VIDEO_SIZE_MEASURE, 25 * MiB)
         measure_map.record(tag_map)
+        exporter.export([
+            exporter.collector.view_name_to_data_map[
+                'opencensus_my.org/views/video_size_test2']])
 
+        self.assertIsInstance(
+            exporter.collector.view_name_to_data_map[
+                'opencensus_my.org/views/video_size_test2'],
+            view_data_module.ViewData)
         self.assertEqual(REGISTERED_VIEW2, exporter.collector.registered_views)
         self.assertEqual(options, exporter.options)
         self.assertEqual(options.registry, exporter.gatherer)
@@ -256,10 +276,10 @@ class TestPrometheusStatsExporter(unittest.TestCase):
         self.assertIsNotNone(exporter.transport)
 
     def test_view_name(self):
-        view_name = prometheus.view_name(
+        v_name = prometheus.view_name(
             namespace="opencensus", view=VIDEO_SIZE_VIEW)
-        self.assertEqual("opencensus_my.org/views/video_size_test2", view_name)
+        self.assertEqual("opencensus_my.org/views/video_size_test2", v_name)
 
     def test_view_name_without_namespace(self):
-        view_name = prometheus.view_name(namespace="", view=VIDEO_SIZE_VIEW)
-        self.assertEqual("my.org/views/video_size_test2", view_name)
+        v_name = prometheus.view_name(namespace="", view=VIDEO_SIZE_VIEW)
+        self.assertEqual("my.org/views/video_size_test2", v_name)
