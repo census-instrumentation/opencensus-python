@@ -189,7 +189,7 @@ class StackdriverStatsExporter(base.StatsExporter):
             batch = []
             for _ in range(batch_size):
                 time_series = next(full_time_series_list, None)
-                if time_series:
+                if time_series is not None:
                     batch.append(time_series)
             if batch:
                 time_series_batches.append(batch)
@@ -245,8 +245,11 @@ class StackdriverStatsExporter(base.StatsExporter):
             elif aggregation_type is aggregation.Type.LASTVALUE:
                 if isinstance(v_data.view.measure, measure.MeasureInt):
                     point.value.int64_value = int(agg.value)
-                elif isinstance(v_data.view.measure, measure.MeasureFloat):
+                if isinstance(v_data.view.measure, measure.MeasureFloat):
                     point.value.double_value = float(agg.value)
+            else:
+                raise Exception("unsupported aggregation type: %s" %
+                                type(v_data.view.aggregation))
 
             start = datetime.strptime(v_data.start_time, EPOCH_PATTERN)
             end = datetime.strptime(v_data.end_time, EPOCH_PATTERN)

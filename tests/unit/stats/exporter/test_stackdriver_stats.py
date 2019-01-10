@@ -938,6 +938,27 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         self.assertEqual(rs_ts.points[0].value.int64_value, 10)
         self.assertEqual(bc_ts.points[0].value.int64_value, 20)
 
+    def test_create_timeseries_invalid_aggregation(self):
+        v_data = mock.Mock(spec=view_data_module.ViewData)
+        v_data.view.name = "example.org/base_view"
+        v_data.view.columns = [tag_key_module.TagKey('base_key')]
+        v_data.view.aggregation.aggregation_type = \
+            aggregation_module.Type.NONE
+        v_data.start_time = TEST_TIME
+        v_data.end_time = TEST_TIME
+
+        base_data = aggregation_data_module.BaseAggregationData(10)
+        v_data.tag_value_aggregation_data_map = {
+            (None,): base_data,
+        }
+
+        exporter = stackdriver.StackdriverStatsExporter(
+            options=mock.Mock(),
+            client=mock.Mock(),
+        )
+        self.assertRaises(Exception, exporter.create_time_series_list,
+                          v_data, "", "")
+
     def test_create_metric_descriptor_count(self):
         client = mock.Mock()
         option = stackdriver.Options(
