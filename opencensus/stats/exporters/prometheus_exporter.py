@@ -16,7 +16,7 @@ from prometheus_client import start_http_server
 from prometheus_client.core import CollectorRegistry
 from prometheus_client.core import GaugeMetricFamily
 from prometheus_client.core import CounterMetricFamily
-from prometheus_client.core import UntypedMetricFamily
+from prometheus_client.core import UnknownMetricFamily
 from prometheus_client.core import HistogramMetricFamily
 from prometheus_client.core import REGISTRY
 from opencensus.stats.exporters import base
@@ -122,7 +122,7 @@ class Collector(object):
         if signature not in self.registered_views:
             desc = {'name': view_name(self.options.namespace, view),
                     'documentation': view.description,
-                    'labels': tag_keys_to_labels(view.columns)}
+                    'labels': list(view.columns)}
             self.registered_views[signature] = desc
             self.registry.register(self)
 
@@ -133,17 +133,23 @@ class Collector(object):
         signature = view_signature(self.options.namespace, view_data.view)
         self.signature_to_data_map[signature] = view_data
 
-    def to_metric(self, desc, view_data):
+    # TODO: add start and end timestamp
+    def to_metric(self, desc, tag_values, agg_data):
         """ to_metric translate the data that OpenCensus create
         to Prometheus format, using Prometheus Metric object
 
         :type desc: dict
         :param desc: The map that describes view definition
 
-        :type view: object of :class:
-            `~opencensus.stats.view.View`
-        :param object of opencensus.stats.view.View view:
-            View object to translate
+        :type tag_values: tuple of :class:
+            `~opencensus.tags.tag_value.TagValue`
+        :param object of opencensus.tags.tag_value.TagValue:
+            TagValue object used as label values
+
+        :type agg_data: object of :class:
+            `~opencensus.stats.aggregation_data.AggregationData`
+        :param object of opencensus.stats.aggregation_data.AggregationData:
+            Aggregated data that needs to be converted as Prometheus samples
 
         :rtype: :class:`~prometheus_client.core.CounterMetricFamily` or
                 :class:`~prometheus_client.core.HistogramMetricFamily` or
@@ -151,14 +157,18 @@ class Collector(object):
                 :class:`~prometheus_client.core.GaugeMetricFamily`
         :returns: A Prometheus metric object
         """
-        agg_data = view.aggregation.aggregation_data
+        metric_name = desc['name']
+        metric_description = desc['documentation']
+        label_keys = desc['labels']
 
+        metric = None
         if isinstance(agg_data, aggregation_data_module.CountAggregationData):
-            labels = desc['labels'] if agg_data.count_data is None else None
-            return CounterMetricFamily(name=desc['name'],
-                                       documentation=desc['documentation'],
-                                       value=float(agg_data.count_data),
-                                       labels=labels)
+            metric = CounterMetricFamily(name=metric_name,
+                                         documentation=metric_description,
+                                         labels=label_keys)
+            metric.add_metric(labels=list(tag_values),
+                              value=agg_data.count_data)
+
         elif isinstance(agg_data,
                         aggregation_data_module.DistributionAggregationData):
 
@@ -168,32 +178,34 @@ class Collector(object):
             for ii, bound in enumerate(agg_data.bounds):
                 cum_count += agg_data.counts_per_bucket[ii]
                 points[str(bound)] = cum_count
-            labels = desc['labels'] if points is None else None
-            return HistogramMetricFamily(name=desc['name'],
-                                         documentation=desc['documentation'],
-                                         buckets=list(points.items()),
-                                         sum_value=agg_data.sum,
-                                         labels=labels)
+            metric = HistogramMetricFamily(name=metric_name,
+                                           documentation=metric_description,
+                                           labels=label_keys)
+            metric.add_metric(labels=list(tag_values),
+                              buckets=list(points.items()),
+                              sum_value=agg_data.sum,)
 
         elif isinstance(agg_data,
                         aggregation_data_module.SumAggregationDataFloat):
-            labels = desc['labels'] if agg_data.sum_data is None else None
-            return UntypedMetricFamily(name=desc['name'],
-                                       documentation=desc['documentation'],
-                                       value=agg_data.sum_data,
-                                       labels=labels)
+            metric = UnknownMetricFamily(name=metric_name,
+                                         documentation=metric_description,
+                                         labels=label_keys)
+            metric.add_metric(labels=list(tag_values),
+                              value=agg_data.sum_data)
 
         elif isinstance(agg_data,
                         aggregation_data_module.LastValueAggregationData):
-            labels = desc['labels'] if agg_data.value is None else None
-            return GaugeMetricFamily(name=desc['name'],
-                                     documentation=desc['documentation'],
-                                     value=agg_data.value,
-                                     labels=labels)
+            metric = GaugeMetricFamily(name=metric_name,
+                                       documentation=metric_description,
+                                       labels=label_keys)
+            metric.add_metric(labels=list(tag_values),
+                              value=agg_data.value)
 
         else:
             raise ValueError("unsupported aggregation type %s"
                              % type(agg_data))
+
+        return metric
 
     def collect(self):  # pragma: NO COVER
         """Collect fetches the statistics from OpenCensus
@@ -203,9 +215,11 @@ class Collector(object):
         """
         for signature in list(self.signature_to_data_map):
             desc = self.registered_views[signature]
-            metric = self.to_metric(desc,
-                                    self.signature_to_data_map[signature])
-            yield metric
+            view_data = self.signature_to_data_map[signature]
+            for tag_values in view_data.tag_value_aggregation_data_map:
+                agg_data = view_data.tag_value_aggregation_data_map[tag_values]
+                metric = to_metric(desc, tag_values, agg_data)
+                yield metric
 
 class PrometheusStatsExporter(base.StatsExporter):
     """ Exporter exports stats to Prometheus, users need
@@ -309,16 +323,6 @@ def new_stats_exporter(option):
                                        gatherer=option.registry,
                                        collector=collector)
     return exporter
-
-
-def tag_keys_to_labels(tag_keys):
-    """ Translate Tag keys to labels
-    """
-    labels = []
-    for key in tag_keys:
-        labels.append(key)
-    return labels
-
 
 def new_collector(options):
     """ new_collector should be used
