@@ -30,16 +30,15 @@ from opencensus.tags import tag_value as tag_value_module
 class TestPrometheusStats(unittest.TestCase):
     def test_prometheus_stats(self):
 
-        MiB = 1 << 20
-        FRONTEND_KEY = tag_key_module.TagKey("my.org/keys/frontend")
-        VIDEO_SIZE_MEASURE = measure_module.MeasureInt(
-            "my.org/measures/video_size", "size of processed videos", "By")
-        VIDEO_SIZE_VIEW_NAME = "my.org/views/video_size"
-        VIDEO_SIZE_DISTRIBUTION = aggregation_module.CountAggregation(
-            256.0 * MiB)
-        VIDEO_SIZE_VIEW = view_module.View(
-            VIDEO_SIZE_VIEW_NAME, "processed video size over time",
-            [FRONTEND_KEY], VIDEO_SIZE_MEASURE, VIDEO_SIZE_DISTRIBUTION)
+        method_key = tag_key_module.TagKey("method")
+        request_count_measure = measure_module.MeasureInt(
+            "request_count", "number of requests", "1")
+        request_count_view_name = "request_count_view"
+        count_agg = aggregation_module.CountAggregation()
+        request_count_view = view_module.View(
+            request_count_view_name,
+            "number of requests broken down by methods",
+            [method_key], request_count_measure, count_agg)
         stats = stats_module.Stats()
         view_manager = stats.view_manager
         stats_recorder = stats.stats_recorder
@@ -48,15 +47,15 @@ class TestPrometheusStats(unittest.TestCase):
             prometheus.Options(namespace="opencensus", port=9303))
         view_manager.register_exporter(exporter)
 
-        view_manager.register_view(VIDEO_SIZE_VIEW)
+        view_manager.register_view(request_count_view)
 
         time.sleep(random.randint(1, 10) / 1000.0)
 
-        tag_value = tag_value_module.TagValue(str(random.randint(1, 10000)))
+        method_value = tag_value_module.TagValue("some method")
         tag_map = tag_map_module.TagMap()
-        tag_map.insert(FRONTEND_KEY, tag_value)
+        tag_map.insert(method_key, method_value)
         measure_map = stats_recorder.new_measurement_map()
-        measure_map.measure_int_put(VIDEO_SIZE_MEASURE, 25 * MiB)
+        measure_map.measure_int_put(request_count_measure, 25)
         measure_map.record(tag_map)
 
         if sys.version_info > (3, 0):
@@ -67,7 +66,7 @@ class TestPrometheusStats(unittest.TestCase):
             import urllib2
             contents = urllib2.urlopen("http://localhost:9303/metrics").read()
 
-        self.assertIn(b'# TYPE opencensus_my.org/views/video_size counter',
+        self.assertIn(b'# TYPE opencensus_request_count_view counter',
                       contents)
-        self.assertIn(b'opencensus_my.org/views/video_size 268435456.0',
+        self.assertIn(b'opencensus_request_count_view 25',
                       contents)
