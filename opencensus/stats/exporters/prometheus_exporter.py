@@ -117,7 +117,7 @@ class Collector(object):
         """ register_view will create the needed structure
         in order to be able to sent all data to Prometheus
         """
-        v_name = view_name(self.options.namespace, view)
+        v_name = get_view_name(self.options.namespace, view)
 
         if v_name not in self.registered_views:
             desc = {'name': v_name,
@@ -130,7 +130,7 @@ class Collector(object):
         """ Add view data object to be sent to server
         """
         self.register_view(view_data.view)
-        v_name = view_name(self.options.namespace, view_data.view)
+        v_name = get_view_name(self.options.namespace, view_data.view)
         self.view_name_to_data_map[v_name] = view_data
 
     # TODO: add start and end timestamp
@@ -161,13 +161,13 @@ class Collector(object):
         metric_description = desc['documentation']
         label_keys = desc['labels']
 
-        metric = None
         if isinstance(agg_data, aggregation_data_module.CountAggregationData):
             metric = CounterMetricFamily(name=metric_name,
                                          documentation=metric_description,
                                          labels=label_keys)
             metric.add_metric(labels=list(tag_values),
                               value=agg_data.count_data)
+            return metric
 
         elif isinstance(agg_data,
                         aggregation_data_module.DistributionAggregationData):
@@ -184,6 +184,7 @@ class Collector(object):
             metric.add_metric(labels=list(tag_values),
                               buckets=list(points.items()),
                               sum_value=agg_data.sum,)
+            return metric
 
         elif isinstance(agg_data,
                         aggregation_data_module.SumAggregationDataFloat):
@@ -192,6 +193,7 @@ class Collector(object):
                                          labels=label_keys)
             metric.add_metric(labels=list(tag_values),
                               value=agg_data.sum_data)
+            return metric
 
         elif isinstance(agg_data,
                         aggregation_data_module.LastValueAggregationData):
@@ -200,12 +202,11 @@ class Collector(object):
                                        labels=label_keys)
             metric.add_metric(labels=list(tag_values),
                               value=agg_data.value)
+            return metric
 
         else:
             raise ValueError("unsupported aggregation type %s"
                              % type(agg_data))
-
-        return metric
 
     def collect(self):  # pragma: NO COVER
         """Collect fetches the statistics from OpenCensus
@@ -217,7 +218,7 @@ class Collector(object):
             if v_name not in self.registered_views:
                 continue
             desc = self.registered_views[v_name]
-            view_data = self.view_name_to_data_map[view_name]
+            view_data = self.view_name_to_data_map[v_name]
             for tag_values in view_data.tag_value_aggregation_data_map:
                 agg_data = view_data.tag_value_aggregation_data_map[tag_values]
                 metric = self.to_metric(desc, tag_values, agg_data)
@@ -336,7 +337,7 @@ def new_collector(options):
     return Collector(options=options)
 
 
-def view_name(namespace, view):
+def get_view_name(namespace, view):
     """ create the name for the view
     """
     name = ""

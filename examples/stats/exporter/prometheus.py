@@ -28,10 +28,10 @@ from opencensus.tags import tag_value as tag_value_module
 from pprint import pprint
 
 MiB = 1 << 20
-FRONTEND_KEY = tag_key_module.TagKey("my.org/keys/frontend")
+FRONTEND_KEY = tag_key_module.TagKey("myorg_keys_frontend")
 VIDEO_SIZE_MEASURE = measure_module.MeasureInt(
-    "my.org/measures/video_size", "size of processed videos", "By")
-VIDEO_SIZE_VIEW_NAME = "my.org/views/video_size"
+    "myorg_measures_video_size", "size of processed videos", "By")
+VIDEO_SIZE_VIEW_NAME = "myorg_views_video_size"
 VIDEO_SIZE_DISTRIBUTION = aggregation_module.DistributionAggregation(
     [0.0, 16.0 * MiB, 256.0 * MiB])
 VIDEO_SIZE_VIEW = view_module.View(
@@ -63,16 +63,17 @@ def main():
     measure_map.measure_int_put(VIDEO_SIZE_MEASURE, 25 * MiB)
     measure_map.record(tag_map)
 
-    # Use the line below to see the data on prometheus
-    # while True:
-    #     pass
-
     # Get aggregated stats and print it to console.
     view_data = view_manager.get_view(VIDEO_SIZE_VIEW_NAME)
     pprint(vars(view_data))
-    for k, v in view_data._tag_value_aggregation_data_map.items():
+    for k, v in view_data.tag_value_aggregation_data_map.items():
         pprint(k)
         pprint(vars(v))
+
+    # Prevent main from exiting to see the data on prometheus
+    # localhost:8000/metrics
+    while True:
+        pass
 
 
 if __name__ == '__main__':

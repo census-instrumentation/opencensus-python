@@ -51,12 +51,20 @@ class TestPrometheusStats(unittest.TestCase):
 
         time.sleep(random.randint(1, 10) / 1000.0)
 
-        method_value = tag_value_module.TagValue("some method")
-        tag_map = tag_map_module.TagMap()
-        tag_map.insert(method_key, method_value)
-        measure_map = stats_recorder.new_measurement_map()
-        measure_map.measure_int_put(request_count_measure, 25)
-        measure_map.record(tag_map)
+        method_value_1 = tag_value_module.TagValue("some method")
+        tag_map_1 = tag_map_module.TagMap()
+        tag_map_1.insert(method_key, method_value_1)
+        measure_map_1 = stats_recorder.new_measurement_map()
+        measure_map_1.measure_int_put(request_count_measure, 1)
+        measure_map_1.record(tag_map_1)
+
+        method_value_2 = tag_value_module.TagValue("some other method")
+        tag_map_2 = tag_map_module.TagMap()
+        tag_map_2.insert(method_key, method_value_2)
+        measure_map_2 = stats_recorder.new_measurement_map()
+        measure_map_2.measure_int_put(request_count_measure, 1)
+        measure_map_2.record(tag_map_2)
+        measure_map_2.record(tag_map_2)
 
         if sys.version_info > (3, 0):
             import urllib.request
@@ -68,5 +76,9 @@ class TestPrometheusStats(unittest.TestCase):
 
         self.assertIn(b'# TYPE opencensus_request_count_view counter',
                       contents)
-        self.assertIn(b'opencensus_request_count_view 25',
+        self.assertIn(b'opencensus_request_count_view'
+                      b'{method="some method"} 1.0',
+                      contents)
+        self.assertIn(b'opencensus_request_count_view'
+                      b'{method="some other method"} 2.0',
                       contents)
