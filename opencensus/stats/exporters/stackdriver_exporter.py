@@ -431,10 +431,10 @@ def get_task_value():
     """ getTaskValue returns a task label value in the format of
      "py-<pid>@<hostname>".
     """
+    task_value = "py@" + str(os.getpid())
     hostname = platform.uname()[1]
-    if not hostname:
-        hostname = "localhost"
-    return "py-%s@%s" % (os.getpid(), hostname)
+    task_value += hostname if hostname is not None else "localhost"
+    return task_value
 
 
 def namespaced_view_name(view_name, metric_prefix):
