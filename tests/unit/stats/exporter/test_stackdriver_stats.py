@@ -956,7 +956,7 @@ class TestStackdriverStatsExporter(unittest.TestCase):
             options=mock.Mock(),
             client=mock.Mock(),
         )
-        self.assertRaises(Exception, exporter.create_time_series_list,
+        self.assertRaises(TypeError, exporter.create_time_series_list,
                           v_data, "", "")
 
     def test_create_metric_descriptor_count(self):

@@ -248,7 +248,7 @@ class StackdriverStatsExporter(base.StatsExporter):
                 if isinstance(v_data.view.measure, measure.MeasureFloat):
                     point.value.double_value = float(agg.value)
             else:
-                raise Exception("unsupported aggregation type: %s" %
+                raise TypeError("Unsupported aggregation type: %s" %
                                 type(v_data.view.aggregation))
 
             start = datetime.strptime(v_data.start_time, EPOCH_PATTERN)
