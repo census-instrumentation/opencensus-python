@@ -1,4 +1,4 @@
-Django==1.11.15
+Django==1.11.18
 Flask==0.12.3
 google-cloud-monitoring==0.31.0
 google-cloud-trace==0.20.1
