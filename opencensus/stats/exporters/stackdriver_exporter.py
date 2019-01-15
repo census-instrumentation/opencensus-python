@@ -17,6 +17,7 @@ import logging
 import os
 import platform
 import re
+import string
 
 from datetime import datetime
 from google.api_core.gapic_v1 import client_info
@@ -440,13 +441,13 @@ def new_label_descriptors(defaults, keys):
     label_descriptors = []
     for key, lbl in defaults.items():
         label = {}
-        label["key"] = remove_non_alphanumeric(key)
+        label["key"] = sanitize_label(key)
         label["description"] = lbl
         label_descriptors.append(label)
 
     for tag_key in keys:
         label = {}
-        label["key"] = remove_non_alphanumeric(tag_key)
+        label["key"] = sanitize_label(tag_key)
         label_descriptors.append(label)
     label_descriptors.append({"key": OPENCENSUS_TASK,
                               "description": OPENCENSUS_TASK_DESCRIPTION})
@@ -461,11 +462,22 @@ def set_metric_labels(series, view, tag_values):
 
     for key, value in zip(view.columns, tag_values):
         if value is not None:
-            series.metric.labels[remove_non_alphanumeric(key)] = value
+            series.metric.labels[sanitize_label(key)] = value
     series.metric.labels[OPENCENSUS_TASK] = get_task_value()
 
 
-def remove_non_alphanumeric(text):
-    """ Remove characters not accepted in labels key
+def sanitize_label(text):
+    """Remove characters not accepted in labels key
+
+    This replaces any non-word characters (alphanumeric or underscore), with
+    an underscore. It also ensures that the first character is a letter by
+    prepending with 'key' if necessary, and trims the text to 100 characters.
     """
-    return str(re.sub('[^0-9a-zA-Z ]+', '', text)).replace(" ", "")
+    if not text:
+        return text
+    text = re.sub('\\W+', '_', text)
+    if text[0] in string.digits:
+        text = "key_" + text
+    elif text[0] == '_':
+        text = "key" + text
+    return text[:100]

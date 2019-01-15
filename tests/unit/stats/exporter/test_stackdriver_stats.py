@@ -37,10 +37,10 @@ FRONTEND_KEY_FLOAT = tag_key_module.TagKey("my.org/keys/frontend-FLOAT")
 FRONTEND_KEY_INT = tag_key_module.TagKey("my.org/keys/frontend-INT")
 FRONTEND_KEY_STR = tag_key_module.TagKey("my.org/keys/frontend-STR")
 
-FRONTEND_KEY_CLEAN = "myorgkeysfrontend"
-FRONTEND_KEY_FLOAT_CLEAN = "myorgkeysfrontendFLOAT"
-FRONTEND_KEY_INT_CLEAN = "myorgkeysfrontendINT"
-FRONTEND_KEY_STR_CLEAN = "myorgkeysfrontendSTR"
+FRONTEND_KEY_CLEAN = "my_org_keys_frontend"
+FRONTEND_KEY_FLOAT_CLEAN = "my_org_keys_frontend_FLOAT"
+FRONTEND_KEY_INT_CLEAN = "my_org_keys_frontend_INT"
+FRONTEND_KEY_STR_CLEAN = "my_org_keys_frontend_STR"
 
 VIDEO_SIZE_MEASURE = measure_module.MeasureInt(
     "my.org/measure/video_size_test2", "size of processed videos", "By")
@@ -142,15 +142,35 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         self.assertIn(stackdriver.get_user_agent_slug(),
                       exporter.client.client_info.to_user_agent())
 
-    def test_remove_invalid_chars(self):
-        invalid_chars = "@#$"
-        valid_chars = "abc"
-
-        result = stackdriver.remove_non_alphanumeric(invalid_chars)
+    def test_sanitize(self):
+        # empty
+        result = stackdriver.sanitize_label("")
         self.assertEqual(result, "")
 
-        result = stackdriver.remove_non_alphanumeric(valid_chars)
+        # all invalid
+        result = stackdriver.sanitize_label("/*^#$")
+        self.assertEqual(result, "key_")
+
+        # all valid
+        result = stackdriver.sanitize_label("abc")
         self.assertEqual(result, "abc")
+
+        # mixed
+        result = stackdriver.sanitize_label("a.b/c")
+        self.assertEqual(result, "a_b_c")
+
+        # starts with '_'
+        result = stackdriver.sanitize_label("_abc")
+        self.assertEqual(result, "key_abc")
+
+        # starts with digit
+        result = stackdriver.sanitize_label("0abc")
+        self.assertEqual(result, "key_0abc")
+
+        # too long
+        result = stackdriver.sanitize_label("0123456789" * 10)
+        self.assertEqual(len(result), 100)
+        self.assertEqual(result, "key_" + "0123456789" * 9 + "012345")
 
     def test_singleton_with_params(self):
         default_labels = {'key1': 'value1'}
@@ -884,7 +904,7 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         [time_series] = time_series_list
 
         self.assertCorrectLabels(time_series.metric.labels,
-                                 {'tagkey': 'tag_value'},
+                                 {'tag_key': 'tag_value'},
                                  include_opencensus=True)
         self.assertEqual(len(time_series.points), 1)
         [point] = time_series.points
