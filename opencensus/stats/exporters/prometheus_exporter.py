@@ -14,14 +14,15 @@
 
 from prometheus_client import start_http_server
 from prometheus_client.core import CollectorRegistry
-from prometheus_client.core import GaugeMetricFamily
 from prometheus_client.core import CounterMetricFamily
-from prometheus_client.core import UntypedMetricFamily
+from prometheus_client.core import GaugeMetricFamily
 from prometheus_client.core import HistogramMetricFamily
 from prometheus_client.core import REGISTRY
-from opencensus.stats.exporters import base
-from opencensus.stats import aggregation_data as aggregation_data_module
+from prometheus_client.core import UntypedMetricFamily
+
 from opencensus.common.transports import sync
+from opencensus.stats import aggregation_data as aggregation_data_module
+from opencensus.stats.exporters import base
 
 
 class Options(object):
