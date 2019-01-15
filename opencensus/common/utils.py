@@ -86,3 +86,20 @@ def iuniq(ible):
 def uniq(ible):
     """Get a list of unique items of `ible`."""
     return list(iuniq(ible))
+
+
+def window(ible, length):
+    """Split `ible` into multiple lists of length `length`.
+
+    >>> [list(window(range(5), 2)]
+    [[0, 1], [2, 3], [4]]
+    """
+    if length <= 0:  # pragma: NO COVER
+        raise ValueError
+    ible = iter(ible)
+    while True:
+        elts = [xx for ii, xx in zip(range(length), ible)]
+        if elts:
+            yield elts
+        else:
+            break

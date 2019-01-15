@@ -180,22 +180,11 @@ class StackdriverStatsExporter(base.StatsExporter):
         """ Create the data structure that will be
             sent to Stackdriver Monitoring
         """
-        full_time_series_list = itertools.chain.from_iterable(
+        time_series_list = itertools.chain.from_iterable(
             self.create_time_series_list(
                 v_data, self.options.resource, self.options.metric_prefix)
             for v_data in view_data)
-        time_series_batches = []
-        while True:
-            batch = []
-            for _ in range(batch_size):
-                time_series = next(full_time_series_list, None)
-                if time_series is not None:
-                    batch.append(time_series)
-            if batch:
-                time_series_batches.append(batch)
-            if len(batch) < batch_size:
-                break
-        return time_series_batches
+        return list(utils.window(time_series_list, batch_size))
 
     def create_time_series_list(self, v_data, option_resource_type,
                                 metric_prefix):
