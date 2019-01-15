@@ -383,10 +383,10 @@ class TestStackdriverStatsExporter(unittest.TestCase):
 
         time_series_list = exporter.create_time_series_list(v_data, "", "")
 
-        self.assertEquals(len(time_series_list), 1)
+        self.assertEqual(len(time_series_list), 1)
         time_series = time_series_list[0]
-        self.assertEquals(time_series.resource.type, "global")
-        self.assertEquals(
+        self.assertEqual(time_series.resource.type, "global")
+        self.assertEqual(
             time_series_list[0].metric.type,
             "custom.googleapis.com/opencensus/my.org/views/video_size_test2")
         self.assertCorrectLabels(time_series.metric.labels,
@@ -394,27 +394,27 @@ class TestStackdriverStatsExporter(unittest.TestCase):
                                  include_opencensus=True)
         self.assertIsNotNone(time_series.resource)
 
-        self.assertEquals(len(time_series.points), 1)
+        self.assertEqual(len(time_series.points), 1)
         value = time_series.points[0].value
-        self.assertEquals(value.distribution_value.count, 1)
-        self.assertEquals(value.distribution_value.mean, 25 * MiB)
+        self.assertEqual(value.distribution_value.count, 1)
+        self.assertEqual(value.distribution_value.mean, 25 * MiB)
 
         time_series_list = exporter.create_time_series_list(
             v_data, "global", "kubernetes.io/myorg")
 
-        self.assertEquals(len(time_series_list), 1)
+        self.assertEqual(len(time_series_list), 1)
         time_series = time_series_list[0]
-        self.assertEquals(time_series.metric.type,
-                          "kubernetes.io/myorg/my.org/views/video_size_test2")
+        self.assertEqual(time_series.metric.type,
+                         "kubernetes.io/myorg/my.org/views/video_size_test2")
         self.assertCorrectLabels(time_series.metric.labels,
                                  {FRONTEND_KEY_CLEAN: "1200"},
                                  include_opencensus=True)
         self.assertIsNotNone(time_series.resource)
 
-        self.assertEquals(len(time_series.points), 1)
+        self.assertEqual(len(time_series.points), 1)
         value = time_series.points[0].value
-        self.assertEquals(value.distribution_value.count, 1)
-        self.assertEquals(value.distribution_value.mean, 25 * MiB)
+        self.assertEqual(value.distribution_value.count, 1)
+        self.assertEqual(value.distribution_value.mean, 25 * MiB)
 
     @mock.patch('opencensus.stats.exporters.stackdriver_exporter.'
                 'MonitoredResourceUtil.get_instance')
@@ -450,26 +450,26 @@ class TestStackdriverStatsExporter(unittest.TestCase):
             mocked_labels
 
         time_series_list = exporter.create_time_series_list(v_data, "", "")
-        self.assertEquals(len(time_series_list), 1)
+        self.assertEqual(len(time_series_list), 1)
         time_series = time_series_list[0]
-        self.assertEquals(time_series.resource.type, "gce_instance")
+        self.assertEqual(time_series.resource.type, "gce_instance")
         self.assertCorrectLabels(time_series.resource.labels, {
             'instance_id': 'my-instance',
             'project_id': 'my-project',
             'zone': 'us-east1',
         })
-        self.assertEquals(
+        self.assertEqual(
             time_series.metric.type,
             "custom.googleapis.com/opencensus/my.org/views/video_size_test2")
         self.assertIsNotNone(time_series)
 
         time_series_list = exporter.create_time_series_list(
             v_data, "global", "")
-        self.assertEquals(len(time_series_list), 1)
+        self.assertEqual(len(time_series_list), 1)
         time_series = time_series_list[0]
-        self.assertEquals(time_series.resource.type, "global")
+        self.assertEqual(time_series.resource.type, "global")
         self.assertCorrectLabels(time_series.resource.labels, {})
-        self.assertEquals(
+        self.assertEqual(
             time_series.metric.type,
             "custom.googleapis.com/opencensus/my.org/views/video_size_test2")
 
@@ -489,9 +489,9 @@ class TestStackdriverStatsExporter(unittest.TestCase):
             mocked_labels
 
         time_series_list = exporter.create_time_series_list(v_data, "", "")
-        self.assertEquals(len(time_series_list), 1)
+        self.assertEqual(len(time_series_list), 1)
         time_series = time_series_list[0]
-        self.assertEquals(time_series.resource.type, "k8s_container")
+        self.assertEqual(time_series.resource.type, "k8s_container")
         self.assertCorrectLabels(time_series.resource.labels, {
             'project_id': 'my-project',
             'location': 'us-east1',
@@ -499,7 +499,7 @@ class TestStackdriverStatsExporter(unittest.TestCase):
             'pod_name': 'localhost',
             'namespace_name': 'namespace',
         })
-        self.assertEquals(
+        self.assertEqual(
             time_series.metric.type,
             "custom.googleapis.com/opencensus/my.org/views/video_size_test2")
         self.assertIsNotNone(time_series)
@@ -517,15 +517,15 @@ class TestStackdriverStatsExporter(unittest.TestCase):
             mocked_labels
 
         time_series_list = exporter.create_time_series_list(v_data, "", "")
-        self.assertEquals(len(time_series_list), 1)
+        self.assertEqual(len(time_series_list), 1)
         time_series = time_series_list[0]
-        self.assertEquals(time_series.resource.type, "aws_ec2_instance")
+        self.assertEqual(time_series.resource.type, "aws_ec2_instance")
         self.assertCorrectLabels(time_series.resource.labels, {
             'instance_id': 'my-instance',
             'aws_account': 'my-project',
             'region': 'aws:us-east1',
         })
-        self.assertEquals(
+        self.assertEqual(
             time_series.metric.type,
             "custom.googleapis.com/opencensus/my.org/views/video_size_test2")
         self.assertIsNotNone(time_series)
@@ -537,11 +537,11 @@ class TestStackdriverStatsExporter(unittest.TestCase):
             mock.Mock()
 
         time_series_list = exporter.create_time_series_list(v_data, "", "")
-        self.assertEquals(len(time_series_list), 1)
+        self.assertEqual(len(time_series_list), 1)
         time_series = time_series_list[0]
-        self.assertEquals(time_series.resource.type, 'global')
+        self.assertEqual(time_series.resource.type, 'global')
         self.assertCorrectLabels(time_series.resource.labels, {})
-        self.assertEquals(
+        self.assertEqual(
             time_series.metric.type,
             "custom.googleapis.com/opencensus/my.org/views/video_size_test2")
         self.assertIsNotNone(time_series)
@@ -573,19 +573,19 @@ class TestStackdriverStatsExporter(unittest.TestCase):
 
         time_series_list = exporter.create_time_series_list(
             v_data, "global", "kubernetes.io/myorg/")
-        self.assertEquals(len(time_series_list), 1)
+        self.assertEqual(len(time_series_list), 1)
         time_series = time_series_list[0]
-        self.assertEquals(time_series.metric.type,
-                          "kubernetes.io/myorg/view-name1")
+        self.assertEqual(time_series.metric.type,
+                         "kubernetes.io/myorg/view-name1")
         self.assertCorrectLabels(time_series.metric.labels,
                                  {FRONTEND_KEY_INT_CLEAN: "Abc"},
                                  include_opencensus=True)
         self.assertIsNotNone(time_series.resource)
 
-        self.assertEquals(len(time_series.points), 1)
+        self.assertEqual(len(time_series.points), 1)
         expected_value = monitoring_v3.types.TypedValue()
         expected_value.int64_value = 25 * MiB
-        self.assertEquals(time_series.points[0].value, expected_value)
+        self.assertEqual(time_series.points[0].value, expected_value)
 
     @mock.patch('opencensus.stats.exporters.stackdriver_exporter.'
                 'MonitoredResourceUtil.get_instance',
@@ -615,19 +615,19 @@ class TestStackdriverStatsExporter(unittest.TestCase):
 
         time_series_list = exporter.create_time_series_list(
             v_data, "global", "kubernetes.io/myorg/")
-        self.assertEquals(len(time_series_list), 1)
+        self.assertEqual(len(time_series_list), 1)
         time_series = time_series_list[0]
-        self.assertEquals(time_series.metric.type,
-                          "kubernetes.io/myorg/view-name1")
+        self.assertEqual(time_series.metric.type,
+                         "kubernetes.io/myorg/view-name1")
         self.assertCorrectLabels(time_series.metric.labels,
                                  {FRONTEND_KEY_INT_CLEAN: "Abc"},
                                  include_opencensus=True)
         self.assertIsNotNone(time_series.resource)
 
-        self.assertEquals(len(time_series.points), 1)
+        self.assertEqual(len(time_series.points), 1)
         expected_value = monitoring_v3.types.TypedValue()
         expected_value.int64_value = 3
-        self.assertEquals(time_series.points[0].value, expected_value)
+        self.assertEqual(time_series.points[0].value, expected_value)
 
     @mock.patch('opencensus.stats.exporters.stackdriver_exporter.'
                 'MonitoredResourceUtil.get_instance',
@@ -657,19 +657,19 @@ class TestStackdriverStatsExporter(unittest.TestCase):
 
         time_series_list = exporter.create_time_series_list(
             v_data, "global", "kubernetes.io/myorg")
-        self.assertEquals(len(time_series_list), 1)
+        self.assertEqual(len(time_series_list), 1)
         time_series = time_series_list[0]
-        self.assertEquals(time_series.metric.type,
-                          "kubernetes.io/myorg/view-name2")
+        self.assertEqual(time_series.metric.type,
+                         "kubernetes.io/myorg/view-name2")
         self.assertCorrectLabels(time_series.metric.labels,
                                  {FRONTEND_KEY_FLOAT_CLEAN: "Abc"},
                                  include_opencensus=True)
         self.assertIsNotNone(time_series.resource)
 
-        self.assertEquals(len(time_series.points), 1)
+        self.assertEqual(len(time_series.points), 1)
         expected_value = monitoring_v3.types.TypedValue()
         expected_value.double_value = 25.7 * MiB
-        self.assertEquals(time_series.points[0].value, expected_value)
+        self.assertEqual(time_series.points[0].value, expected_value)
 
     @mock.patch('opencensus.stats.exporters.stackdriver_exporter.'
                 'MonitoredResourceUtil.get_instance',
@@ -712,19 +712,19 @@ class TestStackdriverStatsExporter(unittest.TestCase):
 
         time_series_list = exporter.create_time_series_list(
             v_data, "global", "")
-        self.assertEquals(len(time_series_list), 1)
+        self.assertEqual(len(time_series_list), 1)
         [time_series] = time_series_list
-        self.assertEquals(time_series.metric.type,
-                          "custom.googleapis.com/opencensus/view-name3")
+        self.assertEqual(time_series.metric.type,
+                         "custom.googleapis.com/opencensus/view-name3")
         self.assertCorrectLabels(time_series.metric.labels,
                                  {FRONTEND_KEY_FLOAT_CLEAN: "1200"},
                                  include_opencensus=True)
         self.assertIsNotNone(time_series.resource)
 
-        self.assertEquals(len(time_series.points), 1)
+        self.assertEqual(len(time_series.points), 1)
         expected_value = monitoring_v3.types.TypedValue()
         expected_value.double_value = 2.2 + 25 * MiB
-        self.assertEquals(time_series.points[0].value, expected_value)
+        self.assertEqual(time_series.points[0].value, expected_value)
 
     @mock.patch('opencensus.stats.exporters.stackdriver_exporter.'
                 'MonitoredResourceUtil.get_instance',
@@ -755,7 +755,7 @@ class TestStackdriverStatsExporter(unittest.TestCase):
 
         time_series_list = exporter.create_time_series_list(v_data, "", "")
 
-        self.assertEquals(len(time_series_list), 2)
+        self.assertEqual(len(time_series_list), 2)
         ts_by_frontend = {ts.metric.labels.get(FRONTEND_KEY_CLEAN): ts
                           for ts in time_series_list}
         self.assertEqual(set(ts_by_frontend.keys()), {"1200", "1400"})
@@ -763,28 +763,28 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         ts2 = ts_by_frontend["1400"]
 
         # Verify first time series
-        self.assertEquals(ts1.resource.type, "global")
-        self.assertEquals(
+        self.assertEqual(ts1.resource.type, "global")
+        self.assertEqual(
             ts1.metric.type,
             "custom.googleapis.com/opencensus/my.org/views/video_size_test2")
         self.assertIsNotNone(ts1.resource)
 
         self.assertEqual(len(ts1.points), 1)
         value1 = ts1.points[0].value
-        self.assertEquals(value1.distribution_value.count, 1)
-        self.assertEquals(value1.distribution_value.mean, 25 * MiB)
+        self.assertEqual(value1.distribution_value.count, 1)
+        self.assertEqual(value1.distribution_value.mean, 25 * MiB)
 
         # Verify second time series
-        self.assertEquals(ts2.resource.type, "global")
-        self.assertEquals(
+        self.assertEqual(ts2.resource.type, "global")
+        self.assertEqual(
             ts2.metric.type,
             "custom.googleapis.com/opencensus/my.org/views/video_size_test2")
         self.assertIsNotNone(ts2.resource)
 
-        self.assertEquals(len(ts2.points), 1)
+        self.assertEqual(len(ts2.points), 1)
         value2 = ts2.points[0].value
-        self.assertEquals(value2.distribution_value.count, 1)
-        self.assertEquals(value2.distribution_value.mean, 12 * MiB)
+        self.assertEqual(value2.distribution_value.count, 1)
+        self.assertEqual(value2.distribution_value.mean, 12 * MiB)
 
     @mock.patch('opencensus.stats.exporters.stackdriver_exporter.'
                 'MonitoredResourceUtil.get_instance',
@@ -814,22 +814,22 @@ class TestStackdriverStatsExporter(unittest.TestCase):
 
         time_series_list = exporter.create_time_series_list(v_data, "", "")
 
-        self.assertEquals(len(time_series_list), 1)
+        self.assertEqual(len(time_series_list), 1)
         [time_series] = time_series_list
 
         # Verify first time series
-        self.assertEquals(time_series.resource.type, "global")
-        self.assertEquals(time_series.metric.type,
-                          "custom.googleapis.com/opencensus/" + view_name)
+        self.assertEqual(time_series.resource.type, "global")
+        self.assertEqual(time_series.metric.type,
+                         "custom.googleapis.com/opencensus/" + view_name)
         self.assertCorrectLabels(time_series.metric.labels,
                                  {FRONTEND_KEY_CLEAN: "1200"},
                                  include_opencensus=True)
         self.assertIsNotNone(time_series.resource)
 
-        self.assertEquals(len(time_series.points), 1)
+        self.assertEqual(len(time_series.points), 1)
         expected_value = monitoring_v3.types.TypedValue()
         expected_value.int64_value = 25 * MiB
-        self.assertEquals(time_series.points[0].value, expected_value)
+        self.assertEqual(time_series.points[0].value, expected_value)
 
     def setup_create_timeseries_test(self):
         client = mock.Mock()
@@ -1061,23 +1061,23 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         series = monitoring_v3.types.TimeSeries()
         tag_value = tag_value_module.TagValue("1200")
         stackdriver.set_metric_labels(series, VIDEO_SIZE_VIEW, [tag_value])
-        self.assertEquals(len(series.metric.labels), 2)
+        self.assertEqual(len(series.metric.labels), 2)
 
     def test_set_metric_labels_with_None(self):
         series = monitoring_v3.types.TimeSeries()
         stackdriver.set_metric_labels(series, VIDEO_SIZE_VIEW, [None])
-        self.assertEquals(len(series.metric.labels), 1)
+        self.assertEqual(len(series.metric.labels), 1)
 
     @mock.patch('os.getpid', return_value=12345)
     @mock.patch('platform.uname', return_value=('system', 'node', 'release',
                                                 'version', 'machine',
                                                 'processor'))
     def test_get_task_value_with_hostname(self, mock_uname, mock_pid):
-        self.assertEquals(stackdriver.get_task_value(), "py@12345node")
+        self.assertEqual(stackdriver.get_task_value(), "py@12345node")
 
     @mock.patch('os.getpid', return_value=12345)
     @mock.patch('platform.uname', return_value=('system', None, 'release',
                                                 'version', 'machine',
                                                 'processor'))
     def test_get_task_value_without_hostname(self, mock_uname, mock_pid):
-        self.assertEquals(stackdriver.get_task_value(), "py@12345localhost")
+        self.assertEqual(stackdriver.get_task_value(), "py@12345localhost")

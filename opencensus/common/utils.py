@@ -91,7 +91,7 @@ def uniq(ible):
 def window(ible, length):
     """Split `ible` into multiple lists of length `length`.
 
-    >>> [list(window(range(5), 2)]
+    >>> list(window(range(5), 2))
     [[0, 1], [2, 3], [4]]
     """
     if length <= 0:  # pragma: NO COVER
