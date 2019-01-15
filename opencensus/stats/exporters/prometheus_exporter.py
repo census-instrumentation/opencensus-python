@@ -82,7 +82,9 @@ class Options(object):
 class Collector(object):
     """ Collector represents the Prometheus Collector object
     """
-    def __init__(self, options=Options(), view_name_to_data_map={}):
+    def __init__(self, options=Options(), view_name_to_data_map=None):
+        if view_name_to_data_map is None:
+            view_name_to_data_map = {}
         self._options = options
         self._registry = options.registry
         self._view_name_to_data_map = view_name_to_data_map
