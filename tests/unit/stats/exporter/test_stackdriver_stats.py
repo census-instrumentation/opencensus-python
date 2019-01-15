@@ -291,7 +291,7 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         if include_opencensus:
             opencensus_tag = actual_labels.pop(stackdriver.OPENCENSUS_TASK)
             self.assertIsNotNone(opencensus_tag)
-            self.assertIn("py@", opencensus_tag)
+            self.assertIn("py-", opencensus_tag)
         self.assertDictEqual(actual_labels, expected_labels)
 
     @mock.patch('opencensus.stats.exporters.stackdriver_exporter.'
@@ -1093,11 +1093,11 @@ class TestStackdriverStatsExporter(unittest.TestCase):
                                                 'version', 'machine',
                                                 'processor'))
     def test_get_task_value_with_hostname(self, mock_uname, mock_pid):
-        self.assertEqual(stackdriver.get_task_value(), "py@12345node")
+        self.assertEqual(stackdriver.get_task_value(), "py-12345@node")
 
     @mock.patch('os.getpid', return_value=12345)
-    @mock.patch('platform.uname', return_value=('system', None, 'release',
+    @mock.patch('platform.uname', return_value=('system', '', 'release',
                                                 'version', 'machine',
                                                 'processor'))
     def test_get_task_value_without_hostname(self, mock_uname, mock_pid):
-        self.assertEqual(stackdriver.get_task_value(), "py@12345localhost")
+        self.assertEqual(stackdriver.get_task_value(), "py-12345@localhost")
