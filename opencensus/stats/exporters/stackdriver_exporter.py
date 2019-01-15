@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import itertools
 import logging
 import os
 import platform
@@ -168,40 +169,29 @@ class StackdriverStatsExporter(base.StatsExporter):
             and create time series for each value
         """
         view_data_set = utils.uniq(view_data)
-        requests = self.make_request(view_data_set, MAX_TIME_SERIES_PER_UPLOAD)
-        for request in requests:
-            self.client.create_time_series(request[CONS_NAME],
-                                           request[CONS_TIME_SERIES])
+        time_series_batches = self.create_batched_time_series(
+            view_data_set, MAX_TIME_SERIES_PER_UPLOAD)
+        for time_series_batch in time_series_batches:
+            self.client.create_time_series(
+                self.client.project_path(self.options.project_id),
+                time_series_batch)
 
-    def make_request(self, view_data, limit):
+    def create_batched_time_series(self, view_data, batch_size):
         """ Create the data structure that will be
             sent to Stackdriver Monitoring
         """
-        requests = []
-        time_series = []
-
-        resource = self.options.resource
-        metric_prefix = self.options.metric_prefix
-        for v_data in view_data:
-            series = self.create_time_series_list(v_data, resource,
-                                                  metric_prefix)
-            time_series.extend(series)
-
-            project_id = self.options.project_id
-            request = {}
-            request[CONS_NAME] = self.client.project_path(project_id)
-            request[CONS_TIME_SERIES] = time_series
-            requests.append(request)
-
-            if len(time_series) == int(limit):
-                time_series = []
-        return requests
+        time_series_list = itertools.chain.from_iterable(
+            self.create_time_series_list(
+                v_data, self.options.resource, self.options.metric_prefix)
+            for v_data in view_data)
+        return list(utils.window(time_series_list, batch_size))
 
     def create_time_series_list(self, v_data, option_resource_type,
                                 metric_prefix):
         """ Create the TimeSeries object based on the view data
         """
         time_series_list = []
+        aggregation_type = v_data.view.aggregation.aggregation_type
         tag_agg = v_data.tag_value_aggregation_data_map
         for tag_value, agg in tag_agg.items():
             series = monitoring_v3.types.TimeSeries()
@@ -211,15 +201,12 @@ class StackdriverStatsExporter(base.StatsExporter):
             set_monitored_resource(series, option_resource_type)
 
             point = series.points.add()
-            if isinstance(
-                    agg,
-                    aggregation.aggregation_data.DistributionAggregationData):
-                agg_data = tag_agg.get(tag_value)
+            if aggregation_type is aggregation.Type.DISTRIBUTION:
                 dist_value = point.value.distribution_value
-                dist_value.count = agg_data.count_data
-                dist_value.mean = agg_data.mean_data
+                dist_value.count = agg.count_data
+                dist_value.mean = agg.mean_data
 
-                sum_of_sqd = agg_data.sum_of_sqd_deviations
+                sum_of_sqd = agg.sum_of_sqd_deviations
                 dist_value.sum_of_squared_deviation = sum_of_sqd
 
                 # Uncomment this when stackdriver supports Range
@@ -233,23 +220,25 @@ class StackdriverStatsExporter(base.StatsExporter):
                 # [0, first_bound).
                 bounds.extend([0])
                 buckets.extend([0])
-                bounds.extend(list(map(float, agg_data.bounds)))
-                buckets.extend(list(map(int, agg_data.counts_per_bucket)))
-            elif isinstance(agg,
-                            aggregation.aggregation_data.CountAggregationData):
+                bounds.extend(list(map(float, agg.bounds)))
+                buckets.extend(list(map(int, agg.counts_per_bucket)))
+            elif aggregation_type is aggregation.Type.COUNT:
                 point.value.int64_value = agg.count_data
-            elif isinstance(
-                    agg, aggregation.aggregation_data.SumAggregationDataFloat):
-                point.value.double_value = agg.sum_data
-            elif not isinstance(
-                    agg, aggregation.aggregation_data
-                    .LastValueAggregationData):  # pragma: NO COVER
+            elif aggregation_type is aggregation.Type.SUM:
+                if isinstance(v_data.view.measure, measure.MeasureInt):
+                    # TODO: Add implementation of sum aggregation that does not
+                    # store it's data as a float.
+                    point.value.int64_value = int(agg.sum_data)
+                if isinstance(v_data.view.measure, measure.MeasureFloat):
+                    point.value.double_value = float(agg.sum_data)
+            elif aggregation_type is aggregation.Type.LASTVALUE:
                 if isinstance(v_data.view.measure, measure.MeasureInt):
                     point.value.int64_value = int(agg.value)
-                elif isinstance(v_data.view.measure, measure.MeasureFloat):
+                if isinstance(v_data.view.measure, measure.MeasureFloat):
                     point.value.double_value = float(agg.value)
             else:
-                point.value.string_value = str(tag_value[0])
+                raise TypeError("Unsupported aggregation type: %s" %
+                                type(v_data.view.aggregation))
 
             start = datetime.strptime(v_data.start_time, EPOCH_PATTERN)
             end = datetime.strptime(v_data.end_time, EPOCH_PATTERN)
@@ -262,8 +251,7 @@ class StackdriverStatsExporter(base.StatsExporter):
             secs = point.interval.end_time.seconds
             point.interval.end_time.nanos = int((timestamp_end - secs) * 10**9)
 
-            if type(agg) is not aggregation.aggregation_data.\
-                    LastValueAggregationData:  # pragma: NO COVER
+            if aggregation_type is not aggregation.Type.LASTVALUE:
                 if timestamp_start == timestamp_end:
                     # avoiding start_time and end_time to be equal
                     timestamp_start = timestamp_start - 1
@@ -471,10 +459,9 @@ def set_metric_labels(series, view, tag_values):
             "TagKeys and TagValues don't have same size."
         )  # pragma: NO COVER
 
-    for ii, tag_value in enumerate(tag_values):
-        if tag_value is not None:
-            metric_label = remove_non_alphanumeric(view.columns[ii])
-            series.metric.labels[metric_label] = tag_value
+    for key, value in zip(view.columns, tag_values):
+        if value is not None:
+            series.metric.labels[remove_non_alphanumeric(key)] = value
     series.metric.labels[OPENCENSUS_TASK] = get_task_value()
 
 
@@ -482,14 +469,3 @@ def remove_non_alphanumeric(text):
     """ Remove characters not accepted in labels key
     """
     return str(re.sub('[^0-9a-zA-Z ]+', '', text)).replace(" ", "")
-
-
-def as_float(value):
-    """ Converts a value to a float if possible
-          On success, it returns (converted_value, True)
-          On failure, it returns (None, False)
-    """
-    try:
-        return float(value), True
-    except Exception:  # Catch all exception including ValueError
-        return None, False
