@@ -69,7 +69,7 @@ class Test__set_default_configs(unittest.TestCase):
                 '_ah/health',
             ],
             'TRANSPORT':
-            'opencensus.trace.exporters.transports.sync.SyncTransport',
+            'opencensus.common.transports.sync.SyncTransport',
         }
 
         params = config._set_default_configs(
@@ -98,7 +98,7 @@ class Test__set_default_configs(unittest.TestCase):
             'BLACKLIST_HOSTNAMES':
             None,
             'TRANSPORT':
-            'opencensus.trace.exporters.transports.sync.SyncTransport',
+            'opencensus.common.transports.sync.SyncTransport',
         }
 
         self.assertEqual(params, expected_params)

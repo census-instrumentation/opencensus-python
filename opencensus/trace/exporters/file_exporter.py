@@ -16,9 +16,9 @@
 
 import json
 
+from opencensus.common.transports import sync
 from opencensus.trace import span_data
 from opencensus.trace.exporters import base
-from opencensus.trace.exporters.transports import sync
 
 DEFAULT_FILENAME = 'opencensus-traces.json'
 
@@ -33,7 +33,7 @@ class FileExporter(base.Exporter):
                       extend from the base :class:`.Transport` type and
                       implement :meth:`.Transport.export`. Defaults to
                       :class:`.SyncTransport`. The other option is
-                      :class:`.BackgroundThreadTransport`.
+                      :class:`.AsyncTransport`.
 
     :type file_mode: str
     :param file_mode: The file mode to open the output file with.

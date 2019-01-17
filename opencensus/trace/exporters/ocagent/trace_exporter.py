@@ -20,6 +20,7 @@ import os
 import socket
 
 from opencensus.__version__ import __version__
+from opencensus.common.transports import sync
 from opencensus.trace.exporters import base
 from opencensus.trace.exporters.gen.opencensus.agent.common.v1 \
     import common_pb2
@@ -28,7 +29,6 @@ from opencensus.trace.exporters.gen.opencensus.agent.trace.v1 \
 from opencensus.trace.exporters.gen.opencensus.agent.trace.v1 \
     import trace_service_pb2_grpc
 from opencensus.trace.exporters.ocagent import utils
-from opencensus.trace.exporters.transports import sync
 
 # Default agent endpoint
 DEFAULT_ENDPOINT = 'localhost:55678'
@@ -57,7 +57,7 @@ class TraceExporter(base.Exporter):
                       extend from the base :class:`.Transport` type and
                       implement :meth:`.Transport.export`. Defaults to
                       :class:`.SyncTransport`. The other option is
-                      :class:`.BackgroundThreadTransport`.
+                      :class:`.AsyncTransport`.
     """
 
     def __init__(

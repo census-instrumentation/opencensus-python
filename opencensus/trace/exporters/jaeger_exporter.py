@@ -20,11 +20,11 @@ import socket
 from thrift.protocol import TBinaryProtocol, TCompactProtocol
 from thrift.transport import THttpClient, TTransport
 
+from opencensus.common.transports import sync
 from opencensus.common.utils import timestamp_to_microseconds
 from opencensus.trace import link as link_module
 from opencensus.trace.exporters import base
 from opencensus.trace.exporters.gen.jaeger import agent, jaeger
-from opencensus.trace.exporters.transports import sync
 
 DEFAULT_HOST_NAME = 'localhost'
 DEFAULT_AGENT_PORT = 6831
@@ -71,7 +71,7 @@ class JaegerExporter(base.Exporter):
                       extend from the base :class:`.Transport` type and
                       implement :meth:`.Transport.export`. Defaults to
                       :class:`.SyncTransport`. The other option is
-                      :class:`.BackgroundThreadTransport`.
+                      :class:`.AsyncTransport`.
     """
 
     def __init__(
@@ -332,7 +332,7 @@ class Collector(base.Exporter):
                       extend from the base :class:`.Transport` type and
                       implement :meth:`.Transport.export`. Defaults to
                       :class:`.SyncTransport`. The other option is
-                      :class:`.BackgroundThreadTransport`.
+                      :class:`.AsyncTransport`.
 
     :type http_transport: :class:`type`
     :param http_transport: Class for creating new client for Thrift
@@ -414,7 +414,7 @@ class AgentClientUDP(base.Exporter):
                       extend from the base :class:`.Transport` type and
                       implement :meth:`.Transport.export`. Defaults to
                       :class:`.SyncTransport`. The other option is
-                      :class:`.BackgroundThreadTransport`.
+                      :class:`.AsyncTransport`.
     """
 
     def __init__(
