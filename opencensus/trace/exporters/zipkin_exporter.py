@@ -19,10 +19,10 @@ import logging
 
 import requests
 
+from opencensus.common.transports import sync
 from opencensus.common.utils import check_str_length
 from opencensus.common.utils import timestamp_to_microseconds
 from opencensus.trace.exporters import base
-from opencensus.trace.exporters.transports import sync
 
 DEFAULT_ENDPOINT = '/api/v2/spans'
 DEFAULT_HOST_NAME = 'localhost'
@@ -65,7 +65,7 @@ class ZipkinExporter(base.Exporter):
                       extend from the base :class:`.Transport` type and
                       implement :meth:`.Transport.export`. Defaults to
                       :class:`.SyncTransport`. The other option is
-                      :class:`.BackgroundThreadTransport`.
+                      :class:`.AsyncTransport`.
     """
 
     def __init__(
