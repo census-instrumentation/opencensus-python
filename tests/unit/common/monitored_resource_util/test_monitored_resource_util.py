@@ -12,36 +12,39 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import unittest
-import mock
 import os
-from opencensus.common.monitored_resource_util.monitored_resource_util import MonitoredResourceUtil
-from opencensus.common.monitored_resource_util.monitored_resource import GcpGkeMonitoredResource
-from opencensus.common.monitored_resource_util.monitored_resource import GcpGceMonitoredResource
-from opencensus.common.monitored_resource_util.monitored_resource import AwsMonitoredResource
+import unittest
+
+import mock
+
+from opencensus.common.monitored_resource_util import monitored_resource
+from opencensus.common.monitored_resource_util import monitored_resource_util
 
 
 class TestMonitoredResourceUtil(unittest.TestCase):
-
     def test_gke_environment(self):
-        patch = mock.patch.dict(os.environ, {'KUBERNETES_SERVICE_HOST': '127.0.0.1'})
+        patch = mock.patch.dict(os.environ,
+                                {'KUBERNETES_SERVICE_HOST': '127.0.0.1'})
 
         with patch:
-            monitored_resource = MonitoredResourceUtil.get_instance()
+            mr = monitored_resource_util.MonitoredResourceUtil.get_instance()
 
-            self.assertIsNotNone(monitored_resource)
-            self.assertIsInstance(monitored_resource, GcpGkeMonitoredResource)
+            self.assertIsNotNone(mr)
+            self.assertIsInstance(mr,
+                                  monitored_resource.GcpGkeMonitoredResource)
 
     def test_gce_environment(self):
-        patch = mock.patch('opencensus.common.monitored_resource_util.'
-                           'gcp_metadata_config.GcpMetadataConfig.'
-                           'is_running_on_gcp',
-                           return_value=True)
+        patch = mock.patch(
+            'opencensus.common.monitored_resource_util.'
+            'gcp_metadata_config.GcpMetadataConfig.'
+            'is_running_on_gcp',
+            return_value=True)
         with patch:
-            monitored_resource = MonitoredResourceUtil.get_instance()
+            mr = monitored_resource_util.MonitoredResourceUtil.get_instance()
 
-            self.assertIsNotNone(monitored_resource)
-            self.assertIsInstance(monitored_resource, GcpGceMonitoredResource)
+            self.assertIsNotNone(mr)
+            self.assertIsInstance(mr,
+                                  monitored_resource.GcpGceMonitoredResource)
 
     @mock.patch('opencensus.common.monitored_resource_util.'
                 'gcp_metadata_config.GcpMetadataConfig.is_running_on_gcp',
@@ -51,10 +54,10 @@ class TestMonitoredResourceUtil(unittest.TestCase):
                 'is_running_on_aws',
                 return_value=True)
     def test_aws_environment(self, aws_util_mock, gcp_metadata_mock):
-        monitored_resource = MonitoredResourceUtil.get_instance()
+        mr = monitored_resource_util.MonitoredResourceUtil.get_instance()
 
-        self.assertIsNotNone(monitored_resource)
-        self.assertIsInstance(monitored_resource, AwsMonitoredResource)
+        self.assertIsNotNone(mr)
+        self.assertIsInstance(mr, monitored_resource.AwsMonitoredResource)
 
     @mock.patch('opencensus.common.monitored_resource_util.'
                 'gcp_metadata_config.GcpMetadataConfig.is_running_on_gcp',
@@ -64,6 +67,6 @@ class TestMonitoredResourceUtil(unittest.TestCase):
                 'is_running_on_aws',
                 return_value=False)
     def test_non_supported_environment(self, aws_util_mock, gcp_metadata_mock):
-        monitored_resource = MonitoredResourceUtil.get_instance()
+        mr = monitored_resource_util.MonitoredResourceUtil.get_instance()
 
-        self.assertIsNone(monitored_resource)
+        self.assertIsNone(mr)

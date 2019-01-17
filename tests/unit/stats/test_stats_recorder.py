@@ -20,7 +20,6 @@ from opencensus.stats import execution_context
 
 
 class TestStatsRecorder(unittest.TestCase):
-
     def test_constructor_defaults(self):
         execution_context.clear()
         self.assertEqual({}, execution_context.get_measure_to_view_map())
@@ -37,4 +36,7 @@ class TestStatsRecorder(unittest.TestCase):
         stats_recorder = stats_recorder_module.StatsRecorder()
         measurement_map = stats_recorder.new_measurement_map()
 
-        self.assertEqual(measurement_map.measurement_map, MeasurementMap(measure_to_view_map=measure_to_view_map).measurement_map)
+        self.assertEqual(
+            measurement_map.measurement_map,
+            MeasurementMap(
+                measure_to_view_map=measure_to_view_map).measurement_map)

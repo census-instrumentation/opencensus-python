@@ -12,7 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
+
 from opencensus.stats import bucket_boundaries
+
+
+logger = logging.getLogger(__name__)
 
 
 class BaseAggregationData(object):
@@ -126,12 +131,15 @@ class DistributionAggregationData(BaseAggregationData):
         self._sum_of_sqd_deviations = sum_of_sqd_deviations
         if bounds is None:
             bounds = []
+        else:
+            assert bounds == list(sorted(set(bounds)))
+            assert all(bb > 0 for bb in bounds)
 
         if counts_per_bucket is None:
             counts_per_bucket = [0 for ii in range(len(bounds) + 1)]
-        elif len(counts_per_bucket) != len(bounds) + 1:
-            raise ValueError("counts_per_bucket length does not match bounds "
-                             "length")
+        else:
+            assert all(cc >= 0 for cc in counts_per_bucket)
+            assert len(counts_per_bucket) == len(bounds) + 1
 
         self._counts_per_bucket = counts_per_bucket
         self._bounds = bucket_boundaries.BucketBoundaries(

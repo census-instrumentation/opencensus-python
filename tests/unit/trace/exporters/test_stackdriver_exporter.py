@@ -31,7 +31,6 @@ class _Client(object):
 
 
 class TestStackdriverExporter(unittest.TestCase):
-
     def test_constructor_default(self):
         patch = mock.patch(
             'opencensus.trace.exporters.stackdriver_exporter.Client',
@@ -50,9 +49,7 @@ class TestStackdriverExporter(unittest.TestCase):
         transport = mock.Mock()
 
         exporter = stackdriver_exporter.StackdriverExporter(
-            client=client,
-            project_id=project_id,
-            transport=transport)
+            client=client, project_id=project_id, transport=transport)
 
         self.assertIs(exporter.client, client)
         self.assertEqual(exporter.project_id, project_id)
@@ -62,9 +59,7 @@ class TestStackdriverExporter(unittest.TestCase):
         project_id = 'PROJECT'
         client.project = project_id
         exporter = stackdriver_exporter.StackdriverExporter(
-            client=client,
-            project_id=project_id,
-            transport=MockTransport)
+            client=client, project_id=project_id, transport=MockTransport)
         exporter.export({})
 
         self.assertTrue(exporter.transport.export_called)
@@ -72,7 +67,7 @@ class TestStackdriverExporter(unittest.TestCase):
     @mock.patch('opencensus.trace.exporters.stackdriver_exporter.'
                 'MonitoredResourceUtil.get_instance',
                 return_value=None)
-    def test_emit(self, monitor_resource_mock):
+    def test_emit(self, mr_mock):
         trace_id = '6e0c63257de34c92bf9efcd03927272e'
         span_datas = [
             span_data_module.SpanData(
@@ -94,38 +89,44 @@ class TestStackdriverExporter(unittest.TestCase):
         ]
 
         stackdriver_spans = {
-            'spans': [
-                {
-                    'status': None,
-                    'childSpanCount': None,
-                    'links': None,
-                    'startTime': None,
-                    'spanId': '1111',
-                    'attributes': {
-                        'attributeMap': {
-                            'g.co/agent': {
-                                'string_value': {
-                                    'truncated_byte_count': 0,
-                                    'value': 'opencensus-python [{}]'.format(
-                                        __version__
-                                    )
-                                }
+            'spans': [{
+                'status':
+                None,
+                'childSpanCount':
+                None,
+                'links':
+                None,
+                'startTime':
+                None,
+                'spanId':
+                '1111',
+                'attributes': {
+                    'attributeMap': {
+                        'g.co/agent': {
+                            'string_value': {
+                                'truncated_byte_count':
+                                0,
+                                'value':
+                                'opencensus-python [{}]'.format(__version__)
                             }
                         }
-                    },
-                    'stackTrace': None,
-                    'displayName': {
-                        'truncated_byte_count': 0,
-                        'value': 'span'
-                    },
-                    'name': 'projects/PROJECT/traces/{}/spans/1111'.format(
-                        trace_id
-                    ),
-                    'timeEvents': None,
-                    'endTime': None,
-                    'sameProcessAsParentSpan': None
-                }
-            ]
+                    }
+                },
+                'stackTrace':
+                None,
+                'displayName': {
+                    'truncated_byte_count': 0,
+                    'value': 'span'
+                },
+                'name':
+                'projects/PROJECT/traces/{}/spans/1111'.format(trace_id),
+                'timeEvents':
+                None,
+                'endTime':
+                None,
+                'sameProcessAsParentSpan':
+                None
+            }]
         }
 
         client = mock.Mock()
@@ -133,8 +134,7 @@ class TestStackdriverExporter(unittest.TestCase):
         client.project = project_id
 
         exporter = stackdriver_exporter.StackdriverExporter(
-            client=client,
-            project_id=project_id)
+            client=client, project_id=project_id)
 
         exporter.emit(span_datas)
 
@@ -146,7 +146,7 @@ class TestStackdriverExporter(unittest.TestCase):
     @mock.patch('opencensus.trace.exporters.stackdriver_exporter.'
                 'MonitoredResourceUtil.get_instance',
                 return_value=None)
-    def test_translate_to_stackdriver(self, monitor_resource_mock):
+    def test_translate_to_stackdriver(self, mr_mock):
         project_id = 'PROJECT'
         trace_id = '6e0c63257de34c92bf9efcd03927272e'
         span_name = 'test span'
@@ -171,78 +171,78 @@ class TestStackdriverExporter(unittest.TestCase):
         start_time = 'test start time'
         end_time = 'test end time'
         trace = {
-            'spans': [
-                {
-                    'displayName': {
-                        'value': span_name,
-                        'truncated_byte_count': 0
-                    },
-                    'spanId': span_id,
-                    'startTime': start_time,
-                    'endTime': end_time,
-                    'parentSpanId': parent_span_id,
-                    'attributes': attributes,
-                    'someRandomKey': 'this should not be included in result',
-                    'childSpanCount': 0
-                }
-            ],
-            'traceId': trace_id
+            'spans': [{
+                'displayName': {
+                    'value': span_name,
+                    'truncated_byte_count': 0
+                },
+                'spanId':
+                span_id,
+                'startTime':
+                start_time,
+                'endTime':
+                end_time,
+                'parentSpanId':
+                parent_span_id,
+                'attributes':
+                attributes,
+                'someRandomKey':
+                'this should not be included in result',
+                'childSpanCount':
+                0
+            }],
+            'traceId':
+            trace_id
         }
 
         client = mock.Mock()
         client.project = project_id
         exporter = stackdriver_exporter.StackdriverExporter(
-            client=client,
-            project_id=project_id)
+            client=client, project_id=project_id)
 
-        spans = exporter.translate_to_stackdriver(trace)
+        spans = list(exporter.translate_to_stackdriver(trace))
 
-        expected_traces = {
-            'spans': [
-                {
-                    'name': 'projects/{}/traces/{}/spans/{}'.format(
-                        project_id, trace_id, span_id),
-                    'displayName': {
-                        'value': span_name,
-                        'truncated_byte_count': 0
-                    },
-                    'attributes': {
-                        'attributeMap': {
-                            'g.co/agent': {
-                                'string_value': {
-                                    'truncated_byte_count': 0,
-                                    'value': 'opencensus-python [{}]'.format(
-                                        __version__
-                                    )
-                                }
-                            },
-                            'key': {
-                                'string_value': {
-                                    'truncated_byte_count': 0,
-                                    'value': 'value'
-                                }
-                            },
-                            '/http/host': {
-                                'string_value': {
-                                    'truncated_byte_count': 0,
-                                    'value': 'host'
-                                }
-                            }
+        expected_traces = [{
+            'name': 'projects/{}/traces/{}/spans/{}'.format(
+                    project_id, trace_id, span_id),
+            'displayName': {
+                'value': span_name,
+                'truncated_byte_count': 0
+            },
+            'attributes': {
+                'attributeMap': {
+                    'g.co/agent': {
+                        'string_value': {
+                            'truncated_byte_count': 0,
+                            'value':
+                                'opencensus-python [{}]'.format(__version__)
                         }
                     },
-                    'spanId': str(span_id),
-                    'startTime': start_time,
-                    'endTime': end_time,
-                    'parentSpanId': str(parent_span_id),
-                    'status': None,
-                    'links': None,
-                    'stackTrace': None,
-                    'timeEvents': None,
-                    'childSpanCount': 0,
-                    'sameProcessAsParentSpan': None
+                    'key': {
+                        'string_value': {
+                            'truncated_byte_count': 0,
+                            'value': 'value'
+                        }
+                    },
+                    '/http/host': {
+                        'string_value': {
+                            'truncated_byte_count': 0,
+                            'value': 'host'
+                        }
+                    }
                 }
-            ]
-        }
+            },
+            'spanId': str(span_id),
+            'startTime': start_time,
+            'endTime': end_time,
+            'parentSpanId': str(parent_span_id),
+            'status': None,
+            'links': None,
+            'stackTrace': None,
+            'timeEvents': None,
+            'childSpanCount': 0,
+            'sameProcessAsParentSpan': None
+        }]
 
         self.assertEqual(spans, expected_traces)
 
@@ -251,8 +251,7 @@ class TestStackdriverExporter(unittest.TestCase):
         client = mock.Mock()
         client.project = project_id
         exporter = stackdriver_exporter.StackdriverExporter(
-            client=client,
-            project_id=project_id)
+            client=client, project_id=project_id)
 
         attributes = {'outer key': 'some value'}
         expected_attributes = {'outer key': 'some value'}
@@ -265,8 +264,7 @@ class TestStackdriverExporter(unittest.TestCase):
         client = mock.Mock()
         client.project = project_id
         exporter = stackdriver_exporter.StackdriverExporter(
-            client=client,
-            project_id=project_id)
+            client=client, project_id=project_id)
 
         # does not throw
         self.assertIsNone(exporter.map_attributes(None))
@@ -276,8 +274,7 @@ class TestStackdriverExporter(unittest.TestCase):
         client = mock.Mock()
         client.project = project_id
         exporter = stackdriver_exporter.StackdriverExporter(
-            client=client,
-            project_id=project_id)
+            client=client, project_id=project_id)
 
         attributes = {
             'outer key': 'some value',
@@ -526,18 +523,13 @@ class TestStackdriverExporter(unittest.TestCase):
 
 
 class Test_set_attributes_gae(unittest.TestCase):
-
     @mock.patch('opencensus.trace.exporters.stackdriver_exporter.'
                 'MonitoredResourceUtil.get_instance',
                 return_value=None)
-    def test_set_attributes_gae(self, monitor_resource_mock):
+    def test_set_attributes_gae(self, mr_mock):
         import os
 
-        trace = {'spans': [
-            {
-                'attributes': {}
-            }
-        ]}
+        trace = {'spans': [{'attributes': {}}]}
 
         expected = {
             'attributes': {
@@ -569,9 +561,8 @@ class Test_set_attributes_gae(unittest.TestCase):
                     'g.co/agent': {
                         'string_value': {
                             'truncated_byte_count': 0,
-                            'value': 'opencensus-python [{}]'.format(
-                                __version__
-                            )
+                            'value':
+                            'opencensus-python [{}]'.format(__version__)
                         }
                     },
                 }
@@ -579,12 +570,13 @@ class Test_set_attributes_gae(unittest.TestCase):
         }
 
         with mock.patch.dict(
-                os.environ,
-                {stackdriver_exporter._APPENGINE_FLEXIBLE_ENV_VM: 'vm',
-                 stackdriver_exporter._APPENGINE_FLEXIBLE_ENV_FLEX: 'flex',
-                 'GOOGLE_CLOUD_PROJECT': 'project',
-                 'GAE_SERVICE': 'service',
-                 'GAE_VERSION': 'version'}):
+                os.environ, {
+                    stackdriver_exporter._APPENGINE_FLEXIBLE_ENV_VM: 'vm',
+                    stackdriver_exporter._APPENGINE_FLEXIBLE_ENV_FLEX: 'flex',
+                    'GOOGLE_CLOUD_PROJECT': 'project',
+                    'GAE_SERVICE': 'service',
+                    'GAE_VERSION': 'version'
+                }):
             self.assertTrue(stackdriver_exporter.is_gae_environment())
             stackdriver_exporter.set_attributes(trace)
 
@@ -593,17 +585,12 @@ class Test_set_attributes_gae(unittest.TestCase):
 
 
 class TestMonitoredResourceAttributes(unittest.TestCase):
-
     @mock.patch('opencensus.trace.exporters.stackdriver_exporter.'
                 'MonitoredResourceUtil.get_instance')
-    def test_monitored_resource_attributes_gke(self, gke_monitor_resource_mock):
+    def test_monitored_resource_attributes_gke(self, gmr_mock):
         import os
 
-        trace = {'spans': [
-            {
-                'attributes': {}
-            }
-        ]}
+        trace = {'spans': [{'attributes': {}}]}
 
         expected = {
             'attributes': {
@@ -635,9 +622,8 @@ class TestMonitoredResourceAttributes(unittest.TestCase):
                     'g.co/agent': {
                         'string_value': {
                             'truncated_byte_count': 0,
-                            'value': 'opencensus-python [{}]'.format(
-                                __version__
-                            )
+                            'value':
+                            'opencensus-python [{}]'.format(__version__)
                         }
                     },
                     'g.co/r/k8s_container/project_id': {
@@ -680,10 +666,10 @@ class TestMonitoredResourceAttributes(unittest.TestCase):
             }
         }
 
-        gke_monitor_resource_mock.return_value = mock.Mock()
+        gmr_mock.return_value = mock.Mock()
 
-        gke_monitor_resource_mock.return_value.resource_type = 'gke_container'
-        gke_monitor_resource_mock.return_value.get_resource_labels.return_value = {
+        gmr_mock.return_value.resource_type = 'gke_container'
+        gmr_mock.return_value.get_resource_labels.return_value = {
             'pod_id': 'pod',
             'cluster_name': 'cluster',
             'namespace_id': 'namespace',
@@ -693,12 +679,13 @@ class TestMonitoredResourceAttributes(unittest.TestCase):
             'zone': 'zone1'
         }
         with mock.patch.dict(
-                os.environ,
-                {stackdriver_exporter._APPENGINE_FLEXIBLE_ENV_VM: 'vm',
-                 stackdriver_exporter._APPENGINE_FLEXIBLE_ENV_FLEX: 'flex',
-                 'GOOGLE_CLOUD_PROJECT': 'project',
-                 'GAE_SERVICE': 'service',
-                 'GAE_VERSION': 'version'}):
+                os.environ, {
+                    stackdriver_exporter._APPENGINE_FLEXIBLE_ENV_VM: 'vm',
+                    stackdriver_exporter._APPENGINE_FLEXIBLE_ENV_FLEX: 'flex',
+                    'GOOGLE_CLOUD_PROJECT': 'project',
+                    'GAE_SERVICE': 'service',
+                    'GAE_VERSION': 'version'
+                }):
             self.assertTrue(stackdriver_exporter.is_gae_environment())
             stackdriver_exporter.set_attributes(trace)
 
@@ -707,12 +694,8 @@ class TestMonitoredResourceAttributes(unittest.TestCase):
 
     @mock.patch('opencensus.trace.exporters.stackdriver_exporter.'
                 'MonitoredResourceUtil.get_instance')
-    def test_monitored_resource_attributes_gce(self, gce_monitor_resource_mock):
-        trace = {'spans': [
-            {
-                'attributes': {}
-            }
-        ]}
+    def test_monitored_resource_attributes_gce(self, gmr_mock):
+        trace = {'spans': [{'attributes': {}}]}
 
         expected = {
             'attributes': {
@@ -720,9 +703,8 @@ class TestMonitoredResourceAttributes(unittest.TestCase):
                     'g.co/agent': {
                         'string_value': {
                             'truncated_byte_count': 0,
-                            'value': 'opencensus-python [{}]'.format(
-                                __version__
-                            )
+                            'value':
+                            'opencensus-python [{}]'.format(__version__)
                         }
                     },
                     'g.co/r/gce_instance/project_id': {
@@ -747,9 +729,9 @@ class TestMonitoredResourceAttributes(unittest.TestCase):
             }
         }
 
-        gce_monitor_resource_mock.return_value = mock.Mock()
-        gce_monitor_resource_mock.return_value.resource_type = 'gce_instance'
-        gce_monitor_resource_mock.return_value.get_resource_labels.return_value = {
+        gmr_mock.return_value = mock.Mock()
+        gmr_mock.return_value.resource_type = 'gce_instance'
+        gmr_mock.return_value.get_resource_labels.return_value = {
             'project_id': 'my_project',
             'instance_id': '12345',
             'zone': 'zone1'
@@ -760,12 +742,8 @@ class TestMonitoredResourceAttributes(unittest.TestCase):
 
     @mock.patch('opencensus.trace.exporters.stackdriver_exporter.'
                 'MonitoredResourceUtil.get_instance')
-    def test_monitored_resource_attributes_aws(self, aws_monitor_resource_mock):
-        trace = {'spans': [
-            {
-                'attributes': {}
-            }
-        ]}
+    def test_monitored_resource_attributes_aws(self, amr_mock):
+        trace = {'spans': [{'attributes': {}}]}
 
         expected = {
             'attributes': {
@@ -773,9 +751,8 @@ class TestMonitoredResourceAttributes(unittest.TestCase):
                     'g.co/agent': {
                         'string_value': {
                             'truncated_byte_count': 0,
-                            'value': 'opencensus-python [{}]'.format(
-                                __version__
-                            )
+                            'value':
+                            'opencensus-python [{}]'.format(__version__)
                         }
                     },
                     'g.co/r/aws_ec2_instance/aws_account': {
@@ -794,10 +771,10 @@ class TestMonitoredResourceAttributes(unittest.TestCase):
             }
         }
 
-        aws_monitor_resource_mock.return_value = mock.Mock()
+        amr_mock.return_value = mock.Mock()
 
-        aws_monitor_resource_mock.return_value.resource_type = 'aws_ec2_instance'
-        aws_monitor_resource_mock.return_value.get_resource_labels.return_value = {
+        amr_mock.return_value.resource_type = 'aws_ec2_instance'
+        amr_mock.return_value.get_resource_labels.return_value = {
             'aws_account': '123456789012',
             'region': 'us-west-2'
         }
@@ -807,12 +784,8 @@ class TestMonitoredResourceAttributes(unittest.TestCase):
 
     @mock.patch('opencensus.trace.exporters.stackdriver_exporter.'
                 'MonitoredResourceUtil.get_instance')
-    def test_monitored_resource_attributes_None(self, monitor_resource_mock):
-        trace = {'spans': [
-            {
-                'attributes': {}
-            }
-        ]}
+    def test_monitored_resource_attributes_None(self, mr_mock):
+        trace = {'spans': [{'attributes': {}}]}
 
         expected = {
             'attributes': {
@@ -820,23 +793,23 @@ class TestMonitoredResourceAttributes(unittest.TestCase):
                     'g.co/agent': {
                         'string_value': {
                             'truncated_byte_count': 0,
-                            'value': 'opencensus-python [{}]'.format(
-                                __version__
-                            )
+                            'value':
+                            'opencensus-python [{}]'.format(__version__)
                         }
                     }
                 }
             }
         }
 
-        monitor_resource_mock.return_value = None
+        mr_mock.return_value = None
         stackdriver_exporter.set_attributes(trace)
         span = trace.get('spans')[0]
         self.assertEqual(span, expected)
 
-        monitor_resource_mock.return_value = mock.Mock()
-        monitor_resource_mock.return_value.resource_type = mock.Mock()
-        monitor_resource_mock.return_value.get_resource_labels.return_value = mock.Mock()
+        mr_mock.return_value = mock.Mock()
+        mr_mock.return_value.resource_type = mock.Mock()
+        mr_mock.return_value.get_resource_labels.return_value = mock.Mock(
+        )
         stackdriver_exporter.set_attributes(trace)
         span = trace.get('spans')[0]
         self.assertEqual(span, expected)

@@ -25,9 +25,7 @@ class TestAttributes(unittest.TestCase):
         self.assertEqual(attributes.attributes, {})
 
     def test_constructor_explicit(self):
-        attr = {
-            'key': 'value'
-        }
+        attr = {'key': 'value'}
         attributes = attributes_module.Attributes(attr)
 
         self.assertEqual(attributes.attributes, attr)
@@ -38,29 +36,19 @@ class TestAttributes(unittest.TestCase):
         attributes = attributes_module.Attributes()
         attributes.set_attribute(key=key, value=value)
 
-        expected_attr = {
-            key: value
-        }
+        expected_attr = {key: value}
 
         self.assertEqual(expected_attr, attributes.attributes)
 
     def test_delete_attribute(self):
-        attr = {
-            'key1': 'value1',
-            'key2': 'value2'
-        }
+        attr = {'key1': 'value1', 'key2': 'value2'}
         attributes = attributes_module.Attributes(attr)
         attributes.delete_attribute('key1')
 
-        self.assertEqual(attributes.attributes, {
-            'key2': 'value2'
-        })
-
+        self.assertEqual(attributes.attributes, {'key2': 'value2'})
 
     def test_get_attribute(self):
-        attr = {
-            'key': 'value'
-        }
+        attr = {'key': 'value'}
         attributes = attributes_module.Attributes(attr)
         value = attributes.get_attribute('key')
 
@@ -100,9 +88,7 @@ class TestAttributes(unittest.TestCase):
             'key1': mock.Mock(),
         }
 
-        expected_json = {
-            'attributeMap': {}
-        }
+        expected_json = {'attributeMap': {}}
 
         attributes = attributes_module.Attributes(attrs)
         attributes_json = attributes.format_attributes_json()

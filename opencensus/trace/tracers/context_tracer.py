@@ -172,7 +172,7 @@ class ContextTracer(base.Tracer):
                 span_kind=span.span_kind
 
             )
-            for span in span_tree
+            for ss in span_tree
         ]
 
         return span_datas

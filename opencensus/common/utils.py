@@ -1,4 +1,4 @@
-# Copyright 2017, OpenCensus Authors
+# Copyright 2018, OpenCensus Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -72,3 +72,34 @@ def timestamp_to_microseconds(timestamp):
     epoch_time_secs = calendar.timegm(timestamp_str.timetuple())
     epoch_time_mus = epoch_time_secs * 1e6 + timestamp_str.microsecond
     return epoch_time_mus
+
+
+def iuniq(ible):
+    """Get an iterator over unique items of `ible`."""
+    items = set()
+    for item in ible:
+        if item not in items:
+            items.add(item)
+            yield item
+
+
+def uniq(ible):
+    """Get a list of unique items of `ible`."""
+    return list(iuniq(ible))
+
+
+def window(ible, length):
+    """Split `ible` into multiple lists of length `length`.
+
+    >>> list(window(range(5), 2))
+    [[0, 1], [2, 3], [4]]
+    """
+    if length <= 0:  # pragma: NO COVER
+        raise ValueError
+    ible = iter(ible)
+    while True:
+        elts = [xx for ii, xx in zip(range(length), ible)]
+        if elts:
+            yield elts
+        else:
+            break

@@ -12,15 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import itertools
+import logging
 import os
 import platform
 import re
+import string
 
 from datetime import datetime
 from google.api_core.gapic_v1 import client_info
 from google.cloud import monitoring_v3
 
 from opencensus.__version__ import __version__
+from opencensus.common import utils
 from opencensus.common.monitored_resource_util.monitored_resource_util \
     import MonitoredResourceUtil
 from opencensus.common.transports import async_
@@ -29,6 +33,7 @@ from opencensus.stats import measure
 from opencensus.stats.exporters import base
 
 MAX_TIME_SERIES_PER_UPLOAD = 200
+OPENCENSUS_TASK = "opencensus_task"
 OPENCENSUS_TASK_DESCRIPTION = "Opencensus task identifier"
 DEFAULT_DISPLAY_NAME_PREFIX = "OpenCensus"
 ERROR_BLANK_PROJECT_ID = "expecting a non-blank ProjectID"
@@ -107,8 +112,8 @@ class Options(object):
 
 
 class StackdriverStatsExporter(base.StatsExporter):
-    """ StackdriverStatsExporter exports stats
-    to the Stackdriver Monitoring."""
+    """Stats exporter for the Stackdriver Monitoring backend."""
+
     def __init__(self,
                  options=Options(),
                  client=None,
@@ -164,71 +169,77 @@ class StackdriverStatsExporter(base.StatsExporter):
         """ It receives an array of view_data object
             and create time series for each value
         """
-        requests = self.make_request(view_data, MAX_TIME_SERIES_PER_UPLOAD)
-        for request in requests:
-            self.client.create_time_series(request[CONS_NAME],
-                                           request[CONS_TIME_SERIES])
+        view_data_set = utils.uniq(view_data)
+        time_series_batches = self.create_batched_time_series(
+            view_data_set, MAX_TIME_SERIES_PER_UPLOAD)
+        for time_series_batch in time_series_batches:
+            self.client.create_time_series(
+                self.client.project_path(self.options.project_id),
+                time_series_batch)
 
-    def make_request(self, view_data, limit):
+    def create_batched_time_series(self, view_data, batch_size):
         """ Create the data structure that will be
             sent to Stackdriver Monitoring
         """
-        requests = []
-        time_series = []
-
-        resource = self.options.resource
-        metric_prefix = self.options.metric_prefix
-        for v_data in view_data:
-            series = self.create_time_series_list(v_data, resource,
-                                                  metric_prefix)
-            time_series.append(series)
-
-            project_id = self.options.project_id
-            request = {}
-            request[CONS_NAME] = self.client.project_path(project_id)
-            request[CONS_TIME_SERIES] = time_series
-            requests.append(request)
-
-            if len(time_series) == int(limit):
-                time_series = []
-        return requests
+        time_series_list = itertools.chain.from_iterable(
+            self.create_time_series_list(
+                v_data, self.options.resource, self.options.metric_prefix)
+            for v_data in view_data)
+        return list(utils.window(time_series_list, batch_size))
 
     def create_time_series_list(self, v_data, option_resource_type,
                                 metric_prefix):
         """ Create the TimeSeries object based on the view data
         """
-        series = monitoring_v3.types.TimeSeries()
-        series.metric.type = namespaced_view_name(v_data.view.name,
-                                                  metric_prefix)
-        set_monitored_resource(series, option_resource_type)
-
+        time_series_list = []
+        aggregation_type = v_data.view.aggregation.aggregation_type
         tag_agg = v_data.tag_value_aggregation_data_map
         for tag_value, agg in tag_agg.items():
-            point = series.points.add()
-            if type(agg) is \
-                    aggregation.aggregation_data.DistributionAggregationData:
-                agg_data = tag_agg.get(tag_value)
-                dist_value = point.value.distribution_value
-                dist_value.count = agg_data.count_data
-                dist_value.mean = agg_data.mean_data
+            series = monitoring_v3.types.TimeSeries()
+            series.metric.type = namespaced_view_name(v_data.view.name,
+                                                      metric_prefix)
+            set_metric_labels(series, v_data.view, tag_value)
+            set_monitored_resource(series, option_resource_type)
 
-                sum_of_sqd = agg_data.sum_of_sqd_deviations
+            point = series.points.add()
+            if aggregation_type is aggregation.Type.DISTRIBUTION:
+                dist_value = point.value.distribution_value
+                dist_value.count = agg.count_data
+                dist_value.mean = agg.mean_data
+
+                sum_of_sqd = agg.sum_of_sqd_deviations
                 dist_value.sum_of_squared_deviation = sum_of_sqd
 
                 # Uncomment this when stackdriver supports Range
                 # point.value.distribution_value.range.min = agg_data.min
                 # point.value.distribution_value.range.max = agg_data.max
                 bounds = dist_value.bucket_options.explicit_buckets.bounds
-                bounds.extend(list(map(float, agg_data.bounds)))
-
                 buckets = dist_value.bucket_counts
-                buckets.extend(list(map(int, agg_data.counts_per_bucket)))
+
+                # Stackdriver expects a first bucket for samples in (-inf, 0),
+                # but we record positive samples only, and our first bucket is
+                # [0, first_bound).
+                bounds.extend([0])
+                buckets.extend([0])
+                bounds.extend(list(map(float, agg.bounds)))
+                buckets.extend(list(map(int, agg.counts_per_bucket)))
+            elif aggregation_type is aggregation.Type.COUNT:
+                point.value.int64_value = agg.count_data
+            elif aggregation_type is aggregation.Type.SUM:
+                if isinstance(v_data.view.measure, measure.MeasureInt):
+                    # TODO: Add implementation of sum aggregation that does not
+                    # store it's data as a float.
+                    point.value.int64_value = int(agg.sum_data)
+                if isinstance(v_data.view.measure, measure.MeasureFloat):
+                    point.value.double_value = float(agg.sum_data)
+            elif aggregation_type is aggregation.Type.LASTVALUE:
+                if isinstance(v_data.view.measure, measure.MeasureInt):
+                    point.value.int64_value = int(agg.value)
+                if isinstance(v_data.view.measure, measure.MeasureFloat):
+                    point.value.double_value = float(agg.value)
             else:
-                convFloat, isFloat = as_float(tag_value[0])
-                if isFloat:  # pragma: NO COVER
-                    point.value.double_value = convFloat
-                else:  # pragma: NO COVER
-                    point.value.string_value = str(tag_value[0])
+                raise TypeError("Unsupported aggregation type: %s" %
+                                type(v_data.view.aggregation))
 
             start = datetime.strptime(v_data.start_time, EPOCH_PATTERN)
             end = datetime.strptime(v_data.end_time, EPOCH_PATTERN)
@@ -239,10 +250,9 @@ class StackdriverStatsExporter(base.StatsExporter):
             point.interval.end_time.seconds = int(timestamp_end)
 
             secs = point.interval.end_time.seconds
-            point.interval.end_time.nanos = int((timestamp_end-secs)*10**9)
+            point.interval.end_time.nanos = int((timestamp_end - secs) * 10**9)
 
-            if type(agg) is not aggregation.aggregation_data.\
-                    LastValueAggregationData:  # pragma: NO COVER
+            if aggregation_type is not aggregation.Type.LASTVALUE:
                 if timestamp_start == timestamp_end:
                     # avoiding start_time and end_time to be equal
                     timestamp_start = timestamp_start - 1
@@ -251,7 +261,10 @@ class StackdriverStatsExporter(base.StatsExporter):
             start_time.seconds = int(timestamp_start)
             start_secs = start_time.seconds
             start_time.nanos = int((timestamp_start - start_secs) * 1e9)
-        return series
+
+            time_series_list.append(series)
+
+        return time_series_list
 
     def create_metric_descriptor(self, view):
         """ it creates a MetricDescriptor
@@ -295,8 +308,8 @@ class StackdriverStatsExporter(base.StatsExporter):
             if isinstance(view_measure, measure.MeasureFloat):
                 value_type = metric_desc.ValueType.DOUBLE
         else:
-            raise Exception("unsupported aggregation type: %s"
-                            % type(view_aggregation))
+            raise Exception(
+                "unsupported aggregation type: %s" % type(view_aggregation))
 
         display_name_prefix = DEFAULT_DISPLAY_NAME_PREFIX
         if self.options.metric_prefix != "":
@@ -384,7 +397,7 @@ def set_attribute_label(series, resource_labels, attribute_key,
 
 def get_user_agent_slug():
     """Get the UA fragment to identify this library version."""
-    return "opencensus-{}".format(__version__)
+    return "opencensus-python/{}".format(__version__)
 
 
 def new_stats_exporter(options):
@@ -401,11 +414,6 @@ def new_stats_exporter(options):
 
     if options.default_monitoring_labels is not None:
         exporter.set_default_labels(options.default_monitoring_labels)
-    else:
-        label = {}
-        key = remove_non_alphanumeric(get_task_value())
-        label[key] = OPENCENSUS_TASK_DESCRIPTION
-        exporter.set_default_labels(label)
     return exporter
 
 
@@ -413,18 +421,17 @@ def get_task_value():
     """ getTaskValue returns a task label value in the format of
      "py-<pid>@<hostname>".
     """
-    task_value = "py@" + str(os.getpid())
     hostname = platform.uname()[1]
-    task_value += hostname if hostname is not None else "localhost"
-    return task_value
+    if not hostname:
+        hostname = "localhost"
+    return "py-%s@%s" % (os.getpid(), hostname)
 
 
 def namespaced_view_name(view_name, metric_prefix):
     """ create string to be used as metric type
     """
-    if metric_prefix == "":
-        return os.path.join("custom.googleapis.com", "opencensus", view_name)
-    return os.path.join(metric_prefix, view_name)
+    metric_prefix = metric_prefix or "custom.googleapis.com/opencensus"
+    return os.path.join(metric_prefix, view_name).replace('\\', '/')
 
 
 def new_label_descriptors(defaults, keys):
@@ -434,29 +441,43 @@ def new_label_descriptors(defaults, keys):
     label_descriptors = []
     for key, lbl in defaults.items():
         label = {}
-        label["key"] = remove_non_alphanumeric(key)
+        label["key"] = sanitize_label(key)
         label["description"] = lbl
         label_descriptors.append(label)
 
     for tag_key in keys:
         label = {}
-        label["key"] = remove_non_alphanumeric(tag_key)
+        label["key"] = sanitize_label(tag_key)
         label_descriptors.append(label)
+    label_descriptors.append({"key": OPENCENSUS_TASK,
+                              "description": OPENCENSUS_TASK_DESCRIPTION})
     return label_descriptors
 
 
-def remove_non_alphanumeric(text):
-    """ Remove characters not accepted in labels key
-    """
-    return str(re.sub('[^0-9a-zA-Z ]+', '', text)).replace(" ", "")
+def set_metric_labels(series, view, tag_values):
+    if len(view.columns) != len(tag_values):
+        logging.warning(
+            "TagKeys and TagValues don't have same size."
+        )  # pragma: NO COVER
+
+    for key, value in zip(view.columns, tag_values):
+        if value is not None:
+            series.metric.labels[sanitize_label(key)] = value
+    series.metric.labels[OPENCENSUS_TASK] = get_task_value()
 
 
-def as_float(value):
-    """ Converts a value to a float if possible
-          On success, it returns (converted_value, True)
-          On failure, it returns (None, False)
+def sanitize_label(text):
+    """Remove characters not accepted in labels key
+
+    This replaces any non-word characters (alphanumeric or underscore), with
+    an underscore. It also ensures that the first character is a letter by
+    prepending with 'key' if necessary, and trims the text to 100 characters.
     """
-    try:
-        return float(value), True
-    except Exception:  # Catch all exception including ValueError
-        return None, False
+    if not text:
+        return text
+    text = re.sub('\\W+', '_', text)
+    if text[0] in string.digits:
+        text = "key_" + text
+    elif text[0] == '_':
+        text = "key" + text
+    return text[:100]

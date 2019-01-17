@@ -12,51 +12,63 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import time
 import random
+import time
+
+import google.auth
+
 from opencensus.stats import aggregation as aggregation_module
-from opencensus.stats.exporters import stackdriver_exporter as stackdriver
 from opencensus.stats import measure as measure_module
 from opencensus.stats import stats as stats_module
 from opencensus.stats import view as view_module
-from opencensus.tags import tag_key as tag_key_module
+from opencensus.stats.exporters import stackdriver_exporter
 from opencensus.tags import tag_map as tag_map_module
-from opencensus.tags import tag_value as tag_value_module
 
-MiB = 1 << 20
-FRONTEND_KEY = tag_key_module.TagKey("my.org/keys/frontend")
-VIDEO_SIZE_MEASURE = measure_module.MeasureInt(
-    "my.org/measure/video_size_test2", "size of processed videos", "By")
-VIDEO_SIZE_VIEW_NAME = "my.org/views/video_size_test2"
-VIDEO_SIZE_DISTRIBUTION = aggregation_module.DistributionAggregation(
-                            [0.0, 16.0 * MiB, 256.0 * MiB])
-VIDEO_SIZE_VIEW = view_module.View(VIDEO_SIZE_VIEW_NAME,
-                                "processed video size over time",
-                                [FRONTEND_KEY],
-                                VIDEO_SIZE_MEASURE,
-                                VIDEO_SIZE_DISTRIBUTION)
+# Create the measures
+# The latency in milliseconds
+m_latency_ms = measure_module.MeasureFloat(
+    "task_latency", "The task latency in milliseconds", "ms")
 
-
-
+# The stats recorder
 stats = stats_module.Stats()
 view_manager = stats.view_manager
 stats_recorder = stats.stats_recorder
 
-exporter = stackdriver.new_stats_exporter(stackdriver.Options(project_id="opencenus-node"))
-view_manager.register_exporter(exporter)
+try:
+    _, project_id = google.auth.default()
+except google.auth.exceptions.DefaultCredentialsError:
+    raise ValueError("Couldn't find Google Cloud credentials, set the "
+                     "project ID with 'gcloud set project'")
 
-# Register view.
-view_manager.register_view(VIDEO_SIZE_VIEW)
+latency_view = view_module.View(
+    "task_latency_distribution",
+    "The distribution of the task latencies",
+    [],
+    m_latency_ms,
+    # Latency in buckets: [>=0ms, >=100ms, >=200ms, >=400ms, >=1s, >=2s, >=4s]
+    aggregation_module.DistributionAggregation(
+        [100.0, 200.0, 400.0, 1000.0, 2000.0, 4000.0]))
 
-# Sleep for [0, 10] milliseconds to fake work.
-time.sleep(random.randint(1, 10) / 1000.0)
 
-# Process video.
-# Record the processed video size.
-tag_value = tag_value_module.TagValue(str(1200))
-tag_map = tag_map_module.TagMap()
-tag_map.insert(FRONTEND_KEY, tag_value)
-measure_map = stats_recorder.new_measurement_map()
-measure_map.measure_int_put(VIDEO_SIZE_MEASURE, 25 * MiB)
+def main():
+    # Enable metrics
+    exporter = stackdriver_exporter.new_stats_exporter(
+        stackdriver_exporter.Options(project_id=project_id))
+    view_manager.register_exporter(exporter)
 
-measure_map.record(tag_map)
+    view_manager.register_view(latency_view)
+    mmap = stats_recorder.new_measurement_map()
+    tmap = tag_map_module.TagMap()
+
+    for i in range(100):
+        ms = random.random() * 5 * 1000
+        print("Latency {0}:{1}".format(i, ms))
+        mmap.measure_float_put(m_latency_ms, ms)
+        mmap.record(tmap)
+        time.sleep(1)
+
+    print("Done recording metrics")
+
+
+if __name__ == "__main__":
+    main()

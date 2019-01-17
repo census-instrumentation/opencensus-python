@@ -100,14 +100,14 @@ class TestDistributionAggregation(unittest.TestCase):
                          distribution_aggregation.aggregation_type)
 
     def test_constructor_explicit(self):
-        boundaries = ["test"]
-        distribution = {1: "test"}
+        boundaries = [1, 2]
+        distribution = [0, 1, 2]
         distribution_aggregation = aggregation_module.DistributionAggregation(
             boundaries=boundaries, distribution=distribution)
 
-        self.assertEqual(["test"],
+        self.assertEqual([1, 2],
                          distribution_aggregation.boundaries.boundaries)
-        self.assertEqual({1: "test"}, distribution_aggregation.distribution)
+        self.assertEqual([0, 1, 2], distribution_aggregation.distribution)
         self.assertEqual(aggregation_module.Type.DISTRIBUTION,
                          distribution_aggregation.aggregation_type)
 
@@ -122,3 +122,20 @@ class TestDistributionAggregation(unittest.TestCase):
 
         self.assertEqual(da.aggregation_data.min, -10)
         self.assertEqual(da.aggregation_data.max, 10)
+
+    def test_init_bad_boundaries(self):
+        """Check that boundaries must be sorted and unique."""
+        with self.assertRaises(ValueError):
+            aggregation_module.DistributionAggregation([1, 3, 2])
+        with self.assertRaises(ValueError):
+            aggregation_module.DistributionAggregation([1, 1, 2])
+
+    def test_init_negative_boundaries(self):
+        """Check that non-positive boundaries are dropped."""
+        da = aggregation_module.DistributionAggregation([-2, -1, 0, 1, 2])
+        self.assertEqual(da.boundaries.boundaries, [1, 2])
+        self.assertEqual(da.aggregation_data.bounds, [1, 2])
+
+        da2 = aggregation_module.DistributionAggregation([-2, -1])
+        self.assertEqual(da2.boundaries.boundaries, [])
+        self.assertEqual(da2.aggregation_data.bounds, [])

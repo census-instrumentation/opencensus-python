@@ -18,7 +18,6 @@ from opencensus.stats import view as view_module
 
 
 class TestView(unittest.TestCase):
-
     def test_constructor(self):
         name = "testName"
         description = "testMeasure"
@@ -26,7 +25,12 @@ class TestView(unittest.TestCase):
         measure = mock.Mock()
         aggregation = mock.Mock()
 
-        view = view_module.View(name=name, description=description, columns=columns, measure=measure, aggregation=aggregation)
+        view = view_module.View(
+            name=name,
+            description=description,
+            columns=columns,
+            measure=measure,
+            aggregation=aggregation)
 
         self.assertEqual("testName", view.name)
         self.assertEqual("testMeasure", view.description)

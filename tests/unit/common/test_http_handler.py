@@ -43,9 +43,7 @@ class TestHttpHandler(unittest.TestCase):
             'pendingTime': '2016-11-19T16:32:11Z',
             'accountId': '12345678901',
             'region': 'us-west-2',
-            'marketplaceProductCodes': [
-                "1abc2defghijklm3nopqrs4tu"
-            ],
+            'marketplaceProductCodes': ["1abc2defghijklm3nopqrs4tu"],
             'instanceType': 't2.micro',
             'version': '2017-09-30',
             'architecture': 'x86_64',
@@ -67,9 +65,7 @@ class TestHttpHandler(unittest.TestCase):
             'pendingTime': '2016-11-19T16:32:11Z',
             'accountId': '123456789012',
             'region': 'us-west-2',
-            'marketplaceProductCodes': [
-                "1abc2defghijklm3nopqrs4tu"
-            ],
+            'marketplaceProductCodes': ["1abc2defghijklm3nopqrs4tu"],
             'instanceType': 't2.micro',
             'version': '2017-09-30',
             'architecture': 'x86_64',
@@ -85,17 +81,22 @@ class TestHttpHandler(unittest.TestCase):
         def raise_urlerror(req, timeout):
             raise URLError('URL Error message')
 
-        with mock.patch('opencensus.common.http_handler.urlopen') as urlopen_mock:
+        with mock.patch(
+                'opencensus.common.http_handler.urlopen') as urlopen_mock:
             urlopen_mock.side_effect = raise_urlerror
             self.assertIsNone(get_request(self.TEST_URL))
 
     def test_urlopen_requests_on_httperror(self):
         def raise_httperror(req, timeout):
             raise HTTPError(
-                url='http://127.0.0.1', code=400,
-                msg='Bad request', hdrs=None, fp=None)
+                url='http://127.0.0.1',
+                code=400,
+                msg='Bad request',
+                hdrs=None,
+                fp=None)
 
-        with mock.patch('opencensus.common.http_handler.urlopen') as urlopen_mock:
+        with mock.patch(
+                'opencensus.common.http_handler.urlopen') as urlopen_mock:
             urlopen_mock.side_effect = raise_httperror
             self.assertIsNone(get_request(self.TEST_URL))
 
@@ -103,6 +104,7 @@ class TestHttpHandler(unittest.TestCase):
         def raise_sockettimeout(req, timeout):
             raise socket.timeout('URL Timeout message')
 
-        with mock.patch('opencensus.common.http_handler.urlopen') as urlopen_mock:
+        with mock.patch(
+                'opencensus.common.http_handler.urlopen') as urlopen_mock:
             urlopen_mock.side_effect = raise_sockettimeout
             self.assertIsNone(get_request(self.TEST_URL))

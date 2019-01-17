@@ -20,11 +20,11 @@ import socket
 from thrift.protocol import TBinaryProtocol, TCompactProtocol
 from thrift.transport import THttpClient, TTransport
 
+from opencensus.common.utils import timestamp_to_microseconds
 from opencensus.trace import link as link_module
 from opencensus.trace.exporters import base
 from opencensus.trace.exporters.gen.jaeger import agent, jaeger
 from opencensus.trace.exporters.transports import sync
-from opencensus.trace.utils import timestamp_to_microseconds
 
 DEFAULT_HOST_NAME = 'localhost'
 DEFAULT_AGENT_PORT = 6831

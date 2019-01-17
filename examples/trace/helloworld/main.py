@@ -29,11 +29,11 @@ def main():
     exporter = print_exporter.PrintExporter()
     tracer = Tracer(sampler=sampler, exporter=exporter)
 
-    with tracer.span(name='root') as root_span:
-        tracer.add_attribute_to_current_span(attribute_key='example key',
-                                             attribute_value='example value')
+    with tracer.span(name='root'):
+        tracer.add_attribute_to_current_span(
+            attribute_key='example key', attribute_value='example value')
         function_to_trace()
-        with tracer.span(name='child') as child_span:
+        with tracer.span(name='child'):
             function_to_trace()
 
     # Get the current tracer
@@ -43,7 +43,7 @@ def main():
     tracer.start_span()
 
     # Get current span
-    cur_span = execution_context.get_current_span()
+    execution_context.get_current_span()
 
     # Explicitly end span
     tracer.end_span()

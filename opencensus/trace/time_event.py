@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from opencensus.trace.utils import _get_truncatable_str
+from opencensus.common.utils import _get_truncatable_str
 
 
 class Type(object):

@@ -1,8 +1,8 @@
-Django==1.11.15
+Django==1.11.18
 Flask==0.12.3
-google-cloud-monitoring==0.29.0
-google-cloud-trace==0.17.0
-grpcio==1.8.3
+google-cloud-monitoring==0.31.0
+google-cloud-trace==0.20.1
+grpcio==1.16.1
 mock==2.0.0
 mysql-connector==2.1.6
 psycopg2==2.7.3.1

@@ -18,21 +18,18 @@ from opencensus.trace.samplers import probability
 
 
 class TestProbabilitySampler(unittest.TestCase):
-
     def test_constructor_invalid(self):
         with self.assertRaises(ValueError):
             probability.ProbabilitySampler(rate=2)
 
     def test_constructor_valid(self):
         rate = 0.8
-        trace_id = 'f8739df974a4481f98748cd92b27177d'
         sampler = probability.ProbabilitySampler(rate=rate)
 
         self.assertEqual(sampler.rate, rate)
 
     def test_constructor_default(self):
         rate = 0.5
-        trace_id = 'f8739df974a4481f98748cd92b27177d'
         sampler = probability.ProbabilitySampler()
 
         self.assertEqual(sampler.rate, rate)

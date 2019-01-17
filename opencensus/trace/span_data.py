@@ -13,7 +13,8 @@
 # limitations under the License.
 
 import collections
-from opencensus.trace import utils
+
+from opencensus.common import utils
 from opencensus.trace import attributes
 
 _SpanData = collections.namedtuple(
