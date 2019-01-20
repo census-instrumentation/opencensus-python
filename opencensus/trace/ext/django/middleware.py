@@ -40,6 +40,9 @@ GCP_EXPORTER_PROJECT = 'GCP_EXPORTER_PROJECT'
 SAMPLING_RATE = 'SAMPLING_RATE'
 TRANSPORT = 'TRANSPORT'
 SERVICE_NAME = 'SERVICE_NAME'
+JAEGER_EXPORTER_SERVICE_NAME = 'JAEGER_EXPORTER_SERVICE_NAME'
+JAEGER_EXPORTER_HOST_NAME = 'JAEGER_EXPORTER_HOST_NAME'
+JAEGER_EXPORTER_PORT = 'JAEGER_EXPORTER_PORT'
 ZIPKIN_EXPORTER_SERVICE_NAME = 'ZIPKIN_EXPORTER_SERVICE_NAME'
 ZIPKIN_EXPORTER_HOST_NAME = 'ZIPKIN_EXPORTER_HOST_NAME'
 ZIPKIN_EXPORTER_PORT = 'ZIPKIN_EXPORTER_PORT'
@@ -155,9 +158,16 @@ class OpencensusMiddleware(MiddlewareMixin):
                 endpoint=_endpoint,
                 transport=transport)
         elif self._exporter.__name__ == 'JaegerExporter':
-            _service_name = self._get_service_name(settings.params)
-            self.exporter = self._exporter(
+            _service_name = params.get(JAEGER_EXPORTER_SERVICE_NAME,
+                self._get_service_name(settings.params))
+            _jaeger_host_name = settings.params.get(
+                JAEGER_EXPORTER_HOST_NAME, 'localhost')
+            _jaeger_port = settings.params.get(
+                JAEGER_EXPORTER_PORT, 6831)
+            self.exporter = self.exporter(
                 service_name=_service_name,
+                host_name=_jaeger_host_name,
+                port=_jaeger_port,
                 transport=transport)
         else:
             self.exporter = self._exporter(transport=transport)
