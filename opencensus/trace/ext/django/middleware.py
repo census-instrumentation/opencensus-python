@@ -44,6 +44,11 @@ ZIPKIN_EXPORTER_SERVICE_NAME = 'ZIPKIN_EXPORTER_SERVICE_NAME'
 ZIPKIN_EXPORTER_HOST_NAME = 'ZIPKIN_EXPORTER_HOST_NAME'
 ZIPKIN_EXPORTER_PORT = 'ZIPKIN_EXPORTER_PORT'
 ZIPKIN_EXPORTER_PROTOCOL = 'ZIPKIN_EXPORTER_PROTOCOL'
+JAEGER_EXPORTER_HOST_NAME = 'JAEGER_EXPORTER_HOST_NAME'
+JAEGER_EXPORTER_PORT = 'JAEGER_EXPORTER_PORT'
+JAEGER_EXPORTER_AGENT_HOST_NAME = 'JAEGER_EXPORTER_AGENT_HOST_NAME'
+JAEGER_EXPORTER_AGENT_PORT = 'JAEGER_EXPORTER_AGENT_PORT'
+JAEGER_EXPORTER_SERVICE_NAME = 'JAEGER_EXPORTER_SERVICE_NAME'
 OCAGENT_TRACE_EXPORTER_ENDPOINT = 'OCAGENT_TRACE_EXPORTER_ENDPOINT'
 BLACKLIST_HOSTNAMES = 'BLACKLIST_HOSTNAMES'
 
@@ -155,10 +160,23 @@ class OpencensusMiddleware(MiddlewareMixin):
                 endpoint=_endpoint,
                 transport=transport)
         elif self._exporter.__name__ == 'JaegerExporter':
-            _service_name = self._get_service_name(settings.params)
+            _service_name = settings.params.get(
+                JAEGER_EXPORTER_SERVICE_NAME,
+                self._get_service_name(settings.params))
+            _jaeger_host_name = settings.params.get(
+                JAEGER_EXPORTER_HOST_NAME, None)
+            _jaeger_port = settings.params.get(
+                JAEGER_EXPORTER_PORT, None)
+            _jaeger_agent_host_name = settings.params.get(
+                JAEGER_EXPORTER_AGENT_HOST_NAME, 'localhost')
+            _jaeger_agent_port = settings.params.get(
+                JAEGER_EXPORTER_AGENT_PORT, 6831)
             self.exporter = self._exporter(
                 service_name=_service_name,
-                transport=transport)
+                host_name=_jaeger_host_name,
+                port=_jaeger_port,
+                agent_host_name=_jaeger_agent_host_name,
+                agent_port=_jaeger_agent_port)
         else:
             self.exporter = self._exporter(transport=transport)
 
