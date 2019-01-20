@@ -159,7 +159,7 @@ class OpencensusMiddleware(MiddlewareMixin):
                 transport=transport)
         elif self._exporter.__name__ == 'JaegerExporter':
             _service_name = settings.params.get(JAEGER_EXPORTER_SERVICE_NAME,
-                                       self._get_service_name(settings.params))
+                self._get_service_name(settings.params))
             _jaeger_host_name = settings.params.get(
                 JAEGER_EXPORTER_HOST_NAME, 'localhost')
             _jaeger_port = settings.params.get(
