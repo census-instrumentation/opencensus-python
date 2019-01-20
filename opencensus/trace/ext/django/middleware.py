@@ -164,7 +164,7 @@ class OpencensusMiddleware(MiddlewareMixin):
                 JAEGER_EXPORTER_HOST_NAME, 'localhost')
             _jaeger_port = settings.params.get(
                 JAEGER_EXPORTER_PORT, 6831)
-            self.exporter = self.exporter(
+            self.exporter = self._exporter(
                 service_name=_service_name,
                 host_name=_jaeger_host_name,
                 port=_jaeger_port,
