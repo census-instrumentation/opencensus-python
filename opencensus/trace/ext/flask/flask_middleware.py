@@ -40,13 +40,15 @@ GCP_EXPORTER_PROJECT = 'GCP_EXPORTER_PROJECT'
 SAMPLING_RATE = 'SAMPLING_RATE'
 TRANSPORT = 'TRANSPORT'
 SERVICE_NAME = 'SERVICE_NAME'
-JAEGER_EXPORTER_SERVICE_NAME = 'JAEGER_EXPORTER_SERVICE_NAME'
-JAEGER_EXPORTER_HOST_NAME = 'JAEGER_EXPORTER_HOST_NAME'
-JAEGER_EXPORTER_PORT = 'JAEGER_EXPORTER_PORT'
 ZIPKIN_EXPORTER_SERVICE_NAME = 'ZIPKIN_EXPORTER_SERVICE_NAME'
 ZIPKIN_EXPORTER_HOST_NAME = 'ZIPKIN_EXPORTER_HOST_NAME'
 ZIPKIN_EXPORTER_PORT = 'ZIPKIN_EXPORTER_PORT'
 ZIPKIN_EXPORTER_PROTOCOL = 'ZIPKIN_EXPORTER_PROTOCOL'
+JAEGER_EXPORTER_HOST_NAME = 'JAEGER_EXPORTER_HOST_NAME'
+JAEGER_EXPORTER_PORT = 'JAEGER_EXPORTER_PORT'
+JAEGER_EXPORTER_AGENT_HOST_NAME = 'JAEGER_EXPORTER_AGENT_HOST_NAME'
+JAEGER_EXPORTER_AGENT_PORT = 'JAEGER_EXPORTER_AGENT_PORT'
+JAEGER_EXPORTER_SERVICE_NAME = 'JAEGER_EXPORTER_SERVICE_NAME'
 OCAGENT_TRACE_EXPORTER_ENDPOINT = 'OCAGENT_TRACE_EXPORTER_ENDPOINT'
 BLACKLIST_HOSTNAMES = 'BLACKLIST_HOSTNAMES'
 
@@ -140,15 +142,23 @@ class FlaskMiddleware(object):
                 project_id=_project_id,
                 transport=transport)
         elif self.exporter.__name__ == 'JaegerExporter':
-            _service_name = self._get_service_name(params)
+            _service_name = params.get(
+                JAEGER_EXPORTER_SERVICE_NAME,
+                self._get_service_name(params))
             _jaeger_host_name = params.get(
-                JAEGER_EXPORTER_HOST_NAME, 'localhost')
+                JAEGER_EXPORTER_HOST_NAME, None)
             _jaeger_port = params.get(
-                JAEGER_EXPORTER_PORT, 14268)
+                JAEGER_EXPORTER_PORT, None)
+            _jaeger_agent_host_name = params.get(
+                JAEGER_EXPORTER_AGENT_HOST_NAME, 'localhost')
+            _jaeger_agent_port = params.get(
+                JAEGER_EXPORTER_AGENT_PORT, 6831)
             self.exporter = self.exporter(
                 service_name=_service_name,
                 host_name=_jaeger_host_name,
                 port=_jaeger_port,
+                agent_host_name=_jaeger_agent_host_name,
+                agent_port=_jaeger_agent_port,
                 transport=transport)
         elif self.exporter.__name__ == 'ZipkinExporter':
             _service_name = self._get_service_name(params)
