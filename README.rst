@@ -307,6 +307,10 @@ setting in ``settings.py``:
         'ZIPKIN_EXPORTER_HOST_NAME': 'localhost',
         'ZIPKIN_EXPORTER_PORT': 9411,
         'ZIPKIN_EXPORTER_PROTOCOL': 'http',
+        'JAEGER_EXPORTER_HOST_NAME': None,
+        'JAEGER_EXPORTER_PORT': None,
+        'JAEGER_EXPORTER_AGENT_HOST_NAME': 'localhost',
+        'JAEGER_EXPORTER_AGENT_PORT': 6831
     }
 
 
