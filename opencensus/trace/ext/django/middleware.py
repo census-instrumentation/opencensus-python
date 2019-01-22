@@ -176,7 +176,8 @@ class OpencensusMiddleware(MiddlewareMixin):
                 host_name=_jaeger_host_name,
                 port=_jaeger_port,
                 agent_host_name=_jaeger_agent_host_name,
-                agent_port=_jaeger_agent_port)
+                agent_port=_jaeger_agent_port,
+                transport=transport)
         else:
             self.exporter = self._exporter(transport=transport)
 
