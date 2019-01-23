@@ -473,7 +473,7 @@ class TestFlaskMiddleware(unittest.TestCase):
         )
         self.assertIsNotNone(exported_spandata.stack_trace.stack_trace_hash_id)
         self.assertNotEqual(exported_spandata.stack_trace.stack_frames, [])
-    
+
     def test_teardown_include_exception_and_traceback_span_disabled(self):
         sampler = always_off.AlwaysOffSampler()
         app = self.create_app()
