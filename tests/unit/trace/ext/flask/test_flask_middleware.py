@@ -35,6 +35,8 @@ from opencensus.trace.samplers import always_off, always_on, ProbabilitySampler
 from opencensus.trace.tracers import base
 from opencensus.trace.tracers import noop_tracer
 from opencensus.trace.blank_span import BlankSpan
+from opencensus.trace.span_context import SpanContext
+from opencensus.trace.trace_options import TraceOptions
 
 
 class TestFlaskMiddleware(unittest.TestCase):
@@ -471,3 +473,23 @@ class TestFlaskMiddleware(unittest.TestCase):
         )
         self.assertIsNotNone(exported_spandata.stack_trace.stack_trace_hash_id)
         self.assertNotEqual(exported_spandata.stack_trace.stack_frames, [])
+    
+    def test_teardown_include_exception_and_traceback_span_disabled(self):
+        sampler = always_off.AlwaysOffSampler()
+        app = self.create_app()
+        app.config['TESTING'] = True
+        middleware = flask_middleware.FlaskMiddleware(app=app, sampler=sampler)
+
+        original_method = middleware.propagator.from_headers
+
+        def nope(*args, **kwargs):
+            trace_options = TraceOptions()
+            trace_options.set_enabled(False)
+            return SpanContext(trace_options=trace_options)
+
+        middleware.propagator.from_headers = nope
+
+        with self.assertRaises(Exception):
+            app.test_client().get('/error')
+
+        middleware.propagator.from_headers = original_method
