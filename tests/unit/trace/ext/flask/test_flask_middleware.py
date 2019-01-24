@@ -17,26 +17,28 @@
 
 import unittest
 
+from google.rpc import code_pb2
 import flask
 import mock
-from google.rpc import code_pb2
 
 from opencensus.trace import execution_context
-from opencensus.trace import span_data
 from opencensus.trace import span as span_module
+from opencensus.trace import span_data
 from opencensus.trace import stack_trace
 from opencensus.trace import status
-from opencensus.trace.exporters import print_exporter, stackdriver_exporter, \
-    zipkin_exporter, jaeger_exporter
+from opencensus.trace.blank_span import BlankSpan
+from opencensus.trace.exporters import jaeger_exporter
+from opencensus.trace.exporters import print_exporter
+from opencensus.trace.exporters import stackdriver_exporter
+from opencensus.trace.exporters import zipkin_exporter
 from opencensus.trace.exporters.ocagent import trace_exporter
 from opencensus.trace.ext.flask import flask_middleware
 from opencensus.trace.propagation import google_cloud_format
 from opencensus.trace.samplers import always_off, always_on, ProbabilitySampler
-from opencensus.trace.tracers import base
-from opencensus.trace.tracers import noop_tracer
-from opencensus.trace.blank_span import BlankSpan
 from opencensus.trace.span_context import SpanContext
 from opencensus.trace.trace_options import TraceOptions
+from opencensus.trace.tracers import base
+from opencensus.trace.tracers import noop_tracer
 
 
 class FlaskTestException(Exception):
