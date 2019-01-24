@@ -260,18 +260,21 @@ class FlaskMiddleware(object):
 
             if exception is not None:
                 span = execution_context.get_current_span()
-                span.status = status.Status(
-                    code=code_pb2.UNKNOWN,
-                    message=str(exception)
-                )
-                # try attaching the stack trace to the span, only populated if
-                # the app has 'PROPAGATE_EXCEPTIONS', 'DEBUG', or 'TESTING'
-                # enabled
-                exc_type, _, exc_traceback = sys.exc_info()
-                if exc_traceback is not None:
-                    span.stack_trace = stack_trace.StackTrace.from_traceback(
-                        exc_traceback
+                if span is not None:
+                    span.status = status.Status(
+                        code=code_pb2.UNKNOWN,
+                        message=str(exception)
                     )
+                    # try attaching the stack trace to the span, only populated
+                    # if the app has 'PROPAGATE_EXCEPTIONS', 'DEBUG', or
+                    # 'TESTING' enabled
+                    exc_type, _, exc_traceback = sys.exc_info()
+                    if exc_traceback is not None:
+                        span.stack_trace = (
+                            stack_trace.StackTrace.from_traceback(
+                                exc_traceback
+                            )
+                        )
 
             tracer.end_span()
             tracer.finish()
