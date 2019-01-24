@@ -12,8 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import copy
 import logging
 
+from opencensus.metrics.export import point
+from opencensus.metrics.export import value
 from opencensus.stats import bucket_boundaries
 
 
@@ -35,6 +38,18 @@ class BaseAggregationData(object):
     def aggregation_data(self):
         """The current aggregation data"""
         return self._aggregation_data
+
+    def to_point(self, timestamp):
+        """Get a Point conversion of this aggregation.
+
+        :type timestamp: :class: `datetime.datetime`
+        :param timestamp: The time to report the point as having been recorded.
+
+        :rtype: :class: `opencensus.metrics.export.point.Point`
+        :return: a Point with with this aggregation's value and appropriate
+        value type.
+        """
+        raise NotImplementedError  # pragma: NO COVER
 
 
 class SumAggregationDataFloat(BaseAggregationData):
@@ -60,6 +75,18 @@ class SumAggregationDataFloat(BaseAggregationData):
         """The current sum data"""
         return self._sum_data
 
+    def to_point(self, timestamp):
+        """Get a Point conversion of this aggregation.
+
+        :type timestamp: :class: `datetime.datetime`
+        :param timestamp: The time to report the point as having been recorded.
+
+        :rtype: :class: `opencensus.metrics.export.point.Point`
+        :return: a :class: `opencensus.metrics.export.value.ValueLong`-valued
+        Point with value equal to `sum_data`.
+        """
+        return point.Point(value.ValueDouble(self.sum_data), timestamp)
+
 
 class CountAggregationData(BaseAggregationData):
     """Count Aggregation Data is the count value of aggregated data
@@ -82,6 +109,18 @@ class CountAggregationData(BaseAggregationData):
     def count_data(self):
         """The current count data"""
         return self._count_data
+
+    def to_point(self, timestamp):
+        """Get a Point conversion of this aggregation.
+
+        :type timestamp: :class: `datetime.datetime`
+        :param timestamp: The time to report the point as having been recorded.
+
+        :rtype: :class: `opencensus.metrics.export.point.Point`
+        :return: a :class: `opencensus.metrics.export.value.ValueLong`-valued
+        Point with value equal to `count_data`.
+        """
+        return point.Point(value.ValueLong(self.count_data), timestamp)
 
 
 class DistributionAggregationData(BaseAggregationData):
@@ -123,34 +162,37 @@ class DistributionAggregationData(BaseAggregationData):
                  counts_per_bucket=None,
                  bounds=None,
                  exemplars=None):
+        if bounds is None and exemplars is not None:
+            raise ValueError
+        if exemplars is not None and len(exemplars) != len(bounds) + 1:
+            raise ValueError
+
         super(DistributionAggregationData, self).__init__(mean_data)
         self._mean_data = mean_data
         self._count_data = count_data
         self._min = min_
         self._max = max_
         self._sum_of_sqd_deviations = sum_of_sqd_deviations
+
         if bounds is None:
             bounds = []
+            self._exemplars = None
         else:
             assert bounds == list(sorted(set(bounds)))
             assert all(bb > 0 for bb in bounds)
+            if exemplars is None:
+                self._exemplars = {ii: None for ii in range(len(bounds) + 1)}
+            else:
+                self._exemplars = {ii: ex for ii, ex in enumerate(exemplars)}
+        self._bounds = (bucket_boundaries.BucketBoundaries(boundaries=bounds)
+                        .boundaries)
 
         if counts_per_bucket is None:
             counts_per_bucket = [0 for ii in range(len(bounds) + 1)]
         else:
             assert all(cc >= 0 for cc in counts_per_bucket)
             assert len(counts_per_bucket) == len(bounds) + 1
-
         self._counts_per_bucket = counts_per_bucket
-        self._bounds = bucket_boundaries.BucketBoundaries(
-            boundaries=bounds).boundaries
-        bucket = 0
-        for _ in self.bounds:
-            bucket = bucket + 1
-
-        # If there is no histogram, do not record an exemplar
-        self._exemplars = \
-            {bucket: exemplars} if len(self._bounds) > 0 else None
 
     @property
     def mean_data(self):
@@ -240,6 +282,43 @@ class DistributionAggregationData(BaseAggregationData):
             self._counts_per_bucket[last_bucket_index] += 1
             return last_bucket_index
 
+    def to_point(self, timestamp):
+        """Get a Point conversion of this aggregation.
+
+        This method creates a :class: `opencensus.metrics.export.point.Point`
+        with a :class: `opencensus.metrics.export.value.ValueDistribution`
+        value, and creates buckets and exemplars for that distribution from the
+        appropriate classes in the `metrics` package.
+
+        :type timestamp: :class: `datetime.datetime`
+        :param timestamp: The time to report the point as having been recorded.
+
+        :rtype: :class: `opencensus.metrics.export.point.Point`
+        :return: a :class: `opencensus.metrics.export.value.ValueDistribution`
+        -valued Point.
+        """
+        buckets = [None] * len(self.counts_per_bucket)
+        for ii, count in enumerate(self.counts_per_bucket):
+            stat_ex = self.exemplars.get(ii, None)
+            if stat_ex is not None:
+                metric_ex = value.Exemplar(stat_ex.value, stat_ex.timestamp,
+                                           copy.copy(stat_ex.attachments))
+                buckets[ii] = value.Bucket(count, metric_ex)
+            else:
+                buckets[ii] = value.Bucket(count)
+
+        bucket_options = value.BucketOptions(value.Explicit(self.bounds))
+        return point.Point(
+            value.ValueDistribution(
+                count=self.count_data,
+                sum_=self.sum,
+                sum_of_squared_deviation=self.sum_of_sqd_deviations,
+                bucket_options=bucket_options,
+                buckets=buckets
+            ),
+            timestamp
+        )
+
 
 class LastValueAggregationData(BaseAggregationData):
     """
@@ -264,6 +343,18 @@ class LastValueAggregationData(BaseAggregationData):
     def value(self):
         """The current value recorded"""
         return self._value
+
+    def to_point(self, timestamp):
+        """Get a Point conversion of this aggregation.
+
+        :type timestamp: :class: `datetime.datetime`
+        :param timestamp: The time to report the point as having been recorded.
+
+        :rtype: :class: `opencensus.metrics.export.point.Point`
+        :return: a :class: `opencensus.metrics.export.value.ValueDouble`-valued
+        Point.
+        """
+        return point.Point(value.ValueDouble(self.value), timestamp)
 
 
 class Exemplar(object):
