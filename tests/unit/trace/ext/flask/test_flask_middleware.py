@@ -480,6 +480,7 @@ class TestFlaskMiddleware(unittest.TestCase):
         app.config['TESTING'] = True
         middleware = flask_middleware.FlaskMiddleware(app=app, sampler=sampler)
 
+        # TODO: send trace options in header (#465)
         original_method = middleware.propagator.from_headers
 
         def nope(*args, **kwargs):
