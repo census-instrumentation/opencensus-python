@@ -54,8 +54,6 @@ class Metric(object):
         """Check that point value types match the descriptor type."""
         check_type = metric_descriptor.MetricDescriptorType.to_type_class(
             self.descriptor.type)
-        if check_type is None:
-            raise ValueError("Unknown metric descriptor type")
         for ts in self.time_series:
             if not ts.check_points_type(check_type):
                 raise ValueError("Invalid point value type")
