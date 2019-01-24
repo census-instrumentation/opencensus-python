@@ -39,6 +39,10 @@ from opencensus.trace.span_context import SpanContext
 from opencensus.trace.trace_options import TraceOptions
 
 
+class FlaskTestException(Exception):
+    pass
+
+
 class TestFlaskMiddleware(unittest.TestCase):
 
     @staticmethod
@@ -55,7 +59,7 @@ class TestFlaskMiddleware(unittest.TestCase):
 
         @app.route('/error')
         def error():
-            raise Exception('error')
+            raise FlaskTestException('error')
 
         return app
 
@@ -460,7 +464,7 @@ class TestFlaskMiddleware(unittest.TestCase):
         app = self.create_app()
         app.config['TESTING'] = True
         flask_middleware.FlaskMiddleware(app=app, exporter=mock_exporter)
-        with self.assertRaises(Exception):
+        with self.assertRaises(FlaskTestException):
             app.test_client().get('/error')
 
         exported_spandata = mock_exporter.export.call_args[0][0][0]
@@ -490,7 +494,7 @@ class TestFlaskMiddleware(unittest.TestCase):
 
         middleware.propagator.from_headers = nope
 
-        with self.assertRaises(Exception):
+        with self.assertRaises(FlaskTestException):
             app.test_client().get('/error')
 
         middleware.propagator.from_headers = original_method
