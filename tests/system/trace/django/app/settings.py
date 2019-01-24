@@ -95,7 +95,7 @@ OPENCENSUS_TRACE_PARAMS = {
     'BLACKLIST_PATHS': [
         '_ah/health',
     ],
-    'TRANSPORT': 'opencensus.trace.exporters.transports.sync.SyncTransport',
+    'TRANSPORT': 'opencensus.common.transports.sync.SyncTransport',
 }
 
 # Internationalization

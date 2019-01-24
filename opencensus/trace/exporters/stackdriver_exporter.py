@@ -20,11 +20,11 @@ from google.cloud.trace.client import Client
 from opencensus.__version__ import __version__
 from opencensus.common.monitored_resource_util.monitored_resource_util \
     import MonitoredResourceUtil
+from opencensus.common.transports import sync
 from opencensus.trace import attributes_helper
 from opencensus.trace import span_data
 from opencensus.trace.attributes import Attributes
 from opencensus.trace.exporters import base
-from opencensus.trace.exporters.transports import sync
 
 # Agent
 AGENT = 'opencensus-python [{}]'.format(__version__)
@@ -188,7 +188,7 @@ class StackdriverExporter(base.Exporter):
                       extend from the base :class:`.Transport` type and
                       implement :meth:`.Transport.export`. Defaults to
                       :class:`.SyncTransport`. The other option is
-                      :class:`.BackgroundThreadTransport`.
+                      :class:`.AsyncTransport`.
     """
 
     def __init__(self, client=None, project_id=None,

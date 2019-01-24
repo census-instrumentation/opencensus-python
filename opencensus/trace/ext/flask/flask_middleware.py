@@ -19,6 +19,7 @@ import sys
 import flask
 from google.rpc import code_pb2
 
+from opencensus.common.transports import sync
 from opencensus.trace import attributes_helper
 from opencensus.trace import execution_context
 from opencensus.trace import span as span_module
@@ -26,7 +27,6 @@ from opencensus.trace import stack_trace
 from opencensus.trace import status
 from opencensus.trace import tracer as tracer_module
 from opencensus.trace.exporters import print_exporter
-from opencensus.trace.exporters.transports import sync
 from opencensus.trace.ext import utils
 from opencensus.trace.propagation import google_cloud_format
 from opencensus.trace.samplers import always_on, probability
@@ -40,13 +40,15 @@ GCP_EXPORTER_PROJECT = 'GCP_EXPORTER_PROJECT'
 SAMPLING_RATE = 'SAMPLING_RATE'
 TRANSPORT = 'TRANSPORT'
 SERVICE_NAME = 'SERVICE_NAME'
-JAEGER_EXPORTER_SERVICE_NAME = 'JAEGER_EXPORTER_SERVICE_NAME'
-JAEGER_EXPORTER_HOST_NAME = 'JAEGER_EXPORTER_HOST_NAME'
-JAEGER_EXPORTER_PORT = 'JAEGER_EXPORTER_PORT'
 ZIPKIN_EXPORTER_SERVICE_NAME = 'ZIPKIN_EXPORTER_SERVICE_NAME'
 ZIPKIN_EXPORTER_HOST_NAME = 'ZIPKIN_EXPORTER_HOST_NAME'
 ZIPKIN_EXPORTER_PORT = 'ZIPKIN_EXPORTER_PORT'
 ZIPKIN_EXPORTER_PROTOCOL = 'ZIPKIN_EXPORTER_PROTOCOL'
+JAEGER_EXPORTER_HOST_NAME = 'JAEGER_EXPORTER_HOST_NAME'
+JAEGER_EXPORTER_PORT = 'JAEGER_EXPORTER_PORT'
+JAEGER_EXPORTER_AGENT_HOST_NAME = 'JAEGER_EXPORTER_AGENT_HOST_NAME'
+JAEGER_EXPORTER_AGENT_PORT = 'JAEGER_EXPORTER_AGENT_PORT'
+JAEGER_EXPORTER_SERVICE_NAME = 'JAEGER_EXPORTER_SERVICE_NAME'
 OCAGENT_TRACE_EXPORTER_ENDPOINT = 'OCAGENT_TRACE_EXPORTER_ENDPOINT'
 BLACKLIST_HOSTNAMES = 'BLACKLIST_HOSTNAMES'
 
@@ -140,15 +142,23 @@ class FlaskMiddleware(object):
                 project_id=_project_id,
                 transport=transport)
         elif self.exporter.__name__ == 'JaegerExporter':
-            _service_name = self._get_service_name(params)
+            _service_name = params.get(
+                JAEGER_EXPORTER_SERVICE_NAME,
+                self._get_service_name(params))
             _jaeger_host_name = params.get(
-                JAEGER_EXPORTER_HOST_NAME, 'localhost')
+                JAEGER_EXPORTER_HOST_NAME, None)
             _jaeger_port = params.get(
-                JAEGER_EXPORTER_PORT, 14268)
+                JAEGER_EXPORTER_PORT, None)
+            _jaeger_agent_host_name = params.get(
+                JAEGER_EXPORTER_AGENT_HOST_NAME, 'localhost')
+            _jaeger_agent_port = params.get(
+                JAEGER_EXPORTER_AGENT_PORT, 6831)
             self.exporter = self.exporter(
                 service_name=_service_name,
                 host_name=_jaeger_host_name,
                 port=_jaeger_port,
+                agent_host_name=_jaeger_agent_host_name,
+                agent_port=_jaeger_agent_port,
                 transport=transport)
         elif self.exporter.__name__ == 'ZipkinExporter':
             _service_name = self._get_service_name(params)
@@ -250,18 +260,21 @@ class FlaskMiddleware(object):
 
             if exception is not None:
                 span = execution_context.get_current_span()
-                span.status = status.Status(
-                    code=code_pb2.UNKNOWN,
-                    message=str(exception)
-                )
-                # try attaching the stack trace to the span, only populated if
-                # the app has 'PROPAGATE_EXCEPTIONS', 'DEBUG', or 'TESTING'
-                # enabled
-                exc_type, _, exc_traceback = sys.exc_info()
-                if exc_traceback is not None:
-                    span.stack_trace = stack_trace.StackTrace.from_traceback(
-                        exc_traceback
+                if span is not None:
+                    span.status = status.Status(
+                        code=code_pb2.UNKNOWN,
+                        message=str(exception)
                     )
+                    # try attaching the stack trace to the span, only populated
+                    # if the app has 'PROPAGATE_EXCEPTIONS', 'DEBUG', or
+                    # 'TESTING' enabled
+                    exc_type, _, exc_traceback = sys.exc_info()
+                    if exc_traceback is not None:
+                        span.stack_trace = (
+                            stack_trace.StackTrace.from_traceback(
+                                exc_traceback
+                            )
+                        )
 
             tracer.end_span()
             tracer.finish()

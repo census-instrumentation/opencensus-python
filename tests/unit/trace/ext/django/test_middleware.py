@@ -18,13 +18,13 @@ import mock
 from django.test import RequestFactory
 from django.test.utils import teardown_test_environment
 
+from opencensus.common.transports import sync
 from opencensus.trace import execution_context
 from opencensus.trace import span as span_module
 from opencensus.trace.exporters import print_exporter
 from opencensus.trace.exporters import zipkin_exporter
 from opencensus.trace.exporters import jaeger_exporter
 from opencensus.trace.exporters.ocagent import trace_exporter
-from opencensus.trace.exporters.transports import sync
 from opencensus.trace.ext import utils
 from opencensus.trace.propagation import google_cloud_format
 from opencensus.trace.samplers import always_on
@@ -60,7 +60,7 @@ class TestOpencensusMiddleware(unittest.TestCase):
         params = {
             'GCP_EXPORTER_PROJECT': project_id,
             'TRANSPORT':
-                'opencensus.trace.exporters.transports.sync.SyncTransport',
+                'opencensus.common.transports.sync.SyncTransport',
         }
 
         patch_params = mock.patch(
@@ -102,7 +102,7 @@ class TestOpencensusMiddleware(unittest.TestCase):
             'ZIPKIN_EXPORTER_PORT': port,
             'ZIPKIN_EXPORTER_PROTOCOL': protocol,
             'TRANSPORT':
-                'opencensus.trace.exporters.transports.sync.SyncTransport',
+                'opencensus.common.transports.sync.SyncTransport',
         }
 
         patch_zipkin = mock.patch(
@@ -141,7 +141,7 @@ class TestOpencensusMiddleware(unittest.TestCase):
         params = {
             'SERVICE_NAME': service_name,
             'TRANSPORT':
-                'opencensus.trace.exporters.transports.sync.SyncTransport',
+                'opencensus.common.transports.sync.SyncTransport',
         }
 
         patch_jaeger = mock.patch(
@@ -184,7 +184,7 @@ class TestOpencensusMiddleware(unittest.TestCase):
             'ZIPKIN_EXPORTER_PORT': port,
             'ZIPKIN_EXPORTER_PROTOCOL': protocol,
             'TRANSPORT':
-                'opencensus.trace.exporters.transports.sync.SyncTransport',
+                'opencensus.common.transports.sync.SyncTransport',
         }
 
         patch_zipkin = mock.patch(
@@ -211,7 +211,7 @@ class TestOpencensusMiddleware(unittest.TestCase):
             'SERVICE_NAME': service_name,
             'OCAGENT_TRACE_EXPORTER_ENDPOINT': endpoint,
             'TRANSPORT':
-                'opencensus.trace.exporters.transports.sync.SyncTransport',
+                'opencensus.common.transports.sync.SyncTransport',
         }
 
         patch_ocagent_trace = mock.patch(
@@ -249,7 +249,7 @@ class TestOpencensusMiddleware(unittest.TestCase):
         params = {
             'SERVICE_NAME': service_name,
             'TRANSPORT':
-                'opencensus.trace.exporters.transports.sync.SyncTransport',
+                'opencensus.common.transports.sync.SyncTransport',
         }
 
         patch_ocagent_trace = mock.patch(
@@ -274,7 +274,7 @@ class TestOpencensusMiddleware(unittest.TestCase):
         params = {
             'SAMPLING_RATE': 0.8,
             'TRANSPORT':
-                'opencensus.trace.exporters.transports.sync.SyncTransport',
+                'opencensus.common.transports.sync.SyncTransport',
         }
 
         patch_sampler = mock.patch(
@@ -352,7 +352,7 @@ class TestOpencensusMiddleware(unittest.TestCase):
         params = {
             'BLACKLIST_PATHS': ['test_blacklist_path', ],
             'TRANSPORT':
-                'opencensus.trace.exporters.transports.sync.SyncTransport', }
+                'opencensus.common.transports.sync.SyncTransport', }
         patch_params = mock.patch(
             'opencensus.trace.ext.django.middleware.settings.params',
             params)

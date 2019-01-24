@@ -16,9 +16,9 @@
 
 import logging
 
+from opencensus.common.transports import sync
 from opencensus.trace import span_data
 from opencensus.trace.exporters import base
-from opencensus.trace.exporters.transports import sync
 
 
 class LoggingExporter(base.Exporter):
@@ -33,7 +33,7 @@ class LoggingExporter(base.Exporter):
                       extend from the base :class:`.Transport` type and
                       implement :meth:`.Transport.export`. Defaults to
                       :class:`.SyncTransport`. The other option is
-                      :class:`.BackgroundThreadTransport`.
+                      :class:`.AsyncTransport`.
 
     Example:
 

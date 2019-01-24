@@ -293,3 +293,24 @@ class TestViewData(unittest.TestCase):
         self.assertTrue(tuple_vals in view_data.tag_value_aggregation_data_map)
         sum_data = view_data.tag_value_aggregation_data_map.get(tuple_vals)
         self.assertEqual(4, sum_data.sum_data)
+
+    def test_record_with_none_context(self):
+        measure = mock.Mock()
+        sum_aggregation = aggregation_module.SumAggregation()
+        view = view_module.View("test_view", "description", ['key1', 'key2'],
+                                measure, sum_aggregation)
+        start_time = datetime.utcnow()
+        end_time = datetime.utcnow()
+        view_data = view_data_module.ViewData(
+            view=view, start_time=start_time, end_time=end_time)
+        time = datetime.utcnow().isoformat() + 'Z'
+        value = 4
+        view_data.record(
+            context=None, value=value, timestamp=time, attachments=None)
+        tag_values = view_data.get_tag_values(
+            tags={}, columns=view.columns)
+        tuple_vals = tuple(tag_values)
+        self.assertEqual([None, None], tag_values)
+        self.assertTrue(tuple_vals in view_data.tag_value_aggregation_data_map)
+        sum_data = view_data.tag_value_aggregation_data_map.get(tuple_vals)
+        self.assertEqual(4, sum_data.sum_data)

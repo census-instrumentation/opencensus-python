@@ -19,9 +19,9 @@ import mysql.connector
 import psycopg2
 import sqlalchemy
 
+from opencensus.common.transports import async_
 from opencensus.trace import config_integration
 from opencensus.trace.exporters import stackdriver_exporter
-from opencensus.trace.exporters.transports import background_thread
 from opencensus.trace.ext.flask.flask_middleware import FlaskMiddleware
 
 INTEGRATIONS = ['mysql', 'postgresql', 'sqlalchemy']
@@ -42,7 +42,7 @@ app = flask.Flask(__name__)
 # transport.  This is intentionally different from the Django system test which
 # is using sync transport to test both.
 exporter = stackdriver_exporter.StackdriverExporter(
-    transport=background_thread.BackgroundThreadTransport)
+    transport=async_.AsyncTransport)
 
 middleware = FlaskMiddleware(app, exporter=exporter)
 config_integration.trace_integrations(INTEGRATIONS)

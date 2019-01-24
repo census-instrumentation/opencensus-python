@@ -83,7 +83,11 @@ class ViewData(object):
 
     def record(self, context, value, timestamp, attachments=None):
         """records the view data against context"""
-        tag_values = self.get_tag_values(tags=context.map,
+        if context is None:
+            tags = dict()
+        else:
+            tags = context.map
+        tag_values = self.get_tag_values(tags=tags,
                                          columns=self.view.columns)
         tuple_vals = tuple(tag_values)
         if tuple_vals not in self.tag_value_aggregation_data_map:
