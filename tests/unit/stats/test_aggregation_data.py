@@ -545,6 +545,8 @@ class TestDistributionAggregationData(unittest.TestCase):
                          80850.0)
         self.assertEqual([bb.count for bb in converted_point.value.buckets],
                          [0, 9, 90, 0])
+        self.assertEqual(converted_point.value.bucket_options.type_.bounds,
+                         [1, 10, 100])
         self.assertTrue(
             exemplars_equal(
                 ex_9,
