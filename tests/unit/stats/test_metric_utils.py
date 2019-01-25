@@ -17,13 +17,20 @@ try:
 except ImportError:
     from unittest import mock
 
+import datetime
 import unittest
 
 from opencensus.metrics.export import metric_descriptor
+from opencensus.metrics.export import point
+from opencensus.metrics.export import value
 from opencensus.stats import aggregation
+from opencensus.stats import aggregation_data
 from opencensus.stats import measure
 from opencensus.stats import metric_utils
 from opencensus.stats import view
+from opencensus.stats import view_data
+from opencensus.tags import tag_key
+from opencensus.tags import tag_value
 
 
 class TestMetricUtils(unittest.TestCase):
@@ -100,3 +107,82 @@ class TestMetricUtils(unittest.TestCase):
         self.assertTrue(
             all(lk.key == col
                 for lk, col in zip(md.label_keys, test_view.columns)))
+
+    def do_test_view_data_to_metric(self, aggregation_type, aggregation_class,
+                                    value_type, metric_descriptor_type):
+        """Test that ViewDatas are converted correctly into Metrics.
+
+        This test doesn't check that the various aggregation data `to_point`
+        methods handle the point conversion correctly, just that converted
+        Point is included in the Metric, and the metric has the expected
+        structure, descriptor, and labels.
+        """
+        start_time = datetime.datetime(2019, 1, 25, 11, 12, 13)
+        current_time = datetime.datetime(2019, 1, 25, 12, 13, 14)
+
+        mock_measure = mock.Mock(spec=measure.MeasureFloat)
+
+        mock_view = mock.Mock(spec=view.View)
+        mock_view.measure = mock_measure
+        mock_view.columns = [tag_key.TagKey('k1'), tag_key.TagKey('k2')]
+        mock_view.aggregation = mock.Mock(spec=aggregation_class)
+        mock_view.aggregation.aggregation_type = aggregation_type
+
+        vd = mock.Mock(spec=view_data.ViewData)
+        vd.view = mock_view
+        vd.start_time = start_time
+
+        mock_point = mock.Mock(spec=point.Point)
+        mock_point.value = mock.Mock(spec=value_type)
+
+        mock_agg = mock.Mock(spec=aggregation_data.SumAggregationDataFloat)
+        mock_agg.to_point.return_value = mock_point
+
+        vd.tag_value_aggregation_data_map = {
+            (tag_value.TagValue('v1'), tag_value.TagValue('v2')): mock_agg
+        }
+
+        metric = metric_utils.view_data_to_metric(vd, current_time)
+        mock_agg.to_point.assert_called_once_with(current_time)
+
+        self.assertEqual(metric.descriptor.name, mock_view.name)
+        self.assertEqual(metric.descriptor.description, mock_view.description)
+        self.assertEqual(metric.descriptor.unit, mock_view.measure.unit)
+        self.assertEqual(metric.descriptor.type, metric_descriptor_type)
+        self.assertListEqual(
+            [lk.key for lk in metric.descriptor.label_keys],
+            ['k1', 'k2'])
+
+        self.assertEqual(len(metric.time_series), 1)
+        [ts] = metric.time_series
+        self.assertEqual(ts.start_timestamp, start_time)
+        self.assertListEqual(
+            [lv.value for lv in ts.label_values],
+            ['v1', 'v2'])
+        self.assertEqual(len(ts.points), 1)
+        [pt] = ts.points
+        self.assertEqual(pt, mock_point)
+
+    def test_view_data_to_metric(self):
+        args_list = [
+            [
+                aggregation.Type.SUM,
+                aggregation.SumAggregation,
+                value.ValueDouble,
+                metric_descriptor.MetricDescriptorType.CUMULATIVE_DOUBLE
+            ],
+            [
+                aggregation.Type.COUNT,
+                aggregation.CountAggregation,
+                value.ValueLong,
+                metric_descriptor.MetricDescriptorType.CUMULATIVE_INT64
+            ],
+            [
+                aggregation.Type.DISTRIBUTION,
+                aggregation.DistributionAggregation,
+                value.ValueDistribution,
+                metric_descriptor.MetricDescriptorType.CUMULATIVE_DISTRIBUTION
+            ]
+        ]
+        for args in args_list:
+            self.do_test_view_data_to_metric(*args)
