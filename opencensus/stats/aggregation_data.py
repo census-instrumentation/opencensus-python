@@ -82,7 +82,7 @@ class SumAggregationDataFloat(BaseAggregationData):
         :param timestamp: The time to report the point as having been recorded.
 
         :rtype: :class: `opencensus.metrics.export.point.Point`
-        :return: a :class: `opencensus.metrics.export.value.ValueLong`-valued
+        :return: a :class: `opencensus.metrics.export.value.ValueDouble`-valued
         Point with value equal to `sum_data`.
         """
         return point.Point(value.ValueDouble(self.sum_data), timestamp)
