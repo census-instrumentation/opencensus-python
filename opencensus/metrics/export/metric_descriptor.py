@@ -14,8 +14,7 @@
 
 import six
 
-from opencensus.metrics.export.value import ValueDistribution
-from opencensus.metrics.export.value import ValueSummary
+from opencensus.metrics.export import value
 
 
 class _MetricDescriptorTypeMeta(type):
@@ -81,19 +80,20 @@ class MetricDescriptorType(object):
     # is not recommended, since it cannot be aggregated.
     SUMMARY = 7
 
+    _type_map = {
+        GAUGE_INT64: value.ValueLong,
+        GAUGE_DOUBLE: value.ValueDouble,
+        GAUGE_DISTRIBUTION: value.ValueDistribution,
+        CUMULATIVE_INT64: value.ValueLong,
+        CUMULATIVE_DOUBLE: value.ValueDouble,
+        CUMULATIVE_DISTRIBUTION: value.ValueDistribution,
+        SUMMARY: value.ValueSummary
+    }
+
     @classmethod
     def to_type_class(cls, metric_descriptor_type):
-        type_map = {
-            cls.GAUGE_INT64: int,
-            cls.GAUGE_DOUBLE: float,
-            cls.GAUGE_DISTRIBUTION: ValueDistribution,
-            cls.CUMULATIVE_INT64: int,
-            cls.CUMULATIVE_DOUBLE: float,
-            cls.CUMULATIVE_DISTRIBUTION: ValueDistribution,
-            cls.SUMMARY: ValueSummary
-        }
         try:
-            return type_map[metric_descriptor_type]
+            return cls._type_map[metric_descriptor_type]
         except KeyError:
             raise ValueError("Unknown MetricDescriptorType value")
 
@@ -119,8 +119,8 @@ class MetricDescriptor(object):
     format described by http://unitsofmeasure.org/ucum.html.
 
     :type type_: int
-    :param unit: The unit in which the metric value is reported. The
-    MetricDescriptorType class enumerates valid options.
+    :param type_: The type of metric. MetricDescriptorType enumerates the valid
+    options.
 
     :type label_keys: list(:class: '~opencensus.metrics.label_key.LabelKey')
     :param label_keys: The label keys associated with the metric descriptor.

@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from opencensus.metrics.export import metric_descriptor
-
 
 class TimeSeries(object):
     """Time series data for a given metric and time interval.
@@ -60,15 +58,19 @@ class TimeSeries(object):
     def points(self):
         return self._points
 
-    def check_points_type(self, type_):
-        """Check that each point's value is an instance `type_`.
+    def check_points_type(self, type_class):
+        """Check that each point's value is an instance of `type_class`.
 
-        :type type_: type
-        :param type_: Type to check against.
+        `type_class` should typically be a Value type, i.e. one that extends
+        :class: `opencensus.metrics.export.value.Value`.
+
+        :type type_class: type
+        :param type_class: Type to check against.
+
+        :rtype: bool
+        :return: Whether all points are instances of `type_class`.
         """
-        type_class = (
-            metric_descriptor.MetricDescriptorType.to_type_class(type_))
         for point in self.points:
-            if not isinstance(point.value.value, type_class):
+            if not isinstance(point.value, type_class):
                 return False
         return True

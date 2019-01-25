@@ -16,48 +16,53 @@
 
 import unittest
 
-from opencensus.metrics.export.metric_descriptor import MetricDescriptor
-from opencensus.metrics.export.metric_descriptor import MetricDescriptorType
-from opencensus.metrics.label_key import LabelKey
+from opencensus.metrics import label_key
+from opencensus.metrics.export import metric_descriptor
+from opencensus.metrics.export import value
 
 NAME = 'metric'
 DESCRIPTION = 'Metric description'
 UNIT = '0.738.[ft_i].[lbf_av]/s'
-LABEL_KEY1 = LabelKey('key1', 'key description one')
-LABEL_KEY2 = LabelKey('值', '测试用键')
+LABEL_KEY1 = label_key.LabelKey('key1', 'key description one')
+LABEL_KEY2 = label_key.LabelKey('值', '测试用键')
 LABEL_KEYS = (LABEL_KEY1, LABEL_KEY2)
 
 
 class TestMetricDescriptor(unittest.TestCase):
     def test_init(self):
-        metric_descriptor = MetricDescriptor(NAME, DESCRIPTION, UNIT,
-                                             MetricDescriptorType.GAUGE_DOUBLE,
-                                             (LABEL_KEY1, LABEL_KEY2))
+        md = metric_descriptor.MetricDescriptor(
+            NAME, DESCRIPTION, UNIT,
+            metric_descriptor.MetricDescriptorType.GAUGE_DOUBLE,
+            (LABEL_KEY1, LABEL_KEY2))
 
-        self.assertEqual(metric_descriptor.name, NAME)
-        self.assertEqual(metric_descriptor.description, DESCRIPTION)
-        self.assertEqual(metric_descriptor.unit, UNIT)
-        self.assertEqual(metric_descriptor.type,
-                         MetricDescriptorType.GAUGE_DOUBLE)
-        self.assertEqual(metric_descriptor.label_keys, LABEL_KEYS)
+        self.assertEqual(md.name, NAME)
+        self.assertEqual(md.description, DESCRIPTION)
+        self.assertEqual(md.unit, UNIT)
+        self.assertEqual(md.type,
+                         metric_descriptor.MetricDescriptorType.GAUGE_DOUBLE)
+        self.assertEqual(md.label_keys, LABEL_KEYS)
 
     def test_bogus_type(self):
         with self.assertRaises(ValueError):
-            MetricDescriptor(NAME, DESCRIPTION, UNIT, 0, (LABEL_KEY1, ))
+            metric_descriptor.MetricDescriptor(NAME, DESCRIPTION, UNIT, 0,
+                                               (LABEL_KEY1, ))
 
     def test_null_label_keys(self):
         with self.assertRaises(ValueError):
-            MetricDescriptor(NAME, DESCRIPTION, UNIT,
-                             MetricDescriptorType.GAUGE_DOUBLE, None)
+            metric_descriptor.MetricDescriptor(
+                NAME, DESCRIPTION, UNIT,
+                metric_descriptor.MetricDescriptorType.GAUGE_DOUBLE, None)
 
     def test_null_label_key_values(self):
         with self.assertRaises(ValueError):
-            MetricDescriptor(NAME, DESCRIPTION, UNIT,
-                             MetricDescriptorType.GAUGE_DOUBLE, (None, ))
+            metric_descriptor.MetricDescriptor(
+                NAME, DESCRIPTION, UNIT,
+                metric_descriptor.MetricDescriptorType.GAUGE_DOUBLE, (None, ))
 
     def test_to_type_class(self):
         self.assertEqual(
-            MetricDescriptorType.to_type_class(
-                MetricDescriptorType.GAUGE_INT64), int)
+            metric_descriptor.MetricDescriptorType.to_type_class(
+                metric_descriptor.MetricDescriptorType.GAUGE_INT64),
+            value.ValueLong)
         with self.assertRaises(ValueError):
-            MetricDescriptorType.to_type_class(10)
+            metric_descriptor.MetricDescriptorType.to_type_class(10)

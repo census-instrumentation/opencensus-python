@@ -149,7 +149,7 @@ class Bucket(object):
     distribution does not have a histogram.
     """
 
-    def __init__(self, count, exemplar):
+    def __init__(self, count, exemplar=None):
         self._count = count
         self._exemplar = exemplar
 
