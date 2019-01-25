@@ -80,19 +80,20 @@ class MetricDescriptorType(object):
     # is not recommended, since it cannot be aggregated.
     SUMMARY = 7
 
+    _type_map = {
+        GAUGE_INT64: value.ValueLong,
+        GAUGE_DOUBLE: value.ValueDouble,
+        GAUGE_DISTRIBUTION: value.ValueDistribution,
+        CUMULATIVE_INT64: value.ValueLong,
+        CUMULATIVE_DOUBLE: value.ValueDouble,
+        CUMULATIVE_DISTRIBUTION: value.ValueDistribution,
+        SUMMARY: value.ValueSummary
+    }
+
     @classmethod
     def to_type_class(cls, metric_descriptor_type):
-        type_map = {
-            cls.GAUGE_INT64: value.ValueLong,
-            cls.GAUGE_DOUBLE: value.ValueDouble,
-            cls.GAUGE_DISTRIBUTION: value.ValueDistribution,
-            cls.CUMULATIVE_INT64: value.ValueLong,
-            cls.CUMULATIVE_DOUBLE: value.ValueDouble,
-            cls.CUMULATIVE_DISTRIBUTION: value.ValueDistribution,
-            cls.SUMMARY: value.ValueSummary
-        }
         try:
-            return type_map[metric_descriptor_type]
+            return cls._type_map[metric_descriptor_type]
         except KeyError:
             raise ValueError("Unknown MetricDescriptorType value")
 
