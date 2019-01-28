@@ -90,24 +90,6 @@ class TestMetricUtils(unittest.TestCase):
         with self.assertRaises(ValueError):
             metric_utils.get_metric_type(base_measure, agg_lv)
 
-    def test_view_to_metric_descriptor(self):
-        mock_measure = mock.Mock(spec=measure.MeasureFloat)
-        mock_agg = mock.Mock(spec=aggregation.SumAggregation)
-        mock_agg.aggregation_type = aggregation.Type.SUM
-        test_view = view.View("name", "description", ["tk1", "tk2"],
-                              mock_measure, mock_agg)
-
-        md = metric_utils.view_to_metric_descriptor(test_view)
-        self.assertTrue(isinstance(md, metric_descriptor.MetricDescriptor))
-        self.assertEqual(md.name, test_view.name)
-        self.assertEqual(md.description, test_view.description)
-        self.assertEqual(md.unit, test_view.measure.unit)
-        self.assertEqual(
-            md.type, metric_descriptor.MetricDescriptorType.CUMULATIVE_DOUBLE)
-        self.assertTrue(
-            all(lk.key == col
-                for lk, col in zip(md.label_keys, test_view.columns)))
-
     def do_test_view_data_to_metric(self, aggregation_type, aggregation_class,
                                     value_type, metric_descriptor_type):
         """Test that ViewDatas are converted correctly into Metrics.
@@ -121,15 +103,18 @@ class TestMetricUtils(unittest.TestCase):
         current_time = datetime.datetime(2019, 1, 25, 12, 13, 14)
 
         mock_measure = mock.Mock(spec=measure.MeasureFloat)
+        mock_aggregation = mock.Mock(spec=aggregation_class)
+        mock_aggregation.aggregation_type = aggregation_type
 
-        mock_view = mock.Mock(spec=view.View)
-        mock_view.measure = mock_measure
-        mock_view.columns = [tag_key.TagKey('k1'), tag_key.TagKey('k2')]
-        mock_view.aggregation = mock.Mock(spec=aggregation_class)
-        mock_view.aggregation.aggregation_type = aggregation_type
+        vv = view.View(
+            name=mock.Mock(),
+            description=mock.Mock(),
+            columns=[tag_key.TagKey('k1'), tag_key.TagKey('k2')],
+            measure=mock_measure,
+            aggregation=mock_aggregation)
 
         vd = mock.Mock(spec=view_data.ViewData)
-        vd.view = mock_view
+        vd.view = vv
         vd.start_time = start_time
 
         mock_point = mock.Mock(spec=point.Point)
@@ -145,9 +130,9 @@ class TestMetricUtils(unittest.TestCase):
         metric = metric_utils.view_data_to_metric(vd, current_time)
         mock_agg.to_point.assert_called_once_with(current_time)
 
-        self.assertEqual(metric.descriptor.name, mock_view.name)
-        self.assertEqual(metric.descriptor.description, mock_view.description)
-        self.assertEqual(metric.descriptor.unit, mock_view.measure.unit)
+        self.assertEqual(metric.descriptor.name, vv.name)
+        self.assertEqual(metric.descriptor.description, vv.description)
+        self.assertEqual(metric.descriptor.unit, vv.measure.unit)
         self.assertEqual(metric.descriptor.type, metric_descriptor_type)
         self.assertListEqual(
             [lk.key for lk in metric.descriptor.label_keys],

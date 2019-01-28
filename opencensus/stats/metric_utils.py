@@ -15,7 +15,6 @@
 Utilities to convert stats data models to metrics data models.
 """
 
-from opencensus.metrics import label_key
 from opencensus.metrics import label_value
 from opencensus.metrics.export import metric
 from opencensus.metrics.export import metric_descriptor
@@ -73,19 +72,6 @@ def get_metric_type(measure, aggregation):
         raise AssertionError  # pragma: NO COVER
 
 
-def view_to_metric_descriptor(view):
-    """Get a MetricDescriptor for given view data.
-
-    :type view: (:class: '~opencensus.stats.view.View')
-    :param view: the view data to for which to build a metric descriptor
-    """
-    return metric_descriptor.MetricDescriptor(
-        view.name, view.description, view.measure.unit,
-        get_metric_type(view.measure, view.aggregation),
-        # TODO: add label key description
-        [label_key.LabelKey(tk, "") for tk in view.columns])
-
-
 def is_gauge(md_type):
     """Whether a given MetricDescriptorType value is a gauge.
 
@@ -127,11 +113,10 @@ def view_data_to_metric(view_data, timestamp):
     :rtype: :class: `opencensus.metrics.export.metric.Metric`
     :return: A converted Metric.
     """
-    # TODO: consider caching the descriptor on the view data
-    metric_descriptor = view_to_metric_descriptor(view_data.view)
+    md = view_data.view.get_metric_descriptor()
 
     # TODO: implement gauges
-    if is_gauge(metric_descriptor.type):
+    if is_gauge(md.type):
         ts_start = None  # pragma: NO COVER
     else:
         ts_start = view_data.start_time
@@ -141,4 +126,4 @@ def view_data_to_metric(view_data, timestamp):
         label_values = get_label_values(tag_vals)
         point = agg_data.to_point(timestamp)
         ts_list.append(time_series.TimeSeries(label_values, [point], ts_start))
-    return metric.Metric(metric_descriptor, ts_list)
+    return metric.Metric(md, ts_list)

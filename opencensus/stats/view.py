@@ -13,6 +13,13 @@
 # limitations under the License.
 
 
+import threading
+
+from opencensus.metrics import label_key
+from opencensus.metrics.export import metric_descriptor
+from opencensus.stats import metric_utils
+
+
 class View(object):
     """A view defines a specific aggregation and a set of tag keys
 
@@ -33,12 +40,18 @@ class View(object):
     :param aggregation: the aggregation the view will support
 
     """
+
     def __init__(self, name, description, columns, measure, aggregation):
         self._name = name
         self._description = description
         self._columns = columns
         self._measure = measure
         self._aggregation = aggregation
+
+        # Cache the converted MetricDescriptor here to avoid creating it each
+        # time we convert a ViewData that realizes this View into a Metric.
+        self._md_cache_lock = threading.Lock()
+        self._metric_descriptor = None
 
     @property
     def name(self):
@@ -64,3 +77,24 @@ class View(object):
     def aggregation(self):
         """the aggregation of the current view"""
         return self._aggregation
+
+    def get_metric_descriptor(self):
+        """Get a MetricDescriptor for this view.
+
+        Lazily creates a MetricDescriptor for metrics conversion.
+
+        :rtype: :class:
+                `opencensus.metrics.export.metric_descriptor.MetricDescriptor`
+        :return: A converted Metric.
+        """  # noqa
+        with self._md_cache_lock:
+            if self._metric_descriptor is None:
+                self._metric_descriptor = metric_descriptor.MetricDescriptor(
+                    self.name,
+                    self.description,
+                    self.measure.unit,
+                    metric_utils.get_metric_type(self.measure,
+                                                 self.aggregation),
+                    # TODO: add label key description
+                    [label_key.LabelKey(tk, "") for tk in self.columns])
+        return self._metric_descriptor

@@ -58,7 +58,7 @@ class MeasureToViewMap(object):
         if view_data_list is not None:
             for view_data in view_data_list:
                 if view_data.view.name == view_name:
-                    view_data_copy = copy.deepcopy(view_data)
+                    view_data_copy = copy.copy(view_data)
                     view_data_copy.end()
                     return view_data_copy
 
