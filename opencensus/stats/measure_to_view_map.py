@@ -55,12 +55,21 @@ class MeasureToViewMap(object):
 
         view_data_list = self._measure_to_view_data_list_map.get(
             view.measure.name)
-        if view_data_list is not None:
-            for view_data in view_data_list:
-                if view_data.view.name == view_name:
-                    view_data_copy = copy.deepcopy(view_data)
-                    view_data_copy.end()
-                    return view_data_copy
+
+        if not view_data_list:
+            return None
+
+        for view_data in view_data_list:
+            if view_data.view.name == view_name:
+                break
+        else:
+            return None
+
+        view_data_copy = copy.copy(view_data)
+        tvdam_copy = copy.deepcopy(view_data.tag_value_aggregation_data_map)
+        view_data_copy._tag_value_aggregation_data_map = tvdam_copy
+        view_data_copy.end()
+        return view_data_copy
 
     def filter_exported_views(self, all_views):
         """returns the subset of the given view that should be exported"""
