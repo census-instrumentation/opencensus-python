@@ -26,8 +26,8 @@ INVALID_SPAN_ID = '0' * 16
 TRACE_ID_PATTERN = re.compile('[0-9a-f]{32}?')
 SPAN_ID_PATTERN = re.compile('[0-9a-f]{16}?')
 
-# Default options, enable tracing
-DEFAULT_OPTIONS = 1
+# Default options, don't force sampling
+DEFAULT_OPTIONS = 0
 
 # Default trace options
 DEFAULT = trace_options.TraceOptions(DEFAULT_OPTIONS)
