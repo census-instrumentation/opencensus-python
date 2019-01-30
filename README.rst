@@ -158,7 +158,7 @@ This example shows how to configure Census to use a background thread:
 
 .. code:: python
 
-    from opencensus.common.transport.async_ import AsyncTransport
+    from opencensus.common.transports.async_ import AsyncTransport
     from opencensus.trace.exporters import stackdriver_exporter
     from opencensus.trace import tracer as tracer_module
 
