@@ -19,9 +19,9 @@ class Metric(object):
     """A collection of time series data and label metadata.
 
     This class implements the spec for v1 Metrics as of opencensus-proto
-    release v0.0.2. See opencensus-proto for details:
+    release v0.1.0. See opencensus-proto for details:
 
-    https://github.com/census-instrumentation/opencensus-proto/blob/24333298e36590ea0716598caacc8959fc393c48/src/opencensus/proto/metrics/v1/metrics.proto#33
+    https://github.com/census-instrumentation/opencensus-proto/blob/v0.1.0/src/opencensus/proto/metrics/v1/metrics.proto#L35
 
     Defines a Metric which has one or more timeseries.
 
