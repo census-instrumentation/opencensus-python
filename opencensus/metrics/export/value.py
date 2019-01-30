@@ -13,9 +13,9 @@
 # limitations under the License.
 """
 The classes in this module implement the spec for v1 Metrics as of
-opencensus-proto release v0.0.2. See opencensus-proto for details:
+opencensus-proto release v0.1.0. See opencensus-proto for details:
 
-https://github.com/census-instrumentation/opencensus-proto/blob/24333298e36590ea0716598caacc8959fc393c48/src/opencensus/proto/metrics/v1/metrics.proto
+https://github.com/census-instrumentation/opencensus-proto/blob/v0.1.0/src/opencensus/proto/metrics/v1/metrics.proto
 """  # noqa
 
 from copy import copy

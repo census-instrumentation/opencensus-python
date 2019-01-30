@@ -47,7 +47,7 @@ class Tracestate(OrderedDict):
     # if the tracestate value size is bigger than 512 characters, the tracer
     # CAN decide to forward the tracestate
     def is_valid(self):
-        if len(self) is 0:
+        if len(self) == 0:
             return False
         # there can be a maximum of 32 list-members in a list
         if len(self) > 32:
