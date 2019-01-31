@@ -42,6 +42,13 @@ class Metric(object):
         self._descriptor = descriptor
         self._check_type()
 
+    def __repr__(self):
+        return ('{}(descriptor.name="{}")'
+                .format(
+                    type(self).__name__,
+                    self.descriptor.name
+                ))
+
     @property
     def time_series(self):
         return self._time_series

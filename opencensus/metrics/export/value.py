@@ -79,6 +79,13 @@ class ValueDouble(Value):
     def __init__(self, value):
         super(ValueDouble, self).__init__(value)
 
+    def __repr__(self):
+        return ("{}({})"
+                .format(
+                    type(self).__name__,
+                    self.value,
+                ))
+
 
 class ValueLong(Value):
     """A 64-bit integer.

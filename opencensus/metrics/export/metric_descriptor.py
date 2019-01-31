@@ -142,6 +142,17 @@ class MetricDescriptor(object):
         self._type = type_
         self._label_keys = label_keys
 
+    def __repr__(self):
+        type_name = MetricDescriptorType.to_type_class(self.type).__name__
+        return ('{}(name="{}", description="{}", unit={}, type={})'
+                .format(
+                    type(self).__name__,
+                    self.name,
+                    self.description,
+                    self.unit,
+                    type_name,
+                ))
+
     @property
     def name(self):
         return self._name

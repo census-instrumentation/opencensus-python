@@ -46,6 +46,15 @@ class TimeSeries(object):
         self._points = points
         self._start_timestamp = start_timestamp
 
+    def __repr__(self):
+        return ('{}(points={}, label_values={}, start_timestamp={})'
+                .format(
+                    type(self).__name__,
+                    self.points,
+                    self.label_values,
+                    self.start_timestamp
+                ))
+
     @property
     def start_timestamp(self):
         return self._start_timestamp
