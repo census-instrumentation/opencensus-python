@@ -283,3 +283,9 @@ class TestPrometheusStatsExporter(unittest.TestCase):
     def test_get_view_name_without_namespace(self):
         v_name = prometheus.get_view_name(namespace="", view=VIDEO_SIZE_VIEW)
         self.assertEqual("myorg_views_video_size_test2", v_name)
+
+    def test_sanitize(self):
+        v_name = prometheus.sanitize("demo/latency")
+        self.assertEqual("demo_latency", v_name)
+        label_name = prometheus.sanitize("my.org/demo/key1")
+        self.assertEqual("my_org_demo_key1", label_name)
