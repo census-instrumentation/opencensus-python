@@ -249,9 +249,9 @@ class ValueDistribution(Value):
             raise ValueError("bucket_options must not be null")
         if bucket_options.type_ is None:
             if buckets is not None:
-                raise ValueError("buckets must be null if the distribution has"
-                                 "no histogram (i.e. bucket_options.type is "
-                                 "null)")
+                raise ValueError("buckets must be null if the distribution "
+                                 "has no histogram (i.e. bucket_options.type "
+                                 "is null)")
         else:
             if len(buckets) != len(bucket_options.type_.bounds) + 1:
                 # Note that this includes the implicit 0 and positive-infinity
