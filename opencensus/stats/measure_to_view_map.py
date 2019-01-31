@@ -142,4 +142,6 @@ class MeasureToViewMap(object):
         """
         for vdl in self._measure_to_view_data_list_map.values():
             for vd in vdl:
-                yield metric_utils.view_data_to_metric(vd, timestamp)
+                metric = metric_utils.view_data_to_metric(vd, timestamp)
+                if metric is not None:
+                    yield metric
