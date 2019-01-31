@@ -25,18 +25,8 @@ class Stats(MetricProducer):
     """
 
     def __init__(self):
-        self._stats_recorder = StatsRecorder()
-        self._view_manager = ViewManager()
-
-    @property
-    def stats_recorder(self):
-        """the current stats recorder for Stats"""
-        return self._stats_recorder
-
-    @property
-    def view_manager(self):
-        """the current view manager for Stats"""
-        return self._view_manager
+        self.stats_recorder = StatsRecorder()
+        self.view_manager = ViewManager()
 
     def get_metrics(self):
         """Get a Metric for each of the view manager's registered views.
