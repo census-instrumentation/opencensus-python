@@ -50,3 +50,12 @@ class TestMetricProducerManager(unittest.TestCase):
         self.assertEqual(mpm.metric_producers, set([mock_mp]))
         mpm.remove(mock_mp)
         self.assertEqual(mpm.metric_producers, set())
+
+    def test_get_all(self):
+        mp1 = Mock()
+        mp2 = Mock()
+        mpm = metric_producer.MetricProducerManager([mp1, mp2])
+        got = mpm.get_all()
+        mpm.remove(mp1)
+        self.assertIn(mp1, got)
+        self.assertIn(mp2, got)

@@ -65,3 +65,17 @@ class MetricProducerManager(object):
                 self.metric_producers.remove(metric_producer)
         except KeyError:
             pass
+
+    def get_all(self):
+        """Get the set of all metric producers.
+
+        Get a copy of `metric_producers`. Prefer this method to using the
+        attribute directly to avoid other threads adding/removing producers
+        while you're reading it.
+
+        :rtype: set(:class: `MetricProducer`)
+        :return: A set of all metric producers at the time of the call.
+        """
+        with self.mp_lock:
+            mps_copy = set(self.metric_producers)
+        return mps_copy
