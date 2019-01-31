@@ -13,9 +13,9 @@
 # limitations under the License.
 
 try:
-    import mock
+    from mock import Mock
 except ImportError:
-    from unittest import mock
+    from unittest.mock import Mock
 
 import unittest
 
@@ -29,7 +29,6 @@ from opencensus.tags import tag_map
 
 
 class TestStats(unittest.TestCase):
-
     def test_get_metrics(self):
         """Test that Stats converts recorded values into metrics."""
 
@@ -39,22 +38,21 @@ class TestStats(unittest.TestCase):
         initial_metrics = list(stats.get_metrics())
         self.assertEqual(initial_metrics, [])
 
-        mock_measure = mock.Mock(spec=measure.MeasureFloat)
+        mock_measure = Mock(spec=measure.MeasureFloat)
 
-        mock_md = mock.Mock(spec=metric_descriptor.MetricDescriptor)
+        mock_md = Mock(spec=metric_descriptor.MetricDescriptor)
         mock_md.type =\
             metric_descriptor.MetricDescriptorType.CUMULATIVE_DISTRIBUTION
 
-        mock_view = mock.Mock(spec=view.View)
+        mock_view = Mock(spec=view.View)
         mock_view.measure = mock_measure
         mock_view.get_metric_descriptor.return_value = mock_md
         mock_view.columns = ['k1']
 
-        stats.view_manager.measure_to_view_map.register_view(
-            mock_view, mock.Mock())
+        stats.view_manager.measure_to_view_map.register_view(mock_view, Mock())
 
-        empty_metrics = list(stats.get_metrics())
         # Check that metrics are stil empty until we record
+        empty_metrics = list(stats.get_metrics())
         self.assertEqual(empty_metrics, [])
 
         mm = stats.stats_recorder.new_measurement_map()
