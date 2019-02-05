@@ -309,7 +309,9 @@ class DistributionAggregationData(BaseAggregationData):
         This method creates a :class: `opencensus.metrics.export.point.Point`
         with a :class: `opencensus.metrics.export.value.ValueDistribution`
         value, and creates buckets and exemplars for that distribution from the
-        appropriate classes in the `metrics` package.
+        appropriate classes in the `metrics` package. If the distribution
+        doesn't have a histogram (i.e. `bounds` is empty) the converted point's
+        `buckets` attribute will be null.
 
         :type timestamp: :class: `datetime.datetime`
         :param timestamp: The time to report the point as having been recorded.
@@ -318,17 +320,22 @@ class DistributionAggregationData(BaseAggregationData):
         :return: a :class: `opencensus.metrics.export.value.ValueDistribution`
         -valued Point.
         """
-        buckets = [None] * len(self.counts_per_bucket)
-        for ii, count in enumerate(self.counts_per_bucket):
-            stat_ex = self.exemplars.get(ii, None)
-            if stat_ex is not None:
-                metric_ex = value.Exemplar(stat_ex.value, stat_ex.timestamp,
-                                           copy.copy(stat_ex.attachments))
-                buckets[ii] = value.Bucket(count, metric_ex)
-            else:
-                buckets[ii] = value.Bucket(count)
+        if self.bounds:
+            bucket_options = value.BucketOptions(value.Explicit(self.bounds))
+            buckets = [None] * len(self.counts_per_bucket)
+            for ii, count in enumerate(self.counts_per_bucket):
+                stat_ex = self.exemplars.get(ii) if self.exemplars else None
+                if stat_ex is not None:
+                    metric_ex = value.Exemplar(stat_ex.value,
+                                               stat_ex.timestamp,
+                                               copy.copy(stat_ex.attachments))
+                    buckets[ii] = value.Bucket(count, metric_ex)
+                else:
+                    buckets[ii] = value.Bucket(count)
 
-        bucket_options = value.BucketOptions(value.Explicit(self.bounds))
+        else:
+            bucket_options = value.BucketOptions()
+            buckets = None
         return point.Point(
             value.ValueDistribution(
                 count=self.count_data,

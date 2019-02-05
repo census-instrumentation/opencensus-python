@@ -16,6 +16,7 @@ from collections import defaultdict
 import copy
 import logging
 
+from opencensus.stats import metric_utils
 from opencensus.stats import view_data as view_data_module
 
 
@@ -126,3 +127,21 @@ class MeasureToViewMap(object):
         if len(self.exporters) > 0:
             for e in self.exporters:
                 e.export(view_datas)
+
+    def get_metrics(self, timestamp):
+        """Get a Metric for each registered view.
+
+        Convert each registered view's associated `ViewData` into a `Metric` to
+        be exported.
+
+        :type timestamp: :class: `datetime.datetime`
+        :param timestamp: The timestamp to use for metric conversions, usually
+        the current time.
+
+        :rtype: Iterator[:class: `opencensus.metrics.export.metric.Metric`]
+        """
+        for vdl in self._measure_to_view_data_list_map.values():
+            for vd in vdl:
+                metric = metric_utils.view_data_to_metric(vd, timestamp)
+                if metric is not None:
+                    yield metric

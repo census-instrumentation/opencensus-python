@@ -555,3 +555,22 @@ class TestDistributionAggregationData(unittest.TestCase):
             exemplars_equal(
                 ex_99,
                 converted_point.value.buckets[2].exemplar))
+
+    def test_to_point_no_histogram(self):
+        timestamp = datetime(1970, 1, 1)
+        dist_agg_data = aggregation_data_module.DistributionAggregationData(
+            mean_data=50,
+            count_data=99,
+            min_=1,
+            max_=99,
+            sum_of_sqd_deviations=80850.0,
+        )
+        converted_point = dist_agg_data.to_point(timestamp)
+        self.assertTrue(isinstance(converted_point.value,
+                                   value.ValueDistribution))
+        self.assertEqual(converted_point.value.count, 99)
+        self.assertEqual(converted_point.value.sum, 4950)
+        self.assertEqual(converted_point.value.sum_of_squared_deviation,
+                         80850.0)
+        self.assertIsNone(converted_point.value.buckets)
+        self.assertIsNone(converted_point.value.bucket_options._type)

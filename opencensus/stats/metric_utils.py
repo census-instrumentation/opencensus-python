@@ -113,6 +113,9 @@ def view_data_to_metric(view_data, timestamp):
     :rtype: :class: `opencensus.metrics.export.metric.Metric`
     :return: A converted Metric.
     """
+    if not view_data.tag_value_aggregation_data_map:
+        return None
+
     md = view_data.view.get_metric_descriptor()
 
     # TODO: implement gauges
