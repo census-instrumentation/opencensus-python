@@ -166,11 +166,16 @@ class Collector(object):
         metric_description = desc['documentation']
         label_keys = desc['labels']
 
+        # Prometheus requires that all tag values be strings hence
+        # the need to cast none to the empty string before exporting. See
+        # https://github.com/census-instrumentation/opencensus-python/issues/480
+        tag_values = list(map(cast_none_to_empty_str, tag_values))
+
         if isinstance(agg_data, aggregation_data_module.CountAggregationData):
             metric = CounterMetricFamily(name=metric_name,
                                          documentation=metric_description,
                                          labels=label_keys)
-            metric.add_metric(labels=list(tag_values),
+            metric.add_metric(labels=tag_values,
                               value=agg_data.count_data)
             return metric
 
@@ -186,7 +191,7 @@ class Collector(object):
             metric = HistogramMetricFamily(name=metric_name,
                                            documentation=metric_description,
                                            labels=label_keys)
-            metric.add_metric(labels=list(tag_values),
+            metric.add_metric(labels=tag_values,
                               buckets=list(points.items()),
                               sum_value=agg_data.sum,)
             return metric
@@ -196,7 +201,7 @@ class Collector(object):
             metric = UntypedMetricFamily(name=metric_name,
                                          documentation=metric_description,
                                          labels=label_keys)
-            metric.add_metric(labels=list(tag_values),
+            metric.add_metric(labels=tag_values,
                               value=agg_data.sum_data)
             return metric
 
@@ -205,7 +210,7 @@ class Collector(object):
             metric = GaugeMetricFamily(name=metric_name,
                                        documentation=metric_description,
                                        labels=label_keys)
-            metric.add_metric(labels=list(tag_values),
+            metric.add_metric(labels=tag_values,
                               value=agg_data.value)
             return metric
 
@@ -358,3 +363,12 @@ def sanitize(key):
     Replace all characters other than [A-Za-z0-9_] with '_'.
     """
     return _NON_LETTERS_NOR_DIGITS_RE.sub('_', key)
+
+
+def cast_none_to_empty_str(label_value):
+    """ convert None label to '' since Prometheus doesn't allow label values
+    to be None.
+    """
+    if label_value is None:
+        return ""
+    return label_value
