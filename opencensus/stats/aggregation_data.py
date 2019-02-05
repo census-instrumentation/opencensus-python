@@ -64,6 +64,13 @@ class SumAggregationDataFloat(BaseAggregationData):
         super(SumAggregationDataFloat, self).__init__(sum_data)
         self._sum_data = sum_data
 
+    def __repr__(self):
+        return ("{}({})"
+                .format(
+                    type(self).__name__,
+                    self.sum_data,
+                ))
+
     def add_sample(self, value, timestamp=None, attachments=None):
         """Allows the user to add a sample to the Sum Aggregation Data
         The value of the sample is then added to the current sum data
@@ -99,6 +106,13 @@ class CountAggregationData(BaseAggregationData):
     def __init__(self, count_data):
         super(CountAggregationData, self).__init__(count_data)
         self._count_data = count_data
+
+    def __repr__(self):
+        return ("{}({})"
+                .format(
+                    type(self).__name__,
+                    self.count_data,
+                ))
 
     def add_sample(self, value, timestamp=None, attachments=None):
         """Adds a sample to the current Count Aggregation Data and adds 1 to
@@ -193,6 +207,13 @@ class DistributionAggregationData(BaseAggregationData):
             assert all(cc >= 0 for cc in counts_per_bucket)
             assert len(counts_per_bucket) == len(bounds) + 1
         self._counts_per_bucket = counts_per_bucket
+
+    def __repr__(self):
+        return ("{}({})"
+                .format(
+                    type(self).__name__,
+                    self.count_data,
+                ))
 
     @property
     def mean_data(self):
@@ -339,6 +360,13 @@ class LastValueAggregationData(BaseAggregationData):
     def __init__(self, value):
         super(LastValueAggregationData, self).__init__(value)
         self._value = value
+
+    def __repr__(self):
+        return ("{}({})"
+                .format(
+                    type(self).__name__,
+                    self.value,
+                ))
 
     def add_sample(self, value, timestamp=None, attachments=None):
         """Adds a sample to the current
