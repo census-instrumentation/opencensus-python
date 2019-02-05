@@ -18,40 +18,43 @@ import logging
 _ENABLED_BITMASK = 1 << 0
 
 # Default trace options
-DEFAULT = '0'
+DEFAULT = 0x0
 
 
 class TraceOptions(object):
     """A class that represents global trace options.
 
-    :type trace_options_byte: str
+    :type trace_options_byte: int
     :param trace_options_byte: 1 byte bitmap for trace options.
     """
 
-    def __init__(self, trace_options_byte=None):
-        if trace_options_byte is None:
+    def __init__(self, trace_options_byte=DEFAULT):
+        if not isinstance(trace_options_byte, int):
+            logging.warning("trace_options_byte must be an int, this will be "
+                            "an error in future versions")
+            try:
+                trace_options_byte = int(trace_options_byte)
+            except ValueError:  # pragma: NO COVER
+                trace_options_byte = DEFAULT
+
+        if not 0x0 <= trace_options_byte <= 0xff:
+            logging.warning("Trace options invalid, should be 1 byte.")
             trace_options_byte = DEFAULT
 
-        self.trace_options_byte = self.check_trace_options(trace_options_byte)
-        self.enabled = self.get_enabled
-
-    def check_trace_options(self, trace_options_byte):
-        trace_options_int = int(trace_options_byte)
-
-        if trace_options_int < 0 or trace_options_int > 255:
-            logging.warn("Trace options invalid, should be 1 byte.")
-            trace_options_byte = DEFAULT
-
-        return trace_options_byte
+        self.trace_options_byte = trace_options_byte
 
     def __repr__(self):
         fmt = '{}(enabled={})'
         return fmt.format(
             type(self).__name__,
-            self.get_enabled,
+            self.get_enabled(),
         )
 
+    # TODO: deprecate, replace with is_sampled()
     @property
+    def enabled(self):
+        return self.get_enabled()
+
     def get_enabled(self):
         """Get the last bit from the trace options which is the enabled field.
 
@@ -61,19 +64,15 @@ class TraceOptions(object):
                               enabled, 0 means not enabled.
 
         :rtype: bool
-        :returns: Enabled tracing or not.
+        :returns: Whether tracing is enabled in this span context.
         """
-        enabled = bool(int(self.trace_options_byte) & _ENABLED_BITMASK)
-
-        return enabled
+        return bool(self.trace_options_byte & _ENABLED_BITMASK)
 
     def set_enabled(self, enabled):
         """Update the last bit of the trace options byte str.
 
         :type enabled: bool
-        :param enabled: Whether enable tracing in this span context or not.
+        :param enabled: Whether to enable tracing in this span context.
         """
-        enabled_bit = '1' if enabled else '0'
-        self.trace_options_byte = str(
-            self.trace_options_byte)[:-1] + enabled_bit
-        self.enabled = self.get_enabled
+        if not enabled == self.get_enabled():
+            self.trace_options_byte ^= _ENABLED_BITMASK

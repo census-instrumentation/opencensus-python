@@ -46,7 +46,7 @@ class TestTracer(unittest.TestCase):
         exporter = mock.Mock()
         propagator = mock.Mock()
         span_context = mock.Mock()
-        span_context.trace_options.enabled = False
+        span_context.trace_options.get_enabled.return_value = False
 
         tracer = tracer_module.Tracer(
             span_context=span_context,
@@ -63,7 +63,7 @@ class TestTracer(unittest.TestCase):
     def test_should_sample_force_not_trace(self):
 
         span_context = mock.Mock()
-        span_context.trace_options.enabled = False
+        span_context.trace_options.get_enabled.return_value = False
         sampler = mock.Mock()
         sampler.should_sample.return_value = False
         tracer = tracer_module.Tracer(
@@ -84,14 +84,14 @@ class TestTracer(unittest.TestCase):
         sampler = mock.Mock()
         sampler.should_sample.return_value = False
         span_context = mock.Mock()
-        span_context.trace_options.enabled = False
+        span_context.trace_options.get_enabled.return_value = False
         tracer = tracer_module.Tracer(
             span_context=span_context, sampler=sampler)
         sampled = tracer.should_sample()
 
         self.assertFalse(sampled)
 
-    def get_tracer_noop_tracer(self):
+    def test_get_tracer_noop_tracer(self):
         from opencensus.trace.tracers import noop_tracer
 
         sampler = mock.Mock()
@@ -102,7 +102,7 @@ class TestTracer(unittest.TestCase):
 
         assert isinstance(result, noop_tracer.NoopTracer)
 
-    def get_tracer_context_tracer(self):
+    def test_get_tracer_context_tracer(self):
         from opencensus.trace.tracers import context_tracer
 
         sampler = mock.Mock()
@@ -120,7 +120,7 @@ class TestTracer(unittest.TestCase):
         sampler = mock.Mock()
         sampler.should_sample.return_value = False
         span_context = mock.Mock()
-        span_context.trace_options.enabled = False
+        span_context.trace_options.get_enabled.return_value = False
         tracer = tracer_module.Tracer(
             span_context=span_context, sampler=sampler)
         assert isinstance(tracer.tracer, noop_tracer.NoopTracer)
@@ -147,7 +147,7 @@ class TestTracer(unittest.TestCase):
         sampler = mock.Mock()
         sampler.should_sample.return_value = False
         span_context = mock.Mock()
-        span_context.trace_options.enabled = False
+        span_context.trace_options.get_enabled.return_value = False
         tracer = tracer_module.Tracer(
             span_context=span_context, sampler=sampler)
 
@@ -177,7 +177,7 @@ class TestTracer(unittest.TestCase):
         sampler = mock.Mock()
         sampler.should_sample.return_value = False
         span_context = mock.Mock()
-        span_context.trace_options.enabled = False
+        span_context.trace_options.get_enabled.return_value = False
         tracer = tracer_module.Tracer(
             span_context=span_context, sampler=sampler)
 
@@ -199,7 +199,7 @@ class TestTracer(unittest.TestCase):
         sampler = mock.Mock()
         sampler.should_sample.return_value = False
         span_context = mock.Mock()
-        span_context.trace_options.enabled = False
+        span_context.trace_options.get_enabled.return_value = False
         tracer = tracer_module.Tracer(
             sampler=sampler, span_context=span_context)
 
@@ -235,7 +235,7 @@ class TestTracer(unittest.TestCase):
         sampler = mock.Mock()
         sampler.should_sample.return_value = False
         span_context = mock.Mock()
-        span_context.trace_options.enabled = False
+        span_context.trace_options.get_enabled.return_value = False
         tracer = tracer_module.Tracer(
             sampler=sampler, span_context=span_context)
 
@@ -262,7 +262,7 @@ class TestTracer(unittest.TestCase):
         sampler = mock.Mock()
         sampler.should_sample.return_value = False
         span_context = mock.Mock()
-        span_context.trace_options.enabled = False
+        span_context.trace_options.get_enabled.return_value = False
         tracer = tracer_module.Tracer(
             span_context=span_context, sampler=sampler)
         tracer.add_attribute_to_current_span('key', 'value')

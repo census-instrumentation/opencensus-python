@@ -25,20 +25,32 @@ class TestTraceOptions(unittest.TestCase):
         self.assertFalse(trace_options.enabled)
 
     def test_constructor_explicit(self):
-        trace_options_byte = '0'
+        trace_options_byte = 0x0
         trace_options = trace_opt.TraceOptions(trace_options_byte)
 
         self.assertEqual(trace_options.trace_options_byte, trace_options_byte)
         self.assertFalse(trace_options.enabled)
 
     def test_check_trace_options_valid(self):
-        trace_options_byte = '10'
+        trace_options_byte = 0xa
         trace_options = trace_opt.TraceOptions(trace_options_byte)
 
         self.assertEqual(trace_options.trace_options_byte, trace_options_byte)
 
     def test_check_trace_options_invalid(self):
-        trace_options_byte = '256'
+        trace_options_byte = 0x100
         trace_options = trace_opt.TraceOptions(trace_options_byte)
 
         self.assertEqual(trace_options.trace_options_byte, trace_opt.DEFAULT)
+
+    def test_enable_tracing(self):
+        trace_options = trace_opt.TraceOptions()
+        self.assertFalse(trace_options.get_enabled())
+        trace_options.set_enabled(True)
+        self.assertTrue(trace_options.get_enabled())
+        trace_options.set_enabled(True)
+        self.assertTrue(trace_options.get_enabled())
+        trace_options.set_enabled(False)
+        self.assertFalse(trace_options.get_enabled())
+        trace_options.set_enabled(False)
+        self.assertFalse(trace_options.get_enabled())

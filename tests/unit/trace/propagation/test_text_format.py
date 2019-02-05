@@ -37,7 +37,7 @@ class Test_from_carrier(unittest.TestCase):
 
         self.assertEqual(span_context.trace_id, test_trace_id)
         self.assertEqual(span_context.span_id, test_span_id)
-        self.assertEqual(span_context.trace_options.enabled,
+        self.assertEqual(span_context.trace_options.get_enabled(),
                          bool(test_options))
 
     def test_from_carrier_keys_not_exist(self):
@@ -50,7 +50,7 @@ class Test_from_carrier(unittest.TestCase):
         # Span_id should be None here which indicates no parent span_id for
         # the child spans
         self.assertIsNone(span_context.span_id)
-        self.assertTrue(span_context.trace_options.enabled)
+        self.assertTrue(span_context.trace_options.get_enabled())
 
     def test_to_carrier_has_span_id(self):
         test_trace_id = '6e0c63257de34c92bf9efcd03927272e'

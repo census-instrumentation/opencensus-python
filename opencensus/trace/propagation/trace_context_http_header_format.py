@@ -95,7 +95,7 @@ class TraceContextPropagator(object):
         """
         trace_id = span_context.trace_id
         span_id = span_context.span_id
-        trace_options = span_context.trace_options.enabled
+        trace_options = span_context.trace_options.get_enabled()
 
         # Convert the trace options
         trace_options = '01' if trace_options else '00'
