@@ -18,7 +18,7 @@ import logging
 _ENABLED_BITMASK = 1 << 0
 
 # Default trace options
-DEFAULT = '1'
+DEFAULT = '0'
 
 
 class TraceOptions(object):

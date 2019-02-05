@@ -22,7 +22,7 @@ class TestTraceOptions(unittest.TestCase):
         trace_options = trace_opt.TraceOptions()
 
         self.assertEqual(trace_options.trace_options_byte, trace_opt.DEFAULT)
-        self.assertTrue(trace_options.enabled)
+        self.assertFalse(trace_options.enabled)
 
     def test_constructor_explicit(self):
         trace_options_byte = '0'
