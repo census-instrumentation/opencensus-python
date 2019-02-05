@@ -36,3 +36,11 @@ class Point(object):
     def timestamp(self):
         """Returns the Timestamp when this Point was recorded."""
         return self._timestamp
+
+    def __repr__(self):
+        return ("{}(value={}, timestamp={})"
+                .format(
+                    type(self).__name__,
+                    self.value,
+                    self.timestamp
+                ))

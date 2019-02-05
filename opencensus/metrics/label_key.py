@@ -26,6 +26,20 @@ class LabelKey(object):
         self._key = key
         self._description = description
 
+    def __repr__(self):
+        if self.description:
+            return ('{}({}, description="{}")'
+                    .format(
+                        type(self).__name__,
+                        self.key,
+                        self.description
+                    ))
+        return ("{}({})"
+                .format(
+                    type(self).__name__,
+                    self.key,
+                ))
+
     @property
     def key(self):
         """the key for the label"""

@@ -24,6 +24,8 @@ from opencensus.common.transports import sync
 from opencensus.stats import aggregation_data as aggregation_data_module
 from opencensus.stats.exporters import base
 
+import re
+
 
 class Options(object):
     """ Options contains options for configuring the exporter.
@@ -125,7 +127,7 @@ class Collector(object):
         if v_name not in self.registered_views:
             desc = {'name': v_name,
                     'documentation': view.description,
-                    'labels': list(view.columns)}
+                    'labels': list(map(sanitize, view.columns))}
             self.registered_views[v_name] = desc
             self.registry.register(self)
 
@@ -345,4 +347,14 @@ def get_view_name(namespace, view):
     name = ""
     if namespace != "":
         name = namespace + "_"
-    return name + view.name
+    return sanitize(name + view.name)
+
+
+_NON_LETTERS_NOR_DIGITS_RE = re.compile(r'[^\w]', re.UNICODE | re.IGNORECASE)
+
+
+def sanitize(key):
+    """ sanitize the given metric name or label according to Prometheus rule.
+    Replace all characters other than [A-Za-z0-9_] with '_'.
+    """
+    return _NON_LETTERS_NOR_DIGITS_RE.sub('_', key)

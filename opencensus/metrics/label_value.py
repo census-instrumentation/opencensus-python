@@ -22,6 +22,13 @@ class LabelValue(object):
     def __init__(self, value=None):
         self._value = value
 
+    def __repr__(self):
+        return ("{}({})"
+                .format(
+                    type(self).__name__,
+                    self.value,
+                ))
+
     @property
     def value(self):
         """the value for the label"""

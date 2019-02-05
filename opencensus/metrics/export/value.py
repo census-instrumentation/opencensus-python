@@ -13,9 +13,9 @@
 # limitations under the License.
 """
 The classes in this module implement the spec for v1 Metrics as of
-opencensus-proto release v0.0.2. See opencensus-proto for details:
+opencensus-proto release v0.1.0. See opencensus-proto for details:
 
-https://github.com/census-instrumentation/opencensus-proto/blob/24333298e36590ea0716598caacc8959fc393c48/src/opencensus/proto/metrics/v1/metrics.proto
+https://github.com/census-instrumentation/opencensus-proto/blob/v0.1.0/src/opencensus/proto/metrics/v1/metrics.proto
 """  # noqa
 
 from copy import copy
@@ -78,6 +78,13 @@ class ValueDouble(Value):
 
     def __init__(self, value):
         super(ValueDouble, self).__init__(value)
+
+    def __repr__(self):
+        return ("{}({})"
+                .format(
+                    type(self).__name__,
+                    self.value,
+                ))
 
 
 class ValueLong(Value):
@@ -249,9 +256,9 @@ class ValueDistribution(Value):
             raise ValueError("bucket_options must not be null")
         if bucket_options.type_ is None:
             if buckets is not None:
-                raise ValueError("buckets must be null if the distribution has"
-                                 "no histogram (i.e. bucket_options.type is "
-                                 "null)")
+                raise ValueError("buckets must be null if the distribution "
+                                 "has no histogram (i.e. bucket_options.type "
+                                 "is null)")
         else:
             if len(buckets) != len(bucket_options.type_.bounds) + 1:
                 # Note that this includes the implicit 0 and positive-infinity

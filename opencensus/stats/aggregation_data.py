@@ -64,6 +64,13 @@ class SumAggregationDataFloat(BaseAggregationData):
         super(SumAggregationDataFloat, self).__init__(sum_data)
         self._sum_data = sum_data
 
+    def __repr__(self):
+        return ("{}({})"
+                .format(
+                    type(self).__name__,
+                    self.sum_data,
+                ))
+
     def add_sample(self, value, timestamp=None, attachments=None):
         """Allows the user to add a sample to the Sum Aggregation Data
         The value of the sample is then added to the current sum data
@@ -99,6 +106,13 @@ class CountAggregationData(BaseAggregationData):
     def __init__(self, count_data):
         super(CountAggregationData, self).__init__(count_data)
         self._count_data = count_data
+
+    def __repr__(self):
+        return ("{}({})"
+                .format(
+                    type(self).__name__,
+                    self.count_data,
+                ))
 
     def add_sample(self, value, timestamp=None, attachments=None):
         """Adds a sample to the current Count Aggregation Data and adds 1 to
@@ -194,6 +208,13 @@ class DistributionAggregationData(BaseAggregationData):
             assert len(counts_per_bucket) == len(bounds) + 1
         self._counts_per_bucket = counts_per_bucket
 
+    def __repr__(self):
+        return ("{}({})"
+                .format(
+                    type(self).__name__,
+                    self.count_data,
+                ))
+
     @property
     def mean_data(self):
         """The current mean data"""
@@ -288,7 +309,9 @@ class DistributionAggregationData(BaseAggregationData):
         This method creates a :class: `opencensus.metrics.export.point.Point`
         with a :class: `opencensus.metrics.export.value.ValueDistribution`
         value, and creates buckets and exemplars for that distribution from the
-        appropriate classes in the `metrics` package.
+        appropriate classes in the `metrics` package. If the distribution
+        doesn't have a histogram (i.e. `bounds` is empty) the converted point's
+        `buckets` attribute will be null.
 
         :type timestamp: :class: `datetime.datetime`
         :param timestamp: The time to report the point as having been recorded.
@@ -297,17 +320,22 @@ class DistributionAggregationData(BaseAggregationData):
         :return: a :class: `opencensus.metrics.export.value.ValueDistribution`
         -valued Point.
         """
-        buckets = [None] * len(self.counts_per_bucket)
-        for ii, count in enumerate(self.counts_per_bucket):
-            stat_ex = self.exemplars.get(ii, None)
-            if stat_ex is not None:
-                metric_ex = value.Exemplar(stat_ex.value, stat_ex.timestamp,
-                                           copy.copy(stat_ex.attachments))
-                buckets[ii] = value.Bucket(count, metric_ex)
-            else:
-                buckets[ii] = value.Bucket(count)
+        if self.bounds:
+            bucket_options = value.BucketOptions(value.Explicit(self.bounds))
+            buckets = [None] * len(self.counts_per_bucket)
+            for ii, count in enumerate(self.counts_per_bucket):
+                stat_ex = self.exemplars.get(ii) if self.exemplars else None
+                if stat_ex is not None:
+                    metric_ex = value.Exemplar(stat_ex.value,
+                                               stat_ex.timestamp,
+                                               copy.copy(stat_ex.attachments))
+                    buckets[ii] = value.Bucket(count, metric_ex)
+                else:
+                    buckets[ii] = value.Bucket(count)
 
-        bucket_options = value.BucketOptions(value.Explicit(self.bounds))
+        else:
+            bucket_options = value.BucketOptions()
+            buckets = None
         return point.Point(
             value.ValueDistribution(
                 count=self.count_data,
@@ -332,6 +360,13 @@ class LastValueAggregationData(BaseAggregationData):
     def __init__(self, value):
         super(LastValueAggregationData, self).__init__(value)
         self._value = value
+
+    def __repr__(self):
+        return ("{}({})"
+                .format(
+                    type(self).__name__,
+                    self.value,
+                ))
 
     def add_sample(self, value, timestamp=None, attachments=None):
         """Adds a sample to the current

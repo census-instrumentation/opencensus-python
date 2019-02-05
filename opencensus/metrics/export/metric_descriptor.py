@@ -38,7 +38,7 @@ class MetricDescriptorType(object):
     MetricDescriptorType is an enum of valid MetricDescriptor type values. See
     opencensus-proto for details:
 
-        https://github.com/census-instrumentation/opencensus-proto/blob/24333298e36590ea0716598caacc8959fc393c48/src/opencensus/proto/metrics/v1/metrics.proto#L73  # noqa
+    https://github.com/census-instrumentation/opencensus-proto/blob/v0.1.0/src/opencensus/proto/metrics/v1/metrics.proto#L79
 
     A gauge is an instantaneous measurement of a value.
 
@@ -102,9 +102,9 @@ class MetricDescriptor(object):
     """Defines a metric type and its schema.
 
     This class implements the spec for v1 MetricDescriptors, as of
-    opencensus-proto release v0.0.2. See opencensus-proto for details:
+    opencensus-proto release v0.1.0. See opencensus-proto for details:
 
-        https://github.com/census-instrumentation/opencensus-proto/blob/24333298e36590ea0716598caacc8959fc393c48/src/opencensus/proto/metrics/v1/metrics.proto#L53  # noqa
+    https://github.com/census-instrumentation/opencensus-proto/blob/v0.1.0/src/opencensus/proto/metrics/v1/metrics.proto#L59
 
     :type name: str
     :param name: The metric type, including its DNS name prefix. It must be
@@ -141,6 +141,17 @@ class MetricDescriptor(object):
         self._unit = unit
         self._type = type_
         self._label_keys = label_keys
+
+    def __repr__(self):
+        type_name = MetricDescriptorType.to_type_class(self.type).__name__
+        return ('{}(name="{}", description="{}", unit={}, type={})'
+                .format(
+                    type(self).__name__,
+                    self.name,
+                    self.description,
+                    self.unit,
+                    type_name,
+                ))
 
     @property
     def name(self):

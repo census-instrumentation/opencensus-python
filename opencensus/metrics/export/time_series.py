@@ -17,9 +17,9 @@ class TimeSeries(object):
     """Time series data for a given metric and time interval.
 
     This class implements the spec for v1 TimeSeries structs as of
-    opencensus-proto release v0.0.2. See opencensus-proto for details:
+    opencensus-proto release v0.1.0. See opencensus-proto for details:
 
-        https://github.com/census-instrumentation/opencensus-proto/blob/24333298e36590ea0716598caacc8959fc393c48/src/opencensus/proto/metrics/v1/metrics.proto#L112
+        https://github.com/census-instrumentation/opencensus-proto/blob/v0.1.0/src/opencensus/proto/metrics/v1/metrics.proto#L132
 
     A TimeSeries is a collection of data points that describes the time-varying
     values of a metric.
@@ -45,6 +45,15 @@ class TimeSeries(object):
         self._label_values = label_values
         self._points = points
         self._start_timestamp = start_timestamp
+
+    def __repr__(self):
+        return ('{}(points={}, label_values={}, start_timestamp={})'
+                .format(
+                    type(self).__name__,
+                    self.points,
+                    self.label_values,
+                    self.start_timestamp
+                ))
 
     @property
     def start_timestamp(self):
