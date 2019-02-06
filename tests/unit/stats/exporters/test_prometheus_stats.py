@@ -13,8 +13,11 @@
 # limitations under the License.
 
 from datetime import datetime
+import copy
 import mock
 import unittest
+
+from prometheus_client.core import Sample
 
 from opencensus.stats import aggregation as aggregation_module
 from opencensus.stats import measure as measure_module
@@ -25,7 +28,6 @@ from opencensus.stats.exporters import prometheus_exporter as prometheus
 from opencensus.tags import tag_key as tag_key_module
 from opencensus.tags import tag_map as tag_map_module
 from opencensus.tags import tag_value as tag_value_module
-
 
 MiB = 1 << 20
 FRONTEND_KEY = tag_key_module.TagKey("myorg_keys_frontend")
@@ -160,7 +162,7 @@ class TestCollectorPrometheus(unittest.TestCase):
 
         self.assertEqual(desc['name'], metric.name)
         self.assertEqual(desc['documentation'], metric.documentation)
-        self.assertEqual('untyped', metric.type)
+        self.assertEqual('unknown', metric.type)
         self.assertEqual(1, len(metric.samples))
 
     def test_collector_to_metric_last_value(self):
@@ -187,15 +189,21 @@ class TestCollectorPrometheus(unittest.TestCase):
         collector = prometheus.Collector(options=options)
         collector.register_view(VIDEO_SIZE_VIEW)
         desc = collector.registered_views[list(REGISTERED_VIEW)[0]]
+        distribution = copy.deepcopy(VIDEO_SIZE_DISTRIBUTION.aggregation_data)
+        distribution.add_sample(280.0 * MiB, None, None)
         metric = collector.to_metric(
-            desc=desc,
-            tag_values=[],
-            agg_data=VIDEO_SIZE_DISTRIBUTION.aggregation_data)
+            desc=desc, tag_values=[], agg_data=distribution)
 
         self.assertEqual(desc['name'], metric.name)
         self.assertEqual(desc['documentation'], metric.documentation)
         self.assertEqual('histogram', metric.type)
-        self.assertEqual(5, len(metric.samples))
+        expected_samples = [
+            Sample(metric.name + '_bucket', {"le": str(16.0 * MiB)}, 0),
+            Sample(metric.name + '_bucket', {"le": str(256.0 * MiB)}, 0),
+            Sample(metric.name + '_bucket', {"le": "+Inf"}, 1),
+            Sample(metric.name + '_count', {}, 1),
+            Sample(metric.name + '_sum', {}, 280.0 * MiB)]
+        self.assertEqual(expected_samples, metric.samples)
 
     def test_collector_to_metric_invalid_dist(self):
         agg = mock.Mock()
@@ -222,23 +230,17 @@ class TestCollectorPrometheus(unittest.TestCase):
         collector = prometheus.Collector(options=options)
         collector.register_view(view)
         desc = collector.registered_views['test2_new_view']
-        collector.to_metric(
-            desc=desc, tag_values=[], agg_data=agg.aggregation_data)
-
-        registry = mock.Mock()
-        options = prometheus.Options("test1", 8001, "localhost", registry)
-        collector = prometheus.Collector(options=options)
-        collector.register_view(VIDEO_SIZE_VIEW)
-        desc = collector.registered_views[list(REGISTERED_VIEW)[0]]
         metric = collector.to_metric(
             desc=desc,
-            tag_values=[],
-            agg_data=VIDEO_SIZE_DISTRIBUTION.aggregation_data)
+            tag_values=[tag_value_module.TagValue("value")],
+            agg_data=agg.aggregation_data)
 
         self.assertEqual(desc['name'], metric.name)
         self.assertEqual(desc['documentation'], metric.documentation)
-        self.assertEqual('histogram', metric.type)
-        self.assertEqual(5, len(metric.samples))
+        self.assertEqual('gauge', metric.type)
+        expected_samples = [
+            Sample(metric.name, {"myorg_keys_frontend": "value"}, 256)]
+        self.assertEqual(expected_samples, metric.samples)
 
     def test_collector_collect_with_none_label_value(self):
         agg = aggregation_module.LastValueAggregation(256)
