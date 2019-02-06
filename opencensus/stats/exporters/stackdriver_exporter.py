@@ -23,7 +23,7 @@ from datetime import datetime
 from google.api_core.gapic_v1 import client_info
 from google.cloud import monitoring_v3
 
-from opencensus.__version__ import __version__
+from opencensus.common.__version__ import __version__
 from opencensus.common import utils
 from opencensus.common.monitored_resource_util.monitored_resource_util \
     import MonitoredResourceUtil

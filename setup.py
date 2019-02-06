@@ -26,7 +26,7 @@ install_requires = [
     'google-api-core >= 1.0.0, < 2.0.0',
 ]
 
-exec(open("opencensus/__version__.py").read())
+exec(open("opencensus/common/__version__.py").read())
 setup(
     name='opencensus',
     version=__version__,  # noqa
@@ -44,6 +44,8 @@ setup(
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
+        # TODO: uncomment this line after py3.7 test integration done
+        # 'Programming Language :: Python :: 3.7',
     ],
     description='A stats collection and distributed tracing framework',
     include_package_data=True,

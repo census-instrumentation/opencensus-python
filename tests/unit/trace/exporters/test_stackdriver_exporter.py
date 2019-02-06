@@ -16,7 +16,7 @@ import unittest
 
 import mock
 
-from opencensus.__version__ import __version__
+from opencensus.common.__version__ import __version__
 from opencensus.trace import span_context
 from opencensus.trace import span_data as span_data_module
 from opencensus.trace.exporters import stackdriver_exporter

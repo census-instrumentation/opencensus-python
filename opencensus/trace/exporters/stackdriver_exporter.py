@@ -17,7 +17,7 @@ import os
 
 from google.cloud.trace.client import Client
 
-from opencensus.__version__ import __version__
+from opencensus.common.__version__ import __version__
 from opencensus.common.monitored_resource_util.monitored_resource_util \
     import MonitoredResourceUtil
 from opencensus.common.transports import sync
