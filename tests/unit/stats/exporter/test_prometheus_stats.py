@@ -195,7 +195,7 @@ class TestCollectorPrometheus(unittest.TestCase):
         self.assertEqual(desc['name'], metric.name)
         self.assertEqual(desc['documentation'], metric.documentation)
         self.assertEqual('histogram', metric.type)
-        self.assertEqual(4, len(metric.samples))
+        self.assertEqual(5, len(metric.samples))
 
     def test_collector_to_metric_invalid_dist(self):
         agg = mock.Mock()
@@ -238,7 +238,7 @@ class TestCollectorPrometheus(unittest.TestCase):
         self.assertEqual(desc['name'], metric.name)
         self.assertEqual(desc['documentation'], metric.documentation)
         self.assertEqual('histogram', metric.type)
-        self.assertEqual(4, len(metric.samples))
+        self.assertEqual(5, len(metric.samples))
 
     def test_collector_collect_with_none_label_value(self):
         agg = aggregation_module.LastValueAggregation(256)

@@ -188,6 +188,10 @@ class Collector(object):
             for ii, bound in enumerate(agg_data.bounds):
                 cum_count += agg_data.counts_per_bucket[ii]
                 points[str(bound)] = cum_count
+            # Prometheus requires buckets to be sorted, and +Inf present.
+            # In OpenCensus we don't have +Inf in the bucket bonds so need to
+            # append it here.
+            points["+Inf"] = agg_data.count_data
             metric = HistogramMetricFamily(name=metric_name,
                                            documentation=metric_description,
                                            labels=label_keys)
