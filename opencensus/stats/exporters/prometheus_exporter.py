@@ -184,7 +184,7 @@ class Collector(object):
                         aggregation_data_module.DistributionAggregationData):
 
             assert(agg_data.bounds == sorted(agg_data.bounds))
-            # buckets are a list of bucket. Each bucket is another list with
+            # buckets are a list of buckets. Each bucket is another list with
             # a pair of bucket name and value, or a triple of bucket name,
             # value, and exemplar. buckets need to be in order.
             buckets = []
