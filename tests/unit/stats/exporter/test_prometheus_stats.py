@@ -240,6 +240,25 @@ class TestCollectorPrometheus(unittest.TestCase):
         self.assertEqual('histogram', metric.type)
         self.assertEqual(4, len(metric.samples))
 
+    def test_collector_collect_with_none_label_value(self):
+        agg = aggregation_module.LastValueAggregation(256)
+        view = view_module.View("new_view", "processed video size over time",
+                                [FRONTEND_KEY], VIDEO_SIZE_MEASURE, agg)
+        registry = mock.Mock()
+        options = prometheus.Options("test3", 8001, "localhost", registry)
+        collector = prometheus.Collector(options=options)
+        collector.register_view(view)
+        desc = collector.registered_views['test3_new_view']
+        metric = collector.to_metric(
+            desc=desc, tag_values=[None], agg_data=agg.aggregation_data)
+
+        self.assertEqual(1, len(metric.samples))
+        sample = metric.samples[0]
+        # Sample is a namedtuple
+        # ('Sample', ['name', 'labels', 'value', 'timestamp', 'exemplar'])
+        label_map = sample[1]
+        self.assertEqual({"myorg_keys_frontend": ""}, label_map)
+
 
 class TestPrometheusStatsExporter(unittest.TestCase):
     def test_exporter_constructor_no_namespace(self):

@@ -166,11 +166,16 @@ class Collector(object):
         metric_description = desc['documentation']
         label_keys = desc['labels']
 
+        # Prometheus requires that all tag values be strings hence
+        # the need to cast none to the empty string before exporting. See
+        # https://github.com/census-instrumentation/opencensus-python/issues/480
+        tag_values = [tv if tv else "" for tv in tag_values]
+
         if isinstance(agg_data, aggregation_data_module.CountAggregationData):
             metric = CounterMetricFamily(name=metric_name,
                                          documentation=metric_description,
                                          labels=label_keys)
-            metric.add_metric(labels=list(tag_values),
+            metric.add_metric(labels=tag_values,
                               value=agg_data.count_data)
             return metric
 
@@ -186,7 +191,7 @@ class Collector(object):
             metric = HistogramMetricFamily(name=metric_name,
                                            documentation=metric_description,
                                            labels=label_keys)
-            metric.add_metric(labels=list(tag_values),
+            metric.add_metric(labels=tag_values,
                               buckets=list(points.items()),
                               sum_value=agg_data.sum,)
             return metric
@@ -196,7 +201,7 @@ class Collector(object):
             metric = UntypedMetricFamily(name=metric_name,
                                          documentation=metric_description,
                                          labels=label_keys)
-            metric.add_metric(labels=list(tag_values),
+            metric.add_metric(labels=tag_values,
                               value=agg_data.sum_data)
             return metric
 
@@ -205,7 +210,7 @@ class Collector(object):
             metric = GaugeMetricFamily(name=metric_name,
                                        documentation=metric_description,
                                        labels=label_keys)
-            metric.add_metric(labels=list(tag_values),
+            metric.add_metric(labels=tag_values,
                               value=agg_data.value)
             return metric
 
