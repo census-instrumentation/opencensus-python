@@ -140,7 +140,7 @@ class TestCollectorPrometheus(unittest.TestCase):
         collector.register_view(view)
         desc = collector.registered_views[list(REGISTERED_VIEW)[0]]
         metric = collector.to_metric(
-            desc=desc, tag_values=[], agg_data=agg.aggregation_data)
+            desc=desc, tag_values=[None], agg_data=agg.aggregation_data)
 
         self.assertEqual(desc['name'], metric.name)
         self.assertEqual(desc['documentation'], metric.documentation)
@@ -158,7 +158,7 @@ class TestCollectorPrometheus(unittest.TestCase):
         collector.register_view(view)
         desc = collector.registered_views[list(REGISTERED_VIEW)[0]]
         metric = collector.to_metric(
-            desc=desc, tag_values=[], agg_data=agg.aggregation_data)
+            desc=desc, tag_values=[None], agg_data=agg.aggregation_data)
 
         self.assertEqual(desc['name'], metric.name)
         self.assertEqual(desc['documentation'], metric.documentation)
@@ -176,7 +176,7 @@ class TestCollectorPrometheus(unittest.TestCase):
         collector.register_view(view)
         desc = collector.registered_views[list(REGISTERED_VIEW)[0]]
         metric = collector.to_metric(
-            desc=desc, tag_values=[], agg_data=agg.aggregation_data)
+            desc=desc, tag_values=[None], agg_data=agg.aggregation_data)
 
         self.assertEqual(desc['name'], metric.name)
         self.assertEqual(desc['documentation'], metric.documentation)
@@ -192,17 +192,27 @@ class TestCollectorPrometheus(unittest.TestCase):
         distribution = copy.deepcopy(VIDEO_SIZE_DISTRIBUTION.aggregation_data)
         distribution.add_sample(280.0 * MiB, None, None)
         metric = collector.to_metric(
-            desc=desc, tag_values=[], agg_data=distribution)
+            desc=desc,
+            tag_values=[tag_value_module.TagValue("ios")],
+            agg_data=distribution)
 
         self.assertEqual(desc['name'], metric.name)
         self.assertEqual(desc['documentation'], metric.documentation)
         self.assertEqual('histogram', metric.type)
         expected_samples = [
-            Sample(metric.name + '_bucket', {"le": str(16.0 * MiB)}, 0),
-            Sample(metric.name + '_bucket', {"le": str(256.0 * MiB)}, 0),
-            Sample(metric.name + '_bucket', {"le": "+Inf"}, 1),
-            Sample(metric.name + '_count', {}, 1),
-            Sample(metric.name + '_sum', {}, 280.0 * MiB)]
+            Sample(metric.name + '_bucket',
+                   {"myorg_keys_frontend": "ios", "le": str(16.0 * MiB)},
+                   0),
+            Sample(metric.name + '_bucket',
+                   {"myorg_keys_frontend": "ios", "le": str(256.0 * MiB)},
+                   0),
+            Sample(metric.name + '_bucket',
+                   {"myorg_keys_frontend": "ios", "le": "+Inf"},
+                   1),
+            Sample(metric.name + '_count', {"myorg_keys_frontend": "ios"}, 1),
+            Sample(metric.name + '_sum',
+                   {"myorg_keys_frontend": "ios"},
+                   280.0 * MiB)]
         self.assertEqual(expected_samples, metric.samples)
 
     def test_collector_to_metric_invalid_dist(self):
@@ -219,7 +229,7 @@ class TestCollectorPrometheus(unittest.TestCase):
         with self.assertRaisesRegexp(
                 ValueError,
                 'unsupported aggregation type <class \'mock.mock.Mock\'>'):
-            collector.to_metric(desc=desc, tag_values=[], agg_data=agg)
+            collector.to_metric(desc=desc, tag_values=[None], agg_data=agg)
 
     def test_collector_collect(self):
         agg = aggregation_module.LastValueAggregation(256)
