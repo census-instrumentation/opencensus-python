@@ -169,7 +169,7 @@ class Collector(object):
         # Prometheus requires that all tag values be strings hence
         # the need to cast none to the empty string before exporting. See
         # https://github.com/census-instrumentation/opencensus-python/issues/480
-        tag_values = list(map(cast_none_to_empty_str, tag_values))
+        tag_values = [tv if tv else "" for tv in tag_values]
 
         if isinstance(agg_data, aggregation_data_module.CountAggregationData):
             metric = CounterMetricFamily(name=metric_name,
@@ -363,12 +363,3 @@ def sanitize(key):
     Replace all characters other than [A-Za-z0-9_] with '_'.
     """
     return _NON_LETTERS_NOR_DIGITS_RE.sub('_', key)
-
-
-def cast_none_to_empty_str(label_value):
-    """ convert None label to '' since Prometheus doesn't allow label values
-    to be None.
-    """
-    if label_value is None:
-        return ""
-    return label_value

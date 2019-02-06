@@ -308,8 +308,3 @@ class TestPrometheusStatsExporter(unittest.TestCase):
         self.assertEqual("demo_latency", v_name)
         label_name = prometheus.sanitize("my.org/demo/key1")
         self.assertEqual("my_org_demo_key1", label_name)
-
-    def test_cast_none_to_empty_str(self):
-        self.assertEqual("", prometheus.cast_none_to_empty_str(None))
-        self.assertEqual(
-            "label_value", prometheus.cast_none_to_empty_str("label_value"))
