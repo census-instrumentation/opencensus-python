@@ -147,6 +147,24 @@ class Gauge(object):
             return self.points.setdefault(
                 tuple(label_values), self.point_type())
 
+    def remove_time_series(self, label_values):
+        """Remove the time series for specific label values.
+
+        :type label_values: list(:class:`LabelValue`)
+        :param label_values: Label values of the time series to remove.
+        """
+        if label_values is None:
+            raise ValueError
+        if any(lv is None for lv in label_values):
+            raise ValueError
+        if len(label_values) != self._len_label_keys:
+            raise ValueError
+        with self._points_lock:
+            try:
+                del self.points[tuple(label_values)]
+            except KeyError:
+                pass
+
     def clear(self):
         """Remove all points from this gauge."""
         with self._points_lock:

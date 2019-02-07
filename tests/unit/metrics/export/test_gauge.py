@@ -110,6 +110,36 @@ class TestLongGauge(unittest.TestCase):
         self.assertIs(point, point2)
         self.assertEqual(len(long_gauge.points.keys()), 1)
 
+    def test_remove_time_series(self):
+        long_gauge = gauge.LongGauge(Mock(), Mock(), Mock(), [Mock(), Mock()])
+
+        with self.assertRaises(ValueError):
+            long_gauge.remove_time_series(None)
+        with self.assertRaises(ValueError):
+            long_gauge.remove_time_series([Mock()])
+        with self.assertRaises(ValueError):
+            long_gauge.remove_time_series([Mock(), Mock(), Mock()])
+        with self.assertRaises(ValueError):
+            long_gauge.remove_time_series([Mock(), None])
+
+        lv1 = [Mock(), Mock()]
+        long_gauge.get_time_series(lv1)
+        lv2 = [Mock(), Mock()]
+        long_gauge.get_time_series(lv2)
+        self.assertEqual(len(long_gauge.points.keys()), 2)
+
+        # Removing a non-existent point shouldn't fail, or remove anything
+        long_gauge.remove_time_series([Mock(), Mock()])
+        self.assertEqual(len(long_gauge.points.keys()), 2)
+
+        long_gauge.remove_time_series(lv1)
+        self.assertEqual(len(long_gauge.points.keys()), 1)
+        [key] = long_gauge.points.keys()
+        self.assertEqual(key, tuple(lv2))
+
+        long_gauge.remove_time_series(lv2)
+        self.assertEqual(len(long_gauge.points.keys()), 0)
+
     def test_clear(self):
         name = Mock()
         description = Mock()
