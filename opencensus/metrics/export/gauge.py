@@ -188,9 +188,11 @@ class Gauge(object):
             return None
 
         ts_list = []
-        for lv, gp in self.points.items():
-            point = point_module.Point(self.value_type(gp.value), timestamp)
-            ts_list.append(time_series.TimeSeries(lv, [point], timestamp))
+        with self._points_lock:
+            for lv, gp in self.points.items():
+                point = point_module.Point(
+                    self.value_type(gp.value), timestamp)
+                ts_list.append(time_series.TimeSeries(lv, [point], timestamp))
         return metric.Metric(self.descriptor, ts_list)
 
     @property
