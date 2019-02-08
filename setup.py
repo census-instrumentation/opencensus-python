@@ -51,6 +51,6 @@ setup(
     install_requires=install_requires,
     extras_require=extras,
     license='Apache-2.0',
-    packages=find_packages(),
+    packages=find_packages(exclude=('tests',)),
     namespace_packages=[],
     url='https://github.com/census-instrumentation/opencensus-python')
