@@ -91,28 +91,28 @@ class TestLongGauge(unittest.TestCase):
         label_keys = [Mock(), Mock]
         long_gauge = gauge.LongGauge(name, description, unit, label_keys)
         with self.assertRaises(ValueError):
-            long_gauge.get_time_series(None)
+            long_gauge.get_or_create_time_series(None)
         with self.assertRaises(ValueError):
-            long_gauge.get_time_series([Mock()])
+            long_gauge.get_or_create_time_series([Mock()])
         with self.assertRaises(ValueError):
-            long_gauge.get_time_series([Mock(), Mock(), Mock()])
+            long_gauge.get_or_create_time_series([Mock(), Mock(), Mock()])
         with self.assertRaises(ValueError):
-            long_gauge.get_time_series([Mock(), None])
+            long_gauge.get_or_create_time_series([Mock(), None])
 
         label_values = [Mock(), Mock()]
-        point = long_gauge.get_time_series(label_values)
+        point = long_gauge.get_or_create_time_series(label_values)
         self.assertIsInstance(point, gauge.GaugePointLong)
         self.assertEqual(point.value, 0)
         self.assertEqual(len(long_gauge.points.keys()), 1)
         [key] = long_gauge.points.keys()
         self.assertEqual(key, tuple(label_values))
-        point2 = long_gauge.get_time_series(label_values)
+        point2 = long_gauge.get_or_create_time_series(label_values)
         self.assertIs(point, point2)
         self.assertEqual(len(long_gauge.points.keys()), 1)
 
     def test_get_default_time_series(self):
         long_gauge = gauge.LongGauge(Mock(), Mock(), Mock(), [Mock(), Mock])
-        default_point = long_gauge.get_default_time_series()
+        default_point = long_gauge.get_or_create_default_time_series()
         self.assertIsInstance(default_point, gauge.GaugePointLong)
         self.assertEqual(long_gauge.default_point, default_point)
         self.assertEqual(default_point.value, 0)
@@ -130,9 +130,9 @@ class TestLongGauge(unittest.TestCase):
             long_gauge.remove_time_series([Mock(), None])
 
         lv1 = [Mock(), Mock()]
-        long_gauge.get_time_series(lv1)
+        long_gauge.get_or_create_time_series(lv1)
         lv2 = [Mock(), Mock()]
-        long_gauge.get_time_series(lv2)
+        long_gauge.get_or_create_time_series(lv2)
         self.assertEqual(len(long_gauge.points.keys()), 2)
 
         # Removing a non-existent point shouldn't fail, or remove anything
@@ -153,7 +153,7 @@ class TestLongGauge(unittest.TestCase):
         # Removing the default point before it exists shouldn't fail
         long_gauge.remove_default_time_series()
 
-        long_gauge.get_default_time_series()
+        long_gauge.get_or_create_default_time_series()
         self.assertIsNotNone(long_gauge.default_point)
         long_gauge.remove_default_time_series()
         self.assertIsNone(long_gauge.default_point)
@@ -166,7 +166,7 @@ class TestLongGauge(unittest.TestCase):
         long_gauge = gauge.LongGauge(name, description, unit, label_keys)
 
         label_values = [Mock(), Mock()]
-        point = long_gauge.get_time_series(label_values)
+        point = long_gauge.get_or_create_time_series(label_values)
         self.assertEqual(len(long_gauge.points.keys()), 1)
         point.add(1)
 
@@ -174,7 +174,7 @@ class TestLongGauge(unittest.TestCase):
         self.assertDictEqual(long_gauge.points, {})
 
         label_values = [Mock(), Mock()]
-        point2 = long_gauge.get_time_series(label_values)
+        point2 = long_gauge.get_or_create_time_series(label_values)
         self.assertEqual(point2.value, 0)
         self.assertIsNot(point, point2)
 
@@ -191,8 +191,8 @@ class TestLongGauge(unittest.TestCase):
 
         lv1 = [Mock(), Mock()]
         lv2 = [Mock(), Mock()]
-        point1 = long_gauge.get_time_series(lv1)
-        point2 = long_gauge.get_time_series(lv2)
+        point1 = long_gauge.get_or_create_time_series(lv1)
+        point2 = long_gauge.get_or_create_time_series(lv2)
 
         point1.set(1)
         point2.set(2)
@@ -215,7 +215,7 @@ class TestLongGauge(unittest.TestCase):
         label_keys = [Mock(), Mock]
         long_gauge = gauge.LongGauge(name, description, unit, label_keys)
 
-        default_point = long_gauge.get_default_time_series()
+        default_point = long_gauge.get_or_create_default_time_series()
         default_point.set(3)
 
         timestamp = Mock()
@@ -244,7 +244,7 @@ class TestDoubleGauge(unittest.TestCase):
     def test_get_time_series(self):
         double_gauge = gauge.DoubleGauge(Mock(), Mock(), Mock(),
                                          [Mock(), Mock])
-        point = double_gauge.get_time_series([Mock(), Mock()])
+        point = double_gauge.get_or_create_time_series([Mock(), Mock()])
         self.assertIsInstance(point, gauge.GaugePointDouble)
 
     def test_get_metric(self):
@@ -255,8 +255,8 @@ class TestDoubleGauge(unittest.TestCase):
 
         lv1 = [Mock(), Mock()]
         lv2 = [Mock(), Mock()]
-        point1 = double_gauge.get_time_series(lv1)
-        point2 = double_gauge.get_time_series(lv2)
+        point1 = double_gauge.get_or_create_time_series(lv1)
+        point2 = double_gauge.get_or_create_time_series(lv2)
 
         point1.set(1.2)
         point2.set(2.2)

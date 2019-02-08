@@ -129,7 +129,7 @@ class Gauge(object):
                     self.points
                 ))
 
-    def get_time_series(self, label_values):
+    def get_or_create_time_series(self, label_values):
         """Get a mutable measurement for the given set of label values.
 
         :type label_values: list(:class:`LabelValue`)
@@ -149,7 +149,7 @@ class Gauge(object):
             return self.points.setdefault(
                 tuple(label_values), self.point_type())
 
-    def get_default_time_series(self):
+    def get_or_create_default_time_series(self):
         """Get the default measurement for this gauge.
 
         Each gauge has a default point not associated with any specific label
