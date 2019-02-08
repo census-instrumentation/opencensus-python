@@ -110,6 +110,13 @@ class TestLongGauge(unittest.TestCase):
         self.assertIs(point, point2)
         self.assertEqual(len(long_gauge.points.keys()), 1)
 
+    def test_get_default_time_series(self):
+        long_gauge = gauge.LongGauge(Mock(), Mock(), Mock(), [Mock(), Mock])
+        default_point = long_gauge.get_default_time_series()
+        self.assertIsInstance(default_point, gauge.GaugePointLong)
+        self.assertEqual(long_gauge.default_point, default_point)
+        self.assertEqual(default_point.value, 0)
+
     def test_remove_time_series(self):
         long_gauge = gauge.LongGauge(Mock(), Mock(), Mock(), [Mock(), Mock()])
 
@@ -139,6 +146,17 @@ class TestLongGauge(unittest.TestCase):
 
         long_gauge.remove_time_series(lv2)
         self.assertEqual(len(long_gauge.points.keys()), 0)
+
+    def test_remove_default_time_series(self):
+        long_gauge = gauge.LongGauge(Mock(), Mock(), Mock(), [Mock(), Mock()])
+
+        # Removing the default point before it exists shouldn't fail
+        long_gauge.remove_default_time_series()
+
+        long_gauge.get_default_time_series()
+        self.assertIsNotNone(long_gauge.default_point)
+        long_gauge.remove_default_time_series()
+        self.assertIsNone(long_gauge.default_point)
 
     def test_clear(self):
         name = Mock()
@@ -189,6 +207,25 @@ class TestLongGauge(unittest.TestCase):
                               value_module.ValueLong)
         self.assertEqual(metric.time_series[0].points[0].value.value, 1)
         self.assertEqual(metric.time_series[1].points[0].value.value, 2)
+
+    def test_get_metric_default(self):
+        name = Mock()
+        description = Mock()
+        unit = Mock()
+        label_keys = [Mock(), Mock]
+        long_gauge = gauge.LongGauge(name, description, unit, label_keys)
+
+        default_point = long_gauge.get_default_time_series()
+        default_point.set(3)
+
+        timestamp = Mock()
+        metric = long_gauge.get_metric(timestamp)
+        self.assertEqual(metric.descriptor, long_gauge.descriptor)
+        self.assertEqual(len(metric.time_series), 1)
+        self.assertEqual(len(metric.time_series[0].points), 1)
+        self.assertIsInstance(metric.time_series[0].points[0].value,
+                              value_module.ValueLong)
+        self.assertEqual(metric.time_series[0].points[0].value.value, 3)
 
 
 class TestDoubleGauge(unittest.TestCase):

@@ -118,6 +118,8 @@ class Gauge(object):
             name, description, unit, self.descriptor_type, label_keys)
         self.points = OrderedDict()
         self._points_lock = threading.Lock()
+        self.default_point = None
+        self._default_point_lock = threading.Lock()
 
     def __repr__(self):
         return ('{}(descriptor.name="{}", points={})'
@@ -147,6 +149,22 @@ class Gauge(object):
             return self.points.setdefault(
                 tuple(label_values), self.point_type())
 
+    def get_default_time_series(self):
+        """Get the default measurement for this gauge.
+
+        Each gauge has a default point not associated with any specific label
+        values. When this gauge is exported as a metric via `get_metric` the
+        time series associated with this point will have null label values.
+
+        :rtype: :class:`GaugePointLong` or :class:`GaugePointDouble`
+        :return: A mutable point that represents the last value of the
+        measurement.
+        """
+        with self._default_point_lock:
+            if self.default_point is None:
+                self.default_point = self.point_type()
+            return self.default_point
+
     def remove_time_series(self, label_values):
         """Remove the time series for specific label values.
 
@@ -164,6 +182,11 @@ class Gauge(object):
                 del self.points[tuple(label_values)]
             except KeyError:
                 pass
+
+    def remove_default_time_series(self):
+        """Remove the default time series for this gauge."""
+        with self._default_point_lock:
+            self.default_point = None
 
     def clear(self):
         """Remove all points from this gauge."""
@@ -184,10 +207,19 @@ class Gauge(object):
         :rtype: :class:`opencensus.metrics.export.metric.Metric` or None
         :return: A converted metric for all current measurements.
         """
-        if not self.points:
+        if not self.points and self.default_point is None:
             return None
 
         ts_list = []
+
+        with self._default_point_lock:
+            if self.default_point is not None:
+                dp = point_module.Point(
+                    self.value_type(self.default_point.value), timestamp)
+                null_lv = [None] * self._len_label_keys
+                ts_list.append(time_series.TimeSeries(
+                    null_lv, [dp], timestamp))
+
         with self._points_lock:
             for lv, gp in self.points.items():
                 point = point_module.Point(
