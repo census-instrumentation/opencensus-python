@@ -17,10 +17,10 @@ import os
 
 from google.cloud.trace.client import Client
 
-from opencensus.common.__version__ import __version__
 from opencensus.common.monitored_resource_util.monitored_resource_util \
     import MonitoredResourceUtil
 from opencensus.common.transports import sync
+from opencensus.common.version import __version__
 from opencensus.trace import attributes_helper
 from opencensus.trace import span_data
 from opencensus.trace.attributes import Attributes

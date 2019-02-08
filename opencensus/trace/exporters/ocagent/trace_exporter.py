@@ -19,8 +19,8 @@ import grpc
 import os
 import socket
 
-from opencensus.common.__version__ import __version__
 from opencensus.common.transports import sync
+from opencensus.common.version import __version__
 from opencensus.trace.exporters import base
 from opencensus.trace.exporters.gen.opencensus.agent.common.v1 \
     import common_pb2

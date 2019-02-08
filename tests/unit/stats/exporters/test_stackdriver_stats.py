@@ -18,7 +18,7 @@ import unittest
 
 from google.cloud import monitoring_v3
 
-from opencensus.common.__version__ import __version__
+from opencensus.common.version import __version__
 from opencensus.stats import aggregation as aggregation_module
 from opencensus.stats import aggregation_data as aggregation_data_module
 from opencensus.stats import execution_context
