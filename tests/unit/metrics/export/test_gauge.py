@@ -114,8 +114,8 @@ class TestLongGauge(unittest.TestCase):
         long_gauge = gauge.LongGauge(Mock(), Mock(), Mock(), [Mock(), Mock])
         default_point = long_gauge.get_or_create_default_time_series()
         self.assertIsInstance(default_point, gauge.GaugePointLong)
-        self.assertEqual(long_gauge.default_point, default_point)
         self.assertEqual(default_point.value, 0)
+        self.assertEqual(len(long_gauge.points.keys()), 1)
 
     def test_remove_time_series(self):
         long_gauge = gauge.LongGauge(Mock(), Mock(), Mock(), [Mock(), Mock()])
@@ -154,9 +154,9 @@ class TestLongGauge(unittest.TestCase):
         long_gauge.remove_default_time_series()
 
         long_gauge.get_or_create_default_time_series()
-        self.assertIsNotNone(long_gauge.default_point)
+        self.assertEqual(len(long_gauge.points.keys()), 1)
         long_gauge.remove_default_time_series()
-        self.assertIsNone(long_gauge.default_point)
+        self.assertEqual(len(long_gauge.points.keys()), 0)
 
     def test_clear(self):
         name = Mock()

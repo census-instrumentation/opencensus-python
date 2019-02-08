@@ -114,12 +114,11 @@ class Gauge(object):
 
     def __init__(self, name, description, unit, label_keys):
         self._len_label_keys = len(label_keys)
+        self.default_label_values = [None] * self._len_label_keys
         self.descriptor = metric_descriptor.MetricDescriptor(
             name, description, unit, self.descriptor_type, label_keys)
         self.points = OrderedDict()
         self._points_lock = threading.Lock()
-        self.default_point = None
-        self._default_point_lock = threading.Lock()
 
     def __repr__(self):
         return ('{}(descriptor.name="{}", points={})'
@@ -128,6 +127,11 @@ class Gauge(object):
                     self.descriptor.name,
                     self.points
                 ))
+
+    def _get_or_create_time_series(self, label_values):
+        with self._points_lock:
+            return self.points.setdefault(
+                tuple(label_values), self.point_type())
 
     def get_or_create_time_series(self, label_values):
         """Get a mutable measurement for the given set of label values.
@@ -145,9 +149,7 @@ class Gauge(object):
             raise ValueError
         if len(label_values) != self._len_label_keys:
             raise ValueError
-        with self._points_lock:
-            return self.points.setdefault(
-                tuple(label_values), self.point_type())
+        return self._get_or_create_time_series(label_values)
 
     def get_or_create_default_time_series(self):
         """Get the default measurement for this gauge.
@@ -160,10 +162,14 @@ class Gauge(object):
         :return: A mutable point that represents the last value of the
         measurement.
         """
-        with self._default_point_lock:
-            if self.default_point is None:
-                self.default_point = self.point_type()
-            return self.default_point
+        return self._get_or_create_time_series(self.default_label_values)
+
+    def _remove_time_series(self, label_values):
+        with self._points_lock:
+            try:
+                del self.points[tuple(label_values)]
+            except KeyError:
+                pass
 
     def remove_time_series(self, label_values):
         """Remove the time series for specific label values.
@@ -177,16 +183,11 @@ class Gauge(object):
             raise ValueError
         if len(label_values) != self._len_label_keys:
             raise ValueError
-        with self._points_lock:
-            try:
-                del self.points[tuple(label_values)]
-            except KeyError:
-                pass
+        self._remove_time_series(label_values)
 
     def remove_default_time_series(self):
         """Remove the default time series for this gauge."""
-        with self._default_point_lock:
-            self.default_point = None
+        self._remove_time_series(self.default_label_values)
 
     def clear(self):
         """Remove all points from this gauge."""
@@ -207,19 +208,10 @@ class Gauge(object):
         :rtype: :class:`opencensus.metrics.export.metric.Metric` or None
         :return: A converted metric for all current measurements.
         """
-        if not self.points and self.default_point is None:
+        if not self.points:
             return None
 
         ts_list = []
-
-        with self._default_point_lock:
-            if self.default_point is not None:
-                dp = point_module.Point(
-                    self.value_type(self.default_point.value), timestamp)
-                null_lv = [None] * self._len_label_keys
-                ts_list.append(time_series.TimeSeries(
-                    null_lv, [dp], timestamp))
-
         with self._points_lock:
             for lv, gp in self.points.items():
                 point = point_module.Point(
