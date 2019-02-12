@@ -12,7 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from functools import wraps
+try:
+    from weakref import WeakMethod
+except ImportError:
+    from opencensus.common.backports import WeakMethod
+
 import calendar
 import datetime
 import weakref
@@ -107,28 +111,6 @@ def window(ible, length):
             break
 
 
-class WeakrefWrapper(object):
-    """Wrapper for weak references to bound methods.
-
-    See the O'Reilley Python Cookbook for a pre-2.6 implementation:
-    - https://www.oreilly.com/library/view/python-cookbook/0596001673/ch05s15.html
-    - https://github.com/ActiveState/code/blob/master/recipes/Python/81253_WeakMethod/recipe-81253.py
-    """  # noqa
-    def __init__(self, obj, func):
-        self.__self__ = weakref.ref(obj)
-        self.__func__ = weakref.ref(func)
-
-    def __call__(self):
-        if self.__self__() is None:
-            return None
-
-        @wraps(self.__func__())
-        def wrapped_func(*args, **kws):
-            return self.__func__()(self.__self__(), *args, **kws)
-
-        return wrapped_func
-
-
 def get_weakref(func):
     """Get a weak reference to bound or unbound `func`.
 
@@ -137,7 +119,6 @@ def get_weakref(func):
     """
     if func is None:
         raise ValueError
-    try:
-        return WeakrefWrapper(func.__self__, func.__func__)
-    except AttributeError:
+    if not hasattr(func, '__self__'):
         return weakref.ref(func)
+    return WeakMethod(func)
