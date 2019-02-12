@@ -111,18 +111,6 @@ class TestDistributionAggregation(unittest.TestCase):
         self.assertEqual(aggregation_module.Type.DISTRIBUTION,
                          distribution_aggregation.aggregation_type)
 
-    def test_min_max(self):
-        da = aggregation_module.DistributionAggregation([])
-
-        self.assertEqual(da.aggregation_data.min, float('inf'))
-        self.assertEqual(da.aggregation_data.max, float('-inf'))
-
-        for dp in range(-10, 11):
-            da.aggregation_data.add_sample(dp, datetime(1999, 12, 31), {})
-
-        self.assertEqual(da.aggregation_data.min, -10)
-        self.assertEqual(da.aggregation_data.max, 10)
-
     def test_init_bad_boundaries(self):
         """Check that boundaries must be sorted and unique."""
         with self.assertRaises(ValueError):
