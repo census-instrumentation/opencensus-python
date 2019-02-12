@@ -147,12 +147,6 @@ class DistributionAggregationData(BaseAggregationData):
     :type count_data: int
     :param count_data: the count value of the distribution
 
-    :type min_: double
-    :param min_: the minimum value of the distribution
-
-    :type max_: double
-    :param max_: the maximum value of the distribution
-
     :type sum_of_sqd_deviations: float
     :param sum_of_sqd_deviations: the sum of the sqd deviations from the mean
 
@@ -170,8 +164,6 @@ class DistributionAggregationData(BaseAggregationData):
     def __init__(self,
                  mean_data,
                  count_data,
-                 min_,
-                 max_,
                  sum_of_sqd_deviations,
                  counts_per_bucket=None,
                  bounds=None,
@@ -184,8 +176,6 @@ class DistributionAggregationData(BaseAggregationData):
         super(DistributionAggregationData, self).__init__(mean_data)
         self._mean_data = mean_data
         self._count_data = count_data
-        self._min = min_
-        self._max = max_
         self._sum_of_sqd_deviations = sum_of_sqd_deviations
 
         if bounds is None:
@@ -226,16 +216,6 @@ class DistributionAggregationData(BaseAggregationData):
         return self._count_data
 
     @property
-    def min(self):
-        """The current min value"""
-        return self._min
-
-    @property
-    def max(self):
-        """The current max value"""
-        return self._max
-
-    @property
     def sum_of_sqd_deviations(self):
         """The current sum of squared deviations from the mean"""
         return self._sum_of_sqd_deviations
@@ -269,10 +249,6 @@ class DistributionAggregationData(BaseAggregationData):
 
     def add_sample(self, value, timestamp, attachments):
         """Adding a sample to Distribution Aggregation Data"""
-        if value < self.min:
-            self._min = value
-        if value > self.max:
-            self._max = value
         self._count_data += 1
         bucket = self.increment_bucket_count(value)
 
