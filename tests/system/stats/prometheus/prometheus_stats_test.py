@@ -74,11 +74,11 @@ class TestPrometheusStats(unittest.TestCase):
             import urllib2
             contents = urllib2.urlopen("http://localhost:9303/metrics").read()
 
-        self.assertIn(b'# TYPE opencensus_request_count_view counter',
+        self.assertIn(b'# TYPE opencensus_request_count_view_total counter',
                       contents)
-        self.assertIn(b'opencensus_request_count_view'
+        self.assertIn(b'opencensus_request_count_view_total'
                       b'{method="some method"} 1.0',
                       contents)
-        self.assertIn(b'opencensus_request_count_view'
+        self.assertIn(b'opencensus_request_count_view_total'
                       b'{method="some other method"} 2.0',
                       contents)
