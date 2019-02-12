@@ -97,6 +97,13 @@ class ValueLong(Value):
     def __init__(self, value):
         super(ValueLong, self).__init__(value)
 
+    def __repr__(self):
+        return ("{}({})"
+                .format(
+                    type(self).__name__,
+                    self.value,
+                ))
+
 
 class ValueSummary(Value):
     """Represents a snapshot values calculated over an arbitrary time window.
@@ -107,6 +114,13 @@ class ValueSummary(Value):
 
     def __init__(self, value):
         super(ValueSummary, self).__init__(value)
+
+    def __repr__(self):
+        return ("{}({})"
+                .format(
+                    type(self).__name__,
+                    self.value,
+                ))
 
 
 class Exemplar(object):
