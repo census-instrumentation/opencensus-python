@@ -50,7 +50,8 @@ class Metric(object):
         for ts in self.time_series:
             labels = ", ".join('{}="{}"'.format(lk, lv)
                                for lk, lv in zip(lks, ts.label_values))
-            pvs = [point.value.value for point in ts.points]
+            pvs = [point.value.value if point.value else None
+                   for point in ts.points]
             labeled_pvs.append((labels, pvs))
         short_ts_repr = ", ".join("({}, {})".format(ll, pvs)
                                   for ll, pvs in labeled_pvs)

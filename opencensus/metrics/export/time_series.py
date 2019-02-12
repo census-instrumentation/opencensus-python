@@ -80,6 +80,7 @@ class TimeSeries(object):
         :return: Whether all points are instances of `type_class`.
         """
         for point in self.points:
-            if not isinstance(point.value, type_class):
+            if (point.value is not None
+                    and not isinstance(point.value, type_class)):
                 return False
         return True
