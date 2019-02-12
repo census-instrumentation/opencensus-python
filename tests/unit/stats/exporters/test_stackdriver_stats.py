@@ -886,8 +886,6 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         dad = aggregation_data_module.DistributionAggregationData(
             mean_data=4.5,
             count_data=100,
-            min_=0,
-            max_=9,
             sum_of_sqd_deviations=825,
             counts_per_bucket=[20, 20, 20, 20, 20],
             bounds=[2, 4, 6, 8],
