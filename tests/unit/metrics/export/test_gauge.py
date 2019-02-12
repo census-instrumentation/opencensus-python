@@ -104,7 +104,7 @@ class TestDerivedGaugePoint(unittest.TestCase):
 
     def test_get_value_gcd(self):
         """Check handling deletion of the underlying func."""
-        get_10 = lambda: 10
+        get_10 = lambda: 10  # noqa
         point = gauge.DerivedGaugePoint(get_10, gauge.GaugePointLong())
 
         value = point.get_value()
@@ -137,7 +137,7 @@ class TestDerivedGaugePoint(unittest.TestCase):
         self.assertEqual(mock_fn.call_count, 2)
 
     def test_get_to_point_value_gcd(self):
-        get_10 = lambda: 10
+        get_10 = lambda: 10  # noqa
         point = gauge.DerivedGaugePoint(get_10, gauge.GaugePointLong())
         del get_10
         gc.collect()
