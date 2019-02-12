@@ -25,21 +25,21 @@ from opencensus.metrics.export import value as value_module
 
 
 def get_timeseries_list(points, timestamp):
-    """Get a metric including all current time series.
+    """Convert a list of `GaugePoint`s into a list of `TimeSeries`.
 
-    Get a :class:`opencensus.metrics.export.metric.Metric` with one
-    :class:`opencensus.metrics.export.time_series.TimeSeries` for each
-    set of label values with a recorded measurement. Each `TimeSeries`
-    has a single point that represents the last recorded value.
+    Get a :class:`opencensus.metrics.export.time_series.TimeSeries` for each
+    measurement in `points`. Each series contains a single
+    :class:`opencensus.metrics.export.point.Point` that represents the last
+    recorded value of the measurement.
 
-    :type points: :class:`datetime.datetime`
-    :param points: Recording time to report, usually the current time.
+    :type points: list(:class:`GaugePoint`)
+    :param points: The list of measurements to convert.
 
     :type timestamp: :class:`datetime.datetime`
     :param timestamp: Recording time to report, usually the current time.
 
-    :rtype: :class:`opencensus.metrics.export.metric.Metric` or None
-    :return: A converted metric for all current measurements.
+    :rtype: list(:class:`opencensus.metrics.export.time_series.TimeSeries`)
+    :return: A list of one `TimeSeries` for each point in `points`.
     """
     ts_list = []
     for lv, gp in points.items():
