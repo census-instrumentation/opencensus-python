@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import logging
 import sys
 
 import grpc
@@ -74,8 +73,7 @@ class OpenCensusServerInterceptor(grpc.ServerInterceptor):
                             span=span,
                             message_event_type=time_event.Type.SENT,
                         )
-                except Exception as exc:
-                    logging.exception(exc)
+                except Exception:
                     _add_exc_info(span)
                     raise
                 finally:
