@@ -115,7 +115,7 @@ def get_weakref(func):
     """Get a weak reference to bound or unbound `func`.
 
     If `func` is unbound (i.e. has no __self__ attr) get a weakref.ref,
-    otherwise get a wrapper that simulates simulates weakref.ref.
+    otherwise get a wrapper that simulates weakref.ref.
     """
     if func is None:
         raise ValueError
