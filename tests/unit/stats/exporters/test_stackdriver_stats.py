@@ -18,7 +18,7 @@ import unittest
 
 from google.cloud import monitoring_v3
 
-from opencensus.__version__ import __version__
+from opencensus.common.version import __version__
 from opencensus.stats import aggregation as aggregation_module
 from opencensus.stats import aggregation_data as aggregation_data_module
 from opencensus.stats import execution_context
@@ -886,8 +886,6 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         dad = aggregation_data_module.DistributionAggregationData(
             mean_data=4.5,
             count_data=100,
-            min_=0,
-            max_=9,
             sum_of_sqd_deviations=825,
             counts_per_bucket=[20, 20, 20, 20, 20],
             bounds=[2, 4, 6, 8],

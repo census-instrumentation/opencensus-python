@@ -26,7 +26,7 @@ install_requires = [
     'google-api-core >= 1.0.0, < 2.0.0',
 ]
 
-exec(open("opencensus/__version__.py").read())
+exec(open("opencensus/common/version.py").read())
 setup(
     name='opencensus',
     version=__version__,  # noqa
@@ -51,6 +51,6 @@ setup(
     install_requires=install_requires,
     extras_require=extras,
     license='Apache-2.0',
-    packages=find_packages(),
+    packages=find_packages(exclude=('tests',)),
     namespace_packages=[],
     url='https://github.com/census-instrumentation/opencensus-python')

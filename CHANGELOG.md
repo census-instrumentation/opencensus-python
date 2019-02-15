@@ -2,15 +2,20 @@
 
 ## Unreleased
 
+- Fix bugs in Prometheus exporter. Use ordered list for histogram buckets.
+  Use `UnknownMetricFamily` for `SumData` instead of `UntypedMetricFamily`.
+  Check if label keys and values match before exporting.
+- Remove min and max from Distribution.
+
 ## 0.2.0
-Released 2018-01-18
+Released 2019-01-18
 
 - Fix multiple stackdriver and prometheus exporter bugs
 - Increase size of trace batches and change transport behavior on exit
   ([#452](https://github.com/census-instrumentation/opencensus-python/pull/452))
 
 ## 0.1.11
-Released 2018-01-16
+Released 2019-01-16
 
 - Fix a bug in the stackdriver exporter that caused spans to be exported
   individually

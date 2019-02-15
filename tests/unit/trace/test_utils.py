@@ -15,9 +15,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import unittest
+try:
+    from mock import Mock
+except ImportError:
+    from unittest.mock import Mock
 
+try:
+    from weakref import WeakMethod
+except ImportError:
+    from opencensus.common.backports import WeakMethod
+
+import gc
 import mock
+import unittest
+import weakref
 
 from opencensus.common import utils
 
@@ -67,3 +78,43 @@ class TestUtils(unittest.TestCase):
     def test_uniq(self):
         self.assertEqual(
             list(utils.uniq(['a', 'b', 'a', 'c', 'c'])), ['a', 'b', 'c'])
+
+
+class TestGetWeakref(unittest.TestCase):
+
+    class Getter(object):
+        def __init__(self, val):
+            self.val = val
+
+        def get(self):
+            return self.val
+
+    def test_get_weakref_bad_args(self):
+        with self.assertRaises(ValueError):
+            utils.get_weakref(None)
+
+    def test_get_weakref_unbound(self):
+        mock_val = Mock()
+        func = lambda: mock_val  # noqa
+        ref = utils.get_weakref(func)
+        self.assertIsInstance(ref, weakref.ref)
+        self.assertIs(ref(), func)
+        self.assertIs(ref()(), mock_val)
+
+        del func
+        gc.collect()
+        self.assertIsNotNone(ref)
+        self.assertIsNone(ref())
+
+    def test_get_weakref_bound(self):
+        mock_val = Mock()
+        getter = TestGetWeakref.Getter(mock_val)
+        ref = utils.get_weakref(getter.get)
+        self.assertIsInstance(ref, WeakMethod)
+        self.assertEqual(ref(), getter.get)
+        self.assertIs(ref()(), mock_val)
+
+        del getter
+        gc.collect()
+        self.assertIsNotNone(ref)
+        self.assertIsNone(ref())

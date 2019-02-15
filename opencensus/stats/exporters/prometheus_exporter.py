@@ -18,7 +18,7 @@ from prometheus_client.core import CounterMetricFamily
 from prometheus_client.core import GaugeMetricFamily
 from prometheus_client.core import HistogramMetricFamily
 from prometheus_client.core import REGISTRY
-from prometheus_client.core import UntypedMetricFamily
+from prometheus_client.core import UnknownMetricFamily
 
 from opencensus.common.transports import sync
 from opencensus.stats import aggregation_data as aggregation_data_module
@@ -158,7 +158,7 @@ class Collector(object):
 
         :rtype: :class:`~prometheus_client.core.CounterMetricFamily` or
                 :class:`~prometheus_client.core.HistogramMetricFamily` or
-                :class:`~prometheus_client.core.UntypedMetricFamily` or
+                :class:`~prometheus_client.core.UnknownMetricFamily` or
                 :class:`~prometheus_client.core.GaugeMetricFamily`
         :returns: A Prometheus metric object
         """
@@ -166,11 +166,17 @@ class Collector(object):
         metric_description = desc['documentation']
         label_keys = desc['labels']
 
+        assert(len(tag_values) == len(label_keys))
+        # Prometheus requires that all tag values be strings hence
+        # the need to cast none to the empty string before exporting. See
+        # https://github.com/census-instrumentation/opencensus-python/issues/480
+        tag_values = [tv if tv else "" for tv in tag_values]
+
         if isinstance(agg_data, aggregation_data_module.CountAggregationData):
             metric = CounterMetricFamily(name=metric_name,
                                          documentation=metric_description,
                                          labels=label_keys)
-            metric.add_metric(labels=list(tag_values),
+            metric.add_metric(labels=tag_values,
                               value=agg_data.count_data)
             return metric
 
@@ -178,25 +184,33 @@ class Collector(object):
                         aggregation_data_module.DistributionAggregationData):
 
             assert(agg_data.bounds == sorted(agg_data.bounds))
-            points = {}
-            cum_count = 0
+            # buckets are a list of buckets. Each bucket is another list with
+            # a pair of bucket name and value, or a triple of bucket name,
+            # value, and exemplar. buckets need to be in order.
+            buckets = []
+            cum_count = 0  # Prometheus buckets expect cumulative count.
             for ii, bound in enumerate(agg_data.bounds):
                 cum_count += agg_data.counts_per_bucket[ii]
-                points[str(bound)] = cum_count
+                bucket = [str(bound), cum_count]
+                buckets.append(bucket)
+            # Prometheus requires buckets to be sorted, and +Inf present.
+            # In OpenCensus we don't have +Inf in the bucket bonds so need to
+            # append it here.
+            buckets.append(["+Inf", agg_data.count_data])
             metric = HistogramMetricFamily(name=metric_name,
                                            documentation=metric_description,
                                            labels=label_keys)
-            metric.add_metric(labels=list(tag_values),
-                              buckets=list(points.items()),
+            metric.add_metric(labels=tag_values,
+                              buckets=buckets,
                               sum_value=agg_data.sum,)
             return metric
 
         elif isinstance(agg_data,
                         aggregation_data_module.SumAggregationDataFloat):
-            metric = UntypedMetricFamily(name=metric_name,
+            metric = UnknownMetricFamily(name=metric_name,
                                          documentation=metric_description,
                                          labels=label_keys)
-            metric.add_metric(labels=list(tag_values),
+            metric.add_metric(labels=tag_values,
                               value=agg_data.sum_data)
             return metric
 
@@ -205,7 +219,7 @@ class Collector(object):
             metric = GaugeMetricFamily(name=metric_name,
                                        documentation=metric_description,
                                        labels=label_keys)
-            metric.add_metric(labels=list(tag_values),
+            metric.add_metric(labels=tag_values,
                               value=agg_data.value)
             return metric
 
