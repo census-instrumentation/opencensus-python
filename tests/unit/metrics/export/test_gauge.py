@@ -17,6 +17,7 @@ try:
 except ImportError:
     from unittest.mock import Mock
 
+import gc
 import unittest
 
 from opencensus.metrics.export import gauge
@@ -48,6 +49,12 @@ class TestGaugePointLong(unittest.TestCase):
         with self.assertRaises(ValueError):
             point.set(10.0)
 
+    def test_get_value(self):
+        point = gauge.GaugePointLong()
+        point.set(10)
+        self.assertEqual(point.value, 10)
+        self.assertEqual(point.get_value(), point.value)
+
 
 class TestGaugePointDouble(unittest.TestCase):
     def test_init(self):
@@ -68,6 +75,74 @@ class TestGaugePointDouble(unittest.TestCase):
         self.assertEqual(point.value, 10.0)
         point.set(-20.2)
         self.assertEqual(point.value, -20.2)
+
+    def test_get_value(self):
+        point = gauge.GaugePointDouble()
+        point.set(10.1)
+        self.assertEqual(point.value, 10.1)
+        self.assertEqual(point.get_value(), point.value)
+
+
+class TestDerivedGaugePoint(unittest.TestCase):
+    def test_get_value(self):
+        mock_fn = Mock()
+        mock_value = Mock(spec=int)
+        mock_fn.return_value = mock_value
+
+        point = gauge.DerivedGaugePoint(mock_fn, gauge.GaugePointLong())
+        mock_fn.assert_not_called()
+
+        value = point.get_value()
+        self.assertEqual(value, mock_value)
+        self.assertEqual(point.gauge_point.value, mock_value)
+        mock_fn.assert_called_once()
+
+        value = point.get_value()
+        self.assertEqual(value, mock_value)
+        self.assertEqual(point.gauge_point.value, mock_value)
+        self.assertEqual(mock_fn.call_count, 2)
+
+    def test_get_value_gcd(self):
+        """Check handling deletion of the underlying func."""
+        get_10 = lambda: 10  # noqa
+        point = gauge.DerivedGaugePoint(get_10, gauge.GaugePointLong())
+
+        value = point.get_value()
+        self.assertEqual(value, 10)
+        self.assertEqual(point.gauge_point.value, 10)
+
+        del get_10
+        gc.collect()
+        deleted_value = point.get_value()
+        self.assertIsNone(deleted_value)
+        # Check that we don't null out the underlying point value
+        self.assertEqual(point.gauge_point.value, 10)
+
+    def test_get_to_point_value(self):
+        mock_fn = Mock()
+        mock_value = Mock(spec=int)
+        mock_fn.return_value = mock_value
+
+        point = gauge.DerivedGaugePoint(mock_fn, gauge.GaugePointLong())
+        mock_fn.assert_not_called()
+
+        value_long = point.to_point_value()
+        self.assertEqual(value_long.value, mock_value)
+        self.assertEqual(point.gauge_point.value, mock_value)
+        mock_fn.assert_called_once()
+
+        value = point.get_value()
+        self.assertEqual(value, mock_value)
+        self.assertEqual(point.gauge_point.value, mock_value)
+        self.assertEqual(mock_fn.call_count, 2)
+
+    def test_get_to_point_value_gcd(self):
+        get_10 = lambda: 10  # noqa
+        point = gauge.DerivedGaugePoint(get_10, gauge.GaugePointLong())
+        del get_10
+        gc.collect()
+        deleted_long_value = point.to_point_value()
+        self.assertIsNone(deleted_long_value)
 
 
 class TestLongGauge(unittest.TestCase):
@@ -267,3 +342,85 @@ class TestDoubleGauge(unittest.TestCase):
                               value_module.ValueDouble)
         self.assertEqual(metric.time_series[0].points[0].value.value, 1.2)
         self.assertEqual(metric.time_series[1].points[0].value.value, 2.2)
+
+
+class TestDerivedGauge(unittest.TestCase):
+
+    def test_one(self):
+        name = Mock()
+        description = Mock()
+        unit = Mock()
+        label_keys = [Mock(), Mock]
+        derived_gauge = gauge.DerivedLongGauge(
+            name, description, unit, label_keys)
+        self.assertEqual(derived_gauge.descriptor.name, name)
+        self.assertEqual(derived_gauge.descriptor.description, description)
+        self.assertEqual(derived_gauge.descriptor.unit, unit)
+        self.assertEqual(derived_gauge.descriptor.label_keys, label_keys)
+        self.assertEqual(derived_gauge.descriptor.type,
+                         metric_descriptor.MetricDescriptorType.GAUGE_INT64)
+
+    def test_create_time_series(self):
+        name = Mock()
+        description = Mock()
+        unit = Mock()
+        label_keys = [Mock(), Mock]
+        derived_gauge = gauge.DerivedLongGauge(
+            name, description, unit, label_keys)
+        with self.assertRaises(ValueError):
+            derived_gauge.create_time_series(None, Mock())
+        with self.assertRaises(ValueError):
+            derived_gauge.create_time_series([Mock()], Mock())
+        with self.assertRaises(ValueError):
+            derived_gauge.create_time_series([Mock(), None], Mock())
+        with self.assertRaises(ValueError):
+            derived_gauge.create_time_series([Mock(), Mock()], None)
+
+        mock_fn = Mock()
+        mock_fn.side_effect = range(10, 12)
+        label_values = [Mock(), Mock()]
+        point = derived_gauge.create_time_series(label_values, mock_fn)
+        self.assertIsInstance(point, gauge.DerivedGaugePoint)
+        self.assertIsInstance(point.gauge_point, gauge.GaugePointLong)
+        mock_fn.assert_not_called()
+        self.assertEqual(len(derived_gauge.points.keys()), 1)
+        [key] = derived_gauge.points.keys()
+        self.assertEqual(key, tuple(label_values))
+        self.assertEqual(point.get_value(), 10)
+        mock_fn.assert_called_once()
+        self.assertEqual(point.get_value(), 11)
+        self.assertEqual(mock_fn.call_count, 2)
+
+        unused_mock_fn = Mock()
+        point2 = derived_gauge.create_time_series(label_values, unused_mock_fn)
+        self.assertIs(point, point2)
+        unused_mock_fn.assert_not_called()
+        self.assertEqual(len(derived_gauge.points.keys()), 1)
+
+    def test_create_default_time_series(self):
+        derived_gauge = gauge.DerivedLongGauge(
+            Mock(), Mock(), Mock(), [Mock(), Mock])
+        mock_fn = Mock()
+        mock_fn.side_effect = range(10, 13)
+
+        with self.assertRaises(ValueError):
+            derived_gauge.create_default_time_series(None)
+
+        default_point = derived_gauge.create_default_time_series(mock_fn)
+        self.assertIsInstance(default_point, gauge.DerivedGaugePoint)
+        self.assertIsInstance(default_point.gauge_point, gauge.GaugePointLong)
+        self.assertEqual(default_point.get_value(), 10)
+        self.assertEqual(len(derived_gauge.points.keys()), 1)
+
+        unused_mock_fn = Mock()
+        point2 = derived_gauge.create_default_time_series(unused_mock_fn)
+        self.assertIs(default_point, point2)
+        self.assertEqual(default_point.get_value(), 11)
+        unused_mock_fn.assert_not_called()
+
+        unused_mock_fn2 = Mock()
+        point3 = derived_gauge._create_time_series(
+            derived_gauge.default_label_values, unused_mock_fn)
+        self.assertIs(default_point, point3)
+        self.assertEqual(default_point.get_value(), 12)
+        unused_mock_fn2.assert_not_called()
