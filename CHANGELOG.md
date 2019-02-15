@@ -6,6 +6,8 @@
   Use `UnknownMetricFamily` for `SumData` instead of `UntypedMetricFamily`.
   Check if label keys and values match before exporting.
 - Remove min and max from Distribution.
+- Fix a bug that caused root spans from the same tracer to share a trace ID
+  ([#505](https://github.com/census-instrumentation/opencensus-python/pull/505)
 
 ## 0.2.0
 Released 2019-01-18
