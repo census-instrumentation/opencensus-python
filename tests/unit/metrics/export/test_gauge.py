@@ -424,3 +424,46 @@ class TestDerivedGauge(unittest.TestCase):
         self.assertIs(default_point, point3)
         self.assertEqual(default_point.get_value(), 12)
         unused_mock_fn2.assert_not_called()
+
+
+class TestRegistry(unittest.TestCase):
+    def test_add_gauge(self):
+        reg = gauge.Registry()
+
+        with self.assertRaises(ValueError):
+            reg.add_gauge(None)
+
+        gauge1 = Mock()
+        gauge1.descriptor.name = 'gauge1'
+        gauge2 = Mock()
+        gauge2.descriptor.name = 'gauge2'
+
+        reg.add_gauge(gauge1)
+        self.assertDictEqual(reg.gauges, {'gauge1': gauge1})
+        reg.add_gauge(gauge2)
+        self.assertDictEqual(reg.gauges, {'gauge1': gauge1, 'gauge2': gauge2})
+
+        with self.assertRaises(ValueError):
+            reg.add_gauge(gauge2)
+
+    def test_get_metrics(self):
+        reg = gauge.Registry()
+
+        with self.assertRaises(ValueError):
+            reg.add_gauge(None)
+
+        gauge1 = Mock()
+        gauge1.descriptor.name = 'gauge1'
+        metric1 = Mock()
+        gauge1.get_metric.return_value = metric1
+
+        gauge2 = Mock()
+        gauge2.descriptor.name = 'gauge2'
+        metric2 = Mock()
+        gauge2.get_metric.return_value = metric2
+
+        self.assertSetEqual(reg.get_metrics(), set())
+        reg.add_gauge(gauge1)
+        self.assertSetEqual(reg.get_metrics(), {metric1})
+        reg.add_gauge(gauge2)
+        self.assertSetEqual(reg.get_metrics(), {metric1, metric2})
