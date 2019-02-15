@@ -483,7 +483,6 @@ class Registry(metric_producer.MetricProducer):
         """
         now = datetime.now()
         metrics = set()
-        with self._gauges_lock:
-            for gauge in self.gauges.values():
-                metrics.add(gauge.get_metric(now))
+        for gauge in self.gauges.values():
+            metrics.add(gauge.get_metric(now))
         return metrics
