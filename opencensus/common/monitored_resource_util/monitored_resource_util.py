@@ -24,32 +24,6 @@ from opencensus.common.monitored_resource_util.gcp_metadata_config \
 _KUBERNETES_SERVICE_HOST = 'KUBERNETES_SERVICE_HOST'
 
 
-class MonitoredResourceUtil(object):
-    """Utilities for auto detecting monitored resource based on the
-    environment where the application is running.
-    """
-
-    @staticmethod
-    def get_instance():
-        """
-        Returns a self-configured monitored resource, or None if the
-        application is not running on a supported environment.
-        It supports following environments (resource types)
-        1. gke_container:
-        2. gce_instance:
-        3. aws_ec2_instance:
-        :return: MonitoredResource or None
-        """
-        if is_gke_environment():
-            return monitored_resource.GcpGkeMonitoredResource()
-        elif is_gce_environment():
-            return monitored_resource.GcpGceMonitoredResource()
-        elif is_aws_environment():
-            return monitored_resource.AwsMonitoredResource()
-
-        return None
-
-
 def is_gke_environment():
     """A Google Container Engine (GKE) container instance.
     KUBERNETES_SERVICE_HOST environment variable must be set.
@@ -65,3 +39,26 @@ def is_gce_environment():
 def is_aws_environment():
     """A virtual machine instance in Amazon EC2"""
     return AwsIdentityDocumentUtils.is_running_on_aws()
+
+
+def get_instance():
+    """Get a monitored resource based on the application environment.
+
+    Returns a self-configured monitored resource, or None if the application is
+    not running on a supported environment.
+
+    It supports following environments (resource types)
+    1. gke_container:
+    2. gce_instance:
+    3. aws_ec2_instance:
+
+    :return: MonitoredResource or None
+    """
+    if is_gke_environment():
+        return monitored_resource.GcpGkeMonitoredResource()
+    if is_gce_environment():
+        return monitored_resource.GcpGceMonitoredResource()
+    if is_aws_environment():
+        return monitored_resource.AwsMonitoredResource()
+
+    return None

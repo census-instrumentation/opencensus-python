@@ -24,8 +24,7 @@ from google.api_core.gapic_v1 import client_info
 from google.cloud import monitoring_v3
 
 from opencensus.common import utils
-from opencensus.common.monitored_resource_util.monitored_resource_util \
-    import MonitoredResourceUtil
+from opencensus.common.monitored_resource_util import monitored_resource_util
 from opencensus.common.transports import async_
 from opencensus.common.version import __version__
 from opencensus.stats import aggregation
@@ -345,7 +344,7 @@ def set_monitored_resource(series, option_resource_type):
     resource_type = GLOBAL_RESOURCE_TYPE
 
     if option_resource_type == "":
-        monitored_resource = MonitoredResourceUtil.get_instance()
+        monitored_resource = monitored_resource_util.get_instance()
         if monitored_resource is not None:
             resource_labels = monitored_resource.get_resource_labels()
 

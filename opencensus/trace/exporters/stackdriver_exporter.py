@@ -17,8 +17,7 @@ import os
 
 from google.cloud.trace.client import Client
 
-from opencensus.common.monitored_resource_util.monitored_resource_util \
-    import MonitoredResourceUtil
+from opencensus.common.monitored_resource_util import monitored_resource_util
 from opencensus.common.transports import sync
 from opencensus.common.version import __version__
 from opencensus.trace import attributes_helper
@@ -79,7 +78,7 @@ def set_monitored_resource_attributes(span):
     """Set labels to span that can be used for tracing.
     :param span: Span object
     """
-    monitored_resource = MonitoredResourceUtil.get_instance()
+    monitored_resource = monitored_resource_util.get_instance()
     if monitored_resource is not None:
         resource_type = monitored_resource.resource_type
         resource_labels = monitored_resource.get_resource_labels()

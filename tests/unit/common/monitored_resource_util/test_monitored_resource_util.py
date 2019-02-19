@@ -27,7 +27,7 @@ class TestMonitoredResourceUtil(unittest.TestCase):
                                 {'KUBERNETES_SERVICE_HOST': '127.0.0.1'})
 
         with patch:
-            mr = monitored_resource_util.MonitoredResourceUtil.get_instance()
+            mr = monitored_resource_util.get_instance()
 
             self.assertIsNotNone(mr)
             self.assertIsInstance(mr,
@@ -40,7 +40,7 @@ class TestMonitoredResourceUtil(unittest.TestCase):
             'is_running_on_gcp',
             return_value=True)
         with patch:
-            mr = monitored_resource_util.MonitoredResourceUtil.get_instance()
+            mr = monitored_resource_util.get_instance()
 
             self.assertIsNotNone(mr)
             self.assertIsInstance(mr,
@@ -54,7 +54,7 @@ class TestMonitoredResourceUtil(unittest.TestCase):
                 'is_running_on_aws',
                 return_value=True)
     def test_aws_environment(self, aws_util_mock, gcp_metadata_mock):
-        mr = monitored_resource_util.MonitoredResourceUtil.get_instance()
+        mr = monitored_resource_util.get_instance()
 
         self.assertIsNotNone(mr)
         self.assertIsInstance(mr, monitored_resource.AwsMonitoredResource)
@@ -67,6 +67,6 @@ class TestMonitoredResourceUtil(unittest.TestCase):
                 'is_running_on_aws',
                 return_value=False)
     def test_non_supported_environment(self, aws_util_mock, gcp_metadata_mock):
-        mr = monitored_resource_util.MonitoredResourceUtil.get_instance()
+        mr = monitored_resource_util.get_instance()
 
         self.assertIsNone(mr)
