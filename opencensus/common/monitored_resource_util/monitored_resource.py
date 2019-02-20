@@ -12,75 +12,70 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 
-from opencensus.common.monitored_resource_util.gcp_metadata_config \
-    import GcpMetadataConfig
-from opencensus.common.monitored_resource_util.aws_identity_doc_utils \
-    import AwsIdentityDocumentUtils
+from opencensus.common import resource
+from opencensus.common.monitored_resource_util import aws_identity_doc_utils
+from opencensus.common.monitored_resource_util import gcp_metadata_config
 
-# supported environments (resource types)
+
+# Supported environments (resource types)
 _GCE_INSTANCE = "gce_instance"
 _GKE_CONTAINER = "gke_container"
 _AWS_EC2_INSTANCE = "aws_ec2_instance"
 
+# Kubenertes environment variables
+_KUBERNETES_SERVICE_HOST = 'KUBERNETES_SERVICE_HOST'
 
-class MonitoredResource(object):
-    """MonitoredResource returns the resource type and resource labels.
+
+def is_gke_environment():
+    """Whether the environment is a GKE container instance.
+
+    The KUBERNETES_SERVICE_HOST environment variable must be set.
     """
-
-    @property
-    def resource_type(self):
-        """Returns the resource type this MonitoredResource.
-        :return:
-        """
-        raise NotImplementedError  # pragma: NO COVER
-
-    def get_resource_labels(self):
-        """Returns the resource labels for this MonitoredResource.
-        :return:
-        """
-        raise NotImplementedError  # pragma: NO COVER
+    return _KUBERNETES_SERVICE_HOST in os.environ
 
 
-class GcpGceMonitoredResource(MonitoredResource):
-    """GceMonitoredResource represents gce_instance type monitored resource.
-    For definition refer to
-    https://cloud.google.com/monitoring/api/resources#tag_gce_instance
+def is_gce_environment():
+    """Whether the environment is a virtual machine on GCE."""
+    return gcp_metadata_config.GcpMetadataConfig.is_running_on_gcp()
+
+
+def is_aws_environment():
+    """Whether the environment is a virtual machine instance on EC2."""
+    return aws_identity_doc_utils.AwsIdentityDocumentUtils.is_running_on_aws()
+
+
+def get_instance():
+    """Get a resource based on the application environment.
+
+    Returns a `Resource` configured for the current environment, or None if the
+    environment is unknown or unsupported.
+
+    Supported environments include:
+
+    1. 'gke_container'
+    - https://cloud.google.com/monitoring/api/resources#tag_gke_container
+    2. 'gce_instance'
+    - https://cloud.google.com/monitoring/api/resources#tag_gce_instance
+    3. 'aws_ec2_instance'
+    - https://cloud.google.com/monitoring/api/resources#tag_aws_ec2_instance
+
+    :rtype: :class:`opencensus.common.resource.Resource` or None
+    :return: A `Resource` configured for the current environment.
     """
+    if is_gke_environment():
+        return resource.Resource(
+            _GKE_CONTAINER,
+            gcp_metadata_config.GcpMetadataConfig().get_gke_metadata())
+    if is_gce_environment():
+        return resource.Resource(
+            _GCE_INSTANCE,
+            gcp_metadata_config.GcpMetadataConfig().get_gce_metadata())
+    if is_aws_environment():
+        return resource.Resource(
+            _AWS_EC2_INSTANCE,
+            (aws_identity_doc_utils.AwsIdentityDocumentUtils()
+             .get_aws_metadata()))
 
-    @property
-    def resource_type(self):
-        return _GCE_INSTANCE
-
-    def get_resource_labels(self):
-        gcp_config = GcpMetadataConfig()
-        return gcp_config.get_gce_metadata()
-
-
-class GcpGkeMonitoredResource(MonitoredResource):
-    """GkeMonitoredResource represents gke_container type monitored resource.
-    For definition refer to
-    https://cloud.google.com/monitoring/api/resources#tag_gke_container
-    """
-
-    @property
-    def resource_type(self):
-        return _GKE_CONTAINER
-
-    def get_resource_labels(self):
-        gcp_config = GcpMetadataConfig()
-        return gcp_config.get_gke_metadata()
-
-
-class AwsMonitoredResource(MonitoredResource):
-    """AwsMonitoredResource represents aws_ec2_instance type monitored resource.
-    For definition refer to
-    https://cloud.google.com/monitoring/api/resources#tag_aws_ec2_instance
-    """
-    @property
-    def resource_type(self):
-        return _AWS_EC2_INSTANCE
-
-    def get_resource_labels(self):
-        aws_util = AwsIdentityDocumentUtils()
-        return aws_util.get_aws_metadata()
+    return None
