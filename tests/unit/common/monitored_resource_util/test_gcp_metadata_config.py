@@ -12,20 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import unittest
 import mock
 import os
-from opencensus.common.monitored_resource_util.gcp_metadata_config \
-    import GcpMetadataConfig
-from opencensus.common.monitored_resource_util import gcp_metadata_config
+import unittest
+
+from opencensus.common.monitored_resource import gcp_metadata_config
 
 
 class TestGcpMetadataConfig(unittest.TestCase):
-
-    @mock.patch('opencensus.common.monitored_resource_util.'
+    @mock.patch('opencensus.common.monitored_resource.'
                 'gcp_metadata_config.get_request')
     def test_get_gce_metadata(self, http_request_mock):
-
         def assign_attribute_value(*args, **kwargs):
             attribute_uri = args[0].split('/')[-1]
             if attribute_uri == 'id':
@@ -36,13 +33,15 @@ class TestGcpMetadataConfig(unittest.TestCase):
                 return 'us-east1'
 
         http_request_mock.side_effect = assign_attribute_value
-        GcpMetadataConfig.inited = False
-        GcpMetadataConfig.is_running = False
+        gcp_metadata_config.GcpMetadataConfig.inited = False
+        gcp_metadata_config.GcpMetadataConfig.is_running = False
         gcp_metadata_config.gcp_metadata_map = {}
 
-        self.assertTrue(GcpMetadataConfig.is_running_on_gcp())
+        self.assertTrue(
+            gcp_metadata_config.GcpMetadataConfig.is_running_on_gcp())
 
-        labels_list = GcpMetadataConfig().get_gce_metadata()
+        labels_list = gcp_metadata_config.GcpMetadataConfig().get_gce_metadata(
+        )
 
         self.assertEquals(len(labels_list), 3)
 
@@ -54,12 +53,13 @@ class TestGcpMetadataConfig(unittest.TestCase):
 
         self.assertEquals(labels_list, expected_labels)
 
-    @mock.patch('opencensus.common.monitored_resource_util.'
+    @mock.patch('opencensus.common.monitored_resource.'
                 'gcp_metadata_config.get_request')
     def test_get_gce_metadata_binary_strings(self, http_request_mock):
         """
         At least in python 3 binary strings are returned from urllib
         """
+
         def assign_attribute_value(*args, **kwargs):
             attribute_uri = args[0].split('/')[-1]
             if attribute_uri == 'id':
@@ -70,13 +70,15 @@ class TestGcpMetadataConfig(unittest.TestCase):
                 return b'us-east1'
 
         http_request_mock.side_effect = assign_attribute_value
-        GcpMetadataConfig.inited = False
-        GcpMetadataConfig.is_running = False
+        gcp_metadata_config.GcpMetadataConfig.inited = False
+        gcp_metadata_config.GcpMetadataConfig.is_running = False
         gcp_metadata_config.gcp_metadata_map = {}
 
-        self.assertTrue(GcpMetadataConfig.is_running_on_gcp())
+        self.assertTrue(
+            gcp_metadata_config.GcpMetadataConfig.is_running_on_gcp())
 
-        labels_list = GcpMetadataConfig().get_gce_metadata()
+        labels_list = gcp_metadata_config.GcpMetadataConfig().get_gce_metadata(
+        )
 
         self.assertEquals(len(labels_list), 3)
 
@@ -88,16 +90,17 @@ class TestGcpMetadataConfig(unittest.TestCase):
 
         self.assertEquals(labels_list, expected_labels)
 
-    @mock.patch.dict(os.environ,
-                     {'KUBERNETES_SERVICE_HOST': '127.0.0.1',
-                      'CONTAINER_NAME': 'container',
-                      'NAMESPACE': 'namespace',
-                      'HOSTNAME': 'localhost'}, clear=True
-                     )
-    @mock.patch('opencensus.common.monitored_resource_util.'
+    @mock.patch.dict(
+        os.environ, {
+            'KUBERNETES_SERVICE_HOST': '127.0.0.1',
+            'CONTAINER_NAME': 'container',
+            'NAMESPACE': 'namespace',
+            'HOSTNAME': 'localhost'
+        },
+        clear=True)
+    @mock.patch('opencensus.common.monitored_resource.'
                 'gcp_metadata_config.get_request')
     def test_get_gke_metadata(self, http_request_mock):
-
         def assign_attribute_value(*args, **kwargs):
             attribute_uri = args[0].split('/')[-1]
             if attribute_uri == 'id':
@@ -110,13 +113,15 @@ class TestGcpMetadataConfig(unittest.TestCase):
                 return 'us-east1'
 
         http_request_mock.side_effect = assign_attribute_value
-        GcpMetadataConfig.inited = False
-        GcpMetadataConfig.is_running = False
+        gcp_metadata_config.GcpMetadataConfig.inited = False
+        gcp_metadata_config.GcpMetadataConfig.is_running = False
         gcp_metadata_config.gcp_metadata_map = {}
 
-        self.assertTrue(GcpMetadataConfig.is_running_on_gcp())
+        self.assertTrue(
+            gcp_metadata_config.GcpMetadataConfig.is_running_on_gcp())
 
-        labels_list = GcpMetadataConfig().get_gke_metadata()
+        labels_list = gcp_metadata_config.GcpMetadataConfig().get_gke_metadata(
+        )
 
         self.assertEquals(len(labels_list), 7)
 
@@ -132,15 +137,16 @@ class TestGcpMetadataConfig(unittest.TestCase):
 
         self.assertEquals(labels_list, expected_labels)
 
-    @mock.patch.dict(os.environ,
-                     {'KUBERNETES_SERVICE_HOST': '127.0.0.1',
-                      'NAMESPACE': 'namespace',
-                      'HOSTNAME': 'localhost'}, clear=True
-                     )
-    @mock.patch('opencensus.common.monitored_resource_util.'
+    @mock.patch.dict(
+        os.environ, {
+            'KUBERNETES_SERVICE_HOST': '127.0.0.1',
+            'NAMESPACE': 'namespace',
+            'HOSTNAME': 'localhost'
+        },
+        clear=True)
+    @mock.patch('opencensus.common.monitored_resource.'
                 'gcp_metadata_config.get_request')
     def test_get_gke_metadata_container_empty(self, http_request_mock):
-
         def assign_attribute_value(*args, **kwargs):
             attribute_uri = args[0].split('/')[-1]
             if attribute_uri == 'id':
@@ -151,13 +157,15 @@ class TestGcpMetadataConfig(unittest.TestCase):
                 return 'us-east1'
 
         http_request_mock.side_effect = assign_attribute_value
-        GcpMetadataConfig.inited = False
-        GcpMetadataConfig.is_running = False
+        gcp_metadata_config.GcpMetadataConfig.inited = False
+        gcp_metadata_config.GcpMetadataConfig.is_running = False
         gcp_metadata_config.gcp_metadata_map = {}
 
-        self.assertTrue(GcpMetadataConfig.is_running_on_gcp())
+        self.assertTrue(
+            gcp_metadata_config.GcpMetadataConfig.is_running_on_gcp())
 
-        labels_list = GcpMetadataConfig().get_gke_metadata()
+        labels_list = gcp_metadata_config.GcpMetadataConfig().get_gke_metadata(
+        )
 
         self.assertEquals(len(labels_list), 5)
 
@@ -172,15 +180,18 @@ class TestGcpMetadataConfig(unittest.TestCase):
         self.assertEquals(labels_list, expected_labels)
 
     @mock.patch.dict(os.environ, clear=True)
-    @mock.patch('opencensus.common.monitored_resource_util.'
+    @mock.patch('opencensus.common.monitored_resource.'
                 'gcp_metadata_config.get_request')
     def test_gcp_not_running(self, http_request_mock):
         http_request_mock.return_value = None
-        GcpMetadataConfig.inited = False
-        GcpMetadataConfig.is_running = False
+        gcp_metadata_config.GcpMetadataConfig.inited = False
+        gcp_metadata_config.GcpMetadataConfig.is_running = False
         gcp_metadata_config.gcp_metadata_map = {}
 
-        self.assertFalse(GcpMetadataConfig.is_running_on_gcp())
+        self.assertFalse(
+            gcp_metadata_config.GcpMetadataConfig.is_running_on_gcp())
 
-        self.assertEquals(len(GcpMetadataConfig().get_gce_metadata()), 0)
-        self.assertEquals(len(GcpMetadataConfig().get_gke_metadata()), 0)
+        self.assertEquals(
+            len(gcp_metadata_config.GcpMetadataConfig().get_gce_metadata()), 0)
+        self.assertEquals(
+            len(gcp_metadata_config.GcpMetadataConfig().get_gke_metadata()), 0)

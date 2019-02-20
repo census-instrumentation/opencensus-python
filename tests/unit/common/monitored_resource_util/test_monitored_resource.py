@@ -17,7 +17,7 @@ import mock
 import os
 import unittest
 
-from opencensus.common.monitored_resource_util import monitored_resource
+from opencensus.common.monitored_resource import monitored_resource
 
 
 @contextmanager
@@ -65,7 +65,7 @@ def mock_aws_env():
 
 class TestMonitoredResource(unittest.TestCase):
 
-    @mock.patch('opencensus.common.monitored_resource_util.monitored_resource'
+    @mock.patch('opencensus.common.monitored_resource.monitored_resource'
                 '.gcp_metadata_config.GcpMetadataConfig')
     def test_gcp_gce_monitored_resource(self, gcp_metadata_mock):
         mocked_labels = {
@@ -82,7 +82,7 @@ class TestMonitoredResource(unittest.TestCase):
         self.assertEquals(resource.get_type(), 'gce_instance')
         self.assertEquals(resource.get_labels(), mocked_labels)
 
-    @mock.patch('opencensus.common.monitored_resource_util.monitored_resource'
+    @mock.patch('opencensus.common.monitored_resource.monitored_resource'
                 '.gcp_metadata_config.GcpMetadataConfig')
     def test_gcp_gke_monitored_resource(self, gcp_metadata_mock):
 
@@ -104,7 +104,7 @@ class TestMonitoredResource(unittest.TestCase):
         self.assertEquals(resource.get_type(), 'gke_container')
         self.assertEquals(resource.get_labels(), mocked_labels)
 
-    @mock.patch('opencensus.common.monitored_resource_util.monitored_resource'
+    @mock.patch('opencensus.common.monitored_resource.monitored_resource'
                 '.aws_identity_doc_utils.AwsIdentityDocumentUtils')
     def test_aws_monitored_resource(self, aws_metadata_mock):
 
@@ -135,7 +135,7 @@ class TestMonitoredResource(unittest.TestCase):
 
     def test_gce_environment(self):
         patch = mock.patch(
-            'opencensus.common.monitored_resource_util.'
+            'opencensus.common.monitored_resource.'
             'gcp_metadata_config.GcpMetadataConfig.'
             'is_running_on_gcp',
             return_value=True)
@@ -145,10 +145,10 @@ class TestMonitoredResource(unittest.TestCase):
             self.assertIsNotNone(mr)
             self.assertEqual(mr.get_type(), "gce_instance")
 
-    @mock.patch('opencensus.common.monitored_resource_util.'
+    @mock.patch('opencensus.common.monitored_resource.'
                 'gcp_metadata_config.GcpMetadataConfig.is_running_on_gcp',
                 return_value=False)
-    @mock.patch('opencensus.common.monitored_resource_util.'
+    @mock.patch('opencensus.common.monitored_resource.'
                 'aws_identity_doc_utils.AwsIdentityDocumentUtils.'
                 'is_running_on_aws',
                 return_value=True)
@@ -158,10 +158,10 @@ class TestMonitoredResource(unittest.TestCase):
         self.assertIsNotNone(mr)
         self.assertEqual(mr.get_type(), "aws_ec2_instance")
 
-    @mock.patch('opencensus.common.monitored_resource_util.'
+    @mock.patch('opencensus.common.monitored_resource.'
                 'gcp_metadata_config.GcpMetadataConfig.is_running_on_gcp',
                 return_value=False)
-    @mock.patch('opencensus.common.monitored_resource_util.'
+    @mock.patch('opencensus.common.monitored_resource.'
                 'aws_identity_doc_utils.AwsIdentityDocumentUtils.'
                 'is_running_on_aws',
                 return_value=False)
