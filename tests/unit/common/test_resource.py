@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 # Copyright 2019 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,25 +21,43 @@ except ImportError:
 
 import unittest
 
+from opencensus.common import resource as resource_module
 from opencensus.common.resource import Resource
 
 
 class TestResource(unittest.TestCase):
     def test_init_bad_args(self):
+        long_string = (
+            "long string is looooooooooooooooooooooooooooooooooooooooooooooooo"
+            "ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo"
+            "ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo"
+            "oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong")
         with self.assertRaises(ValueError):
-            Resource("", Mock())
+            Resource('', {})
         with self.assertRaises(ValueError):
-            Resource(Mock(), {"": Mock()})
+            Resource(chr(31), {'key': 'value'})
         with self.assertRaises(ValueError):
-            Resource(Mock(), {None: Mock()})
+            Resource(long_string, {'key': 'value'})
         with self.assertRaises(ValueError):
-            Resource(Mock(), {Mock(): None})
+            Resource('type', {"": 'value'})
         with self.assertRaises(ValueError):
-            Resource(Mock(), {Mock(): Mock(), None: Mock()})
+            Resource('type', {None: 'value'})
         with self.assertRaises(ValueError):
-            Resource(Mock(), {Mock(): Mock(), Mock(): None})
+            Resource('type', {'key': None})
+        with self.assertRaises(ValueError):
+            Resource('type', {chr(31): 'value'})
+        with self.assertRaises(ValueError):
+            Resource('type', {'key': chr(31)})
+        with self.assertRaises(ValueError):
+            Resource(long_string, {long_string: 'value'})
+        with self.assertRaises(ValueError):
+            Resource(long_string, {long_string: long_string})
+        with self.assertRaises(ValueError):
+            Resource('type', {'key1': 'value1', None: 'value2'})
+        with self.assertRaises(ValueError):
+            Resource('type', {'key1': 'value1', 'key2': None})
         # Empty (but not null) label values are ok
-        Resource(Mock(), {Mock(): ""})
+        Resource('type', {'key': ""})
 
     def test_default_init(self):
         resource = Resource()
@@ -46,23 +66,23 @@ class TestResource(unittest.TestCase):
         self.assertDictEqual(resource.labels, {})
 
     def test_init(self):
-        resource_type = Mock()
-        resource_labels = {Mock(): Mock()}
+        resource_type = 'type'
+        resource_labels = {'key': 'value'}
         resource = Resource(resource_type, resource_labels)
         self.assertEqual(resource.type, resource_type)
         self.assertEqual(resource.labels, resource_labels)
         self.assertIsNot(resource.labels, resource_labels)
 
     def test_get_type(self):
-        resource_type = Mock()
+        resource_type = 'type'
         resource = Resource(resource_type, None)
         self.assertEqual(resource.get_type(), resource_type)
 
     def test_get_labels(self):
-        label_key = Mock()
-        label_value = Mock()
+        label_key = 'key'
+        label_value = 'value'
         resource_labels = {label_key: label_value}
-        resource = Resource(Mock(), resource_labels)
+        resource = Resource('type', resource_labels)
         self.assertEqual(resource.get_labels(), resource_labels)
         self.assertIsNot(resource.get_labels(), resource_labels)
         got_labels = resource.get_labels()
@@ -71,33 +91,54 @@ class TestResource(unittest.TestCase):
         self.assertEqual(resource.get_labels()[label_key], label_value)
 
     def test_merge(self):
-        t1, lk1, lv1 = Mock(), Mock(), Mock()
-        t2, lk2, lv2 = Mock(), Mock(), Mock()
-        r1 = Resource(t1, {lk1: lv1})
-        r2 = Resource(t2, {lk2: lv2})
+        r1 = Resource('t1', {'lk1': 'lv1'})
+        r2 = Resource('t2', {'lk2': 'lv2'})
 
         r1m2 = r1.merge(r2)
         self.assertIsNot(r1m2, r1)
         self.assertIsNot(r1m2, r2)
         self.assertEqual(r1m2.type, r1.type)
         self.assertNotEqual(r1m2.type, r2.type)
-        self.assertDictEqual(r1m2.labels, {lk1: lv1, lk2: lv2})
+        self.assertDictEqual(r1m2.labels, {'lk1': 'lv1', 'lk2': 'lv2'})
 
         r2m1 = r2.merge(r1)
         self.assertIsNot(r2m1, r1)
         self.assertIsNot(r2m1, r2)
         self.assertEqual(r2m1.type, r2.type)
         self.assertNotEqual(r2m1.type, r1.type)
-        self.assertDictEqual(r2m1.labels, {lk1: lv1, lk2: lv2})
+        self.assertDictEqual(r2m1.labels, {'lk1': 'lv1', 'lk2': 'lv2'})
 
     def test_merge_self(self):
-        resource = Resource(Mock(), {Mock(): Mock()})
+        resource = Resource('type', {'key': 'value'})
         merged = resource.merge(resource)
         self.assertEqual(merged.type, resource.type)
         self.assertDictEqual(merged.labels, resource.labels)
 
     def test_merge_overwrite(self):
-        r1 = Resource(Mock(), {'lk1': 'lv11'})
-        r2 = Resource(Mock(), {'lk1': 'lv12', 'lk2': 'lv22'})
+        r1 = Resource('t1', {'lk1': 'lv11'})
+        r2 = Resource('t2', {'lk1': 'lv12', 'lk2': 'lv22'})
         self.assertEqual(r1.merge(r2).labels, {'lk1': 'lv11', 'lk2': 'lv22'})
         self.assertEqual(r2.merge(r1).labels, {'lk1': 'lv12', 'lk2': 'lv22'})
+
+
+class TestResourceModule(unittest.TestCase):
+
+    def test_check_ascii_256(self):
+        self.assertIsNone(resource_module.check_ascii_256(None))
+
+        # Accept both str and unicode in python 2, reject bytes (i.e. encoded
+        # ascii) in python 3.
+        self.assertIsNone(resource_module.check_ascii_256(''))
+        self.assertIsNone(resource_module.check_ascii_256(u''))
+        self.assertIsNone(resource_module.check_ascii_256('abc'))
+        self.assertIsNone(resource_module.check_ascii_256(u'abc'))
+
+        with self.assertRaises(ValueError) as ve:
+            resource_module.check_ascii_256(u'长猫')
+        self.assertIn(u'长', ve.exception.args[0])
+        self.assertNotIn(u'猫', ve.exception.args[0])
+
+        with self.assertRaises(ValueError):
+            resource_module.check_ascii_256('abc' + chr(31))
+        with self.assertRaises(ValueError):
+            resource_module.check_ascii_256(u'abc' + chr(31))
