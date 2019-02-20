@@ -24,7 +24,7 @@ from google.api_core.gapic_v1 import client_info
 from google.cloud import monitoring_v3
 
 from opencensus.common import utils
-from opencensus.common.monitored_resource_util import monitored_resource_util
+from opencensus.common.monitored_resource_util import monitored_resource
 from opencensus.common.transports import async_
 from opencensus.common.version import __version__
 from opencensus.stats import aggregation
@@ -344,11 +344,11 @@ def set_monitored_resource(series, option_resource_type):
     resource_type = GLOBAL_RESOURCE_TYPE
 
     if option_resource_type == "":
-        monitored_resource = monitored_resource_util.get_instance()
-        if monitored_resource is not None:
-            resource_labels = monitored_resource.get_resource_labels()
+        resource = monitored_resource.get_instance()
+        if resource is not None:
+            resource_labels = resource.get_labels()
 
-            if monitored_resource.resource_type == 'gke_container':
+            if resource.get_type() == 'gke_container':
                 resource_type = 'k8s_container'
                 set_attribute_label(series, resource_labels, 'project_id')
                 set_attribute_label(series, resource_labels, 'cluster_name')
@@ -360,14 +360,14 @@ def set_monitored_resource(series, option_resource_type):
                 set_attribute_label(series, resource_labels, 'zone',
                                     'location')
 
-            elif monitored_resource.resource_type == 'gce_instance':
-                resource_type = monitored_resource.resource_type
+            elif resource.get_type() == 'gce_instance':
+                resource_type = 'gce_instance'
                 set_attribute_label(series, resource_labels, 'project_id')
                 set_attribute_label(series, resource_labels, 'instance_id')
                 set_attribute_label(series, resource_labels, 'zone')
 
-            elif monitored_resource.resource_type == 'aws_ec2_instance':
-                resource_type = monitored_resource.resource_type
+            elif resource.get_type() == 'aws_ec2_instance':
+                resource_type = 'aws_ec2_instance'
                 set_attribute_label(series, resource_labels, 'aws_account')
                 set_attribute_label(series, resource_labels, 'instance_id')
                 set_attribute_label(series, resource_labels, 'region',

@@ -12,75 +12,76 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 
-from opencensus.common.monitored_resource_util.gcp_metadata_config \
-    import GcpMetadataConfig
-from opencensus.common.monitored_resource_util.aws_identity_doc_utils \
-    import AwsIdentityDocumentUtils
+from opencensus.common.monitored_resource_util import aws_identity_doc_utils
+from opencensus.common.monitored_resource_util import gcp_metadata_config
+from opencensus.common import resource
+
 
 # supported environments (resource types)
 _GCE_INSTANCE = "gce_instance"
 _GKE_CONTAINER = "gke_container"
 _AWS_EC2_INSTANCE = "aws_ec2_instance"
 
+# Kubenertes environment variables
+_KUBERNETES_SERVICE_HOST = 'KUBERNETES_SERVICE_HOST'
 
-class MonitoredResource(object):
-    """MonitoredResource returns the resource type and resource labels.
+
+def is_gke_environment():
+    """A Google Container Engine (GKE) container instance.
+    KUBERNETES_SERVICE_HOST environment variable must be set.
     """
-
-    @property
-    def resource_type(self):
-        """Returns the resource type this MonitoredResource.
-        :return:
-        """
-        raise NotImplementedError  # pragma: NO COVER
-
-    def get_resource_labels(self):
-        """Returns the resource labels for this MonitoredResource.
-        :return:
-        """
-        raise NotImplementedError  # pragma: NO COVER
+    return _KUBERNETES_SERVICE_HOST in os.environ
 
 
-class GcpGceMonitoredResource(MonitoredResource):
-    """GceMonitoredResource represents gce_instance type monitored resource.
-    For definition refer to
-    https://cloud.google.com/monitoring/api/resources#tag_gce_instance
-    """
-
-    @property
-    def resource_type(self):
-        return _GCE_INSTANCE
-
-    def get_resource_labels(self):
-        gcp_config = GcpMetadataConfig()
-        return gcp_config.get_gce_metadata()
+def is_gce_environment():
+    """A virtual machine instance hosted in Google Compute Engine (GCE)."""
+    return gcp_metadata_config.GcpMetadataConfig.is_running_on_gcp()
 
 
-class GcpGkeMonitoredResource(MonitoredResource):
-    """GkeMonitoredResource represents gke_container type monitored resource.
-    For definition refer to
-    https://cloud.google.com/monitoring/api/resources#tag_gke_container
-    """
-
-    @property
-    def resource_type(self):
-        return _GKE_CONTAINER
-
-    def get_resource_labels(self):
-        gcp_config = GcpMetadataConfig()
-        return gcp_config.get_gke_metadata()
+def is_aws_environment():
+    """A virtual machine instance in Amazon EC2"""
+    return aws_identity_doc_utils.AwsIdentityDocumentUtils.is_running_on_aws()
 
 
-class AwsMonitoredResource(MonitoredResource):
-    """AwsMonitoredResource represents aws_ec2_instance type monitored resource.
+def get_instance():
+    """Get a monitored resource based on the application environment.
+
+    Returns a self-configured monitored resource, or None if the application is
+    not running on a supported environment.
+
+    It supports following environments (resource types)
+    1. gke_container:
+    2. gce_instance:
+    3. aws_ec2_instance:
+
+    AwsMonitoredResource represents aws_ec2_instance type monitored resource.
     For definition refer to
     https://cloud.google.com/monitoring/api/resources#tag_aws_ec2_instance
-    """
-    @property
-    def resource_type(self):
-        return _AWS_EC2_INSTANCE
 
-    def get_resource_labels(self):
-        aws_util = AwsIdentityDocumentUtils()
-        return aws_util.get_aws_metadata()
+    GkeMonitoredResource represents gke_container type monitored resource.
+    For definition refer to
+    https://cloud.google.com/monitoring/api/resources#tag_gke_container
+
+    GceMonitoredResource represents gce_instance type monitored resource.
+    For definition refer to
+    https://cloud.google.com/monitoring/api/resources#tag_gce_instance
+
+    :return: MonitoredResource or None
+    """
+    if is_gke_environment():
+        return resource.Resource(
+            _GKE_CONTAINER,
+            gcp_metadata_config.GcpMetadataConfig().get_gke_metadata())
+    if is_gce_environment():
+        return resource.Resource(
+            _GCE_INSTANCE,
+            gcp_metadata_config.GcpMetadataConfig().get_gce_metadata())
+    if is_aws_environment():
+        return resource.Resource(
+            _AWS_EC2_INSTANCE,
+            (aws_identity_doc_utils.AwsIdentityDocumentUtils()
+             .get_aws_metadata()))
+
+    return None

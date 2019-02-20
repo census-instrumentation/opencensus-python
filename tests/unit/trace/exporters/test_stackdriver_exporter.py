@@ -65,7 +65,7 @@ class TestStackdriverExporter(unittest.TestCase):
         self.assertTrue(exporter.transport.export_called)
 
     @mock.patch('opencensus.trace.exporters.stackdriver_exporter.'
-                'monitored_resource_util.get_instance',
+                'monitored_resource.get_instance',
                 return_value=None)
     def test_emit(self, mr_mock):
         trace_id = '6e0c63257de34c92bf9efcd03927272e'
@@ -144,7 +144,7 @@ class TestStackdriverExporter(unittest.TestCase):
         self.assertTrue(client.batch_write_spans.called)
 
     @mock.patch('opencensus.trace.exporters.stackdriver_exporter.'
-                'monitored_resource_util.get_instance',
+                'monitored_resource.get_instance',
                 return_value=None)
     def test_translate_to_stackdriver(self, mr_mock):
         project_id = 'PROJECT'
@@ -524,7 +524,7 @@ class TestStackdriverExporter(unittest.TestCase):
 
 class Test_set_attributes_gae(unittest.TestCase):
     @mock.patch('opencensus.trace.exporters.stackdriver_exporter.'
-                'monitored_resource_util.get_instance',
+                'monitored_resource.get_instance',
                 return_value=None)
     def test_set_attributes_gae(self, mr_mock):
         import os
@@ -586,7 +586,7 @@ class Test_set_attributes_gae(unittest.TestCase):
 
 class TestMonitoredResourceAttributes(unittest.TestCase):
     @mock.patch('opencensus.trace.exporters.stackdriver_exporter.'
-                'monitored_resource_util.get_instance')
+                'monitored_resource.get_instance')
     def test_monitored_resource_attributes_gke(self, gmr_mock):
         import os
 
@@ -666,10 +666,9 @@ class TestMonitoredResourceAttributes(unittest.TestCase):
             }
         }
 
-        gmr_mock.return_value = mock.Mock()
-
-        gmr_mock.return_value.resource_type = 'gke_container'
-        gmr_mock.return_value.get_resource_labels.return_value = {
+        mock_resource = mock.Mock()
+        mock_resource.get_type.return_value = 'gke_container'
+        mock_resource.get_labels.return_value = {
             'pod_id': 'pod',
             'cluster_name': 'cluster',
             'namespace_id': 'namespace',
@@ -678,6 +677,7 @@ class TestMonitoredResourceAttributes(unittest.TestCase):
             'instance_id': 'instance',
             'zone': 'zone1'
         }
+        gmr_mock.return_value = mock_resource
         with mock.patch.dict(
                 os.environ, {
                     stackdriver_exporter._APPENGINE_FLEXIBLE_ENV_VM: 'vm',
@@ -693,7 +693,7 @@ class TestMonitoredResourceAttributes(unittest.TestCase):
         self.assertEqual(span, expected)
 
     @mock.patch('opencensus.trace.exporters.stackdriver_exporter.'
-                'monitored_resource_util.get_instance')
+                'monitored_resource.get_instance')
     def test_monitored_resource_attributes_gce(self, gmr_mock):
         trace = {'spans': [{'attributes': {}}]}
 
@@ -729,19 +729,20 @@ class TestMonitoredResourceAttributes(unittest.TestCase):
             }
         }
 
-        gmr_mock.return_value = mock.Mock()
-        gmr_mock.return_value.resource_type = 'gce_instance'
-        gmr_mock.return_value.get_resource_labels.return_value = {
+        mock_resource = mock.Mock()
+        mock_resource.get_type.return_value = 'gce_instance'
+        mock_resource.get_labels.return_value = {
             'project_id': 'my_project',
             'instance_id': '12345',
             'zone': 'zone1'
         }
+        gmr_mock.return_value = mock_resource
         stackdriver_exporter.set_attributes(trace)
         span = trace.get('spans')[0]
         self.assertEqual(span, expected)
 
     @mock.patch('opencensus.trace.exporters.stackdriver_exporter.'
-                'monitored_resource_util.get_instance')
+                'monitored_resource.get_instance')
     def test_monitored_resource_attributes_aws(self, amr_mock):
         trace = {'spans': [{'attributes': {}}]}
 
@@ -771,19 +772,20 @@ class TestMonitoredResourceAttributes(unittest.TestCase):
             }
         }
 
-        amr_mock.return_value = mock.Mock()
-
-        amr_mock.return_value.resource_type = 'aws_ec2_instance'
-        amr_mock.return_value.get_resource_labels.return_value = {
+        mock_resource = mock.Mock()
+        mock_resource.get_type.return_value = 'aws_ec2_instance'
+        mock_resource.get_labels.return_value = {
             'aws_account': '123456789012',
             'region': 'us-west-2'
         }
+        amr_mock.return_value = mock_resource
+
         stackdriver_exporter.set_attributes(trace)
         span = trace.get('spans')[0]
         self.assertEqual(span, expected)
 
     @mock.patch('opencensus.trace.exporters.stackdriver_exporter.'
-                'monitored_resource_util.get_instance')
+                'monitored_resource.get_instance')
     def test_monitored_resource_attributes_None(self, mr_mock):
         trace = {'spans': [{'attributes': {}}]}
 
@@ -806,10 +808,11 @@ class TestMonitoredResourceAttributes(unittest.TestCase):
         span = trace.get('spans')[0]
         self.assertEqual(span, expected)
 
-        mr_mock.return_value = mock.Mock()
-        mr_mock.return_value.resource_type = mock.Mock()
-        mr_mock.return_value.get_resource_labels.return_value = mock.Mock(
-        )
+        mock_resource = mock.Mock()
+        mock_resource.get_type.return_value = mock.Mock()
+        mock_resource.get_labels.return_value = mock.Mock()
+        mr_mock.return_value = mock_resource
+
         stackdriver_exporter.set_attributes(trace)
         span = trace.get('spans')[0]
         self.assertEqual(span, expected)

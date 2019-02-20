@@ -224,7 +224,7 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         self.assertTrue(client.create_metric_descriptor.called)
 
     @mock.patch('opencensus.stats.exporters.stackdriver_exporter.'
-                'monitored_resource_util.get_instance',
+                'monitored_resource.get_instance',
                 return_value=None)
     def test_emit(self, monitor_resource_mock):
         client = mock.Mock()
@@ -270,7 +270,7 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         self.assertFalse(client.create_time_series.called)
 
     @mock.patch('opencensus.stats.exporters.stackdriver_exporter.'
-                'monitored_resource_util.get_instance',
+                'monitored_resource.get_instance',
                 return_value=None)
     def test_handle_upload_with_data(self, monitor_resource_mock):
         client = mock.Mock()
@@ -295,7 +295,7 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         self.assertDictEqual(actual_labels, expected_labels)
 
     @mock.patch('opencensus.stats.exporters.stackdriver_exporter.'
-                'monitored_resource_util.get_instance',
+                'monitored_resource.get_instance',
                 return_value=None)
     def test_create_batched_time_series(self, monitor_resource_mock):
         client = mock.Mock()
@@ -322,7 +322,7 @@ class TestStackdriverStatsExporter(unittest.TestCase):
                                  include_opencensus=True)
 
     @mock.patch('opencensus.stats.exporters.stackdriver_exporter.'
-                'monitored_resource_util.get_instance',
+                'monitored_resource.get_instance',
                 return_value=None)
     def test_create_batched_time_series_with_many(self, monitor_resource_mock):
         client = mock.Mock()
@@ -382,7 +382,7 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         self.assertEqual(registered_exporters, 1)
 
     @mock.patch('opencensus.stats.exporters.stackdriver_exporter.'
-                'monitored_resource_util.get_instance',
+                'monitored_resource.get_instance',
                 return_value=None)
     def test_create_timeseries(self, monitor_resource_mock):
         view_manager, stats_recorder, exporter = \
@@ -437,7 +437,7 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         self.assertEqual(value.distribution_value.mean, 25 * MiB)
 
     @mock.patch('opencensus.stats.exporters.stackdriver_exporter.'
-                'monitored_resource_util.get_instance')
+                'monitored_resource.get_instance')
     def test_create_timeseries_with_resource(self, monitor_resource_mock):
         view_manager, stats_recorder, exporter = \
             self.setup_create_timeseries_test()
@@ -464,10 +464,10 @@ class TestStackdriverStatsExporter(unittest.TestCase):
             'namespace_id': 'namespace'
         }
 
-        monitor_resource_mock.return_value = mock.Mock()
-        monitor_resource_mock.return_value.resource_type = 'gce_instance'
-        monitor_resource_mock.return_value.get_resource_labels.return_value =\
-            mocked_labels
+        mock_resource = mock.Mock()
+        mock_resource.get_type.return_value = 'gce_instance'
+        mock_resource.get_labels.return_value = mocked_labels
+        monitor_resource_mock.return_value = mock_resource
 
         time_series_list = exporter.create_time_series_list(v_data, "", "")
         self.assertEqual(len(time_series_list), 1)
@@ -503,10 +503,10 @@ class TestStackdriverStatsExporter(unittest.TestCase):
             'namespace_id': 'namespace'
         }
 
-        monitor_resource_mock.return_value = mock.Mock()
-        monitor_resource_mock.return_value.resource_type = 'gke_container'
-        monitor_resource_mock.return_value.get_resource_labels.return_value =\
-            mocked_labels
+        mock_resource = mock.Mock()
+        mock_resource.get_type.return_value = 'gke_container'
+        mock_resource.get_labels.return_value = mocked_labels
+        monitor_resource_mock.return_value = mock_resource
 
         time_series_list = exporter.create_time_series_list(v_data, "", "")
         self.assertEqual(len(time_series_list), 1)
@@ -531,10 +531,10 @@ class TestStackdriverStatsExporter(unittest.TestCase):
             'region': 'us-east1',
         }
 
-        monitor_resource_mock.return_value = mock.Mock()
-        monitor_resource_mock.return_value.resource_type = 'aws_ec2_instance'
-        monitor_resource_mock.return_value.get_resource_labels.return_value =\
-            mocked_labels
+        mock_resource = mock.Mock()
+        mock_resource.get_type.return_value = 'aws_ec2_instance'
+        mock_resource.get_labels.return_value = mocked_labels
+        monitor_resource_mock.return_value = mock_resource
 
         time_series_list = exporter.create_time_series_list(v_data, "", "")
         self.assertEqual(len(time_series_list), 1)
@@ -551,10 +551,10 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         self.assertIsNotNone(time_series)
 
         # check for out of box monitored resource
-        monitor_resource_mock.return_value = mock.Mock()
-        monitor_resource_mock.return_value.resource_type = ''
-        monitor_resource_mock.return_value.get_resource_labels.return_value =\
-            mock.Mock()
+        mock_resource = mock.Mock()
+        mock_resource.get_type.return_value = ''
+        mock_resource.get_labels.return_value = mock.Mock()
+        monitor_resource_mock.return_value = mock_resource
 
         time_series_list = exporter.create_time_series_list(v_data, "", "")
         self.assertEqual(len(time_series_list), 1)
@@ -567,7 +567,7 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         self.assertIsNotNone(time_series)
 
     @mock.patch('opencensus.stats.exporters.stackdriver_exporter.'
-                'monitored_resource_util.get_instance',
+                'monitored_resource.get_instance',
                 return_value=None)
     def test_create_timeseries_str_tagvalue(self, monitor_resource_mock):
         view_manager, stats_recorder, exporter = \
@@ -608,7 +608,7 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         self.assertEqual(time_series.points[0].value, expected_value)
 
     @mock.patch('opencensus.stats.exporters.stackdriver_exporter.'
-                'monitored_resource_util.get_instance',
+                'monitored_resource.get_instance',
                 return_value=None)
     def test_create_timeseries_str_tagvalue_count_aggregtation(
             self, monitor_resource_mock):
@@ -650,7 +650,7 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         self.assertEqual(time_series.points[0].value, expected_value)
 
     @mock.patch('opencensus.stats.exporters.stackdriver_exporter.'
-                'monitored_resource_util.get_instance',
+                'monitored_resource.get_instance',
                 return_value=None)
     def test_create_timeseries_last_value_float_tagvalue(
             self, monitor_resource_mock):
@@ -692,7 +692,7 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         self.assertEqual(time_series.points[0].value, expected_value)
 
     @mock.patch('opencensus.stats.exporters.stackdriver_exporter.'
-                'monitored_resource_util.get_instance',
+                'monitored_resource.get_instance',
                 return_value=None)
     def test_create_timeseries_float_tagvalue(self, monitor_resource_mock):
         client = mock.Mock()
@@ -747,7 +747,7 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         self.assertEqual(time_series.points[0].value, expected_value)
 
     @mock.patch('opencensus.stats.exporters.stackdriver_exporter.'
-                'monitored_resource_util.get_instance',
+                'monitored_resource.get_instance',
                 return_value=None)
     def test_create_timeseries_multiple_tag_values(self,
                                                    monitoring_resoure_mock):
@@ -807,7 +807,7 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         self.assertEqual(value2.distribution_value.mean, 12 * MiB)
 
     @mock.patch('opencensus.stats.exporters.stackdriver_exporter.'
-                'monitored_resource_util.get_instance',
+                'monitored_resource.get_instance',
                 return_value=None)
     def test_create_timeseries_disjoint_tags(self, monitoring_resoure_mock):
         view_manager, stats_recorder, exporter = \
