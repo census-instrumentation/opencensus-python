@@ -14,8 +14,12 @@
 
 
 from copy import copy
+import logging
 import os
 import re
+
+
+logger = logging.getLogger(__name__)
 
 
 OC_RESOURCE_TYPE = 'OC_RESOURCE_TYPE'
@@ -181,8 +185,8 @@ def parse_labels(labels_str):
         gd = kv.groupdict()
         key = unquote(gd['key'])
         if key in labels:
-            raise ValueError('Duplicate label key "{}"')
-        labels[unquote(gd['key'])] = unquote(gd['val'])
+            logger.warning('Duplicate label key "%s"', key)
+        labels[key] = unquote(gd['val'])
     return labels
 
 
