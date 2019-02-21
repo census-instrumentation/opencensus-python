@@ -22,27 +22,27 @@ OC_RESOURCE_TYPE = 'OC_RESOURCE_TYPE'
 OC_RESOURCE_LABELS = 'OC_RESOURCE_LABELS'
 
 # Matches anything outside ASCII 32-126 inclusive
-NON_PRINTABLE_ASCII = re.compile(
+_NON_PRINTABLE_ASCII = re.compile(
     r'[^ !"#$%&\'()*+,\-./:;<=>?@\[\\\]^_`{|}~0-9a-zA-Z]')
 
 # Label key/value tokens, may be quoted
-WORD_RES = r'(\'[^\']*\'|"[^"]*"|[^\s,=]+)'
+_WORD_RES = r'(\'[^\']*\'|"[^"]*"|[^\s,=]+)'
 
-KV_RE = re.compile(r"""
+_KV_RE = re.compile(r"""
     \s*                 # ignore leading spaces
     (?P<key>{word_re})  # capture the key word
     \s*=\s*
     (?P<val>{word_re})  # capture the value word
     \s*                 # ignore trailing spaces
-    """.format(word_re=WORD_RES), re.VERBOSE)
+    """.format(word_re=_WORD_RES), re.VERBOSE)
 
-LABELS_RE = re.compile(r"""
-    ^\s*{word_re}\s*=\s*{word_re}\s*     # KV_RE without the named groups
+_LABELS_RE = re.compile(r"""
+    ^\s*{word_re}\s*=\s*{word_re}\s*     # _KV_RE without the named groups
     (,\s*{word_re}\s*=\s*{word_re}\s*)*  # more KV pairs, comma delimited
     $
-    """.format(word_re=WORD_RES), re.VERBOSE)
+    """.format(word_re=_WORD_RES), re.VERBOSE)
 
-UNQUOTE_RE = re.compile(r'^([\'"]?)([^\1]*)(\1)$')
+_UNQUOTE_RE = re.compile(r'^([\'"]?)([^\1]*)(\1)$')
 
 
 def merge_resources(r1, r2):
@@ -76,7 +76,7 @@ def check_ascii_256(string):
         return
     if len(string) > 256:
         raise ValueError("Value is longer than 256 characters")
-    bad_char = NON_PRINTABLE_ASCII.search(string)
+    bad_char = _NON_PRINTABLE_ASCII.search(string)
     if bad_char:
         raise ValueError(u'Character "{}" at position {} is not printable '
                          'ASCII'
@@ -161,7 +161,7 @@ def unquote(string):
     >>> unquote('"a\\'b\\'c"')
     "a'b'c"
     """
-    return UNQUOTE_RE.sub(r'\2', string)
+    return _UNQUOTE_RE.sub(r'\2', string)
 
 
 def parse_labels(labels_str):
@@ -174,10 +174,10 @@ def parse_labels(labels_str):
     >>> parse_labels("k1='v1,=z1'")
     {'k1': 'v1,=z1'}
     """
-    if not LABELS_RE.match(labels_str):
+    if not _LABELS_RE.match(labels_str):
         return None
     labels = {}
-    for kv in KV_RE.finditer(labels_str):
+    for kv in _KV_RE.finditer(labels_str):
         gd = kv.groupdict()
         key = unquote(gd['key'])
         if key in labels:
