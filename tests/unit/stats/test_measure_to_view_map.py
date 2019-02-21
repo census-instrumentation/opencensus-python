@@ -17,10 +17,23 @@ import unittest
 import mock
 
 from opencensus.stats import measure_to_view_map as measure_to_view_map_module
+from opencensus.stats.aggregation import CountAggregation
 from opencensus.stats.measure import BaseMeasure
 from opencensus.stats.measure import MeasureInt
 from opencensus.stats.view import View
 from opencensus.stats.view_data import ViewData
+from opencensus.tags import tag_key as tag_key_module
+
+
+METHOD_KEY = tag_key_module.TagKey("method")
+REQUEST_COUNT_MEASURE = MeasureInt(
+    "request_count", "number of requests", "1")
+REQUEST_COUNT_VIEW_NAME = "request_count_view"
+COUNT = CountAggregation()
+REQUEST_COUNT_VIEW = View(
+    REQUEST_COUNT_VIEW_NAME,
+    "number of requests broken down by methods",
+    [METHOD_KEY], REQUEST_COUNT_MEASURE, COUNT)
 
 
 class TestMeasureToViewMap(unittest.TestCase):
@@ -378,3 +391,24 @@ class TestMeasureToViewMap(unittest.TestCase):
         measure_to_view_map._registered_measures = {}
         measure_to_view_map.export(view_data)
         self.assertTrue(True)
+
+    def test_export_duplicates_viewdata(self):
+        """Check that we copy view data on export."""
+        mtvm = measure_to_view_map_module.MeasureToViewMap()
+
+        exporter = mock.Mock()
+        mtvm.exporters.append(exporter)
+
+        timestamp1 = mock.Mock()
+        timestamp2 = mock.Mock()
+        view_data = ViewData(REQUEST_COUNT_VIEW, timestamp1, timestamp2)
+        mtvm.export([view_data])
+        mtvm.export([view_data])
+        self.assertEqual(exporter.export.call_count, 2)
+
+        exported_call1, exported_call2 = exporter.export.call_args_list
+        exported_vd1 = exported_call1[0][0][0]
+        exported_vd2 = exported_call2[0][0][0]
+        self.assertIsNot(exported_vd1, exported_vd2)
+        self.assertIsNot(exported_vd1.end_time, view_data.end_time)
+        self.assertIsNot(exported_vd2.end_time, view_data.end_time)
