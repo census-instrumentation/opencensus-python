@@ -15,9 +15,9 @@
 # limitations under the License.
 
 try:
-    from mock import Mock
+    import mock
 except ImportError:
-    from unittest.mock import Mock
+    from unittest import mock
 
 import unittest
 
@@ -86,7 +86,7 @@ class TestResource(unittest.TestCase):
         self.assertEqual(resource.get_labels(), resource_labels)
         self.assertIsNot(resource.get_labels(), resource_labels)
         got_labels = resource.get_labels()
-        got_labels[label_key] = Mock()
+        got_labels[label_key] = mock.Mock()
         self.assertNotEqual(resource.get_labels(), got_labels)
         self.assertEqual(resource.get_labels()[label_key], label_value)
 
@@ -142,3 +142,76 @@ class TestResourceModule(unittest.TestCase):
             resource_module.check_ascii_256('abc' + chr(31))
         with self.assertRaises(ValueError):
             resource_module.check_ascii_256(u'abc' + chr(31))
+
+    def test_get_from_env(self):
+        with mock.patch.dict('os.environ', {
+                'OC_RESOURCE_TYPE': 'opencensus.io/example',
+                'OC_RESOURCE_LABELS': 'k1=v1,k2=v2'
+        }):
+            resource = resource_module.get_from_env()
+        self.assertEqual(resource.type, 'opencensus.io/example')
+        self.assertDictEqual(resource.labels, {'k1': 'v1', 'k2': 'v2'})
+
+    def test_get_from_env_no_type(self):
+        with mock.patch.dict('os.environ', {
+                'OC_RESOURCE_LABELS': 'k1=v1,k2=v2'
+        }):
+            self.assertIsNone(resource_module.get_from_env())
+
+    def test_get_from_env_no_labels(self):
+        with mock.patch.dict('os.environ', {
+                'OC_RESOURCE_TYPE': 'opencensus.io/example',
+        }):
+            resource = resource_module.get_from_env()
+        self.assertEqual(resource.type, 'opencensus.io/example')
+        self.assertDictEqual(resource.labels, {})
+
+    def test_get_from_env_outer_spaces(self):
+        with mock.patch.dict('os.environ', {
+                'OC_RESOURCE_TYPE': ' opencensus.io/example  ',
+                'OC_RESOURCE_LABELS': 'k1= v1 ,  k2=v2  '
+        }):
+            resource = resource_module.get_from_env()
+        self.assertEqual(resource.type, 'opencensus.io/example')
+        self.assertDictEqual(resource.labels, {'k1': 'v1', 'k2': 'v2'})
+
+    def test_get_from_env_inner_spaces(self):
+        # Spaces inside key/label values should be contained by quotes, refuse
+        # to parse this.
+        with mock.patch.dict('os.environ', {
+                'OC_RESOURCE_TYPE': 'opencensus.io / example',
+                'OC_RESOURCE_LABELS': 'key one=value one,  key two= value two'
+        }):
+            resource = resource_module.get_from_env()
+        self.assertEqual(resource.type, 'opencensus.io / example')
+        self.assertDictEqual(resource.labels, {})
+
+    def test_get_from_env_quoted_chars(self):
+        with mock.patch.dict('os.environ', {
+                'OC_RESOURCE_TYPE': 'opencensus.io/example',
+                'OC_RESOURCE_LABELS': '"k1=\'"="v1,,,", "k2"=\'="=??\''
+        }):
+            resource = resource_module.get_from_env()
+        self.assertDictEqual(resource.labels, {"k1='": 'v1,,,', 'k2': '="=??'})
+
+    def test_parse_labels(self):
+        self.assertEqual(resource_module.parse_labels("k1=v1"), {'k1': 'v1'})
+        self.assertEqual(
+            resource_module.parse_labels("k1=v1,k2=v2"),
+            {'k1': 'v1', 'k2': 'v2'})
+
+        self.assertEqual(
+            resource_module.parse_labels('k1="v1"'),
+            {'k1': 'v1'})
+
+        self.assertEqual(
+            resource_module.parse_labels('k1="v1==,"'),
+            {'k1': 'v1==,'})
+
+        self.assertEqual(
+            resource_module.parse_labels('k1="one/two/three"'),
+            {'k1': 'one/two/three'})
+
+        self.assertEqual(
+            resource_module.parse_labels('k1="one\\two\\three"'),
+            {'k1': 'one\\two\\three'})
