@@ -16,11 +16,8 @@ import unittest
 
 import mock
 
-from opencensus.stats import aggregation as aggregation_module
-from opencensus.stats import measure as measure_module
-from opencensus.stats import view as view_module
-from opencensus.stats import view_data as view_data_module
 from opencensus.stats import measure_to_view_map as measure_to_view_map_module
+from opencensus.stats.aggregation import CountAggregation
 from opencensus.stats.measure import BaseMeasure
 from opencensus.stats.measure import MeasureInt
 from opencensus.stats.view import View
@@ -29,11 +26,11 @@ from opencensus.tags import tag_key as tag_key_module
 
 
 METHOD_KEY = tag_key_module.TagKey("method")
-REQUEST_COUNT_MEASURE = measure_module.MeasureInt(
+REQUEST_COUNT_MEASURE = MeasureInt(
     "request_count", "number of requests", "1")
 REQUEST_COUNT_VIEW_NAME = "request_count_view"
-COUNT = aggregation_module.CountAggregation()
-REQUEST_COUNT_VIEW = view_module.View(
+COUNT = CountAggregation()
+REQUEST_COUNT_VIEW = View(
     REQUEST_COUNT_VIEW_NAME,
     "number of requests broken down by methods",
     [METHOD_KEY], REQUEST_COUNT_MEASURE, COUNT)
@@ -404,8 +401,7 @@ class TestMeasureToViewMap(unittest.TestCase):
 
         timestamp1 = mock.Mock()
         timestamp2 = mock.Mock()
-        view_data = view_data_module.ViewData(
-            REQUEST_COUNT_VIEW, timestamp1, timestamp2)
+        view_data = ViewData(REQUEST_COUNT_VIEW, timestamp1, timestamp2)
         mtvm.export([view_data])
         mtvm.export([view_data])
         self.assertEqual(exporter.export.call_count, 2)
