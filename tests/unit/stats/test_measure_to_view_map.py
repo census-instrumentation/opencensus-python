@@ -378,3 +378,20 @@ class TestMeasureToViewMap(unittest.TestCase):
         measure_to_view_map._registered_measures = {}
         measure_to_view_map.export(view_data)
         self.assertTrue(True)
+
+    def test_export_duplicates_viewdata(self):
+        """Check that we copy view data on export."""
+        mtvm = measure_to_view_map_module.MeasureToViewMap()
+
+        exporter = mock.Mock()
+        mtvm.exporters.append(exporter)
+
+        view_data = mock.Mock(spec=ViewData)
+        mtvm.export([view_data])
+        mtvm.export([view_data])
+        self.assertEqual(exporter.export.call_count, 2)
+
+        exported_call1, exported_call2 = exporter.export.call_args_list
+        exported_vd1 = exported_call1[0][0][0]
+        exported_vd2 = exported_call2[0][0][0]
+        self.assertIsNot(exported_vd1, exported_vd2)
