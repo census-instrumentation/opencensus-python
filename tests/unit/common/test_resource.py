@@ -215,3 +215,6 @@ class TestResourceModule(unittest.TestCase):
         self.assertEqual(
             resource_module.parse_labels('k1="one\\two\\three"'),
             {'k1': 'one\\two\\three'})
+
+        with self.assertRaises(ValueError):
+            resource_module.parse_labels('k1=v1, k2=v2, k1=v3')

@@ -179,6 +179,9 @@ def parse_labels(labels_str):
     labels = {}
     for kv in KV_RE.finditer(labels_str):
         gd = kv.groupdict()
+        key = unquote(gd['key'])
+        if key in labels:
+            raise ValueError('Duplicate label key "{}"')
         labels[unquote(gd['key'])] = unquote(gd['val'])
     return labels
 
