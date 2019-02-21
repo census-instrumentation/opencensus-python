@@ -15,8 +15,8 @@
 import os
 
 from opencensus.common import resource
-from opencensus.common.monitored_resource_util import aws_identity_doc_utils
-from opencensus.common.monitored_resource_util import gcp_metadata_config
+from opencensus.common.monitored_resource import aws_identity_doc_utils
+from opencensus.common.monitored_resource import gcp_metadata_config
 
 
 # Supported environments (resource types)
