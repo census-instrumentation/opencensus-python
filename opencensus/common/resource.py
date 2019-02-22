@@ -70,9 +70,8 @@ def merge_resources(resource_list):
         if rr.type:
             rtype = rr.type
             break
-    last, rest = resource_list[::-1][0], resource_list[::-1][1:]
-    labels = copy(last.labels)
-    for rr in rest:
+    labels = {}
+    for rr in reversed(resource_list):
         labels.update(rr.labels)
     return Resource(rtype, labels)
 
