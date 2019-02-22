@@ -14,12 +14,39 @@
 
 
 from copy import copy
+import logging
+import os
 import re
 
 
+logger = logging.getLogger(__name__)
+
+
+OC_RESOURCE_TYPE = 'OC_RESOURCE_TYPE'
+OC_RESOURCE_LABELS = 'OC_RESOURCE_LABELS'
+
 # Matches anything outside ASCII 32-126 inclusive
-NON_PRINTABLE_ASCII = re.compile(
+_NON_PRINTABLE_ASCII = re.compile(
     r'[^ !"#$%&\'()*+,\-./:;<=>?@\[\\\]^_`{|}~0-9a-zA-Z]')
+
+# Label key/value tokens, may be quoted
+_WORD_RES = r'(\'[^\']*\'|"[^"]*"|[^\s,=]+)'
+
+_KV_RE = re.compile(r"""
+    \s*                 # ignore leading spaces
+    (?P<key>{word_re})  # capture the key word
+    \s*=\s*
+    (?P<val>{word_re})  # capture the value word
+    \s*                 # ignore trailing spaces
+    """.format(word_re=_WORD_RES), re.VERBOSE)
+
+_LABELS_RE = re.compile(r"""
+    ^\s*{word_re}\s*=\s*{word_re}\s*     # _KV_RE without the named groups
+    (,\s*{word_re}\s*=\s*{word_re}\s*)*  # more KV pairs, comma delimited
+    $
+    """.format(word_re=_WORD_RES), re.VERBOSE)
+
+_UNQUOTE_RE = re.compile(r'^([\'"]?)([^\1]*)(\1)$')
 
 
 def merge_resources(r1, r2):
@@ -53,7 +80,7 @@ def check_ascii_256(string):
         return
     if len(string) > 256:
         raise ValueError("Value is longer than 256 characters")
-    bad_char = NON_PRINTABLE_ASCII.search(string)
+    bad_char = _NON_PRINTABLE_ASCII.search(string)
     if bad_char:
         raise ValueError(u'Character "{}" at position {} is not printable '
                          'ASCII'
@@ -124,3 +151,60 @@ class Resource(object):
         :return: The new combined resource.
         """
         return merge_resources(self, other)
+
+
+def unquote(string):
+    """Strip quotes surrounding `string` if they exist.
+
+    >>> unquote('abc')
+    'abc'
+    >>> unquote('"abc"')
+    'abc'
+    >>> unquote("'abc'")
+    'abc'
+    >>> unquote('"a\\'b\\'c"')
+    "a'b'c"
+    """
+    return _UNQUOTE_RE.sub(r'\2', string)
+
+
+def parse_labels(labels_str):
+    """Parse label keys and values following the Resource spec.
+
+    >>> parse_labels("k=v")
+    {'k': 'v'}
+    >>> parse_labels("k1=v1, k2=v2")
+    {'k1': 'v1', 'k2': 'v2'}
+    >>> parse_labels("k1='v1,=z1'")
+    {'k1': 'v1,=z1'}
+    """
+    if not _LABELS_RE.match(labels_str):
+        return None
+    labels = {}
+    for kv in _KV_RE.finditer(labels_str):
+        gd = kv.groupdict()
+        key = unquote(gd['key'])
+        if key in labels:
+            logger.warning('Duplicate label key "%s"', key)
+        labels[key] = unquote(gd['val'])
+    return labels
+
+
+def get_from_env():
+    """Get a Resource from environment variables.
+
+    :rtype: :class:`Resource`
+    :return: A resource with type and labels from the environment.
+    """
+    type_env = os.getenv(OC_RESOURCE_TYPE)
+    if type_env is None:
+        return None
+    type_env = type_env.strip()
+
+    labels_env = os.getenv(OC_RESOURCE_LABELS)
+    if labels_env is None:
+        return Resource(type_env)
+
+    labels = parse_labels(labels_env)
+
+    return Resource(type_env, labels)
