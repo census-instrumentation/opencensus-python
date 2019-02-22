@@ -20,14 +20,14 @@ from opencensus.metrics.export import value as value_module
 
 class TestPoint(unittest.TestCase):
     def setUp(self):
-        self.double_value = value_module.Value.double_value(55.5)
-        self.long_value = value_module.Value.long_value(9876543210)
+        self.double_value = value_module.ValueDouble(55.5)
+        self.long_value = value_module.ValueLong(9876543210)
         self.timestamp = '2018-10-06T17:57:57.936475Z'
 
         value_at_percentile = [summary_module.ValueAtPercentile(99.5, 10.2)]
         snapshot = summary_module.Snapshot(10, 87.07, value_at_percentile)
         self.summary = summary_module.Summary(10, 6.6, snapshot)
-        self.summary_value = value_module.Value.summary_value(self.summary)
+        self.summary_value = value_module.ValueSummary(self.summary)
         self.distribution_value = value_module.ValueDistribution(
             100,
             1000.0,
