@@ -123,6 +123,21 @@ class TestResource(unittest.TestCase):
 
 class TestResourceModule(unittest.TestCase):
 
+    def test_merge_resource(self):
+        with self.assertRaises(ValueError):
+            resource_module.merge_resources(None)
+        with self.assertRaises(ValueError):
+            resource_module.merge_resources([])
+
+        r1 = Resource(None, {'lk1': 'lv11'})
+        r2 = Resource('t2', {'lk1': 'lv12', 'lk2': 'lv22'})
+        r3 = Resource('t3', {'lk2': 'lv23', 'lk3': 'lv33'})
+
+        merged = resource_module.merge_resources([r1, r2, r3])
+        self.assertEqual(merged.type, 't2')
+        self.assertDictEqual(
+            merged.labels, {'lk1': 'lv11', 'lk2': 'lv22', 'lk3': 'lv33'})
+
     def test_check_ascii_256(self):
         self.assertIsNone(resource_module.check_ascii_256(None))
 
