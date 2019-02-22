@@ -64,18 +64,26 @@ def get_instance():
     :rtype: :class:`opencensus.common.resource.Resource` or None
     :return: A `Resource` configured for the current environment.
     """
+    resources = []
+    env_resource = resource.get_from_env()
+    if env_resource is not None:
+        resources.append(env_resource)
+
     if is_gke_environment():
-        return resource.Resource(
+        resources.append(resource.Resource(
             _GKE_CONTAINER,
-            gcp_metadata_config.GcpMetadataConfig().get_gke_metadata())
+            gcp_metadata_config.GcpMetadataConfig().get_gke_metadata()))
+
     if is_gce_environment():
-        return resource.Resource(
+        resources.append(resource.Resource(
             _GCE_INSTANCE,
-            gcp_metadata_config.GcpMetadataConfig().get_gce_metadata())
-    if is_aws_environment():
-        return resource.Resource(
+            gcp_metadata_config.GcpMetadataConfig().get_gce_metadata()))
+    elif is_aws_environment():
+        resources.append(resource.Resource(
             _AWS_EC2_INSTANCE,
             (aws_identity_doc_utils.AwsIdentityDocumentUtils()
-             .get_aws_metadata()))
+             .get_aws_metadata())))
 
-    return None
+    if not resources:
+        return None
+    return resource.merge_resources(resources)

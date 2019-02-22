@@ -19,6 +19,7 @@ try:
 except ImportError:
     from unittest import mock
 
+import os
 import unittest
 
 from opencensus.common import resource as resource_module
@@ -138,6 +139,13 @@ class TestResourceModule(unittest.TestCase):
         self.assertDictEqual(
             merged.labels, {'lk1': 'lv11', 'lk2': 'lv22', 'lk3': 'lv33'})
 
+    def test_merge_resource_no_type(self):
+        r1 = Resource(None)
+        r2 = Resource(None)
+
+        merged = resource_module.merge_resources([r1, r2])
+        self.assertEqual(merged.type, None)
+
     def test_check_ascii_256(self):
         self.assertIsNone(resource_module.check_ascii_256(None))
 
@@ -171,12 +179,20 @@ class TestResourceModule(unittest.TestCase):
         with mock.patch.dict('os.environ', {
                 'OC_RESOURCE_LABELS': 'k1=v1,k2=v2'
         }):
+            try:
+                del os.environ['OC_RESOURCE_TYPE']
+            except KeyError:
+                pass
             self.assertIsNone(resource_module.get_from_env())
 
     def test_get_from_env_no_labels(self):
         with mock.patch.dict('os.environ', {
                 'OC_RESOURCE_TYPE': 'opencensus.io/example',
         }):
+            try:
+                del os.environ['OC_RESOURCE_LABELS']
+            except KeyError:
+                pass
             resource = resource_module.get_from_env()
         self.assertEqual(resource.type, 'opencensus.io/example')
         self.assertDictEqual(resource.labels, {})

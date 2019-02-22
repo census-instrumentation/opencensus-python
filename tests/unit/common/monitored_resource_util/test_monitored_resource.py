@@ -40,6 +40,27 @@ def mock_use_aws(use):
 
 
 @contextmanager
+def no_oc_env():
+    with mock.patch.dict(os.environ):
+        try:
+            del os.environ['OC_RESOURCE_TYPE']
+        except KeyError:
+            pass
+        try:
+            del os.environ['OC_RESOURCE_LABELS']
+        except KeyError:
+            pass
+        yield
+
+
+def mock_oc_env():
+    return mock.patch.dict('os.environ', {
+        'OC_RESOURCE_TYPE': 'mock_resource_type',
+        'OC_RESOURCE_LABELS': 'mock_label_key=mock_label_value'
+    })
+
+
+@contextmanager
 def mock_gke_env():
     with mock_use_gke(True):
         with mock_use_gce(False):
@@ -77,10 +98,19 @@ class TestMonitoredResource(unittest.TestCase):
         gcp_metadata_mock.return_value = mock.Mock()
         gcp_metadata_mock.return_value.get_gce_metadata.return_value =\
             mocked_labels
-        with mock_gce_env():
-            resource = monitored_resource.get_instance()
+        with no_oc_env():
+            with mock_gce_env():
+                resource = monitored_resource.get_instance()
         self.assertEquals(resource.get_type(), 'gce_instance')
         self.assertEquals(resource.get_labels(), mocked_labels)
+
+        with mock_oc_env():
+            with mock_gce_env():
+                resource = monitored_resource.get_instance()
+        self.assertEqual(resource.get_type(), 'mock_resource_type')
+        self.assertDictContainsSubset(
+            {'mock_label_key': 'mock_label_value'}, resource.get_labels())
+        self.assertDictContainsSubset(mocked_labels, resource.get_labels())
 
     @mock.patch('opencensus.common.monitored_resource.monitored_resource'
                 '.gcp_metadata_config.GcpMetadataConfig')
@@ -99,10 +129,19 @@ class TestMonitoredResource(unittest.TestCase):
         gcp_metadata_mock.return_value = mock.Mock()
         gcp_metadata_mock.return_value.get_gke_metadata.return_value =\
             mocked_labels
-        with mock_gke_env():
-            resource = monitored_resource.get_instance()
+        with no_oc_env():
+            with mock_gke_env():
+                resource = monitored_resource.get_instance()
         self.assertEquals(resource.get_type(), 'gke_container')
         self.assertEquals(resource.get_labels(), mocked_labels)
+
+        with mock_oc_env():
+            with mock_gke_env():
+                resource = monitored_resource.get_instance()
+        self.assertEqual(resource.get_type(), 'mock_resource_type')
+        self.assertDictContainsSubset(
+            {'mock_label_key': 'mock_label_value'}, resource.get_labels())
+        self.assertDictContainsSubset(mocked_labels, resource.get_labels())
 
     @mock.patch('opencensus.common.monitored_resource.monitored_resource'
                 '.aws_identity_doc_utils.AwsIdentityDocumentUtils')
@@ -118,20 +157,35 @@ class TestMonitoredResource(unittest.TestCase):
         aws_metadata_mock.return_value.get_aws_metadata.return_value =\
             mocked_labels
 
-        with mock_aws_env():
-            resource = monitored_resource.get_instance()
+        with no_oc_env():
+            with mock_aws_env():
+                resource = monitored_resource.get_instance()
         self.assertEquals(resource.get_type(), 'aws_ec2_instance')
         self.assertEquals(resource.get_labels(), mocked_labels)
+
+        with mock_oc_env():
+            with mock_aws_env():
+                resource = monitored_resource.get_instance()
+        self.assertEqual(resource.get_type(), 'mock_resource_type')
+        self.assertDictContainsSubset(
+            {'mock_label_key': 'mock_label_value'}, resource.get_labels())
+        self.assertDictContainsSubset(mocked_labels, resource.get_labels())
 
     def test_gke_environment(self):
         patch = mock.patch.dict(os.environ,
                                 {'KUBERNETES_SERVICE_HOST': '127.0.0.1'})
 
-        with patch:
-            mr = monitored_resource.get_instance()
+        with no_oc_env():
+            with patch:
+                mr = monitored_resource.get_instance()
+        self.assertIsNotNone(mr)
+        self.assertEqual(mr.get_type(), "gke_container")
 
-            self.assertIsNotNone(mr)
-            self.assertEqual(mr.get_type(), "gke_container")
+        with mock_oc_env():
+            mr = monitored_resource.get_instance()
+        self.assertEqual(mr.get_type(), 'mock_resource_type')
+        self.assertDictContainsSubset(
+            {'mock_label_key': 'mock_label_value'}, mr.get_labels())
 
     def test_gce_environment(self):
         patch = mock.patch(
@@ -139,11 +193,18 @@ class TestMonitoredResource(unittest.TestCase):
             'gcp_metadata_config.GcpMetadataConfig.'
             'is_running_on_gcp',
             return_value=True)
-        with patch:
-            mr = monitored_resource.get_instance()
+        with no_oc_env():
+            with patch:
+                mr = monitored_resource.get_instance()
 
-            self.assertIsNotNone(mr)
-            self.assertEqual(mr.get_type(), "gce_instance")
+        self.assertIsNotNone(mr)
+        self.assertEqual(mr.get_type(), "gce_instance")
+
+        with mock_oc_env():
+            mr = monitored_resource.get_instance()
+        self.assertEqual(mr.get_type(), 'mock_resource_type')
+        self.assertDictContainsSubset(
+            {'mock_label_key': 'mock_label_value'}, mr.get_labels())
 
     @mock.patch('opencensus.common.monitored_resource.'
                 'gcp_metadata_config.GcpMetadataConfig.is_running_on_gcp',
@@ -153,10 +214,16 @@ class TestMonitoredResource(unittest.TestCase):
                 'is_running_on_aws',
                 return_value=True)
     def test_aws_environment(self, aws_util_mock, gcp_metadata_mock):
-        mr = monitored_resource.get_instance()
-
+        with no_oc_env():
+            mr = monitored_resource.get_instance()
         self.assertIsNotNone(mr)
         self.assertEqual(mr.get_type(), "aws_ec2_instance")
+
+        with mock_oc_env():
+            mr = monitored_resource.get_instance()
+        self.assertEqual(mr.get_type(), 'mock_resource_type')
+        self.assertDictContainsSubset(
+            {'mock_label_key': 'mock_label_value'}, mr.get_labels())
 
     @mock.patch('opencensus.common.monitored_resource.'
                 'gcp_metadata_config.GcpMetadataConfig.is_running_on_gcp',
@@ -166,6 +233,13 @@ class TestMonitoredResource(unittest.TestCase):
                 'is_running_on_aws',
                 return_value=False)
     def test_non_supported_environment(self, aws_util_mock, gcp_metadata_mock):
-        mr = monitored_resource.get_instance()
-
+        with no_oc_env():
+            mr = monitored_resource.get_instance()
         self.assertIsNone(mr)
+
+        with mock_oc_env():
+            mr = monitored_resource.get_instance()
+        self.assertIsNotNone(mr)
+        self.assertEqual(mr.get_type(), 'mock_resource_type')
+        self.assertDictEqual(
+            mr.get_labels(), {'mock_label_key': 'mock_label_value'})
