@@ -201,7 +201,7 @@ def add_proto_attribute_value(
         pb_attributes,
         attribute_key,
         attribute_value):
-    """Sets string, int or boolean value on protobuf
+    """Sets string, int, boolean or float value on protobuf
         span, link or annotation attributes.
 
     :type pb_attributes:
@@ -224,6 +224,10 @@ def add_proto_attribute_value(
     elif isinstance(attribute_value, str):
         pb_attributes.attribute_map[attribute_key].\
             string_value.value = attribute_value
+    # TODO(songya): uncomment this once the gen-proto files are updated.
+    # elif isinstance(attribute_value, float):
+    #     pb_attributes.attribute_map[attribute_key].\
+    #         double_value.value = attribute_value
     else:
         pb_attributes.attribute_map[attribute_key].\
             string_value.value = str(attribute_value)
