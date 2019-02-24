@@ -181,13 +181,15 @@ class TestJaegerExporter(unittest.TestCase):
             'key_bool': False,
             'key_string': 'hello_world',
             'key_int': 3,
-            'key_double': 111.22
+            'key_double': 111.22,
+            'key_unsupported_type': ()
         }
 
         annotation_attributes = {
             'annotation_bool': True,
             'annotation_string': 'annotation_test',
-            'key_float': .3
+            'key_float': .3,
+            'key_unsupported_type': {}
         }
 
         link_attributes = {'key_bool': True}
