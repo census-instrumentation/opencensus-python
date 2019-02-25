@@ -42,7 +42,6 @@ class TestTraceExporterUtils(unittest.TestCase):
                 'test_str_key': 'test_str_value',
                 'test_int_key': 1,
                 'test_bool_key': False
-                # 'test_double_key': 567.89
             },
             start_time='2017-08-15T18:02:26.071158Z',
             end_time='2017-08-15T18:02:36.071158Z',
@@ -76,8 +75,6 @@ class TestTraceExporterUtils(unittest.TestCase):
                          trace_pb2.AttributeValue(int_value=1))
         self.assertEqual(pb_span.attributes.attribute_map['test_bool_key'],
                          trace_pb2.AttributeValue(bool_value=False))
-        # self.assertEqual(pb_span.attributes.attribute_map['test_double_key'],
-        #                  trace_pb2.AttributeValue(double_value=567.89))
 
         self.assertEqual(pb_span.start_time.ToJsonString(),
                          '2017-08-15T18:02:26.071158Z')
@@ -186,7 +183,6 @@ class TestTraceExporterUtils(unittest.TestCase):
                             'test_str_key': 'test_str_value',
                             'test_int_key': 1,
                             'test_bool_key': False
-                            # 'test_double_key': 567.89
                         })),
                 link_module.Link(
                     trace_id='1e0c63257de34c92bf9efcd03927272e',
@@ -252,9 +248,6 @@ class TestTraceExporterUtils(unittest.TestCase):
         self.assertEqual(
             pb_span.links.link[0].attributes.attribute_map['test_bool_key'],
             trace_pb2.AttributeValue(bool_value=False))
-        # self.assertEqual(
-        #     pb_span.links.link[0].attributes.attribute_map['test_double_key'],
-        #     trace_pb2.AttributeValue(double_key=567.89))
 
     def test_translate_time_events(self):
 
@@ -277,8 +270,7 @@ class TestTraceExporterUtils(unittest.TestCase):
                             attributes={
                                 'test_str_key': 'test_str_value',
                                 'test_int_key': 1,
-                                'test_bool_key': False,
-                                # 'test_double_key': 567.89
+                                'test_bool_key': False
                             }))),
                 time_event_module.TimeEvent(
                     timestamp=annotation1_ts,
@@ -351,9 +343,6 @@ class TestTraceExporterUtils(unittest.TestCase):
         self.assertEqual(
             event0.annotation.attributes.attribute_map['test_bool_key'],
             trace_pb2.AttributeValue(bool_value=False))
-        # self.assertEqual(
-        #     event0.annotation.attributes.attribute_map['test_double_key'],
-        #     trace_pb2.AttributeValue(double_value=567.89))
 
         self.assertEqual(event2.message_event.id, 0)
         self.assertEqual(event3.message_event.id, 1)
@@ -486,7 +475,6 @@ class TestTraceExporterUtils(unittest.TestCase):
                     'test_str_key': 'test_str_value',
                     'test_int_key': 1,
                     'test_bool_key': False
-                    # 'test_double_key': 567.89
                 }))
 
         utils.set_proto_annotation(pb_event.annotation, annotation)
@@ -504,9 +492,6 @@ class TestTraceExporterUtils(unittest.TestCase):
         self.assertEqual(
             pb_event.annotation.attributes.attribute_map['test_bool_key'],
             trace_pb2.AttributeValue(bool_value=False))
-        # self.assertEqual(
-        #     pb_event.annotation.attributes.attribute_map['test_double_key'],
-        #     trace_pb2.AttributeValue(double_value=567.89))
 
     def test_set_annotation_without_attributes(self):
         pb_span = trace_pb2.Span()
