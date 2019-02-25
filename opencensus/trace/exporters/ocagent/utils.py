@@ -201,7 +201,7 @@ def add_proto_attribute_value(
         pb_attributes,
         attribute_key,
         attribute_value):
-    """Sets string, int or boolean value on protobuf
+    """Sets string, int, boolean or float value on protobuf
         span, link or annotation attributes.
 
     :type pb_attributes:
