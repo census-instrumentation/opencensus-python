@@ -180,13 +180,16 @@ class TestJaegerExporter(unittest.TestCase):
         span_attributes = {
             'key_bool': False,
             'key_string': 'hello_world',
-            'key_int': 3
+            'key_int': 3,
+            'key_double': 111.22,
+            'key_unsupported_type': ()
         }
 
         annotation_attributes = {
             'annotation_bool': True,
             'annotation_string': 'annotation_test',
-            'key_float': .3
+            'key_float': .3,
+            'key_unsupported_type': {}
         }
 
         link_attributes = {'key_bool': True}
@@ -320,6 +323,10 @@ class TestJaegerExporter(unittest.TestCase):
                     jaeger.Tag(
                         key='key_int', vType=jaeger.TagType.LONG, vLong=3),
                     jaeger.Tag(
+                        key='key_double',
+                        vType=jaeger.TagType.DOUBLE,
+                        vDouble=111.22),
+                    jaeger.Tag(
                         key='status.code',
                         vType=jaeger.TagType.LONG,
                         vLong=200),
@@ -357,6 +364,10 @@ class TestJaegerExporter(unittest.TestCase):
                                 key='annotation_string',
                                 vType=jaeger.TagType.STRING,
                                 vStr='annotation_test'),
+                            jaeger.Tag(
+                                key='key_float',
+                                vType=jaeger.TagType.DOUBLE,
+                                vDouble=0.3),
                             jaeger.Tag(
                                 key='message',
                                 vType=jaeger.TagType.STRING,

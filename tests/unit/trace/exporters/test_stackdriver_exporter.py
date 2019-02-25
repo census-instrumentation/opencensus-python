@@ -159,6 +159,11 @@ class TestStackdriverExporter(unittest.TestCase):
                         'value': 'value'
                     }
                 },
+                'key_double': {
+                    'double_value': {
+                        'value': 123.45
+                    }
+                },
                 'http.host': {
                     'string_value': {
                         'truncated_byte_count': 0,
@@ -222,6 +227,11 @@ class TestStackdriverExporter(unittest.TestCase):
                         'string_value': {
                             'truncated_byte_count': 0,
                             'value': 'value'
+                        }
+                    },
+                    'key_double': {
+                        'double_value': {
+                            'value': 123.45
                         }
                     },
                     '/http/host': {
