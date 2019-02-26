@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .correlation_context import CorrelationContext
+from correlationcontext.correlation_context import CorrelationContext
 
 
 __all__ = ['CorrelationContext']
