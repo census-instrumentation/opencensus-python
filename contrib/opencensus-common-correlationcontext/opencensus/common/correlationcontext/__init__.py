@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import unittest
-from correlationcontext import CorrelationContext
+from opencensus.common.correlationcontext.correlationcontext import CorrelationContext
 
-class CorrelationContextTest(unittest.TestCase):
-    def test_ctor_default(self):
-        self.assertTrue(CorrelationContext())
+
+__all__ = ['CorrelationContext']
