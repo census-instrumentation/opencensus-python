@@ -12,15 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from opencensus.common.http_handler import get_request
 import os
+
+from opencensus.common.http_handler import get_request
 
 _GCP_METADATA_URI = 'http://metadata/computeMetadata/v1/'
 _GCP_METADATA_URI_HEADER = {'Metadata-Flavor': 'Google'}
 
 # GCE common attributes
-# See: https://cloud.google.com/appengine/docs/flexible/python/runtime#
-#      environment_variables
+# See: https://cloud.google.com/appengine/docs/flexible/python/runtime#environment_variables  # noqa
 _GCE_ATTRIBUTES = {
     # ProjectID is the identifier of the GCP project associated with this
     # resource, such as "my-project".
@@ -34,17 +34,13 @@ _GCE_ATTRIBUTES = {
     'zone': 'instance/zone'
 }
 
-_GKE_ATTRIBUTES = {
+_K8S_ATTRIBUTES = {
     # ProjectID is the identifier of the GCP project associated with this
     # resource, such as "my-project".
     'project_id': 'project/project-id',
 
-    # instance_id is the numeric VM instance identifier assigned by
-    # Compute Engine.
-    'instance_id': 'instance/id',
-
-    # zone is the Compute Engine zone in which the VM is running.
-    'zone': 'instance/zone',
+    # location is the Compute Engine zone in which the VM is running.
+    'location': 'instance/zone',
 
     # cluster_name is the name for the cluster the container is running in.
     'cluster_name': 'instance/attributes/cluster-name'
@@ -52,24 +48,31 @@ _GKE_ATTRIBUTES = {
 
 # Following attributes are derived from environment variables. They are
 # configured via yaml file. For details refer to:
-# https://cloud.google.com/kubernetes-engine/docs/tutorials/
-# custom-metrics-autoscaling#exporting_metrics_from_the_application
-_GKE_ENV_ATTRIBUTES = {
+# https://cloud.google.com/kubernetes-engine/docs/tutorials/custom-metrics-autoscaling#exporting_metrics_from_the_application  # noqa
+_K8S_ENV_ATTRIBUTES = {
     # ContainerName is the name of the container.
     'container_name': 'CONTAINER_NAME',
 
-    # namespace_id is the identifier for the cluster namespace the container
+    # namespace_name is the identifier for the cluster namespace the container
     # is running in
-    'namespace_id': 'NAMESPACE',
+    'namespace_name': 'NAMESPACE',
 
-    # pod_id is the identifier for the pod the container is running in.
-    'pod_id': 'HOSTNAME'
+    # pod_name is the identifier for the pod the container is running in.
+    'pod_name': 'HOSTNAME'
 }
 
 # Kubenertes environment variables
 _KUBERNETES_SERVICE_HOST = 'KUBERNETES_SERVICE_HOST'
 
 gcp_metadata_map = {}
+
+
+def is_k8s_environment():
+    """Whether the environment is a kubernetes container.
+
+    The KUBERNETES_SERVICE_HOST environment variable must be set.
+    """
+    return _KUBERNETES_SERVICE_HOST in os.environ
 
 
 class GcpMetadataConfig(object):
@@ -98,8 +101,8 @@ class GcpMetadataConfig(object):
             gcp_metadata_map['instance_id'] = instance_id
 
             attributes = _GCE_ATTRIBUTES
-            if _KUBERNETES_SERVICE_HOST in os.environ:
-                attributes = _GKE_ATTRIBUTES
+            if is_k8s_environment():
+                attributes = _K8S_ATTRIBUTES
 
             # fetch attributes from metadata request
             for attribute_key, attribute_uri in attributes.items():
@@ -122,20 +125,20 @@ class GcpMetadataConfig(object):
 
         return dict()
 
-    def get_gke_metadata(self):
-        """for GCP GKE container."""
-        gke_metadata = {}
+    def get_k8s_metadata(self):
+        """Get kubernetes container metadata, as on GCP GKE."""
+        k8s_metadata = {}
 
         if self.is_running_on_gcp():
-            gke_metadata = gcp_metadata_map
+            k8s_metadata = gcp_metadata_map
 
         # fetch attributes from Environment Variables
-        for attribute_key, attribute_env in _GKE_ENV_ATTRIBUTES.items():
+        for attribute_key, attribute_env in _K8S_ENV_ATTRIBUTES.items():
             attribute_value = os.environ.get(attribute_env)
             if attribute_value is not None:
-                gke_metadata[attribute_key] = attribute_value
+                k8s_metadata[attribute_key] = attribute_value
 
-        return gke_metadata
+        return k8s_metadata
 
     @staticmethod
     def _get_attribute(attribute_key):
@@ -145,8 +148,14 @@ class GcpMetadataConfig(object):
         computeMetadata/v1 prefix
         :return:  The value read from the metadata service or None
         """
-        attribute_value = get_request(_GCP_METADATA_URI +
-                                      _GKE_ATTRIBUTES[attribute_key],
+        if is_k8s_environment():
+            try:
+                attr_slug = _K8S_ATTRIBUTES[attribute_key]
+            except KeyError:
+                attr_slug = _GCE_ATTRIBUTES[attribute_key]
+        else:
+            attr_slug = _GCE_ATTRIBUTES[attribute_key]
+        attribute_value = get_request(_GCP_METADATA_URI + attr_slug,
                                       _GCP_METADATA_URI_HEADER)
 
         if attribute_value is not None and isinstance(attribute_value, bytes):

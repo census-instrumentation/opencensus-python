@@ -27,8 +27,8 @@ def mock_mr_method(method, use):
         yield
 
 
-def mock_use_gke(use):
-    return mock_mr_method('is_gke_environment', use)
+def mock_use_k8s(use):
+    return mock_mr_method('gcp_metadata_config.is_k8s_environment', use)
 
 
 def mock_use_gce(use):
@@ -40,8 +40,8 @@ def mock_use_aws(use):
 
 
 @contextmanager
-def mock_gke_env():
-    with mock_use_gke(True):
+def mock_k8s_env():
+    with mock_use_k8s(True):
         with mock_use_gce(False):
             with mock_use_aws(False):
                 yield
@@ -49,7 +49,7 @@ def mock_gke_env():
 
 @contextmanager
 def mock_gce_env():
-    with mock_use_gke(False):
+    with mock_use_k8s(False):
         with mock_use_gce(True):
             with mock_use_aws(False):
                 yield
@@ -57,7 +57,7 @@ def mock_gce_env():
 
 @contextmanager
 def mock_aws_env():
-    with mock_use_gke(False):
+    with mock_use_k8s(False):
         with mock_use_gce(False):
             with mock_use_aws(True):
                 yield
@@ -84,7 +84,7 @@ class TestMonitoredResource(unittest.TestCase):
 
     @mock.patch('opencensus.common.monitored_resource.monitored_resource'
                 '.gcp_metadata_config.GcpMetadataConfig')
-    def test_gcp_gke_monitored_resource(self, gcp_metadata_mock):
+    def test_gcp_k8s_monitored_resource(self, gcp_metadata_mock):
 
         mocked_labels = {
             'instance_id': 'my-instance',
@@ -97,11 +97,11 @@ class TestMonitoredResource(unittest.TestCase):
         }
 
         gcp_metadata_mock.return_value = mock.Mock()
-        gcp_metadata_mock.return_value.get_gke_metadata.return_value =\
+        gcp_metadata_mock.return_value.get_k8s_metadata.return_value =\
             mocked_labels
-        with mock_gke_env():
+        with mock_k8s_env():
             resource = monitored_resource.get_instance()
-        self.assertEquals(resource.get_type(), 'gke_container')
+        self.assertEquals(resource.get_type(), 'k8s_container')
         self.assertEquals(resource.get_labels(), mocked_labels)
 
     @mock.patch('opencensus.common.monitored_resource.monitored_resource'
@@ -123,7 +123,7 @@ class TestMonitoredResource(unittest.TestCase):
         self.assertEquals(resource.get_type(), 'aws_ec2_instance')
         self.assertEquals(resource.get_labels(), mocked_labels)
 
-    def test_gke_environment(self):
+    def test_k8s_environment(self):
         patch = mock.patch.dict(os.environ,
                                 {'KUBERNETES_SERVICE_HOST': '127.0.0.1'})
 
@@ -131,7 +131,7 @@ class TestMonitoredResource(unittest.TestCase):
             mr = monitored_resource.get_instance()
 
             self.assertIsNotNone(mr)
-            self.assertEqual(mr.get_type(), "gke_container")
+            self.assertEqual(mr.get_type(), "k8s_container")
 
     def test_gce_environment(self):
         patch = mock.patch(

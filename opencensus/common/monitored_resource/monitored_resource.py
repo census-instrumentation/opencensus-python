@@ -21,19 +21,8 @@ from opencensus.common.monitored_resource import gcp_metadata_config
 
 # Supported environments (resource types)
 _GCE_INSTANCE = "gce_instance"
-_GKE_CONTAINER = "gke_container"
+_K8S_CONTAINER = "k8s_container"
 _AWS_EC2_INSTANCE = "aws_ec2_instance"
-
-# Kubenertes environment variables
-_KUBERNETES_SERVICE_HOST = 'KUBERNETES_SERVICE_HOST'
-
-
-def is_gke_environment():
-    """Whether the environment is a GKE container instance.
-
-    The KUBERNETES_SERVICE_HOST environment variable must be set.
-    """
-    return _KUBERNETES_SERVICE_HOST in os.environ
 
 
 def is_gce_environment():
@@ -54,8 +43,8 @@ def get_instance():
 
     Supported environments include:
 
-    1. 'gke_container'
-    - https://cloud.google.com/monitoring/api/resources#tag_gke_container
+    1. 'k8s_container'
+    - https://cloud.google.com/monitoring/api/resources#tag_k8s_container
     2. 'gce_instance'
     - https://cloud.google.com/monitoring/api/resources#tag_gce_instance
     3. 'aws_ec2_instance'
@@ -64,10 +53,10 @@ def get_instance():
     :rtype: :class:`opencensus.common.resource.Resource` or None
     :return: A `Resource` configured for the current environment.
     """
-    if is_gke_environment():
+    if gcp_metadata_config.is_k8s_environment():
         return resource.Resource(
-            _GKE_CONTAINER,
-            gcp_metadata_config.GcpMetadataConfig().get_gke_metadata())
+            _K8S_CONTAINER,
+            gcp_metadata_config.GcpMetadataConfig().get_k8s_metadata())
     if is_gce_environment():
         return resource.Resource(
             _GCE_INSTANCE,

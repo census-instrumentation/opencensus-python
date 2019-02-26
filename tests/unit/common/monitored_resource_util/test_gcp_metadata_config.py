@@ -20,6 +20,7 @@ from opencensus.common.monitored_resource import gcp_metadata_config
 
 
 class TestGcpMetadataConfig(unittest.TestCase):
+
     @mock.patch('opencensus.common.monitored_resource.'
                 'gcp_metadata_config.get_request')
     def test_get_gce_metadata(self, http_request_mock):
@@ -51,7 +52,7 @@ class TestGcpMetadataConfig(unittest.TestCase):
             'zone': 'us-east1'
         }
 
-        self.assertEquals(labels_list, expected_labels)
+        self.assertDictEqual(labels_list, expected_labels)
 
     @mock.patch('opencensus.common.monitored_resource.'
                 'gcp_metadata_config.get_request')
@@ -88,7 +89,7 @@ class TestGcpMetadataConfig(unittest.TestCase):
             'zone': 'us-east1'
         }
 
-        self.assertEquals(labels_list, expected_labels)
+        self.assertDictEqual(labels_list, expected_labels)
 
     @mock.patch.dict(
         os.environ, {
@@ -100,7 +101,7 @@ class TestGcpMetadataConfig(unittest.TestCase):
         clear=True)
     @mock.patch('opencensus.common.monitored_resource.'
                 'gcp_metadata_config.get_request')
-    def test_get_gke_metadata(self, http_request_mock):
+    def test_get_k8s_metadata(self, http_request_mock):
         def assign_attribute_value(*args, **kwargs):
             attribute_uri = args[0].split('/')[-1]
             if attribute_uri == 'id':
@@ -120,8 +121,8 @@ class TestGcpMetadataConfig(unittest.TestCase):
         self.assertTrue(
             gcp_metadata_config.GcpMetadataConfig.is_running_on_gcp())
 
-        labels_list = gcp_metadata_config.GcpMetadataConfig().get_gke_metadata(
-        )
+        labels_list = (gcp_metadata_config.GcpMetadataConfig()
+                       .get_k8s_metadata())
 
         self.assertEquals(len(labels_list), 7)
 
@@ -129,13 +130,12 @@ class TestGcpMetadataConfig(unittest.TestCase):
             'instance_id': 'my-instance',
             'cluster_name': 'cluster',
             'project_id': 'my-project',
-            'zone': 'us-east1',
-            'pod_id': 'localhost',
-            'namespace_id': 'namespace',
+            'location': 'us-east1',
+            'pod_name': 'localhost',
+            'namespace_name': 'namespace',
             'container_name': 'container'
         }
-
-        self.assertEquals(labels_list, expected_labels)
+        self.assertDictEqual(labels_list, expected_labels)
 
     @mock.patch.dict(
         os.environ, {
@@ -146,7 +146,7 @@ class TestGcpMetadataConfig(unittest.TestCase):
         clear=True)
     @mock.patch('opencensus.common.monitored_resource.'
                 'gcp_metadata_config.get_request')
-    def test_get_gke_metadata_container_empty(self, http_request_mock):
+    def test_get_k8s_metadata_container_empty(self, http_request_mock):
         def assign_attribute_value(*args, **kwargs):
             attribute_uri = args[0].split('/')[-1]
             if attribute_uri == 'id':
@@ -164,7 +164,7 @@ class TestGcpMetadataConfig(unittest.TestCase):
         self.assertTrue(
             gcp_metadata_config.GcpMetadataConfig.is_running_on_gcp())
 
-        labels_list = gcp_metadata_config.GcpMetadataConfig().get_gke_metadata(
+        labels_list = gcp_metadata_config.GcpMetadataConfig().get_k8s_metadata(
         )
 
         self.assertEquals(len(labels_list), 5)
@@ -172,12 +172,11 @@ class TestGcpMetadataConfig(unittest.TestCase):
         expected_labels = {
             'instance_id': 'my-instance',
             'project_id': 'my-project',
-            'zone': 'us-east1',
-            'pod_id': 'localhost',
-            'namespace_id': 'namespace'
+            'location': 'us-east1',
+            'pod_name': 'localhost',
+            'namespace_name': 'namespace'
         }
-
-        self.assertEquals(labels_list, expected_labels)
+        self.assertDictEqual(labels_list, expected_labels)
 
     @mock.patch.dict(os.environ, clear=True)
     @mock.patch('opencensus.common.monitored_resource.'
@@ -194,4 +193,4 @@ class TestGcpMetadataConfig(unittest.TestCase):
         self.assertEquals(
             len(gcp_metadata_config.GcpMetadataConfig().get_gce_metadata()), 0)
         self.assertEquals(
-            len(gcp_metadata_config.GcpMetadataConfig().get_gke_metadata()), 0)
+            len(gcp_metadata_config.GcpMetadataConfig().get_k8s_metadata()), 0)
