@@ -79,8 +79,8 @@ class TestMonitoredResource(unittest.TestCase):
             mocked_labels
         with mock_gce_env():
             resource = monitored_resource.get_instance()
-        self.assertEquals(resource.get_type(), 'gce_instance')
-        self.assertEquals(resource.get_labels(), mocked_labels)
+        self.assertEqual(resource.get_type(), 'gce_instance')
+        self.assertEqual(resource.get_labels(), mocked_labels)
 
     @mock.patch('opencensus.common.monitored_resource.monitored_resource'
                 '.gcp_metadata_config.GcpMetadataConfig')
@@ -101,8 +101,8 @@ class TestMonitoredResource(unittest.TestCase):
             mocked_labels
         with mock_k8s_env():
             resource = monitored_resource.get_instance()
-        self.assertEquals(resource.get_type(), 'k8s_container')
-        self.assertEquals(resource.get_labels(), mocked_labels)
+        self.assertEqual(resource.get_type(), 'k8s_container')
+        self.assertEqual(resource.get_labels(), mocked_labels)
 
     @mock.patch('opencensus.common.monitored_resource.monitored_resource'
                 '.aws_identity_doc_utils.AwsIdentityDocumentUtils')
@@ -120,8 +120,8 @@ class TestMonitoredResource(unittest.TestCase):
 
         with mock_aws_env():
             resource = monitored_resource.get_instance()
-        self.assertEquals(resource.get_type(), 'aws_ec2_instance')
-        self.assertEquals(resource.get_labels(), mocked_labels)
+        self.assertEqual(resource.get_type(), 'aws_ec2_instance')
+        self.assertEqual(resource.get_labels(), mocked_labels)
 
     def test_k8s_environment(self):
         patch = mock.patch.dict(os.environ,
