@@ -41,7 +41,7 @@ setup(
     install_requires=[],
     extras_require={},
     license='Apache-2.0',
-    packages=find_packages(exclude=('test',)),
+    packages=find_packages(exclude=('tests',)),
     namespace_packages=[],
     url='https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/correlation-context',
     zip_safe=False,
