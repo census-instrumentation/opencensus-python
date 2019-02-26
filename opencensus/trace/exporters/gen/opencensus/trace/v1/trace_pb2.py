@@ -7,12 +7,12 @@ from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
 from google.protobuf import reflection as _reflection
 from google.protobuf import symbol_database as _symbol_database
-from google.protobuf import descriptor_pb2
 # @@protoc_insertion_point(imports)
 
 _sym_db = _symbol_database.Default()
 
 
+from opencensus.trace.exporters.gen.opencensus.resource.v1 import resource_pb2 as opencensus_dot_proto_dot_resource_dot_v1_dot_resource__pb2
 from google.protobuf import timestamp_pb2 as google_dot_protobuf_dot_timestamp__pb2
 from google.protobuf import wrappers_pb2 as google_dot_protobuf_dot_wrappers__pb2
 
@@ -21,9 +21,10 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='opencensus/proto/trace/v1/trace.proto',
   package='opencensus.proto.trace.v1',
   syntax='proto3',
-  serialized_pb=_b('\n%opencensus/proto/trace/v1/trace.proto\x12\x19opencensus.proto.trace.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1egoogle/protobuf/wrappers.proto\"\xb2\x11\n\x04Span\x12\x10\n\x08trace_id\x18\x01 \x01(\x0c\x12\x0f\n\x07span_id\x18\x02 \x01(\x0c\x12>\n\ntracestate\x18\x0f \x01(\x0b\x32*.opencensus.proto.trace.v1.Span.Tracestate\x12\x16\n\x0eparent_span_id\x18\x03 \x01(\x0c\x12:\n\x04name\x18\x04 \x01(\x0b\x32,.opencensus.proto.trace.v1.TruncatableString\x12\x36\n\x04kind\x18\x0e \x01(\x0e\x32(.opencensus.proto.trace.v1.Span.SpanKind\x12.\n\nstart_time\x18\x05 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12,\n\x08\x65nd_time\x18\x06 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12>\n\nattributes\x18\x07 \x01(\x0b\x32*.opencensus.proto.trace.v1.Span.Attributes\x12:\n\x0bstack_trace\x18\x08 \x01(\x0b\x32%.opencensus.proto.trace.v1.StackTrace\x12?\n\x0btime_events\x18\t \x01(\x0b\x32*.opencensus.proto.trace.v1.Span.TimeEvents\x12\x34\n\x05links\x18\n \x01(\x0b\x32%.opencensus.proto.trace.v1.Span.Links\x12\x31\n\x06status\x18\x0b \x01(\x0b\x32!.opencensus.proto.trace.v1.Status\x12?\n\x1bsame_process_as_parent_span\x18\x0c \x01(\x0b\x32\x1a.google.protobuf.BoolValue\x12\x36\n\x10\x63hild_span_count\x18\r \x01(\x0b\x32\x1c.google.protobuf.UInt32Value\x1at\n\nTracestate\x12\x41\n\x07\x65ntries\x18\x01 \x03(\x0b\x32\x30.opencensus.proto.trace.v1.Span.Tracestate.Entry\x1a#\n\x05\x45ntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t\x1a\xe3\x01\n\nAttributes\x12S\n\rattribute_map\x18\x01 \x03(\x0b\x32<.opencensus.proto.trace.v1.Span.Attributes.AttributeMapEntry\x12 \n\x18\x64ropped_attributes_count\x18\x02 \x01(\x05\x1a^\n\x11\x41ttributeMapEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x38\n\x05value\x18\x02 \x01(\x0b\x32).opencensus.proto.trace.v1.AttributeValue:\x02\x38\x01\x1a\xbf\x04\n\tTimeEvent\x12(\n\x04time\x18\x01 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12J\n\nannotation\x18\x02 \x01(\x0b\x32\x34.opencensus.proto.trace.v1.Span.TimeEvent.AnnotationH\x00\x12O\n\rmessage_event\x18\x03 \x01(\x0b\x32\x36.opencensus.proto.trace.v1.Span.TimeEvent.MessageEventH\x00\x1a\x8f\x01\n\nAnnotation\x12\x41\n\x0b\x64\x65scription\x18\x01 \x01(\x0b\x32,.opencensus.proto.trace.v1.TruncatableString\x12>\n\nattributes\x18\x02 \x01(\x0b\x32*.opencensus.proto.trace.v1.Span.Attributes\x1a\xcf\x01\n\x0cMessageEvent\x12I\n\x04type\x18\x01 \x01(\x0e\x32;.opencensus.proto.trace.v1.Span.TimeEvent.MessageEvent.Type\x12\n\n\x02id\x18\x02 \x01(\x04\x12\x19\n\x11uncompressed_size\x18\x03 \x01(\x04\x12\x17\n\x0f\x63ompressed_size\x18\x04 \x01(\x04\"4\n\x04Type\x12\x14\n\x10TYPE_UNSPECIFIED\x10\x00\x12\x08\n\x04SENT\x10\x01\x12\x0c\n\x08RECEIVED\x10\x02\x42\x07\n\x05value\x1a\x94\x01\n\nTimeEvents\x12=\n\ntime_event\x18\x01 \x03(\x0b\x32).opencensus.proto.trace.v1.Span.TimeEvent\x12!\n\x19\x64ropped_annotations_count\x18\x02 \x01(\x05\x12$\n\x1c\x64ropped_message_events_count\x18\x03 \x01(\x05\x1a\xef\x01\n\x04Link\x12\x10\n\x08trace_id\x18\x01 \x01(\x0c\x12\x0f\n\x07span_id\x18\x02 \x01(\x0c\x12\x37\n\x04type\x18\x03 \x01(\x0e\x32).opencensus.proto.trace.v1.Span.Link.Type\x12>\n\nattributes\x18\x04 \x01(\x0b\x32*.opencensus.proto.trace.v1.Span.Attributes\"K\n\x04Type\x12\x14\n\x10TYPE_UNSPECIFIED\x10\x00\x12\x15\n\x11\x43HILD_LINKED_SPAN\x10\x01\x12\x16\n\x12PARENT_LINKED_SPAN\x10\x02\x1aX\n\x05Links\x12\x32\n\x04link\x18\x01 \x03(\x0b\x32$.opencensus.proto.trace.v1.Span.Link\x12\x1b\n\x13\x64ropped_links_count\x18\x02 \x01(\x05\"=\n\x08SpanKind\x12\x19\n\x15SPAN_KIND_UNSPECIFIED\x10\x00\x12\n\n\x06SERVER\x10\x01\x12\n\n\x06\x43LIENT\x10\x02\"\'\n\x06Status\x12\x0c\n\x04\x63ode\x18\x01 \x01(\x05\x12\x0f\n\x07message\x18\x02 \x01(\t\"\x8a\x01\n\x0e\x41ttributeValue\x12\x44\n\x0cstring_value\x18\x01 \x01(\x0b\x32,.opencensus.proto.trace.v1.TruncatableStringH\x00\x12\x13\n\tint_value\x18\x02 \x01(\x03H\x00\x12\x14\n\nbool_value\x18\x03 \x01(\x08H\x00\x42\x07\n\x05value\"\xed\x04\n\nStackTrace\x12G\n\x0cstack_frames\x18\x01 \x01(\x0b\x32\x31.opencensus.proto.trace.v1.StackTrace.StackFrames\x12\x1b\n\x13stack_trace_hash_id\x18\x02 \x01(\x04\x1a\x8a\x03\n\nStackFrame\x12\x43\n\rfunction_name\x18\x01 \x01(\x0b\x32,.opencensus.proto.trace.v1.TruncatableString\x12L\n\x16original_function_name\x18\x02 \x01(\x0b\x32,.opencensus.proto.trace.v1.TruncatableString\x12?\n\tfile_name\x18\x03 \x01(\x0b\x32,.opencensus.proto.trace.v1.TruncatableString\x12\x13\n\x0bline_number\x18\x04 \x01(\x03\x12\x15\n\rcolumn_number\x18\x05 \x01(\x03\x12\x36\n\x0bload_module\x18\x06 \x01(\x0b\x32!.opencensus.proto.trace.v1.Module\x12\x44\n\x0esource_version\x18\x07 \x01(\x0b\x32,.opencensus.proto.trace.v1.TruncatableString\x1al\n\x0bStackFrames\x12?\n\x05\x66rame\x18\x01 \x03(\x0b\x32\x30.opencensus.proto.trace.v1.StackTrace.StackFrame\x12\x1c\n\x14\x64ropped_frames_count\x18\x02 \x01(\x05\"\x86\x01\n\x06Module\x12<\n\x06module\x18\x01 \x01(\x0b\x32,.opencensus.proto.trace.v1.TruncatableString\x12>\n\x08\x62uild_id\x18\x02 \x01(\x0b\x32,.opencensus.proto.trace.v1.TruncatableString\"@\n\x11TruncatableString\x12\r\n\x05value\x18\x01 \x01(\t\x12\x1c\n\x14truncated_byte_count\x18\x02 \x01(\x05\x42p\n\x1cio.opencensus.proto.trace.v1B\nTraceProtoP\x01ZBgithub.com/census-instrumentation/opencensus-proto/gen-go/trace/v1b\x06proto3')
+  serialized_options=_b('\n\034io.opencensus.proto.trace.v1B\nTraceProtoP\001ZBgithub.com/census-instrumentation/opencensus-proto/gen-go/trace/v1'),
+  serialized_pb=_b('\n%opencensus/proto/trace/v1/trace.proto\x12\x19opencensus.proto.trace.v1\x1a+opencensus/proto/resource/v1/resource.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1egoogle/protobuf/wrappers.proto\"\xec\x11\n\x04Span\x12\x10\n\x08trace_id\x18\x01 \x01(\x0c\x12\x0f\n\x07span_id\x18\x02 \x01(\x0c\x12>\n\ntracestate\x18\x0f \x01(\x0b\x32*.opencensus.proto.trace.v1.Span.Tracestate\x12\x16\n\x0eparent_span_id\x18\x03 \x01(\x0c\x12:\n\x04name\x18\x04 \x01(\x0b\x32,.opencensus.proto.trace.v1.TruncatableString\x12\x36\n\x04kind\x18\x0e \x01(\x0e\x32(.opencensus.proto.trace.v1.Span.SpanKind\x12.\n\nstart_time\x18\x05 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12,\n\x08\x65nd_time\x18\x06 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12>\n\nattributes\x18\x07 \x01(\x0b\x32*.opencensus.proto.trace.v1.Span.Attributes\x12:\n\x0bstack_trace\x18\x08 \x01(\x0b\x32%.opencensus.proto.trace.v1.StackTrace\x12?\n\x0btime_events\x18\t \x01(\x0b\x32*.opencensus.proto.trace.v1.Span.TimeEvents\x12\x34\n\x05links\x18\n \x01(\x0b\x32%.opencensus.proto.trace.v1.Span.Links\x12\x31\n\x06status\x18\x0b \x01(\x0b\x32!.opencensus.proto.trace.v1.Status\x12\x38\n\x08resource\x18\x10 \x01(\x0b\x32&.opencensus.proto.resource.v1.Resource\x12?\n\x1bsame_process_as_parent_span\x18\x0c \x01(\x0b\x32\x1a.google.protobuf.BoolValue\x12\x36\n\x10\x63hild_span_count\x18\r \x01(\x0b\x32\x1c.google.protobuf.UInt32Value\x1at\n\nTracestate\x12\x41\n\x07\x65ntries\x18\x01 \x03(\x0b\x32\x30.opencensus.proto.trace.v1.Span.Tracestate.Entry\x1a#\n\x05\x45ntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t\x1a\xe3\x01\n\nAttributes\x12S\n\rattribute_map\x18\x01 \x03(\x0b\x32<.opencensus.proto.trace.v1.Span.Attributes.AttributeMapEntry\x12 \n\x18\x64ropped_attributes_count\x18\x02 \x01(\x05\x1a^\n\x11\x41ttributeMapEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x38\n\x05value\x18\x02 \x01(\x0b\x32).opencensus.proto.trace.v1.AttributeValue:\x02\x38\x01\x1a\xbf\x04\n\tTimeEvent\x12(\n\x04time\x18\x01 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12J\n\nannotation\x18\x02 \x01(\x0b\x32\x34.opencensus.proto.trace.v1.Span.TimeEvent.AnnotationH\x00\x12O\n\rmessage_event\x18\x03 \x01(\x0b\x32\x36.opencensus.proto.trace.v1.Span.TimeEvent.MessageEventH\x00\x1a\x8f\x01\n\nAnnotation\x12\x41\n\x0b\x64\x65scription\x18\x01 \x01(\x0b\x32,.opencensus.proto.trace.v1.TruncatableString\x12>\n\nattributes\x18\x02 \x01(\x0b\x32*.opencensus.proto.trace.v1.Span.Attributes\x1a\xcf\x01\n\x0cMessageEvent\x12I\n\x04type\x18\x01 \x01(\x0e\x32;.opencensus.proto.trace.v1.Span.TimeEvent.MessageEvent.Type\x12\n\n\x02id\x18\x02 \x01(\x04\x12\x19\n\x11uncompressed_size\x18\x03 \x01(\x04\x12\x17\n\x0f\x63ompressed_size\x18\x04 \x01(\x04\"4\n\x04Type\x12\x14\n\x10TYPE_UNSPECIFIED\x10\x00\x12\x08\n\x04SENT\x10\x01\x12\x0c\n\x08RECEIVED\x10\x02\x42\x07\n\x05value\x1a\x94\x01\n\nTimeEvents\x12=\n\ntime_event\x18\x01 \x03(\x0b\x32).opencensus.proto.trace.v1.Span.TimeEvent\x12!\n\x19\x64ropped_annotations_count\x18\x02 \x01(\x05\x12$\n\x1c\x64ropped_message_events_count\x18\x03 \x01(\x05\x1a\xef\x01\n\x04Link\x12\x10\n\x08trace_id\x18\x01 \x01(\x0c\x12\x0f\n\x07span_id\x18\x02 \x01(\x0c\x12\x37\n\x04type\x18\x03 \x01(\x0e\x32).opencensus.proto.trace.v1.Span.Link.Type\x12>\n\nattributes\x18\x04 \x01(\x0b\x32*.opencensus.proto.trace.v1.Span.Attributes\"K\n\x04Type\x12\x14\n\x10TYPE_UNSPECIFIED\x10\x00\x12\x15\n\x11\x43HILD_LINKED_SPAN\x10\x01\x12\x16\n\x12PARENT_LINKED_SPAN\x10\x02\x1aX\n\x05Links\x12\x32\n\x04link\x18\x01 \x03(\x0b\x32$.opencensus.proto.trace.v1.Span.Link\x12\x1b\n\x13\x64ropped_links_count\x18\x02 \x01(\x05\"=\n\x08SpanKind\x12\x19\n\x15SPAN_KIND_UNSPECIFIED\x10\x00\x12\n\n\x06SERVER\x10\x01\x12\n\n\x06\x43LIENT\x10\x02\"\'\n\x06Status\x12\x0c\n\x04\x63ode\x18\x01 \x01(\x05\x12\x0f\n\x07message\x18\x02 \x01(\t\"\xa2\x01\n\x0e\x41ttributeValue\x12\x44\n\x0cstring_value\x18\x01 \x01(\x0b\x32,.opencensus.proto.trace.v1.TruncatableStringH\x00\x12\x13\n\tint_value\x18\x02 \x01(\x03H\x00\x12\x14\n\nbool_value\x18\x03 \x01(\x08H\x00\x12\x16\n\x0c\x64ouble_value\x18\x04 \x01(\x01H\x00\x42\x07\n\x05value\"\xed\x04\n\nStackTrace\x12G\n\x0cstack_frames\x18\x01 \x01(\x0b\x32\x31.opencensus.proto.trace.v1.StackTrace.StackFrames\x12\x1b\n\x13stack_trace_hash_id\x18\x02 \x01(\x04\x1a\x8a\x03\n\nStackFrame\x12\x43\n\rfunction_name\x18\x01 \x01(\x0b\x32,.opencensus.proto.trace.v1.TruncatableString\x12L\n\x16original_function_name\x18\x02 \x01(\x0b\x32,.opencensus.proto.trace.v1.TruncatableString\x12?\n\tfile_name\x18\x03 \x01(\x0b\x32,.opencensus.proto.trace.v1.TruncatableString\x12\x13\n\x0bline_number\x18\x04 \x01(\x03\x12\x15\n\rcolumn_number\x18\x05 \x01(\x03\x12\x36\n\x0bload_module\x18\x06 \x01(\x0b\x32!.opencensus.proto.trace.v1.Module\x12\x44\n\x0esource_version\x18\x07 \x01(\x0b\x32,.opencensus.proto.trace.v1.TruncatableString\x1al\n\x0bStackFrames\x12?\n\x05\x66rame\x18\x01 \x03(\x0b\x32\x30.opencensus.proto.trace.v1.StackTrace.StackFrame\x12\x1c\n\x14\x64ropped_frames_count\x18\x02 \x01(\x05\"\x86\x01\n\x06Module\x12<\n\x06module\x18\x01 \x01(\x0b\x32,.opencensus.proto.trace.v1.TruncatableString\x12>\n\x08\x62uild_id\x18\x02 \x01(\x0b\x32,.opencensus.proto.trace.v1.TruncatableString\"@\n\x11TruncatableString\x12\r\n\x05value\x18\x01 \x01(\t\x12\x1c\n\x14truncated_byte_count\x18\x02 \x01(\x05\x42p\n\x1cio.opencensus.proto.trace.v1B\nTraceProtoP\x01ZBgithub.com/census-instrumentation/opencensus-proto/gen-go/trace/v1b\x06proto3')
   ,
-  dependencies=[google_dot_protobuf_dot_timestamp__pb2.DESCRIPTOR,google_dot_protobuf_dot_wrappers__pb2.DESCRIPTOR,])
+  dependencies=[opencensus_dot_proto_dot_resource_dot_v1_dot_resource__pb2.DESCRIPTOR,google_dot_protobuf_dot_timestamp__pb2.DESCRIPTOR,google_dot_protobuf_dot_wrappers__pb2.DESCRIPTOR,])
 
 
 
@@ -35,21 +36,21 @@ _SPAN_TIMEEVENT_MESSAGEEVENT_TYPE = _descriptor.EnumDescriptor(
   values=[
     _descriptor.EnumValueDescriptor(
       name='TYPE_UNSPECIFIED', index=0, number=0,
-      options=None,
+      serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='SENT', index=1, number=1,
-      options=None,
+      serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='RECEIVED', index=2, number=2,
-      options=None,
+      serialized_options=None,
       type=None),
   ],
   containing_type=None,
-  options=None,
-  serialized_start=1753,
-  serialized_end=1805,
+  serialized_options=None,
+  serialized_start=1856,
+  serialized_end=1908,
 )
 _sym_db.RegisterEnumDescriptor(_SPAN_TIMEEVENT_MESSAGEEVENT_TYPE)
 
@@ -61,21 +62,21 @@ _SPAN_LINK_TYPE = _descriptor.EnumDescriptor(
   values=[
     _descriptor.EnumValueDescriptor(
       name='TYPE_UNSPECIFIED', index=0, number=0,
-      options=None,
+      serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='CHILD_LINKED_SPAN', index=1, number=1,
-      options=None,
+      serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='PARENT_LINKED_SPAN', index=2, number=2,
-      options=None,
+      serialized_options=None,
       type=None),
   ],
   containing_type=None,
-  options=None,
-  serialized_start=2132,
-  serialized_end=2207,
+  serialized_options=None,
+  serialized_start=2235,
+  serialized_end=2310,
 )
 _sym_db.RegisterEnumDescriptor(_SPAN_LINK_TYPE)
 
@@ -87,21 +88,21 @@ _SPAN_SPANKIND = _descriptor.EnumDescriptor(
   values=[
     _descriptor.EnumValueDescriptor(
       name='SPAN_KIND_UNSPECIFIED', index=0, number=0,
-      options=None,
+      serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='SERVER', index=1, number=1,
-      options=None,
+      serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='CLIENT', index=2, number=2,
-      options=None,
+      serialized_options=None,
       type=None),
   ],
   containing_type=None,
-  options=None,
-  serialized_start=2299,
-  serialized_end=2360,
+  serialized_options=None,
+  serialized_start=2402,
+  serialized_end=2463,
 )
 _sym_db.RegisterEnumDescriptor(_SPAN_SPANKIND)
 
@@ -119,28 +120,28 @@ _SPAN_TRACESTATE_ENTRY = _descriptor.Descriptor(
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='value', full_name='opencensus.proto.trace.v1.Span.Tracestate.Entry.value', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=971,
-  serialized_end=1006,
+  serialized_start=1074,
+  serialized_end=1109,
 )
 
 _SPAN_TRACESTATE = _descriptor.Descriptor(
@@ -156,21 +157,21 @@ _SPAN_TRACESTATE = _descriptor.Descriptor(
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[_SPAN_TRACESTATE_ENTRY, ],
   enum_types=[
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=890,
-  serialized_end=1006,
+  serialized_start=993,
+  serialized_end=1109,
 )
 
 _SPAN_ATTRIBUTES_ATTRIBUTEMAPENTRY = _descriptor.Descriptor(
@@ -186,28 +187,28 @@ _SPAN_ATTRIBUTES_ATTRIBUTEMAPENTRY = _descriptor.Descriptor(
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='value', full_name='opencensus.proto.trace.v1.Span.Attributes.AttributeMapEntry.value', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=_descriptor._ParseOptions(descriptor_pb2.MessageOptions(), _b('8\001')),
+  serialized_options=_b('8\001'),
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1142,
-  serialized_end=1236,
+  serialized_start=1245,
+  serialized_end=1339,
 )
 
 _SPAN_ATTRIBUTES = _descriptor.Descriptor(
@@ -223,28 +224,28 @@ _SPAN_ATTRIBUTES = _descriptor.Descriptor(
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='dropped_attributes_count', full_name='opencensus.proto.trace.v1.Span.Attributes.dropped_attributes_count', index=1,
       number=2, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[_SPAN_ATTRIBUTES_ATTRIBUTEMAPENTRY, ],
   enum_types=[
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1009,
-  serialized_end=1236,
+  serialized_start=1112,
+  serialized_end=1339,
 )
 
 _SPAN_TIMEEVENT_ANNOTATION = _descriptor.Descriptor(
@@ -260,28 +261,28 @@ _SPAN_TIMEEVENT_ANNOTATION = _descriptor.Descriptor(
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='attributes', full_name='opencensus.proto.trace.v1.Span.TimeEvent.Annotation.attributes', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1452,
-  serialized_end=1595,
+  serialized_start=1555,
+  serialized_end=1698,
 )
 
 _SPAN_TIMEEVENT_MESSAGEEVENT = _descriptor.Descriptor(
@@ -297,28 +298,28 @@ _SPAN_TIMEEVENT_MESSAGEEVENT = _descriptor.Descriptor(
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='id', full_name='opencensus.proto.trace.v1.Span.TimeEvent.MessageEvent.id', index=1,
       number=2, type=4, cpp_type=4, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='uncompressed_size', full_name='opencensus.proto.trace.v1.Span.TimeEvent.MessageEvent.uncompressed_size', index=2,
       number=3, type=4, cpp_type=4, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='compressed_size', full_name='opencensus.proto.trace.v1.Span.TimeEvent.MessageEvent.compressed_size', index=3,
       number=4, type=4, cpp_type=4, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -326,14 +327,14 @@ _SPAN_TIMEEVENT_MESSAGEEVENT = _descriptor.Descriptor(
   enum_types=[
     _SPAN_TIMEEVENT_MESSAGEEVENT_TYPE,
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1598,
-  serialized_end=1805,
+  serialized_start=1701,
+  serialized_end=1908,
 )
 
 _SPAN_TIMEEVENT = _descriptor.Descriptor(
@@ -349,28 +350,28 @@ _SPAN_TIMEEVENT = _descriptor.Descriptor(
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='annotation', full_name='opencensus.proto.trace.v1.Span.TimeEvent.annotation', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='message_event', full_name='opencensus.proto.trace.v1.Span.TimeEvent.message_event', index=2,
       number=3, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[_SPAN_TIMEEVENT_ANNOTATION, _SPAN_TIMEEVENT_MESSAGEEVENT, ],
   enum_types=[
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -379,8 +380,8 @@ _SPAN_TIMEEVENT = _descriptor.Descriptor(
       name='value', full_name='opencensus.proto.trace.v1.Span.TimeEvent.value',
       index=0, containing_type=None, fields=[]),
   ],
-  serialized_start=1239,
-  serialized_end=1814,
+  serialized_start=1342,
+  serialized_end=1917,
 )
 
 _SPAN_TIMEEVENTS = _descriptor.Descriptor(
@@ -396,35 +397,35 @@ _SPAN_TIMEEVENTS = _descriptor.Descriptor(
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='dropped_annotations_count', full_name='opencensus.proto.trace.v1.Span.TimeEvents.dropped_annotations_count', index=1,
       number=2, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='dropped_message_events_count', full_name='opencensus.proto.trace.v1.Span.TimeEvents.dropped_message_events_count', index=2,
       number=3, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1817,
-  serialized_end=1965,
+  serialized_start=1920,
+  serialized_end=2068,
 )
 
 _SPAN_LINK = _descriptor.Descriptor(
@@ -440,28 +441,28 @@ _SPAN_LINK = _descriptor.Descriptor(
       has_default_value=False, default_value=_b(""),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='span_id', full_name='opencensus.proto.trace.v1.Span.Link.span_id', index=1,
       number=2, type=12, cpp_type=9, label=1,
       has_default_value=False, default_value=_b(""),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='type', full_name='opencensus.proto.trace.v1.Span.Link.type', index=2,
       number=3, type=14, cpp_type=8, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='attributes', full_name='opencensus.proto.trace.v1.Span.Link.attributes', index=3,
       number=4, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -469,14 +470,14 @@ _SPAN_LINK = _descriptor.Descriptor(
   enum_types=[
     _SPAN_LINK_TYPE,
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1968,
-  serialized_end=2207,
+  serialized_start=2071,
+  serialized_end=2310,
 )
 
 _SPAN_LINKS = _descriptor.Descriptor(
@@ -492,28 +493,28 @@ _SPAN_LINKS = _descriptor.Descriptor(
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='dropped_links_count', full_name='opencensus.proto.trace.v1.Span.Links.dropped_links_count', index=1,
       number=2, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2209,
-  serialized_end=2297,
+  serialized_start=2312,
+  serialized_end=2400,
 )
 
 _SPAN = _descriptor.Descriptor(
@@ -529,105 +530,112 @@ _SPAN = _descriptor.Descriptor(
       has_default_value=False, default_value=_b(""),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='span_id', full_name='opencensus.proto.trace.v1.Span.span_id', index=1,
       number=2, type=12, cpp_type=9, label=1,
       has_default_value=False, default_value=_b(""),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='tracestate', full_name='opencensus.proto.trace.v1.Span.tracestate', index=2,
       number=15, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='parent_span_id', full_name='opencensus.proto.trace.v1.Span.parent_span_id', index=3,
       number=3, type=12, cpp_type=9, label=1,
       has_default_value=False, default_value=_b(""),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='name', full_name='opencensus.proto.trace.v1.Span.name', index=4,
       number=4, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='kind', full_name='opencensus.proto.trace.v1.Span.kind', index=5,
       number=14, type=14, cpp_type=8, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='start_time', full_name='opencensus.proto.trace.v1.Span.start_time', index=6,
       number=5, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='end_time', full_name='opencensus.proto.trace.v1.Span.end_time', index=7,
       number=6, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='attributes', full_name='opencensus.proto.trace.v1.Span.attributes', index=8,
       number=7, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='stack_trace', full_name='opencensus.proto.trace.v1.Span.stack_trace', index=9,
       number=8, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='time_events', full_name='opencensus.proto.trace.v1.Span.time_events', index=10,
       number=9, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='links', full_name='opencensus.proto.trace.v1.Span.links', index=11,
       number=10, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='status', full_name='opencensus.proto.trace.v1.Span.status', index=12,
       number=11, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='same_process_as_parent_span', full_name='opencensus.proto.trace.v1.Span.same_process_as_parent_span', index=13,
+      name='resource', full_name='opencensus.proto.trace.v1.Span.resource', index=13,
+      number=16, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='same_process_as_parent_span', full_name='opencensus.proto.trace.v1.Span.same_process_as_parent_span', index=14,
       number=12, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='child_span_count', full_name='opencensus.proto.trace.v1.Span.child_span_count', index=14,
+      name='child_span_count', full_name='opencensus.proto.trace.v1.Span.child_span_count', index=15,
       number=13, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -635,14 +643,14 @@ _SPAN = _descriptor.Descriptor(
   enum_types=[
     _SPAN_SPANKIND,
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=134,
-  serialized_end=2360,
+  serialized_start=179,
+  serialized_end=2463,
 )
 
 
@@ -659,28 +667,28 @@ _STATUS = _descriptor.Descriptor(
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='message', full_name='opencensus.proto.trace.v1.Status.message', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2362,
-  serialized_end=2401,
+  serialized_start=2465,
+  serialized_end=2504,
 )
 
 
@@ -697,28 +705,35 @@ _ATTRIBUTEVALUE = _descriptor.Descriptor(
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='int_value', full_name='opencensus.proto.trace.v1.AttributeValue.int_value', index=1,
       number=2, type=3, cpp_type=2, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='bool_value', full_name='opencensus.proto.trace.v1.AttributeValue.bool_value', index=2,
       number=3, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='double_value', full_name='opencensus.proto.trace.v1.AttributeValue.double_value', index=3,
+      number=4, type=1, cpp_type=5, label=1,
+      has_default_value=False, default_value=float(0),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -727,8 +742,8 @@ _ATTRIBUTEVALUE = _descriptor.Descriptor(
       name='value', full_name='opencensus.proto.trace.v1.AttributeValue.value',
       index=0, containing_type=None, fields=[]),
   ],
-  serialized_start=2404,
-  serialized_end=2542,
+  serialized_start=2507,
+  serialized_end=2669,
 )
 
 
@@ -745,63 +760,63 @@ _STACKTRACE_STACKFRAME = _descriptor.Descriptor(
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='original_function_name', full_name='opencensus.proto.trace.v1.StackTrace.StackFrame.original_function_name', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='file_name', full_name='opencensus.proto.trace.v1.StackTrace.StackFrame.file_name', index=2,
       number=3, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='line_number', full_name='opencensus.proto.trace.v1.StackTrace.StackFrame.line_number', index=3,
       number=4, type=3, cpp_type=2, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='column_number', full_name='opencensus.proto.trace.v1.StackTrace.StackFrame.column_number', index=4,
       number=5, type=3, cpp_type=2, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='load_module', full_name='opencensus.proto.trace.v1.StackTrace.StackFrame.load_module', index=5,
       number=6, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='source_version', full_name='opencensus.proto.trace.v1.StackTrace.StackFrame.source_version', index=6,
       number=7, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2662,
-  serialized_end=3056,
+  serialized_start=2789,
+  serialized_end=3183,
 )
 
 _STACKTRACE_STACKFRAMES = _descriptor.Descriptor(
@@ -817,28 +832,28 @@ _STACKTRACE_STACKFRAMES = _descriptor.Descriptor(
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='dropped_frames_count', full_name='opencensus.proto.trace.v1.StackTrace.StackFrames.dropped_frames_count', index=1,
       number=2, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3058,
-  serialized_end=3166,
+  serialized_start=3185,
+  serialized_end=3293,
 )
 
 _STACKTRACE = _descriptor.Descriptor(
@@ -854,28 +869,28 @@ _STACKTRACE = _descriptor.Descriptor(
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='stack_trace_hash_id', full_name='opencensus.proto.trace.v1.StackTrace.stack_trace_hash_id', index=1,
       number=2, type=4, cpp_type=4, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[_STACKTRACE_STACKFRAME, _STACKTRACE_STACKFRAMES, ],
   enum_types=[
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2545,
-  serialized_end=3166,
+  serialized_start=2672,
+  serialized_end=3293,
 )
 
 
@@ -892,28 +907,28 @@ _MODULE = _descriptor.Descriptor(
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='build_id', full_name='opencensus.proto.trace.v1.Module.build_id', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3169,
-  serialized_end=3303,
+  serialized_start=3296,
+  serialized_end=3430,
 )
 
 
@@ -930,28 +945,28 @@ _TRUNCATABLESTRING = _descriptor.Descriptor(
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='truncated_byte_count', full_name='opencensus.proto.trace.v1.TruncatableString.truncated_byte_count', index=1,
       number=2, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3305,
-  serialized_end=3369,
+  serialized_start=3432,
+  serialized_end=3496,
 )
 
 _SPAN_TRACESTATE_ENTRY.containing_type = _SPAN_TRACESTATE
@@ -995,6 +1010,7 @@ _SPAN.fields_by_name['stack_trace'].message_type = _STACKTRACE
 _SPAN.fields_by_name['time_events'].message_type = _SPAN_TIMEEVENTS
 _SPAN.fields_by_name['links'].message_type = _SPAN_LINKS
 _SPAN.fields_by_name['status'].message_type = _STATUS
+_SPAN.fields_by_name['resource'].message_type = opencensus_dot_proto_dot_resource_dot_v1_dot_resource__pb2._RESOURCE
 _SPAN.fields_by_name['same_process_as_parent_span'].message_type = google_dot_protobuf_dot_wrappers__pb2._BOOLVALUE
 _SPAN.fields_by_name['child_span_count'].message_type = google_dot_protobuf_dot_wrappers__pb2._UINT32VALUE
 _SPAN_SPANKIND.containing_type = _SPAN
@@ -1008,6 +1024,9 @@ _ATTRIBUTEVALUE.fields_by_name['int_value'].containing_oneof = _ATTRIBUTEVALUE.o
 _ATTRIBUTEVALUE.oneofs_by_name['value'].fields.append(
   _ATTRIBUTEVALUE.fields_by_name['bool_value'])
 _ATTRIBUTEVALUE.fields_by_name['bool_value'].containing_oneof = _ATTRIBUTEVALUE.oneofs_by_name['value']
+_ATTRIBUTEVALUE.oneofs_by_name['value'].fields.append(
+  _ATTRIBUTEVALUE.fields_by_name['double_value'])
+_ATTRIBUTEVALUE.fields_by_name['double_value'].containing_oneof = _ATTRIBUTEVALUE.oneofs_by_name['value']
 _STACKTRACE_STACKFRAME.fields_by_name['function_name'].message_type = _TRUNCATABLESTRING
 _STACKTRACE_STACKFRAME.fields_by_name['original_function_name'].message_type = _TRUNCATABLESTRING
 _STACKTRACE_STACKFRAME.fields_by_name['file_name'].message_type = _TRUNCATABLESTRING
@@ -1166,8 +1185,6 @@ TruncatableString = _reflection.GeneratedProtocolMessageType('TruncatableString'
 _sym_db.RegisterMessage(TruncatableString)
 
 
-DESCRIPTOR.has_options = True
-DESCRIPTOR._options = _descriptor._ParseOptions(descriptor_pb2.FileOptions(), _b('\n\034io.opencensus.proto.trace.v1B\nTraceProtoP\001ZBgithub.com/census-instrumentation/opencensus-proto/gen-go/trace/v1'))
-_SPAN_ATTRIBUTES_ATTRIBUTEMAPENTRY.has_options = True
-_SPAN_ATTRIBUTES_ATTRIBUTEMAPENTRY._options = _descriptor._ParseOptions(descriptor_pb2.MessageOptions(), _b('8\001'))
+DESCRIPTOR._options = None
+_SPAN_ATTRIBUTES_ATTRIBUTEMAPENTRY._options = None
 # @@protoc_insertion_point(module_scope)
