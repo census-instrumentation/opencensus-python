@@ -211,7 +211,7 @@ def add_proto_attribute_value(
     :type attribute_key: str
     :param attribute_key: attribute key to set
 
-    :type attribute_value: str or int or bool
+    :type attribute_value: str or int or bool or float
     :param attribute_value: attribute value
     """
 
@@ -224,6 +224,9 @@ def add_proto_attribute_value(
     elif isinstance(attribute_value, str):
         pb_attributes.attribute_map[attribute_key].\
             string_value.value = attribute_value
+    elif isinstance(attribute_value, float):
+        pb_attributes.attribute_map[attribute_key].\
+            double_value = attribute_value
     else:
         pb_attributes.attribute_map[attribute_key].\
             string_value.value = str(attribute_value)
