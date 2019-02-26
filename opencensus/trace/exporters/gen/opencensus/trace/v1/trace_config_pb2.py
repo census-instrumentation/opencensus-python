@@ -7,7 +7,6 @@ from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
 from google.protobuf import reflection as _reflection
 from google.protobuf import symbol_database as _symbol_database
-from google.protobuf import descriptor_pb2
 # @@protoc_insertion_point(imports)
 
 _sym_db = _symbol_database.Default()
@@ -19,7 +18,8 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='opencensus/proto/trace/v1/trace_config.proto',
   package='opencensus.proto.trace.v1',
   syntax='proto3',
-  serialized_pb=_b('\n,opencensus/proto/trace/v1/trace_config.proto\x12\x19opencensus.proto.trace.v1\"\xff\x01\n\x0bTraceConfig\x12L\n\x13probability_sampler\x18\x01 \x01(\x0b\x32-.opencensus.proto.trace.v1.ProbabilitySamplerH\x00\x12\x46\n\x10\x63onstant_sampler\x18\x02 \x01(\x0b\x32*.opencensus.proto.trace.v1.ConstantSamplerH\x00\x12O\n\x15rate_limiting_sampler\x18\x03 \x01(\x0b\x32..opencensus.proto.trace.v1.RateLimitingSamplerH\x00\x42\t\n\x07sampler\"1\n\x12ProbabilitySampler\x12\x1b\n\x13samplingProbability\x18\x01 \x01(\x01\"#\n\x0f\x43onstantSampler\x12\x10\n\x08\x64\x65\x63ision\x18\x01 \x01(\x08\"\"\n\x13RateLimitingSampler\x12\x0b\n\x03qps\x18\x01 \x01(\x03\x42v\n\x1cio.opencensus.proto.trace.v1B\x10TraceConfigProtoP\x01ZBgithub.com/census-instrumentation/opencensus-proto/gen-go/trace/v1b\x06proto3')
+  serialized_options=_b('\n\034io.opencensus.proto.trace.v1B\020TraceConfigProtoP\001ZBgithub.com/census-instrumentation/opencensus-proto/gen-go/trace/v1'),
+  serialized_pb=_b('\n,opencensus/proto/trace/v1/trace_config.proto\x12\x19opencensus.proto.trace.v1\"\x87\x03\n\x0bTraceConfig\x12L\n\x13probability_sampler\x18\x01 \x01(\x0b\x32-.opencensus.proto.trace.v1.ProbabilitySamplerH\x00\x12\x46\n\x10\x63onstant_sampler\x18\x02 \x01(\x0b\x32*.opencensus.proto.trace.v1.ConstantSamplerH\x00\x12O\n\x15rate_limiting_sampler\x18\x03 \x01(\x0b\x32..opencensus.proto.trace.v1.RateLimitingSamplerH\x00\x12 \n\x18max_number_of_attributes\x18\x04 \x01(\x03\x12!\n\x19max_number_of_annotations\x18\x05 \x01(\x03\x12$\n\x1cmax_number_of_message_events\x18\x06 \x01(\x03\x12\x1b\n\x13max_number_of_links\x18\x07 \x01(\x03\x42\t\n\x07sampler\"1\n\x12ProbabilitySampler\x12\x1b\n\x13samplingProbability\x18\x01 \x01(\x01\"#\n\x0f\x43onstantSampler\x12\x10\n\x08\x64\x65\x63ision\x18\x01 \x01(\x08\"\"\n\x13RateLimitingSampler\x12\x0b\n\x03qps\x18\x01 \x01(\x03\x42v\n\x1cio.opencensus.proto.trace.v1B\x10TraceConfigProtoP\x01ZBgithub.com/census-instrumentation/opencensus-proto/gen-go/trace/v1b\x06proto3')
 )
 
 
@@ -38,28 +38,56 @@ _TRACECONFIG = _descriptor.Descriptor(
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='constant_sampler', full_name='opencensus.proto.trace.v1.TraceConfig.constant_sampler', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='rate_limiting_sampler', full_name='opencensus.proto.trace.v1.TraceConfig.rate_limiting_sampler', index=2,
       number=3, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='max_number_of_attributes', full_name='opencensus.proto.trace.v1.TraceConfig.max_number_of_attributes', index=3,
+      number=4, type=3, cpp_type=2, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='max_number_of_annotations', full_name='opencensus.proto.trace.v1.TraceConfig.max_number_of_annotations', index=4,
+      number=5, type=3, cpp_type=2, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='max_number_of_message_events', full_name='opencensus.proto.trace.v1.TraceConfig.max_number_of_message_events', index=5,
+      number=6, type=3, cpp_type=2, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='max_number_of_links', full_name='opencensus.proto.trace.v1.TraceConfig.max_number_of_links', index=6,
+      number=7, type=3, cpp_type=2, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -69,7 +97,7 @@ _TRACECONFIG = _descriptor.Descriptor(
       index=0, containing_type=None, fields=[]),
   ],
   serialized_start=76,
-  serialized_end=331,
+  serialized_end=467,
 )
 
 
@@ -86,21 +114,21 @@ _PROBABILITYSAMPLER = _descriptor.Descriptor(
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=333,
-  serialized_end=382,
+  serialized_start=469,
+  serialized_end=518,
 )
 
 
@@ -117,21 +145,21 @@ _CONSTANTSAMPLER = _descriptor.Descriptor(
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=384,
-  serialized_end=419,
+  serialized_start=520,
+  serialized_end=555,
 )
 
 
@@ -148,21 +176,21 @@ _RATELIMITINGSAMPLER = _descriptor.Descriptor(
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=421,
-  serialized_end=455,
+  serialized_start=557,
+  serialized_end=591,
 )
 
 _TRACECONFIG.fields_by_name['probability_sampler'].message_type = _PROBABILITYSAMPLER
@@ -212,6 +240,5 @@ RateLimitingSampler = _reflection.GeneratedProtocolMessageType('RateLimitingSamp
 _sym_db.RegisterMessage(RateLimitingSampler)
 
 
-DESCRIPTOR.has_options = True
-DESCRIPTOR._options = _descriptor._ParseOptions(descriptor_pb2.FileOptions(), _b('\n\034io.opencensus.proto.trace.v1B\020TraceConfigProtoP\001ZBgithub.com/census-instrumentation/opencensus-proto/gen-go/trace/v1'))
+DESCRIPTOR._options = None
 # @@protoc_insertion_point(module_scope)
