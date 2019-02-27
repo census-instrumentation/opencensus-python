@@ -20,14 +20,14 @@ from opencensus.metrics.export import value as value_module
 
 class TestValue(unittest.TestCase):
     def test_create_double_value(self):
-        double_value = value_module.Value.double_value(-34.56)
+        double_value = value_module.ValueDouble(-34.56)
 
         self.assertIsNotNone(double_value)
         self.assertIsInstance(double_value, value_module.ValueDouble)
         self.assertEqual(double_value.value, -34.56)
 
     def test_create_long_value(self):
-        long_value = value_module.Value.long_value(123456789)
+        long_value = value_module.ValueLong(123456789)
 
         self.assertIsNotNone(long_value)
         self.assertIsInstance(long_value, value_module.ValueLong)
@@ -38,7 +38,7 @@ class TestValue(unittest.TestCase):
         snapshot = summary_module.Snapshot(10, 87.07, value_at_percentile)
         summary = summary_module.Summary(10, 6.6, snapshot)
 
-        summary_value = value_module.Value.summary_value(summary)
+        summary_value = value_module.ValueSummary(summary)
 
         self.assertIsNotNone(summary_value)
         self.assertIsInstance(summary_value, value_module.ValueSummary)

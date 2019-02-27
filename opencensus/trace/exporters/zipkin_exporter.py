@@ -187,7 +187,7 @@ def _extract_tags_from_span(attr):
         return {}
     tags = {}
     for attribute_key, attribute_value in attr.items():
-        if isinstance(attribute_value, (int, bool)):
+        if isinstance(attribute_value, (int, bool, float)):
             value = str(attribute_value)
         elif isinstance(attribute_value, str):
             res, _ = check_str_length(str_to_check=attribute_value)
