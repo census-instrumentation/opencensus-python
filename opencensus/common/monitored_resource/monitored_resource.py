@@ -40,15 +40,6 @@ def get_instance():
     Returns a `Resource` configured for the current environment, or None if the
     environment is unknown or unsupported.
 
-    Supported environments include:
-
-    1. 'k8s_container'
-    - https://cloud.google.com/monitoring/api/resources#tag_k8s_container
-    2. 'gce_instance'
-    - https://cloud.google.com/monitoring/api/resources#tag_gce_instance
-    3. 'aws_ec2_instance'
-    - https://cloud.google.com/monitoring/api/resources#tag_aws_ec2_instance
-
     :rtype: :class:`opencensus.common.resource.Resource` or None
     :return: A `Resource` configured for the current environment.
     """
