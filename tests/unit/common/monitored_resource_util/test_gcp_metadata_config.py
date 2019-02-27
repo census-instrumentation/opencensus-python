@@ -36,7 +36,7 @@ class TestGcpMetadataConfig(unittest.TestCase):
         http_request_mock.side_effect = assign_attribute_value
         gcp_metadata_config.GcpMetadataConfig.inited = False
         gcp_metadata_config.GcpMetadataConfig.is_running = False
-        gcp_metadata_config.gcp_metadata_map = {}
+        gcp_metadata_config._GCP_METADATA_MAP = {}
 
         self.assertTrue(
             gcp_metadata_config.GcpMetadataConfig.is_running_on_gcp())
@@ -73,7 +73,7 @@ class TestGcpMetadataConfig(unittest.TestCase):
         http_request_mock.side_effect = assign_attribute_value
         gcp_metadata_config.GcpMetadataConfig.inited = False
         gcp_metadata_config.GcpMetadataConfig.is_running = False
-        gcp_metadata_config.gcp_metadata_map = {}
+        gcp_metadata_config._GCP_METADATA_MAP = {}
 
         self.assertTrue(
             gcp_metadata_config.GcpMetadataConfig.is_running_on_gcp())
@@ -98,7 +98,7 @@ class TestGcpMetadataConfig(unittest.TestCase):
         http_request_mock.return_value = None
         gcp_metadata_config.GcpMetadataConfig.inited = False
         gcp_metadata_config.GcpMetadataConfig.is_running = False
-        gcp_metadata_config.gcp_metadata_map = {}
+        gcp_metadata_config._GCP_METADATA_MAP = {}
 
         self.assertFalse(
             gcp_metadata_config.GcpMetadataConfig.is_running_on_gcp())

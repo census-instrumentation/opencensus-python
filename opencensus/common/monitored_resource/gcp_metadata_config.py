@@ -38,7 +38,7 @@ _GCE_ATTRIBUTES = {
 }
 
 
-gcp_metadata_map = {}
+_GCP_METADATA_MAP = {}
 
 
 class GcpMetadataConfig(object):
@@ -64,14 +64,14 @@ class GcpMetadataConfig(object):
         if instance_id is not None:
             cls.is_running = True
 
-            gcp_metadata_map['instance_id'] = instance_id
+            _GCP_METADATA_MAP['instance_id'] = instance_id
 
             # fetch attributes from metadata request
             for attribute_key, attribute_uri in _GCE_ATTRIBUTES.items():
-                if attribute_key not in gcp_metadata_map:
+                if attribute_key not in _GCP_METADATA_MAP:
                     attribute_value = cls.get_attribute(attribute_uri)
                     if attribute_value is not None:  # pragma: NO COVER
-                        gcp_metadata_map[attribute_key] = attribute_value
+                        _GCP_METADATA_MAP[attribute_key] = attribute_value
 
         cls.inited = True
 
@@ -83,7 +83,7 @@ class GcpMetadataConfig(object):
     def get_gce_metadata(self):
         """for GCP GCE instance"""
         if self.is_running_on_gcp():
-            return gcp_metadata_map
+            return _GCP_METADATA_MAP
 
         return dict()
 
