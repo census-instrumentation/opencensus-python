@@ -26,7 +26,7 @@ install_requires = [
     'google-api-core >= 1.0.0, < 2.0.0',
 ]
 
-exec(open("opencensus/common/version.py").read())
+exec(open("opencensus/common/version/version.py").read())
 setup(
     name='opencensus',
     version=__version__,  # noqa

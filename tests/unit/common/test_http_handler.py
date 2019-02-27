@@ -32,8 +32,8 @@ except ImportError:
 class TestHttpHandler(unittest.TestCase):
     TEST_URL = 'https://localhost:8080/metadata'
 
-    @mock.patch('opencensus.common.http_handler.Request')
-    @mock.patch('opencensus.common.http_handler.urlopen')
+    @mock.patch('opencensus.common.http_handler.http_handler.Request')
+    @mock.patch('opencensus.common.http_handler.http_handler.urlopen')
     def test_urlopen(self, urlopen_mock, request_mock):
         mocked_response = {
             'availabilityZone': 'us-west-2b',
@@ -54,8 +54,8 @@ class TestHttpHandler(unittest.TestCase):
         self.assertIn('availabilityZone', data)
         self.assertEqual(urlopen_mock.call_count, 1)
 
-    @mock.patch('opencensus.common.http_handler.Request')
-    @mock.patch('opencensus.common.http_handler.urlopen')
+    @mock.patch('opencensus.common.http_handler.http_handler.Request')
+    @mock.patch('opencensus.common.http_handler.http_handler.urlopen')
     def test_urlopen_with_headers(self, urlopen_mock, request_mock):
         mocked_response = {
             'availabilityZone': 'us-west-2b',
@@ -82,7 +82,7 @@ class TestHttpHandler(unittest.TestCase):
             raise URLError('URL Error message')
 
         with mock.patch(
-                'opencensus.common.http_handler.urlopen') as urlopen_mock:
+                'opencensus.common.http_handler.http_handler.urlopen') as urlopen_mock:
             urlopen_mock.side_effect = raise_urlerror
             self.assertIsNone(get_request(self.TEST_URL))
 
@@ -96,7 +96,7 @@ class TestHttpHandler(unittest.TestCase):
                 fp=None)
 
         with mock.patch(
-                'opencensus.common.http_handler.urlopen') as urlopen_mock:
+                'opencensus.common.http_handler.http_handler.urlopen') as urlopen_mock:
             urlopen_mock.side_effect = raise_httperror
             self.assertIsNone(get_request(self.TEST_URL))
 
@@ -105,6 +105,6 @@ class TestHttpHandler(unittest.TestCase):
             raise socket.timeout('URL Timeout message')
 
         with mock.patch(
-                'opencensus.common.http_handler.urlopen') as urlopen_mock:
+                'opencensus.common.http_handler.http_handler.urlopen') as urlopen_mock:
             urlopen_mock.side_effect = raise_sockettimeout
             self.assertIsNone(get_request(self.TEST_URL))
