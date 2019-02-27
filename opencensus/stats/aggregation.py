@@ -143,9 +143,8 @@ class DistributionAggregation(BaseAggregation):
             else:
                 ii += 1
             if ii:
-                logger.warning("Dropping {} negative bucket boundaries, the "
-                               "values must be strictly > 0"
-                               .format(ii))
+                logger.warning("Dropping %s non-positive bucket boundaries",
+                               ii)
             boundaries = boundaries[ii:]
 
         super(DistributionAggregation, self).__init__(
@@ -153,7 +152,7 @@ class DistributionAggregation(BaseAggregation):
         self._boundaries = bucket_boundaries.BucketBoundaries(boundaries)
         self._distribution = distribution or {}
         self.aggregation_data = aggregation_data.DistributionAggregationData(
-            0, 0, float('inf'), float('-inf'), 0, None, boundaries)
+            0, 0, 0, None, boundaries)
 
     @property
     def boundaries(self):

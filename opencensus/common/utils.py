@@ -12,8 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+try:
+    from weakref import WeakMethod
+except ImportError:
+    from opencensus.common.backports import WeakMethod
+
 import calendar
 import datetime
+import weakref
 
 UTF8 = 'utf-8'
 
@@ -103,3 +109,16 @@ def window(ible, length):
             yield elts
         else:
             break
+
+
+def get_weakref(func):
+    """Get a weak reference to bound or unbound `func`.
+
+    If `func` is unbound (i.e. has no __self__ attr) get a weakref.ref,
+    otherwise get a wrapper that simulates weakref.ref.
+    """
+    if func is None:
+        raise ValueError
+    if not hasattr(func, '__self__'):
+        return weakref.ref(func)
+    return WeakMethod(func)

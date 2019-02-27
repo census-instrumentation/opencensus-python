@@ -1,9 +1,11 @@
 # Changelog
+
+## Unreleased
+
 - Fix bugs in Prometheus exporter. Use ordered list for histogram buckets.
   Use `UnknownMetricFamily` for `SumData` instead of `UntypedMetricFamily`.
   Check if label keys and values match before exporting.
-
-## Unreleased
+- Remove min and max from Distribution.
 
 ## 0.2.0
 Released 2019-01-18
