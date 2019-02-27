@@ -37,26 +37,18 @@ class TestK8SUtils(unittest.TestCase):
                 'gcp_metadata_config.get_request')
     def test_get_k8s_metadata(self, http_request_mock):
         def assign_attribute_value(*args, **kwargs):
-            attribute_uri = args[0].split('/')[-1]
-            if attribute_uri == 'id':
-                return 'my-instance'
-            elif attribute_uri == 'project-id':
-                return 'my-project'
-            elif attribute_uri == 'cluster-name':
+            if args[0].split('/')[-1] == 'cluster-name':
                 return 'cluster'
-            elif attribute_uri == 'zone':
-                return 'us-east1'
+            raise AssertionError
 
         http_request_mock.side_effect = assign_attribute_value
         labels_list = (k8s_utils.get_k8s_metadata())
         self.assertDictEqual(
             labels_list,
-            {'cluster_name': 'cluster',
-             'project_id': 'my-project',
-             'location': 'us-east1',
-             'pod_name': 'localhost',
-             'namespace_name': 'namespace',
-             'container_name': 'container'
+            {'k8s.io/cluster/name': 'cluster',
+             'k8s.io/container': 'container',
+             'k8s.io/namespace/name': 'namespace',
+             'k8s.io/pod/name': 'localhost'
              })
 
     @mock.patch.dict(
@@ -66,25 +58,11 @@ class TestK8SUtils(unittest.TestCase):
             'HOSTNAME': 'localhost'
         },
         clear=True)
-    @mock.patch('opencensus.common.monitored_resource.'
-                'gcp_metadata_config.get_request')
-    def test_get_k8s_metadata_container_empty(self, http_request_mock):
-        def assign_attribute_value(*args, **kwargs):
-            attribute_uri = args[0].split('/')[-1]
-            if attribute_uri == 'id':
-                return 'my-instance'
-            elif attribute_uri == 'project-id':
-                return 'my-project'
-            elif attribute_uri == 'zone':
-                return 'us-east1'
-
-        http_request_mock.side_effect = assign_attribute_value
+    def test_get_k8s_metadata_container_empty(self):
         labels_list = (k8s_utils.get_k8s_metadata())
 
         self.assertDictEqual(
             labels_list,
-            {'project_id': 'my-project',
-             'location': 'us-east1',
-             'pod_name': 'localhost',
-             'namespace_name': 'namespace'
+            {'k8s.io/namespace/name': 'namespace',
+             'k8s.io/pod/name': 'localhost'
              })

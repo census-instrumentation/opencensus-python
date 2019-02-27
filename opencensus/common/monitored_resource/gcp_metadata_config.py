@@ -17,19 +17,24 @@ from opencensus.common.http_handler import get_request
 _GCP_METADATA_URI = 'http://metadata/computeMetadata/v1/'
 _GCP_METADATA_URI_HEADER = {'Metadata-Flavor': 'Google'}
 
+# ID of the GCP project associated with this resource, such as "my-project"
+PROJECT_ID_KEY = 'project_id'
+
+# Numeric VM instance identifier assigned by GCE
+INSTANCE_ID_KEY = 'instance_id'
+
+# The GCE zone in which the VM is running
+ZONE_KEY = 'zone'
+
+# GKE cluster name
+CLUSTER_NAME_KEY = 'instance/attributes/cluster-name'
+
 # GCE common attributes
 # See: https://cloud.google.com/appengine/docs/flexible/python/runtime#environment_variables  # noqa
 _GCE_ATTRIBUTES = {
-    # ProjectID is the identifier of the GCP project associated with this
-    # resource, such as "my-project".
-    'project_id': 'project/project-id',
-
-    # instance_id is the numeric VM instance identifier assigned by
-    # Compute Engine.
-    'instance_id': 'instance/id',
-
-    # zone is the Compute Engine zone in which the VM is running.
-    'zone': 'instance/zone'
+    PROJECT_ID_KEY: 'project/project-id',
+    INSTANCE_ID_KEY: 'instance/id',
+    ZONE_KEY: 'instance/zone'
 }
 
 

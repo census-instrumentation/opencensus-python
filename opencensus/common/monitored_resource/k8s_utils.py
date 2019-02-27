@@ -16,34 +16,27 @@ import os
 
 from opencensus.common.monitored_resource import gcp_metadata_config
 
-_K8S_ATTRIBUTES = {
-    # ProjectID is the identifier of the GCP project associated with this
-    # resource, such as "my-project".
-    'project_id': 'project/project-id',
-
-    # location is the Compute Engine zone in which the VM is running.
-    'location': 'instance/zone',
-
-    # cluster_name is the name for the cluster the container is running in.
-    'cluster_name': 'instance/attributes/cluster-name'
-}
-
-# Following attributes are derived from environment variables. They are
-# configured via yaml file. For details refer to:
-# https://cloud.google.com/kubernetes-engine/docs/tutorials/custom-metrics-autoscaling#exporting_metrics_from_the_application  # noqa
-_K8S_ENV_ATTRIBUTES = {
-    # The name of the container.
-    'container_name': 'CONTAINER_NAME',
-
-    # The identifier for the cluster namespace the container is running in
-    'namespace_name': 'NAMESPACE',
-
-    # The identifier for the pod the container is running in
-    'pod_name': 'HOSTNAME'
-}
-
-# Kubenertes environment variables
+# Env var that signals that we're in a kubernetes container
 _KUBERNETES_SERVICE_HOST = 'KUBERNETES_SERVICE_HOST'
+
+# Name of the cluster the container is running in
+CLUSTER_NAME_KEY = 'k8s.io/cluster/name'
+
+# ID of the instance the container is running on
+NAMESPACE_NAME_KEY = 'k8s.io/namespace/name'
+
+# Container pod ID
+POD_NAME_KEY = 'k8s.io/pod/name'
+
+# Container name
+CONTAINER_NAME_KEY = 'k8s.io/container'
+
+# Attributes set from environment variables
+_K8S_ENV_ATTRIBUTES = {
+    CONTAINER_NAME_KEY: 'CONTAINER_NAME',
+    NAMESPACE_NAME_KEY: 'NAMESPACE',
+    POD_NAME_KEY: 'HOSTNAME'
+}
 
 
 def is_k8s_environment():
@@ -58,11 +51,10 @@ def get_k8s_metadata():
     """Get kubernetes container metadata, as on GCP GKE."""
     k8s_metadata = {}
 
-    for attribute_key, attribute_uri in _K8S_ATTRIBUTES.items():
-        attribute_value = (gcp_metadata_config.GcpMetadataConfig
-                           .get_attribute(attribute_uri))
-        if attribute_value is not None:
-            k8s_metadata[attribute_key] = attribute_value
+    gcp_cluster = (gcp_metadata_config.GcpMetadataConfig
+                   .get_attribute(gcp_metadata_config.CLUSTER_NAME_KEY))
+    if gcp_cluster is not None:
+        k8s_metadata[CLUSTER_NAME_KEY] = gcp_cluster
 
     for attribute_key, attribute_env in _K8S_ENV_ATTRIBUTES.items():
         attribute_value = os.environ.get(attribute_env)
