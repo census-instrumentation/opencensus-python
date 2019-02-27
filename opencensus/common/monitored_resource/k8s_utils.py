@@ -29,7 +29,7 @@ NAMESPACE_NAME_KEY = 'k8s.io/namespace/name'
 POD_NAME_KEY = 'k8s.io/pod/name'
 
 # Container name
-CONTAINER_NAME_KEY = 'k8s.io/container'
+CONTAINER_NAME_KEY = 'k8s.io/container/name'
 
 # Attributes set from environment variables
 _K8S_ENV_ATTRIBUTES = {

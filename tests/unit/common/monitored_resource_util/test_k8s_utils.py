@@ -46,7 +46,7 @@ class TestK8SUtils(unittest.TestCase):
         self.assertDictEqual(
             labels_list,
             {'k8s.io/cluster/name': 'cluster',
-             'k8s.io/container': 'container',
+             'k8s.io/container/name': 'container',
              'k8s.io/namespace/name': 'namespace',
              'k8s.io/pod/name': 'localhost'
              })
