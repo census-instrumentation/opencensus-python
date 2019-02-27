@@ -28,7 +28,7 @@ def mock_mr_method(method, use):
 
 
 def mock_use_k8s(use):
-    return mock_mr_method('gcp_metadata_config.is_k8s_environment', use)
+    return mock_mr_method('k8s_utils.is_k8s_environment', use)
 
 
 def mock_use_gce(use):
@@ -80,12 +80,9 @@ class TestMonitoredResource(unittest.TestCase):
         with mock_gce_env():
             resource = monitored_resource.get_instance()
         self.assertEqual(resource.get_type(), 'gce_instance')
-        self.assertEqual(resource.get_labels(), mocked_labels)
+        self.assertDictEqual(resource.get_labels(), mocked_labels)
 
-    @mock.patch('opencensus.common.monitored_resource.monitored_resource'
-                '.gcp_metadata_config.GcpMetadataConfig')
-    def test_gcp_k8s_monitored_resource(self, gcp_metadata_mock):
-
+    def test_gcp_k8s_monitored_resource(self):
         mocked_labels = {
             'instance_id': 'my-instance',
             'cluster_name': 'cluster',
@@ -96,13 +93,11 @@ class TestMonitoredResource(unittest.TestCase):
             'container_name': 'container'
         }
 
-        gcp_metadata_mock.return_value = mock.Mock()
-        gcp_metadata_mock.return_value.get_k8s_metadata.return_value =\
-            mocked_labels
-        with mock_k8s_env():
-            resource = monitored_resource.get_instance()
+        with mock_mr_method('k8s_utils.get_k8s_metadata', mocked_labels):
+            with mock_k8s_env():
+                resource = monitored_resource.get_instance()
         self.assertEqual(resource.get_type(), 'k8s_container')
-        self.assertEqual(resource.get_labels(), mocked_labels)
+        self.assertDictEqual(resource.get_labels(), mocked_labels)
 
     @mock.patch('opencensus.common.monitored_resource.monitored_resource'
                 '.aws_identity_doc_utils.AwsIdentityDocumentUtils')
@@ -121,7 +116,7 @@ class TestMonitoredResource(unittest.TestCase):
         with mock_aws_env():
             resource = monitored_resource.get_instance()
         self.assertEqual(resource.get_type(), 'aws_ec2_instance')
-        self.assertEqual(resource.get_labels(), mocked_labels)
+        self.assertDictEqual(resource.get_labels(), mocked_labels)
 
     def test_k8s_environment(self):
         patch = mock.patch.dict(os.environ,

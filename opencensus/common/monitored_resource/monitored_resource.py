@@ -12,11 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
-
 from opencensus.common import resource
 from opencensus.common.monitored_resource import aws_identity_doc_utils
 from opencensus.common.monitored_resource import gcp_metadata_config
+from opencensus.common.monitored_resource import k8s_utils
 
 
 # Supported environments (resource types)
@@ -53,10 +52,8 @@ def get_instance():
     :rtype: :class:`opencensus.common.resource.Resource` or None
     :return: A `Resource` configured for the current environment.
     """
-    if gcp_metadata_config.is_k8s_environment():
-        return resource.Resource(
-            _K8S_CONTAINER,
-            gcp_metadata_config.GcpMetadataConfig().get_k8s_metadata())
+    if k8s_utils.is_k8s_environment():
+        return resource.Resource(_K8S_CONTAINER, k8s_utils.get_k8s_metadata())
     if is_gce_environment():
         return resource.Resource(
             _GCE_INSTANCE,
