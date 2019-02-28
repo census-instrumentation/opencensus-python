@@ -28,7 +28,7 @@ def unit(session, py):
 
     # Install all test dependencies, then install this package in-place.
     session.install('-r', 'requirements-test.txt')
-
+    session.install('-e', 'contrib/opencensus-common-correlationcontext')
     session.install('-e', '.')
 
     # Run py.test against the unit tests.
@@ -41,6 +41,7 @@ def unit(session, py):
         '--cov-report=',
         '--cov-fail-under=97',
         'tests/unit/',
+        'contrib/',
         *session.posargs
     )
 
@@ -82,7 +83,8 @@ def lint(session):
     """
     session.interpreter = 'python3.6'
     session.install('flake8')
-    session.install('.')
+    session.install('-e', 'contrib/opencensus-common-correlationcontext')
+    session.install('-e', '.')
     session.run(
         'flake8',
         '--exclude=opencensus/trace/exporters/gen/',

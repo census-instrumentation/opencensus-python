@@ -3,6 +3,8 @@ branch = True
 omit = 
        *gen/jaeger*
        *gen/opencensus*
+       opencensus/__init__.py
+       opencensus/common/__init__.py
 
 [report]
 fail_under = 100
@@ -15,3 +17,5 @@ exclude_lines =
 omit = 
        *gen/jaeger*
        *gen/opencensus*
+       opencensus/__init__.py
+       opencensus/common/__init__.py

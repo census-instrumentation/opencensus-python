@@ -29,4 +29,6 @@ python3 -m pip install --upgrade twine wheel setuptools
 
 # Build the distribution and upload.
 python3 setup.py bdist_wheel
+cd contrib/opencensus-common-correlationcontext
+python3 setup.py bdist_wheel --dist-dir ./../../dist/
 twine upload dist/*
