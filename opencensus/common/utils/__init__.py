@@ -29,7 +29,7 @@ MAX_LENGTH = 128
 ISO_DATETIME_REGEX = '%Y-%m-%dT%H:%M:%S.%fZ'
 
 
-def _get_truncatable_str(str_to_convert):
+def get_truncatable_str(str_to_convert):
     """Truncate a string if exceed limit and record the truncated bytes
     count.
     """
