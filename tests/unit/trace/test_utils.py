@@ -34,9 +34,9 @@ from opencensus.common import utils
 
 
 class TestUtils(unittest.TestCase):
-    def test__get_truncatable_str(self):
+    def test_get_truncatable_str(self):
         str_to_convert = 'test string'
-        truncatable_str = utils._get_truncatable_str(str_to_convert)
+        truncatable_str = utils.get_truncatable_str(str_to_convert)
 
         expected_str = {
             'value': str_to_convert,
@@ -45,13 +45,13 @@ class TestUtils(unittest.TestCase):
 
         self.assertEqual(expected_str, truncatable_str)
 
-    def test__get_truncatable_str_length_exceeds(self):
+    def test_get_truncatable_str_length_exceeds(self):
         max_len = 5
         str_to_convert = 'length exceeded'
         patch = mock.patch('opencensus.common.utils.MAX_LENGTH', max_len)
 
         with patch:
-            truncatable_str = utils._get_truncatable_str(str_to_convert)
+            truncatable_str = utils.get_truncatable_str(str_to_convert)
 
         expected_str = {
             'value': 'lengt',

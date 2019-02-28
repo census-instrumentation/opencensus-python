@@ -17,7 +17,7 @@ import os
 import random
 import traceback
 
-from opencensus.common.utils import _get_truncatable_str
+from opencensus.common.utils import get_truncatable_str
 
 MAX_FRAMES = 128
 
@@ -86,18 +86,18 @@ class StackFrame(object):
     def format_stack_frame_json(self):
         """Convert StackFrame object to json format."""
         stack_frame_json = {}
-        stack_frame_json['function_name'] = _get_truncatable_str(
+        stack_frame_json['function_name'] = get_truncatable_str(
             self.func_name)
-        stack_frame_json['original_function_name'] = _get_truncatable_str(
+        stack_frame_json['original_function_name'] = get_truncatable_str(
             self.original_func_name)
-        stack_frame_json['file_name'] = _get_truncatable_str(self.file_name)
+        stack_frame_json['file_name'] = get_truncatable_str(self.file_name)
         stack_frame_json['line_number'] = self.line_num
         stack_frame_json['column_number'] = self.col_num
         stack_frame_json['load_module'] = {
-            'module': _get_truncatable_str(self.load_module),
-            'build_id': _get_truncatable_str(self.build_id),
+            'module': get_truncatable_str(self.load_module),
+            'build_id': get_truncatable_str(self.build_id),
         }
-        stack_frame_json['source_version'] = _get_truncatable_str(
+        stack_frame_json['source_version'] = get_truncatable_str(
             self.source_version)
 
         return stack_frame_json

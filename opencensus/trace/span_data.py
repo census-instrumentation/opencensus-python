@@ -106,7 +106,7 @@ def _format_legacy_span_json(span_data):
     :return: Dictionary representing the Span
     """
     span_json = {
-        'displayName': utils._get_truncatable_str(span_data.name),
+        'displayName': utils.get_truncatable_str(span_data.name),
         'spanId': span_data.span_id,
         'startTime': span_data.start_time,
         'endTime': span_data.end_time,
