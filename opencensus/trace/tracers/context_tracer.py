@@ -16,10 +16,11 @@ import logging
 import threading
 
 from opencensus.trace import execution_context
-from opencensus.trace.span_context import SpanContext
 from opencensus.trace import span as trace_span
 from opencensus.trace import span_data as span_data_module
 from opencensus.trace.exporters import print_exporter
+from opencensus.trace.span_context import SpanContext
+from opencensus.trace.span_context import generate_trace_id
 from opencensus.trace.tracers import base
 
 
@@ -116,6 +117,8 @@ class ContextTracer(base.Tracer):
             execution_context.set_current_span(cur_span.parent_span)
         else:
             execution_context.set_current_span(None)
+            self.span_context.trace_id = generate_trace_id()
+            self.trace_id = self.span_context.trace_id
 
         with self._spans_list_condition:
             if cur_span in self._spans_list:

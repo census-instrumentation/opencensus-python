@@ -136,13 +136,20 @@ class TestContextTracer(unittest.TestCase):
         mock_span.attributes = {}
         mock_span.__iter__ = mock.Mock(return_value=iter([mock_span]))
         parent_span_id = '6e0c63257de34c92'
+        mock_span.parent_span = mock.Mock(spec=span.Span)
         mock_span.parent_span.span_id = parent_span_id
         mock_current_span.return_value = mock_span
+        old_trace_id = tracer.trace_id
+        self.assertEqual(tracer.trace_id, tracer.span_context.trace_id)
         tracer.end_span()
 
         self.assertTrue(mock_span.finish.called)
         self.assertEqual(tracer.span_context.span_id, parent_span_id)
         self.assertFalse(tracer.exporter.export.called)
+
+        # Check that we don't change the trace ID if the parent span exists
+        self.assertEqual(tracer.trace_id, old_trace_id)
+        self.assertEqual(tracer.trace_id, tracer.span_context.trace_id)
 
     @mock.patch.object(context_tracer.ContextTracer, 'current_span')
     def test_end_span_without_parent(self, mock_current_span):
@@ -159,10 +166,16 @@ class TestContextTracer(unittest.TestCase):
         mock_span.attributes = {}
         mock_span.__iter__ = mock.Mock(return_value=iter([mock_span]))
         mock_current_span.return_value = mock_span
+        old_trace_id = tracer.trace_id
+        self.assertEqual(tracer.trace_id, tracer.span_context.trace_id)
         tracer.end_span()
 
         cur_span = get_current_span()
         self.assertIsNone(cur_span)
+
+        # Check that ending the root span generates a new trace ID
+        self.assertNotEqual(tracer.trace_id, old_trace_id)
+        self.assertEqual(tracer.trace_id, tracer.span_context.trace_id)
 
     def test_end_span_batch_export(self):
         exporter = mock.Mock()
