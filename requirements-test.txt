@@ -1,5 +1,4 @@
 Django==1.11.20
-Flask==0.12.3
 google-cloud-monitoring==0.31.0
 google-cloud-trace==0.20.1
 grpcio==1.16.1

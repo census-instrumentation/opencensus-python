@@ -18,6 +18,12 @@ import nox
 import os
 
 
+def _install_dev_packages(session):
+    session.install('-e', 'contrib/opencensus-correlation')
+    session.install('-e', '.')
+    session.install('-e', 'contrib/opencensus-ext-flask')
+
+
 @nox.session
 @nox.parametrize('py', ['2.7', '3.4', '3.5', '3.6'])
 def unit(session, py):
@@ -26,10 +32,11 @@ def unit(session, py):
     # Run unit tests against all supported versions of Python.
     session.interpreter = 'python{}'.format(py)
 
-    # Install all test dependencies, then install this package in-place.
+    # Install all test dependencies.
     session.install('-r', 'requirements-test.txt')
-    session.install('-e', 'contrib/opencensus-correlation')
-    session.install('-e', '.')
+
+    # Install dev packages.
+    _install_dev_packages(session)
 
     # Run py.test against the unit tests.
     session.run(
@@ -61,11 +68,11 @@ def system(session, py):
     # Set the virtualenv dirname.
     session.virtualenv_dirname = 'sys-' + py
 
-    # Install all test dependencies, then install this package into the
-    # virutalenv's dist-packages.
+    # Install all test dependencies.
     session.install('-r', 'requirements-test.txt')
-    session.install('-e', 'contrib/opencensus-correlation')
-    session.install('-e', '.')
+
+    # Install dev packages into the virutalenv's dist-packages.
+    _install_dev_packages(session)
 
     # Run py.test against the system tests.
     session.run(
@@ -84,8 +91,10 @@ def lint(session):
     """
     session.interpreter = 'python3.6'
     session.install('flake8')
-    session.install('-e', 'contrib/opencensus-correlation')
-    session.install('-e', '.')
+
+    # Install dev packages.
+    _install_dev_packages(session)
+
     session.run(
         'flake8',
         '--exclude=opencensus/trace/exporters/gen/',
