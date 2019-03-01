@@ -25,7 +25,7 @@ extras = {
 }
 
 install_requires = [
-    'opencensus-common-correlationcontext == {}'.format(__version__),
+    'opencensus-correlation == {}'.format(__version__),
     'google-api-core >= 1.0.0, < 2.0.0',
 ]
 

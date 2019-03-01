@@ -17,7 +17,7 @@ from setuptools import setup
 from version import __version__
 
 setup(
-    name='opencensus-common-correlationcontext',
+    name='opencensus-correlation',
     version=__version__,  # noqa
     author='OpenCensus Authors',
     author_email='census-developers@googlegroups.com',
@@ -43,6 +43,6 @@ setup(
     license='Apache-2.0',
     packages=find_packages(exclude=('tests',)),
     namespace_packages=[],
-    url='https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-common-correlationcontext',
+    url='https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-correlation',
     zip_safe=False,
 )

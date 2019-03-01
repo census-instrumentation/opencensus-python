@@ -28,7 +28,7 @@ def unit(session, py):
 
     # Install all test dependencies, then install this package in-place.
     session.install('-r', 'requirements-test.txt')
-    session.install('-e', 'contrib/opencensus-common-correlationcontext')
+    session.install('-e', 'contrib/opencensus-correlation')
     session.install('-e', '.')
 
     # Run py.test against the unit tests.
@@ -64,7 +64,7 @@ def system(session, py):
     # Install all test dependencies, then install this package into the
     # virutalenv's dist-packages.
     session.install('-r', 'requirements-test.txt')
-    session.install('-e', 'contrib/opencensus-common-correlationcontext')
+    session.install('-e', 'contrib/opencensus-correlation')
     session.install('-e', '.')
 
     # Run py.test against the system tests.
@@ -84,7 +84,7 @@ def lint(session):
     """
     session.interpreter = 'python3.6'
     session.install('flake8')
-    session.install('-e', 'contrib/opencensus-common-correlationcontext')
+    session.install('-e', 'contrib/opencensus-correlation')
     session.install('-e', '.')
     session.run(
         'flake8',
