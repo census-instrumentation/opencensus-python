@@ -1,12 +1,15 @@
-# OpenCensus Flask Integration
+OpenCensus Flask Integration
 ============================================================================
 
-Installation & basic usage
---------------------------
+Installation
+------------
 
 ::
 
     pip install opencensus-ext-flask
+
+Usage
+-----
 
 .. code:: python
 
