@@ -71,7 +71,7 @@ def system(session, py):
     # Install all test dependencies.
     session.install('-r', 'requirements-test.txt')
 
-    # Install dev packages into the virutalenv's dist-packages.
+    # Install dev packages into the virtualenv's dist-packages.
     _install_dev_packages(session)
 
     # Run py.test against the system tests.
