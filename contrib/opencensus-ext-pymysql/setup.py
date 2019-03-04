@@ -39,7 +39,7 @@ setup(
     include_package_data=True,
     long_description=open('README.rst').read(),
     install_requires=[
-        'flask >= 0.7.11, < 1.0.0',
+        'PyMySQL >= 0.7.11, < 1.0.0',
         'opencensus >= 0.2.dev0, < 1.0.0',
     ],
     extras_require={},
