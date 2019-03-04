@@ -11,21 +11,31 @@ Installation
 Usage
 -----
 
+In your application, add the pyramid tween and your requests will be
+traced.
+
 .. code:: python
 
-    from flask import Flask
-    from opencensus.ext.flask.flask_middleware import FlaskMiddleware
-    from opencensus.trace.propagation.trace_context_http_header_format import TraceContextPropagator
-    
-    app = Flask(__name__)
-    middleware = FlaskMiddleware(app, propagator=TraceContextPropagator(), blacklist_paths=['_ah/health'])
-    
-    @app.route('/')
-    def hello():
-        return 'Hello World!'
-    
-    if __name__ == '__main__':
-        import logging
-        logger = logging.getLogger('werkzeug')
-        logger.setLevel(logging.ERROR)
-        app.run(host='localhost', port=8080, threaded=True)
+    def main(global_config, **settings):
+        config = Configurator(settings=settings)
+
+        config.add_tween('opencensus.ext.pyramid'
+                         '.pyramid_middleware.OpenCensusTweenFactory')
+
+To configure the sampler, exporter, and propagator, pass the instances
+into the pyramid settings
+
+.. code:: python
+
+    from opencensus.trace.exporters import print_exporter
+    from opencensus.trace.propagation import google_cloud_format
+    from opencensus.trace.samplers import probability
+
+    settings = {}
+    settings['OPENCENSUS_TRACE'] = {
+        'EXPORTER': print_exporter.PrintExporter(),
+        'SAMPLER': probability.ProbabilitySampler(rate=0.5),
+        'PROPAGATOR': google_cloud_format.GoogleCloudFormatPropagator(),
+    }
+
+    config = Configurator(settings=settings)

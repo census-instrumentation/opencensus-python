@@ -11,21 +11,48 @@ Installation
 Usage
 -----
 
+For tracing Django requests, you will need to add the following line to
+the ``MIDDLEWARE_CLASSES`` section in the Django ``settings.py`` file.
+
 .. code:: python
 
-    from flask import Flask
-    from opencensus.ext.flask.flask_middleware import FlaskMiddleware
-    from opencensus.trace.propagation.trace_context_http_header_format import TraceContextPropagator
-    
-    app = Flask(__name__)
-    middleware = FlaskMiddleware(app, propagator=TraceContextPropagator(), blacklist_paths=['_ah/health'])
-    
-    @app.route('/')
-    def hello():
-        return 'Hello World!'
-    
-    if __name__ == '__main__':
-        import logging
-        logger = logging.getLogger('werkzeug')
-        logger.setLevel(logging.ERROR)
-        app.run(host='localhost', port=8080, threaded=True)
+    MIDDLEWARE_CLASSES = [
+        ...
+        'opencensus.ext.django.middleware.OpencensusMiddleware',
+    ]
+
+And add this line to the ``INSTALLED_APPS`` section:
+
+.. code:: python
+
+    INSTALLED_APPS = [
+        ...
+        'opencensus.ext.django',
+    ]
+
+You can configure the sampler, exporter, propagator using the ``OPENCENSUS_TRACE`` setting in
+``settings.py``:
+
+.. code:: python
+
+    OPENCENSUS_TRACE = {
+        'SAMPLER': 'opencensus.trace.samplers.probability.ProbabilitySampler',
+        'REPORTER': 'opencensus.trace.exporters.print_exporter.PrintExporter',
+        'PROPAGATOR': 'opencensus.trace.propagation.google_cloud_format.'
+                      'GoogleCloudFormatPropagator',
+    }
+
+You can configure the sampling rate and other parameters using the ``OPENCENSUS_TRACE_PARAMS``
+setting in ``settings.py``:
+
+.. code:: python
+
+    OPENCENSUS_TRACE_PARAMS = {
+        'BLACKLIST_PATHS': ['/_ah/health'],
+        'GCP_EXPORTER_PROJECT': None,
+        'SAMPLING_RATE': 0.5,
+        'SERVICE_NAME': 'my_service',
+        'ZIPKIN_EXPORTER_HOST_NAME': 'localhost',
+        'ZIPKIN_EXPORTER_PORT': 9411,
+        'ZIPKIN_EXPORTER_PROTOCOL': 'http',
+    }
