@@ -20,9 +20,9 @@ import psycopg2
 import sqlalchemy
 
 from opencensus.common.transports import async_
+from opencensus.ext.flask.flask_middleware import FlaskMiddleware
 from opencensus.trace import config_integration
 from opencensus.trace.exporters import stackdriver_exporter
-from opencensus.trace.ext.flask.flask_middleware import FlaskMiddleware
 
 INTEGRATIONS = ['mysql', 'postgresql', 'sqlalchemy']
 
