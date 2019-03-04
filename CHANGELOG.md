@@ -6,6 +6,9 @@
   Use `UnknownMetricFamily` for `SumData` instead of `UntypedMetricFamily`.
   Check if label keys and values match before exporting.
 - Remove min and max from Distribution.
+- Replace stackdriver `gke_container` resources, see the [GKE migration
+  notes](https://cloud.google.com/monitoring/kubernetes-engine/migration#incompatible)
+  for details
 
 ## 0.2.0
 Released 2019-01-18
