@@ -21,9 +21,10 @@ import os
 def _install_dev_packages(session):
     session.install('-e', 'contrib/opencensus-correlation')
     session.install('-e', '.')
-    for name in os.listdir('contrib'):
-        if os.path.isdir(name):
-            session.install('-e', 'contrib/{}'.format(name))
+    session.install('-e', 'contrib/opencensus-ext-django')
+    session.install('-e', 'contrib/opencensus-ext-flask')
+    session.install('-e', 'contrib/opencensus-ext-pymysql')
+    session.install('-e', 'contrib/opencensus-ext-pyramid')
 
 
 @nox.session
