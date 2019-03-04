@@ -17,7 +17,7 @@ from setuptools import setup
 from version import __version__
 
 setup(
-    name='opencensus-ext-pymysql',
+    name='opencensus-ext-dbapi',
     version=__version__,  # noqa
     author='OpenCensus Authors',
     author_email='census-developers@googlegroups.com',
@@ -35,18 +35,16 @@ setup(
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
     ],
-    description='OpenCensus PyMySQL Integration',
+    description='OpenCensus Database API Integration',
     include_package_data=True,
     long_description=open('README.rst').read(),
     install_requires=[
-        'PyMySQL >= 0.7.11, < 1.0.0',
         'opencensus >= 0.2.dev0, < 1.0.0',
-        'opencensus.ext.dbapi >= 0.1.dev0, < 1.0.0',
     ],
     extras_require={},
     license='Apache-2.0',
     packages=find_packages(exclude=('tests',)),
     namespace_packages=[],
-    url='https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-pymysql',
+    url='https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-dbapi',
     zip_safe=False,
 )

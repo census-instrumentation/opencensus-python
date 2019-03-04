@@ -16,7 +16,7 @@ import unittest
 
 import mock
 
-from opencensus.trace.ext.dbapi import trace
+from opencensus.ext.dbapi import trace
 
 
 class TestDBAPITrace(unittest.TestCase):
@@ -36,7 +36,7 @@ class TestDBAPITrace(unittest.TestCase):
         wrapped = trace.wrap_conn(mock_func)
 
         patch_wrap = mock.patch(
-            'opencensus.trace.ext.dbapi.trace.wrap_cursor',
+            'opencensus.ext.dbapi.trace.wrap_cursor',
             side_effect=mock_wrap)
 
         with patch_wrap:
@@ -65,7 +65,7 @@ class TestDBAPITrace(unittest.TestCase):
         wrapped = trace.wrap_cursor(mock_func)
 
         patch_wrap = mock.patch(
-            'opencensus.trace.ext.dbapi.trace.trace_cursor_query',
+            'opencensus.ext.dbapi.trace.trace_cursor_query',
             side_effect=mock_trace_cursor_query)
 
         with patch_wrap:
@@ -85,7 +85,7 @@ class TestDBAPITrace(unittest.TestCase):
         mock_cursor = mock.Mock()
 
         patch = mock.patch(
-            'opencensus.trace.ext.dbapi.trace.execution_context.'
+            'opencensus.ext.dbapi.trace.execution_context.'
             'get_opencensus_tracer',
             return_value=mock_tracer)
 

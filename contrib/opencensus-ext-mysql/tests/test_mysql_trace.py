@@ -16,7 +16,7 @@ import unittest
 
 import mock
 
-from opencensus.trace.ext.mysql import trace
+from opencensus.ext.mysql import trace
 
 
 class Test_mysql_trace(unittest.TestCase):
@@ -33,10 +33,10 @@ class Test_mysql_trace(unittest.TestCase):
         mock_inspect.getmodule.return_value = mock_mysql_module
 
         patch_wrap = mock.patch(
-            'opencensus.trace.ext.mysql.trace.trace.wrap_conn',
+            'opencensus.ext.mysql.trace.trace.wrap_conn',
             side_effect=mock_wrap)
         patch_inspect = mock.patch(
-            'opencensus.trace.ext.mysql.trace.inspect',
+            'opencensus.ext.mysql.trace.inspect',
             mock_inspect)
 
         with patch_wrap, patch_inspect:

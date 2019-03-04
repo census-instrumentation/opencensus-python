@@ -21,8 +21,10 @@ import os
 def _install_dev_packages(session):
     session.install('-e', 'contrib/opencensus-correlation')
     session.install('-e', '.')
+    session.install('-e', 'contrib/opencensus-ext-dbapi')
     session.install('-e', 'contrib/opencensus-ext-django')
     session.install('-e', 'contrib/opencensus-ext-flask')
+    session.install('-e', 'contrib/opencensus-ext-mysql')
     session.install('-e', 'contrib/opencensus-ext-pymysql')
     session.install('-e', 'contrib/opencensus-ext-pyramid')
 

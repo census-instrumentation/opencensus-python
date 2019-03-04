@@ -12,6 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from opencensus.trace.ext.dbapi import trace
+from opencensus.ext.dbapi import trace
 
 __all__ = ['trace']
