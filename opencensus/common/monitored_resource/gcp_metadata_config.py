@@ -51,7 +51,7 @@ _GKE_ATTRIBUTES = {
 }
 
 _ATTRIBUTE_TRANSFORMATIONS = {
-    'zone': lambda v: v[v.rfind('/'):] if '/' in v else v
+    'zone': lambda v: v[v.rfind('/') + 1:] if '/' in v else v
 }
 
 # Following attributes are derived from environment variables. They are
