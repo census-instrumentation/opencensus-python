@@ -50,6 +50,10 @@ _GKE_ATTRIBUTES = {
     'cluster_name': 'instance/attributes/cluster-name'
 }
 
+_ATTRIBUTE_TRANSFORMATIONS = {
+    'zone': lambda v: v[v.rfind('/'):] if '/' in v else v
+}
+
 # Following attributes are derived from environment variables. They are
 # configured via yaml file. For details refer to:
 # https://cloud.google.com/kubernetes-engine/docs/tutorials/
@@ -154,5 +158,9 @@ class GcpMetadataConfig(object):
             # urllib (although the response is text), convert
             # to a normal string:
             attribute_value = attribute_value.decode('utf-8')
+
+        transformation = _ATTRIBUTE_TRANSFORMATIONS.get(attribute_key)
+        if transformation is not None:
+            attribute_value = transformation(attribute_value)
 
         return attribute_value
