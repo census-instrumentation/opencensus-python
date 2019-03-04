@@ -22,7 +22,7 @@ def _install_dev_packages(session):
     session.install('-e', 'contrib/opencensus-correlation')
     session.install('-e', '.')
     for name in os.listdir('contrib'):
-        if os.isdir(name):
+        if os.path.isdir(name):
             session.install('-e', 'contrib/{}'.format(name))
 
 
