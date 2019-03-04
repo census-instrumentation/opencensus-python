@@ -18,7 +18,7 @@ Usage
     from opencensus.trace.propagation.trace_context_http_header_format import TraceContextPropagator
     
     app = Flask(__name__)
-    middleware = FlaskMiddleware(app, propagator = TraceContextPropagator(), blacklist_paths = ['_ah/health'])
+    middleware = FlaskMiddleware(app, propagator=TraceContextPropagator(), blacklist_paths=['_ah/health'])
     
     @app.route('/')
     def hello():
@@ -28,4 +28,4 @@ Usage
         import logging
         logger = logging.getLogger('werkzeug')
         logger.setLevel(logging.ERROR)
-        app.run(host = 'localhost', port = 8080, threaded = True)
+        app.run(host='localhost', port=8080, threaded=True)
