@@ -39,7 +39,7 @@ setup(
     include_package_data=True,
     long_description=open('README.rst').read(),
     install_requires=[
-        'Django >= 1.11.0, < 3.0.0',
+        'Django >= 1.11.0, <= 1.11.20',
         'opencensus >= 0.2.dev0, < 1.0.0',
     ],
     extras_require={},
