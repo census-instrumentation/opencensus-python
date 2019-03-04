@@ -15,8 +15,8 @@
 """Django middleware helper to capture and trace a request."""
 import logging
 
+from opencensus.ext.django.config import (settings, convert_to_import)
 from opencensus.trace.ext import utils
-from opencensus.trace.ext.django.config import (settings, convert_to_import)
 from opencensus.trace import attributes_helper
 from opencensus.trace import execution_context
 from opencensus.trace import span as span_module

@@ -32,7 +32,7 @@ class TestDjangoTraceSettings(unittest.TestCase):
         teardown_test_environment()
 
     def test_constructor(self):
-        from opencensus.trace.ext.django import config
+        from opencensus.ext.django import config
 
         django_trace_settings = config.DjangoTraceSettings()
 
@@ -40,7 +40,7 @@ class TestDjangoTraceSettings(unittest.TestCase):
                          config.DEFAULT_DJANGO_TRACER_CONFIG)
 
     def test__getattr___invalid(self):
-        from opencensus.trace.ext.django import config
+        from opencensus.ext.django import config
 
         django_trace_settings = config.DjangoTraceSettings()
 
@@ -48,7 +48,7 @@ class TestDjangoTraceSettings(unittest.TestCase):
             getattr(django_trace_settings, 'TEST_INVALID_ATTR')
 
     def test__getattr___valid(self):
-        from opencensus.trace.ext.django import config
+        from opencensus.ext.django import config
         from opencensus.trace.samplers.always_on import AlwaysOnSampler
 
         django_trace_settings = config.DjangoTraceSettings()
@@ -60,7 +60,7 @@ class TestDjangoTraceSettings(unittest.TestCase):
 
 class Test__set_default_configs(unittest.TestCase):
     def test__set_default_configs(self):
-        from opencensus.trace.ext.django import config
+        from opencensus.ext.django import config
 
         custom_django_params = {
             'SAMPLING_RATE':
@@ -106,7 +106,7 @@ class Test__set_default_configs(unittest.TestCase):
 
 class Test_convert_to_import(unittest.TestCase):
     def test_convert_to_import(self):
-        from opencensus.trace.ext.django import config
+        from opencensus.ext.django import config
 
         module_name = 'module'
         class_name = 'class'
@@ -119,7 +119,7 @@ class Test_convert_to_import(unittest.TestCase):
         mock_import_module.return_value = mock_module
         mock_importlib.import_module = mock_import_module
 
-        patch = mock.patch('opencensus.trace.ext.django.config.importlib',
+        patch = mock.patch('opencensus.ext.django.config.importlib',
                            mock_importlib)
 
         with patch:
@@ -128,7 +128,7 @@ class Test_convert_to_import(unittest.TestCase):
         self.assertEqual(result, mock_class)
 
     def test_convert_to_import_error(self):
-        from opencensus.trace.ext.django import config
+        from opencensus.ext.django import config
 
         module_name = 'test_module'
         class_name = 'test_class'

@@ -265,7 +265,7 @@ traced.
     def main(global_config, **settings):
         config = Configurator(settings=settings)
 
-        config.add_tween('opencensus.trace.ext.pyramid'
+        config.add_tween('opencensus.ext.pyramid'
                          '.pyramid_middleware.OpenCensusTweenFactory')
 
 To configure the sampler, exporter, and propagator, pass the instances

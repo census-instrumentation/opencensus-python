@@ -15,7 +15,7 @@
 import mock
 import unittest
 
-from opencensus.trace.ext.pyramid import config
+from opencensus.ext.pyramid import config
 
 
 class TestPyramidTraceSettings(unittest.TestCase):

@@ -23,11 +23,11 @@ from pyramid.response import Response
 from pyramid.testing import DummyRequest
 
 from opencensus.common.transports import sync
+from opencensus.ext.pyramid import pyramid_middleware
 from opencensus.trace import execution_context
 from opencensus.trace import span as span_module
 from opencensus.trace.exporters import print_exporter
 from opencensus.trace.exporters import zipkin_exporter
-from opencensus.trace.ext.pyramid import pyramid_middleware
 from opencensus.trace.propagation import google_cloud_format
 from opencensus.trace.samplers import always_on
 from opencensus.trace.blank_span import BlankSpan

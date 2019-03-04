@@ -47,7 +47,7 @@ class TestOpencensusMiddleware(unittest.TestCase):
         teardown_test_environment()
 
     def test_constructor_cloud(self):
-        from opencensus.trace.ext.django import middleware
+        from opencensus.ext.django import middleware
 
         class MockCloudExporter(object):
             def __init__(self, project_id, transport):
@@ -64,9 +64,9 @@ class TestOpencensusMiddleware(unittest.TestCase):
         }
 
         patch_params = mock.patch(
-            'opencensus.trace.ext.django.config.settings.params', params)
+            'opencensus.ext.django.config.settings.params', params)
         patch_exporter = mock.patch(
-            'opencensus.trace.ext.django.config.settings.EXPORTER',
+            'opencensus.ext.django.config.settings.EXPORTER',
             MockCloudExporter)
 
         with patch_params, patch_exporter:
@@ -90,7 +90,7 @@ class TestOpencensusMiddleware(unittest.TestCase):
         self.assertEqual(middleware.exporter.transport, sync.SyncTransport)
 
     def test_constructor_zipkin(self):
-        from opencensus.trace.ext.django import middleware
+        from opencensus.ext.django import middleware
 
         service_name = 'test_service'
         host_name = 'test_hostname'
@@ -106,11 +106,11 @@ class TestOpencensusMiddleware(unittest.TestCase):
         }
 
         patch_zipkin = mock.patch(
-            'opencensus.trace.ext.django.config.settings.EXPORTER',
+            'opencensus.ext.django.config.settings.EXPORTER',
             zipkin_exporter.ZipkinExporter)
 
         patch_params = mock.patch(
-            'opencensus.trace.ext.django.config.settings.params',
+            'opencensus.ext.django.config.settings.params',
             params)
 
         with patch_zipkin, patch_params:
@@ -135,7 +135,7 @@ class TestOpencensusMiddleware(unittest.TestCase):
         self.assertEqual(middleware.exporter.port, port)
 
     def test_constructor_jaeger(self):
-        from opencensus.trace.ext.django import middleware
+        from opencensus.ext.django import middleware
 
         service_name = 'test_service'
         params = {
@@ -145,11 +145,11 @@ class TestOpencensusMiddleware(unittest.TestCase):
         }
 
         patch_jaeger = mock.patch(
-            'opencensus.trace.ext.django.config.settings.EXPORTER',
+            'opencensus.ext.django.config.settings.EXPORTER',
             jaeger_exporter.JaegerExporter)
 
         patch_params = mock.patch(
-            'opencensus.trace.ext.django.config.settings.params',
+            'opencensus.ext.django.config.settings.params',
             params)
 
         with patch_jaeger, patch_params:
@@ -172,7 +172,7 @@ class TestOpencensusMiddleware(unittest.TestCase):
         self.assertEqual(middleware.exporter.service_name, service_name)
 
     def test_constructor_zipkin_service_name_param(self):
-        from opencensus.trace.ext.django import middleware
+        from opencensus.ext.django import middleware
 
         service_name = 'test_service'
         host_name = 'test_hostname'
@@ -188,11 +188,11 @@ class TestOpencensusMiddleware(unittest.TestCase):
         }
 
         patch_zipkin = mock.patch(
-            'opencensus.trace.ext.django.config.settings.EXPORTER',
+            'opencensus.ext.django.config.settings.EXPORTER',
             zipkin_exporter.ZipkinExporter)
 
         patch_params = mock.patch(
-            'opencensus.trace.ext.django.config.settings.params',
+            'opencensus.ext.django.config.settings.params',
             params)
 
         with patch_zipkin, patch_params:
@@ -203,7 +203,7 @@ class TestOpencensusMiddleware(unittest.TestCase):
         self.assertEqual(middleware.exporter.port, port)
 
     def test_constructor_ocagent_trace_exporter(self):
-        from opencensus.trace.ext.django import middleware
+        from opencensus.ext.django import middleware
 
         service_name = 'test_service'
         endpoint = 'localhost:50001'
@@ -215,11 +215,11 @@ class TestOpencensusMiddleware(unittest.TestCase):
         }
 
         patch_ocagent_trace = mock.patch(
-            'opencensus.trace.ext.django.config.settings.EXPORTER',
+            'opencensus.ext.django.config.settings.EXPORTER',
             trace_exporter.TraceExporter)
 
         patch_params = mock.patch(
-            'opencensus.trace.ext.django.config.settings.params',
+            'opencensus.ext.django.config.settings.params',
             params)
 
         with patch_ocagent_trace, patch_params:
@@ -243,7 +243,7 @@ class TestOpencensusMiddleware(unittest.TestCase):
         self.assertEqual(middleware.exporter.endpoint, endpoint)
 
     def test_constructor_ocagent_trace_exporter_default_endpoint(self):
-        from opencensus.trace.ext.django import middleware
+        from opencensus.ext.django import middleware
 
         service_name = 'test_service'
         params = {
@@ -253,11 +253,11 @@ class TestOpencensusMiddleware(unittest.TestCase):
         }
 
         patch_ocagent_trace = mock.patch(
-            'opencensus.trace.ext.django.config.settings.EXPORTER',
+            'opencensus.ext.django.config.settings.EXPORTER',
             trace_exporter.TraceExporter)
 
         patch_params = mock.patch(
-            'opencensus.trace.ext.django.config.settings.params',
+            'opencensus.ext.django.config.settings.params',
             params)
 
         with patch_ocagent_trace, patch_params:
@@ -268,7 +268,7 @@ class TestOpencensusMiddleware(unittest.TestCase):
                          trace_exporter.DEFAULT_ENDPOINT)
 
     def test_constructor_probability_sampler(self):
-        from opencensus.trace.ext.django import middleware
+        from opencensus.ext.django import middleware
 
         rate = 0.8
         params = {
@@ -278,14 +278,14 @@ class TestOpencensusMiddleware(unittest.TestCase):
         }
 
         patch_sampler = mock.patch(
-            'opencensus.trace.ext.django.config.settings.SAMPLER',
+            'opencensus.ext.django.config.settings.SAMPLER',
             probability.ProbabilitySampler)
         patch_exporter = mock.patch(
-            'opencensus.trace.ext.django.config.settings.EXPORTER',
+            'opencensus.ext.django.config.settings.EXPORTER',
             print_exporter.PrintExporter)
 
         patch_params = mock.patch(
-            'opencensus.trace.ext.django.config.settings.params',
+            'opencensus.ext.django.config.settings.params',
             params)
 
         with patch_sampler, patch_exporter, patch_params:
@@ -308,7 +308,7 @@ class TestOpencensusMiddleware(unittest.TestCase):
         self.assertEqual(middleware.sampler.rate, rate)
 
     def test_process_request(self):
-        from opencensus.trace.ext.django import middleware
+        from opencensus.ext.django import middleware
 
         trace_id = '2dd43a1d6b2549c6bc2a1a54c2fc0b05'
         span_id = '6e0c63257de34c92'
@@ -344,7 +344,7 @@ class TestOpencensusMiddleware(unittest.TestCase):
         self.assertEqual(span.name, 'mock.mock.Mock')
 
     def test_blacklist_path(self):
-        from opencensus.trace.ext.django import middleware
+        from opencensus.ext.django import middleware
 
         execution_context.clear()
 
@@ -354,7 +354,7 @@ class TestOpencensusMiddleware(unittest.TestCase):
             'TRANSPORT':
                 'opencensus.common.transports.sync.SyncTransport', }
         patch_params = mock.patch(
-            'opencensus.trace.ext.django.middleware.settings.params',
+            'opencensus.ext.django.middleware.settings.params',
             params)
 
         with patch_params:
@@ -392,7 +392,7 @@ class TestOpencensusMiddleware(unittest.TestCase):
         assert isinstance(span, BlankSpan)
 
     def test_process_response(self):
-        from opencensus.trace.ext.django import middleware
+        from opencensus.ext.django import middleware
 
         trace_id = '2dd43a1d6b2549c6bc2a1a54c2fc0b05'
         span_id = '6e0c63257de34c92'
@@ -431,7 +431,7 @@ class TestOpencensusMiddleware(unittest.TestCase):
         self.assertEqual(span.attributes, expected_attributes)
 
     def test_process_response_unfinished_child_span(self):
-        from opencensus.trace.ext.django import middleware
+        from opencensus.ext.django import middleware
 
         trace_id = '2dd43a1d6b2549c6bc2a1a54c2fc0b05'
         span_id = '6e0c63257de34c92'
@@ -481,7 +481,7 @@ class Test__set_django_attributes(unittest.TestCase):
             self.attributes[key] = value
 
     def test__set_django_attributes_no_user(self):
-        from opencensus.trace.ext.django.middleware import \
+        from opencensus.ext.django.middleware import \
             _set_django_attributes
         span = self.Span()
         request = mock.Mock()
@@ -495,7 +495,7 @@ class Test__set_django_attributes(unittest.TestCase):
         self.assertEqual(span.attributes, expected_attributes)
 
     def test__set_django_attributes_no_user_info(self):
-        from opencensus.trace.ext.django.middleware import \
+        from opencensus.ext.django.middleware import \
             _set_django_attributes
         span = self.Span()
         request = mock.Mock()
@@ -512,7 +512,7 @@ class Test__set_django_attributes(unittest.TestCase):
         self.assertEqual(span.attributes, expected_attributes)
 
     def test__set_django_attributes_with_user_info(self):
-        from opencensus.trace.ext.django.middleware import \
+        from opencensus.ext.django.middleware import \
             _set_django_attributes
         span = self.Span()
         request = mock.Mock()
