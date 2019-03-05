@@ -37,6 +37,10 @@ _GCE_ATTRIBUTES = {
     ZONE_KEY: 'instance/zone'
 }
 
+_ATTRIBUTE_URI_TRANSFORMATIONS = {
+    _GCE_ATTRIBUTES[ZONE_KEY]:
+        lambda v: v[v.rfind('/') + 1:] if '/' in v else v
+}
 
 _GCP_METADATA_MAP = {}
 
@@ -103,5 +107,9 @@ class GcpMetadataConfig(object):
             # urllib (although the response is text), convert
             # to a normal string:
             attribute_value = attribute_value.decode('utf-8')
+
+        transformation = _ATTRIBUTE_URI_TRANSFORMATIONS.get(attribute_uri)
+        if transformation is not None:
+            attribute_value = transformation(attribute_value)
 
         return attribute_value
