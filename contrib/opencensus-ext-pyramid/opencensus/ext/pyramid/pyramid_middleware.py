@@ -19,7 +19,7 @@ from opencensus.trace import attributes_helper
 from opencensus.trace import execution_context
 from opencensus.trace import span as span_module
 from opencensus.trace import tracer as tracer_module
-from opencensus.trace.ext import utils
+from opencensus.trace import utils
 
 HTTP_METHOD = attributes_helper.COMMON_ATTRIBUTES['HTTP_METHOD']
 HTTP_URL = attributes_helper.COMMON_ATTRIBUTES['HTTP_URL']
