@@ -15,3 +15,4 @@ WebOb==1.7.3
 wrapt==1.10.11
 thrift==0.10.0
 prometheus_client==0.5.0
+unittest2==1.1.0

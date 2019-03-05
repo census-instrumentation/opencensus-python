@@ -12,16 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-try:
-    import mock
-except ImportError:
-    from unittest import mock
-
+import sys
 from contextlib import contextmanager
 import logging
-import unittest
 
 from opencensus import log
+
+if sys.version_info < (3,):
+    import unittest2 as unittest
+    import mock
+else:
+    import unittest
+    from unittest import mock
 
 
 @contextmanager

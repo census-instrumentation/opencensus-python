@@ -101,14 +101,18 @@ class TraceLoggingAdapter(logging.LoggerAdapter):
 # https://docs.python.org/3.7/library/logging.html#logging.getLoggerClass
 class TraceLogger(logging.getLoggerClass()):
     """Logger class that adds openensus context attrs to records."""
-    def makeRecord(self, name, level, fn, lno, msg, args, exc_info, func=None,
-                   extra=None, sinfo=None):
-        if extra is None:
-            extra = {}
+    def makeRecord(self, *args, **kwargs):
+        try:
+            extra = args[8]
+            if extra is None:
+                extra = {}
+                args = tuple(list(args[:8]) + [extra] + list(args[9:]))
+        except IndexError:  # pragma: NO COVER
+            extra = kwargs.setdefault('extra', {})
+            if extra is None:
+                kwargs['extra'] = extra
         _set_extra_attrs(extra)
-        return (super(TraceLogger, self)
-                .makeRecord(name, level, fn, lno, msg, args, exc_info, func,
-                            extra, sinfo))
+        return super(TraceLogger, self).makeRecord(*args, **kwargs)
 
 
 def use_oc_logging():
