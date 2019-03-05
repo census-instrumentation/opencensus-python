@@ -31,7 +31,7 @@ class TestGcpMetadataConfig(unittest.TestCase):
             elif attribute_uri == 'project-id':
                 return 'my-project'
             elif attribute_uri == 'zone':
-                return 'us-east1'
+                return '/projects/012345678/zones/us-east1'
 
         http_request_mock.side_effect = assign_attribute_value
         gcp_metadata_config.GcpMetadataConfig.inited = False
@@ -68,7 +68,7 @@ class TestGcpMetadataConfig(unittest.TestCase):
             elif attribute_uri == 'project-id':
                 return b'my-project'
             elif attribute_uri == 'zone':
-                return b'us-east1'
+                return b'/projects/012345678/zones/us-east1'
 
         http_request_mock.side_effect = assign_attribute_value
         gcp_metadata_config.GcpMetadataConfig.inited = False
