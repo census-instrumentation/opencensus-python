@@ -41,7 +41,7 @@ setup(
     install_requires=[
         'mysql-connector >= 2.1.6, < 3.0.0',
         'opencensus >= 0.2.dev0, < 1.0.0',
-        'opencensus.ext.dbapi >= 0.1.dev0, < 1.0.0',
+        'opencensus-ext-dbapi >= 0.1.dev0, < 1.0.0',
     ],
     extras_require={},
     license='Apache-2.0',
