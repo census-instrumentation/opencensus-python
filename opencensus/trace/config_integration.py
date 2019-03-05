@@ -20,7 +20,7 @@ log = logging.getLogger(__name__)
 SUPPORTED_INTEGRATIONS = {
     'httplib': 'opencensus.trace.ext.httplib.trace',
     'requests': 'opencensus.trace.ext.requests.trace',
-    'google_cloud_clientlibs': 'opencensus.trace.ext.google_cloud_clientlibs.trace', # noqa
+    'google_cloud_clientlibs': 'opencensus.trace.ext.google_cloud_clientlibs.trace',  # noqa
     'threading': 'opencensus.trace.ext.threading.trace',
 
     'mysql': 'opencensus.ext.mysql.trace',
