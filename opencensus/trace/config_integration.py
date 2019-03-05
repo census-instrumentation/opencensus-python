@@ -17,11 +17,17 @@ import logging
 
 log = logging.getLogger(__name__)
 
-SUPPORTED_INTEGRATIONS = ['httplib', 'mysql', 'postgresql', 'pymysql',
-                          'requests', 'sqlalchemy', 'google_cloud_clientlibs',
-                          'threading']
+SUPPORTED_INTEGRATIONS = {
+    'httplib': 'opencensus.trace.ext.httplib',
+    'requests': 'opencensus.trace.ext.requests',
+    'google_cloud_clientlibs': 'opencensus.trace.ext.google_cloud_clientlibs',
+    'threading': 'opencensus.trace.ext.threading',
 
-PATH_PREFIX = 'opencensus.trace.ext'
+    'mysql': 'opencensus.ext.mysql',
+    'postgresql': 'opencensus.ext.postgresql',
+    'pymysql': 'opencensus.ext.pymysql',
+    'sqlalchemy': 'opencensus.ext.sqlalchemy',
+}
 
 
 def trace_integrations(integrations, tracer=None):
@@ -34,7 +40,7 @@ def trace_integrations(integrations, tracer=None):
 
     for item in integrations:
         try:
-            path_to_module = '{}.{}.trace'.format(PATH_PREFIX, item)
+            path_to_module = SUPPORTED_INTEGRATIONS[item]
             module = importlib.import_module(path_to_module)
             module.trace_integration(tracer=tracer)
             integrated.append(item)

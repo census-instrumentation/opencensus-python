@@ -12,6 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from opencensus.trace.ext.postgresql import trace
+from opencensus.ext.postgresql import trace
 
 __all__ = ['trace']

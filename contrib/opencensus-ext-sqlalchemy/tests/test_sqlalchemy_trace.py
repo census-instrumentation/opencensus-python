@@ -17,7 +17,7 @@ import unittest
 import mock
 
 from opencensus.trace import span as span_module
-from opencensus.trace.ext.sqlalchemy import trace
+from opencensus.ext.sqlalchemy import trace
 
 
 class Test_sqlalchemy_trace(unittest.TestCase):
@@ -26,7 +26,7 @@ class Test_sqlalchemy_trace(unittest.TestCase):
         mock_trace_engine = mock.Mock()
 
         patch = mock.patch(
-            'opencensus.trace.ext.sqlalchemy.trace.trace_engine',
+            'opencensus.ext.sqlalchemy.trace.trace_engine',
             side_effect=mock_trace_engine)
 
         with patch:
@@ -41,13 +41,13 @@ class Test_sqlalchemy_trace(unittest.TestCase):
         mock_after = mock.Mock()
 
         patch_listen = mock.patch(
-            'opencensus.trace.ext.sqlalchemy.trace.event.listen',
+            'opencensus.ext.sqlalchemy.trace.event.listen',
             side_effect=mock_listen)
         patch_before = mock.patch(
-            'opencensus.trace.ext.sqlalchemy.trace._before_cursor_execute',
+            'opencensus.ext.sqlalchemy.trace._before_cursor_execute',
             side_effect=mock_before)
         patch_after = mock.patch(
-            'opencensus.trace.ext.sqlalchemy.trace._after_cursor_execute',
+            'opencensus.ext.sqlalchemy.trace._after_cursor_execute',
             side_effect=mock_after)
 
         with patch_listen, patch_before, patch_after:
@@ -59,7 +59,7 @@ class Test_sqlalchemy_trace(unittest.TestCase):
         mock_tracer = MockTracer()
 
         patch = mock.patch(
-            'opencensus.trace.ext.sqlalchemy.trace.execution_context.'
+            'opencensus.ext.sqlalchemy.trace.execution_context.'
             'get_opencensus_tracer',
             return_value=mock_tracer)
 
@@ -88,7 +88,7 @@ class Test_sqlalchemy_trace(unittest.TestCase):
         mock_tracer = MockTracer()
 
         patch = mock.patch(
-            'opencensus.trace.ext.sqlalchemy.trace.execution_context.'
+            'opencensus.ext.sqlalchemy.trace.execution_context.'
             'get_opencensus_tracer',
             return_value=mock_tracer)
 
@@ -115,7 +115,7 @@ class Test_sqlalchemy_trace(unittest.TestCase):
         mock_tracer = mock.Mock()
 
         patch = mock.patch(
-            'opencensus.trace.ext.sqlalchemy.trace.execution_context.'
+            'opencensus.ext.sqlalchemy.trace.execution_context.'
             'get_opencensus_tracer',
             return_value=mock_tracer)
 

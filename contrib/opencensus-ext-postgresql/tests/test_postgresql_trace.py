@@ -16,7 +16,7 @@ import unittest
 
 import mock
 
-from opencensus.trace.ext.postgresql import trace
+from opencensus.ext.postgresql import trace
 
 
 class Test_postgresql_trace(unittest.TestCase):
@@ -31,10 +31,10 @@ class Test_postgresql_trace(unittest.TestCase):
         mock_inspect.getmodule.return_value = mock_postgresql_module
 
         patch_connect = mock.patch(
-            'opencensus.trace.ext.postgresql.trace.connect',
+            'opencensus.ext.postgresql.trace.connect',
             side_effect=mock_connect)
         patch_inspect = mock.patch(
-            'opencensus.trace.ext.postgresql.trace.inspect', mock_inspect)
+            'opencensus.ext.postgresql.trace.inspect', mock_inspect)
 
         with patch_connect, patch_inspect:
             trace.trace_integration()
@@ -50,10 +50,10 @@ class Test_postgresql_trace(unittest.TestCase):
         mock_pg_connect.return_value = return_conn
         mock_cursor = mock.Mock(spec=trace.TraceCursor)
         patch_connect = mock.patch(
-            'opencensus.trace.ext.postgresql.trace.pg_connect',
+            'opencensus.ext.postgresql.trace.pg_connect',
             mock_pg_connect)
         patch_cursor = mock.patch(
-            'opencensus.trace.ext.postgresql.trace.TraceCursor', mock_cursor)
+            'opencensus.ext.postgresql.trace.TraceCursor', mock_cursor)
 
         with patch_connect, patch_cursor:
             trace.connect()
@@ -69,7 +69,7 @@ class Test_postgresql_trace(unittest.TestCase):
         mock_tracer = mock.Mock()
 
         patch = mock.patch(
-            'opencensus.trace.ext.postgresql.trace.execution_context.'
+            'opencensus.ext.postgresql.trace.execution_context.'
             'get_opencensus_tracer',
             return_value=mock_tracer)
 
@@ -92,7 +92,7 @@ class Test_postgresql_trace(unittest.TestCase):
         mock_tracer = mock.Mock()
 
         patch = mock.patch(
-            'opencensus.trace.ext.postgresql.trace.execution_context.'
+            'opencensus.ext.postgresql.trace.execution_context.'
             'get_opencensus_tracer',
             return_value=None)
 
