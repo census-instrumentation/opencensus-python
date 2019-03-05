@@ -1,4 +1,4 @@
-OpenCensus Database API Integration
+OpenCensus httplib Integration
 ============================================================================
 
 Installation
@@ -6,7 +6,7 @@ Installation
 
 ::
 
-    pip install opencensus-ext-dbapi
+    pip install opencensus-ext-httplib
 
 Usage
 -----

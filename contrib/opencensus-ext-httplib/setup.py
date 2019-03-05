@@ -17,7 +17,7 @@ from setuptools import setup
 from version import __version__
 
 setup(
-    name='opencensus-ext-dbapi',
+    name='opencensus-ext-httplib',
     version=__version__,  # noqa
     author='OpenCensus Authors',
     author_email='census-developers@googlegroups.com',
@@ -35,7 +35,7 @@ setup(
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
     ],
-    description='OpenCensus Database API Integration',
+    description='OpenCensus httplib Integration',
     include_package_data=True,
     long_description=open('README.rst').read(),
     install_requires=[
@@ -45,6 +45,6 @@ setup(
     license='Apache-2.0',
     packages=find_packages(exclude=('tests',)),
     namespace_packages=[],
-    url='https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-dbapi',
+    url='https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-httplib',
     zip_safe=False,
 )
