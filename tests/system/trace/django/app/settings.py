@@ -31,7 +31,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'opencensus.trace.ext.django',
+    'opencensus.ext.django',
 )
 
 if django.VERSION >= (1, 10):
@@ -44,7 +44,7 @@ if django.VERSION >= (1, 10):
         'django.contrib.messages.middleware.MessageMiddleware',
         'django.middleware.clickjacking.XFrameOptionsMiddleware',
         'django.middleware.security.SecurityMiddleware',
-        'opencensus.trace.ext.django.middleware.OpencensusMiddleware',
+        'opencensus.ext.django.middleware.OpencensusMiddleware',
     )
 
 # Middleware interface for Django version before 1.10
@@ -57,7 +57,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
-    'opencensus.trace.ext.django.middleware.OpencensusMiddleware',
+    'opencensus.ext.django.middleware.OpencensusMiddleware',
 )
 
 ROOT_URLCONF = 'app.urls'
