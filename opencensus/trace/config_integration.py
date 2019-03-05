@@ -18,15 +18,15 @@ import logging
 log = logging.getLogger(__name__)
 
 SUPPORTED_INTEGRATIONS = {
-    'httplib': 'opencensus.trace.ext.httplib',
-    'requests': 'opencensus.trace.ext.requests',
-    'google_cloud_clientlibs': 'opencensus.trace.ext.google_cloud_clientlibs',
-    'threading': 'opencensus.trace.ext.threading',
+    'httplib': 'opencensus.trace.ext.httplib.trace',
+    'requests': 'opencensus.trace.ext.requests.trace',
+    'google_cloud_clientlibs': 'opencensus.trace.ext.google_cloud_clientlibs.trace',
+    'threading': 'opencensus.trace.ext.threading.trace',
 
-    'mysql': 'opencensus.ext.mysql',
-    'postgresql': 'opencensus.ext.postgresql',
-    'pymysql': 'opencensus.ext.pymysql',
-    'sqlalchemy': 'opencensus.ext.sqlalchemy',
+    'mysql': 'opencensus.ext.mysql.trace',
+    'postgresql': 'opencensus.ext.postgresql.trace',
+    'pymysql': 'opencensus.ext.pymysql.trace',
+    'sqlalchemy': 'opencensus.ext.sqlalchemy.trace',
 }
 
 
