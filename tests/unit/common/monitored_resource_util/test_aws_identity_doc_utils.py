@@ -1,4 +1,4 @@
-# Copyright 2018 Google Inc.
+# Copyright 2018, OpenCensus Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,17 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import unittest
-import mock
 import json
-from opencensus.common.monitored_resource_util.aws_identity_doc_utils \
-    import AwsIdentityDocumentUtils
-from opencensus.common.monitored_resource_util import \
-    aws_identity_doc_utils
+import mock
+import unittest
+
+from opencensus.common.monitored_resource import aws_identity_doc_utils
 
 
 class TestAwsIdentityDocumentUtils(unittest.TestCase):
-    @mock.patch('opencensus.common.monitored_resource_util.'
+    @mock.patch('opencensus.common.monitored_resource.'
                 'aws_identity_doc_utils.get_request')
     def test_get_aws_metadata(self, http_request_mock):
         mocked_http_response = {
@@ -40,13 +38,15 @@ class TestAwsIdentityDocumentUtils(unittest.TestCase):
         }
 
         http_request_mock.return_value = json.dumps(mocked_http_response)
-        AwsIdentityDocumentUtils.inited = False
-        AwsIdentityDocumentUtils.is_running = False
+        aws_identity_doc_utils.AwsIdentityDocumentUtils.inited = False
+        aws_identity_doc_utils.AwsIdentityDocumentUtils.is_running = False
         aws_identity_doc_utils.aws_metadata_map = {}
 
-        self.assertTrue(AwsIdentityDocumentUtils.is_running_on_aws())
+        self.assertTrue(aws_identity_doc_utils.AwsIdentityDocumentUtils
+                        .is_running_on_aws())
 
-        labels_list = AwsIdentityDocumentUtils().get_aws_metadata()
+        labels_list = aws_identity_doc_utils.AwsIdentityDocumentUtils(
+        ).get_aws_metadata()
 
         self.assertEquals(len(labels_list), 3)
 
@@ -58,7 +58,7 @@ class TestAwsIdentityDocumentUtils(unittest.TestCase):
 
         self.assertEquals(labels_list, expected_labels)
 
-    @mock.patch('opencensus.common.monitored_resource_util.'
+    @mock.patch('opencensus.common.monitored_resource.'
                 'aws_identity_doc_utils.get_request')
     def test_get_aws_metadata_none_fields(self, http_request_mock):
         mocked_http_response = {
@@ -75,13 +75,15 @@ class TestAwsIdentityDocumentUtils(unittest.TestCase):
         }
 
         http_request_mock.return_value = json.dumps(mocked_http_response)
-        AwsIdentityDocumentUtils.inited = False
-        AwsIdentityDocumentUtils.is_running = False
+        aws_identity_doc_utils.AwsIdentityDocumentUtils.inited = False
+        aws_identity_doc_utils.AwsIdentityDocumentUtils.is_running = False
         aws_identity_doc_utils.aws_metadata_map = {}
 
-        self.assertTrue(AwsIdentityDocumentUtils.is_running_on_aws())
+        self.assertTrue(aws_identity_doc_utils.AwsIdentityDocumentUtils
+                        .is_running_on_aws())
 
-        labels_list = AwsIdentityDocumentUtils().get_aws_metadata()
+        labels_list = aws_identity_doc_utils.AwsIdentityDocumentUtils(
+        ).get_aws_metadata()
 
         self.assertEquals(len(labels_list), 2)
 
@@ -92,7 +94,7 @@ class TestAwsIdentityDocumentUtils(unittest.TestCase):
 
         self.assertEquals(labels_list, expected_labels)
 
-    @mock.patch('opencensus.common.monitored_resource_util.'
+    @mock.patch('opencensus.common.monitored_resource.'
                 'aws_identity_doc_utils.get_request')
     def test_aws_not_running(self, http_request_mock):
         http_request_mock.return_value = None
@@ -100,8 +102,10 @@ class TestAwsIdentityDocumentUtils(unittest.TestCase):
         aws_identity_doc_utils.is_running_on_aws = False
         aws_identity_doc_utils.aws_metadata_map = {}
 
-        self.assertFalse(AwsIdentityDocumentUtils.is_running_on_aws())
+        self.assertFalse(aws_identity_doc_utils.AwsIdentityDocumentUtils
+                         .is_running_on_aws())
 
-        labels_list = AwsIdentityDocumentUtils().get_aws_metadata()
+        labels_list = aws_identity_doc_utils.AwsIdentityDocumentUtils(
+        ).get_aws_metadata()
 
         self.assertEquals(len(labels_list), 0)

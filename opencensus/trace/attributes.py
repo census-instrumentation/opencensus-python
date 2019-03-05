@@ -23,7 +23,9 @@ def _format_attribute_value(value):
         value_type = 'int_value'
     elif isinstance(value, six.string_types):
         value_type = 'string_value'
-        value = utils._get_truncatable_str(value)
+        value = utils.get_truncatable_str(value)
+    elif isinstance(value, float):
+        value_type = 'double_value'
     else:
         return None
 
@@ -36,7 +38,8 @@ class Attributes(object):
     :type attributes: dict
     :param attributes: The set of attributes. Each attribute's key can be up
                        to 128 bytes long. The value can be a string up to 256
-                       bytes, an integer, or the Boolean values true and false.
+                       bytes, an integer, a floating-point number, or the
+                       Boolean values true and false.
     """
     def __init__(self, attributes=None):
         self.attributes = attributes or {}

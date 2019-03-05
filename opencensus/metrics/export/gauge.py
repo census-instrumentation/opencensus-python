@@ -13,12 +13,14 @@
 # limitations under the License.
 
 from collections import OrderedDict
+from datetime import datetime
 import six
 import threading
 
 from opencensus.common import utils
 from opencensus.metrics.export import metric
 from opencensus.metrics.export import metric_descriptor
+from opencensus.metrics.export import metric_producer
 from opencensus.metrics.export import point as point_module
 from opencensus.metrics.export import time_series
 from opencensus.metrics.export import value as value_module
@@ -430,3 +432,57 @@ class DerivedLongGauge(LongGaugeMixin, DerivedGauge):
 
 class DerivedDoubleGauge(DoubleGaugeMixin, DerivedGauge):
     """Gauge for derived float-valued measurements."""
+
+
+class Registry(metric_producer.MetricProducer):
+    """A collection of gauges to be exported together.
+
+    Each registered gauge must have a unique `descriptor.name`.
+    """
+
+    def __init__(self):
+        self.gauges = {}
+        self._gauges_lock = threading.Lock()
+
+    def __repr__(self):
+        return ('{}(gauges={}'
+                .format(
+                    type(self).__name__,
+                    self.gauges
+                ))
+
+    def add_gauge(self, gauge):
+        """Add `gauge` to the registry and return it.
+
+        Raises a `ValueError` if another gauge with the same name already
+        exists in the registry.
+
+        :type gauge: class:`LongGauge`, class:`DoubleGauge`,
+        :class:`DerivedLongGauge`, or :class:`DerivedDoubleGauge`
+        :param gauge: The gauge to add to the registry.
+
+        :type gauge: class:`LongGauge`, class:`DoubleGauge`,
+        :class:`DerivedLongGauge`, or :class:`DerivedDoubleGauge`
+        :return: The gauge that was added to the registry.
+        """
+        if gauge is None:
+            raise ValueError
+        name = gauge.descriptor.name
+        with self._gauges_lock:
+            if name in self.gauges:
+                raise ValueError(
+                    'Another gauge named "{}" is already registered'
+                    .format(name))
+            self.gauges[name] = gauge
+
+    def get_metrics(self):
+        """Get a metric for each gauge in the registry at the current time.
+
+        :rtype: set(:class:`opencensus.metrics.export.metric.Metric`)
+        :return: A set of `Metric`s, one for each registered gauge.
+        """
+        now = datetime.now()
+        metrics = set()
+        for gauge in self.gauges.values():
+            metrics.add(gauge.get_metric(now))
+        return metrics

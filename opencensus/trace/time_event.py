@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from opencensus.common.utils import _get_truncatable_str
+from opencensus.common.utils import get_truncatable_str
 
 
 class Type(object):
@@ -46,7 +46,7 @@ class Annotation(object):
 
     def format_annotation_json(self):
         annotation_json = {}
-        annotation_json['description'] = _get_truncatable_str(self.description)
+        annotation_json['description'] = get_truncatable_str(self.description)
 
         if self.attributes is not None:
             annotation_json['attributes'] = self.attributes.\

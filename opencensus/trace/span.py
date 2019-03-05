@@ -15,7 +15,7 @@
 from datetime import datetime
 from itertools import chain
 
-from opencensus.common.utils import _get_truncatable_str
+from opencensus.common.utils import get_truncatable_str
 from opencensus.trace import attributes
 from opencensus.trace import base_span
 from opencensus.trace import link as link_module
@@ -265,7 +265,7 @@ def format_span_json(span):
     :returns: Formatted Span.
     """
     span_json = {
-        'displayName': _get_truncatable_str(span.name),
+        'displayName': get_truncatable_str(span.name),
         'spanId': span.span_id,
         'startTime': span.start_time,
         'endTime': span.end_time,

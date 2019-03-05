@@ -138,7 +138,6 @@ class TestZipkinExporter(unittest.TestCase):
                 attributes={
                     'test_key': False,
                     'test_key2': 'raw_value',
-                    # these tags are malformed and should be omitted
                     'test_key3': 0.1,
                 },
                 start_time='2017-08-15T18:02:26.071158Z',
@@ -207,7 +206,8 @@ class TestZipkinExporter(unittest.TestCase):
                 'localEndpoint': local_endpoint_ipv6,
                 'tags': {
                     'test_key': 'False',
-                    'test_key2': 'raw_value'
+                    'test_key2': 'raw_value',
+                    'test_key3': '0.1'
                 },
                 'kind': 'SERVER',
                 'annotations': [],
@@ -299,7 +299,6 @@ class TestZipkinExporter(unittest.TestCase):
                 attributes={
                     'test_key': False,
                     'test_key2': 'raw_value',
-                    # these tags are malformed and should be omitted
                     'test_key3': 0.1,
                 },
                 start_time='2017-08-15T18:02:26.071158Z',
@@ -394,7 +393,8 @@ class TestZipkinExporter(unittest.TestCase):
                 local_endpoint_ipv6,
                 'tags': {
                     'test_key': 'False',
-                    'test_key2': 'raw_value'
+                    'test_key2': 'raw_value',
+                    'test_key3': '0.1'
                 },
                 'kind':
                 'SERVER',
@@ -422,7 +422,7 @@ class TestZipkinExporter(unittest.TestCase):
         self.assertEqual(zipkin_spans_ipv6, expected_zipkin_spans_ipv6)
 
     def test_ignore_incorrect_spans(self):
-        attributes = {'float_value': 0.1}
+        attributes = {'unknown_value': {}}
         self.assertEqual(
             zipkin_exporter._extract_tags_from_span(attributes), {})
 
