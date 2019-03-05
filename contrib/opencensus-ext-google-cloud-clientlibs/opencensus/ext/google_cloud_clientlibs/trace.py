@@ -19,7 +19,6 @@ import grpc
 from google.cloud import _helpers
 from google.api_core import grpc_helpers
 
-from opencensus.trace import execution_context
 from opencensus.ext.grpc.client_interceptor import (
     OpenCensusClientInterceptor)
 
@@ -89,11 +88,7 @@ def wrap_make_secure_channel(make_secure_channel_func, tracer=None):
 
         try:
             host = kwargs.get('host')
-            if tracer is None:
-                _tracer = execution_context.get_opencensus_tracer()
-            else:  # pragma: NO COVER
-                _tracer = tracer
-            tracer_interceptor = OpenCensusClientInterceptor(_tracer, host)
+            tracer_interceptor = OpenCensusClientInterceptor(tracer, host)
             intercepted_channel = grpc.intercept_channel(
                 channel, tracer_interceptor)
             return intercepted_channel  # pragma: NO COVER
@@ -112,11 +107,7 @@ def wrap_insecure_channel(insecure_channel_func, tracer=None):
 
         try:
             target = kwargs.get('target')
-            if tracer is None:
-                _tracer = execution_context.get_opencensus_tracer()
-            else:  # pragma: NO COVER
-                _tracer = tracer
-            tracer_interceptor = OpenCensusClientInterceptor(_tracer, target)
+            tracer_interceptor = OpenCensusClientInterceptor(tracer, target)
             intercepted_channel = grpc.intercept_channel(
                 channel, tracer_interceptor)
             return intercepted_channel  # pragma: NO COVER
@@ -135,11 +126,7 @@ def wrap_create_channel(create_channel_func, tracer=None):
 
         try:
             target = kwargs.get('target')
-            if tracer is None:
-                _tracer = execution_context.get_opencensus_tracer()
-            else:  # pragma: NO COVER
-                _tracer = tracer
-            tracer_interceptor = OpenCensusClientInterceptor(_tracer, target)
+            tracer_interceptor = OpenCensusClientInterceptor(tracer, target)
             intercepted_channel = grpc.intercept_channel(
                 channel, tracer_interceptor)
             return intercepted_channel  # pragma: NO COVER
