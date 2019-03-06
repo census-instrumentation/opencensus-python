@@ -7,7 +7,7 @@ OpenCensus - A stats collection and distributed tracing framework
 
 .. |circleci| image:: https://circleci.com/gh/census-instrumentation/opencensus-python.svg?style=shield
    :target: https://circleci.com/gh/census-instrumentation/opencensus-python
-.. |gitter| image: https://badges.gitter.im/census-instrumentation/lobby.svg
+.. |gitter| image:: https://badges.gitter.im/census-instrumentation/lobby.svg
    :target: https://gitter.im/census-instrumentation/lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
 .. |pypi| image:: https://badge.fury.io/py/opencensus.svg
    :target: https://pypi.org/project/opencensus/
