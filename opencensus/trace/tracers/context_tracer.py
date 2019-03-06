@@ -155,21 +155,21 @@ class ContextTracer(base.Tracer):
         span_tree = list(iter(span))
         span_datas = [
             span_data_module.SpanData(
-                name=span.name,
+                name=ss.name,
                 context=self.span_context,
-                span_id=span.span_id,
-                parent_span_id=span.parent_span.span_id if
-                span.parent_span else None,
-                attributes=span.attributes,
-                start_time=span.start_time,
-                end_time=span.end_time,
-                child_span_count=len(span.children),
-                stack_trace=span.stack_trace,
-                time_events=span.time_events,
-                links=span.links,
-                status=span.status,
-                same_process_as_parent_span=span.same_process_as_parent_span,
-                span_kind=span.span_kind
+                span_id=ss.span_id,
+                parent_span_id=ss.parent_span.span_id if
+                ss.parent_span else None,
+                attributes=ss.attributes,
+                start_time=ss.start_time,
+                end_time=ss.end_time,
+                child_span_count=len(ss.children),
+                stack_trace=ss.stack_trace,
+                time_events=ss.time_events,
+                links=ss.links,
+                status=ss.status,
+                same_process_as_parent_span=ss.same_process_as_parent_span,
+                span_kind=ss.span_kind
 
             )
             for ss in span_tree
