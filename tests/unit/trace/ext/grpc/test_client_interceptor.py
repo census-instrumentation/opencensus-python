@@ -89,7 +89,7 @@ class TestOpenCensusClientInterceptor(unittest.TestCase):
         mock_client_call_details.metadata = None
         mock_client_call_details.method = '/hello'
 
-        client_call_details, request_iterator, current_span =\
+        client_call_details, request_iterator, current_span, previous_span =\
             interceptor._intercept_call(
                 mock_client_call_details, mock.Mock(), 'unary_unary')
 
@@ -110,7 +110,7 @@ class TestOpenCensusClientInterceptor(unittest.TestCase):
         mock_client_call_details.metadata = None
         mock_client_call_details.method = '/hello'
 
-        client_call_details, request_iterator, current_span =\
+        client_call_details, request_iterator, current_span, previous_span =\
             interceptor._intercept_call(
                 mock_client_call_details, mock.Mock(), 'unary_unary')
 
@@ -134,7 +134,7 @@ class TestOpenCensusClientInterceptor(unittest.TestCase):
         ]
         mock_client_call_details.method = '/hello'
 
-        client_call_details, request_iterator, current_span =\
+        client_call_details, request_iterator, current_span, previous_span =\
             interceptor._intercept_call(
                 mock_client_call_details, mock.Mock(), 'unary_unary')
 
@@ -159,7 +159,7 @@ class TestOpenCensusClientInterceptor(unittest.TestCase):
         mock_client_call_details.metadata = (('test_key', 'test_value'), )
         mock_client_call_details.method = '/hello'
 
-        client_call_details, request_iterator, current_span =\
+        client_call_details, request_iterator, current_span, previous_span =\
             interceptor._intercept_call(
                 mock_client_call_details, mock.Mock(), 'unary_unary')
 
@@ -172,11 +172,12 @@ class TestOpenCensusClientInterceptor(unittest.TestCase):
 
     def test__callback(self):
         current_span = mock.Mock()
+        previous_span = mock.Mock()
         tracer = MockTracer(current_span)
         interceptor = client_interceptor.OpenCensusClientInterceptor(
             tracer=tracer, host_port='test')
         current_span.attributes = {}
-        callback = interceptor._callback(current_span)
+        callback = interceptor._callback(current_span, previous_span)
         response = mock.Mock()
         response.exception.return_value = 'test_exception'
         callback(response)
@@ -188,11 +189,12 @@ class TestOpenCensusClientInterceptor(unittest.TestCase):
 
     def test__callback_no_exception(self):
         current_span = mock.Mock()
+        previous_span = mock.Mock()
         tracer = MockTracer(current_span)
         interceptor = client_interceptor.OpenCensusClientInterceptor(
             tracer=tracer, host_port='test')
         current_span.attributes = {}
-        callback = interceptor._callback(current_span)
+        callback = interceptor._callback(current_span, previous_span)
         response = mock.Mock()
         response.exception.return_value = None
         callback(response)
@@ -206,7 +208,7 @@ class TestOpenCensusClientInterceptor(unittest.TestCase):
         continuation.return_value = mock_response
         interceptor = client_interceptor.OpenCensusClientInterceptor()
         interceptor._intercept_call = mock.Mock(
-            return_value=(None, iter([mock.Mock()]), None))
+            return_value=(None, iter([mock.Mock()]), None, None))
         return interceptor, continuation, mock_response
 
     def _stream_helper(self):
@@ -217,7 +219,7 @@ class TestOpenCensusClientInterceptor(unittest.TestCase):
         interceptor = client_interceptor.OpenCensusClientInterceptor(
             tracer=mock_tracer)
         interceptor._intercept_call = mock.Mock(
-            return_value=(None, iter([mock.Mock()]), mock.Mock()))
+            return_value=(None, iter([mock.Mock()]), mock.Mock(), mock.Mock()))
         return interceptor, continuation, mock_tracer
 
     def test_intercept_unary_unary_trace(self):
