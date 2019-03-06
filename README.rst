@@ -1,5 +1,5 @@
 OpenCensus - A stats collection and distributed tracing framework
-============================================================================
+=================================================================
 
 |gitter|
 |circleci|
