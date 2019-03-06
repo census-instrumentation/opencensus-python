@@ -19,7 +19,7 @@ import re
 import six
 import uuid
 
-from opencensus.trace import trace_options
+from opencensus.trace import trace_options as trace_options_module
 
 _INVALID_TRACE_ID = '0' * 32
 INVALID_SPAN_ID = '0' * 16
@@ -28,10 +28,7 @@ TRACE_ID_PATTERN = re.compile('[0-9a-f]{32}?')
 SPAN_ID_PATTERN = re.compile('[0-9a-f]{16}?')
 
 # Default options, don't force sampling
-DEFAULT_OPTIONS = 0
-
-# Default trace options
-DEFAULT = trace_options.TraceOptions(DEFAULT_OPTIONS)
+DEFAULT_OPTIONS = '0'
 
 
 class SpanContext(object):
@@ -65,7 +62,7 @@ class SpanContext(object):
             trace_id = generate_trace_id()
 
         if trace_options is None:
-            trace_options = DEFAULT
+            trace_options = trace_options_module.TraceOptions(DEFAULT_OPTIONS)
 
         self.from_header = from_header
         self.trace_id = self._check_trace_id(trace_id)
