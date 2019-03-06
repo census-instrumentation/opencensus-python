@@ -54,8 +54,5 @@ setup(
     license='Apache-2.0',
     packages=find_packages(exclude=('tests',)),
     namespace_packages=[],
-    dependency_links=[
-        'https://github.com/census-instrumentation/opencensus-python@master#subdirectory=contrib/opencensus-correlation',
-    ],
     url='https://github.com/census-instrumentation/opencensus-python',
 )
