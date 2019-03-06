@@ -24,11 +24,16 @@ def _install_dev_packages(session):
     session.install('-e', 'contrib/opencensus-ext-dbapi')
     session.install('-e', 'contrib/opencensus-ext-django')
     session.install('-e', 'contrib/opencensus-ext-flask')
+    session.install('-e', 'contrib/opencensus-ext-grpc')
+    session.install('-e', 'contrib/opencensus-ext-httplib')
     session.install('-e', 'contrib/opencensus-ext-mysql')
     session.install('-e', 'contrib/opencensus-ext-postgresql')
     session.install('-e', 'contrib/opencensus-ext-pymysql')
     session.install('-e', 'contrib/opencensus-ext-pyramid')
+    session.install('-e', 'contrib/opencensus-ext-requests')
     session.install('-e', 'contrib/opencensus-ext-sqlalchemy')
+    session.install('-e', 'contrib/opencensus-ext-threading')
+    session.install('-e', 'contrib/opencensus-ext-google-cloud-clientlibs')
 
 
 @nox.session
