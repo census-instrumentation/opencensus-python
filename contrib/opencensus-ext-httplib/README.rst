@@ -1,7 +1,7 @@
 OpenCensus httplib Integration
 ============================================================================
 
-Census can trace HTTP requests made with the httplib library.
+OpenCensus can trace HTTP requests made with the httplib library.
 
 You can enable requests integration by specifying ``'httplib'`` to ``trace_integrations``.
 

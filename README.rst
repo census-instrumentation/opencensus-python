@@ -81,7 +81,7 @@ You can collect traces using the ``Tracer`` `context manager`_:
     with tracer.span(name='span2') as span2:
         do_something_to_trace()
 
-Census will collect everything within the ``with`` statement as a single span.
+OpenCensus will collect everything within the ``with`` statement as a single span.
 
 Alternatively, you can explicitly start and end a span:
 
@@ -127,7 +127,7 @@ the traces are printed to stdout in JSON format. Other options include
 writing to a file, sending to Python logging, or reporting to
 Stackdriver.
 
-This example shows how to configure Census to save the traces to a
+This example shows how to configure OpenCensus to save the traces to a
 file:
 
 .. code:: python
@@ -161,7 +161,7 @@ By default, traces are exported synchronously, which introduces latency during
 your code's execution. To avoid blocking code execution, you can initialize
 your exporter to use a background thread.
 
-This example shows how to configure Census to use a background thread:
+This example shows how to configure OpenCensus to use a background thread:
 
 .. code:: python
 
@@ -245,7 +245,7 @@ For Django, you can configure the blacklist in the ``OPENCENSUS_TRACE_PARAMS`` i
 Integration
 -----------
 
-Census supports integration with popular web frameworks, client libraries and built-in libraries.
+OpenCensus supports integration with popular web frameworks, client libraries and built-in libraries.
 
 -  `Django`_
 -  `Flask`_

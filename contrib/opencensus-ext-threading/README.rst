@@ -1,7 +1,7 @@
 OpenCensus threading Integration
 ============================================================================
 
-Census can propagate trace across threads when using the threading package.
+OpenCensus can propagate trace across threads when using the threading package.
 
 You can enable Threading integration by specifying ``'threading'`` to ``trace_integrations``.
 

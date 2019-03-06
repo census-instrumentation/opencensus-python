@@ -1,7 +1,7 @@
 OpenCensus requests Integration
 ============================================================================
 
-Census can trace HTTP requests made with the `requests package`_. The request URL,
+OpenCensus can trace HTTP requests made with the `requests package`_. The request URL,
 method, and status will be collected.
 
 You can enable requests integration by specifying ``'requests'`` to ``trace_integrations``.

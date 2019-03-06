@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""A setup module for Open Source Census Instrumentation Library"""
+"""A setup module for OpenCensus Instrumentation Library"""
 
 from setuptools import find_packages
 from setuptools import setup
