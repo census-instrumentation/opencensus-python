@@ -1,6 +1,5 @@
 google-cloud-monitoring==0.31.0
 google-cloud-trace==0.20.1
-grpcio==1.16.1
 mock==2.0.0
 pytest==3.2.2
 pytest-cov==2.5.1
