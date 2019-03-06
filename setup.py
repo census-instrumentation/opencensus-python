@@ -20,7 +20,6 @@ exec(open('opencensus/common/version/__init__.py').read())
 
 extras = {
     'prometheus_client': ['prometheus_client==0.3.1'],
-    'requests': ['wrapt==1.10.11'],
     'stackdriver': ['google-cloud-trace>=0.20.1, <0.30'],
 }
 
