@@ -139,7 +139,7 @@ class TestTraceContextPropagator(unittest.TestCase):
 
         self.assertEqual(span_context.trace_id, trace_id)
         self.assertEqual(span_context.span_id, span_id)
-        self.assertFalse(span_context.trace_options.enabled)
+        self.assertFalse(span_context.trace_options.get_enabled())
 
         # Trace option is enabled.
         span_context = propagator.from_headers({
@@ -149,7 +149,7 @@ class TestTraceContextPropagator(unittest.TestCase):
 
         self.assertEqual(span_context.trace_id, trace_id)
         self.assertEqual(span_context.span_id, span_id)
-        self.assertTrue(span_context.trace_options.enabled)
+        self.assertTrue(span_context.trace_options.get_enabled())
 
     def test_header_not_match(self):
         propagator = trace_context_http_header_format.\

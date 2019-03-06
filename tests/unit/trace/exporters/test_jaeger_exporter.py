@@ -311,7 +311,7 @@ class TestJaegerExporter(unittest.TestCase):
                 operationName='test1',
                 startTime=1502820146071158,
                 duration=10000000,
-                flags=1,
+                flags=0,
                 tags=[
                     jaeger.Tag(
                         key='key_bool', vType=jaeger.TagType.BOOL,

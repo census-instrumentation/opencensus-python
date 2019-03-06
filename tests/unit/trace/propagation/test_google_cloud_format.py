@@ -62,7 +62,7 @@ class TestGoogleCloudFormatPropagator(unittest.TestCase):
 
         self.assertEqual(span_context.trace_id, expected_trace_id)
         self.assertEqual(span_context.span_id, expected_span_id)
-        self.assertFalse(span_context.trace_options.enabled)
+        self.assertFalse(span_context.trace_options.get_enabled())
 
         # Trace option is enabled.
         header = '6e0c63257de34c92bf9efcd03927272e/00f067aa0ba902b7;o=1'
@@ -74,7 +74,7 @@ class TestGoogleCloudFormatPropagator(unittest.TestCase):
 
         self.assertEqual(span_context.trace_id, expected_trace_id)
         self.assertEqual(span_context.span_id, expected_span_id)
-        self.assertTrue(span_context.trace_options.enabled)
+        self.assertTrue(span_context.trace_options.get_enabled())
 
     def test_header_match_no_option(self):
         header = '6e0c63257de34c92bf9efcd03927272e/00f067aa0ba902b7'
@@ -86,7 +86,7 @@ class TestGoogleCloudFormatPropagator(unittest.TestCase):
 
         self.assertEqual(span_context.trace_id, expected_trace_id)
         self.assertEqual(span_context.span_id, expected_span_id)
-        self.assertTrue(span_context.trace_options.enabled)
+        self.assertTrue(span_context.trace_options.get_enabled())
 
     def test_header_not_match(self):
         header = 'invalid_trace_id/66666;o=1'
@@ -111,7 +111,7 @@ class TestGoogleCloudFormatPropagator(unittest.TestCase):
 
         self.assertEqual(span_context.trace_id, expected_trace_id)
         self.assertEqual(span_context.span_id, expected_span_id)
-        self.assertTrue(span_context.trace_options.enabled)
+        self.assertTrue(span_context.trace_options.get_enabled())
 
     def test_to_header(self):
         from opencensus.trace import span_context

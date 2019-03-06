@@ -51,7 +51,7 @@ class TestBinaryFormat(unittest.TestCase):
 
         self.assertEqual(span_context.trace_id, expected_trace_id)
         self.assertEqual(span_context.span_id, expected_span_id)
-        self.assertEqual(span_context.trace_options.enabled,
+        self.assertEqual(span_context.trace_options.get_enabled(),
                          expected_trace_option)
 
     def test_to_header_span_id_zero(self):
