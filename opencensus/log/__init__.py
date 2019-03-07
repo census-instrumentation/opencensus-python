@@ -100,7 +100,7 @@ class TraceLoggingAdapter(logging.LoggerAdapter):
 # This is the idiomatic way to stack logger customizations, see
 # https://docs.python.org/3.7/library/logging.html#logging.getLoggerClass
 class TraceLogger(logging.getLoggerClass()):
-    """Logger class that adds openensus context attrs to records."""
+    """Logger class that adds opencensus context attrs to records."""
     def makeRecord(self, *args, **kwargs):
         try:
             extra = args[8]
