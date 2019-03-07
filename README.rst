@@ -254,6 +254,7 @@ OpenCensus supports integration with popular web frameworks, client libraries an
 -  `httplib`_
 -  `MySQL`_
 -  `PostgreSQL`_
+-  `pymongo`_
 -  `PyMySQL`_
 -  `Pyramid`_
 -  `requests`_
@@ -267,6 +268,7 @@ OpenCensus supports integration with popular web frameworks, client libraries an
 .. _httplib: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-httplib
 .. _MySQL: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-mysql
 .. _PostgreSQL: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-postgresql
+.. _pymongo: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-pymongo
 .. _PyMySQL: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-pymysql
 .. _Pyramid: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-pyramid
 .. _requests: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-requests
