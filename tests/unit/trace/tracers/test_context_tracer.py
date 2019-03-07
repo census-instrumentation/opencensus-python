@@ -67,6 +67,44 @@ class TestContextTracer(unittest.TestCase):
 
         self.assertEqual(tracer._spans_list, [])
 
+    def test_finish_with_tracer_subspans(self):
+        tracer = context_tracer.ContextTracer()
+        parent = tracer.start_span('parent')
+        child = tracer.start_span('child')
+        self.assertEqual(child.parent_span, parent)
+        tracer.exporter = mock.Mock()
+        tracer.finish()
+
+        self.assertEqual(tracer.exporter.export.call_count, 2)
+        [[[[c_sd]], _], [[[p_sd]], _]] = tracer.exporter.export.call_args_list
+
+        self.assertEqual(p_sd.span_id, parent.span_id)
+        self.assertIsNone(parent.parent_span.span_id)
+        self.assertIsNone(p_sd.parent_span_id)
+        self.assertEqual(c_sd.span_id, child.span_id)
+        self.assertEqual(c_sd.parent_span_id, parent.span_id)
+
+        self.assertEqual(tracer._spans_list, [])
+
+    def test_finish_with_span_subspans(self):
+        tracer = context_tracer.ContextTracer()
+        parent = tracer.start_span('parent')
+        child = parent.span('child')
+        self.assertEqual(child.parent_span, parent)
+        tracer.exporter = mock.Mock()
+        tracer.finish()
+
+        self.assertEqual(tracer.exporter.export.call_count, 1)
+        [[[[c_sd, p_sd]], _]] = tracer.exporter.export.call_args_list
+
+        self.assertEqual(p_sd.span_id, parent.span_id)
+        self.assertIsNone(parent.parent_span.span_id)
+        self.assertIsNone(p_sd.parent_span_id)
+        self.assertEqual(c_sd.span_id, child.span_id)
+        self.assertEqual(c_sd.parent_span_id, parent.span_id)
+
+        self.assertEqual(tracer._spans_list, [])
+
     def test_end_leftover_spans(self):
         tracer = context_tracer.ContextTracer()
         tracer._spans_list = [span.Span(name='span')]
