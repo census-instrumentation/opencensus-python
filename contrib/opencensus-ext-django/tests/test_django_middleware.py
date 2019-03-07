@@ -19,13 +19,13 @@ from django.test import RequestFactory
 from django.test.utils import teardown_test_environment
 
 from opencensus.common.transports import sync
+from opencensus.ext.ocagent import trace_exporter
 from opencensus.trace import execution_context
 from opencensus.trace import span as span_module
 from opencensus.trace import utils
 from opencensus.trace.exporters import print_exporter
 from opencensus.trace.exporters import zipkin_exporter
 from opencensus.trace.exporters import jaeger_exporter
-from opencensus.ext.ocagent import trace_exporter
 from opencensus.trace.propagation import google_cloud_format
 from opencensus.trace.samplers import always_on
 from opencensus.trace.samplers import probability
