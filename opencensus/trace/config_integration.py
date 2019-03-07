@@ -30,6 +30,7 @@ def trace_integrations(integrations, tracer=None):
             module = importlib.import_module(module_name)
         except Exception as e:
             log.warning('Failed to import module: {}'.format(item))
+            log.warning('{}'.format(e))
             continue
         try:
             module.trace_integration(tracer=tracer)
