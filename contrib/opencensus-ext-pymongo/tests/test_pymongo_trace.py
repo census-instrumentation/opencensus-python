@@ -16,7 +16,7 @@ import unittest
 
 import mock
 
-from opencensus.trace.ext.pymongo import trace
+from opencensus.ext.pymongo import trace
 
 
 class Test_pymongo_trace(unittest.TestCase):
