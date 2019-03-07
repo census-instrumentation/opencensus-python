@@ -40,19 +40,25 @@ class Test_pymongo_trace(unittest.TestCase):
             'opencensus.trace.execution_context.get_opencensus_tracer',
             return_value=mock_tracer)
 
+        command_attrs = {
+            'filter': 'filter',
+            'sort': 'sort',
+            'limit': 'limit',
+            'command_name': 'find'
+        }
+
         expected_attrs = {
             'filter': 'filter',
             'sort': 'sort',
-            'skip': 'skip',
             'limit': 'limit',
             'request_id': 'request_id',
             'connection_id': 'connection_id'
         }
 
-        expected_name = 'pymongo.database_name.command_name.command_name'
+        expected_name = 'pymongo.database_name.find.command_name'
 
         with patch:
-            trace.MongoCommandListener().started(event=MockEvent())
+            trace.MongoCommandListener().started(event=MockEvent(command_attrs))
 
         self.assertEqual(mock_tracer.current_span.attributes, expected_attrs)
         self.assertEqual(mock_tracer.current_span.name, expected_name)
@@ -68,7 +74,7 @@ class Test_pymongo_trace(unittest.TestCase):
         expected_attrs = {'status': 'succeeded'}
 
         with patch:
-            trace.MongoCommandListener().succeeded(event=MockEvent())
+            trace.MongoCommandListener().succeeded(event=MockEvent(None))
 
         self.assertEqual(mock_tracer.current_span.attributes, expected_attrs)
         mock_tracer.end_span.assert_called_with()
@@ -84,21 +90,26 @@ class Test_pymongo_trace(unittest.TestCase):
         expected_attrs = {'status': 'failed'}
 
         with patch:
-            trace.MongoCommandListener().failed(event=MockEvent())
+            trace.MongoCommandListener().failed(event=MockEvent(None))
 
         self.assertEqual(mock_tracer.current_span.attributes, expected_attrs)
         mock_tracer.end_span.assert_called_with()
 
 
+class MockCommand(object):
+    def __init__(self, command_attrs):
+        self.command_attrs = command_attrs
+
+    def get(self, key, default=None):
+        return self.command_attrs[key] if key in self.command_attrs else default
+
+
 class MockEvent(object):
-    def __init__(self):
-        self.command = self
+    def __init__(self, command_attrs):
+        self.command = MockCommand(command_attrs)
 
     def __getattr__(self, item):
         return item
-
-    def get(self, key, default=None):
-        return key
 
 
 class MockTracer(object):
