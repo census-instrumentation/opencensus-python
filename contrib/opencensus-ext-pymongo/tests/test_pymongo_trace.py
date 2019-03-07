@@ -58,7 +58,8 @@ class Test_pymongo_trace(unittest.TestCase):
         expected_name = 'pymongo.database_name.find.command_name'
 
         with patch:
-            trace.MongoCommandListener().started(event=MockEvent(command_attrs))
+            trace.MongoCommandListener().started(
+                event=MockEvent(command_attrs))
 
         self.assertEqual(mock_tracer.current_span.attributes, expected_attrs)
         self.assertEqual(mock_tracer.current_span.name, expected_name)
@@ -101,7 +102,8 @@ class MockCommand(object):
         self.command_attrs = command_attrs
 
     def get(self, key, default=None):
-        return self.command_attrs[key] if key in self.command_attrs else default
+        return self.command_attrs[key]\
+            if key in self.command_attrs else default
 
 
 class MockEvent(object):
