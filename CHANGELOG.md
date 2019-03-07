@@ -9,6 +9,9 @@
 - Replace stackdriver `gke_container` resources, see the [GKE migration
   notes](https://cloud.google.com/monitoring/kubernetes-engine/migration#incompatible)
   for details
+- Componentize the package distribution. All [contrib
+  packages](https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/)
+  are now decoupled from the core library, and can be released separately.
 
 ## 0.2.0
 Released 2019-01-18
