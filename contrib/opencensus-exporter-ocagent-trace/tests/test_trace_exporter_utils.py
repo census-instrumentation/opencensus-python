@@ -16,6 +16,9 @@ import codecs
 from datetime import datetime, timedelta
 import unittest
 
+from opencensus.ext.ocagent.trace_exporter import utils
+from opencensus.ext.ocagent.trace_exporter.gen.opencensus.trace.v1 \
+    import trace_pb2
 from opencensus.trace import attributes as attributes_module
 from opencensus.trace import link as link_module
 from opencensus.trace import span as span_module
@@ -24,8 +27,6 @@ from opencensus.trace import span_data as span_data_module
 from opencensus.trace import status as status_module
 from opencensus.trace import time_event as time_event_module
 from opencensus.trace import tracestate as tracestate_module
-from opencensus.trace.exporters.ocagent import utils
-from opencensus.trace.exporters.gen.opencensus.trace.v1 import trace_pb2
 
 
 class TestTraceExporterUtils(unittest.TestCase):
