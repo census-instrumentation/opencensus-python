@@ -152,7 +152,6 @@ class ContextTracer(base.Tracer):
         :rtype: list of opencensus.trace.span_data.SpanData
         :return list of SpanData tuples
         """
-        span_tree = list(iter(span))
         span_datas = [
             span_data_module.SpanData(
                 name=ss.name,
@@ -170,9 +169,8 @@ class ContextTracer(base.Tracer):
                 status=ss.status,
                 same_process_as_parent_span=ss.same_process_as_parent_span,
                 span_kind=ss.span_kind
-
             )
-            for ss in span_tree
+            for ss in span
         ]
 
         return span_datas
