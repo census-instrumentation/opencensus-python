@@ -26,7 +26,8 @@ SPAN_ID_KEY = 'spanId'
 SAMPLING_DECISION_KEY = 'traceSampled'
 
 LogAttrs = namedtuple('LogAttrs', ['trace_id', 'span_id', 'sampling_decision'])
-ATTR_DEFAULTS = LogAttrs('', '', False)
+ATTR_DEFAULTS = LogAttrs("00000000000000000000000000000000",
+                         "0000000000000000", False)
 
 
 def get_log_attrs():
