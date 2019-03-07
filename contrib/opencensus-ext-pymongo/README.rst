@@ -1,4 +1,4 @@
-OpenCensus MongoDB Integration
+OpenCensus pymongo Integration
 ============================================================================
 
 The integration with MongoDB supports the `pymongo`_ library and is specified

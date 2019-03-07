@@ -102,7 +102,7 @@ class MockCommand(object):
         self.command_attrs = command_attrs
 
     def get(self, key, default=None):
-        return self.command_attrs[key]\
+        return self.command_attrs[key] \
             if key in self.command_attrs else default
 
 

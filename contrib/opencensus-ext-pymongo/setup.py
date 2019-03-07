@@ -35,7 +35,7 @@ setup(
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
     ],
-    description='OpenCensus MongoDB Integration',
+    description='OpenCensus pymongo Integration',
     include_package_data=True,
     long_description=open('README.rst').read(),
     install_requires=[
