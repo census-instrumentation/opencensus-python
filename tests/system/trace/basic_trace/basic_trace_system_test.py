@@ -16,9 +16,7 @@ import unittest
 
 
 def func_to_trace():
-    import time
     print('Test simple tracing...')
-    time.sleep(2)
 
 
 class TestBasicTrace(unittest.TestCase):
