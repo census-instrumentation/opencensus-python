@@ -1,11 +1,11 @@
 OpenCensus for Python - A stats collection and distributed tracing framework
 ============================================================================
 
-    `Census`_ for Python. Census provides a framework to measure a server's resource
+    `OpenCensus`_ provides a framework to measure a server's resource
     usage and collect performance stats. This repository contains Python related
-    utilities and supporting software needed by Census.
+    utilities and supporting software needed by OpenCensus.
 
-    .. _Census: https://github.com/census-instrumentation
+    .. _OpenCensus: https://github.com/census-instrumentation
 
 |circleci|
 
@@ -59,7 +59,7 @@ You can collect traces using the ``Tracer`` `context manager`_:
     with tracer.span(name='span2') as span2:
         do_something_to_trace()
 
-Census will collect everything within the ``with`` statement as a single span.
+OpenCensus will collect everything within the ``with`` statement as a single span.
 
 Alternatively, you can explicitly start and end a span:
 
@@ -105,7 +105,7 @@ the traces are printed to stdout in JSON format. Other options include
 writing to a file, sending to Python logging, or reporting to
 Stackdriver.
 
-This example shows how to configure Census to save the traces to a
+This example shows how to configure OpenCensus to save the traces to a
 file:
 
 .. code:: python
@@ -182,7 +182,7 @@ For Django, you can configure the blacklist in the ``OPENCENSUS_TRACE_PARAMS`` i
 Framework Integration
 ---------------------
 
-Census supports integration with popular web frameworks including Django,
+OpenCensus supports integration with popular web frameworks including Django,
 Flask, and Pyramid. When the application receives a HTTP request, the tracer
 will automatically generate a span context using the trace information
 extracted from the request headers, and propagated to the child spans.
@@ -355,7 +355,7 @@ database, by specifying ``'sqlalchemy'`` to ``trace_integrations``.
 Requests
 ~~~~~~~~
 
-Census can trace HTTP requests made with the `Requests package`_. The request URL,
+OpenCensus can trace HTTP requests made with the `Requests package`_. The request URL,
 method, and status will be collected.
 
 You can enable Requests integration by specifying ``'requests'`` to ``trace_integrations``.
