@@ -11,22 +11,23 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""A setup module for Open Source Census Instrumentation Library"""
+"""A setup module for OpenCensus Instrumentation Library"""
 
 from setuptools import find_packages
 from setuptools import setup
 
+exec(open('opencensus/common/version/__init__.py').read())
+
 extras = {
-    "stackdriver": ['google-cloud-trace>=0.20.1, <0.30'],
-    "prometheus_client": ['prometheus_client==0.3.1'],
-    "requests": ['wrapt==1.10.11']
+    'prometheus_client': ['prometheus_client==0.3.1'],
+    'stackdriver': ['google-cloud-trace>=0.20.1, <0.30'],
 }
 
 install_requires = [
+    'opencensus-correlation == 0.2.dev0',
     'google-api-core >= 1.0.0, < 2.0.0',
 ]
 
-exec(open("opencensus/common/version.py").read())
 setup(
     name='opencensus',
     version=__version__,  # noqa
@@ -53,4 +54,5 @@ setup(
     license='Apache-2.0',
     packages=find_packages(exclude=('tests',)),
     namespace_packages=[],
-    url='https://github.com/census-instrumentation/opencensus-python')
+    url='https://github.com/census-instrumentation/opencensus-python',
+)

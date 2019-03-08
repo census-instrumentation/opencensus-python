@@ -1,4 +1,4 @@
-# Copyright 2018 Google Inc.
+# Copyright 2018, OpenCensus Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,63 +13,36 @@
 # limitations under the License.
 
 from opencensus.common.http_handler import get_request
-import os
 
 _GCP_METADATA_URI = 'http://metadata/computeMetadata/v1/'
 _GCP_METADATA_URI_HEADER = {'Metadata-Flavor': 'Google'}
 
+# ID of the GCP project associated with this resource, such as "my-project"
+PROJECT_ID_KEY = 'project_id'
+
+# Numeric VM instance identifier assigned by GCE
+INSTANCE_ID_KEY = 'instance_id'
+
+# The GCE zone in which the VM is running
+ZONE_KEY = 'zone'
+
+# GKE cluster name
+CLUSTER_NAME_KEY = 'instance/attributes/cluster-name'
+
 # GCE common attributes
-# See: https://cloud.google.com/appengine/docs/flexible/python/runtime#
-#      environment_variables
+# See: https://cloud.google.com/appengine/docs/flexible/python/runtime#environment_variables  # noqa
 _GCE_ATTRIBUTES = {
-    # ProjectID is the identifier of the GCP project associated with this
-    # resource, such as "my-project".
-    'project_id': 'project/project-id',
-
-    # instance_id is the numeric VM instance identifier assigned by
-    # Compute Engine.
-    'instance_id': 'instance/id',
-
-    # zone is the Compute Engine zone in which the VM is running.
-    'zone': 'instance/zone'
+    PROJECT_ID_KEY: 'project/project-id',
+    INSTANCE_ID_KEY: 'instance/id',
+    ZONE_KEY: 'instance/zone'
 }
 
-_GKE_ATTRIBUTES = {
-    # ProjectID is the identifier of the GCP project associated with this
-    # resource, such as "my-project".
-    'project_id': 'project/project-id',
-
-    # instance_id is the numeric VM instance identifier assigned by
-    # Compute Engine.
-    'instance_id': 'instance/id',
-
-    # zone is the Compute Engine zone in which the VM is running.
-    'zone': 'instance/zone',
-
-    # cluster_name is the name for the cluster the container is running in.
-    'cluster_name': 'instance/attributes/cluster-name'
+_ATTRIBUTE_URI_TRANSFORMATIONS = {
+    _GCE_ATTRIBUTES[ZONE_KEY]:
+        lambda v: v[v.rfind('/') + 1:] if '/' in v else v
 }
 
-# Following attributes are derived from environment variables. They are
-# configured via yaml file. For details refer to:
-# https://cloud.google.com/kubernetes-engine/docs/tutorials/
-# custom-metrics-autoscaling#exporting_metrics_from_the_application
-_GKE_ENV_ATTRIBUTES = {
-    # ContainerName is the name of the container.
-    'container_name': 'CONTAINER_NAME',
-
-    # namespace_id is the identifier for the cluster namespace the container
-    # is running in
-    'namespace_id': 'NAMESPACE',
-
-    # pod_id is the identifier for the pod the container is running in.
-    'pod_id': 'HOSTNAME'
-}
-
-# Kubenertes environment variables
-_KUBERNETES_SERVICE_HOST = 'KUBERNETES_SERVICE_HOST'
-
-gcp_metadata_map = {}
+_GCP_METADATA_MAP = {}
 
 
 class GcpMetadataConfig(object):
@@ -90,23 +63,19 @@ class GcpMetadataConfig(object):
         if cls.inited:
             return
 
-        instance_id = cls._get_attribute('instance_id')
+        instance_id = cls.get_attribute('instance/id')
 
         if instance_id is not None:
             cls.is_running = True
 
-            gcp_metadata_map['instance_id'] = instance_id
-
-            attributes = _GCE_ATTRIBUTES
-            if _KUBERNETES_SERVICE_HOST in os.environ:
-                attributes = _GKE_ATTRIBUTES
+            _GCP_METADATA_MAP['instance_id'] = instance_id
 
             # fetch attributes from metadata request
-            for attribute_key, attribute_uri in attributes.items():
-                if attribute_key not in gcp_metadata_map:
-                    attribute_value = cls._get_attribute(attribute_key)
-                    if attribute_value is not None:
-                        gcp_metadata_map[attribute_key] = attribute_value
+            for attribute_key, attribute_uri in _GCE_ATTRIBUTES.items():
+                if attribute_key not in _GCP_METADATA_MAP:
+                    attribute_value = cls.get_attribute(attribute_uri)
+                    if attribute_value is not None:  # pragma: NO COVER
+                        _GCP_METADATA_MAP[attribute_key] = attribute_value
 
         cls.inited = True
 
@@ -118,35 +87,19 @@ class GcpMetadataConfig(object):
     def get_gce_metadata(self):
         """for GCP GCE instance"""
         if self.is_running_on_gcp():
-            return gcp_metadata_map
+            return _GCP_METADATA_MAP
 
         return dict()
 
-    def get_gke_metadata(self):
-        """for GCP GKE container."""
-        gke_metadata = {}
-
-        if self.is_running_on_gcp():
-            gke_metadata = gcp_metadata_map
-
-        # fetch attributes from Environment Variables
-        for attribute_key, attribute_env in _GKE_ENV_ATTRIBUTES.items():
-            attribute_value = os.environ.get(attribute_env)
-            if attribute_value is not None:
-                gke_metadata[attribute_key] = attribute_value
-
-        return gke_metadata
-
     @staticmethod
-    def _get_attribute(attribute_key):
+    def get_attribute(attribute_uri):
         """
         Fetch the requested instance metadata entry.
         :param attribute_uri: attribute_uri: attribute name relative to the
         computeMetadata/v1 prefix
         :return:  The value read from the metadata service or None
         """
-        attribute_value = get_request(_GCP_METADATA_URI +
-                                      _GKE_ATTRIBUTES[attribute_key],
+        attribute_value = get_request(_GCP_METADATA_URI + attribute_uri,
                                       _GCP_METADATA_URI_HEADER)
 
         if attribute_value is not None and isinstance(attribute_value, bytes):
@@ -154,5 +107,9 @@ class GcpMetadataConfig(object):
             # urllib (although the response is text), convert
             # to a normal string:
             attribute_value = attribute_value.decode('utf-8')
+
+        transformation = _ATTRIBUTE_URI_TRANSFORMATIONS.get(attribute_uri)
+        if transformation is not None:
+            attribute_value = transformation(attribute_value)
 
         return attribute_value

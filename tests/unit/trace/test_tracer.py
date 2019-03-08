@@ -221,7 +221,7 @@ class TestTracer(unittest.TestCase):
         span.__iter__ = mock.Mock(return_value=iter([span]))
         execution_context.set_current_span(span)
 
-        patch = mock.patch('opencensus.trace.span._get_truncatable_str',
+        patch = mock.patch('opencensus.trace.span.get_truncatable_str',
                            mock.Mock())
 
         with patch:

@@ -19,14 +19,13 @@ log = logging.getLogger(__name__)
 
 SUPPORTED_INTEGRATIONS = ['httplib', 'mysql', 'postgresql', 'pymysql',
                           'requests', 'sqlalchemy', 'google_cloud_clientlibs',
-                          'threading']
+                          'threading', 'pymongo']
 
-PATH_PREFIX = 'opencensus.trace.ext'
+PATH_PREFIX = 'opencensus.ext'
 
 
 def trace_integrations(integrations, tracer=None):
     """Enable tracing on the selected integrations.
-
     :type integrations: list
     :param integrations: The integrations to be traced.
     """

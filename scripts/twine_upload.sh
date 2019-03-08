@@ -20,6 +20,8 @@ if [[ -z "$CIRCLE_TAG" ]]; then
   exit 0
 fi
 
+BASEDIR=$PWD
+
 echo -e "[pypi]" >> ~/.pypirc
 echo -e "username = $PYPI_USERNAME" >> ~/.pypirc
 echo -e "password = $PYPI_PASSWORD" >> ~/.pypirc
@@ -27,6 +29,15 @@ echo -e "password = $PYPI_PASSWORD" >> ~/.pypirc
 # Ensure that we have the latest versions of Twine, Wheel, and Setuptools.
 python3 -m pip install --upgrade twine wheel setuptools
 
-# Build the distribution and upload.
+# Build the distribution.
 python3 setup.py bdist_wheel
+
+for d in contrib/*/ ; do
+  pushd .
+  cd "$d"
+  python3 setup.py bdist_wheel --dist-dir "$BASEDIR/dist/"
+  popd
+done
+
+# Upload the distribution.
 twine upload dist/*

@@ -59,6 +59,7 @@ class TestAttributes(unittest.TestCase):
             'key1': 'test string',
             'key2': True,
             'key3': 100,
+            'key4': 123.456,
         }
 
         attributes = attributes_module.Attributes(attrs)
@@ -77,6 +78,9 @@ class TestAttributes(unittest.TestCase):
                 },
                 'key3': {
                     'int_value': 100
+                },
+                'key4': {
+                    'double_value': 123.456
                 }
             }
         }

@@ -21,55 +21,7 @@ https://github.com/census-instrumentation/opencensus-proto/blob/v0.1.0/src/openc
 from copy import copy
 
 
-class Value(object):
-    """The actual point value for a Point.
-    Currently there are four types of Value:
-     <ul>
-       <li>double
-       <li>long
-       <li>Summary
-       <li>Distribution (TODO(mayurkale): add Distribution class)
-     </ul>
-    Each Point contains exactly one of the four Value types.
-    """
-
-    def __init__(self, value):
-        self._value = value
-
-    @staticmethod
-    def double_value(value):
-        """Returns a double Value
-
-        :type value: float
-        :param value: value in double
-        """
-        return ValueDouble(value)
-
-    @staticmethod
-    def long_value(value):
-        """Returns a long Value
-
-        :type value: long
-        :param value: value in long
-        """
-        return ValueLong(value)
-
-    @staticmethod
-    def summary_value(value):
-        """Returns a summary Value
-
-        :type value: Summary
-        :param value: value in Summary
-        """
-        return ValueSummary(value)
-
-    @property
-    def value(self):
-        """Returns the value."""
-        return self._value
-
-
-class ValueDouble(Value):
+class ValueDouble(object):
     """A 64-bit double-precision floating-point number.
 
     :type value: float
@@ -77,7 +29,7 @@ class ValueDouble(Value):
     """
 
     def __init__(self, value):
-        super(ValueDouble, self).__init__(value)
+        self._value = value
 
     def __repr__(self):
         return ("{}({})"
@@ -86,8 +38,12 @@ class ValueDouble(Value):
                     self.value,
                 ))
 
+    @property
+    def value(self):
+        return self._value
 
-class ValueLong(Value):
+
+class ValueLong(object):
     """A 64-bit integer.
 
     :type value: long
@@ -95,7 +51,7 @@ class ValueLong(Value):
     """
 
     def __init__(self, value):
-        super(ValueLong, self).__init__(value)
+        self._value = value
 
     def __repr__(self):
         return ("{}({})"
@@ -104,8 +60,12 @@ class ValueLong(Value):
                     self.value,
                 ))
 
+    @property
+    def value(self):
+        return self._value
 
-class ValueSummary(Value):
+
+class ValueSummary(object):
     """Represents a snapshot values calculated over an arbitrary time window.
 
     :type value: summary
@@ -113,7 +73,7 @@ class ValueSummary(Value):
     """
 
     def __init__(self, value):
-        super(ValueSummary, self).__init__(value)
+        self._value = value
 
     def __repr__(self):
         return ("{}({})"
@@ -121,6 +81,10 @@ class ValueSummary(Value):
                     type(self).__name__,
                     self.value,
                 ))
+
+    @property
+    def value(self):
+        return self._value
 
 
 class Exemplar(object):
@@ -227,7 +191,7 @@ class BucketOptions(object):
         return self._type
 
 
-class ValueDistribution(Value):
+class ValueDistribution(object):
     """Summary statistics for a population of values.
 
     Distribution contains summary statistics for a population of values. It

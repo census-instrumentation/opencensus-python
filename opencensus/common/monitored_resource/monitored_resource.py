@@ -1,4 +1,4 @@
-# Copyright 2018 Google Inc.
+# Copyright 2018, OpenCensus Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,28 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
-
 from opencensus.common import resource
 from opencensus.common.monitored_resource import aws_identity_doc_utils
 from opencensus.common.monitored_resource import gcp_metadata_config
+from opencensus.common.monitored_resource import k8s_utils
 
 
 # Supported environments (resource types)
 _GCE_INSTANCE = "gce_instance"
-_GKE_CONTAINER = "gke_container"
+_K8S_CONTAINER = "k8s_container"
 _AWS_EC2_INSTANCE = "aws_ec2_instance"
-
-# Kubenertes environment variables
-_KUBERNETES_SERVICE_HOST = 'KUBERNETES_SERVICE_HOST'
-
-
-def is_gke_environment():
-    """Whether the environment is a GKE container instance.
-
-    The KUBERNETES_SERVICE_HOST environment variable must be set.
-    """
-    return _KUBERNETES_SERVICE_HOST in os.environ
 
 
 def is_gce_environment():
@@ -52,15 +40,6 @@ def get_instance():
     Returns a `Resource` configured for the current environment, or None if the
     environment is unknown or unsupported.
 
-    Supported environments include:
-
-    1. 'gke_container'
-    - https://cloud.google.com/monitoring/api/resources#tag_gke_container
-    2. 'gce_instance'
-    - https://cloud.google.com/monitoring/api/resources#tag_gce_instance
-    3. 'aws_ec2_instance'
-    - https://cloud.google.com/monitoring/api/resources#tag_aws_ec2_instance
-
     :rtype: :class:`opencensus.common.resource.Resource` or None
     :return: A `Resource` configured for the current environment.
     """
@@ -69,10 +48,9 @@ def get_instance():
     if env_resource is not None:
         resources.append(env_resource)
 
-    if is_gke_environment():
+    if k8s_utils.is_k8s_environment():
         resources.append(resource.Resource(
-            _GKE_CONTAINER,
-            gcp_metadata_config.GcpMetadataConfig().get_gke_metadata()))
+            _K8S_CONTAINER, k8s_utils.get_k8s_metadata()))
 
     if is_gce_environment():
         resources.append(resource.Resource(

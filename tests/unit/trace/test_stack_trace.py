@@ -61,7 +61,7 @@ class TestStackFrame(unittest.TestCase):
         def mock_get_truncatable_str(str):
             return str
 
-        patch = mock.patch('opencensus.trace.stack_trace._get_truncatable_str',
+        patch = mock.patch('opencensus.trace.stack_trace.get_truncatable_str',
                            mock_get_truncatable_str)
 
         expected_stack_frame_json = {
