@@ -19,7 +19,7 @@ log = logging.getLogger(__name__)
 
 SUPPORTED_INTEGRATIONS = ['httplib', 'mysql', 'postgresql', 'pymysql',
                           'requests', 'sqlalchemy', 'google_cloud_clientlibs',
-                          'threading']
+                          'threading', 'pymongo']
 
 PATH_PREFIX = 'opencensus.ext'
 

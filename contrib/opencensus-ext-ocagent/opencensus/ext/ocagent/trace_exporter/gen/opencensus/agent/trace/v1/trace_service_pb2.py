@@ -12,10 +12,10 @@ from google.protobuf import symbol_database as _symbol_database
 _sym_db = _symbol_database.Default()
 
 
-from opencensus.trace.exporters.gen.opencensus.agent.common.v1 import common_pb2 as opencensus_dot_proto_dot_agent_dot_common_dot_v1_dot_common__pb2
-from opencensus.trace.exporters.gen.opencensus.resource.v1 import resource_pb2 as opencensus_dot_proto_dot_resource_dot_v1_dot_resource__pb2
-from opencensus.trace.exporters.gen.opencensus.trace.v1 import trace_pb2 as opencensus_dot_proto_dot_trace_dot_v1_dot_trace__pb2
-from opencensus.trace.exporters.gen.opencensus.trace.v1 import trace_config_pb2 as opencensus_dot_proto_dot_trace_dot_v1_dot_trace__config__pb2
+from opencensus.ext.ocagent.trace_exporter.gen.opencensus.agent.common.v1 import common_pb2 as opencensus_dot_proto_dot_agent_dot_common_dot_v1_dot_common__pb2
+from opencensus.ext.ocagent.trace_exporter.gen.opencensus.resource.v1 import resource_pb2 as opencensus_dot_proto_dot_resource_dot_v1_dot_resource__pb2
+from opencensus.ext.ocagent.trace_exporter.gen.opencensus.trace.v1 import trace_pb2 as opencensus_dot_proto_dot_trace_dot_v1_dot_trace__pb2
+from opencensus.ext.ocagent.trace_exporter.gen.opencensus.trace.v1 import trace_config_pb2 as opencensus_dot_proto_dot_trace_dot_v1_dot_trace__config__pb2
 
 
 DESCRIPTOR = _descriptor.FileDescriptor(

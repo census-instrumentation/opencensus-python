@@ -17,7 +17,7 @@ from setuptools import setup
 from version import __version__
 
 setup(
-    name='opencensus-ext-grpc',
+    name='opencensus-ext-ocagent',
     version=__version__,  # noqa
     author='OpenCensus Authors',
     author_email='census-developers@googlegroups.com',
@@ -35,7 +35,7 @@ setup(
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
     ],
-    description='OpenCensus gRPC Integration',
+    description='OpenCensus OC-Agent Trace Exporter',
     include_package_data=True,
     long_description=open('README.rst').read(),
     install_requires=[
@@ -44,8 +44,8 @@ setup(
     ],
     extras_require={},
     license='Apache-2.0',
-    packages=find_packages(exclude=('examples', 'tests',)),
+    packages=find_packages(exclude=('tests',)),
     namespace_packages=[],
-    url='https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-grpc',
+    url='https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-ocagent',
     zip_safe=False,
 )
