@@ -20,10 +20,11 @@ import socket
 import unittest
 
 from opencensus.common.version import __version__
+from opencensus.ext.ocagent.trace_exporter.gen.opencensus.trace.v1 \
+    import trace_config_pb2
+from opencensus.ext.ocagent.trace_exporter import TraceExporter
 from opencensus.trace import span_context as span_context_module
 from opencensus.trace import span_data as span_data_module
-from opencensus.trace.exporters.gen.opencensus.trace.v1 import trace_config_pb2
-from opencensus.trace.exporters.ocagent.trace_exporter import TraceExporter
 
 
 SERVICE_NAME = 'my-service'

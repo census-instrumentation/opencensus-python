@@ -21,14 +21,14 @@ import socket
 
 from opencensus.common.transports import sync
 from opencensus.common.version import __version__
-from opencensus.trace.exporters import base
-from opencensus.trace.exporters.gen.opencensus.agent.common.v1 \
+from opencensus.ext.ocagent.trace_exporter import utils
+from opencensus.ext.ocagent.trace_exporter.gen.opencensus.agent.common.v1 \
     import common_pb2
-from opencensus.trace.exporters.gen.opencensus.agent.trace.v1 \
+from opencensus.ext.ocagent.trace_exporter.gen.opencensus.agent.trace.v1 \
     import trace_service_pb2
-from opencensus.trace.exporters.gen.opencensus.agent.trace.v1 \
+from opencensus.ext.ocagent.trace_exporter.gen.opencensus.agent.trace.v1 \
     import trace_service_pb2_grpc
-from opencensus.trace.exporters.ocagent import utils
+from opencensus.trace.exporters import base
 
 # Default agent endpoint
 DEFAULT_ENDPOINT = 'localhost:55678'
