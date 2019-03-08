@@ -17,6 +17,7 @@ import logging
 
 log = logging.getLogger(__name__)
 
+
 def trace_integrations(integrations, tracer=None):
     """Enable tracing on the selected integrations.
     :type integrations: list
