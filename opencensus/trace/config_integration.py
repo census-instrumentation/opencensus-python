@@ -29,13 +29,13 @@ def trace_integrations(integrations, tracer=None):
         try:
             module = importlib.import_module(module_name)
         except Exception as e:
-            log.warning('Failed to import module: {}'.format(item))
+            log.warning('Failed to import module: {}'.format(module_name))
             log.warning('{}'.format(e))
             continue
         try:
             module.trace_integration(tracer=tracer)
-        except Exception as e:
-            log.warning('Failed to integrate module: {}'.format(item))
+        except Exception as e:  # noqa
+            log.warning('Failed to integrate module: {}'.format(module_name))
             log.warning('{}'.format(e))
             continue
         integrated.append(item)
