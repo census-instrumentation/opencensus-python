@@ -6,7 +6,7 @@ Installation
 
 ::
 
-    pip install opencensus-exporter-ocagent-trace
+    pip install opencensus-ext-ocagent
 
 Usage
 -----
