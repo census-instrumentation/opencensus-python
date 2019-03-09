@@ -17,9 +17,9 @@ import unittest
 import mock
 
 from opencensus.common.version import __version__
+from opencensus.ext.stackdriver import trace_exporter
 from opencensus.trace import span_context
 from opencensus.trace import span_data as span_data_module
-from opencensus.trace.exporters import stackdriver_exporter
 
 
 class _Client(object):
@@ -33,11 +33,11 @@ class _Client(object):
 class TestStackdriverExporter(unittest.TestCase):
     def test_constructor_default(self):
         patch = mock.patch(
-            'opencensus.trace.exporters.stackdriver_exporter.Client',
+            'opencensus.ext.stackdriver.trace_exporter.Client',
             new=_Client)
 
         with patch:
-            exporter = stackdriver_exporter.StackdriverExporter()
+            exporter = trace_exporter.StackdriverExporter()
 
         project_id = 'PROJECT'
         self.assertEqual(exporter.project_id, project_id)
@@ -48,7 +48,7 @@ class TestStackdriverExporter(unittest.TestCase):
         client.project = project_id
         transport = mock.Mock()
 
-        exporter = stackdriver_exporter.StackdriverExporter(
+        exporter = trace_exporter.StackdriverExporter(
             client=client, project_id=project_id, transport=transport)
 
         self.assertIs(exporter.client, client)
@@ -58,13 +58,13 @@ class TestStackdriverExporter(unittest.TestCase):
         client = mock.Mock()
         project_id = 'PROJECT'
         client.project = project_id
-        exporter = stackdriver_exporter.StackdriverExporter(
+        exporter = trace_exporter.StackdriverExporter(
             client=client, project_id=project_id, transport=MockTransport)
         exporter.export({})
 
         self.assertTrue(exporter.transport.export_called)
 
-    @mock.patch('opencensus.trace.exporters.stackdriver_exporter.'
+    @mock.patch('opencensus.ext.stackdriver.trace_exporter.'
                 'monitored_resource.get_instance',
                 return_value=None)
     def test_emit(self, mr_mock):
@@ -133,7 +133,7 @@ class TestStackdriverExporter(unittest.TestCase):
         project_id = 'PROJECT'
         client.project = project_id
 
-        exporter = stackdriver_exporter.StackdriverExporter(
+        exporter = trace_exporter.StackdriverExporter(
             client=client, project_id=project_id)
 
         exporter.emit(span_datas)
@@ -143,7 +143,7 @@ class TestStackdriverExporter(unittest.TestCase):
         client.batch_write_spans.assert_called_with(name, stackdriver_spans)
         self.assertTrue(client.batch_write_spans.called)
 
-    @mock.patch('opencensus.trace.exporters.stackdriver_exporter.'
+    @mock.patch('opencensus.ext.stackdriver.trace_exporter.'
                 'monitored_resource.get_instance',
                 return_value=None)
     def test_translate_to_stackdriver(self, mr_mock):
@@ -202,7 +202,7 @@ class TestStackdriverExporter(unittest.TestCase):
 
         client = mock.Mock()
         client.project = project_id
-        exporter = stackdriver_exporter.StackdriverExporter(
+        exporter = trace_exporter.StackdriverExporter(
             client=client, project_id=project_id)
 
         spans = list(exporter.translate_to_stackdriver(trace))
@@ -260,7 +260,7 @@ class TestStackdriverExporter(unittest.TestCase):
         project_id = 'PROJECT'
         client = mock.Mock()
         client.project = project_id
-        exporter = stackdriver_exporter.StackdriverExporter(
+        exporter = trace_exporter.StackdriverExporter(
             client=client, project_id=project_id)
 
         attributes = {'outer key': 'some value'}
@@ -273,7 +273,7 @@ class TestStackdriverExporter(unittest.TestCase):
         project_id = 'PROJECT'
         client = mock.Mock()
         client.project = project_id
-        exporter = stackdriver_exporter.StackdriverExporter(
+        exporter = trace_exporter.StackdriverExporter(
             client=client, project_id=project_id)
 
         # does not throw
@@ -283,7 +283,7 @@ class TestStackdriverExporter(unittest.TestCase):
         project_id = 'PROJECT'
         client = mock.Mock()
         client.project = project_id
-        exporter = stackdriver_exporter.StackdriverExporter(
+        exporter = trace_exporter.StackdriverExporter(
             client=client, project_id=project_id)
 
         attributes = {
@@ -533,7 +533,7 @@ class TestStackdriverExporter(unittest.TestCase):
 
 
 class Test_set_attributes_gae(unittest.TestCase):
-    @mock.patch('opencensus.trace.exporters.stackdriver_exporter.'
+    @mock.patch('opencensus.ext.stackdriver.trace_exporter.'
                 'monitored_resource.get_instance',
                 return_value=None)
     def test_set_attributes_gae(self, mr_mock):
@@ -581,21 +581,21 @@ class Test_set_attributes_gae(unittest.TestCase):
 
         with mock.patch.dict(
                 os.environ, {
-                    stackdriver_exporter._APPENGINE_FLEXIBLE_ENV_VM: 'vm',
-                    stackdriver_exporter._APPENGINE_FLEXIBLE_ENV_FLEX: 'flex',
+                    trace_exporter._APPENGINE_FLEXIBLE_ENV_VM: 'vm',
+                    trace_exporter._APPENGINE_FLEXIBLE_ENV_FLEX: 'flex',
                     'GOOGLE_CLOUD_PROJECT': 'project',
                     'GAE_SERVICE': 'service',
                     'GAE_VERSION': 'version'
                 }):
-            self.assertTrue(stackdriver_exporter.is_gae_environment())
-            stackdriver_exporter.set_attributes(trace)
+            self.assertTrue(trace_exporter.is_gae_environment())
+            trace_exporter.set_attributes(trace)
 
         span = trace.get('spans')[0]
         self.assertEqual(span, expected)
 
 
 class TestMonitoredResourceAttributes(unittest.TestCase):
-    @mock.patch('opencensus.trace.exporters.stackdriver_exporter.'
+    @mock.patch('opencensus.ext.stackdriver.trace_exporter.'
                 'monitored_resource.get_instance')
     def test_monitored_resource_attributes_gke(self, gmr_mock):
         import os
@@ -690,19 +690,19 @@ class TestMonitoredResourceAttributes(unittest.TestCase):
         gmr_mock.return_value = mock_resource
         with mock.patch.dict(
                 os.environ, {
-                    stackdriver_exporter._APPENGINE_FLEXIBLE_ENV_VM: 'vm',
-                    stackdriver_exporter._APPENGINE_FLEXIBLE_ENV_FLEX: 'flex',
+                    trace_exporter._APPENGINE_FLEXIBLE_ENV_VM: 'vm',
+                    trace_exporter._APPENGINE_FLEXIBLE_ENV_FLEX: 'flex',
                     'GOOGLE_CLOUD_PROJECT': 'project',
                     'GAE_SERVICE': 'service',
                     'GAE_VERSION': 'version'
                 }):
-            self.assertTrue(stackdriver_exporter.is_gae_environment())
-            stackdriver_exporter.set_attributes(trace)
+            self.assertTrue(trace_exporter.is_gae_environment())
+            trace_exporter.set_attributes(trace)
 
         span = trace.get('spans')[0]
         self.assertEqual(span, expected)
 
-    @mock.patch('opencensus.trace.exporters.stackdriver_exporter.'
+    @mock.patch('opencensus.ext.stackdriver.trace_exporter.'
                 'monitored_resource.get_instance')
     def test_monitored_resource_attributes_gce(self, gmr_mock):
         trace = {'spans': [{'attributes': {}}]}
@@ -747,11 +747,11 @@ class TestMonitoredResourceAttributes(unittest.TestCase):
             'zone': 'zone1'
         }
         gmr_mock.return_value = mock_resource
-        stackdriver_exporter.set_attributes(trace)
+        trace_exporter.set_attributes(trace)
         span = trace.get('spans')[0]
         self.assertEqual(span, expected)
 
-    @mock.patch('opencensus.trace.exporters.stackdriver_exporter.'
+    @mock.patch('opencensus.ext.stackdriver.trace_exporter.'
                 'monitored_resource.get_instance')
     def test_monitored_resource_attributes_aws(self, amr_mock):
         trace = {'spans': [{'attributes': {}}]}
@@ -790,11 +790,11 @@ class TestMonitoredResourceAttributes(unittest.TestCase):
         }
         amr_mock.return_value = mock_resource
 
-        stackdriver_exporter.set_attributes(trace)
+        trace_exporter.set_attributes(trace)
         span = trace.get('spans')[0]
         self.assertEqual(span, expected)
 
-    @mock.patch('opencensus.trace.exporters.stackdriver_exporter.'
+    @mock.patch('opencensus.ext.stackdriver.trace_exporter.'
                 'monitored_resource.get_instance')
     def test_monitored_resource_attributes_None(self, mr_mock):
         trace = {'spans': [{'attributes': {}}]}
@@ -814,7 +814,7 @@ class TestMonitoredResourceAttributes(unittest.TestCase):
         }
 
         mr_mock.return_value = None
-        stackdriver_exporter.set_attributes(trace)
+        trace_exporter.set_attributes(trace)
         span = trace.get('spans')[0]
         self.assertEqual(span, expected)
 
@@ -823,7 +823,7 @@ class TestMonitoredResourceAttributes(unittest.TestCase):
         mock_resource.get_labels.return_value = mock.Mock()
         mr_mock.return_value = mock_resource
 
-        stackdriver_exporter.set_attributes(trace)
+        trace_exporter.set_attributes(trace)
         span = trace.get('spans')[0]
         self.assertEqual(span, expected)
 
