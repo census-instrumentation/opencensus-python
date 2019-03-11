@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Fix gRPC client tracer reuse bug
+  ([#539](https://github.com/census-instrumentation/opencensus-python/pull/539))
 - Fix bugs in Prometheus exporter. Use ordered list for histogram buckets.
   Use `UnknownMetricFamily` for `SumData` instead of `UntypedMetricFamily`.
   Check if label keys and values match before exporting.
