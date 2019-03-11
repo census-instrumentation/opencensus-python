@@ -16,10 +16,10 @@ import unittest
 
 import mock
 
+from opencensus.ext.jaeger import trace_exporter
+from opencensus.ext.jaeger.trace_exporter.gen.jaeger import jaeger
 from opencensus.trace import (attributes, link, span_context, span_data,
                               status, time_event)
-from opencensus.trace.exporters import jaeger_exporter
-from opencensus.trace.exporters.gen.jaeger import jaeger
 
 
 class TestJaegerExporter(unittest.TestCase):
@@ -30,7 +30,7 @@ class TestJaegerExporter(unittest.TestCase):
         agent_port = 6831
         agent_address = ('localhost', 6831)
         max_packet_size = 65000
-        exporter = jaeger_exporter.JaegerExporter()
+        exporter = trace_exporter.JaegerExporter()
         agent_client = exporter.agent_client
 
         self.assertEqual(exporter.service_name, service_name)
@@ -59,7 +59,7 @@ class TestJaegerExporter(unittest.TestCase):
         thrift_url = 'http://localhost:14268/api/traces?format=jaeger.thrift'
         auth = (username, password)
 
-        exporter = jaeger_exporter.JaegerExporter(
+        exporter = trace_exporter.JaegerExporter(
             service_name=service,
             host_name=host_name,
             agent_host_name=agent_host_name,
@@ -83,40 +83,40 @@ class TestJaegerExporter(unittest.TestCase):
         self.assertTrue(exporter.collector.auth is None)
 
     def test_export(self):
-        exporter = jaeger_exporter.JaegerExporter(
+        exporter = trace_exporter.JaegerExporter(
             service_name='my_service', transport=MockTransport)
         exporter.export({})
 
-        collector = jaeger_exporter.Collector(
+        collector = trace_exporter.Collector(
             transport=MockTransport, http_transport=MockTransport)
         collector.export({})
 
-        agent = jaeger_exporter.AgentClientUDP(transport=MockTransport)
+        agent = trace_exporter.AgentClientUDP(transport=MockTransport)
         agent.export({})
 
         self.assertTrue(exporter.transport.export_called)
         self.assertTrue(collector.transport.export_called)
         self.assertTrue(agent.transport.export_called)
 
-    @mock.patch('opencensus.trace.exporters.jaeger_exporter.logging')
+    @mock.patch('opencensus.ext.jaeger.trace_exporter.logging')
     def test_agent_emit_succeeded(self, mock_logging):
-        agent_client = jaeger_exporter.AgentClientUDP(client=MockClient)
+        agent_client = trace_exporter.AgentClientUDP(client=MockClient)
 
         agent_client.emit({})
         self.assertTrue(agent_client.client.emit_called)
         self.assertFalse(mock_logging.warn.called)
 
-    @mock.patch('opencensus.trace.exporters.jaeger_exporter.logging')
+    @mock.patch('opencensus.ext.jaeger.trace_exporter.logging')
     def test_packet_capacity_exceeded(self, mock_logging):
-        agent_client = jaeger_exporter.AgentClientUDP(
+        agent_client = trace_exporter.AgentClientUDP(
             client=MockClient, max_packet_size=-1)
         agent_client.emit({})
         self.assertTrue(mock_logging.warn.called)
 
-    @mock.patch('opencensus.trace.exporters.jaeger_exporter.logging')
+    @mock.patch('opencensus.ext.jaeger.trace_exporter.logging')
     def test_collector_emit_failed(self, mock_logging):
         url = 'http://localhost:14268/api/traces?format=jaeger.thrift'
-        collector = jaeger_exporter.Collector(
+        collector = trace_exporter.Collector(
             thrift_url=url, http_transport=MockTransport, client=MockClient)
         collector.http_transport.is_open = False
         collector.http_transport.code = 400
@@ -125,10 +125,10 @@ class TestJaegerExporter(unittest.TestCase):
         self.assertTrue(mock_logging.error.called)
         self.assertFalse(collector.http_transport.is_closed)
 
-    @mock.patch('opencensus.trace.exporters.jaeger_exporter.logging')
+    @mock.patch('opencensus.ext.jaeger.trace_exporter.logging')
     def test_collector_emit_succeeded(self, mock_logging):
         url = 'http://localhost:14268/api/traces?format=jaeger.thrift'
-        collector = jaeger_exporter.Collector(
+        collector = trace_exporter.Collector(
             thrift_url=url, http_transport=MockTransport, client=MockClient)
         collector.http_transport.is_open = True
         collector.http_transport.code = 200
@@ -138,26 +138,26 @@ class TestJaegerExporter(unittest.TestCase):
         self.assertTrue(collector.http_transport.is_closed)
 
     def test_collector_auth_headers(self):
-        collector = jaeger_exporter.Collector(
+        collector = trace_exporter.Collector(
             http_transport=MockTransport, auth=('user', 'pass'))
         self.assertTrue(collector.http_transport.headers_set)
 
-        collector = jaeger_exporter.Collector(http_transport=MockTransport)
+        collector = trace_exporter.Collector(http_transport=MockTransport)
         self.assertFalse(collector.http_transport.headers_set)
 
     @mock.patch.object(
-        jaeger_exporter.JaegerExporter,
+        trace_exporter.JaegerExporter,
         'agent_client',
         new_callable=mock.PropertyMock)
     @mock.patch.object(
-        jaeger_exporter.JaegerExporter,
+        trace_exporter.JaegerExporter,
         'collector',
         new_callable=mock.PropertyMock)
-    @mock.patch.object(jaeger_exporter.JaegerExporter, 'translate_to_jaeger')
+    @mock.patch.object(trace_exporter.JaegerExporter, 'translate_to_jaeger')
     def test_emit_succeeded(self, translate_mock, collector_mock, agent_mock):
         collector = collector_mock.return_value = MockTransport()
         agent = agent_mock.return_value = MockTransport()
-        exporter = jaeger_exporter.JaegerExporter()
+        exporter = trace_exporter.JaegerExporter()
         translate_mock.return_value = {'test': 'mock'}
         exporter.emit([])
         self.assertTrue(agent.export_called)
@@ -165,7 +165,7 @@ class TestJaegerExporter(unittest.TestCase):
 
         collector_mock.return_value = None
         agent = agent_mock.return_value = MockTransport()
-        exporter = jaeger_exporter.JaegerExporter()
+        exporter = trace_exporter.JaegerExporter()
         exporter.emit([])
         self.assertTrue(agent.export_called)
 
@@ -299,7 +299,7 @@ class TestJaegerExporter(unittest.TestCase):
             )
         ]
 
-        exporter = jaeger_exporter.JaegerExporter()
+        exporter = trace_exporter.JaegerExporter()
 
         spans = exporter.translate_to_jaeger(span_datas)
         expected_spans = [
@@ -441,10 +441,10 @@ class TestJaegerExporter(unittest.TestCase):
 
     def test_convert_hex_str_to_int(self):
         invalid_id = '990c63257de34c92'
-        jaeger_exporter._convert_hex_str_to_int(invalid_id)
+        trace_exporter._convert_hex_str_to_int(invalid_id)
         valid_id = '290c63257de34c92'
-        jaeger_exporter._convert_hex_str_to_int(valid_id)
-        self.assertIsNone(jaeger_exporter._convert_hex_str_to_int(None))
+        trace_exporter._convert_hex_str_to_int(valid_id)
+        self.assertIsNone(trace_exporter._convert_hex_str_to_int(None))
 
 
 class MockBatch(object):

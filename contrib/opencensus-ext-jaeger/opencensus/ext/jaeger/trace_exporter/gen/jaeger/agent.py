@@ -9,7 +9,7 @@
 from thrift.Thrift import TType, TMessageType, TApplicationException
 from thrift.Thrift import TProcessor
 from thrift.transport import TTransport
-from opencensus.trace.exporters.gen.jaeger import jaeger
+from opencensus.ext.jaeger.trace_exporter.gen.jaeger import jaeger
 
 
 class Iface(object):

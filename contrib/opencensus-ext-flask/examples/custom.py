@@ -23,10 +23,10 @@ import sqlalchemy
 
 import hello_world_pb2
 import hello_world_pb2_grpc
+from opencensus.ext.flask.flask_middleware import FlaskMiddleware
+from opencensus.ext.grpc import client_interceptor
+from opencensus.ext.stackdriver import trace_exporter as stackdriver_exporter
 from opencensus.trace import config_integration
-from opencensus.trace.exporters import stackdriver_exporter
-from opencensus.trace.ext.flask.flask_middleware import FlaskMiddleware
-from opencensus.trace.ext.grpc import client_interceptor
 from opencensus.trace.samplers import probability
 
 INTEGRATIONS = ['mysql', 'postgresql', 'sqlalchemy', 'requests']

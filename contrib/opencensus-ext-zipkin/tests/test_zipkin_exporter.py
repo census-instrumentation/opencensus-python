@@ -16,10 +16,10 @@ import unittest
 
 import mock
 from datetime import datetime
+from opencensus.ext.zipkin import trace_exporter
 from opencensus.trace import span_context
 from opencensus.trace import span_data as span_data_module
 from opencensus.trace import time_event
-from opencensus.trace.exporters import zipkin_exporter
 
 
 class TestZipkinExporter(unittest.TestCase):
@@ -30,7 +30,7 @@ class TestZipkinExporter(unittest.TestCase):
         endpoint = '/api/v2/test'
         ipv4 = '127.0.0.1'
 
-        exporter = zipkin_exporter.ZipkinExporter(
+        exporter = trace_exporter.ZipkinExporter(
             service_name=service_name,
             host_name=host_name,
             port=port,
@@ -47,20 +47,20 @@ class TestZipkinExporter(unittest.TestCase):
         self.assertEqual(exporter.ipv4, ipv4)
 
     def test_export(self):
-        exporter = zipkin_exporter.ZipkinExporter(
+        exporter = trace_exporter.ZipkinExporter(
             service_name='my_service', transport=MockTransport)
         exporter.export({})
 
         self.assertTrue(exporter.transport.export_called)
 
     @mock.patch('requests.post')
-    @mock.patch.object(zipkin_exporter.ZipkinExporter, 'translate_to_zipkin')
+    @mock.patch.object(trace_exporter.ZipkinExporter, 'translate_to_zipkin')
     def test_emit_succeeded(self, translate_mock, requests_mock):
         import json
 
         trace = {'test': 'this_is_for_test'}
 
-        exporter = zipkin_exporter.ZipkinExporter(service_name='my_service')
+        exporter = trace_exporter.ZipkinExporter(service_name='my_service')
         response = mock.Mock()
         response.status_code = 202
         requests_mock.return_value = response
@@ -70,16 +70,16 @@ class TestZipkinExporter(unittest.TestCase):
         requests_mock.assert_called_once_with(
             url=exporter.url,
             data=json.dumps(trace),
-            headers=zipkin_exporter.ZIPKIN_HEADERS)
+            headers=trace_exporter.ZIPKIN_HEADERS)
 
     @mock.patch('requests.post')
-    @mock.patch.object(zipkin_exporter.ZipkinExporter, 'translate_to_zipkin')
+    @mock.patch.object(trace_exporter.ZipkinExporter, 'translate_to_zipkin')
     def test_emit_failed(self, translate_mock, requests_mock):
         import json
 
         trace = {'test': 'this_is_for_test'}
 
-        exporter = zipkin_exporter.ZipkinExporter(service_name='my_service')
+        exporter = trace_exporter.ZipkinExporter(service_name='my_service')
         response = mock.Mock()
         response.status_code = 400
         requests_mock.return_value = response
@@ -89,7 +89,7 @@ class TestZipkinExporter(unittest.TestCase):
         requests_mock.assert_called_once_with(
             url=exporter.url,
             data=json.dumps(trace),
-            headers=zipkin_exporter.ZIPKIN_HEADERS)
+            headers=trace_exporter.ZIPKIN_HEADERS)
 
     def test_translate_to_zipkin_span_kind_none(self):
         trace_id = '6e0c63257de34c92bf9efcd03927272e'
@@ -215,7 +215,7 @@ class TestZipkinExporter(unittest.TestCase):
         ]
 
         # Test ipv4 local endpoint
-        exporter_ipv4 = zipkin_exporter.ZipkinExporter(
+        exporter_ipv4 = trace_exporter.ZipkinExporter(
             service_name='my_service', ipv4=ipv4)
         zipkin_spans_ipv4 = exporter_ipv4.translate_to_zipkin(
             span_datas=spans_ipv4)
@@ -223,7 +223,7 @@ class TestZipkinExporter(unittest.TestCase):
         self.assertEqual(zipkin_spans_ipv4, expected_zipkin_spans_ipv4)
 
         # Test ipv6 local endpoint
-        exporter_ipv6 = zipkin_exporter.ZipkinExporter(
+        exporter_ipv6 = trace_exporter.ZipkinExporter(
             service_name='my_service', ipv6=ipv6)
         zipkin_spans_ipv6 = exporter_ipv6.translate_to_zipkin(
             span_datas=spans_ipv6)
@@ -406,7 +406,7 @@ class TestZipkinExporter(unittest.TestCase):
         ]
 
         # Test ipv4 local endpoint
-        exporter_ipv4 = zipkin_exporter.ZipkinExporter(
+        exporter_ipv4 = trace_exporter.ZipkinExporter(
             service_name='my_service', ipv4=ipv4)
         zipkin_spans_ipv4 = exporter_ipv4.translate_to_zipkin(
             span_datas=spans_ipv4)
@@ -414,7 +414,7 @@ class TestZipkinExporter(unittest.TestCase):
         self.assertEqual(zipkin_spans_ipv4, expected_zipkin_spans_ipv4)
 
         # Test ipv6 local endpoint
-        exporter_ipv6 = zipkin_exporter.ZipkinExporter(
+        exporter_ipv6 = trace_exporter.ZipkinExporter(
             service_name='my_service', ipv6=ipv6)
         zipkin_spans_ipv6 = exporter_ipv6.translate_to_zipkin(
             span_datas=spans_ipv6)
@@ -424,11 +424,11 @@ class TestZipkinExporter(unittest.TestCase):
     def test_ignore_incorrect_spans(self):
         attributes = {'unknown_value': {}}
         self.assertEqual(
-            zipkin_exporter._extract_tags_from_span(attributes), {})
+            trace_exporter._extract_tags_from_span(attributes), {})
 
         attributes = None
         self.assertEqual(
-            zipkin_exporter._extract_tags_from_span(attributes), {})
+            trace_exporter._extract_tags_from_span(attributes), {})
 
 
 class MockTransport(object):

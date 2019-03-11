@@ -22,9 +22,9 @@ from thrift.transport import THttpClient, TTransport
 
 from opencensus.common.transports import sync
 from opencensus.common.utils import timestamp_to_microseconds
+from opencensus.ext.jaeger.trace_exporter.gen.jaeger import agent, jaeger
 from opencensus.trace import link as link_module
 from opencensus.trace.exporters import base
-from opencensus.trace.exporters.gen.jaeger import agent, jaeger
 
 DEFAULT_HOST_NAME = 'localhost'
 DEFAULT_AGENT_PORT = 6831
