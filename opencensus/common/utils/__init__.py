@@ -69,6 +69,13 @@ def check_str_length(str_to_check, limit=MAX_LENGTH):
     return (result, truncated_byte_count)
 
 
+def isoz(ts=None):
+    """Get an ISO 8601 string for a UTC datetime."""
+    if ts is None:
+        ts = datetime.datetime.utcnow()
+    return ts.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+
+
 def timestamp_to_microseconds(timestamp):
     """Convert a timestamp string into a microseconds value
     :param timestamp

@@ -18,6 +18,7 @@ import unittest
 
 from google.cloud import monitoring_v3
 
+from opencensus.common import utils
 from opencensus.common.version import __version__
 from opencensus.stats import aggregation as aggregation_module
 from opencensus.stats import aggregation_data as aggregation_data_module
@@ -58,7 +59,7 @@ VIDEO_SIZE_VIEW = view_module.View(
     VIDEO_SIZE_VIEW_NAME, "processed video size over time", [FRONTEND_KEY],
     VIDEO_SIZE_MEASURE, VIDEO_SIZE_DISTRIBUTION)
 
-TEST_TIME = datetime(2018, 12, 25, 1, 2, 3, 4).isoformat() + 'Z'
+TEST_TIME = utils.isoz(datetime(2018, 12, 25, 1, 2, 3, 4))
 
 
 class _Client(object):

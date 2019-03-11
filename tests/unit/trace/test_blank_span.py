@@ -15,6 +15,8 @@
 import datetime
 import mock
 import unittest
+
+from opencensus.common import utils
 from opencensus.trace.link import Link
 from opencensus.trace.span import format_span_json
 from opencensus.trace.time_event import TimeEvent
@@ -85,13 +87,12 @@ class TestBlankSpan(unittest.TestCase):
         span.finish()
 
     def test_constructor_explicit(self):
-        from datetime import datetime
 
         span_id = 'test_span_id'
         span_name = 'test_span_name'
         parent_span = mock.Mock()
-        start_time = datetime.utcnow().isoformat() + 'Z'
-        end_time = datetime.utcnow().isoformat() + 'Z'
+        start_time = utils.isoz()
+        end_time = utils.isoz()
         attributes = {
             'http.status_code': '200',
             'component': 'HTTP load balancer',
