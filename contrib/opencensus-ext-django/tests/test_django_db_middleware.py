@@ -40,7 +40,7 @@ class TestOpencensusDatabaseMiddleware(unittest.TestCase):
         if django.VERSION < (2, 0):
             pytest.skip("Wrong version of Django")
 
-        from opencensus.trace.ext.django import middleware
+        from opencensus.ext.django import middleware
 
         sql = "SELECT * FROM users"
 
