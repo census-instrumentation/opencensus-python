@@ -142,7 +142,7 @@ This example shows how to report the traces to Stackdriver Trace:
 
 .. code:: python
 
-    from opencensus.trace.exporters import stackdriver_exporter
+    from opencensus.ext.stackdriver import trace_exporter as stackdriver_exporter
     from opencensus.trace import tracer as tracer_module
 
     exporter = stackdriver_exporter.StackdriverExporter(
@@ -166,7 +166,7 @@ This example shows how to configure OpenCensus to use a background thread:
 .. code:: python
 
     from opencensus.common.transports.async_ import AsyncTransport
-    from opencensus.trace.exporters import stackdriver_exporter
+    from opencensus.ext.stackdriver import trace_exporter as stackdriver_exporter
     from opencensus.trace import tracer as tracer_module
 
     exporter = stackdriver_exporter.StackdriverExporter(

@@ -21,8 +21,8 @@ import sqlalchemy
 
 from opencensus.common.transports import async_
 from opencensus.ext.flask.flask_middleware import FlaskMiddleware
+from opencensus.ext.stackdriver import trace_exporter as stackdriver_exporter
 from opencensus.trace import config_integration
-from opencensus.trace.exporters import stackdriver_exporter
 
 INTEGRATIONS = ['mysql', 'postgresql', 'sqlalchemy']
 
