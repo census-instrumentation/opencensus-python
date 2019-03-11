@@ -37,7 +37,7 @@ You can configure the sampler, exporter, propagator using the ``OPENCENSUS_TRACE
 
     OPENCENSUS_TRACE = {
         'SAMPLER': 'opencensus.trace.samplers.probability.ProbabilitySampler',
-        'REPORTER': 'opencensus.trace.exporters.print_exporter.PrintExporter',
+        'REPORTER': 'opencensus.trace.print_exporter.PrintExporter',
         'PROPAGATOR': 'opencensus.trace.propagation.google_cloud_format.'
                       'GoogleCloudFormatPropagator',
     }

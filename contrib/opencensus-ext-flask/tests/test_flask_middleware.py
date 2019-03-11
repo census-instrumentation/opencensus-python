@@ -27,12 +27,12 @@ from opencensus.ext.ocagent import trace_exporter as ocagent_exporter
 from opencensus.ext.stackdriver import trace_exporter as stackdriver_exporter
 from opencensus.ext.zipkin import trace_exporter as zipkin_exporter
 from opencensus.trace import execution_context
+from opencensus.trace import print_exporter
 from opencensus.trace import span as span_module
 from opencensus.trace import span_data
 from opencensus.trace import stack_trace
 from opencensus.trace import status
 from opencensus.trace.blank_span import BlankSpan
-from opencensus.trace.exporters import print_exporter
 from opencensus.trace.propagation import google_cloud_format
 from opencensus.trace.samplers import always_off, always_on, ProbabilitySampler
 from opencensus.trace.span_context import SpanContext

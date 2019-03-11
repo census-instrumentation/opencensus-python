@@ -19,7 +19,7 @@ class TestPrintExporter(unittest.TestCase):
 
     @staticmethod
     def _get_target_class():
-        from opencensus.trace.exporters.print_exporter import PrintExporter
+        from opencensus.trace.print_exporter import PrintExporter
 
         return PrintExporter
 

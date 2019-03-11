@@ -25,8 +25,8 @@ class TestBasicTrace(unittest.TestCase):
         import json
 
         from opencensus.trace import tracer as tracer_module
+        from opencensus.trace import file_exporter
         from opencensus.trace.samplers import always_on
-        from opencensus.trace.exporters import file_exporter
         from opencensus.trace.propagation import google_cloud_format
 
         trace_id = 'f8739df974a4481f98748cd92b27177d'

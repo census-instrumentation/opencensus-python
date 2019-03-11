@@ -132,7 +132,7 @@ file:
 
 .. code:: python
 
-    from opencensus.trace.exporters import file_exporter
+    from opencensus.trace import file_exporter
     from opencensus.trace.tracers import context_tracer
 
     exporter = file_exporter.FileExporter(file_name='traces')
