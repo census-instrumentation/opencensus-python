@@ -54,8 +54,8 @@ class TraceExporter(base_exporter.Exporter):
 
     :type transport: :class:`type`
     :param transport: Class for creating new transport objects. It should
-                      extend from the base_exporter :class:`.Transport` type and
-                      implement :meth:`.Transport.export`. Defaults to
+                      extend from the base_exporter :class:`.Transport` type
+                      and implement :meth:`.Transport.export`. Defaults to
                       :class:`.SyncTransport`. The other option is
                       :class:`.AsyncTransport`.
     """

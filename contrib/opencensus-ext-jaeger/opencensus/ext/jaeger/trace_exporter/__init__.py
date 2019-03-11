@@ -68,8 +68,8 @@ class JaegerExporter(base_exporter.Exporter):
 
     :type transport: :class:`type`
     :param transport: Class for creating new transport objects. It should
-                      extend from the base_exporter :class:`.Transport` type and
-                      implement :meth:`.Transport.export`. Defaults to
+                      extend from the base_exporter :class:`.Transport` type
+                      and implement :meth:`.Transport.export`. Defaults to
                       :class:`.SyncTransport`. The other option is
                       :class:`.AsyncTransport`.
     """
@@ -334,8 +334,8 @@ class Collector(base_exporter.Exporter):
 
     :type transport: :class:`type`
     :param transport: Class for creating new transport objects. It should
-                      extend from the base_exporter :class:`.Transport` type and
-                      implement :meth:`.Transport.export`. Defaults to
+                      extend from the base_exporter :class:`.Transport` type
+                      and implement :meth:`.Transport.export`. Defaults to
                       :class:`.SyncTransport`. The other option is
                       :class:`.AsyncTransport`.
 
@@ -369,7 +369,8 @@ class Collector(base_exporter.Exporter):
     def emit(self, batch):
         """Submits batches to Thrift HTTP Server through Binary Protocol.
 
-        :type batch: :class: `~opencensus.ext.jaeger.trace_exporter.gen.jaeger.Batch`
+        :type batch:
+            :class:`~opencensus.ext.jaeger.trace_exporter.gen.jaeger.Batch`
         :param batch: Object to emit Jaeger spans.
         """
         try:
@@ -390,7 +391,8 @@ class Collector(base_exporter.Exporter):
 
     def export(self, batch):
         """
-        :type batch: :class: `~opencensus.ext.jaeger.trace_exporter.gen.jaeger.Batch`
+        :type batch: :class:
+            `~opencensus.ext.jaeger.trace_exporter.gen.jaeger.Batch`
         :param batch: Object to export Jaeger spans.
         """
         self.transport.export(batch)
@@ -416,8 +418,8 @@ class AgentClientUDP(base_exporter.Exporter):
 
     :type transport: :class:`type`
     :param transport: Class for creating new transport objects. It should
-                      extend from the base_exporter :class:`.Transport` type and
-                      implement :meth:`.Transport.export`. Defaults to
+                      extend from the base_exporter :class:`.Transport` type
+                      and implement :meth:`.Transport.export`. Defaults to
                       :class:`.SyncTransport`. The other option is
                       :class:`.AsyncTransport`.
     """
@@ -438,7 +440,8 @@ class AgentClientUDP(base_exporter.Exporter):
 
     def emit(self, batch):
         """
-        :type batch: :class: `~opencensus.ext.jaeger.trace_exporter.gen.jaeger.Batch`
+        :type batch:
+            :class:`~opencensus.ext.jaeger.trace_exporter.gen.jaeger.Batch`
         :param batch: Object to emit Jaeger spans.
         """
         udp_socket = None
@@ -465,7 +468,8 @@ class AgentClientUDP(base_exporter.Exporter):
 
     def export(self, batch):
         """
-        :type batch: :class: `~opencensus.ext.jaeger.trace_exporter.gen.jaeger.Batch`
+        :type batch:
+            :class:`~opencensus.ext.jaeger.trace_exporter.gen.jaeger.Batch`
         :param batch: Object to export Jaeger spans.
         """
         self.transport.export(batch)
