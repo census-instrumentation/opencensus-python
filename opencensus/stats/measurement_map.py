@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from datetime import datetime
 import logging
 
+from opencensus.common import utils
 from opencensus.tags import execution_context
 
 
@@ -114,6 +114,6 @@ class MeasurementMap(object):
         self.measure_to_view_map.record(
                 tags=tag_map_tags,
                 measurement_map=self.measurement_map,
-                timestamp=datetime.utcnow().isoformat() + 'Z',
+                timestamp=utils.to_iso_str(),
                 attachments=self.attachments
         )
