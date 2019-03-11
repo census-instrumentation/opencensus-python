@@ -533,7 +533,8 @@ class TestTraceExporterUtils(unittest.TestCase):
         expected_seconds = int(delta.total_seconds())
         expected_nanos = delta.microseconds * 1000
 
-        proto_ts = utils.proto_ts_from_datetime_str(common_utils.isoz(now))
+        proto_ts = utils.proto_ts_from_datetime_str(
+            common_utils.to_iso_str(now))
         self.assertEqual(proto_ts.seconds, int(expected_seconds))
         self.assertEqual(proto_ts.nanos, expected_nanos)
 

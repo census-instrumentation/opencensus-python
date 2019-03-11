@@ -21,7 +21,7 @@ class ViewManager(object):
     """View Manager allows the registering of Views for collecting stats
     and receiving stats data as View Data"""
     def __init__(self):
-        self.time = utils.isoz()
+        self.time = utils.to_iso_str()
         if execution_context.get_measure_to_view_map() == {}:
             execution_context.set_measure_to_view_map(MeasureToViewMap())
 

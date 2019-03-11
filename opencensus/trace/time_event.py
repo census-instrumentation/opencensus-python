@@ -127,7 +127,7 @@ class TimeEvent(object):
                           spans.
     """
     def __init__(self, timestamp, annotation=None, message_event=None):
-        self.timestamp = utils.isoz(timestamp)
+        self.timestamp = utils.to_iso_str(timestamp)
 
         if annotation is not None and message_event is not None:
             raise ValueError("A TimeEvent can contain either an Annotation"

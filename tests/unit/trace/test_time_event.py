@@ -138,7 +138,7 @@ class TestTimeEvent(unittest.TestCase):
         time_event = time_event_module.TimeEvent(
             timestamp=timestamp, message_event=message_event)
 
-        self.assertEqual(time_event.timestamp, utils.isoz(timestamp))
+        self.assertEqual(time_event.timestamp, utils.to_iso_str(timestamp))
         self.assertEqual(time_event.message_event, message_event)
 
     def test_constructor_value_error(self):
@@ -164,7 +164,7 @@ class TestTimeEvent(unittest.TestCase):
 
         time_event_json = time_event.format_time_event_json()
         expected_time_event_json = {
-            'time': utils.isoz(timestamp),
+            'time': utils.to_iso_str(timestamp),
             'annotation': mock_annotation
         }
 
@@ -182,7 +182,7 @@ class TestTimeEvent(unittest.TestCase):
 
         time_event_json = time_event.format_time_event_json()
         expected_time_event_json = {
-            'time': utils.isoz(timestamp),
+            'time': utils.to_iso_str(timestamp),
             'message_event': mock_message_event
         }
 

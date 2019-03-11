@@ -59,7 +59,7 @@ VIDEO_SIZE_VIEW = view_module.View(
     VIDEO_SIZE_VIEW_NAME, "processed video size over time", [FRONTEND_KEY],
     VIDEO_SIZE_MEASURE, VIDEO_SIZE_DISTRIBUTION)
 
-TEST_TIME = utils.isoz(datetime(2018, 12, 25, 1, 2, 3, 4))
+TEST_TIME = utils.to_iso_str(datetime(2018, 12, 25, 1, 2, 3, 4))
 
 
 class _Client(object):

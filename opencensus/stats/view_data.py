@@ -63,11 +63,11 @@ class ViewData(object):
 
     def start(self):
         """sets the start time for the view data"""
-        self._start_time = utils.isoz()
+        self._start_time = utils.to_iso_str()
 
     def end(self):
         """sets the end time for the view data"""
-        self._end_time = utils.isoz()
+        self._end_time = utils.to_iso_str()
 
     def get_tag_values(self, tags, columns):
         """function to get the tag values from tags and columns"""

@@ -62,8 +62,8 @@ class TestSpan(unittest.TestCase):
         span_id = 'test_span_id'
         span_name = 'test_span_name'
         parent_span = mock.Mock()
-        start_time = utils.isoz()
-        end_time = utils.isoz()
+        start_time = utils.to_iso_str()
+        end_time = utils.to_iso_str()
         attributes = {
             'http.status_code': '200',
             'component': 'HTTP load balancer',

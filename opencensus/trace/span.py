@@ -225,11 +225,11 @@ class Span(base_span.BaseSpan):
 
     def start(self):
         """Set the start time for a span."""
-        self.start_time = utils.isoz()
+        self.start_time = utils.to_iso_str()
 
     def finish(self):
         """Set the end time for a span."""
-        self.end_time = utils.isoz()
+        self.end_time = utils.to_iso_str()
 
     def __iter__(self):
         """Iterate through the span tree."""
