@@ -40,7 +40,7 @@ setup(
     long_description=open('README.rst').read(),
     install_requires=[
         'google-cloud-trace >= 0.20.0, < 1.0.0',
-        'opencensus >= 0.2.dev0, < 1.0.0',
+        'opencensus >= 0.3.0, < 1.0.0',
     ],
     extras_require={},
     license='Apache-2.0',
