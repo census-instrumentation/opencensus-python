@@ -17,7 +17,7 @@ from setuptools import setup
 from version import __version__
 
 setup(
-    name='opencensus-ext-stackdriver',
+    name='opencensus-ext-prometheus',
     version=__version__,  # noqa
     author='OpenCensus Authors',
     author_email='census-developers@googlegroups.com',
@@ -35,17 +35,17 @@ setup(
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
     ],
-    description='OpenCensus Stackdriver Trace Exporter',
+    description='OpenCensus Prometheus Exporter',
     include_package_data=True,
     long_description=open('README.rst').read(),
     install_requires=[
-        'google-cloud-trace >= 0.20.0, < 1.0.0',
         'opencensus >= 0.4.dev0, < 1.0.0',
+        'prometheus_client >= 0.5.0, < 1.0.0',
     ],
     extras_require={},
     license='Apache-2.0',
-    packages=find_packages(exclude=('examples', 'tests',)),
+    packages=find_packages(exclude=('tests',)),
     namespace_packages=[],
-    url='https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-stackdriver',
+    url='https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-prometheus',
     zip_safe=False,
 )

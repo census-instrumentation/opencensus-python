@@ -14,19 +14,19 @@
 
 import unittest
 import mock
-from opencensus.stats.exporters import base
+from opencensus.stats import base_exporter
 
 
 class TestBaseStats(unittest.TestCase):
     def test_emit(self):
-        exp = base.StatsExporter()
+        exp = base_exporter.StatsExporter()
         view_data = []
 
         with self.assertRaises(NotImplementedError):
             exp.emit(view_data)
 
     def test_register_view(self):
-        exp = base.StatsExporter()
+        exp = base_exporter.StatsExporter()
         view = mock.Mock()
 
         with self.assertRaises(NotImplementedError):

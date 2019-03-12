@@ -28,8 +28,8 @@ from opencensus.common.monitored_resource import monitored_resource
 from opencensus.common.transports import async_
 from opencensus.common.version import __version__
 from opencensus.stats import aggregation
+from opencensus.stats import base_exporter
 from opencensus.stats import measure
-from opencensus.stats.exporters import base
 
 MAX_TIME_SERIES_PER_UPLOAD = 200
 OPENCENSUS_TASK = "opencensus_task"
@@ -110,7 +110,7 @@ class Options(object):
         return self._default_monitoring_labels
 
 
-class StackdriverStatsExporter(base.StatsExporter):
+class StackdriverStatsExporter(base_exporter.StatsExporter):
     """Stats exporter for the Stackdriver Monitoring backend."""
 
     def __init__(self,
