@@ -2,12 +2,15 @@
 
 ## Unreleased
 
+## 0.3.0
+Released 2019-03-11
+
 - Fix gRPC client tracer reuse bug
   ([#539](https://github.com/census-instrumentation/opencensus-python/pull/539))
-- Fix bugs in Prometheus exporter. Use ordered list for histogram buckets.
-  Use `UnknownMetricFamily` for `SumData` instead of `UntypedMetricFamily`.
-  Check if label keys and values match before exporting.
-- Remove min and max from Distribution.
+- Update prometheus client and fix multiple bugs in the exporter
+  ([#492](https://github.com/census-instrumentation/opencensus-python/pull/492))
+- Remove min and max from `Distribution`
+  ([#501](https://github.com/census-instrumentation/opencensus-python/pull/501))
 - Replace stackdriver `gke_container` resources, see the [GKE migration
   notes](https://cloud.google.com/monitoring/kubernetes-engine/migration#incompatible)
   for details
