@@ -124,9 +124,9 @@ Exporters
 
 By default, the traces are printed to stdout in JSON format. You can choose
 different exporters to send the traces to. There are three built-in exporters,
-which are `opencensus.trace.print_exporter`, `opencensus.trace.file_exporter`
-and `opencensus.trace.logging_exporter`, other exporters are provided as
-`extensions <#trace-exporter>`__.
+which are ``opencensus.trace.print_exporter``, ``opencensus.trace.file_exporter``
+and ``opencensus.trace.logging_exporter``, other exporters are provided as
+``extensions <#trace-exporter>``__.
 
 This example shows how to configure OpenCensus to save the traces to a
 file:
@@ -171,10 +171,10 @@ This example shows how to use the ``TraceContextPropagator``:
     from opencensus.trace.tracer import Tracer
 
     config_integration.trace_integrations(['httplib'])
-    tracer = Tracer(propagator = TraceContextPropagator())
+    tracer = Tracer(propagator=TraceContextPropagator())
 
-    with tracer.span(name = 'parent'):
-        with tracer.span(name = 'child'):
+    with tracer.span(name='parent'):
+        with tracer.span(name='child'):
             response = requests.get('http://localhost:5000')
 
 Blacklist Paths
@@ -183,7 +183,7 @@ Blacklist Paths
 You can specify which paths you do not want to trace by configuring the
 blacklist paths.
 
-This example shows how to configure the blacklist to ignore the `_ah/health` endpoint
+This example shows how to configure the blacklist to ignore the ``_ah/health`` endpoint
 for a Flask application:
 
 .. code:: python
