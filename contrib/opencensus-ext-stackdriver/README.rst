@@ -11,6 +11,47 @@ Installation
 Usage
 -----
 
+Trace
+~~~~~
+
+This example shows how to report the traces to Stackdriver Trace:
+
+.. code:: python
+
+    from opencensus.ext.stackdriver import trace_exporter as stackdriver_exporter
+    from opencensus.trace import tracer as tracer_module
+
+    exporter = stackdriver_exporter.StackdriverExporter(
+        project_id='your_cloud_project')
+    tracer = tracer_module.Tracer(exporter=exporter)
+
+StackdriverExporter requires the google-cloud-trace package. Install
+google-cloud-trace using `pip`_ or `pipenv`_:
+
+::
+
+    pip install google-cloud-trace
+    pipenv install google-cloud-trace
+
+By default, traces are exported synchronously, which introduces latency during
+your code's execution. To avoid blocking code execution, you can initialize
+your exporter to use a background thread.
+
+This example shows how to configure OpenCensus to use a background thread:
+
+.. code:: python
+
+    from opencensus.common.transports.async_ import AsyncTransport
+    from opencensus.ext.stackdriver import trace_exporter as stackdriver_exporter
+    from opencensus.trace import tracer as tracer_module
+
+    exporter = stackdriver_exporter.StackdriverExporter(
+        project_id='your_cloud_project', transport=AsyncTransport)
+    tracer = tracer_module.Tracer(exporter=exporter)
+
+Stats
+~~~~~
+
 The OpenCensus Stackdriver Stats Exporter allows users
 to export metrics to Stackdriver Monitoring.
 The API of this project is still evolving.
@@ -58,11 +99,11 @@ In the *examples* folder, you can find all the necessary steps to get the export
 
 For further details for the Stackdriver implementation, see the folder *stackdriver_exporter.py*.
 
-+----------------------------------------------------+-------------------------------------+
-| Path & File                                        | Short Description                   |
-+====================================================+=====================================+
-| examples/stats/exporter/stackdriver.py             | End to end example                  |
-+----------------------------------------------------+-------------------------------------+
-| opencensus/ext/stackdriver/stats_exporters/        | Stats implementation for Stackdriver|
-+----------------------------------------------------+-------------------------------------+
++---------------------------------------------------------------------------------+-------------------------------------+
+| Path & File                                                                     | Short Description                   |
++=================================================================================+=====================================+
+| contrib/opencensus-ext-stackdriver/examples/                                    | End to end example                  |
++---------------------------------------------------------------------------------+-------------------------------------+
+| contrib/opencensus-ext-stackdriver/opencensus/ext/stackdriver/stats_exporter/   | Stats implementation for Stackdriver|
++---------------------------------------------------------------------------------+-------------------------------------+
 

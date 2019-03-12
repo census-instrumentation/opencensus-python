@@ -122,10 +122,11 @@ and ``ProbabilitySampler``
 Exporters
 ~~~~~~~~~
 
-You can choose different exporters to send the traces to. By default,
-the traces are printed to stdout in JSON format. Other options include
-writing to a file, sending to Python logging, or reporting to
-Stackdriver.
+By default, the traces are printed to stdout in JSON format. You can choose
+different exporters to send the traces to. There are three built-in exporters,
+which are `opencensus.trace.print_exporter`, `opencensus.trace.file_exporter`
+and `opencensus.trace.logging_exporter`, other exporters are provided as
+`extensions <#trace-exporter>`__.
 
 This example shows how to configure OpenCensus to save the traces to a
 file:
@@ -137,41 +138,6 @@ file:
 
     exporter = file_exporter.FileExporter(file_name='traces')
     tracer = context_tracer.ContextTracer(exporter=exporter)
-
-This example shows how to report the traces to Stackdriver Trace:
-
-.. code:: python
-
-    from opencensus.ext.stackdriver import trace_exporter as stackdriver_exporter
-    from opencensus.trace import tracer as tracer_module
-
-    exporter = stackdriver_exporter.StackdriverExporter(
-        project_id='your_cloud_project')
-    tracer = tracer_module.Tracer(exporter=exporter)
-
-StackdriverExporter requires the google-cloud-trace package. Install
-google-cloud-trace using `pip`_ or `pipenv`_:
-
-::
-
-    pip install google-cloud-trace
-    pipenv install google-cloud-trace
-
-By default, traces are exported synchronously, which introduces latency during
-your code's execution. To avoid blocking code execution, you can initialize
-your exporter to use a background thread.
-
-This example shows how to configure OpenCensus to use a background thread:
-
-.. code:: python
-
-    from opencensus.common.transports.async_ import AsyncTransport
-    from opencensus.ext.stackdriver import trace_exporter as stackdriver_exporter
-    from opencensus.trace import tracer as tracer_module
-
-    exporter = stackdriver_exporter.StackdriverExporter(
-        project_id='your_cloud_project', transport=AsyncTransport)
-    tracer = tracer_module.Tracer(exporter=exporter)
 
 Propagators
 ~~~~~~~~~~~
