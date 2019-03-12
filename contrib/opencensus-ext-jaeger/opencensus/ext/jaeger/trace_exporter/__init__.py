@@ -23,8 +23,8 @@ from thrift.transport import THttpClient, TTransport
 from opencensus.common.transports import sync
 from opencensus.common.utils import timestamp_to_microseconds
 from opencensus.ext.jaeger.trace_exporter.gen.jaeger import agent, jaeger
+from opencensus.trace import base_exporter
 from opencensus.trace import link as link_module
-from opencensus.trace.exporters import base
 
 DEFAULT_HOST_NAME = 'localhost'
 DEFAULT_AGENT_PORT = 6831
@@ -35,7 +35,7 @@ UDP_PACKET_MAX_LENGTH = 65000
 logging = logging.getLogger(__name__)
 
 
-class JaegerExporter(base.Exporter):
+class JaegerExporter(base_exporter.Exporter):
     """Exports the spans to Jaeger.
 
     :type service_name: str
@@ -68,8 +68,8 @@ class JaegerExporter(base.Exporter):
 
     :type transport: :class:`type`
     :param transport: Class for creating new transport objects. It should
-                      extend from the base :class:`.Transport` type and
-                      implement :meth:`.Transport.export`. Defaults to
+                      extend from the base_exporter :class:`.Transport` type
+                      and implement :meth:`.Transport.export`. Defaults to
                       :class:`.SyncTransport`. The other option is
                       :class:`.AsyncTransport`.
     """
@@ -322,7 +322,7 @@ def _convert_attribute_to_tag(key, attr):
     return None
 
 
-class Collector(base.Exporter):
+class Collector(base_exporter.Exporter):
     """Submits collected spans to Thrift HTTP server.
 
     :type thrift_url: str
@@ -334,8 +334,8 @@ class Collector(base.Exporter):
 
     :type transport: :class:`type`
     :param transport: Class for creating new transport objects. It should
-                      extend from the base :class:`.Transport` type and
-                      implement :meth:`.Transport.export`. Defaults to
+                      extend from the base_exporter :class:`.Transport` type
+                      and implement :meth:`.Transport.export`. Defaults to
                       :class:`.SyncTransport`. The other option is
                       :class:`.AsyncTransport`.
 
@@ -369,7 +369,8 @@ class Collector(base.Exporter):
     def emit(self, batch):
         """Submits batches to Thrift HTTP Server through Binary Protocol.
 
-        :type batch: :class: `~opencensus.trace.exporters.gen.jaeger.Batch`
+        :type batch:
+            :class:`~opencensus.ext.jaeger.trace_exporter.gen.jaeger.Batch`
         :param batch: Object to emit Jaeger spans.
         """
         try:
@@ -390,13 +391,14 @@ class Collector(base.Exporter):
 
     def export(self, batch):
         """
-        :type batch: :class: `~opencensus.trace.exporters.gen.jaeger.Batch`
+        :type batch: :class:
+            `~opencensus.ext.jaeger.trace_exporter.gen.jaeger.Batch`
         :param batch: Object to export Jaeger spans.
         """
         self.transport.export(batch)
 
 
-class AgentClientUDP(base.Exporter):
+class AgentClientUDP(base_exporter.Exporter):
     """Implement a UDP client to agent.
 
     :type host_name: str
@@ -416,8 +418,8 @@ class AgentClientUDP(base.Exporter):
 
     :type transport: :class:`type`
     :param transport: Class for creating new transport objects. It should
-                      extend from the base :class:`.Transport` type and
-                      implement :meth:`.Transport.export`. Defaults to
+                      extend from the base_exporter :class:`.Transport` type
+                      and implement :meth:`.Transport.export`. Defaults to
                       :class:`.SyncTransport`. The other option is
                       :class:`.AsyncTransport`.
     """
@@ -438,7 +440,8 @@ class AgentClientUDP(base.Exporter):
 
     def emit(self, batch):
         """
-        :type batch: :class: `~opencensus.trace.exporters.gen.jaeger.Batch`
+        :type batch:
+            :class:`~opencensus.ext.jaeger.trace_exporter.gen.jaeger.Batch`
         :param batch: Object to emit Jaeger spans.
         """
         udp_socket = None
@@ -465,7 +468,8 @@ class AgentClientUDP(base.Exporter):
 
     def export(self, batch):
         """
-        :type batch: :class: `~opencensus.trace.exporters.gen.jaeger.Batch`
+        :type batch:
+            :class:`~opencensus.ext.jaeger.trace_exporter.gen.jaeger.Batch`
         :param batch: Object to export Jaeger spans.
         """
         self.transport.export(batch)

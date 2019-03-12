@@ -22,8 +22,8 @@ from opencensus.trace import span_data
 
 class TestTracer(unittest.TestCase):
     def test_constructor_default(self):
+        from opencensus.trace import print_exporter
         from opencensus.trace.propagation import google_cloud_format
-        from opencensus.trace.exporters import print_exporter
         from opencensus.trace.samplers.always_on import AlwaysOnSampler
         from opencensus.trace.span_context import SpanContext
         from opencensus.trace.tracers import context_tracer

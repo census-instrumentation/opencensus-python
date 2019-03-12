@@ -21,9 +21,9 @@ from opencensus.common.monitored_resource import monitored_resource
 from opencensus.common.transports import sync
 from opencensus.common.version import __version__
 from opencensus.trace import attributes_helper
+from opencensus.trace import base_exporter
 from opencensus.trace import span_data
 from opencensus.trace.attributes import Attributes
-from opencensus.trace.exporters import base
 
 # Agent
 AGENT = 'opencensus-python [{}]'.format(__version__)
@@ -172,7 +172,7 @@ def is_gae_environment():
         return True
 
 
-class StackdriverExporter(base.Exporter):
+class StackdriverExporter(base_exporter.Exporter):
     """A exporter that send traces and trace spans to Google Cloud Stackdriver
     Trace.
 
@@ -184,8 +184,8 @@ class StackdriverExporter(base.Exporter):
 
     :type transport: :class:`type`
     :param transport: Class for creating new transport objects. It should
-                      extend from the base :class:`.Transport` type and
-                      implement :meth:`.Transport.export`. Defaults to
+                      extend from the base_exporter :class:`.Transport` type
+                      and implement :meth:`.Transport.export`. Defaults to
                       :class:`.SyncTransport`. The other option is
                       :class:`.AsyncTransport`.
     """

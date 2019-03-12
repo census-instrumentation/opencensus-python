@@ -27,7 +27,7 @@ into the pyramid settings
 
 .. code:: python
 
-    from opencensus.trace.exporters import print_exporter
+    from opencensus.trace import print_exporter
     from opencensus.trace.propagation import google_cloud_format
     from opencensus.trace.samplers import probability
 

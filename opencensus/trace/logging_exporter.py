@@ -17,11 +17,11 @@
 import logging
 
 from opencensus.common.transports import sync
+from opencensus.trace import base_exporter
 from opencensus.trace import span_data
-from opencensus.trace.exporters import base
 
 
-class LoggingExporter(base.Exporter):
+class LoggingExporter(base_exporter.Exporter):
     """A exporter to export the spans data to python logging. Also can use
     handlers like CloudLoggingHandler to log to Stackdriver Logging API.
 
@@ -30,8 +30,8 @@ class LoggingExporter(base.Exporter):
 
     :type transport: :class:`type`
     :param transport: Class for creating new transport objects. It should
-                      extend from the base :class:`.Transport` type and
-                      implement :meth:`.Transport.export`. Defaults to
+                      extend from the base_exporter :class:`.Transport` type
+                      and implement :meth:`.Transport.export`. Defaults to
                       :class:`.SyncTransport`. The other option is
                       :class:`.AsyncTransport`.
 
@@ -41,7 +41,7 @@ class LoggingExporter(base.Exporter):
 
         import google.cloud.logging
         from google.cloud.logging.handlers import CloudLoggingHandler
-        from opencensus.trace.exporters import logging_exporter
+        from opencensus.trace import logging_exporter
 
         client = google.cloud.logging.Client()
         cloud_handler = CloudLoggingHandler(client)

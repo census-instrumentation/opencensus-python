@@ -15,16 +15,16 @@
 """Export the trace spans by printing them out."""
 
 from opencensus.common.transports import sync
-from opencensus.trace.exporters import base
+from opencensus.trace import base_exporter
 
 
-class PrintExporter(base.Exporter):
+class PrintExporter(base_exporter.Exporter):
     """Export the spans by printing them.
 
     :type transport: :class:`type`
     :param transport: Class for creating new transport objects. It should
-                      extend from the base :class:`.Transport` type and
-                      implement :meth:`.Transport.export`. Defaults to
+                      extend from the base_exporter :class:`.Transport` type
+                      and implement :meth:`.Transport.export`. Defaults to
                       :class:`.SyncTransport`. The other option is
                       :class:`.AsyncTransport`.
     """

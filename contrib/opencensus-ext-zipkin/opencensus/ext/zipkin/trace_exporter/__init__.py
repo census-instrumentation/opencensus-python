@@ -22,7 +22,7 @@ import requests
 from opencensus.common.transports import sync
 from opencensus.common.utils import check_str_length
 from opencensus.common.utils import timestamp_to_microseconds
-from opencensus.trace.exporters import base
+from opencensus.trace import base_exporter
 
 DEFAULT_ENDPOINT = '/api/v2/spans'
 DEFAULT_HOST_NAME = 'localhost'
@@ -39,7 +39,7 @@ SPAN_KIND_MAP = {
 SUCCESS_STATUS_CODE = (200, 202)
 
 
-class ZipkinExporter(base.Exporter):
+class ZipkinExporter(base_exporter.Exporter):
     """Export the spans to Zipkin.
 
     See: http://zipkin.io/zipkin-api/#
@@ -62,8 +62,8 @@ class ZipkinExporter(base.Exporter):
 
     :type transport: :class:`type`
     :param transport: Class for creating new transport objects. It should
-                      extend from the base :class:`.Transport` type and
-                      implement :meth:`.Transport.export`. Defaults to
+                      extend from the base_exporter :class:`.Transport` type
+                      and implement :meth:`.Transport.export`. Defaults to
                       :class:`.SyncTransport`. The other option is
                       :class:`.AsyncTransport`.
     """

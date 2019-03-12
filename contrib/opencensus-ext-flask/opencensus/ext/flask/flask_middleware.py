@@ -22,12 +22,12 @@ from google.rpc import code_pb2
 from opencensus.common.transports import sync
 from opencensus.trace import attributes_helper
 from opencensus.trace import execution_context
+from opencensus.trace import print_exporter
 from opencensus.trace import span as span_module
 from opencensus.trace import stack_trace
 from opencensus.trace import status
 from opencensus.trace import tracer as tracer_module
 from opencensus.trace import utils
-from opencensus.trace.exporters import print_exporter
 from opencensus.trace.propagation import google_cloud_format
 from opencensus.trace.samplers import always_on, probability
 
