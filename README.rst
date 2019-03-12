@@ -126,7 +126,7 @@ By default, the traces are printed to stdout in JSON format. You can choose
 different exporters to send the traces to. There are three built-in exporters,
 which are ``opencensus.trace.print_exporter``, ``opencensus.trace.file_exporter``
 and ``opencensus.trace.logging_exporter``, other exporters are provided as
-``extensions <#trace-exporter>``__.
+`extensions <#trace-exporter>`__.
 
 This example shows how to configure OpenCensus to save the traces to a
 file:
