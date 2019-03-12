@@ -52,8 +52,8 @@ latency_view = view_module.View(
 
 def main():
     # Enable metrics
-    exporter = stackdriver_exporter.new_stats_exporter(
-        stackdriver_exporter.Options(project_id=project_id))
+    exporter = stackdriver.new_stats_exporter(
+        stackdriver.Options(project_id=project_id))
     view_manager.register_exporter(exporter)
 
     view_manager.register_view(latency_view)
