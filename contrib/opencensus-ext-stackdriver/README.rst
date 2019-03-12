@@ -97,7 +97,7 @@ Stackdriver Code Reference
 
 In the *examples* folder, you can find all the necessary steps to get the exporter, register a view, put tags on the measure, and see the values against the Stackdriver monitoring tool once you have defined the *project_id*.
 
-For further details for the Stackdriver implementation, see the folder *stackdriver_exporter.py*.
+For further details for the Stackdriver implementation, see the folder *stackdriver/stats_exporter/*.
 
 +---------------------------------------------------------------------------------+-------------------------------------+
 | Path & File                                                                     | Short Description                   |

@@ -53,14 +53,14 @@ Prometheus Code Reference
 
 In the *examples* folder, you can find all the necessary steps to get the exporter, register a view, put tags on the measure, and see the values against the Prometheus monitoring tool.
 
-For further details for the Prometheus implementation, see the file *prometheus_exporter.py*.
+For further details for the Prometheus implementation, see the folder *prometheus/stats_exporter*.
 
 
-+----------------------------------------------------+-------------------------------------+
-| Path & File                                        | Short Description                   |
-+====================================================+=====================================+
-| examples/stats/exporter/prometheus.py              | End to end example                  |
-+----------------------------------------------------+-------------------------------------+
-| opencensus/stats/exporters/prometheus_exporter.py  | Stats implementation for Prometheus |
-+----------------------------------------------------+-------------------------------------+
++-------------------------------------------------------------------------------+-------------------------------------+
+| Path & File                                                                   | Short Description                   |
++===============================================================================+=====================================+
+| contrib/opencensus-ext-prometheus/examples/                                   | End to end example                  |
++-------------------------------------------------------------------------------+-------------------------------------+
+| contrib/opencensus-ext-prometheus/opencensus/ext/prometheus/stats_exporter/   | Stats implementation for Prometheus |
++-------------------------------------------------------------------------------+-------------------------------------+
 
