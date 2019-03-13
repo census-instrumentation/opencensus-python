@@ -17,11 +17,11 @@ import time
 
 import google.auth
 
+from opencensus.ext.stackdriver import stats_exporter as stackdriver
 from opencensus.stats import aggregation as aggregation_module
 from opencensus.stats import measure as measure_module
 from opencensus.stats import stats as stats_module
 from opencensus.stats import view as view_module
-from opencensus.stats.exporters import stackdriver_exporter
 from opencensus.tags import tag_map as tag_map_module
 
 # Create the measures
@@ -52,8 +52,8 @@ latency_view = view_module.View(
 
 def main():
     # Enable metrics
-    exporter = stackdriver_exporter.new_stats_exporter(
-        stackdriver_exporter.Options(project_id=project_id))
+    exporter = stackdriver.new_stats_exporter(
+        stackdriver.Options(project_id=project_id))
     view_manager.register_exporter(exporter)
 
     view_manager.register_view(latency_view)
