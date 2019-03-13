@@ -32,7 +32,7 @@ class _Worker(object):
     """A background thread that exports batches of data.
 
     :type exporter: :class:`~opencensus.trace.base_exporter.Exporter` or
-                    :class:`~opencensus.stats.exporters.base.StatsExporter`
+                    :class:`~opencensus.stats.base_exporter.StatsExporter`
     :param exporter: Instances of Exporter objects. Defaults to
                     :class:`.PrintExporter`. The rest options are
                     :class:`.ZipkinExporter`, :class:`.StackdriverExporter`,
@@ -184,7 +184,7 @@ class AsyncTransport(base.Transport):
     """Asynchronous transport that uses a background thread.
 
     :type exporter: :class:`~opencensus.trace.base_exporter.Exporter` or
-                    :class:`~opencensus.stats.exporters.base.StatsExporter`
+                    :class:`~opencensus.stats.base_exporter.StatsExporter`
     :param exporter: Instances of Exporter objects. Defaults to
                      :class:`.PrintExporter`. The rest options are
                      :class:`.ZipkinExporter`, :class:`.StackdriverExporter`,

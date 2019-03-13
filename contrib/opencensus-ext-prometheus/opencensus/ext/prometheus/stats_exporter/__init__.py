@@ -22,7 +22,7 @@ from prometheus_client.core import UnknownMetricFamily
 
 from opencensus.common.transports import sync
 from opencensus.stats import aggregation_data as aggregation_data_module
-from opencensus.stats.exporters import base
+from opencensus.stats import base_exporter
 
 import re
 
@@ -243,13 +243,13 @@ class Collector(object):
                 yield metric
 
 
-class PrometheusStatsExporter(base.StatsExporter):
+class PrometheusStatsExporter(base_exporter.StatsExporter):
     """ Exporter exports stats to Prometheus, users need
         to register the exporter as an HTTP Handler to be
         able to export.
 
     :type options:
-        :class:`~opencensus.stats.exporters.prometheus_exporters.Options`
+        :class:`~opencensus.ext.prometheus.stats_exporter.Options`
     :param options: An options object with the parameters to instantiate the
                          prometheus exporter.
 
@@ -262,7 +262,7 @@ class PrometheusStatsExporter(base.StatsExporter):
     :param transport: An instance of a Transpor to send data with.
 
     :type collector:
-        :class:`~opencensus.stats.exporters.prometheus_exporters.Collector`
+        :class:`~opencensus.ext.prometheus.stats_exporter.Collector`
     :param collector: An instance of the Prometheus Collector object.
     """
     def __init__(self,

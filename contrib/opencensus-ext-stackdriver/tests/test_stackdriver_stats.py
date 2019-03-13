@@ -20,6 +20,7 @@ from google.cloud import monitoring_v3
 
 from opencensus.common import utils
 from opencensus.common.version import __version__
+from opencensus.ext.stackdriver import stats_exporter as stackdriver
 from opencensus.stats import aggregation as aggregation_module
 from opencensus.stats import aggregation_data as aggregation_data_module
 from opencensus.stats import execution_context
@@ -27,7 +28,6 @@ from opencensus.stats import measure as measure_module
 from opencensus.stats import stats as stats_module
 from opencensus.stats import view as view_module
 from opencensus.stats import view_data as view_data_module
-from opencensus.stats.exporters import stackdriver_exporter as stackdriver
 from opencensus.tags import tag_key as tag_key_module
 from opencensus.tags import tag_map as tag_map_module
 from opencensus.tags import tag_value as tag_value_module
@@ -112,7 +112,7 @@ class TestStackdriverStatsExporter(unittest.TestCase):
 
     def test_not_blank_project(self):
         patch_client = mock.patch(
-            ('opencensus.stats.exporters.stackdriver_exporter'
+            ('opencensus.ext.stackdriver.stats_exporter'
              '.monitoring_v3.MetricServiceClient'), _Client)
 
         with patch_client:
@@ -133,7 +133,7 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         the user agent as metadata to metric service API calls.
         """
         patch_client = mock.patch(
-            'opencensus.stats.exporters.stackdriver_exporter.monitoring_v3'
+            'opencensus.ext.stackdriver.stats_exporter.monitoring_v3'
             '.MetricServiceClient', _Client)
 
         with patch_client:
@@ -176,7 +176,7 @@ class TestStackdriverStatsExporter(unittest.TestCase):
     def test_singleton_with_params(self):
         default_labels = {'key1': 'value1'}
         patch_client = mock.patch(
-            ('opencensus.stats.exporters.stackdriver_exporter'
+            ('opencensus.ext.stackdriver.stats_exporter'
              '.monitoring_v3.MetricServiceClient'), _Client)
 
         with patch_client:
@@ -224,7 +224,7 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         exporter.on_register_view(view_none)
         self.assertTrue(client.create_metric_descriptor.called)
 
-    @mock.patch('opencensus.stats.exporters.stackdriver_exporter.'
+    @mock.patch('opencensus.ext.stackdriver.stats_exporter.'
                 'monitored_resource.get_instance',
                 return_value=None)
     def test_emit(self, monitor_resource_mock):
@@ -270,7 +270,7 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         exporter.handle_upload(None)
         self.assertFalse(client.create_time_series.called)
 
-    @mock.patch('opencensus.stats.exporters.stackdriver_exporter.'
+    @mock.patch('opencensus.ext.stackdriver.stats_exporter.'
                 'monitored_resource.get_instance',
                 return_value=None)
     def test_handle_upload_with_data(self, monitor_resource_mock):
@@ -295,7 +295,7 @@ class TestStackdriverStatsExporter(unittest.TestCase):
             self.assertIn("py-", opencensus_tag)
         self.assertDictEqual(actual_labels, expected_labels)
 
-    @mock.patch('opencensus.stats.exporters.stackdriver_exporter.'
+    @mock.patch('opencensus.ext.stackdriver.stats_exporter.'
                 'monitored_resource.get_instance',
                 return_value=None)
     def test_create_batched_time_series(self, monitor_resource_mock):
@@ -322,7 +322,7 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         self.assertCorrectLabels(time_series.metric.labels, {},
                                  include_opencensus=True)
 
-    @mock.patch('opencensus.stats.exporters.stackdriver_exporter.'
+    @mock.patch('opencensus.ext.stackdriver.stats_exporter.'
                 'monitored_resource.get_instance',
                 return_value=None)
     def test_create_batched_time_series_with_many(self, monitor_resource_mock):
@@ -382,7 +382,7 @@ class TestStackdriverStatsExporter(unittest.TestCase):
 
         self.assertEqual(registered_exporters, 1)
 
-    @mock.patch('opencensus.stats.exporters.stackdriver_exporter.'
+    @mock.patch('opencensus.ext.stackdriver.stats_exporter.'
                 'monitored_resource.get_instance',
                 return_value=None)
     def test_create_timeseries(self, monitor_resource_mock):
@@ -437,7 +437,7 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         self.assertEqual(value.distribution_value.count, 1)
         self.assertEqual(value.distribution_value.mean, 25 * MiB)
 
-    @mock.patch('opencensus.stats.exporters.stackdriver_exporter.'
+    @mock.patch('opencensus.ext.stackdriver.stats_exporter.'
                 'monitored_resource.get_instance')
     def test_create_timeseries_with_resource(self, monitor_resource_mock):
         view_manager, stats_recorder, exporter = \
@@ -567,7 +567,7 @@ class TestStackdriverStatsExporter(unittest.TestCase):
             "custom.googleapis.com/opencensus/my.org/views/video_size_test2")
         self.assertIsNotNone(time_series)
 
-    @mock.patch('opencensus.stats.exporters.stackdriver_exporter.'
+    @mock.patch('opencensus.ext.stackdriver.stats_exporter.'
                 'monitored_resource.get_instance',
                 return_value=None)
     def test_create_timeseries_str_tagvalue(self, monitor_resource_mock):
@@ -608,7 +608,7 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         expected_value.int64_value = 25 * MiB
         self.assertEqual(time_series.points[0].value, expected_value)
 
-    @mock.patch('opencensus.stats.exporters.stackdriver_exporter.'
+    @mock.patch('opencensus.ext.stackdriver.stats_exporter.'
                 'monitored_resource.get_instance',
                 return_value=None)
     def test_create_timeseries_str_tagvalue_count_aggregtation(
@@ -650,7 +650,7 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         expected_value.int64_value = 3
         self.assertEqual(time_series.points[0].value, expected_value)
 
-    @mock.patch('opencensus.stats.exporters.stackdriver_exporter.'
+    @mock.patch('opencensus.ext.stackdriver.stats_exporter.'
                 'monitored_resource.get_instance',
                 return_value=None)
     def test_create_timeseries_last_value_float_tagvalue(
@@ -692,7 +692,7 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         expected_value.double_value = 25.7 * MiB
         self.assertEqual(time_series.points[0].value, expected_value)
 
-    @mock.patch('opencensus.stats.exporters.stackdriver_exporter.'
+    @mock.patch('opencensus.ext.stackdriver.stats_exporter.'
                 'monitored_resource.get_instance',
                 return_value=None)
     def test_create_timeseries_float_tagvalue(self, monitor_resource_mock):
@@ -747,7 +747,7 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         expected_value.double_value = 2.2 + 25 * MiB
         self.assertEqual(time_series.points[0].value, expected_value)
 
-    @mock.patch('opencensus.stats.exporters.stackdriver_exporter.'
+    @mock.patch('opencensus.ext.stackdriver.stats_exporter.'
                 'monitored_resource.get_instance',
                 return_value=None)
     def test_create_timeseries_multiple_tag_values(self,
@@ -807,7 +807,7 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         self.assertEqual(value2.distribution_value.count, 1)
         self.assertEqual(value2.distribution_value.mean, 12 * MiB)
 
-    @mock.patch('opencensus.stats.exporters.stackdriver_exporter.'
+    @mock.patch('opencensus.ext.stackdriver.stats_exporter.'
                 'monitored_resource.get_instance',
                 return_value=None)
     def test_create_timeseries_disjoint_tags(self, monitoring_resoure_mock):

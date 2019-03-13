@@ -122,10 +122,11 @@ and ``ProbabilitySampler``
 Exporters
 ~~~~~~~~~
 
-You can choose different exporters to send the traces to. By default,
-the traces are printed to stdout in JSON format. Other options include
-writing to a file, sending to Python logging, or reporting to
-Stackdriver.
+By default, the traces are printed to stdout in JSON format. You can choose
+different exporters to send the traces to. There are three built-in exporters,
+which are ``opencensus.trace.print_exporter``, ``opencensus.trace.file_exporter``
+and ``opencensus.trace.logging_exporter``, other exporters are provided as
+`extensions <#trace-exporter>`__.
 
 This example shows how to configure OpenCensus to save the traces to a
 file:
@@ -137,41 +138,6 @@ file:
 
     exporter = file_exporter.FileExporter(file_name='traces')
     tracer = context_tracer.ContextTracer(exporter=exporter)
-
-This example shows how to report the traces to Stackdriver Trace:
-
-.. code:: python
-
-    from opencensus.ext.stackdriver import trace_exporter as stackdriver_exporter
-    from opencensus.trace import tracer as tracer_module
-
-    exporter = stackdriver_exporter.StackdriverExporter(
-        project_id='your_cloud_project')
-    tracer = tracer_module.Tracer(exporter=exporter)
-
-StackdriverExporter requires the google-cloud-trace package. Install
-google-cloud-trace using `pip`_ or `pipenv`_:
-
-::
-
-    pip install google-cloud-trace
-    pipenv install google-cloud-trace
-
-By default, traces are exported synchronously, which introduces latency during
-your code's execution. To avoid blocking code execution, you can initialize
-your exporter to use a background thread.
-
-This example shows how to configure OpenCensus to use a background thread:
-
-.. code:: python
-
-    from opencensus.common.transports.async_ import AsyncTransport
-    from opencensus.ext.stackdriver import trace_exporter as stackdriver_exporter
-    from opencensus.trace import tracer as tracer_module
-
-    exporter = stackdriver_exporter.StackdriverExporter(
-        project_id='your_cloud_project', transport=AsyncTransport)
-    tracer = tracer_module.Tracer(exporter=exporter)
 
 Propagators
 ~~~~~~~~~~~
@@ -205,10 +171,10 @@ This example shows how to use the ``TraceContextPropagator``:
     from opencensus.trace.tracer import Tracer
 
     config_integration.trace_integrations(['httplib'])
-    tracer = Tracer(propagator = TraceContextPropagator())
+    tracer = Tracer(propagator=TraceContextPropagator())
 
-    with tracer.span(name = 'parent'):
-        with tracer.span(name = 'child'):
+    with tracer.span(name='parent'):
+        with tracer.span(name='child'):
             response = requests.get('http://localhost:5000')
 
 Blacklist Paths
@@ -217,7 +183,7 @@ Blacklist Paths
 You can specify which paths you do not want to trace by configuring the
 blacklist paths.
 
-This example shows how to configure the blacklist to ignore the `_ah/health` endpoint
+This example shows how to configure the blacklist to ignore the ``_ah/health`` endpoint
 for a Flask application:
 
 .. code:: python
@@ -242,6 +208,10 @@ For Django, you can configure the blacklist in the ``OPENCENSUS_TRACE_PARAMS`` i
 .. note:: By default, the health check path for the App Engine flexible environment is not traced,
     but you can turn it on by excluding it from the blacklist setting.
 
+------------
+ Extensions
+------------
+
 Integration
 -----------
 
@@ -261,137 +231,38 @@ OpenCensus supports integration with popular web frameworks, client libraries an
 -  `SQLAlchemy`_
 -  `threading`_
 
+Trace Exporter
+--------------
+
+-  `Jaeger`_
+-  `OCAgent`_
+-  `Stackdriver`_
+-  `Zipkin`_
+
+Stats Exporter
+--------------
+
+-  `Prometheus`_
+-  `Stackdriver`_
+
 .. _Django: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-django
 .. _Flask: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-flask
 .. _Google Cloud Client Libraries: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-google-cloud-clientlibs
 .. _gRPC: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-grpc
 .. _httplib: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-httplib
+.. _Jaeger: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-jaeger
 .. _MySQL: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-mysql
+.. _OCAgent: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-ocagent
 .. _PostgreSQL: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-postgresql
+.. _Prometheus: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-prometheus
 .. _pymongo: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-pymongo
 .. _PyMySQL: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-pymysql
 .. _Pyramid: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-pyramid
 .. _requests: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-requests
 .. _SQLAlchemy: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-sqlalchemy
+.. _Stackdriver: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-stackdriver
 .. _threading: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-threading
-
-------
- Stats
-------
-
-Stackdriver Stats
------------------
-
-The OpenCensus Stackdriver Stats Exporter allows users
-to export metrics to Stackdriver Monitoring.
-The API of this project is still evolving.
-The use of vendoring or a dependency management tool is recommended.
-
-.. _Stackdriver: https://app.google.stackdriver.com/metrics-explorer
-
-Stackdriver Exporter Usage
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Stackdriver Import
-************************
-
-    .. code:: python
-
-        from opencensus.stats.exporters import stackdriver_exporter as stackdriver
-        from opencensus.stats import stats as stats_module
-
-Stackdriver Prerequisites
-**************************
-
-- OpenCensus Python libraries require Python 2.7 or later.
-- Google Cloud Platform account and project.
-- Google Stackdriver Monitoring enabled on your project (Need help? `Click here`_).
-
-.. _Click here: https://opencensus.io/codelabs/stackdriver
-
-Register the Stackdriver exporter
-**********************************
-
-    .. code:: python
-
-        stats = stats_module.Stats()
-        view_manager = stats.view_manager
-
-        exporter = stackdriver.new_stats_exporter(stackdriver.Options(project_id="<id_value>"))
-        view_manager.register_exporter(exporter)
-        ...
-
-
-Stackdriver Code Reference
-******************************
-
-In the *examples* folder, you can find all the necessary steps to get the exporter, register a view, put tags on the measure, and see the values against the Stackdriver monitoring tool once you have defined the *project_id*.
-
-For further details for the Stackdriver implementation, see the file *stackdriver_exporter.py*.
-
-+----------------------------------------------------+-------------------------------------+
-| Path & File                                        | Short Description                   |
-+====================================================+=====================================+
-| examples/stats/exporter/stackdriver.py             | End to end example                  |
-+----------------------------------------------------+-------------------------------------+
-| opencensus/stats/exporters/stackdriver_exporter.py | Stats implementation for Stackdriver|
-+----------------------------------------------------+-------------------------------------+
-
-Prometheus Stats
------------------
-
-The OpenCensus `Prometheus`_ Stats Exporter allows users
-to export metrics to Prometheus monitoring solution.
-The API of this project is still evolving.
-The use of vendoring or a dependency management tool is recommended.
-
-.. _Prometheus: https://prometheus.io/
-
-Prometheus Exporter Usage
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Prometheus Import
-********************
-
-    .. code:: python
-
-        from opencensus.stats.exporters import prometheus_exporter as prometheus
-        from opencensus.stats import stats as stats_module
-
-Prometheus Prerequisites
-***************************
-
-- OpenCensus Python libraries require Python 2.7 or later.
-- Prometheus up and running.
-
-Register the Prometheus exporter
-***********************************
-
-    .. code:: python
-
-        stats = stats_module.Stats()
-        view_manager = stats.view_manager
-
-        exporter = prometheus.new_stats_exporter(prometheus.Options(namespace="<namespace>"))
-        view_manager.register_exporter(exporter)
-        ...
-
-
-Prometheus Code Reference
-***************************
-
-In the *examples* folder, you can find all the necessary steps to get the exporter, register a view, put tags on the measure, and see the values against the Prometheus monitoring tool.
-
-For further details for the Prometheus implementation, see the file *prometheus_exporter.py*.
-
-
-+----------------------------------------------------+-------------------------------------+
-| Path & File                                        | Short Description                   |
-+====================================================+=====================================+
-| examples/stats/exporter/prometheus.py              | End to end example                  |
-+----------------------------------------------------+-------------------------------------+
-| opencensus/stats/exporters/prometheus_exporter.py  | Stats implementation for Prometheus |
-+----------------------------------------------------+-------------------------------------+
+.. _Zipkin: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-zipkin
 
 ------------------
  Additional Info
