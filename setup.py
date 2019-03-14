@@ -18,15 +18,6 @@ from setuptools import setup
 
 exec(open('opencensus/common/version/__init__.py').read())
 
-extras = {
-    'prometheus_client': ['prometheus_client==0.3.1'],
-    'stackdriver': ['google-cloud-trace>=0.20.1, <0.30'],
-}
-
-install_requires = [
-    'google-api-core >= 1.0.0, < 2.0.0',
-]
-
 setup(
     name='opencensus',
     version=__version__,  # noqa
@@ -48,8 +39,10 @@ setup(
     description='A stats collection and distributed tracing framework',
     include_package_data=True,
     long_description=open('README.rst').read(),
-    install_requires=install_requires,
-    extras_require=extras,
+    install_requires=[
+        'google-api-core >= 1.0.0, < 2.0.0',
+    ],
+    extras_require={},
     license='Apache-2.0',
     packages=find_packages(exclude=('tests',)),
     namespace_packages=[],
