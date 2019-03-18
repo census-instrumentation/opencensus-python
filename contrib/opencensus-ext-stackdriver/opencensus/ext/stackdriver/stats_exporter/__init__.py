@@ -45,6 +45,25 @@ EPOCH_DATETIME = datetime(1970, 1, 1)
 EPOCH_PATTERN = "%Y-%m-%dT%H:%M:%S.%fZ"
 GLOBAL_RESOURCE_TYPE = 'global'
 
+# OC metric descriptor type to SD metric kind and value type
+OC_MD_TO_SD_TYPE = {
+    metric_descriptor.MetricDescriptorType.CUMULATIVE_INT64:
+    (monitoring_v3.enums.MetricDescriptor.MetricKind.CUMULATIVE,
+     monitoring_v3.enums.MetricDescriptor.ValueType.INT64),
+    metric_descriptor.MetricDescriptorType.CUMULATIVE_DOUBLE:
+    (monitoring_v3.enums.MetricDescriptor.MetricKind.CUMULATIVE,
+     monitoring_v3.enums.MetricDescriptor.ValueType.DOUBLE),
+    metric_descriptor.MetricDescriptorType.CUMULATIVE_DISTRIBUTION:
+    (monitoring_v3.enums.MetricDescriptor.MetricKind.CUMULATIVE,
+     monitoring_v3.enums.MetricDescriptor.ValueType.DISTRIBUTION),
+    metric_descriptor.MetricDescriptorType.GAUGE_INT64:
+    (monitoring_v3.enums.MetricDescriptor.MetricKind.GAUGE,
+     monitoring_v3.enums.MetricDescriptor.ValueType.INT64),
+    metric_descriptor.MetricDescriptorType.GAUGE_DOUBLE:
+    (monitoring_v3.enums.MetricDescriptor.MetricKind.GAUGE,
+     monitoring_v3.enums.MetricDescriptor.ValueType.DOUBLE)
+}
+
 
 class Options(object):
     """ Options contains options for configuring the exporter.
@@ -144,10 +163,7 @@ class StackdriverStatsExporter(object):
         return list(utils.window(time_series_list, batch_size))
 
     def create_time_series_list(self, metric):
-        tsl = []
-        for ts in metric.time_series:
-            tsl.append(self._convert_series(metric, ts))
-        return tsl
+        return [self._convert_series(metric, ts) for ts in metric.time_series]
 
     def _convert_series(self, metric, ts):
         """Convert an OC timeseries to a SD series."""
@@ -234,27 +250,9 @@ class StackdriverStatsExporter(object):
 
     def get_metric_descriptor(self, oc_md):
         """Convert an OC metric descriptor to a SD metric descriptor."""
-        if (oc_md.type ==
-                metric_descriptor.MetricDescriptorType.CUMULATIVE_INT64):
-            mk = monitoring_v3.enums.MetricDescriptor.MetricKind.CUMULATIVE
-            vt = monitoring_v3.enums.MetricDescriptor.ValueType.INT64
-        elif (oc_md.type ==
-              metric_descriptor.MetricDescriptorType.CUMULATIVE_DOUBLE):
-            mk = monitoring_v3.enums.MetricDescriptor.MetricKind.CUMULATIVE
-            vt = monitoring_v3.enums.MetricDescriptor.ValueType.DOUBLE
-        elif (oc_md.type ==
-              metric_descriptor.MetricDescriptorType.CUMULATIVE_DISTRIBUTION):
-            mk = monitoring_v3.enums.MetricDescriptor.MetricKind.CUMULATIVE
-            vt = monitoring_v3.enums.MetricDescriptor.ValueType.DISTRIBUTION
-        elif (oc_md.type ==
-              metric_descriptor.MetricDescriptorType.GAUGE_INT64):
-            mk = monitoring_v3.enums.MetricDescriptor.MetricKind.GAUGE
-            vt = monitoring_v3.enums.MetricDescriptor.ValueType.INT64
-        elif (oc_md.type ==
-              metric_descriptor.MetricDescriptorType.GAUGE_DOUBLE):
-            mk = monitoring_v3.enums.MetricDescriptor.MetricKind.GAUGE
-            vt = monitoring_v3.enums.MetricDescriptor.ValueType.DOUBLE
-        else:
+        try:
+            metric_kind, value_type = OC_MD_TO_SD_TYPE[oc_md.type]
+        except KeyError:
             md_type_name = metric_descriptor.MetricDescriptorType.to_name(
                 oc_md.type)
             raise TypeError("Unsupported metric type: {}".format(md_type_name))
@@ -273,8 +271,8 @@ class StackdriverStatsExporter(object):
         descriptor = monitoring_v3.types.MetricDescriptor(labels=desc_labels)
         metric_type = self.get_descriptor_type(oc_md)
         descriptor.type = metric_type
-        descriptor.metric_kind = mk
-        descriptor.value_type = vt
+        descriptor.metric_kind = metric_kind
+        descriptor.value_type = value_type
         descriptor.description = oc_md.description
         descriptor.unit = oc_md.unit
         descriptor.name = ("projects/{}/metricDescriptors/{}"
