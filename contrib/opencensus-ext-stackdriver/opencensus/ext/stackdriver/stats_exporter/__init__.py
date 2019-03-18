@@ -366,7 +366,7 @@ def new_stats_exporter(options):
         uploads stats data to Stackdriver Monitoring.
     """
     if str(options.project_id).strip() == "":
-        raise Exception(ERROR_BLANK_PROJECT_ID)
+        raise ValueError(ERROR_BLANK_PROJECT_ID)
 
     ci = client_info.ClientInfo(client_library_version=get_user_agent_slug())
     client = monitoring_v3.MetricServiceClient(client_info=ci)
