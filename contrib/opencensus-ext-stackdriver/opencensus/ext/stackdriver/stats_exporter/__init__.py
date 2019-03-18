@@ -12,14 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from datetime import datetime
 import itertools
 import logging
 import os
 import platform
 import re
 import string
+import threading
 
-from datetime import datetime
 from google.api_core.gapic_v1 import client_info
 from google.cloud import monitoring_v3
 
@@ -27,9 +28,11 @@ from opencensus.common import utils
 from opencensus.common.monitored_resource import monitored_resource
 from opencensus.common.transports import async_
 from opencensus.common.version import __version__
+from opencensus.metrics.export import metric_descriptor
 from opencensus.stats import aggregation
 from opencensus.stats import base_exporter
 from opencensus.stats import measure
+
 
 MAX_TIME_SERIES_PER_UPLOAD = 200
 OPENCENSUS_TASK = "opencensus_task"
@@ -110,18 +113,14 @@ class Options(object):
         return self._default_monitoring_labels
 
 
-class StackdriverStatsExporter(base_exporter.StatsExporter):
+class StackdriverStatsExporter(object):
     """Stats exporter for the Stackdriver Monitoring backend."""
 
-    def __init__(self,
-                 options=Options(),
-                 client=None,
-                 default_labels={},
-                 transport=async_.AsyncTransport):
+    def __init__(self, options=Options(), client=None):
         self._options = options
         self._client = client
-        self._transport = transport(self)
-        self._default_labels = default_labels
+        self._md_cache = {}
+        self._md_lock = threading.Lock()
 
     @property
     def options(self):
@@ -131,208 +130,173 @@ class StackdriverStatsExporter(base_exporter.StatsExporter):
     def client(self):
         return self._client
 
-    @property
-    def transport(self):
-        return self._transport
-
-    @property
-    def default_labels(self):
-        return self._default_labels
-
-    def set_default_labels(self, value):
-        self._default_labels = value
-
-    def on_register_view(self, view):
-        """ create metric descriptor for the registered view"""
-        if view is not None:
-            self.create_metric_descriptor(view)
-
-    def emit(self, view_data):
-        """ export data to Stackdriver Monitoring"""
-        if view_data is not None:
-            self.handle_upload(view_data)
-
-    def export(self, view_data):
-        """ export data to transport class"""
-        if view_data is not None:
-            self.transport.export(view_data)
-
-    def handle_upload(self, view_data):
-        """ handle_upload handles uploading a slice of Data
-            as well as error handling.
-        """
-        if view_data is not None:
-            self.upload_stats(view_data)
-
-    def upload_stats(self, view_data):
-        """ It receives an array of view_data object
-            and create time series for each value
-        """
-        view_data_set = utils.uniq(view_data)
-        time_series_batches = self.create_batched_time_series(
-            view_data_set, MAX_TIME_SERIES_PER_UPLOAD)
-        for time_series_batch in time_series_batches:
+    def export(self, metrics):
+        ts_batches = self.create_batched_time_series(metrics)
+        for ts_batch in ts_batches:
             self.client.create_time_series(
                 self.client.project_path(self.options.project_id),
-                time_series_batch)
+                ts_batch)
 
-    def create_batched_time_series(self, view_data, batch_size):
-        """ Create the data structure that will be
-            sent to Stackdriver Monitoring
-        """
+    def create_batched_time_series(self, metrics,
+                                   batch_size=MAX_TIME_SERIES_PER_UPLOAD):
         time_series_list = itertools.chain.from_iterable(
-            self.create_time_series_list(
-                v_data, self.options.resource, self.options.metric_prefix)
-            for v_data in view_data)
+            self.create_time_series_list(metric) for metric in metrics)
         return list(utils.window(time_series_list, batch_size))
 
-    def create_time_series_list(self, v_data, option_resource_type,
-                                metric_prefix):
-        """ Create the TimeSeries object based on the view data
-        """
-        time_series_list = []
-        aggregation_type = v_data.view.aggregation.aggregation_type
-        tag_agg = v_data.tag_value_aggregation_data_map
-        for tag_value, agg in tag_agg.items():
-            series = monitoring_v3.types.TimeSeries()
-            series.metric.type = namespaced_view_name(v_data.view.name,
-                                                      metric_prefix)
-            set_metric_labels(series, v_data.view, tag_value)
-            set_monitored_resource(series, option_resource_type)
+    def create_time_series_list(self, metric):
+        tsl = []
+        for ts in metric.time_series:
+            tsl.append(self._convert_series(metric, ts))
+        return tsl
 
-            point = series.points.add()
-            if aggregation_type is aggregation.Type.DISTRIBUTION:
-                dist_value = point.value.distribution_value
-                dist_value.count = agg.count_data
-                dist_value.mean = agg.mean_data
+    def _convert_series(self, metric, ts):
+        """Convert an OC timeseries to a SD series."""
+        series = monitoring_v3.types.TimeSeries()
+        series.metric.type = namespaced_view_name(
+            metric.descriptor.name, self.options.metric_prefix)
 
-                sum_of_sqd = agg.sum_of_sqd_deviations
-                dist_value.sum_of_squared_deviation = sum_of_sqd
+        series.metric.labels[OPENCENSUS_TASK] = get_task_value()
 
-                # Uncomment this when stackdriver supports Range
-                # point.value.distribution_value.range.min = agg_data.min
-                # point.value.distribution_value.range.max = agg_data.max
-                bounds = dist_value.bucket_options.explicit_buckets.bounds
-                buckets = dist_value.bucket_counts
+        for key, val in zip(metric.descriptor.label_keys, ts.label_values):
+            if val.value is not None:
+                safe_key = sanitize_label(key.key)
+                series.metric.labels[safe_key] = val.value
 
-                # Stackdriver expects a first bucket for samples in (-inf, 0),
-                # but we record positive samples only, and our first bucket is
-                # [0, first_bound).
-                bounds.extend([0])
-                buckets.extend([0])
-                bounds.extend(list(map(float, agg.bounds)))
-                buckets.extend(list(map(int, agg.counts_per_bucket)))
-            elif aggregation_type is aggregation.Type.COUNT:
-                point.value.int64_value = agg.count_data
-            elif aggregation_type is aggregation.Type.SUM:
-                if isinstance(v_data.view.measure, measure.MeasureInt):
-                    # TODO: Add implementation of sum aggregation that does not
-                    # store it's data as a float.
-                    point.value.int64_value = int(agg.sum_data)
-                if isinstance(v_data.view.measure, measure.MeasureFloat):
-                    point.value.double_value = float(agg.sum_data)
-            elif aggregation_type is aggregation.Type.LASTVALUE:
-                if isinstance(v_data.view.measure, measure.MeasureInt):
-                    point.value.int64_value = int(agg.value)
-                if isinstance(v_data.view.measure, measure.MeasureFloat):
-                    point.value.double_value = float(agg.value)
-            else:
-                raise TypeError("Unsupported aggregation type: %s" %
-                                type(v_data.view.aggregation))
+        set_monitored_resource(series, self.options.resource)
 
-            start = datetime.strptime(v_data.start_time, EPOCH_PATTERN)
-            end = datetime.strptime(v_data.end_time, EPOCH_PATTERN)
+        for point in ts.points:
+            sd_point = series.points.add()
+            # this just modifies points, no return
+            self._convert_point(metric, ts, point, sd_point)
+        return series
 
-            timestamp_start = (start - EPOCH_DATETIME).total_seconds()
-            timestamp_end = (end - EPOCH_DATETIME).total_seconds()
+    def _convert_point(self, metric, ts, point, sd_point):
+        """Convert an OC metric point to a SD point."""
+        if (metric.descriptor.type ==
+                metric_descriptor.MetricDescriptorType.CUMULATIVE_DISTRIBUTION):
 
-            point.interval.end_time.seconds = int(timestamp_end)
+            sd_dist_val = sd_point.value.distribution_value
+            sd_dist_val.count = point.value.count
+            sd_dist_val.sum_of_squared_deviation = point.value.sum_of_squared_deviation
 
-            secs = point.interval.end_time.seconds
-            point.interval.end_time.nanos = int((timestamp_end - secs) * 10**9)
+            assert sd_dist_val.bucket_options.explicit_buckets.bounds == []
+            sd_dist_val.bucket_options.explicit_buckets.bounds.extend(
+                [0.0] +
+                list(map(float, point.value.bucket_options.type_.bounds))
+            )
 
-            if aggregation_type is not aggregation.Type.LASTVALUE:
-                if timestamp_start == timestamp_end:
-                    # avoiding start_time and end_time to be equal
-                    timestamp_start = timestamp_start - 1
+            assert sd_dist_val.bucket_counts == []
+            sd_dist_val.bucket_counts.extend(
+                [0] +
+                [bb.count for bb in point.value.buckets]
+            )
 
-            start_time = point.interval.start_time
-            start_time.seconds = int(timestamp_start)
-            start_secs = start_time.seconds
-            start_time.nanos = int((timestamp_start - start_secs) * 1e9)
+        elif (metric.descriptor.type ==
+              metric_descriptor.MetricDescriptorType.CUMULATIVE_INT64):
+            sd_point.value.int64_value = int(point.value.value)
 
-            time_series_list.append(series)
+        elif (metric.descriptor.type ==
+              metric_descriptor.MetricDescriptorType.CUMULATIVE_DOUBLE):
+            sd_point.value.double_value = float(point.value.value)
 
-        return time_series_list
+        elif (metric.descriptor.type ==
+              metric_descriptor.MetricDescriptorType.GAUGE_INT64):
+            sd_point.value.int64_value = int(point.value.value)
 
-    def create_metric_descriptor(self, view):
-        """ it creates a MetricDescriptor
-        for the given view data in Stackdriver Monitoring.
-        An error will be raised if there is
-        already a metric descriptor created with the same name
-        but it has a different aggregation or keys.
-        """
-        view_measure = view.measure
-        view_aggregation = view.aggregation
-        view_name = view.name
+        elif (metric.descriptor.type ==
+              metric_descriptor.MetricDescriptorType.GAUGE_DOUBLE):
+            sd_point.value.double_value = float(point.value.value)
 
-        metric_type = namespaced_view_name(view_name,
-                                           self.options.metric_prefix)
-        value_type = None
-        unit = view_measure.unit
-        metric_desc = monitoring_v3.enums.MetricDescriptor
-        agg_type = aggregation.Type
-
-        # Default metric Kind
-        metric_kind = metric_desc.MetricKind.CUMULATIVE
-
-        if view_aggregation.aggregation_type is agg_type.COUNT:
-            value_type = metric_desc.ValueType.INT64
-            # If the aggregation type is count
-            # which counts the number of recorded measurements
-            # the unit must be "1", because this view
-            # does not apply to the recorded values.
-            unit = str(1)
-        elif view_aggregation.aggregation_type is agg_type.SUM:
-            if isinstance(view_measure, measure.MeasureInt):
-                value_type = metric_desc.ValueType.INT64
-            if isinstance(view_measure, measure.MeasureFloat):
-                value_type = metric_desc.ValueType.DOUBLE
-        elif view_aggregation.aggregation_type is agg_type.DISTRIBUTION:
-            value_type = metric_desc.ValueType.DISTRIBUTION
-        elif view_aggregation.aggregation_type is agg_type.LASTVALUE:
-            metric_kind = metric_desc.MetricKind.GAUGE
-            if isinstance(view_measure, measure.MeasureInt):
-                value_type = metric_desc.ValueType.INT64
-            if isinstance(view_measure, measure.MeasureFloat):
-                value_type = metric_desc.ValueType.DOUBLE
         else:
-            raise Exception(
-                "unsupported aggregation type: %s" % type(view_aggregation))
+            md_type_name = metric_descriptor.MetricDescriptorType.to_name(
+                metric.descriptor.type)
+            raise TypeError("Unsupported metric type: {}".format(md_type_name))
 
-        display_name_prefix = DEFAULT_DISPLAY_NAME_PREFIX
-        if self.options.metric_prefix != "":
+        start = datetime.strptime(ts.start_timestamp, EPOCH_PATTERN)
+        end = point.timestamp
+
+        timestamp_start = (start - EPOCH_DATETIME).total_seconds()
+        timestamp_end = (end - EPOCH_DATETIME).total_seconds()
+
+        sd_point.interval.end_time.seconds = int(timestamp_end)
+
+        secs = sd_point.interval.end_time.seconds
+        sd_point.interval.end_time.nanos = int((timestamp_end - secs) * 1e9)
+
+        start_time = sd_point.interval.start_time
+        start_time.seconds = int(timestamp_start)
+        start_secs = start_time.seconds
+        start_time.nanos = int((timestamp_start - start_secs) * 1e9)
+
+    def get_descriptor_type(self, oc_md):
+        """Get a SD descriptor type for an OC metric descriptor."""
+        return namespaced_view_name(oc_md.name, self.options.metric_prefix)
+
+    def get_metric_descriptor(self, oc_md):
+        """Convert an OC metric descriptor to a SD metric descriptor."""
+        if (oc_md.type ==
+                metric_descriptor.MetricDescriptorType.CUMULATIVE_INT64):
+            mk = monitoring_v3.enums.MetricDescriptor.MetricKind.CUMULATIVE
+            vt = monitoring_v3.enums.MetricDescriptor.ValueType.INT64
+        elif (oc_md.type ==
+              metric_descriptor.MetricDescriptorType.CUMULATIVE_DOUBLE):
+            mk = monitoring_v3.enums.MetricDescriptor.MetricKind.CUMULATIVE
+            vt = monitoring_v3.enums.MetricDescriptor.ValueType.DOUBLE
+        elif (oc_md.type ==
+              metric_descriptor.MetricDescriptorType.CUMULATIVE_DISTRIBUTION):
+            mk = monitoring_v3.enums.MetricDescriptor.MetricKind.CUMULATIVE
+            vt = monitoring_v3.enums.MetricDescriptor.ValueType.DISTRIBUTION
+        elif (oc_md.type ==
+              metric_descriptor.MetricDescriptorType.GAUGE_INT64):
+            mk = monitoring_v3.enums.MetricDescriptor.MetricKind.GAUGE
+            vt = monitoring_v3.enums.MetricDescriptor.ValueType.INT64
+        elif (oc_md.type ==
+              metric_descriptor.MetricDescriptorType.GAUGE_DOUBLE):
+            mk = monitoring_v3.enums.MetricDescriptor.MetricKind.GAUGE
+            vt = monitoring_v3.enums.MetricDescriptor.ValueType.DOUBLE
+        else:
+            md_type_name = metric_descriptor.MetricDescriptorType.to_name(
+                oc_md.type)
+            raise TypeError("Unsupported metric type: {}".format(md_type_name))
+
+        if self.options.metric_prefix:
             display_name_prefix = self.options.metric_prefix
+        else:
+            display_name_prefix = DEFAULT_DISPLAY_NAME_PREFIX
 
-        descriptor_pattern = "projects/%s/metricDescriptors/%s"
-        project_id = self.options.project_id
-
-        desc_labels = new_label_descriptors(self.default_labels, view.columns)
+        lks = [lk.key for lk in oc_md.label_keys]
+        default_labels = self.options.default_monitoring_labels
+        if default_labels is None:
+            default_labels = {}
+        desc_labels = new_label_descriptors(default_labels, lks)
 
         descriptor = monitoring_v3.types.MetricDescriptor(labels=desc_labels)
+        metric_type = self.get_descriptor_type(oc_md)
         descriptor.type = metric_type
-        descriptor.metric_kind = metric_kind
-        descriptor.value_type = value_type
-        descriptor.description = view.description
-        descriptor.unit = unit
+        descriptor.metric_kind = mk
+        descriptor.value_type = vt
+        descriptor.description = oc_md.description
+        descriptor.unit = oc_md.unit
+        descriptor.name = ("projects/{}/metricDescriptors/{}"
+                           .format(self.options.project_id, metric_type))
+        descriptor.display_name = ("{}/{}"
+                                   .format(display_name_prefix, oc_md.name))
 
-        descriptor.name = descriptor_pattern % (project_id, metric_type)
-        descriptor.display_name = "%s/%s" % (display_name_prefix, view_name)
-
-        client = self.client
-        project_name = client.project_path(project_id)
-        descriptor = client.create_metric_descriptor(project_name, descriptor)
         return descriptor
+
+    def register_metric_descriptor(self, oc_md):
+        """Register a metric descriptor with stackdriver."""
+        descriptor_type = self.get_descriptor_type(oc_md)
+        with self._md_lock:
+            try:
+                return self._md_cache[descriptor_type]
+            except KeyError:
+                descriptor = self.get_metric_descriptor(oc_md)
+                project_name = self.client.project_path(self.options.project_id)
+                sd_md = self.client.create_metric_descriptor(
+                    project_name, descriptor)
+                self._md_cache[descriptor_type] = sd_md
+                return sd_md
 
 
 def set_monitored_resource(series, option_resource_type):
@@ -408,11 +372,7 @@ def new_stats_exporter(options):
 
     ci = client_info.ClientInfo(client_library_version=get_user_agent_slug())
     client = monitoring_v3.MetricServiceClient(client_info=ci)
-
     exporter = StackdriverStatsExporter(client=client, options=options)
-
-    if options.default_monitoring_labels is not None:
-        exporter.set_default_labels(options.default_monitoring_labels)
     return exporter
 
 
