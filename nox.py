@@ -19,6 +19,7 @@ import os
 
 
 def _install_dev_packages(session):
+    session.install('-e', 'contrib/opencensus-context')
     session.install('-e', 'contrib/opencensus-correlation')
     session.install('-e', '.')
 
