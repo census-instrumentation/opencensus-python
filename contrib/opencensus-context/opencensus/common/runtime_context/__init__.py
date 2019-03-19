@@ -26,25 +26,59 @@ class _RuntimeContext(object):
     def register_slot(cls, name, default = None):
         raise NotImplementedError  # pragma: NO COVER
 
+    def __init__(self):
+        pass
+
     def __repr__(self):
-        return repr(self._slots)
+        return ('{}({})'
+                .format(
+                    type(self).__name__,
+                    dict((n, self._slots[n].get()) for n in self._slots)
+                ))
+
+    def __getattr__(self, name):
+        if name not in self._slots:
+            raise AttributeError('{} is not a registered context slot'.format(name))
+        slot = self._slots[name]
+        return slot.get()
+
+    def __setattr__(self, name, value):
+        if name not in self._slots:
+            raise AttributeError('{} is not a registered context slot'.format(name))
+        slot = self._slots[name]
+        slot.set(value)
 
 class _TlsRuntimeContext(_RuntimeContext):
     _lock = threading.Lock()
     _slots = {}
-    _tls = threading.local()
 
     class Slot(object):
+        _tls = threading.local()
+
         def __init__(self, name, default):
             self.name = name
-            self.default = default
+            self.default = default if callable(default) else (lambda: default)
+
+        def clear(self):
+            setattr(self._tls, self.name, self.default())
+
+        def get(self):
+            try:
+                return getattr(self._tls, self.name)
+            except AttributeError:
+                value = self.default()
+                self.set(value)
+                return value
+
+        def set(self, value):
+            setattr(self._tls, self.name, value)
 
     @classmethod
     def clear(cls):
         with cls._lock:
             for name in cls._slots:
-                slot = self._slots[name]
-                setattr(cls._tls, name, slot.default)
+                slot = cls._slots[name]
+                slot.clear()
 
     @classmethod
     def register_slot(cls, name, default = None):
@@ -52,20 +86,6 @@ class _TlsRuntimeContext(_RuntimeContext):
             if name in cls._slots:
                 raise ValueError('slot {} already registered'.format(name))
             cls._slots[name] = cls.Slot(name, default)
-
-    def __init__(self):
-        pass
-
-    def __getattr__(self, name):
-        if name in self._slots:
-            slot = self._slots[name]
-            return getattr(self._tls, name, slot.default)
-        raise AttributeError('{} is not a registered context slot'.format(name))
-
-    def __setattr__(self, name, value):
-        if name in self._slots:
-            return setattr(self._tls, name, value)
-        raise AttributeError('{} is not a registered context slot'.format(name))
 
 class _AsyncRuntimeContext(_RuntimeContext):
     _lock = threading.Lock()
@@ -76,14 +96,28 @@ class _AsyncRuntimeContext(_RuntimeContext):
             import contextvars
             self.name = name
             self.contextvar = contextvars.ContextVar(name)
-            self.default = default
+            self.default = default if callable(default) else (lambda: default)
+
+        def clear(self):
+            self.contextvar.set(self.default())
+
+        def get(self):
+            try:
+                return self.contextvar.get()
+            except LookupError:
+                value = self.default()
+                self.set(value)
+                return value
+
+        def set(self, value):
+            self.contextvar.set(value)
 
     @classmethod
     def clear(cls):
         with cls._lock:
             for name in cls._slots:
                 slot = cls._slots[name]
-                slot.contextvar.set(slot.default)
+                slot.clear()
 
     @classmethod
     def register_slot(cls, name, default = None):
@@ -91,21 +125,6 @@ class _AsyncRuntimeContext(_RuntimeContext):
             if name in cls._slots:
                 raise ValueError('slot {} already registered'.format(name))
             cls._slots[name] = cls.Slot(name, default)
-
-    def __init__(self):
-        pass
-
-    def __getattr__(self, name):
-        if name in self._slots:
-            slot = self._slots[name]
-            return slot.contextvar.get(slot.default)
-        raise AttributeError('{} is not a registered context slot'.format(name))
-
-    def __setattr__(self, name, value):
-        if name in self._slots:
-            slot = self._slots[name]
-            return slot.contextvar.set(value)
-        raise AttributeError('{} is not a registered context slot'.format(name))
 
 RuntimeContext = _TlsRuntimeContext()
 
