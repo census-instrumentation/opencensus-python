@@ -222,6 +222,7 @@ class StackdriverStatsExporter(object):
               metric_descriptor.MetricDescriptorType.GAUGE_DOUBLE):
             sd_point.value.double_value = float(point.value.value)
 
+        # TODO: handle SUMMARY metrics, #567
         else:
             md_type_name = metric_descriptor.MetricDescriptorType.to_name(
                 metric.descriptor.type)
