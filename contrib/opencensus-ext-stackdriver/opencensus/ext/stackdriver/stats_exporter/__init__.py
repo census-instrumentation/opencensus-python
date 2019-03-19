@@ -149,12 +149,11 @@ class StackdriverStatsExporter(object):
     def client(self):
         return self._client
 
-    def export(self, metrics):
+    def export_metrics(self, metrics):
         ts_batches = self.create_batched_time_series(metrics)
         for ts_batch in ts_batches:
             self.client.create_time_series(
-                self.client.project_path(self.options.project_id),
-                ts_batch)
+                self.client.project_path(self.options.project_id), ts_batch)
 
     def create_batched_time_series(self, metrics,
                                    batch_size=MAX_TIME_SERIES_PER_UPLOAD):
