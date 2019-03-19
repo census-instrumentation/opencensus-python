@@ -228,8 +228,11 @@ class StackdriverStatsExporter(object):
                 metric.descriptor.type)
             raise TypeError("Unsupported metric type: {}".format(md_type_name))
 
-        start = datetime.strptime(ts.start_timestamp, EPOCH_PATTERN)
         end = point.timestamp
+        if ts.start_timestamp is None:
+            start = end
+        else:
+            start = datetime.strptime(ts.start_timestamp, EPOCH_PATTERN)
 
         timestamp_start = (start - EPOCH_DATETIME).total_seconds()
         timestamp_end = (end - EPOCH_DATETIME).total_seconds()
