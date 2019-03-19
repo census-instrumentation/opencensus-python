@@ -44,9 +44,9 @@ FRONTEND_KEY_FLOAT_CLEAN = "my_org_keys_frontend_FLOAT"
 FRONTEND_KEY_INT_CLEAN = "my_org_keys_frontend_INT"
 FRONTEND_KEY_STR_CLEAN = "my_org_keys_frontend_STR"
 
-VIDEO_SIZE_MEASURE = measure_module.MeasureInt(
+VIDEO_SIZE_MEASURE = measure_module.MeasureFloat(
     "my.org/measure/video_size_test2", "size of processed videos", "By")
-VIDEO_SIZE_MEASURE_2 = measure_module.MeasureInt(
+VIDEO_SIZE_MEASURE_2 = measure_module.MeasureFloat(
     "my.org/measure/video_size_test_2", "size of processed videos", "By")
 
 VIDEO_SIZE_MEASURE_FLOAT = measure_module.MeasureFloat(
@@ -587,7 +587,8 @@ class TestCreateTimeseries(unittest.TestCase):
 
         self.assertEqual(len(time_series.points), 1)
         expected_value = monitoring_v3.types.TypedValue()
-        expected_value.int64_value = 25 * MiB
+        # TODO: #565
+        expected_value.double_value = 25.0 * MiB
         self.assertEqual(time_series.points[0].value, expected_value)
 
     @mock.patch('opencensus.ext.stackdriver.stats_exporter.'
@@ -836,7 +837,8 @@ class TestCreateTimeseries(unittest.TestCase):
 
         self.assertEqual(len(time_series.points), 1)
         expected_value = monitoring_v3.types.TypedValue()
-        expected_value.int64_value = 25 * MiB
+        # TODO: #565
+        expected_value.double_value = 25.0 * MiB
         self.assertEqual(time_series.points[0].value, expected_value)
 
     def test_create_timeseries_from_distribution(self):
