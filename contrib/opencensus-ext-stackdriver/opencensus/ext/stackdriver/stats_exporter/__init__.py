@@ -28,6 +28,7 @@ from opencensus.common import utils
 from opencensus.common.monitored_resource import monitored_resource
 from opencensus.common.transports import async_
 from opencensus.common.version import __version__
+from opencensus.metrics.export import metric as metric_module
 from opencensus.metrics.export import metric_descriptor
 from opencensus.stats import aggregation
 from opencensus.stats import base_exporter
@@ -162,6 +163,8 @@ class StackdriverStatsExporter(object):
         return list(utils.window(time_series_list, batch_size))
 
     def create_time_series_list(self, metric):
+        if not isinstance(metric, metric_module.Metric):
+            raise ValueError
         return [self._convert_series(metric, ts) for ts in metric.time_series]
 
     def _convert_series(self, metric, ts):
