@@ -163,7 +163,7 @@ class StackdriverStatsExporter(object):
         return list(utils.window(time_series_list, batch_size))
 
     def create_time_series_list(self, metric):
-        if not isinstance(metric, metric_module.Metric):
+        if not isinstance(metric, metric_module.Metric):  # pragma: NO COVER
             raise ValueError
         return [self._convert_series(metric, ts) for ts in metric.time_series]
 
