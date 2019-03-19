@@ -45,6 +45,6 @@ setup(
     license='Apache-2.0',
     packages=find_packages(exclude=('tests',)),
     namespace_packages=[],
-    url='https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-threading',
+    url='https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-threading',  # noqa: E501
     zip_safe=False,
 )
