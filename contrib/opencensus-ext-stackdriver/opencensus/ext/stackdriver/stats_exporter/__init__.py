@@ -26,13 +26,9 @@ from google.cloud import monitoring_v3
 
 from opencensus.common import utils
 from opencensus.common.monitored_resource import monitored_resource
-from opencensus.common.transports import async_
 from opencensus.common.version import __version__
 from opencensus.metrics.export import metric as metric_module
 from opencensus.metrics.export import metric_descriptor
-from opencensus.stats import aggregation
-from opencensus.stats import base_exporter
-from opencensus.stats import measure
 
 
 MAX_TIME_SERIES_PER_UPLOAD = 200
@@ -190,12 +186,13 @@ class StackdriverStatsExporter(object):
 
     def _convert_point(self, metric, ts, point, sd_point):
         """Convert an OC metric point to a SD point."""
-        if (metric.descriptor.type ==
-                metric_descriptor.MetricDescriptorType.CUMULATIVE_DISTRIBUTION):
+        if (metric.descriptor.type == metric_descriptor.MetricDescriptorType
+                .CUMULATIVE_DISTRIBUTION):
 
             sd_dist_val = sd_point.value.distribution_value
             sd_dist_val.count = point.value.count
-            sd_dist_val.sum_of_squared_deviation = point.value.sum_of_squared_deviation
+            sd_dist_val.sum_of_squared_deviation =\
+                point.value.sum_of_squared_deviation
 
             assert sd_dist_val.bucket_options.explicit_buckets.bounds == []
             sd_dist_val.bucket_options.explicit_buckets.bounds.extend(
@@ -295,7 +292,8 @@ class StackdriverStatsExporter(object):
                 return self._md_cache[descriptor_type]
             except KeyError:
                 descriptor = self.get_metric_descriptor(oc_md)
-                project_name = self.client.project_path(self.options.project_id)
+                project_name =\
+                    self.client.project_path(self.options.project_id)
                 sd_md = self.client.create_metric_descriptor(
                     project_name, descriptor)
                 self._md_cache[descriptor_type] = sd_md
