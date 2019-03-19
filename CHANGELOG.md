@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+## 0.3.1
+Released 2019-03-19
+
+- Release 0.1.0 versions of exporter and integration packages
+
 ## 0.3.0
 Released 2019-03-11
 
