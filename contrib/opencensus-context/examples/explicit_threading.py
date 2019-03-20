@@ -20,6 +20,7 @@ RuntimeContext.register_slot('correlation_context', lambda: dict())
 
 def withcc(fn):
     fork = RuntimeContext.correlation_context.copy()
+
     def callcc(*args, **kwargs):
         try:
             snapshot = RuntimeContext.correlation_context
@@ -27,6 +28,7 @@ def withcc(fn):
             return fn(*args, **kwargs)
         finally:
             RuntimeContext.correlation_context = snapshot
+
     return callcc
 
 
