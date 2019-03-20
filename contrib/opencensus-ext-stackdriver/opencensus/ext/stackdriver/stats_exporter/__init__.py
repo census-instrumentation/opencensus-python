@@ -246,8 +246,7 @@ class StackdriverStatsExporter(object):
 
         start_time = sd_point.interval.start_time
         start_time.seconds = int(timestamp_start)
-        start_secs = start_time.seconds
-        start_time.nanos = int((timestamp_start - start_secs) * 1e9)
+        start_time.nanos = int((timestamp_start - start_time.seconds) * 1e9)
 
     def get_descriptor_type(self, oc_md):
         """Get a SD descriptor type for an OC metric descriptor."""

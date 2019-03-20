@@ -16,7 +16,10 @@ import os
 import random
 import time
 import unittest
+
+from google.cloud import monitoring_v3
 from retrying import retry
+
 from opencensus.ext.stackdriver import stats_exporter as stackdriver
 from opencensus.stats import aggregation as aggregation_module
 from opencensus.stats import measure as measure_module
@@ -25,8 +28,6 @@ from opencensus.stats import view as view_module
 from opencensus.tags import tag_key as tag_key_module
 from opencensus.tags import tag_map as tag_map_module
 from opencensus.tags import tag_value as tag_value_module
-from opencensus.common.transports import sync
-from google.cloud import monitoring_v3
 
 MiB = 1 << 20
 
@@ -63,8 +64,7 @@ class TestBasicStats(unittest.TestCase):
         client = monitoring_v3.MetricServiceClient()
         exporter = stackdriver.StackdriverStatsExporter(
             options=stackdriver.Options(project_id=PROJECT),
-            client=client,
-            transport=sync.SyncTransport)
+            client=client)
         view_manager.register_exporter(exporter)
 
         # Register view.
@@ -82,6 +82,7 @@ class TestBasicStats(unittest.TestCase):
         measure_map.measure_int_put(VIDEO_SIZE_MEASURE, 25 * MiB)
 
         measure_map.record(tag_map)
+        exporter.export_metrics(stats_module.Stats().get_metrics())
 
         # Sleep for [0, 10] milliseconds to fake wait.
         time.sleep(random.randint(1, 10) / 1000.0)
@@ -147,6 +148,7 @@ class TestBasicStats(unittest.TestCase):
         measure_map.measure_int_put(VIDEO_SIZE_MEASURE_ASYNC, 25 * MiB)
 
         measure_map.record(tag_map)
+        exporter.export_metrics(stats_module.Stats().get_metrics())
 
         @retry(
             wait_fixed=RETRY_WAIT_PERIOD,
