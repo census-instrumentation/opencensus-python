@@ -147,6 +147,8 @@ class StackdriverStatsExporter(object):
         return self._client
 
     def export_metrics(self, metrics):
+        for metric in metrics:
+            self.register_metric_descriptor(metric.descriptor)
         ts_batches = self.create_batched_time_series(metrics)
         for ts_batch in ts_batches:
             self.client.create_time_series(
@@ -289,16 +291,15 @@ class StackdriverStatsExporter(object):
         """Register a metric descriptor with stackdriver."""
         descriptor_type = self.get_descriptor_type(oc_md)
         with self._md_lock:
-            try:
+            if descriptor_type in self._md_cache:
                 return self._md_cache[descriptor_type]
-            except KeyError:
-                descriptor = self.get_metric_descriptor(oc_md)
-                project_name =\
-                    self.client.project_path(self.options.project_id)
-                sd_md = self.client.create_metric_descriptor(
-                    project_name, descriptor)
-                self._md_cache[descriptor_type] = sd_md
-                return sd_md
+
+        descriptor = self.get_metric_descriptor(oc_md)
+        project_name = self.client.project_path(self.options.project_id)
+        sd_md = self.client.create_metric_descriptor(project_name, descriptor)
+        with self._md_lock:
+            self._md_cache[descriptor_type] = sd_md
+        return sd_md
 
 
 def set_monitored_resource(series, option_resource_type):
