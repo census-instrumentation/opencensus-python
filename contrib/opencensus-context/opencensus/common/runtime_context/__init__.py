@@ -102,7 +102,9 @@ class _ThreadLocalRuntimeContext(_RuntimeContext):
         with cls._lock:
             if name in cls._slots:
                 raise ValueError('slot {} already registered'.format(name))
-            cls._slots[name] = cls.Slot(name, default)
+            slot = cls.Slot(name, default)
+            cls._slots[name] = slot
+            return slot
 
 
 class _AsyncRuntimeContext(_RuntimeContext):
