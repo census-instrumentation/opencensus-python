@@ -145,7 +145,7 @@ class TestSpan(unittest.TestCase):
         with self.assertRaises(TypeError):
             span.add_time_event(time_event)
 
-        time_event = TimeEvent(datetime.datetime.now())
+        time_event = TimeEvent(datetime.datetime.utcnow())
         span.add_time_event(time_event)
 
         self.assertEqual(len(span.time_events), 1)
@@ -357,7 +357,7 @@ class Test_format_span_json(unittest.TestCase):
         span.start_time = start_time
         span.end_time = end_time
         span._child_spans = []
-        span.time_events = [TimeEvent(datetime.datetime.now())]
+        span.time_events = [TimeEvent(datetime.datetime.utcnow())]
         span.stack_trace = StackTrace()
         span.status = Status(code='200', message='test')
         span.links = [Link(trace_id, span_id)]

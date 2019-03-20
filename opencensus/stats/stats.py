@@ -37,4 +37,4 @@ class Stats(MetricProducer):
         :rtype: Iterator[:class: `opencensus.metrics.export.metric.Metric`]
         """
         return self.view_manager.measure_to_view_map.get_metrics(
-            datetime.now())
+            datetime.utcnow())
