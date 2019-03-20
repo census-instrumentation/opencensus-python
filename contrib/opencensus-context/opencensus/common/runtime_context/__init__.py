@@ -54,15 +54,15 @@ class _RuntimeContext(object):
     def with_current_context(self, func):
         caller_context = self.snapshot()
 
-        def callcc(*args, **kwargs):
+        def call_with_current_context(*args, **kwargs):
             try:
                 backup_context = self.snapshot()
-                RuntimeContext.apply(caller_context)
+                self.apply(caller_context)
                 return func(*args, **kwargs)
             finally:
-                RuntimeContext.apply(backup_context)
+                self.apply(backup_context)
 
-        return callcc
+        return call_with_current_context
 
 
 class _ThreadLocalRuntimeContext(_RuntimeContext):
