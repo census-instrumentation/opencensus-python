@@ -225,10 +225,9 @@ class StackdriverStatsExporter(object):
             sd_point.value.double_value = float(point.value.value)
 
         # TODO: handle SUMMARY metrics, #567
-        else:
-            md_type_name = metric_descriptor.MetricDescriptorType.to_name(
-                metric.descriptor.type)
-            raise TypeError("Unsupported metric type: {}".format(md_type_name))
+        else:  # pragma: NO COVER
+            raise TypeError("Unsupported metric type: {}"
+                            .format(metric.descriptor.type))
 
         end = point.timestamp
         if ts.start_timestamp is None:
@@ -257,20 +256,17 @@ class StackdriverStatsExporter(object):
         try:
             metric_kind, value_type = OC_MD_TO_SD_TYPE[oc_md.type]
         except KeyError:
-            md_type_name = metric_descriptor.MetricDescriptorType.to_name(
-                oc_md.type)
-            raise TypeError("Unsupported metric type: {}".format(md_type_name))
+            raise TypeError("Unsupported metric type: {}".format(oc_md.type))
 
         if self.options.metric_prefix:
             display_name_prefix = self.options.metric_prefix
         else:
             display_name_prefix = DEFAULT_DISPLAY_NAME_PREFIX
 
-        lks = [lk.key for lk in oc_md.label_keys]
         default_labels = self.options.default_monitoring_labels
         if default_labels is None:
             default_labels = {}
-        desc_labels = new_label_descriptors(default_labels, lks)
+        desc_labels = new_label_descriptors(default_labels, oc_md.label_keys)
 
         descriptor = monitoring_v3.types.MetricDescriptor(labels=desc_labels)
         metric_type = self.get_descriptor_type(oc_md)
@@ -406,9 +402,10 @@ def new_label_descriptors(defaults, keys):
         label["description"] = lbl
         label_descriptors.append(label)
 
-    for tag_key in keys:
+    for label_key in keys:
         label = {}
-        label["key"] = sanitize_label(tag_key)
+        label["key"] = sanitize_label(label_key.key)
+        label["description"] = sanitize_label(label_key.description)
         label_descriptors.append(label)
     label_descriptors.append({"key": OPENCENSUS_TASK,
                               "description": OPENCENSUS_TASK_DESCRIPTION})

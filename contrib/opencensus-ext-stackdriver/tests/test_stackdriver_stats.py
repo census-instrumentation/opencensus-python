@@ -21,6 +21,13 @@ from google.cloud import monitoring_v3
 from opencensus.common import utils
 from opencensus.common.version import __version__
 from opencensus.ext.stackdriver import stats_exporter as stackdriver
+from opencensus.metrics import label_key
+from opencensus.metrics import label_value
+from opencensus.metrics.export import metric
+from opencensus.metrics.export import metric_descriptor
+from opencensus.metrics.export import point
+from opencensus.metrics.export import time_series
+from opencensus.metrics.export import value
 from opencensus.stats import aggregation as aggregation_module
 from opencensus.stats import aggregation_data as aggregation_data_module
 from opencensus.stats import execution_context
@@ -178,12 +185,6 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         task_value = stackdriver.get_task_value()
         self.assertNotEqual(task_value, "")
 
-    def test_new_label_descriptors(self):
-        defaults = {'key1': 'value1'}
-        keys = [FRONTEND_KEY]
-        output = stackdriver.new_label_descriptors(defaults, keys)
-        self.assertEqual(len(output), 3)
-
     def test_namespaced_views(self):
         view_name = "view-1"
         expected_view_name_namespaced = (
@@ -236,6 +237,127 @@ class TestStackdriverStatsExporter(unittest.TestCase):
                       'processor'))
     def test_get_task_value_without_hostname(self, mock_uname, mock_pid):
         self.assertEqual(stackdriver.get_task_value(), "py-12345@localhost")
+
+    def test_get_metric_descriptor(self):
+        exporter = stackdriver.StackdriverStatsExporter(
+            options=stackdriver.Options(
+                default_monitoring_labels={'dk': 'dd'},
+                project_id='project_id'),
+            client=mock.Mock())
+
+        oc_md = metric_descriptor.MetricDescriptor(
+            name='name',
+            description='description',
+            unit='unit',
+            type_=metric_descriptor.MetricDescriptorType.GAUGE_INT64,
+            label_keys=[label_key.LabelKey('ck', 'cd')]
+        )
+
+        sd_md = exporter.get_metric_descriptor(oc_md)
+        self.assertEqual(
+            sd_md.metric_kind,
+            monitoring_v3.enums.MetricDescriptor.MetricKind.GAUGE)
+        self.assertEqual(
+            sd_md.value_type,
+            monitoring_v3.enums.MetricDescriptor.ValueType.INT64)
+
+        self.assertIsInstance(sd_md, monitoring_v3.types.MetricDescriptor)
+        exporter.client.create_metric_descriptor.assert_not_called()
+
+    def test_get_metric_descriptor_bad_type(self):
+        exporter = stackdriver.StackdriverStatsExporter(
+            options=stackdriver.Options(project_id='project_id'),
+            client=mock.Mock())
+
+        bad_type_oc_md = metric_descriptor.MetricDescriptor(
+            name='name',
+            description='description',
+            unit='unit',
+            # Need a valid type to create the descriptor
+            type_=metric_descriptor.MetricDescriptorType.GAUGE_INT64,
+            label_keys=[label_key.LabelKey('key', 'description')]
+        )
+        bad_type_oc_md._type = 100
+
+        with self.assertRaises(TypeError):
+            exporter.get_metric_descriptor(bad_type_oc_md)
+
+    def test_get_metric_descriptor_custom_prefix(self):
+
+        exporter = stackdriver.StackdriverStatsExporter(
+            options=stackdriver.Options(
+                default_monitoring_labels={'dk': 'dd'},
+                metric_prefix='metric_prefix',
+                project_id='project_id'),
+            client=mock.Mock())
+
+        oc_md = metric_descriptor.MetricDescriptor(
+            name='name',
+            description='description',
+            unit='unit',
+            type_=metric_descriptor.MetricDescriptorType.GAUGE_INT64,
+            label_keys=[label_key.LabelKey('ck', 'cd')]
+        )
+
+        sd_md = exporter.get_metric_descriptor(oc_md)
+        self.assertIn('metric_prefix', sd_md.type)
+        self.assertIn('metric_prefix', sd_md.name)
+
+    def test_register_metric_descriptor(self):
+        exporter = stackdriver.StackdriverStatsExporter(
+            options=stackdriver.Options(
+                metric_prefix='metric_prefix',
+                project_id='project_id'),
+            client=mock.Mock())
+
+        oc_md = metric_descriptor.MetricDescriptor(
+            name='name',
+            description='description',
+            unit='unit',
+            type_=metric_descriptor.MetricDescriptorType.GAUGE_INT64,
+            label_keys=[label_key.LabelKey('key', 'description')]
+        )
+
+        exporter.register_metric_descriptor(oc_md)
+        self.assertEqual(
+            exporter.client.create_metric_descriptor.call_count,
+            1
+        )
+        exporter.register_metric_descriptor(oc_md)
+        self.assertEqual(
+            exporter.client.create_metric_descriptor.call_count,
+            1
+        )
+
+    def test_export_metrics(self):
+        lv = label_value.LabelValue('val')
+        val = value.ValueLong(value=123)
+        dt = datetime(2019, 3, 20, 21, 34, 0, 537954)
+        pp = point.Point(value=val, timestamp=dt)
+
+        ts = [
+            time_series.TimeSeries(label_values=[lv], points=[pp],
+                                   start_timestamp=utils.to_iso_str(dt))
+        ]
+
+        desc = metric_descriptor.MetricDescriptor(
+            name='name',
+            description='description',
+            unit='unit',
+            type_=metric_descriptor.MetricDescriptorType.GAUGE_INT64,
+            label_keys=[label_key.LabelKey('key', 'description')]
+        )
+
+        mm = metric.Metric(descriptor=desc, time_series=ts)
+
+        exporter = stackdriver.StackdriverStatsExporter(client=mock.Mock())
+        exporter.export_metrics([mm])
+
+        self.assertEqual(exporter.client.create_time_series.call_count, 1)
+        sd_args = exporter.client.create_time_series.call_args[0][1]
+        self.assertEqual(len(sd_args), 1)
+        [sd_arg] = exporter.client.create_time_series.call_args[0][1]
+        self.assertEqual(sd_arg.points[0].value.int64_value, 123)
 
 
 class TestCreateTimeseries(unittest.TestCase):

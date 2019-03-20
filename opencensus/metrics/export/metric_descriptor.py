@@ -90,27 +90,10 @@ class MetricDescriptorType(object):
         SUMMARY: value.ValueSummary
     }
 
-    _name_map = {
-        GAUGE_INT64: 'GAUGE_INT64',
-        GAUGE_DOUBLE: 'GAUGE_DOUBLE',
-        GAUGE_DISTRIBUTION: 'GAUGE_DISTRIBUTION',
-        CUMULATIVE_INT64: 'CUMULATIVE_INT64',
-        CUMULATIVE_DOUBLE: 'CUMULATIVE_DOUBLE',
-        CUMULATIVE_DISTRIBUTION: 'CUMULATIVE_DISTRIBUTION',
-        SUMMARY: 'SUMMARY',
-    }
-
     @classmethod
     def to_type_class(cls, metric_descriptor_type):
         try:
             return cls._type_map[metric_descriptor_type]
-        except KeyError:
-            raise ValueError("Unknown MetricDescriptorType value")
-
-    @classmethod
-    def to_name(cls, metric_descriptor_type):
-        try:
-            return cls._name_map[metric_descriptor_type]
         except KeyError:
             raise ValueError("Unknown MetricDescriptorType value")
 
