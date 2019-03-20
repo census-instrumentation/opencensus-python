@@ -64,7 +64,7 @@ class TestBlankSpan(unittest.TestCase):
         with self.assertRaises(TypeError):
             span.add_time_event(time_event)
 
-        time_event = TimeEvent(datetime.datetime.now())
+        time_event = TimeEvent(datetime.datetime.utcnow())
         span.add_time_event(time_event)
 
         span_iter_list = list(iter(span))
