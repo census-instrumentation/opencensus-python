@@ -52,30 +52,30 @@ class _RuntimeContext(object):
         slot.set(value)
 
 
-class _TlsRuntimeContext(_RuntimeContext):
+class _ThreadLocalRuntimeContext(_RuntimeContext):
     _lock = threading.Lock()
     _slots = {}
 
     class Slot(object):
-        _tls = threading.local()
+        _thread_local = threading.local()
 
         def __init__(self, name, default):
             self.name = name
             self.default = default if callable(default) else (lambda: default)
 
         def clear(self):
-            setattr(self._tls, self.name, self.default())
+            setattr(self._thread_local, self.name, self.default())
 
         def get(self):
             try:
-                return getattr(self._tls, self.name)
+                return getattr(self._thread_local, self.name)
             except AttributeError:
                 value = self.default()
                 self.set(value)
                 return value
 
         def set(self, value):
-            setattr(self._tls, self.name, value)
+            setattr(self._thread_local, self.name, value)
 
     @classmethod
     def clear(cls):
@@ -132,7 +132,7 @@ class _AsyncRuntimeContext(_RuntimeContext):
             cls._slots[name] = cls.Slot(name, default)
 
 
-RuntimeContext = _TlsRuntimeContext()
+RuntimeContext = _ThreadLocalRuntimeContext()
 
 if sys.version_info >= (3, 7):
     RuntimeContext = _AsyncRuntimeContext()

@@ -17,6 +17,12 @@ class Span(object):
     def __exit__(self, type, value, traceback):
         RuntimeContext.current_span = self.parent
 
+    def start(self):
+        RuntimeContext.current_span = self
+
+    def end(self):
+        RuntimeContext.current_span = self.parent
+
 
 if __name__ == '__main__':
     print(RuntimeContext)
@@ -25,4 +31,12 @@ if __name__ == '__main__':
         with Span('bar'):
             print(RuntimeContext)
         print(RuntimeContext)
+    print(RuntimeContext)
+
+    # explicit start/end span
+    span = Span('baz')
+    print(RuntimeContext)
+    span.start()
+    print(RuntimeContext)
+    span.end()
     print(RuntimeContext)
