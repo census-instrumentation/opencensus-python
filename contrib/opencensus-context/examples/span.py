@@ -2,6 +2,7 @@ from opencensus.common.runtime_context import RuntimeContext
 
 RuntimeContext.register_slot('current_span', None)
 
+
 class Span(object):
     def __init__(self, name):
         self.name = name
@@ -15,6 +16,7 @@ class Span(object):
 
     def __exit__(self, type, value, traceback):
         RuntimeContext.current_span = self.parent
+
 
 if __name__ == '__main__':
     print(RuntimeContext)

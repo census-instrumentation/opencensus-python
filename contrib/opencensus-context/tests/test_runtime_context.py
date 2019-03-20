@@ -15,6 +15,7 @@
 import unittest
 from opencensus.common.runtime_context import RuntimeContext
 
+
 class RuntimeContextTest(unittest.TestCase):
     def test_register(self):
         RuntimeContext.register_slot('foo')

@@ -41,8 +41,8 @@ setup(
     install_requires=[],
     extras_require={},
     license='Apache-2.0',
-    packages=find_packages(exclude=('tests',)),
+    packages=find_packages(exclude=('examples', 'tests',)),
     namespace_packages=[],
-    url='https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-context',
+    url='https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-context',  # noqa: E501
     zip_safe=False,
 )

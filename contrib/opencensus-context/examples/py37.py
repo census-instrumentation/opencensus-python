@@ -4,6 +4,7 @@ from opencensus.common.runtime_context import RuntimeContext
 
 RuntimeContext.register_slot('correlation_context', lambda: dict())
 
+
 async def hello(name):
     correlation_context = RuntimeContext.correlation_context.copy()
     correlation_context['name'] = name
@@ -17,6 +18,7 @@ async def hello(name):
         ))
         await asyncio.sleep(0.1)
 
+
 async def main():
     print(RuntimeContext)
     RuntimeContext.correlation_context['test'] = True
@@ -29,6 +31,7 @@ async def main():
     print(RuntimeContext)
     RuntimeContext.clear()
     print(RuntimeContext)
+
 
 if __name__ == '__main__':
     asyncio.run(main())

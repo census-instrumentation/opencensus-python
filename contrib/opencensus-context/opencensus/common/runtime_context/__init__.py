@@ -17,13 +17,14 @@ import threading
 
 __all__ = ['RuntimeContext']
 
+
 class _RuntimeContext(object):
     @classmethod
     def clear(cls):
         raise NotImplementedError  # pragma: NO COVER
 
     @classmethod
-    def register_slot(cls, name, default = None):
+    def register_slot(cls, name, default=None):
         raise NotImplementedError  # pragma: NO COVER
 
     def __init__(self):
@@ -38,15 +39,18 @@ class _RuntimeContext(object):
 
     def __getattr__(self, name):
         if name not in self._slots:
-            raise AttributeError('{} is not a registered context slot'.format(name))
+            raise AttributeError('{} is not a registered context slot'
+                                 .format(name))
         slot = self._slots[name]
         return slot.get()
 
     def __setattr__(self, name, value):
         if name not in self._slots:
-            raise AttributeError('{} is not a registered context slot'.format(name))
+            raise AttributeError('{} is not a registered context slot'
+                                 .format(name))
         slot = self._slots[name]
         slot.set(value)
+
 
 class _TlsRuntimeContext(_RuntimeContext):
     _lock = threading.Lock()
@@ -81,11 +85,12 @@ class _TlsRuntimeContext(_RuntimeContext):
                 slot.clear()
 
     @classmethod
-    def register_slot(cls, name, default = None):
+    def register_slot(cls, name, default=None):
         with cls._lock:
             if name in cls._slots:
                 raise ValueError('slot {} already registered'.format(name))
             cls._slots[name] = cls.Slot(name, default)
+
 
 class _AsyncRuntimeContext(_RuntimeContext):
     _lock = threading.Lock()
@@ -120,11 +125,12 @@ class _AsyncRuntimeContext(_RuntimeContext):
                 slot.clear()
 
     @classmethod
-    def register_slot(cls, name, default = None):
+    def register_slot(cls, name, default=None):
         with cls._lock:
             if name in cls._slots:
                 raise ValueError('slot {} already registered'.format(name))
             cls._slots[name] = cls.Slot(name, default)
+
 
 RuntimeContext = _TlsRuntimeContext()
 
