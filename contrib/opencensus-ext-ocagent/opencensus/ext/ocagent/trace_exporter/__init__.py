@@ -84,7 +84,7 @@ class TraceExporter(base_exporter.Exporter):
                 else host_name,
                 pid=os.getpid(),
                 start_timestamp=utils.proto_ts_from_datetime(
-                    datetime.datetime.now())
+                    datetime.datetime.utcnow())
             ),
             library_info=common_pb2.LibraryInfo(
                 language=common_pb2.LibraryInfo.Language.Value('PYTHON'),
