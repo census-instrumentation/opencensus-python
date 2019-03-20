@@ -27,9 +27,6 @@ class _RuntimeContext(object):
     def register_slot(cls, name, default=None):
         raise NotImplementedError  # pragma: NO COVER
 
-    def __init__(self):
-        pass
-
     def __repr__(self):
         return ('{}({})'
                 .format(
