@@ -27,12 +27,15 @@ class _RuntimeContext(object):
     def register_slot(cls, name, default=None):
         raise NotImplementedError  # pragma: NO COVER
 
+    def apply(self, snapshot):
+        for name in snapshot:
+            setattr(self, name, snapshot[name])
+
+    def snapshot(self):
+        return dict((n, self._slots[n].get()) for n in self._slots.keys())
+
     def __repr__(self):
-        return ('{}({})'
-                .format(
-                    type(self).__name__,
-                    dict((n, self._slots[n].get()) for n in self._slots)
-                ))
+        return ('{}({})'.format(type(self).__name__, self.snapshot()))
 
     def __getattr__(self, name):
         if name not in self._slots:
@@ -47,6 +50,19 @@ class _RuntimeContext(object):
                                  .format(name))
         slot = self._slots[name]
         slot.set(value)
+
+    def with_current_context(self, func):
+        caller_context = self.snapshot()
+
+        def callcc(*args, **kwargs):
+            try:
+                backup_context = self.snapshot()
+                RuntimeContext.apply(caller_context)
+                return func(*args, **kwargs)
+            finally:
+                RuntimeContext.apply(backup_context)
+
+        return callcc
 
 
 class _ThreadLocalRuntimeContext(_RuntimeContext):
