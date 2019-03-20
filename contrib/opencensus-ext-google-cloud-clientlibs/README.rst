@@ -1,6 +1,11 @@
 OpenCensus Google Cloud Client Libraries Integration
 ============================================================================
 
+|pypi|
+
+.. |pypi| image:: https://badge.fury.io/py/opencensus-ext-google-cloud-clientlibs.svg
+   :target: https://pypi.org/project/opencensus-ext-google-cloud-clientlibs/
+
 OpenCensus can trace HTTP and gRPC requests made with the `Cloud client libraries`_.
 The request URL, method, and status will be collected.
 
