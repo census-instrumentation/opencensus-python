@@ -19,6 +19,7 @@ import os
 
 
 def _install_dev_packages(session):
+    session.install('-e', 'context/opencensus-context')
     session.install('-e', 'contrib/opencensus-correlation')
     session.install('-e', '.')
 
@@ -116,7 +117,7 @@ def lint(session):
     session.run(
         'flake8',
         '--exclude=contrib/opencensus-ext-ocagent/opencensus/ext/ocagent/trace_exporter/gen/',
-        'contrib/', 'opencensus/', 'tests/', 'examples/')
+        'context/', 'contrib/', 'opencensus/', 'tests/', 'examples/')
 
 
 @nox.session
