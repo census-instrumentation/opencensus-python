@@ -38,7 +38,10 @@ if __name__ == '__main__':
     print('Main thread:', RuntimeContext)
 
     # user can propagate context explicitly
-    thread = Thread(target=RuntimeContext.with_current_context(work), args=('bar',))
+    thread = Thread(
+        target=RuntimeContext.with_current_context(work),
+        args=('bar',),
+    )
     thread.start()
     thread.join()
 

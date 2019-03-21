@@ -24,7 +24,12 @@ class Span(object):
         self.parent = RuntimeContext.current_span
 
     def __repr__(self):
-        return ('{}(name={}, parent={})'.format(type(self).__name__, self.name, self.parent))
+        return ('{}(name={}, parent={})'
+                .format(
+                    type(self).__name__,
+                    self.name,
+                    self.parent,
+                ))
 
     async def __aenter__(self):
         RuntimeContext.current_span = self

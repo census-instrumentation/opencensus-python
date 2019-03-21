@@ -36,7 +36,7 @@ def work(name):
 if __name__ == "__main__":
     println('Main thread: {}'.format(RuntimeContext))
     RuntimeContext.operation_id = 'main'
-    pool = ThreadPool(2) # create a thread pool with 2 threads
+    pool = ThreadPool(2)  # create a thread pool with 2 threads
     pool.map(RuntimeContext.with_current_context(work), [
         'bear',
         'cat',
