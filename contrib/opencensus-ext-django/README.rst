@@ -1,6 +1,11 @@
 OpenCensus Django Integration
 ============================================================================
 
+|pypi|
+
+.. |pypi| image:: https://badge.fury.io/py/opencensus-ext-django.svg
+   :target: https://pypi.org/project/opencensus-ext-django/
+
 Installation
 ------------
 

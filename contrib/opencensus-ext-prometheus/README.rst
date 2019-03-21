@@ -1,6 +1,11 @@
 OpenCensus Prometheus Exporter
 ============================================================================
 
+|pypi|
+
+.. |pypi| image:: https://badge.fury.io/py/opencensus-ext-prometheus.svg
+   :target: https://pypi.org/project/opencensus-ext-prometheus/
+
 Installation
 ------------
 
