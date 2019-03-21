@@ -21,17 +21,34 @@ __all__ = ['RuntimeContext']
 class _RuntimeContext(object):
     @classmethod
     def clear(cls):
+        """Clear all slots to their default value."""
+
         raise NotImplementedError  # pragma: NO COVER
 
     @classmethod
     def register_slot(cls, name, default=None):
+        """Register a context slot with an optional default value.
+
+        :type name: str
+        :param name: The name of the context slot.
+
+        :type default: object
+        :param name: The default value of the slot, can be a value or lambda.
+
+        :returns: The registered slot.
+        """
+
         raise NotImplementedError  # pragma: NO COVER
 
     def apply(self, snapshot):
+        """Set the current context from a given snapshot dictionary"""
+
         for name in snapshot:
             setattr(self, name, snapshot[name])
 
     def snapshot(self):
+        """Return a dictionary of current slots by reference."""
+
         return dict((n, self._slots[n].get()) for n in self._slots.keys())
 
     def __repr__(self):
@@ -52,6 +69,8 @@ class _RuntimeContext(object):
         slot.set(value)
 
     def with_current_context(self, func):
+        """Capture the current context and apply it to the provided func"""
+
         caller_context = self.snapshot()
 
         def call_with_current_context(*args, **kwargs):
@@ -144,7 +163,9 @@ class _AsyncRuntimeContext(_RuntimeContext):
         with cls._lock:
             if name in cls._slots:
                 raise ValueError('slot {} already registered'.format(name))
-            cls._slots[name] = cls.Slot(name, default)
+            slot = cls.Slot(name, default)
+            cls._slots[name] = slot
+            return slot
 
 
 RuntimeContext = _ThreadLocalRuntimeContext()
