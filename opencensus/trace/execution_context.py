@@ -76,4 +76,5 @@ def clean():
 
 
 def clear():
+    """Clear the context, used in test."""
     clean()
