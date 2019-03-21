@@ -1,6 +1,11 @@
 OpenCensus httplib Integration
 ============================================================================
 
+|pypi|
+
+.. |pypi| image:: https://badge.fury.io/py/opencensus-ext-httplib.svg
+   :target: https://pypi.org/project/opencensus-ext-httplib/
+
 OpenCensus can trace HTTP requests made with the httplib library.
 
 You can enable requests integration by specifying ``'httplib'`` to ``trace_integrations``.
