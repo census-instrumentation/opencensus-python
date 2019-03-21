@@ -147,6 +147,7 @@ class StackdriverStatsExporter(object):
         return self._client
 
     def export_metrics(self, metrics):
+        metrics = list(metrics)
         for metric in metrics:
             self.register_metric_descriptor(metric.descriptor)
         ts_batches = self.create_batched_time_series(metrics)
