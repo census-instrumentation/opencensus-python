@@ -20,7 +20,7 @@ _measure_to_view_map_slot = RuntimeContext.register_slot(
 
 
 def get_measure_to_view_map():
-    RuntimeContext.measure_to_view_map
+    return RuntimeContext.measure_to_view_map
 
 
 def set_measure_to_view_map(measure_to_view_map):
