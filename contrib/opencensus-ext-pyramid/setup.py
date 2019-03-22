@@ -39,7 +39,7 @@ setup(
     include_package_data=True,
     long_description=open('README.rst').read(),
     install_requires=[
-        'pyramid >= 1.9.1, < 2.0.0',
+        'pyramid == 1.9.1',
         'opencensus >= 0.3.0, < 1.0.0',
     ],
     extras_require={},
