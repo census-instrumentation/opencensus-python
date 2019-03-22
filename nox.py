@@ -65,7 +65,7 @@ def unit(session, py):
         '--cov-append',
         '--cov-config=.coveragerc',
         '--cov-report=',
-        '--cov-fail-under=97',
+        '--cov-fail-under=95',  # release branch only, see #576
         'tests/unit/',
         'contrib/',
         *session.posargs
