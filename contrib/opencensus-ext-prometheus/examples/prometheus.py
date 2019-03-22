@@ -17,8 +17,8 @@
 import random
 import time
 
+from opencensus.ext.prometheus import stats_exporter as prometheus
 from opencensus.stats import aggregation as aggregation_module
-from opencensus.stats.exporters import prometheus_exporter as prometheus
 from opencensus.stats import measure as measure_module
 from opencensus.stats import stats as stats_module
 from opencensus.stats import view as view_module
