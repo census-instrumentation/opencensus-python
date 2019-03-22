@@ -61,7 +61,6 @@ def unit(session, py):
     session.run(
         'py.test',
         '--quiet',
-        '--cov=opencensus',
         '--cov-append',
         '--cov-config=.coveragerc',
         '--cov-report=',

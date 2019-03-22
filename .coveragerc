@@ -1,10 +1,15 @@
 [run]
 branch = True
-omit = 
-       *gen/jaeger*
-       *gen/opencensus*
-       opencensus/__init__.py
-       opencensus/common/__init__.py
+omit =
+    *gen/jaeger*
+    *gen/opencensus*
+    opencensus/__init__.py
+    opencensus/common/__init__.py
+
+[paths]
+source =
+    opencensus/
+    contrib/*/opencensus/
 
 [report]
 fail_under = 100
@@ -14,8 +19,10 @@ exclude_lines =
     pragma: NO COVER
     # Ignore debug-only repr
     def __repr__
-omit = 
-       *gen/jaeger*
-       *gen/opencensus*
-       opencensus/__init__.py
-       opencensus/common/__init__.py
+omit =
+    *gen/jaeger*
+    *gen/opencensus*
+    contrib/*/opencensus/__init__.py
+    contrib/*/opencensus/ext/__init__.py
+    opencensus/__init__.py
+    opencensus/common/__init__.py
