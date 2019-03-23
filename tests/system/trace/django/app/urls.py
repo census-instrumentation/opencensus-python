@@ -27,20 +27,20 @@ Including another URLconf
     1. Add an import:  from blog import urls as blog_urls
     2. Add a URL to urlpatterns:  url(r'^blog/', include(blog_urls))
 """
-from django.conf.urls import include, url
+from django.urls import path
 from django.contrib import admin
 
 import app.views
 
 
 urlpatterns = [
-    url(r'^admin/', include(admin.site.urls)),
-    url(r'^$', app.views.home),
-    url(r'^greetings$', app.views.greetings),
-    url(r'^_ah/health$', app.views.health_check),
-    url(r'^request$', app.views.get_request_header),
-    url(r'^mysql$', app.views.mysql_trace),
-    url(r'^postgresql$', app.views.postgresql_trace),
-    url(r'^sqlalchemy_mysql$', app.views.sqlalchemy_mysql_trace),
-    url(r'^sqlalchemy_postgresql$', app.views.sqlalchemy_postgresql_trace),
+    path(r'^admin/', admin.site.urls),
+    path(r'^$', app.views.home),
+    path(r'^greetings$', app.views.greetings),
+    path(r'^_ah/health$', app.views.health_check),
+    path(r'^request$', app.views.get_request_header),
+    path(r'^mysql$', app.views.mysql_trace),
+    path(r'^postgresql$', app.views.postgresql_trace),
+    path(r'^sqlalchemy_mysql$', app.views.sqlalchemy_mysql_trace),
+    path(r'^sqlalchemy_postgresql$', app.views.sqlalchemy_postgresql_trace),
 ]

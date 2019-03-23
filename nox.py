@@ -40,7 +40,7 @@ def _install_dev_packages(session):
 
 
 @nox.session
-@nox.parametrize('py', ['2.7', '3.4', '3.5', '3.6'])
+@nox.parametrize('py', ['2.7', '3.4', '3.5', '3.6', '3.7'])
 def unit(session, py):
     """Run the unit test suite."""
 
@@ -69,7 +69,7 @@ def unit(session, py):
 
 
 @nox.session
-@nox.parametrize('py', ['2.7', '3.6'])
+@nox.parametrize('py', ['2.7', '3.7'])
 def system(session, py):
     """Run the system test suite."""
 
