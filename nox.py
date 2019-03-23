@@ -61,12 +61,12 @@ def unit(session, py):
     session.run(
         'py.test',
         '--quiet',
+        '--cov=contrib', '--cov=opencensus',
         '--cov-append',
         '--cov-config=.coveragerc',
         '--cov-report=',
         '--cov-fail-under=97',
-        'tests/unit/',
-        'contrib/',
+        'contrib/', 'tests/unit/',
         *session.posargs
     )
 
