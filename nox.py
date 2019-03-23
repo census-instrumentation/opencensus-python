@@ -66,7 +66,7 @@ def unit(session, py):
         '--cov-config=.coveragerc',
         '--cov-report=',
         '--cov-fail-under=97',
-        'contrib/', 'tests/unit/',
+        'tests/unit/', 'contrib/',
         *session.posargs
     )
 
