@@ -1,6 +1,11 @@
 OpenCensus gRPC Integration
 ============================================================================
 
+|pypi|
+
+.. |pypi| image:: https://badge.fury.io/py/opencensus-ext-grpc.svg
+   :target: https://pypi.org/project/opencensus-ext-grpc/
+
 OpenCensus provides the implementation of interceptors for both the client side
 and server side to instrument the gRPC requests and responses. The client
 interceptors are used to create a decorated channel that intercepts client

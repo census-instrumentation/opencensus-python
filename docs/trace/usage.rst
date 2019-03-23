@@ -110,7 +110,7 @@ file:
 
 .. code:: python
 
-    from opencensus.trace.exporters import file_exporter
+    from opencensus.trace import file_exporter
     from opencensus.trace.tracers import context_tracer
 
     exporter = file_exporter.FileExporter(file_name='traces')
@@ -120,7 +120,7 @@ This example shows how to report the traces to Stackdriver Trace:
 
 .. code:: python
 
-    from opencensus.trace.exporters import stackdriver_exporter
+    from opencensus.ext.stackdriver import trace_exporter as stackdriver_exporter
     from opencensus.trace import tracer as tracer_module
 
     exporter = stackdriver_exporter.StackdriverExporter(
@@ -233,7 +233,7 @@ You can configure the sampler, exporter, propagator using the ``OPENCENSUS_TRACE
 
     OPENCENSUS_TRACE = {
         'SAMPLER': 'opencensus.trace.samplers.probability.ProbabilitySampler',
-        'REPORTER': 'opencensus.trace.exporters.print_exporter.PrintExporter',
+        'REPORTER': 'opencensus.trace.print_exporter.PrintExporter',
         'PROPAGATOR': 'opencensus.trace.propagation.google_cloud_format.'
                       'GoogleCloudFormatPropagator',
     }
@@ -273,7 +273,7 @@ into the pyramid settings
 
 .. code:: python
 
-    from opencensus.trace.exporters import print_exporter
+    from opencensus.trace import print_exporter
     from opencensus.trace.propagation import google_cloud_format
     from opencensus.trace.samplers import probability
 

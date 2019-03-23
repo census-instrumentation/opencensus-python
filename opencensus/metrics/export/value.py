@@ -110,6 +110,13 @@ class Exemplar(object):
         self._timestamp = timestamp
         self._attachments = attachments
 
+    def __repr__(self):
+        return ("{}({})"
+                .format(
+                    type(self).__name__,
+                    self.value,
+                ))
+
     @property
     def value(self):
         return self._value
@@ -137,6 +144,13 @@ class Bucket(object):
     def __init__(self, count, exemplar=None):
         self._count = count
         self._exemplar = exemplar
+
+    def __repr__(self):
+        return ("{}({})"
+                .format(
+                    type(self).__name__,
+                    self.count,
+                ))
 
     @property
     def count(self):
@@ -185,6 +199,13 @@ class BucketOptions(object):
 
     def __init__(self, type_=None):
         self._type = type_
+
+    def __repr__(self):
+        return ("{}({})"
+                .format(
+                    type(self).__name__,
+                    self.type_,
+                ))
 
     @property
     def type_(self):
@@ -252,6 +273,18 @@ class ValueDistribution(object):
         self._sum_of_squared_deviation = sum_of_squared_deviation
         self._bucket_options = bucket_options
         self._buckets = buckets
+
+    def __repr__(self):
+        try:
+            bounds = self.bucket_options.type_.bounds,
+        except AttributeError:
+            bounds = None
+
+        return ("{}({})"
+                .format(
+                    type(self).__name__,
+                    bounds
+                ))
 
     @property
     def count(self):

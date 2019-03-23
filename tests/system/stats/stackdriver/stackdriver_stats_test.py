@@ -17,8 +17,8 @@ import random
 import time
 import unittest
 from retrying import retry
+from opencensus.ext.stackdriver import stats_exporter as stackdriver
 from opencensus.stats import aggregation as aggregation_module
-from opencensus.stats.exporters import stackdriver_exporter as stackdriver
 from opencensus.stats import measure as measure_module
 from opencensus.stats import stats as stats_module
 from opencensus.stats import view as view_module

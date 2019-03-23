@@ -1,6 +1,6 @@
 Exporter - File Exporter
 ========================
 
-.. automodule:: opencensus.trace.exporters.file_exporter
+.. automodule:: opencensus.trace.file_exporter
   :members:
   :show-inheritance:

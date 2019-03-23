@@ -15,7 +15,7 @@
 from wsgiref.simple_server import make_server
 
 from opencensus.trace import config_integration
-from opencensus.trace.exporters import print_exporter
+from opencensus.trace import print_exporter
 from opencensus.trace.samplers import probability
 
 from app import main

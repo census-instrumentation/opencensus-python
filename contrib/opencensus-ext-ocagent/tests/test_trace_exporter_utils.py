@@ -16,6 +16,7 @@ import codecs
 from datetime import datetime, timedelta
 import unittest
 
+from opencensus.common import utils as common_utils
 from opencensus.ext.ocagent.trace_exporter import utils
 from opencensus.ext.ocagent.trace_exporter.gen.opencensus.trace.v1 \
     import trace_pb2
@@ -532,7 +533,8 @@ class TestTraceExporterUtils(unittest.TestCase):
         expected_seconds = int(delta.total_seconds())
         expected_nanos = delta.microseconds * 1000
 
-        proto_ts = utils.proto_ts_from_datetime_str(now.isoformat() + 'Z')
+        proto_ts = utils.proto_ts_from_datetime_str(
+            common_utils.to_iso_str(now))
         self.assertEqual(proto_ts.seconds, int(expected_seconds))
         self.assertEqual(proto_ts.nanos, expected_nanos)
 

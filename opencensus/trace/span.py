@@ -15,7 +15,7 @@
 from datetime import datetime
 from itertools import chain
 
-from opencensus.common.utils import get_truncatable_str
+from opencensus.common import utils
 from opencensus.trace import attributes
 from opencensus.trace import base_span
 from opencensus.trace import link as link_module
@@ -225,11 +225,11 @@ class Span(base_span.BaseSpan):
 
     def start(self):
         """Set the start time for a span."""
-        self.start_time = datetime.utcnow().isoformat() + 'Z'
+        self.start_time = utils.to_iso_str()
 
     def finish(self):
         """Set the end time for a span."""
-        self.end_time = datetime.utcnow().isoformat() + 'Z'
+        self.end_time = utils.to_iso_str()
 
     def __iter__(self):
         """Iterate through the span tree."""
@@ -265,7 +265,7 @@ def format_span_json(span):
     :returns: Formatted Span.
     """
     span_json = {
-        'displayName': get_truncatable_str(span.name),
+        'displayName': utils.get_truncatable_str(span.name),
         'spanId': span.span_id,
         'startTime': span.start_time,
         'endTime': span.end_time,

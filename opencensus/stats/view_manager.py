@@ -12,16 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from opencensus.common import utils
 from opencensus.stats.measure_to_view_map import MeasureToViewMap
 from opencensus.stats import execution_context
-from datetime import datetime
 
 
 class ViewManager(object):
     """View Manager allows the registering of Views for collecting stats
     and receiving stats data as View Data"""
     def __init__(self):
-        self.time = datetime.utcnow().isoformat() + 'Z'
+        self.time = utils.to_iso_str()
         if execution_context.get_measure_to_view_map() == {}:
             execution_context.set_measure_to_view_map(MeasureToViewMap())
 

@@ -1,6 +1,6 @@
 Exporter - Zipkin Exporter
 ==========================
 
-.. automodule:: opencensus.trace.exporters.zipkin_exporter
+.. automodule:: opencensus.ext.zipkin.trace_exporter
   :members:
   :show-inheritance:
