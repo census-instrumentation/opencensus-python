@@ -31,6 +31,7 @@ def _install_dev_packages(session):
     session.install('-e', 'contrib/opencensus-ext-mysql')
     session.install('-e', 'contrib/opencensus-ext-ocagent')
     session.install('-e', 'contrib/opencensus-ext-postgresql')
+    session.install('-e', 'contrib/opencensus-ext-prometheus')
     session.install('-e', 'contrib/opencensus-ext-pymongo')
     session.install('-e', 'contrib/opencensus-ext-pymysql')
     session.install('-e', 'contrib/opencensus-ext-pyramid')
@@ -64,7 +65,7 @@ def unit(session, py):
         '--cov-append',
         '--cov-config=.coveragerc',
         '--cov-report=',
-        '--cov-fail-under=97',
+        '--cov-fail-under=95',  # release branch only, see #576
         'tests/unit/',
         'contrib/',
         *session.posargs

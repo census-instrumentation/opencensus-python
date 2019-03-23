@@ -249,7 +249,7 @@ class PrometheusStatsExporter(base.StatsExporter):
         able to export.
 
     :type options:
-        :class:`~opencensus.stats.exporters.prometheus_exporters.Options`
+        :class:`~opencensus.ext.prometheus.stats_exporter.Options`
     :param options: An options object with the parameters to instantiate the
                          prometheus exporter.
 
@@ -262,7 +262,7 @@ class PrometheusStatsExporter(base.StatsExporter):
     :param transport: An instance of a Transpor to send data with.
 
     :type collector:
-        :class:`~opencensus.stats.exporters.prometheus_exporters.Collector`
+        :class:`~opencensus.ext.prometheus.stats_exporter.Collector`
     :param collector: An instance of the Prometheus Collector object.
     """
     def __init__(self,
