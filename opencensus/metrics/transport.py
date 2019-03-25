@@ -21,7 +21,7 @@ from opencensus.common import utils
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_INTERVAL = 10
+DEFAULT_INTERVAL = 60
 GRACE_PERIOD = 5
 
 
