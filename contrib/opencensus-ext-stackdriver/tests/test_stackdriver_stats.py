@@ -77,14 +77,6 @@ class _Client(object):
         self.client_info = client_info
 
 
-@contextmanager
-def patch_sd_transport():
-    with mock.patch('opencensus.metrics.transport'
-                    '.get_default_task_class') as mm:
-        mm.return_value = stackdriver.transport.ManualTask
-        yield
-
-
 class TestOptions(unittest.TestCase):
     def test_options_blank(self):
         option = stackdriver.Options()
@@ -124,23 +116,20 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         self.assertEqual(exporter.options.project_id, project_id)
 
     def test_blank_project(self):
-        with patch_sd_transport():
-            self.assertRaises(ValueError, stackdriver.new_stats_exporter,
-                              stackdriver.Options(project_id=""))
+        self.assertRaises(ValueError, stackdriver.new_stats_exporter,
+                          stackdriver.Options(project_id=""))
 
     def test_not_blank_project(self):
         patch_client = mock.patch(
             ('opencensus.ext.stackdriver.stats_exporter'
              '.monitoring_v3.MetricServiceClient'), _Client)
 
-        with patch_sd_transport():
-            with patch_client:
-                exporter_created, transport = stackdriver.new_stats_exporter(
-                    stackdriver.Options(project_id=1))
+        with patch_client:
+            exporter_created, transport = stackdriver.new_stats_exporter(
+                stackdriver.Options(project_id=1))
 
         self.assertIsInstance(exporter_created,
                               stackdriver.StackdriverStatsExporter)
-        transport.stop()
 
     def test_get_user_agent_slug(self):
         self.assertIn(__version__, stackdriver.get_user_agent_slug())
@@ -156,14 +145,12 @@ class TestStackdriverStatsExporter(unittest.TestCase):
             'opencensus.ext.stackdriver.stats_exporter.monitoring_v3'
             '.MetricServiceClient', _Client)
 
-        with patch_sd_transport():
-            with patch_client:
-                exporter, transport = stackdriver.new_stats_exporter(
-                    stackdriver.Options(project_id=1))
+        with patch_client:
+            exporter, transport = stackdriver.new_stats_exporter(
+                stackdriver.Options(project_id=1))
 
         self.assertIn(stackdriver.get_user_agent_slug(),
                       exporter.client.client_info.to_user_agent())
-        transport.stop()
 
     def test_sanitize(self):
         # empty
@@ -372,6 +359,14 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         self.assertEqual(len(sd_args), 1)
         [sd_arg] = exporter.client.create_time_series.call_args[0][1]
         self.assertEqual(sd_arg.points[0].value.int64_value, 123)
+
+
+@contextmanager
+def patch_sd_transport():
+    with mock.patch('opencensus.metrics.transport'
+                    '.get_default_task_class') as mm:
+        mm.return_value = stackdriver.transport.ManualTask
+        yield
 
 
 @mock.patch('opencensus.ext.stackdriver.stats_exporter'

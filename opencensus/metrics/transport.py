@@ -39,6 +39,8 @@ class PeriodicTask(threading.Thread):
     :param interval: Seconds between calls to the function.
     """
 
+    daemon = True
+
     def __init__(self, func, interval=None, **kwargs):
         super(PeriodicTask, self).__init__(**kwargs)
         if interval is None:
