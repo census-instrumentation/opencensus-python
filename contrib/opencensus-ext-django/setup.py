@@ -40,12 +40,12 @@ setup(
     long_description=open('README.rst').read(),
     install_requires=[
         'Django >= 1.11.0',
-        'opencensus >= 0.2.dev0, < 1.0.0',
+        'opencensus >= 0.4.dev0, < 1.0.0',
     ],
     extras_require={},
     license='Apache-2.0',
     packages=find_packages(exclude=('examples', 'tests',)),
     namespace_packages=[],
-    url='https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-django',
+    url='https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-django',  # noqa: E501
     zip_safe=False,
 )

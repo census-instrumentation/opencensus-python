@@ -22,17 +22,17 @@ import flask
 import mock
 
 from opencensus.ext.flask import flask_middleware
-from opencensus.ext.ocagent import trace_exporter
+from opencensus.ext.jaeger import trace_exporter as jaeger_exporter
+from opencensus.ext.ocagent import trace_exporter as ocagent_exporter
+from opencensus.ext.stackdriver import trace_exporter as stackdriver_exporter
+from opencensus.ext.zipkin import trace_exporter as zipkin_exporter
 from opencensus.trace import execution_context
+from opencensus.trace import print_exporter
 from opencensus.trace import span as span_module
 from opencensus.trace import span_data
 from opencensus.trace import stack_trace
 from opencensus.trace import status
 from opencensus.trace.blank_span import BlankSpan
-from opencensus.trace.exporters import jaeger_exporter
-from opencensus.trace.exporters import print_exporter
-from opencensus.trace.exporters import stackdriver_exporter
-from opencensus.trace.exporters import zipkin_exporter
 from opencensus.trace.propagation import google_cloud_format
 from opencensus.trace.samplers import always_off, always_on, ProbabilitySampler
 from opencensus.trace.span_context import SpanContext
@@ -240,7 +240,7 @@ class TestFlaskMiddleware(unittest.TestCase):
         app.config = {
             'OPENCENSUS_TRACE': {
                 'SAMPLER': ProbabilitySampler,
-                'EXPORTER': trace_exporter.TraceExporter,
+                'EXPORTER': ocagent_exporter.TraceExporter,
                 'PROPAGATOR': google_cloud_format.GoogleCloudFormatPropagator,
             },
             'OPENCENSUS_TRACE_PARAMS': {
@@ -254,7 +254,7 @@ class TestFlaskMiddleware(unittest.TestCase):
 
         self.assertIs(middleware.app, app)
         assert isinstance(
-            middleware.exporter, trace_exporter.TraceExporter)
+            middleware.exporter, ocagent_exporter.TraceExporter)
         self.assertEqual(middleware.exporter.service_name, 'foo')
         self.assertEqual(middleware.exporter.endpoint, 'localhost:50001')
 
@@ -266,7 +266,7 @@ class TestFlaskMiddleware(unittest.TestCase):
         app.config = {
             'OPENCENSUS_TRACE': {
                 'SAMPLER': ProbabilitySampler,
-                'EXPORTER': trace_exporter.TraceExporter,
+                'EXPORTER': ocagent_exporter.TraceExporter,
                 'PROPAGATOR': google_cloud_format.GoogleCloudFormatPropagator,
             },
             'OPENCENSUS_TRACE_PARAMS': {
@@ -279,10 +279,10 @@ class TestFlaskMiddleware(unittest.TestCase):
 
         self.assertIs(middleware.app, app)
         assert isinstance(
-            middleware.exporter, trace_exporter.TraceExporter)
+            middleware.exporter, ocagent_exporter.TraceExporter)
         self.assertEqual(middleware.exporter.service_name, 'foo')
         self.assertEqual(middleware.exporter.endpoint,
-                         trace_exporter.DEFAULT_ENDPOINT)
+                         ocagent_exporter.DEFAULT_ENDPOINT)
 
         self.assertTrue(app.before_request.called)
         self.assertTrue(app.after_request.called)

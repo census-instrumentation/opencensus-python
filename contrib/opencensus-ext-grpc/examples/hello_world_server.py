@@ -20,9 +20,9 @@ import grpc
 import hello_world_pb2
 import hello_world_pb2_grpc
 
-from opencensus.trace.ext.grpc import server_interceptor
+from opencensus.ext.grpc import server_interceptor
+from opencensus.ext.stackdriver import trace_exporter as stackdriver_exporter
 from opencensus.trace.samplers import always_on
-from opencensus.trace.exporters import stackdriver_exporter
 
 _ONE_DAY_IN_SECONDS = 60 * 60 * 24
 

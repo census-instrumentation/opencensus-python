@@ -40,13 +40,13 @@ setup(
     long_description=open('README.rst').read(),
     install_requires=[
         'mysql-connector >= 2.1.6, < 3.0.0',
-        'opencensus >= 0.2.dev0, < 1.0.0',
-        'opencensus-ext-dbapi >= 0.1.dev0, < 1.0.0',
+        'opencensus >= 0.4.dev0, < 1.0.0',
+        'opencensus-ext-dbapi >= 0.2.dev0, < 1.0.0',
     ],
     extras_require={},
     license='Apache-2.0',
     packages=find_packages(exclude=('tests',)),
     namespace_packages=[],
-    url='https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-mysql',
+    url='https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-mysql',  # noqa: E501
     zip_safe=False,
 )

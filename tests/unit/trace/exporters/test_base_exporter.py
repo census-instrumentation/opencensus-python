@@ -18,18 +18,18 @@ import unittest
 class TestBaseExporter(unittest.TestCase):
 
     def test_export_abstract(self):
-        from opencensus.trace.exporters import base
+        from opencensus.trace import base_exporter
 
-        exporter = base.Exporter()
+        exporter = base_exporter.Exporter()
         trace = {}
 
         with self.assertRaises(NotImplementedError):
             exporter.export(trace)
 
     def test_emit_abstract(self):
-        from opencensus.trace.exporters import base
+        from opencensus.trace import base_exporter
 
-        exporter = base.Exporter()
+        exporter = base_exporter.Exporter()
         trace = {}
 
         with self.assertRaises(NotImplementedError):

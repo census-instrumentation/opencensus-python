@@ -19,7 +19,7 @@ import unittest
 class TestFileExporter(unittest.TestCase):
     @staticmethod
     def _get_target_class():
-        from opencensus.trace.exporters.file_exporter import FileExporter
+        from opencensus.trace.file_exporter import FileExporter
 
         return FileExporter
 

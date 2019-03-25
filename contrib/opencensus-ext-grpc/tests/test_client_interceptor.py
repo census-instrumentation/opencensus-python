@@ -61,20 +61,6 @@ class TestOpenCensusClientInterceptor(unittest.TestCase):
         self.assertTrue(tracer.start_span.called)
         self.assertTrue(tracer.add_attribute_to_current_span.called)
 
-    def test__end_span_between_context(self):
-        from opencensus.trace import execution_context
-
-        current_span = mock.Mock()
-        tracer = mock.Mock()
-        interceptor = client_interceptor.OpenCensusClientInterceptor(
-            tracer=tracer, host_port='test')
-        interceptor._end_span_between_context(current_span)
-
-        span_in_context = execution_context.get_current_span()
-
-        self.assertEqual(span_in_context, current_span)
-        self.assertTrue(tracer.end_span.called)
-
     def test__intercept_call_metadata_none(self):
         tracer = mock.Mock()
         tracer.span_context = mock.Mock()

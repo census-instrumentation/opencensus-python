@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from opencensus.common.utils import get_truncatable_str
+from opencensus.common import utils
 
 
 class Type(object):
@@ -46,7 +46,8 @@ class Annotation(object):
 
     def format_annotation_json(self):
         annotation_json = {}
-        annotation_json['description'] = get_truncatable_str(self.description)
+        annotation_json['description'] = utils.get_truncatable_str(
+            self.description)
 
         if self.attributes is not None:
             annotation_json['attributes'] = self.attributes.\
@@ -126,7 +127,7 @@ class TimeEvent(object):
                           spans.
     """
     def __init__(self, timestamp, annotation=None, message_event=None):
-        self.timestamp = timestamp.isoformat() + 'Z'
+        self.timestamp = utils.to_iso_str(timestamp)
 
         if annotation is not None and message_event is not None:
             raise ValueError("A TimeEvent can contain either an Annotation"

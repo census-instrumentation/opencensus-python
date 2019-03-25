@@ -28,7 +28,7 @@ from opencensus.ext.ocagent.trace_exporter.gen.opencensus.agent.trace.v1 \
     import trace_service_pb2
 from opencensus.ext.ocagent.trace_exporter.gen.opencensus.agent.trace.v1 \
     import trace_service_pb2_grpc
-from opencensus.trace.exporters import base
+from opencensus.trace import base_exporter
 
 # Default agent endpoint
 DEFAULT_ENDPOINT = 'localhost:55678'
@@ -37,7 +37,7 @@ DEFAULT_ENDPOINT = 'localhost:55678'
 EXPORTER_VERSION = '0.0.1'
 
 
-class TraceExporter(base.Exporter):
+class TraceExporter(base_exporter.Exporter):
     """Export the spans by sending them to opencensus agent.
 
     :type service_name: str
@@ -54,8 +54,8 @@ class TraceExporter(base.Exporter):
 
     :type transport: :class:`type`
     :param transport: Class for creating new transport objects. It should
-                      extend from the base :class:`.Transport` type and
-                      implement :meth:`.Transport.export`. Defaults to
+                      extend from the base_exporter :class:`.Transport` type
+                      and implement :meth:`.Transport.export`. Defaults to
                       :class:`.SyncTransport`. The other option is
                       :class:`.AsyncTransport`.
     """
@@ -84,7 +84,7 @@ class TraceExporter(base.Exporter):
                 else host_name,
                 pid=os.getpid(),
                 start_timestamp=utils.proto_ts_from_datetime(
-                    datetime.datetime.now())
+                    datetime.datetime.utcnow())
             ),
             library_info=common_pb2.LibraryInfo(
                 language=common_pb2.LibraryInfo.Language.Value('PYTHON'),

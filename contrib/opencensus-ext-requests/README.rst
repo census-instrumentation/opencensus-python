@@ -1,6 +1,11 @@
 OpenCensus requests Integration
 ============================================================================
 
+|pypi|
+
+.. |pypi| image:: https://badge.fury.io/py/opencensus-ext-requests.svg
+   :target: https://pypi.org/project/opencensus-ext-requests/
+
 OpenCensus can trace HTTP requests made with the `requests package`_. The request URL,
 method, and status will be collected.
 

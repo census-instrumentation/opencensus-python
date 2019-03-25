@@ -39,14 +39,14 @@ setup(
     include_package_data=True,
     long_description=open('README.rst').read(),
     install_requires=[
-        'opencensus >= 0.2.dev0, < 1.0.0',
-        'opencensus-ext-grpc >= 0.1.dev0, < 1.0.0',
-        'opencensus-ext-requests >= 0.1.dev0, < 1.0.0',
+        'opencensus >= 0.4.dev0, < 1.0.0',
+        'opencensus-ext-grpc >= 0.2.dev0, < 1.0.0',
+        'opencensus-ext-requests >= 0.2.dev0, < 1.0.0',
     ],
     extras_require={},
     license='Apache-2.0',
     packages=find_packages(exclude=('tests',)),
     namespace_packages=[],
-    url='https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-google-cloud-clientlibs',
+    url='https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-google-cloud-clientlibs',  # noqa: E501
     zip_safe=False,
 )

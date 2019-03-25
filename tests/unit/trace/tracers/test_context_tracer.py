@@ -26,8 +26,8 @@ class TestContextTracer(unittest.TestCase):
         execution_context.clear()
 
     def test_constructor_defaults(self):
+        from opencensus.trace import print_exporter
         from opencensus.trace import span_context
-        from opencensus.trace.exporters import print_exporter
 
         tracer = context_tracer.ContextTracer()
 

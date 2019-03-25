@@ -27,15 +27,19 @@ def _install_dev_packages(session):
     session.install('-e', 'contrib/opencensus-ext-flask')
     session.install('-e', 'contrib/opencensus-ext-grpc')
     session.install('-e', 'contrib/opencensus-ext-httplib')
+    session.install('-e', 'contrib/opencensus-ext-jaeger')
     session.install('-e', 'contrib/opencensus-ext-mysql')
     session.install('-e', 'contrib/opencensus-ext-ocagent')
     session.install('-e', 'contrib/opencensus-ext-postgresql')
+    session.install('-e', 'contrib/opencensus-ext-prometheus')
     session.install('-e', 'contrib/opencensus-ext-pymongo')
     session.install('-e', 'contrib/opencensus-ext-pymysql')
     session.install('-e', 'contrib/opencensus-ext-pyramid')
     session.install('-e', 'contrib/opencensus-ext-requests')
     session.install('-e', 'contrib/opencensus-ext-sqlalchemy')
+    session.install('-e', 'contrib/opencensus-ext-stackdriver')
     session.install('-e', 'contrib/opencensus-ext-threading')
+    session.install('-e', 'contrib/opencensus-ext-zipkin')
     session.install('-e', 'contrib/opencensus-ext-google-cloud-clientlibs')
 
 
@@ -57,13 +61,12 @@ def unit(session, py):
     session.run(
         'py.test',
         '--quiet',
-        '--cov=opencensus',
+        '--cov=opencensus', '--cov=contrib',
         '--cov-append',
         '--cov-config=.coveragerc',
         '--cov-report=',
         '--cov-fail-under=97',
-        'tests/unit/',
-        'contrib/',
+        'tests/unit/', 'contrib/',
         *session.posargs
     )
 
@@ -112,8 +115,8 @@ def lint(session):
 
     session.run(
         'flake8',
-        '--exclude=opencensus/trace/exporters/gen/',
-        'opencensus/', 'tests/', 'examples/')
+        '--exclude=contrib/opencensus-ext-ocagent/opencensus/ext/ocagent/trace_exporter/gen/',
+        'contrib/', 'opencensus/', 'tests/', 'examples/')
 
 
 @nox.session
