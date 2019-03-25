@@ -27,8 +27,10 @@ from google.cloud import monitoring_v3
 from opencensus.common import utils
 from opencensus.common.monitored_resource import monitored_resource
 from opencensus.common.version import __version__
+from opencensus.metrics import transport
 from opencensus.metrics.export import metric as metric_module
 from opencensus.metrics.export import metric_descriptor
+from opencensus.stats import stats
 
 
 MAX_TIME_SERIES_PER_UPLOAD = 200
@@ -372,7 +374,9 @@ def new_stats_exporter(options):
     ci = client_info.ClientInfo(client_library_version=get_user_agent_slug())
     client = monitoring_v3.MetricServiceClient(client_info=ci)
     exporter = StackdriverStatsExporter(client=client, options=options)
-    return exporter
+
+    tt = transport.get_exporter_thread(stats.Stats(), exporter)
+    return exporter, tt
 
 
 def get_task_value():

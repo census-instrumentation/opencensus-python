@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from contextlib import contextmanager
 from datetime import datetime
 import mock
 import unittest
@@ -76,6 +77,14 @@ class _Client(object):
         self.client_info = client_info
 
 
+@contextmanager
+def patch_sd_transport():
+    with mock.patch('opencensus.metrics.transport'
+                    '.get_default_task_class') as mm:
+        mm.return_value = stackdriver.transport.ManualTask
+        yield
+
+
 class TestOptions(unittest.TestCase):
     def test_options_blank(self):
         option = stackdriver.Options()
@@ -115,20 +124,23 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         self.assertEqual(exporter.options.project_id, project_id)
 
     def test_blank_project(self):
-        self.assertRaises(ValueError, stackdriver.new_stats_exporter,
-                          stackdriver.Options(project_id=""))
+        with patch_sd_transport():
+            self.assertRaises(ValueError, stackdriver.new_stats_exporter,
+                              stackdriver.Options(project_id=""))
 
     def test_not_blank_project(self):
         patch_client = mock.patch(
             ('opencensus.ext.stackdriver.stats_exporter'
              '.monitoring_v3.MetricServiceClient'), _Client)
 
-        with patch_client:
-            exporter_created = stackdriver.new_stats_exporter(
-                stackdriver.Options(project_id=1))
+        with patch_sd_transport():
+            with patch_client:
+                exporter_created, transport = stackdriver.new_stats_exporter(
+                    stackdriver.Options(project_id=1))
 
         self.assertIsInstance(exporter_created,
                               stackdriver.StackdriverStatsExporter)
+        transport.stop()
 
     def test_get_user_agent_slug(self):
         self.assertIn(__version__, stackdriver.get_user_agent_slug())
@@ -144,12 +156,14 @@ class TestStackdriverStatsExporter(unittest.TestCase):
             'opencensus.ext.stackdriver.stats_exporter.monitoring_v3'
             '.MetricServiceClient', _Client)
 
-        with patch_client:
-            exporter = stackdriver.new_stats_exporter(
-                stackdriver.Options(project_id=1))
+        with patch_sd_transport():
+            with patch_client:
+                exporter, transport = stackdriver.new_stats_exporter(
+                    stackdriver.Options(project_id=1))
 
         self.assertIn(stackdriver.get_user_agent_slug(),
                       exporter.client.client_info.to_user_agent())
+        transport.stop()
 
     def test_sanitize(self):
         # empty
@@ -358,6 +372,90 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         self.assertEqual(len(sd_args), 1)
         [sd_arg] = exporter.client.create_time_series.call_args[0][1]
         self.assertEqual(sd_arg.points[0].value.int64_value, 123)
+
+
+@mock.patch('opencensus.ext.stackdriver.stats_exporter'
+            '.monitoring_v3.MetricServiceClient')
+class TestAsyncStatsExport(unittest.TestCase):
+    """Check that metrics are exported using the exporter thread."""
+
+    @mock.patch('opencensus.ext.stackdriver.stats_exporter'
+                '.stats.Stats')
+    def test_export_empty(self, mock_stats, mock_client):
+        """Check that we don't attempt to export empty metric sets."""
+
+        mock_stats.return_value.get_metrics.return_value = []
+
+        with patch_sd_transport():
+            exporter, transport = stackdriver.new_stats_exporter(
+                stackdriver.Options(project_id=1))
+
+        try:
+            transport.go()
+            exporter.client.create_metric_descriptor.assert_not_called()
+            exporter.client.create_time_series.assert_not_called()
+        finally:
+            transport.stop()
+
+    @mock.patch('opencensus.ext.stackdriver.stats_exporter'
+                '.stats.Stats')
+    def test_export_single_metric(self, mock_stats, mock_client):
+        """Check that we can export a set of a single metric."""
+
+        lv = label_value.LabelValue('val')
+        val = value.ValueLong(value=123)
+        dt = datetime(2019, 3, 20, 21, 34, 0, 537954)
+        pp = point.Point(value=val, timestamp=dt)
+
+        ts = [
+            time_series.TimeSeries(label_values=[lv], points=[pp],
+                                   start_timestamp=utils.to_iso_str(dt))
+        ]
+
+        desc = metric_descriptor.MetricDescriptor(
+            name='name2',
+            description='description2',
+            unit='unit2',
+            type_=metric_descriptor.MetricDescriptorType.GAUGE_INT64,
+            label_keys=[label_key.LabelKey('key', 'description')]
+        )
+
+        mm = metric.Metric(descriptor=desc, time_series=ts)
+        mock_stats.return_value.get_metrics.return_value = [mm]
+
+        with patch_sd_transport():
+            exporter, transport = stackdriver.new_stats_exporter(
+                stackdriver.Options(project_id=1))
+
+        transport.go()
+
+        try:
+            exporter.client.create_metric_descriptor.assert_called()
+            self.assertEqual(
+                exporter.client.create_metric_descriptor.call_count,
+                1)
+            md_call_arg =\
+                exporter.client.create_metric_descriptor.call_args[0][1]
+            self.assertEqual(
+                md_call_arg.metric_kind,
+                monitoring_v3.enums.MetricDescriptor.MetricKind.GAUGE
+            )
+            self.assertEqual(
+                md_call_arg.value_type,
+                monitoring_v3.enums.MetricDescriptor.ValueType.INT64
+            )
+
+            exporter.client.create_time_series.assert_called()
+            self.assertEqual(
+                exporter.client.create_time_series.call_count,
+                1)
+            ts_call_arg = exporter.client.create_time_series.call_args[0][1]
+            self.assertEqual(len(ts_call_arg), 1)
+            self.assertEqual(len(ts_call_arg[0].points), 1)
+            self.assertEqual(ts_call_arg[0].points[0].value.int64_value, 123)
+
+        finally:
+            transport.stop()
 
 
 class TestCreateTimeseries(unittest.TestCase):

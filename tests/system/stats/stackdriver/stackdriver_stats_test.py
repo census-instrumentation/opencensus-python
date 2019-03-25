@@ -129,7 +129,7 @@ class TestBasicStats(unittest.TestCase):
         view_manager = stats.view_manager
         stats_recorder = stats.stats_recorder
 
-        exporter = stackdriver.new_stats_exporter(
+        exporter, tt = stackdriver.new_stats_exporter(
             stackdriver.Options(project_id=PROJECT))
         view_manager.register_exporter(exporter)
 
@@ -148,7 +148,8 @@ class TestBasicStats(unittest.TestCase):
         measure_map.measure_int_put(VIDEO_SIZE_MEASURE_ASYNC, 25 * MiB)
 
         measure_map.record(tag_map)
-        exporter.export_metrics(stats_module.Stats().get_metrics())
+        tt.go()
+        tt.stop()
 
         @retry(
             wait_fixed=RETRY_WAIT_PERIOD,
