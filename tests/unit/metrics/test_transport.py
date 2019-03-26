@@ -15,7 +15,6 @@
 from concurrent import futures
 from contextlib import contextmanager
 import gc
-import logging
 import sys
 import threading
 import time
@@ -158,8 +157,7 @@ class TestGetExporterThreadManual(unittest.TestCase):
         with patch_get_exporter_thread():
             try:
                 task = transport.get_exporter_thread(producer, exporter)
-                with self.assertLogs('opencensus.metrics.transport',
-                                     level=logging.ERROR):
+                with self.assertLogs(transport.logger):
                     task.go()
                 self.assertFalse(task._stopped.is_set())
             finally:
@@ -172,8 +170,7 @@ class TestGetExporterThreadManual(unittest.TestCase):
             task = transport.get_exporter_thread(producer, exporter)
             del producer
             gc.collect()
-            with self.assertLogs('opencensus.metrics.transport',
-                                 level=logging.ERROR):
+            with self.assertLogs(transport.logger):
                 task.go()
             self.assertTrue(task._stopped.is_set())
 
@@ -184,8 +181,7 @@ class TestGetExporterThreadManual(unittest.TestCase):
             task = transport.get_exporter_thread(producer, exporter)
             del exporter
             gc.collect()
-            with self.assertLogs('opencensus.metrics.transport',
-                                 level=logging.ERROR):
+            with self.assertLogs(transport.logger):
                 task.go()
             self.assertTrue(task._stopped.is_set())
 
@@ -215,8 +211,7 @@ class TestGetExporterThreadPeriodic(unittest.TestCase):
         producer.get_metrics.side_effect = ValueError()
 
         task = transport.get_exporter_thread(producer, exporter)
-        with self.assertLogs('opencensus.metrics.transport',
-                             level=logging.ERROR):
+        with self.assertLogs(transport.logger):
             time.sleep(INTERVAL + INTERVAL / 2.0)
         self.assertFalse(task._stopped.is_set())
 
@@ -226,8 +221,7 @@ class TestGetExporterThreadPeriodic(unittest.TestCase):
         task = transport.get_exporter_thread(producer, exporter)
         del producer
         gc.collect()
-        with self.assertLogs('opencensus.metrics.transport',
-                             level=logging.ERROR):
+        with self.assertLogs(transport.logger):
             time.sleep(INTERVAL + INTERVAL / 2.0)
         self.assertTrue(task._stopped.is_set())
 
@@ -237,7 +231,6 @@ class TestGetExporterThreadPeriodic(unittest.TestCase):
         task = transport.get_exporter_thread(producer, exporter)
         del exporter
         gc.collect()
-        with self.assertLogs('opencensus.metrics.transport',
-                             level=logging.ERROR):
+        with self.assertLogs(transport.logger):
             time.sleep(INTERVAL + INTERVAL / 2.0)
         self.assertTrue(task._stopped.is_set())
