@@ -33,7 +33,7 @@ else:
 # Some tests use real time! This is the time to wait between the exporter
 # thread handling tasks, and doesn't account for processing time. If these
 # tests become flaky, try increasing this.
-INTERVAL = .01
+INTERVAL = .05
 
 class TestPeriodicTask(unittest.TestCase):
 
