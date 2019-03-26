@@ -35,6 +35,7 @@ else:
 # tests become flaky, try increasing this.
 INTERVAL = .05
 
+
 class TestPeriodicTask(unittest.TestCase):
 
     def test_default_constructor(self):
@@ -96,6 +97,7 @@ class TestManualTask(unittest.TestCase):
         """Check that we finish the work on the queue after stop signal."""
         count = 0
         lock = threading.Lock()
+
         def sleep_and_inc():
             time.sleep(INTERVAL)
             with lock:
@@ -119,7 +121,6 @@ class TestManualTask(unittest.TestCase):
 
             time.sleep(num_threads * INTERVAL + INTERVAL / 2.0)
             self.assertEqual(mock_func.call_count, num_threads)
-
 
 
 @contextmanager
