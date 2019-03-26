@@ -44,7 +44,7 @@ def _install_dev_packages(session):
 
 
 @nox.session
-@nox.parametrize('py', ['2.7', '3.4', '3.5', '3.6'])
+@nox.parametrize('py', ['2.7', '3.4', '3.5', '3.6', '3.7'])
 def unit(session, py):
     """Run the unit test suite."""
 
@@ -72,7 +72,7 @@ def unit(session, py):
 
 
 @nox.session
-@nox.parametrize('py', ['2.7', '3.6'])
+@nox.parametrize('py', ['2.7', '3.6', '3.7'])
 def system(session, py):
     """Run the system test suite."""
 
@@ -107,7 +107,7 @@ def lint(session):
     Returns a failure if flake8 finds linting errors or sufficiently
     serious code quality issues.
     """
-    session.interpreter = 'python3.6'
+    session.interpreter = 'python3.7'
     session.install('flake8')
 
     # Install dev packages.
@@ -122,7 +122,7 @@ def lint(session):
 @nox.session
 def lint_setup_py(session):
     """Verify that setup.py is valid (including RST check)."""
-    session.interpreter = 'python3.6'
+    session.interpreter = 'python3.7'
     session.install('docutils', 'pygments')
     session.run(
         'python', 'setup.py', 'check', '--restructuredtext', '--strict')
@@ -134,7 +134,7 @@ def cover(session):
     This outputs the coverage report aggregating coverage from the unit
     test runs (not system test runs), and then erases coverage data.
     """
-    session.interpreter = 'python3.6'
+    session.interpreter = 'python3.7'
     session.install('coverage', 'pytest-cov')
     session.run('coverage', 'report', '--show-missing', '--fail-under=100')
     session.run('coverage', 'erase')
@@ -145,7 +145,7 @@ def docs(session):
     """Build the docs."""
 
     # Build docs against the latest version of Python, because we can.
-    session.interpreter = 'python3.6'
+    session.interpreter = 'python3.7'
 
     # Set the virtualenv dirname.
     session.virtualenv_dirname = 'docs'
