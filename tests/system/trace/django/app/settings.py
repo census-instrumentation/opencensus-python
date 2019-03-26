@@ -34,8 +34,9 @@ INSTALLED_APPS = (
     'opencensus.ext.django',
 )
 
-if django.VERSION >= (1, 10):
-    MIDDLEWARE = (
+if django.VERSION <= (1, 10):
+    # Middleware interface for Django version before 1.10
+    MIDDLEWARE_CLASSES = (
         'django.contrib.sessions.middleware.SessionMiddleware',
         'django.middleware.common.CommonMiddleware',
         'django.middleware.csrf.CsrfViewMiddleware',
@@ -47,18 +48,20 @@ if django.VERSION >= (1, 10):
         'opencensus.ext.django.middleware.OpencensusMiddleware',
     )
 
-# Middleware interface for Django version before 1.10
-MIDDLEWARE_CLASSES = (
+MIDDLEWARE = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'opencensus.ext.django.middleware.OpencensusMiddleware',
 )
+
+# SessionAuthentication is unconditionally enabled for Django versions greater than 2
+if django.VERSION < (2,):
+    MIDDLEWARE += ('django.contrib.auth.middleware.SessionAuthenticationMiddleware',)
 
 ROOT_URLCONF = 'app.urls'
 
