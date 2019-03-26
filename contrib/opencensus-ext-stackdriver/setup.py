@@ -41,7 +41,7 @@ setup(
     install_requires=[
         'google-cloud-trace >= 0.20.0, < 1.0.0',
         'google-cloud-monitoring >= 0.31.0, < 1.0.0',
-        'opencensus >= 0.3.0, < 1.0.0',
+        'opencensus >= 0.3.0, < 0.4.0',
     ],
     extras_require={},
     license='Apache-2.0',
