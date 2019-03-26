@@ -54,10 +54,10 @@ class PeriodicTask(threading.Thread):
             try:
                 self.func()
             except TransportError as ex:
-                logging.exception(ex)
+                logger.exception(ex)
                 self.stop()
             except Exception:
-                logging.exception("Error handling metric export")
+                logger.exception("Error handling metric export")
 
     def stop(self):
         self._stopped.set()
@@ -89,8 +89,11 @@ class ManualTask(threading.Thread):
 
             try:
                 self.func()
+            except TransportError as ex:
+                logger.exception(ex)
+                self.stop()
             except Exception:
-                logging.exception("Error handling metric export")
+                logger.exception("Error handling metric export")
             finally:
                 task.set()
 
