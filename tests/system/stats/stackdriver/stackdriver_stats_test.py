@@ -12,10 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from contextlib import contextmanager
 import os
 import random
+import sys
 import time
-import unittest
 
 from google.cloud import monitoring_v3
 from retrying import retry
@@ -29,11 +30,27 @@ from opencensus.tags import tag_key as tag_key_module
 from opencensus.tags import tag_map as tag_map_module
 from opencensus.tags import tag_value as tag_value_module
 
+if sys.version_info < (3,):
+    import unittest2 as unittest
+    import mock
+else:
+    import unittest
+    from unittest import mock
+
+
 MiB = 1 << 20
 
 PROJECT = os.environ.get('GCLOUD_PROJECT_PYTHON')
 RETRY_WAIT_PERIOD = 10000  # Wait 10 seconds between each retry
 RETRY_MAX_ATTEMPT = 10  # Retry 10 times
+
+
+@contextmanager
+def patch_sd_transport():
+    with mock.patch('opencensus.metrics.transport'
+                    '.get_default_task_class') as mm:
+        mm.return_value = stackdriver.transport.ManualTask
+        yield
 
 
 class TestBasicStats(unittest.TestCase):
@@ -129,8 +146,9 @@ class TestBasicStats(unittest.TestCase):
         view_manager = stats.view_manager
         stats_recorder = stats.stats_recorder
 
-        exporter, tt = stackdriver.new_stats_exporter(
-            stackdriver.Options(project_id=PROJECT))
+        with patch_sd_transport():
+            exporter, transport = stackdriver.new_stats_exporter(
+                stackdriver.Options(project_id=PROJECT))
         view_manager.register_exporter(exporter)
 
         # Register view.
@@ -148,8 +166,6 @@ class TestBasicStats(unittest.TestCase):
         measure_map.measure_int_put(VIDEO_SIZE_MEASURE_ASYNC, 25 * MiB)
 
         measure_map.record(tag_map)
-        tt.go()
-        tt.stop()
 
         @retry(
             wait_fixed=RETRY_WAIT_PERIOD,
@@ -164,4 +180,8 @@ class TestBasicStats(unittest.TestCase):
             self.assertEqual(element.description, view_description)
             self.assertEqual(element.unit, "By")
 
-        get_metric_descriptors(self, exporter, view_description)
+        try:
+            transport.go()
+            get_metric_descriptors(self, exporter, view_description)
+        finally:
+            transport.stop()
