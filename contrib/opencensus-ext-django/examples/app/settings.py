@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Django settings for test app."""
+import django
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
