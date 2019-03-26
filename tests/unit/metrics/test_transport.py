@@ -95,14 +95,13 @@ class TestManualTask(unittest.TestCase):
 
     def test_manual_task_finish_queue(self):
         """Check that we finish the work on the queue after stop signal."""
-        count = 0
         lock = threading.Lock()
+        count = mock.Mock()
 
         def sleep_and_inc():
             time.sleep(INTERVAL)
             with lock:
-                nonlocal count
-                count += 1  # noqa
+                count()
 
         mock_func = mock.Mock()
         mock_func.side_effect = sleep_and_inc
@@ -115,11 +114,12 @@ class TestManualTask(unittest.TestCase):
             for _ in range(num_threads):
                 tpe.submit(task.go)
 
-            self.assertEqual(count, 0)
+            self.assertEqual(count.call_count, 0)
             # Call stop after work is queued, but not complete
             task.stop()
 
             time.sleep(num_threads * INTERVAL + INTERVAL / 2.0)
+            self.assertEqual(count.call_count, num_threads)
             self.assertEqual(mock_func.call_count, num_threads)
 
 
