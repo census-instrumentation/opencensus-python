@@ -14,7 +14,6 @@
 
 from concurrent import futures
 from contextlib import contextmanager
-from functools import partial
 import gc
 import logging
 import sys
@@ -100,26 +99,27 @@ class TestManualTask(unittest.TestCase):
         def sleep_and_inc():
             time.sleep(INTERVAL)
             with lock:
-                count += 1
+                nonlocal count
+                count += 1  # noqa
 
         mock_func = mock.Mock()
-        mock_func.side_effect = partial(time.sleep, INTERVAL)
+        mock_func.side_effect = sleep_and_inc
 
         task = transport.ManualTask(mock_func)
-        try:
-            task.start()
+        task.start()
 
-            num_threads = 5
-            with futures.ThreadPoolExecutor(max_workers=num_threads) as tpe:
-                for _ in range(num_threads):
-                    tpe.submit(task.go)
+        num_threads = 5
+        with futures.ThreadPoolExecutor(max_workers=num_threads) as tpe:
+            for _ in range(num_threads):
+                tpe.submit(task.go)
 
             self.assertEqual(count, 0)
-        finally:
+            # Call stop after work is queued, but not complete
             task.stop()
 
-        time.sleep(num_threads * INTERVAL + INTERVAL / 2.0)
-        self.assertEqual(mock_func.call_count, num_threads)
+            time.sleep(num_threads * INTERVAL + INTERVAL / 2.0)
+            self.assertEqual(mock_func.call_count, num_threads)
+
 
 
 @contextmanager
