@@ -59,9 +59,12 @@ MIDDLEWARE = (
     'opencensus.ext.django.middleware.OpencensusMiddleware',
 )
 
-# SessionAuthentication is unconditionally enabled for Django versions greater than 2
+# SessionAuthentication is unconditionally enabled for Django versions greater
+# than 2
 if django.VERSION < (2,):
-    MIDDLEWARE += ('django.contrib.auth.middleware.SessionAuthenticationMiddleware',)
+    MIDDLEWARE += (
+        'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
+    )
 
 ROOT_URLCONF = 'app.urls'
 

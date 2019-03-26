@@ -45,7 +45,9 @@ MIDDLEWARE = (
 )
 
 if django.VERSION < (2,):
-    MIDDLEWARE += ('django.contrib.auth.middleware.SessionAuthenticationMiddleware',)
+    MIDDLEWARE += (
+        'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
+    )
 
 ROOT_URLCONF = 'app.urls'
 
