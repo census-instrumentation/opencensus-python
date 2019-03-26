@@ -105,6 +105,7 @@ class ManualTask(threading.Thread):
         ee.wait(GRACE_PERIOD)
 
     def stop(self):
+        self._stopped.set()
         self.qq.put(ManualTask.STOP)
 
 
