@@ -199,7 +199,7 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         self.assertEqual(expected_view_name_namespaced, view_name_namespaced)
 
     def test_stackdriver_register_exporter(self):
-        stats = stats_module.Stats()
+        stats = stats_module.stats
         view_manager = stats.view_manager
 
         exporter = mock.Mock()
@@ -541,7 +541,7 @@ class TestCreateTimeseries(unittest.TestCase):
         exporter = stackdriver.StackdriverStatsExporter(
             options=option, client=client)
 
-        stats = stats_module.Stats()
+        stats = stats_module.stats
         view_manager = stats.view_manager
         stats_recorder = stats.stats_recorder
 
@@ -617,7 +617,7 @@ class TestCreateTimeseries(unittest.TestCase):
         exporter = stackdriver.StackdriverStatsExporter(
             options=option, client=client)
 
-        stats = stats_module.Stats()
+        stats = stats_module.stats
         view_manager = stats.view_manager
         stats_recorder = stats.stats_recorder
 
@@ -888,7 +888,7 @@ class TestCreateTimeseries(unittest.TestCase):
         exporter = stackdriver.StackdriverStatsExporter(
             options=option, client=client)
 
-        stats = stats_module.Stats()
+        stats = stats_module.stats
         view_manager = stats.view_manager
         stats_recorder = stats.stats_recorder
 

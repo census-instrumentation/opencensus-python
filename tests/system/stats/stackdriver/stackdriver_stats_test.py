@@ -74,7 +74,7 @@ class TestBasicStats(unittest.TestCase):
             VIDEO_SIZE_VIEW_NAME, view_description, [FRONTEND_KEY],
             VIDEO_SIZE_MEASURE, VIDEO_SIZE_DISTRIBUTION)
 
-        stats = stats_module.Stats()
+        stats = stats_module.stats
         view_manager = stats.view_manager
         stats_recorder = stats.stats_recorder
 
@@ -99,7 +99,7 @@ class TestBasicStats(unittest.TestCase):
         measure_map.measure_int_put(VIDEO_SIZE_MEASURE, 25 * MiB)
 
         measure_map.record(tag_map)
-        exporter.export_metrics(stats_module.Stats().get_metrics())
+        exporter.export_metrics(stats_module.stats.get_metrics())
 
         # Sleep for [0, 10] milliseconds to fake wait.
         time.sleep(random.randint(1, 10) / 1000.0)
@@ -142,7 +142,7 @@ class TestBasicStats(unittest.TestCase):
             VIDEO_SIZE_VIEW_NAME_ASYNC, view_description, [FRONTEND_KEY_ASYNC],
             VIDEO_SIZE_MEASURE_ASYNC, VIDEO_SIZE_DISTRIBUTION_ASYNC)
 
-        stats = stats_module.Stats()
+        stats = stats_module.stats
         view_manager = stats.view_manager
         stats_recorder = stats.stats_recorder
 

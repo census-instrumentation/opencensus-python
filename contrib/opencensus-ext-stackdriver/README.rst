@@ -89,7 +89,7 @@ Register the Stackdriver exporter
 
     .. code:: python
 
-        stats = stats_module.Stats()
+        stats = stats_module.stats
         view_manager = stats.view_manager
 
         exporter = stackdriver.new_stats_exporter(stackdriver.Options(project_id="<id_value>"))

@@ -374,7 +374,7 @@ def new_stats_exporter(options):
     client = monitoring_v3.MetricServiceClient(client_info=ci)
     exporter = StackdriverStatsExporter(client=client, options=options)
 
-    tt = transport.get_exporter_thread(stats.Stats(), exporter)
+    tt = transport.get_exporter_thread(stats.stats, exporter)
     return exporter, tt
 
 

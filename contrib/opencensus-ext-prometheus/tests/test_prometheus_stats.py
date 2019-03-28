@@ -280,7 +280,7 @@ class TestPrometheusStatsExporter(unittest.TestCase):
 
     def test_emit(self):
         options = prometheus.Options(namespace="opencensus", port=9005)
-        stats = stats_module.Stats()
+        stats = stats_module.stats
         view_manager = stats.view_manager
         stats_recorder = stats.stats_recorder
         exporter = prometheus.new_stats_exporter(options)

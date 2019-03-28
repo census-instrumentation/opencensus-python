@@ -30,7 +30,7 @@ m_latency_ms = measure_module.MeasureFloat(
     "task_latency", "The task latency in milliseconds", "ms")
 
 # The stats recorder
-stats = stats_module.Stats()
+stats = stats_module.stats
 view_manager = stats.view_manager
 stats_recorder = stats.stats_recorder
 

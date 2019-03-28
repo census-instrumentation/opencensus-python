@@ -45,7 +45,7 @@ Register the Prometheus exporter
 
     .. code:: python
 
-        stats = stats_module.Stats()
+        stats = stats_module.stats
         view_manager = stats.view_manager
 
         exporter = prometheus.new_stats_exporter(prometheus.Options(namespace="<namespace>"))
