@@ -212,17 +212,6 @@ class TestStackdriverStatsExporter(unittest.TestCase):
 
         self.assertEqual(registered_exporters, 1)
 
-    def test_set_metric_labels(self):
-        series = monitoring_v3.types.TimeSeries()
-        tag_value = tag_value_module.TagValue("1200")
-        stackdriver.set_metric_labels(series, VIDEO_SIZE_VIEW, [tag_value])
-        self.assertEqual(len(series.metric.labels), 2)
-
-    def test_set_metric_labels_with_None(self):
-        series = monitoring_v3.types.TimeSeries()
-        stackdriver.set_metric_labels(series, VIDEO_SIZE_VIEW, [None])
-        self.assertEqual(len(series.metric.labels), 1)
-
     @mock.patch('os.getpid', return_value=12345)
     @mock.patch(
         'platform.uname',

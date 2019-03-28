@@ -14,7 +14,6 @@
 
 from datetime import datetime
 import itertools
-import logging
 import os
 import platform
 import re
@@ -415,18 +414,6 @@ def new_label_descriptors(defaults, keys):
     label_descriptors.append({"key": OPENCENSUS_TASK,
                               "description": OPENCENSUS_TASK_DESCRIPTION})
     return label_descriptors
-
-
-def set_metric_labels(series, view, tag_values):
-    if len(view.columns) != len(tag_values):
-        logging.warning(
-            "TagKeys and TagValues don't have same size."
-        )  # pragma: NO COVER
-
-    for key, value in zip(view.columns, tag_values):
-        if value is not None:
-            series.metric.labels[sanitize_label(key)] = value
-    series.metric.labels[OPENCENSUS_TASK] = get_task_value()
 
 
 def sanitize_label(text):
