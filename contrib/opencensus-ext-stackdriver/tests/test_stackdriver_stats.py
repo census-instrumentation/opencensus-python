@@ -364,11 +364,11 @@ class TestAsyncStatsExport(unittest.TestCase):
     """Check that metrics are exported using the exporter thread."""
 
     @mock.patch('opencensus.ext.stackdriver.stats_exporter'
-                '.stats.Stats')
+                '.stats.stats')
     def test_export_empty(self, mock_stats, mock_client):
         """Check that we don't attempt to export empty metric sets."""
 
-        mock_stats.return_value.get_metrics.return_value = []
+        mock_stats.get_metrics.return_value = []
 
         with patch_sd_transport():
             exporter, transport = stackdriver.new_stats_exporter(
@@ -382,7 +382,7 @@ class TestAsyncStatsExport(unittest.TestCase):
             transport.stop()
 
     @mock.patch('opencensus.ext.stackdriver.stats_exporter'
-                '.stats.Stats')
+                '.stats.stats')
     def test_export_single_metric(self, mock_stats, mock_client):
         """Check that we can export a set of a single metric."""
 
@@ -405,7 +405,7 @@ class TestAsyncStatsExport(unittest.TestCase):
         )
 
         mm = metric.Metric(descriptor=desc, time_series=ts)
-        mock_stats.return_value.get_metrics.return_value = [mm]
+        mock_stats.get_metrics.return_value = [mm]
 
         with patch_sd_transport():
             exporter, transport = stackdriver.new_stats_exporter(
@@ -443,6 +443,14 @@ class TestAsyncStatsExport(unittest.TestCase):
 
 
 class TestCreateTimeseries(unittest.TestCase):
+
+    def setUp(self):
+        patcher = mock.patch(
+            'opencensus.ext.stackdriver.stats_exporter.stats.stats',
+            stats_module._Stats())
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
     def check_labels(self,
                      actual_labels,
                      expected_labels,
