@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from opencensus.trace import print_exporter
 from opencensus.trace.propagation import google_cloud_format
-from opencensus.trace.exporters import print_exporter
 from opencensus.trace.samplers import always_on
 from opencensus.trace.span_context import SpanContext
 from opencensus.trace.tracers import context_tracer
@@ -33,7 +33,7 @@ class Tracer(object):
                     :class:`.AlwaysOnSampler`. The rest options are
                     :class:`.AlwaysOffSampler`, :class:`.FixedRateSampler`.
 
-    :type exporter: :class:`~opencensus.trace.exporters.base.exporter`
+    :type exporter: :class:`~opencensus.trace.base_exporter.exporter`
     :param exporter: Instances of exporter objects. Default to
                      :class:`.Printexporter`. The rest options are
                      :class:`.Fileexporter`, :class:`.Printexporter`,

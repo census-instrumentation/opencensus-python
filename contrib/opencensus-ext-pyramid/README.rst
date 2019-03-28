@@ -1,6 +1,11 @@
 OpenCensus Pyramid Integration
 ============================================================================
 
+|pypi|
+
+.. |pypi| image:: https://badge.fury.io/py/opencensus-ext-pyramid.svg
+   :target: https://pypi.org/project/opencensus-ext-pyramid/
+
 Installation
 ------------
 
@@ -27,7 +32,7 @@ into the pyramid settings
 
 .. code:: python
 
-    from opencensus.trace.exporters import print_exporter
+    from opencensus.trace import print_exporter
     from opencensus.trace.propagation import google_cloud_format
     from opencensus.trace.samplers import probability
 

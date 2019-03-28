@@ -22,8 +22,8 @@ from opencensus.trace import span_data
 
 class TestTracer(unittest.TestCase):
     def test_constructor_default(self):
+        from opencensus.trace import print_exporter
         from opencensus.trace.propagation import google_cloud_format
-        from opencensus.trace.exporters import print_exporter
         from opencensus.trace.samplers.always_on import AlwaysOnSampler
         from opencensus.trace.span_context import SpanContext
         from opencensus.trace.tracers import context_tracer
@@ -220,10 +220,7 @@ class TestTracer(unittest.TestCase):
         span.__iter__ = mock.Mock(return_value=iter([span]))
         execution_context.set_current_span(span)
 
-        patch = mock.patch('opencensus.trace.span.get_truncatable_str',
-                           mock.Mock())
-
-        with patch:
+        with mock.patch('opencensus.trace.span.utils.get_truncatable_str'):
             tracer.end_span()
 
         self.assertTrue(span.finish.called)

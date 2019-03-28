@@ -1,6 +1,11 @@
 OpenCensus Flask Integration
 ============================================================================
 
+|pypi|
+
+.. |pypi| image:: https://badge.fury.io/py/opencensus-ext-flask.svg
+   :target: https://pypi.org/project/opencensus-ext-flask/
+
 Installation
 ------------
 

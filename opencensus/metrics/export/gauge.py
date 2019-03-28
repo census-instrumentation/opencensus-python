@@ -481,7 +481,7 @@ class Registry(metric_producer.MetricProducer):
         :rtype: set(:class:`opencensus.metrics.export.metric.Metric`)
         :return: A set of `Metric`s, one for each registered gauge.
         """
-        now = datetime.now()
+        now = datetime.utcnow()
         metrics = set()
         for gauge in self.gauges.values():
             metrics.add(gauge.get_metric(now))
