@@ -255,6 +255,9 @@ class StackdriverStatsExporter(base_exporter.StatsExporter):
                 if timestamp_start == timestamp_end:
                     # avoiding start_time and end_time to be equal
                     timestamp_start = timestamp_start - 1
+            else:
+                # For LastValue (Gauge), start and end time must be the same.
+                timestamp_start = timestamp_end
 
             start_time = point.interval.start_time
             start_time.seconds = int(timestamp_start)
