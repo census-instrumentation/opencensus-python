@@ -31,8 +31,10 @@ from opencensus.tags import tag_value as tag_value_module
 
 if sys.version_info < (3,):
     import unittest2 as unittest
+    import mock
 else:
     import unittest
+    from unittest import mock
 
 
 MiB = 1 << 20
@@ -43,6 +45,14 @@ RETRY_MAX_ATTEMPT = 10  # Retry 10 times
 
 
 class TestBasicStats(unittest.TestCase):
+
+    def setUp(self):
+        patcher = mock.patch(
+            'opencensus.ext.stackdriver.stats_exporter.stats.stats',
+            stats_module._Stats())
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
     def test_stats_record_sync(self):
         # We are using sufix in order to prevent cached objects
         sufix = str(os.getgid())
