@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from six.moves import queue
 import logging
 import threading
 
@@ -61,52 +60,6 @@ class PeriodicTask(threading.Thread):
 
     def stop(self):
         self._stopped.set()
-
-
-class ManualTask(threading.Thread):
-    """Thread that calls a given function on command.
-
-    `ManualTask.go` calls `func` once and blocks until it completes,
-    effectively simulating running `func` in the calling thread.
-
-    :type func: function
-    :param func: The function to call.
-    """
-
-    STOP = object()
-
-    def __init__(self, func, **kwargs):
-        super(ManualTask, self).__init__(**kwargs)
-        self.func = func
-        self.qq = queue.Queue()
-        self._stopped = threading.Event()
-
-    def run(self):
-        while True:
-            task = self.qq.get()
-            if task == ManualTask.STOP:
-                break
-
-            try:
-                self.func()
-            except TransportError as ex:
-                logger.exception(ex)
-                self.stop()
-            except Exception:
-                logger.exception("Error handling metric export")
-            finally:
-                task.set()
-
-    def go(self):
-        if self._stopped.is_set():
-            raise ValueError("Thread is stopped")
-        ee = threading.Event()
-        self.qq.put(ee)
-        ee.wait(GRACE_PERIOD)
-
-    def stop(self):
-        self._stopped.set()
-        self.qq.put(ManualTask.STOP)
 
 
 def get_exporter_thread(metric_producer, exporter):
