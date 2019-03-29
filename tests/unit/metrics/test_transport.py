@@ -16,14 +16,14 @@ import gc
 import sys
 import time
 
+import mock
+
 from opencensus.metrics import transport
 
 if sys.version_info < (3,):
     import unittest2 as unittest
-    import mock
 else:
     import unittest
-    from unittest import mock
 
 
 # Some tests use real time! This is the time to wait between the exporter

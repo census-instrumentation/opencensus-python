@@ -19,6 +19,7 @@ import time
 
 from google.cloud import monitoring_v3
 from retrying import retry
+import mock
 
 from opencensus.ext.stackdriver import stats_exporter as stackdriver
 from opencensus.stats import aggregation as aggregation_module
@@ -31,10 +32,8 @@ from opencensus.tags import tag_value as tag_value_module
 
 if sys.version_info < (3,):
     import unittest2 as unittest
-    import mock
 else:
     import unittest
-    from unittest import mock
 
 
 MiB = 1 << 20
