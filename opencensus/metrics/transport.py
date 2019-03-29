@@ -112,8 +112,7 @@ class ManualTask(threading.Thread):
 def get_exporter_thread(metric_producer, exporter):
     """Get a running task that periodically exports metrics.
 
-    Get a `PeriodicTask` (by default, see `get_default_task_class`) that
-    exports periodically calls
+    Get a `PeriodicTask` that exports periodically calls:
 
         exporter.export_metrics(metric_producer.get_metrics())
 
