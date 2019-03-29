@@ -12,11 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from concurrent import futures
-from contextlib import contextmanager
 import gc
 import sys
-import threading
 import time
 
 from opencensus.metrics import transport
@@ -73,123 +70,11 @@ class TestPeriodicTask(unittest.TestCase):
         self.assertEqual(mock_func.call_count, 1)
 
 
-class TestManualTask(unittest.TestCase):
-
-    def test_manual_task(self):
-        mock_func = mock.Mock()
-        task = transport.ManualTask(mock_func)
-        try:
-            task.start()
-            mock_func.assert_not_called()
-            task.go()
-            self.assertEqual(mock_func.call_count, 1)
-            task.go()
-            self.assertEqual(mock_func.call_count, 2)
-        finally:
-            task.stop()
-
-        with self.assertRaises(ValueError):
-            task.go()
-        self.assertEqual(mock_func.call_count, 2)
-
-    def test_manual_task_finish_queue(self):
-        """Check that we finish the work on the queue after stop signal."""
-        lock = threading.Lock()
-        count = mock.Mock()
-
-        def sleep_and_inc():
-            time.sleep(INTERVAL)
-            with lock:
-                count()
-
-        mock_func = mock.Mock()
-        mock_func.side_effect = sleep_and_inc
-
-        task = transport.ManualTask(mock_func)
-        task.start()
-
-        num_threads = 5
-        with futures.ThreadPoolExecutor(max_workers=num_threads) as tpe:
-            for _ in range(num_threads):
-                tpe.submit(task.go)
-
-            self.assertEqual(count.call_count, 0)
-            # Call stop after work is queued, but not complete
-            task.stop()
-
-            time.sleep(num_threads * INTERVAL + INTERVAL / 2.0)
-            self.assertEqual(count.call_count, num_threads)
-            self.assertEqual(mock_func.call_count, num_threads)
-
-
-@contextmanager
-def patch_get_exporter_thread():
-    with mock.patch('opencensus.metrics.transport'
-                    '.get_default_task_class') as mm:
-        mm.return_value = transport.ManualTask
-        yield
-
-
-class TestGetExporterThreadManual(unittest.TestCase):
-
-    def test_threaded_export(self):
-        with patch_get_exporter_thread():
-            producer = mock.Mock()
-            exporter = mock.Mock()
-            metrics = mock.Mock()
-            producer.get_metrics.return_value = metrics
-            try:
-                task = transport.get_exporter_thread(producer, exporter)
-                producer.get_metrics.assert_not_called()
-                exporter.export_metrics.assert_not_called()
-                task.go()
-                producer.get_metrics.assert_called_once_with()
-                exporter.export_metrics.assert_called_once_with(metrics)
-            finally:
-                task.stop()
-
-    def test_producer_error(self):
-        producer = mock.Mock()
-        exporter = mock.Mock()
-
-        producer.get_metrics.side_effect = ValueError()
-
-        with patch_get_exporter_thread():
-            try:
-                task = transport.get_exporter_thread(producer, exporter)
-                with self.assertLogs(transport.logger):
-                    task.go()
-                self.assertFalse(task._stopped.is_set())
-            finally:
-                task.stop()
-
-    def test_producer_deleted(self):
-        with patch_get_exporter_thread():
-            producer = mock.Mock()
-            exporter = mock.Mock()
-            task = transport.get_exporter_thread(producer, exporter)
-            del producer
-            gc.collect()
-            with self.assertLogs(transport.logger):
-                task.go()
-            self.assertTrue(task._stopped.is_set())
-
-    def test_exporter_deleted(self):
-        with patch_get_exporter_thread():
-            producer = mock.Mock()
-            exporter = mock.Mock()
-            task = transport.get_exporter_thread(producer, exporter)
-            del exporter
-            gc.collect()
-            with self.assertLogs(transport.logger):
-                task.go()
-            self.assertTrue(task._stopped.is_set())
-
-
 @mock.patch('opencensus.metrics.transport.DEFAULT_INTERVAL', INTERVAL)
+@mock.patch('opencensus.metrics.transport.logger')
 class TestGetExporterThreadPeriodic(unittest.TestCase):
 
-    def test_threaded_export(self):
+    def test_threaded_export(self, mock_logger):
         producer = mock.Mock()
         exporter = mock.Mock()
         metrics = mock.Mock()
@@ -203,34 +88,35 @@ class TestGetExporterThreadPeriodic(unittest.TestCase):
             exporter.export_metrics.assert_called_once_with(metrics)
         finally:
             task.stop()
+            task.join()
 
-    def test_producer_error(self):
+    def test_producer_error(self, mock_logger):
         producer = mock.Mock()
         exporter = mock.Mock()
 
         producer.get_metrics.side_effect = ValueError()
 
         task = transport.get_exporter_thread(producer, exporter)
-        with self.assertLogs(transport.logger):
-            time.sleep(INTERVAL + INTERVAL / 2.0)
+        time.sleep(INTERVAL + INTERVAL / 2.0)
+        mock_logger.exception.assert_called()
         self.assertFalse(task._stopped.is_set())
 
-    def test_producer_deleted(self):
+    def test_producer_deleted(self, mock_logger):
         producer = mock.Mock()
         exporter = mock.Mock()
         task = transport.get_exporter_thread(producer, exporter)
         del producer
         gc.collect()
-        with self.assertLogs(transport.logger):
-            time.sleep(INTERVAL + INTERVAL / 2.0)
+        time.sleep(INTERVAL + INTERVAL / 2.0)
+        mock_logger.exception.assert_called()
         self.assertTrue(task._stopped.is_set())
 
-    def test_exporter_deleted(self):
+    def test_exporter_deleted(self, mock_logger):
         producer = mock.Mock()
         exporter = mock.Mock()
         task = transport.get_exporter_thread(producer, exporter)
         del exporter
         gc.collect()
-        with self.assertLogs(transport.logger):
-            time.sleep(INTERVAL + INTERVAL / 2.0)
+        time.sleep(INTERVAL + INTERVAL / 2.0)
+        mock_logger.exception.assert_called()
         self.assertTrue(task._stopped.is_set())

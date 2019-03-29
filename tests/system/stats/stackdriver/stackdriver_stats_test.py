@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from contextlib import contextmanager
 import os
 import random
 import sys
@@ -32,10 +31,8 @@ from opencensus.tags import tag_value as tag_value_module
 
 if sys.version_info < (3,):
     import unittest2 as unittest
-    import mock
 else:
     import unittest
-    from unittest import mock
 
 
 MiB = 1 << 20
@@ -43,14 +40,6 @@ MiB = 1 << 20
 PROJECT = os.environ.get('GCLOUD_PROJECT_PYTHON')
 RETRY_WAIT_PERIOD = 10000  # Wait 10 seconds between each retry
 RETRY_MAX_ATTEMPT = 10  # Retry 10 times
-
-
-@contextmanager
-def patch_sd_transport():
-    with mock.patch('opencensus.metrics.transport'
-                    '.get_default_task_class') as mm:
-        mm.return_value = stackdriver.transport.ManualTask
-        yield
 
 
 class TestBasicStats(unittest.TestCase):
@@ -146,9 +135,8 @@ class TestBasicStats(unittest.TestCase):
         view_manager = stats.view_manager
         stats_recorder = stats.stats_recorder
 
-        with patch_sd_transport():
-            exporter, transport = stackdriver.new_stats_exporter(
-                stackdriver.Options(project_id=PROJECT))
+        exporter, transport = stackdriver.new_stats_exporter(
+            stackdriver.Options(project_id=PROJECT))
         view_manager.register_exporter(exporter)
 
         # Register view.
@@ -180,8 +168,4 @@ class TestBasicStats(unittest.TestCase):
             self.assertEqual(element.description, view_description)
             self.assertEqual(element.unit, "By")
 
-        try:
-            transport.go()
-            get_metric_descriptors(self, exporter, view_description)
-        finally:
-            transport.stop()
+        get_metric_descriptors(self, exporter, view_description)

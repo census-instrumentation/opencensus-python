@@ -109,10 +109,6 @@ class ManualTask(threading.Thread):
         self.qq.put(ManualTask.STOP)
 
 
-def get_default_task_class():
-    return PeriodicTask
-
-
 def get_exporter_thread(metric_producer, exporter):
     """Get a running task that periodically exports metrics.
 
@@ -144,6 +140,6 @@ def get_exporter_thread(metric_producer, exporter):
             raise TransportError("Metric exporter is not available")
         export(get())
 
-    tt = get_default_task_class()(export_all)
+    tt = PeriodicTask(export_all)
     tt.start()
     return tt

@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from contextlib import contextmanager
 from datetime import datetime
 import mock
 import unittest
@@ -24,6 +23,7 @@ from opencensus.common.version import __version__
 from opencensus.ext.stackdriver import stats_exporter as stackdriver
 from opencensus.metrics import label_key
 from opencensus.metrics import label_value
+from opencensus.metrics import transport as transport_module
 from opencensus.metrics.export import metric
 from opencensus.metrics.export import metric_descriptor
 from opencensus.metrics.export import point
@@ -350,18 +350,39 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         self.assertEqual(sd_arg.points[0].value.int64_value, 123)
 
 
-@contextmanager
-def patch_sd_transport():
-    with mock.patch('opencensus.metrics.transport'
-                    '.get_default_task_class') as mm:
-        mm.return_value = stackdriver.transport.ManualTask
-        yield
+class MockPeriodicTask(object):
+    """Testing mock of metrics.transport.PeriodicTask.
+
+    Simulate calling export asynchronously from another thread synchronously
+    from this one.
+    """
+    def __init__(self, func, interval=None, **kwargs):
+        self.func = func
+        self.logger = mock.Mock()
+        self.start = mock.Mock()
+        self.run = mock.Mock()
+
+    def step(self):
+        try:
+            self.func()
+        except transport_module.TransportError as ex:
+            self.logger.exception(ex)
+            self.stop()
+        except Exception:
+            self.logger.exception("Error handling metric export")
 
 
 @mock.patch('opencensus.ext.stackdriver.stats_exporter'
             '.monitoring_v3.MetricServiceClient')
 class TestAsyncStatsExport(unittest.TestCase):
     """Check that metrics are exported using the exporter thread."""
+
+    def setUp(self):
+        patcher = mock.patch(
+            'opencensus.metrics.transport.PeriodicTask',
+            MockPeriodicTask)
+        patcher.start()
+        self.addCleanup(patcher.stop)
 
     @mock.patch('opencensus.ext.stackdriver.stats_exporter'
                 '.stats.stats')
@@ -370,16 +391,12 @@ class TestAsyncStatsExport(unittest.TestCase):
 
         mock_stats.get_metrics.return_value = []
 
-        with patch_sd_transport():
-            exporter, transport = stackdriver.new_stats_exporter(
-                stackdriver.Options(project_id=1))
+        exporter, transport = stackdriver.new_stats_exporter(
+            stackdriver.Options(project_id=1))
 
-        try:
-            transport.go()
-            exporter.client.create_metric_descriptor.assert_not_called()
-            exporter.client.create_time_series.assert_not_called()
-        finally:
-            transport.stop()
+        transport.step()
+        exporter.client.create_metric_descriptor.assert_not_called()
+        exporter.client.create_time_series.assert_not_called()
 
     @mock.patch('opencensus.ext.stackdriver.stats_exporter'
                 '.stats.stats')
@@ -407,39 +424,34 @@ class TestAsyncStatsExport(unittest.TestCase):
         mm = metric.Metric(descriptor=desc, time_series=ts)
         mock_stats.get_metrics.return_value = [mm]
 
-        with patch_sd_transport():
-            exporter, transport = stackdriver.new_stats_exporter(
-                stackdriver.Options(project_id=1))
+        exporter, transport = stackdriver.new_stats_exporter(
+            stackdriver.Options(project_id=1))
 
-        transport.go()
+        transport.step()
 
-        try:
-            exporter.client.create_metric_descriptor.assert_called()
-            self.assertEqual(
-                exporter.client.create_metric_descriptor.call_count,
-                1)
-            md_call_arg =\
-                exporter.client.create_metric_descriptor.call_args[0][1]
-            self.assertEqual(
-                md_call_arg.metric_kind,
-                monitoring_v3.enums.MetricDescriptor.MetricKind.GAUGE
-            )
-            self.assertEqual(
-                md_call_arg.value_type,
-                monitoring_v3.enums.MetricDescriptor.ValueType.INT64
-            )
+        exporter.client.create_metric_descriptor.assert_called()
+        self.assertEqual(
+            exporter.client.create_metric_descriptor.call_count,
+            1)
+        md_call_arg =\
+            exporter.client.create_metric_descriptor.call_args[0][1]
+        self.assertEqual(
+            md_call_arg.metric_kind,
+            monitoring_v3.enums.MetricDescriptor.MetricKind.GAUGE
+        )
+        self.assertEqual(
+            md_call_arg.value_type,
+            monitoring_v3.enums.MetricDescriptor.ValueType.INT64
+        )
 
-            exporter.client.create_time_series.assert_called()
-            self.assertEqual(
-                exporter.client.create_time_series.call_count,
-                1)
-            ts_call_arg = exporter.client.create_time_series.call_args[0][1]
-            self.assertEqual(len(ts_call_arg), 1)
-            self.assertEqual(len(ts_call_arg[0].points), 1)
-            self.assertEqual(ts_call_arg[0].points[0].value.int64_value, 123)
-
-        finally:
-            transport.stop()
+        exporter.client.create_time_series.assert_called()
+        self.assertEqual(
+            exporter.client.create_time_series.call_count,
+            1)
+        ts_call_arg = exporter.client.create_time_series.call_args[0][1]
+        self.assertEqual(len(ts_call_arg), 1)
+        self.assertEqual(len(ts_call_arg[0].points), 1)
+        self.assertEqual(ts_call_arg[0].points[0].value.int64_value, 123)
 
 
 class TestCreateTimeseries(unittest.TestCase):
