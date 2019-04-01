@@ -19,7 +19,7 @@ from opencensus.stats.stats_recorder import StatsRecorder
 from opencensus.stats.view_manager import ViewManager
 
 
-class Stats(MetricProducer):
+class _Stats(MetricProducer):
     """Stats defines a View Manager and a Stats Recorder in order for the
     collection of Stats
     """
@@ -38,3 +38,6 @@ class Stats(MetricProducer):
         """
         return self.view_manager.measure_to_view_map.get_metrics(
             datetime.utcnow())
+
+
+stats = _Stats()

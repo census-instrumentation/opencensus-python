@@ -32,7 +32,7 @@ class TestStats(unittest.TestCase):
     def test_get_metrics(self):
         """Test that Stats converts recorded values into metrics."""
 
-        stats = stats_module.Stats()
+        stats = stats_module.stats
 
         # Check that metrics are empty before view registration
         initial_metrics = list(stats.get_metrics())

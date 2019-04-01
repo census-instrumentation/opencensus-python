@@ -14,7 +14,6 @@
 
 from datetime import datetime
 import itertools
-import logging
 import os
 import platform
 import re
@@ -27,8 +26,10 @@ from google.cloud import monitoring_v3
 from opencensus.common import utils
 from opencensus.common.monitored_resource import monitored_resource
 from opencensus.common.version import __version__
+from opencensus.metrics import transport
 from opencensus.metrics.export import metric as metric_module
 from opencensus.metrics.export import metric_descriptor
+from opencensus.stats import stats
 
 
 MAX_TIME_SERIES_PER_UPLOAD = 200
@@ -147,6 +148,7 @@ class StackdriverStatsExporter(object):
         return self._client
 
     def export_metrics(self, metrics):
+        metrics = list(metrics)
         for metric in metrics:
             self.register_metric_descriptor(metric.descriptor)
         ts_batches = self.create_batched_time_series(metrics)
@@ -371,7 +373,9 @@ def new_stats_exporter(options):
     ci = client_info.ClientInfo(client_library_version=get_user_agent_slug())
     client = monitoring_v3.MetricServiceClient(client_info=ci)
     exporter = StackdriverStatsExporter(client=client, options=options)
-    return exporter
+
+    tt = transport.get_exporter_thread(stats.stats, exporter)
+    return exporter, tt
 
 
 def get_task_value():
@@ -410,18 +414,6 @@ def new_label_descriptors(defaults, keys):
     label_descriptors.append({"key": OPENCENSUS_TASK,
                               "description": OPENCENSUS_TASK_DESCRIPTION})
     return label_descriptors
-
-
-def set_metric_labels(series, view, tag_values):
-    if len(view.columns) != len(tag_values):
-        logging.warning(
-            "TagKeys and TagValues don't have same size."
-        )  # pragma: NO COVER
-
-    for key, value in zip(view.columns, tag_values):
-        if value is not None:
-            series.metric.labels[sanitize_label(key)] = value
-    series.metric.labels[OPENCENSUS_TASK] = get_task_value()
 
 
 def sanitize_label(text):

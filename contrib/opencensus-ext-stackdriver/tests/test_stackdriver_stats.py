@@ -23,6 +23,7 @@ from opencensus.common.version import __version__
 from opencensus.ext.stackdriver import stats_exporter as stackdriver
 from opencensus.metrics import label_key
 from opencensus.metrics import label_value
+from opencensus.metrics import transport as transport_module
 from opencensus.metrics.export import metric
 from opencensus.metrics.export import metric_descriptor
 from opencensus.metrics.export import point
@@ -124,7 +125,7 @@ class TestStackdriverStatsExporter(unittest.TestCase):
              '.monitoring_v3.MetricServiceClient'), _Client)
 
         with patch_client:
-            exporter_created = stackdriver.new_stats_exporter(
+            exporter_created, transport = stackdriver.new_stats_exporter(
                 stackdriver.Options(project_id=1))
 
         self.assertIsInstance(exporter_created,
@@ -145,7 +146,7 @@ class TestStackdriverStatsExporter(unittest.TestCase):
             '.MetricServiceClient', _Client)
 
         with patch_client:
-            exporter = stackdriver.new_stats_exporter(
+            exporter, transport = stackdriver.new_stats_exporter(
                 stackdriver.Options(project_id=1))
 
         self.assertIn(stackdriver.get_user_agent_slug(),
@@ -198,7 +199,7 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         self.assertEqual(expected_view_name_namespaced, view_name_namespaced)
 
     def test_stackdriver_register_exporter(self):
-        stats = stats_module.Stats()
+        stats = stats_module.stats
         view_manager = stats.view_manager
 
         exporter = mock.Mock()
@@ -210,17 +211,6 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         registered_exporters = len(view_manager.measure_to_view_map.exporters)
 
         self.assertEqual(registered_exporters, 1)
-
-    def test_set_metric_labels(self):
-        series = monitoring_v3.types.TimeSeries()
-        tag_value = tag_value_module.TagValue("1200")
-        stackdriver.set_metric_labels(series, VIDEO_SIZE_VIEW, [tag_value])
-        self.assertEqual(len(series.metric.labels), 2)
-
-    def test_set_metric_labels_with_None(self):
-        series = monitoring_v3.types.TimeSeries()
-        stackdriver.set_metric_labels(series, VIDEO_SIZE_VIEW, [None])
-        self.assertEqual(len(series.metric.labels), 1)
 
     @mock.patch('os.getpid', return_value=12345)
     @mock.patch(
@@ -360,7 +350,119 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         self.assertEqual(sd_arg.points[0].value.int64_value, 123)
 
 
+class MockPeriodicTask(object):
+    """Testing mock of metrics.transport.PeriodicTask.
+
+    Simulate calling export asynchronously from another thread synchronously
+    from this one.
+    """
+    def __init__(self, func, interval=None, **kwargs):
+        self.func = func
+        self.logger = mock.Mock()
+        self.start = mock.Mock()
+        self.run = mock.Mock()
+
+    def step(self):
+        try:
+            self.func()
+        except transport_module.TransportError as ex:
+            self.logger.exception(ex)
+            self.stop()
+        except Exception:
+            self.logger.exception("Error handling metric export")
+
+
+@mock.patch('opencensus.ext.stackdriver.stats_exporter'
+            '.monitoring_v3.MetricServiceClient')
+class TestAsyncStatsExport(unittest.TestCase):
+    """Check that metrics are exported using the exporter thread."""
+
+    def setUp(self):
+        patcher = mock.patch(
+            'opencensus.metrics.transport.PeriodicTask',
+            MockPeriodicTask)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+    @mock.patch('opencensus.ext.stackdriver.stats_exporter'
+                '.stats.stats')
+    def test_export_empty(self, mock_stats, mock_client):
+        """Check that we don't attempt to export empty metric sets."""
+
+        mock_stats.get_metrics.return_value = []
+
+        exporter, transport = stackdriver.new_stats_exporter(
+            stackdriver.Options(project_id=1))
+
+        transport.step()
+        exporter.client.create_metric_descriptor.assert_not_called()
+        exporter.client.create_time_series.assert_not_called()
+
+    @mock.patch('opencensus.ext.stackdriver.stats_exporter'
+                '.stats.stats')
+    def test_export_single_metric(self, mock_stats, mock_client):
+        """Check that we can export a set of a single metric."""
+
+        lv = label_value.LabelValue('val')
+        val = value.ValueLong(value=123)
+        dt = datetime(2019, 3, 20, 21, 34, 0, 537954)
+        pp = point.Point(value=val, timestamp=dt)
+
+        ts = [
+            time_series.TimeSeries(label_values=[lv], points=[pp],
+                                   start_timestamp=utils.to_iso_str(dt))
+        ]
+
+        desc = metric_descriptor.MetricDescriptor(
+            name='name2',
+            description='description2',
+            unit='unit2',
+            type_=metric_descriptor.MetricDescriptorType.GAUGE_INT64,
+            label_keys=[label_key.LabelKey('key', 'description')]
+        )
+
+        mm = metric.Metric(descriptor=desc, time_series=ts)
+        mock_stats.get_metrics.return_value = [mm]
+
+        exporter, transport = stackdriver.new_stats_exporter(
+            stackdriver.Options(project_id=1))
+
+        transport.step()
+
+        exporter.client.create_metric_descriptor.assert_called()
+        self.assertEqual(
+            exporter.client.create_metric_descriptor.call_count,
+            1)
+        md_call_arg =\
+            exporter.client.create_metric_descriptor.call_args[0][1]
+        self.assertEqual(
+            md_call_arg.metric_kind,
+            monitoring_v3.enums.MetricDescriptor.MetricKind.GAUGE
+        )
+        self.assertEqual(
+            md_call_arg.value_type,
+            monitoring_v3.enums.MetricDescriptor.ValueType.INT64
+        )
+
+        exporter.client.create_time_series.assert_called()
+        self.assertEqual(
+            exporter.client.create_time_series.call_count,
+            1)
+        ts_call_arg = exporter.client.create_time_series.call_args[0][1]
+        self.assertEqual(len(ts_call_arg), 1)
+        self.assertEqual(len(ts_call_arg[0].points), 1)
+        self.assertEqual(ts_call_arg[0].points[0].value.int64_value, 123)
+
+
 class TestCreateTimeseries(unittest.TestCase):
+
+    def setUp(self):
+        patcher = mock.patch(
+            'opencensus.ext.stackdriver.stats_exporter.stats.stats',
+            stats_module._Stats())
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
     def check_labels(self,
                      actual_labels,
                      expected_labels,
@@ -459,7 +561,7 @@ class TestCreateTimeseries(unittest.TestCase):
         exporter = stackdriver.StackdriverStatsExporter(
             options=option, client=client)
 
-        stats = stats_module.Stats()
+        stats = stats_module.stats
         view_manager = stats.view_manager
         stats_recorder = stats.stats_recorder
 
@@ -535,7 +637,7 @@ class TestCreateTimeseries(unittest.TestCase):
         exporter = stackdriver.StackdriverStatsExporter(
             options=option, client=client)
 
-        stats = stats_module.Stats()
+        stats = stats_module.stats
         view_manager = stats.view_manager
         stats_recorder = stats.stats_recorder
 
@@ -806,7 +908,7 @@ class TestCreateTimeseries(unittest.TestCase):
         exporter = stackdriver.StackdriverStatsExporter(
             options=option, client=client)
 
-        stats = stats_module.Stats()
+        stats = stats_module.stats
         view_manager = stats.view_manager
         stats_recorder = stats.stats_recorder
 
