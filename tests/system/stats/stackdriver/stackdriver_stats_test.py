@@ -18,7 +18,6 @@ import sys
 import time
 
 from google.cloud import monitoring_v3
-from retrying import retry
 import mock
 
 from opencensus.ext.stackdriver import stats_exporter as stackdriver
@@ -39,11 +38,25 @@ else:
 MiB = 1 << 20
 
 PROJECT = os.environ.get('GCLOUD_PROJECT_PYTHON')
-RETRY_WAIT_PERIOD = 10000  # Wait 10 seconds between each retry
-RETRY_MAX_ATTEMPT = 10  # Retry 10 times
+ASYNC_TEST_INTERVAL = 15  # Background thread export interval
 
 
 class TestBasicStats(unittest.TestCase):
+
+    def check_sd_md(self, exporter, view_description):
+        """Check that the metric descriptor was written to stackdriver."""
+        name = exporter.client.project_path(PROJECT)
+        list_metrics_descriptors = exporter.client.list_metric_descriptors(
+            name)
+
+        for ee in list_metrics_descriptors:
+            if ee.description == view_description:
+                break
+        else:
+            raise AssertionError("No matching metric descriptor")
+
+        self.assertIsNotNone(ee)
+        self.assertEqual(ee.unit, "By")
 
     def setUp(self):
         patcher = mock.patch(
@@ -102,22 +115,10 @@ class TestBasicStats(unittest.TestCase):
         # Sleep for [0, 10] milliseconds to fake wait.
         time.sleep(random.randint(1, 10) / 1000.0)
 
-        @retry(
-            wait_fixed=RETRY_WAIT_PERIOD,
-            stop_max_attempt_number=RETRY_MAX_ATTEMPT)
-        def get_metric_descriptors(self, exporter, view_description):
-            name = exporter.client.project_path(PROJECT)
-            list_metrics_descriptors = exporter.client.list_metric_descriptors(
-                name)
-            element = next((element for element in list_metrics_descriptors
-                            if element.description == view_description), None)
+        self.check_sd_md(exporter, view_description)
 
-            self.assertIsNotNone(element)
-            self.assertEqual(element.description, view_description)
-            self.assertEqual(element.unit, "By")
-
-        get_metric_descriptors(self, exporter, view_description)
-
+    @mock.patch('opencensus.metrics.transport.DEFAULT_INTERVAL',
+                ASYNC_TEST_INTERVAL)
     def test_stats_record_async(self):
         # We are using sufix in order to prevent cached objects
         sufix = str(os.getpid())
@@ -163,18 +164,8 @@ class TestBasicStats(unittest.TestCase):
         measure_map.measure_int_put(VIDEO_SIZE_MEASURE_ASYNC, 25 * MiB)
 
         measure_map.record(tag_map)
+        # Give the exporter thread enough time to export exactly once
+        time.sleep(ASYNC_TEST_INTERVAL * 2 - 1)
+        transport.stop()
 
-        @retry(
-            wait_fixed=RETRY_WAIT_PERIOD,
-            stop_max_attempt_number=RETRY_MAX_ATTEMPT)
-        def get_metric_descriptors(self, exporter, view_description):
-            name = exporter.client.project_path(PROJECT)
-            list_metrics_descriptors = exporter.client.list_metric_descriptors(
-                name)
-            element = next((element for element in list_metrics_descriptors
-                            if element.description == view_description), None)
-            self.assertIsNotNone(element)
-            self.assertEqual(element.description, view_description)
-            self.assertEqual(element.unit, "By")
-
-        get_metric_descriptors(self, exporter, view_description)
+        self.check_sd_md(exporter, view_description)
