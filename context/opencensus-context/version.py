@@ -1,4 +1,4 @@
-# Copyright 2018, OpenCensus Authors
+# Copyright 2019, OpenCensus Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,21 +12,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from opencensus.common.runtime_context import RuntimeContext
-
-_measure_to_view_map_slot = RuntimeContext.register_slot(
-    'measure_to_view_map',
-    lambda: {})
-
-
-def get_measure_to_view_map():
-    return RuntimeContext.measure_to_view_map
-
-
-def set_measure_to_view_map(measure_to_view_map):
-    RuntimeContext.measure_to_view_map = measure_to_view_map
-
-
-def clear():
-    """Clear the context, used in test."""
-    _measure_to_view_map_slot.clear()
+__version__ = '0.1.dev0'

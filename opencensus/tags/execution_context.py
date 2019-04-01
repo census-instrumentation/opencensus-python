@@ -12,19 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import threading
+from opencensus.common.runtime_context import RuntimeContext
 
-_thread_local = threading.local()
+_current_tag_map_slot = RuntimeContext.register_slot('current_tag_map', None)
 
 
 def get_current_tag_map():
-    return getattr(_thread_local, 'current_tag_map', None)
+    return RuntimeContext.current_tag_map
 
 
 def set_current_tag_map(current_tag_map):
-    setattr(_thread_local, 'current_tag_map', current_tag_map)
+    RuntimeContext.current_tag_map = current_tag_map
 
 
 def clear():
-    """Clear the thread local, used in test."""
-    _thread_local.__dict__.clear()
+    """Clear the context, used in test."""
+    _current_tag_map_slot.clear()
