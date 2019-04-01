@@ -610,7 +610,6 @@ class TestCreateTimeseries(unittest.TestCase):
         self.assertEqual(len(time_series.points), 1)
         value = time_series.points[0].value
         self.assertEqual(value.distribution_value.count, 1)
-        # self.assertEqual(value.distribution_value.mean, 25 * MiB)
 
         time_series_list = exporter.create_time_series_list(v_data)
 
@@ -624,7 +623,6 @@ class TestCreateTimeseries(unittest.TestCase):
         self.assertEqual(len(time_series.points), 1)
         value = time_series.points[0].value
         self.assertEqual(value.distribution_value.count, 1)
-        # self.assertEqual(value.distribution_value.mean, 25 * MiB)
 
     @mock.patch('opencensus.ext.stackdriver.stats_exporter.'
                 'monitored_resource.get_instance')
@@ -1003,7 +1001,6 @@ class TestCreateTimeseries(unittest.TestCase):
         self.assertEqual(len(ts1.points), 1)
         value1 = ts1.points[0].value
         self.assertEqual(value1.distribution_value.count, 1)
-        # self.assertEqual(value1.distribution_value.mean, 25 * MiB)
 
         # Verify second time series
         self.assertEqual(ts2.resource.type, "global")
@@ -1015,7 +1012,6 @@ class TestCreateTimeseries(unittest.TestCase):
         self.assertEqual(len(ts2.points), 1)
         value2 = ts2.points[0].value
         self.assertEqual(value2.distribution_value.count, 1)
-        # self.assertEqual(value2.distribution_value.mean, 12 * MiB)
 
     @mock.patch('opencensus.ext.stackdriver.stats_exporter.'
                 'monitored_resource.get_instance',
@@ -1109,7 +1105,6 @@ class TestCreateTimeseries(unittest.TestCase):
         [point] = time_series.points
         dv = point.value.distribution_value
         self.assertEqual(100, dv.count)
-        # self.assertEqual(4.5, dv.mean)
         self.assertEqual(825.0, dv.sum_of_squared_deviation)
         self.assertEqual([0, 20, 20, 20, 20, 20], dv.bucket_counts)
         self.assertEqual([0, 2, 4, 6, 8],
