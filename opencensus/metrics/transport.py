@@ -62,10 +62,10 @@ class PeriodicTask(threading.Thread):
         self._stopped.set()
 
 
-def get_exporter_thread(metric_producer, exporter):
+def get_exporter_thread(metric_producer, exporter, interval=None):
     """Get a running task that periodically exports metrics.
 
-    Get a `PeriodicTask` that exports periodically calls:
+    Get a `PeriodicTask` that periodically calls:
 
         exporter.export_metrics(metric_producer.get_metrics())
 
@@ -76,7 +76,10 @@ def get_exporter_thread(metric_producer, exporter):
     :type exporter: :class:`opencensus.stats.base_exporter.MetricsExporter`
     :param exporter: The exporter to use to export metrics.
 
-    :rtype: :class:`threading.Thread`
+    :type interval: int or float
+    :param interval: Seconds between export calls.
+
+    :rtype: :class:`PeriodicTask`
     :return: A running thread responsible calling the exporter.
 
     """
@@ -92,6 +95,6 @@ def get_exporter_thread(metric_producer, exporter):
             raise TransportError("Metric exporter is not available")
         export(get())
 
-    tt = PeriodicTask(export_all)
+    tt = PeriodicTask(export_all, interval=interval)
     tt.start()
     return tt

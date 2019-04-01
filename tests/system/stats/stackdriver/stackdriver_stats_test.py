@@ -117,8 +117,6 @@ class TestBasicStats(unittest.TestCase):
 
         self.check_sd_md(exporter, view_description)
 
-    @mock.patch('opencensus.metrics.transport.DEFAULT_INTERVAL',
-                ASYNC_TEST_INTERVAL)
     def test_stats_record_async(self):
         # We are using sufix in order to prevent cached objects
         sufix = str(os.getpid())
@@ -146,7 +144,8 @@ class TestBasicStats(unittest.TestCase):
         stats_recorder = stats.stats_recorder
 
         exporter, transport = stackdriver.new_stats_exporter(
-            stackdriver.Options(project_id=PROJECT))
+            stackdriver.Options(project_id=PROJECT),
+            interval=ASYNC_TEST_INTERVAL)
         view_manager.register_exporter(exporter)
 
         # Register view.

@@ -363,9 +363,23 @@ def get_user_agent_slug():
     return "opencensus-python/{}".format(__version__)
 
 
-def new_stats_exporter(options):
-    """ new_stats_exporter returns an exporter that
-        uploads stats data to Stackdriver Monitoring.
+def new_stats_exporter(options, interval=None):
+    """Get a stats exporter and running transport thread.
+
+    Create a new `StackdriverStatsExporter` with the given options and start
+    periodically exporting stats to stackdriver in the background.
+
+    See `opencensus.metrics.transport.get_exporter_thread` for details on the
+    transport thread.
+
+    :type options: :class:`Options`
+    :param exporter: Options to pass to the exporter
+
+    :type interval: int or float
+    :param interval: Seconds between export calls.
+
+    :rtype: :class:`StackdriverStatsExporter` and :class:`PeriodicTask`
+    :return: A tuple of the exporter and transport thread.
     """
     if str(options.project_id).strip() == "":
         raise ValueError(ERROR_BLANK_PROJECT_ID)
@@ -374,7 +388,11 @@ def new_stats_exporter(options):
     client = monitoring_v3.MetricServiceClient(client_info=ci)
     exporter = StackdriverStatsExporter(client=client, options=options)
 
-    tt = transport.get_exporter_thread(stats.stats, exporter)
+    if interval is None:
+        tt = transport.get_exporter_thread(stats.stats, exporter)
+    else:
+        tt = transport.get_exporter_thread(stats.stats, exporter,
+                                           interval=interval)
     return exporter, tt
 
 
