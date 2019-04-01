@@ -47,11 +47,15 @@ class TimeSeries(object):
         self._start_timestamp = start_timestamp
 
     def __repr__(self):
+        points_repr = '[{}]'.format(
+            ', '.join(repr(point.value) for point in self.points))
+
+        lv_repr = tuple(lv.value for lv in self.label_values)
         return ('{}({}, label_values={}, start_timestamp={})'
                 .format(
                     type(self).__name__,
-                    [point.value.value for point in self.points],
-                    self.label_values,
+                    points_repr,
+                    lv_repr,
                     self.start_timestamp
                 ))
 

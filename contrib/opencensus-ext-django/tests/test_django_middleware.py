@@ -19,13 +19,13 @@ from django.test import RequestFactory
 from django.test.utils import teardown_test_environment
 
 from opencensus.common.transports import sync
+from opencensus.ext.jaeger import trace_exporter as jaeger_exporter
+from opencensus.ext.ocagent import trace_exporter as ocagent_exporter
+from opencensus.ext.zipkin import trace_exporter as zipkin_exporter
 from opencensus.trace import execution_context
+from opencensus.trace import print_exporter
 from opencensus.trace import span as span_module
-from opencensus.trace.exporters import print_exporter
-from opencensus.trace.exporters import zipkin_exporter
-from opencensus.trace.exporters import jaeger_exporter
-from opencensus.trace.exporters.ocagent import trace_exporter
-from opencensus.trace.ext import utils
+from opencensus.trace import utils
 from opencensus.trace.propagation import google_cloud_format
 from opencensus.trace.samplers import always_on
 from opencensus.trace.samplers import probability
@@ -216,7 +216,7 @@ class TestOpencensusMiddleware(unittest.TestCase):
 
         patch_ocagent_trace = mock.patch(
             'opencensus.ext.django.config.settings.EXPORTER',
-            trace_exporter.TraceExporter)
+            ocagent_exporter.TraceExporter)
 
         patch_params = mock.patch(
             'opencensus.ext.django.config.settings.params',
@@ -227,14 +227,14 @@ class TestOpencensusMiddleware(unittest.TestCase):
 
         self.assertIs(middleware._sampler, always_on.AlwaysOnSampler)
         self.assertIs(
-            middleware._exporter, trace_exporter.TraceExporter)
+            middleware._exporter, ocagent_exporter.TraceExporter)
         self.assertIs(
             middleware._propagator,
             google_cloud_format.GoogleCloudFormatPropagator)
 
         assert isinstance(middleware.sampler, always_on.AlwaysOnSampler)
         assert isinstance(
-            middleware.exporter, trace_exporter.TraceExporter)
+            middleware.exporter, ocagent_exporter.TraceExporter)
         assert isinstance(
             middleware.propagator,
             google_cloud_format.GoogleCloudFormatPropagator)
@@ -254,7 +254,7 @@ class TestOpencensusMiddleware(unittest.TestCase):
 
         patch_ocagent_trace = mock.patch(
             'opencensus.ext.django.config.settings.EXPORTER',
-            trace_exporter.TraceExporter)
+            ocagent_exporter.TraceExporter)
 
         patch_params = mock.patch(
             'opencensus.ext.django.config.settings.params',
@@ -265,7 +265,7 @@ class TestOpencensusMiddleware(unittest.TestCase):
 
         self.assertEqual(middleware.exporter.service_name, service_name)
         self.assertEqual(middleware.exporter.endpoint,
-                         trace_exporter.DEFAULT_ENDPOINT)
+                         ocagent_exporter.DEFAULT_ENDPOINT)
 
     def test_constructor_probability_sampler(self):
         from opencensus.ext.django import middleware

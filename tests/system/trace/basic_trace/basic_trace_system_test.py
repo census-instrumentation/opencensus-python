@@ -16,9 +16,7 @@ import unittest
 
 
 def func_to_trace():
-    import time
     print('Test simple tracing...')
-    time.sleep(2)
 
 
 class TestBasicTrace(unittest.TestCase):
@@ -27,8 +25,8 @@ class TestBasicTrace(unittest.TestCase):
         import json
 
         from opencensus.trace import tracer as tracer_module
+        from opencensus.trace import file_exporter
         from opencensus.trace.samplers import always_on
-        from opencensus.trace.exporters import file_exporter
         from opencensus.trace.propagation import google_cloud_format
 
         trace_id = 'f8739df974a4481f98748cd92b27177d'
@@ -65,8 +63,15 @@ class TestBasicTrace(unittest.TestCase):
         self.assertEqual(trace_json.get('traceId'), trace_id)
         self.assertEqual(len(spans), 2)
 
+        self.assertSetEqual(
+            {ss['displayName']['value'] for ss in spans},
+            {'child_span', 'root_span'})
+
         for span in spans:
-            if span.get('displayName').get('value') == 'root_span':
-                self.assertEqual(str(span.get('parentSpanId')), span_id)
+            if span['displayName']['value'] == 'root_span':
+                self.assertEqual(span['parentSpanId'], span_id)
+                self.assertEqual(span['childSpanCount'], 1)
             else:
-                self.assertEqual(span.get('parentSpanId'), parent_span_id)
+                self.assertEqual(span['displayName']['value'], 'child_span')
+                self.assertEqual(span['parentSpanId'], parent_span_id)
+                self.assertEqual(span['childSpanCount'], 0)

@@ -43,24 +43,10 @@ class Metric(object):
         self._check_type()
 
     def __repr__(self):
-        # Get a condensed description of a list of time series like:
-        # (k1="v11", k2="v21", [12]), (k1="v21", k2="v22", [34])
-        lks = [lk.key for lk in self.descriptor.label_keys]
-        labeled_pvs = []
-        for ts in self.time_series:
-            labels = ", ".join('{}="{}"'.format(lk, lv)
-                               for lk, lv in zip(lks, ts.label_values))
-            pvs = [point.value.value if point.value else None
-                   for point in ts.points]
-            labeled_pvs.append((labels, pvs))
-        short_ts_repr = ", ".join("({}, {})".format(ll, pvs)
-                                  for ll, pvs in labeled_pvs)
-
-        # E.g. 'Metric((k1="v11", k2="v21", [12]), descriptor.name="name")'
-        return ('{}({}, descriptor.name="{}")'
+        return ('{}(time_series={}, descriptor.name="{}")'
                 .format(
                     type(self).__name__,
-                    short_ts_repr,
+                    "<{} TimeSeries>".format(len(self.time_series)),
                     self.descriptor.name,
                 ))
 

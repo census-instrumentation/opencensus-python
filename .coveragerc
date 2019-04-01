@@ -1,10 +1,14 @@
 [run]
 branch = True
-omit = 
-       *gen/jaeger*
-       *gen/opencensus*
-       opencensus/__init__.py
-       opencensus/common/__init__.py
+omit =
+    # Test cases
+    contrib/*/tests/*
+    # Auto generated files
+    contrib/opencensus-ext-jaeger/opencensus/ext/jaeger/trace_exporter/gen/*
+    contrib/opencensus-ext-ocagent/opencensus/ext/ocagent/trace_exporter/gen/*
+    # Side-effect introduced by namespace packages
+    opencensus/__init__.py
+    opencensus/common/__init__.py
 
 [report]
 fail_under = 100
@@ -14,8 +18,12 @@ exclude_lines =
     pragma: NO COVER
     # Ignore debug-only repr
     def __repr__
-omit = 
-       *gen/jaeger*
-       *gen/opencensus*
-       opencensus/__init__.py
-       opencensus/common/__init__.py
+omit =
+    # Side-effect introduced by namespace packages
+    contrib/*/opencensus/__init__.py
+    contrib/*/opencensus/ext/__init__.py
+    opencensus/__init__.py
+    opencensus/common/__init__.py
+    # Auto generated files
+    contrib/opencensus-ext-jaeger/opencensus/ext/jaeger/trace_exporter/gen/*
+    contrib/opencensus-ext-ocagent/opencensus/ext/ocagent/trace_exporter/gen/*

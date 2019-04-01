@@ -1,6 +1,6 @@
 Exporter - Stackdriver Exporter
 ===============================
 
-.. automodule:: opencensus.trace.exporters.stackdriver_exporter
+.. automodule:: opencensus.ext.stackdriver.trace_exporter
   :members:
   :show-inheritance:

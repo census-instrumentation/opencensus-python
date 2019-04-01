@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from opencensus.trace import print_exporter
 from opencensus.trace.samplers import always_on
-from opencensus.trace.exporters import print_exporter
 from opencensus.trace.propagation import google_cloud_format
 
 DEFAULT_PYRAMID_TRACER_CONFIG = {

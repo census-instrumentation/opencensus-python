@@ -12,12 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import datetime
 import unittest
 
 import mock
 
 from google.rpc import code_pb2
 
+from opencensus.common import utils
 from opencensus.trace.stack_trace import StackTrace
 from opencensus.trace.status import Status
 from opencensus.trace.time_event import TimeEvent
@@ -56,13 +58,12 @@ class TestSpan(unittest.TestCase):
         self.assertIsNone(span.context_tracer)
 
     def test_constructor_explicit(self):
-        from datetime import datetime
 
         span_id = 'test_span_id'
         span_name = 'test_span_name'
         parent_span = mock.Mock()
-        start_time = datetime.utcnow().isoformat() + 'Z'
-        end_time = datetime.utcnow().isoformat() + 'Z'
+        start_time = utils.to_iso_str()
+        end_time = utils.to_iso_str()
         attributes = {
             'http.status_code': '200',
             'component': 'HTTP load balancer',
@@ -136,7 +137,6 @@ class TestSpan(unittest.TestCase):
 
     def test_add_time_event(self):
         from opencensus.trace.time_event import TimeEvent
-        import datetime
 
         span_name = 'test_span_name'
         span = self._make_one(span_name)
@@ -145,7 +145,7 @@ class TestSpan(unittest.TestCase):
         with self.assertRaises(TypeError):
             span.add_time_event(time_event)
 
-        time_event = TimeEvent(datetime.datetime.now())
+        time_event = TimeEvent(datetime.datetime.utcnow())
         span.add_time_event(time_event)
 
         self.assertEqual(len(span.time_events), 1)
@@ -320,7 +320,6 @@ class Test_format_span_json(unittest.TestCase):
     @mock.patch.object(TimeEvent, 'format_time_event_json')
     def test_format_span_json_with_parent_span(self, time_event_mock,
                                                status_mock, stack_trace_mock):
-        import datetime
 
         from opencensus.trace.link import Link
         from opencensus.trace.span import format_span_json
@@ -358,7 +357,7 @@ class Test_format_span_json(unittest.TestCase):
         span.start_time = start_time
         span.end_time = end_time
         span._child_spans = []
-        span.time_events = [TimeEvent(datetime.datetime.now())]
+        span.time_events = [TimeEvent(datetime.datetime.utcnow())]
         span.stack_trace = StackTrace()
         span.status = Status(code='200', message='test')
         span.links = [Link(trace_id, span_id)]

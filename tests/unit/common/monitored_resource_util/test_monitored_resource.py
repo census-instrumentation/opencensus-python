@@ -13,11 +13,17 @@
 # limitations under the License.
 
 from contextlib import contextmanager
-import mock
 import os
-import unittest
+import sys
 
 from opencensus.common.monitored_resource import monitored_resource
+
+if sys.version_info < (3,):
+    import unittest2 as unittest
+    import mock
+else:
+    import unittest
+    from unittest import mock
 
 
 @contextmanager
@@ -39,50 +45,71 @@ def mock_use_aws(use):
     return mock_mr_method('is_aws_environment', use)
 
 
+def mock_oc_env():
+    return mock.patch.dict('os.environ', {
+        'OC_RESOURCE_TYPE': 'mock_resource_type',
+        'OC_RESOURCE_LABELS': 'mock_label_key=mock_label_value'
+    })
+
+
 @contextmanager
 def mock_k8s_env():
     with mock_use_k8s(True):
-        with mock_use_gce(False):
-            with mock_use_aws(False):
-                yield
+        yield
 
 
 @contextmanager
 def mock_gce_env():
-    with mock_use_k8s(False):
-        with mock_use_gce(True):
-            with mock_use_aws(False):
-                yield
+    with mock_use_gce(True):
+        with mock_use_aws(False):
+            yield
 
 
 @contextmanager
 def mock_aws_env():
-    with mock_use_k8s(False):
-        with mock_use_gce(False):
-            with mock_use_aws(True):
-                yield
+    with mock_use_gce(False):
+        with mock_use_aws(True):
+            yield
 
 
 class TestMonitoredResource(unittest.TestCase):
 
+    def setUp(self):
+        self.env_mock = mock.patch.dict(os.environ, clear=True)
+        self.env_mock.start()
+
+    def tearDown(self):
+        self.env_mock.stop()
+
     @mock.patch('opencensus.common.monitored_resource.monitored_resource'
                 '.gcp_metadata_config.GcpMetadataConfig')
-    def test_gcp_gce_monitored_resource(self, gcp_metadata_mock):
+    def test_gcp_gce_monitored_resource(self, gcp_md_mock):
         mocked_labels = {
             'instance_id': 'my-instance',
             'project_id': 'my-project',
             'zone': 'us-east1'
         }
 
-        gcp_metadata_mock.return_value = mock.Mock()
-        gcp_metadata_mock.return_value.get_gce_metadata.return_value =\
-            mocked_labels
+        gcp_md_mock.return_value = mock.Mock()
+        gcp_md_mock.return_value.get_gce_metadata.return_value = mocked_labels
+
         with mock_gce_env():
             resource = monitored_resource.get_instance()
         self.assertEqual(resource.get_type(), 'gce_instance')
-        self.assertDictEqual(resource.get_labels(), mocked_labels)
+        self.assertEqual(resource.get_labels(), mocked_labels)
 
-    def test_gcp_k8s_monitored_resource(self):
+        with mock_oc_env():
+            with mock_gce_env():
+                resource = monitored_resource.get_instance()
+        self.assertEqual(resource.get_type(), 'mock_resource_type')
+        self.assertDictContainsSubset(
+            {'mock_label_key': 'mock_label_value'}, resource.get_labels())
+        self.assertDictContainsSubset(mocked_labels, resource.get_labels())
+
+    @mock.patch('opencensus.common.monitored_resource.monitored_resource'
+                '.gcp_metadata_config.GcpMetadataConfig')
+    def test_gcp_k8s_monitored_resource(self, gcp_md_mock):
+
         mocked_labels = {
             'instance_id': 'my-instance',
             'cluster_name': 'cluster',
@@ -92,16 +119,31 @@ class TestMonitoredResource(unittest.TestCase):
             'namespace_id': 'namespace',
             'container_name': 'container'
         }
+        cluster_name_key = 'instance/attributes/cluster-name'
+        cluster_name_val = 'cluster'
+        gcp_md_mock.return_value = mock.Mock()
+        gcp_md_mock.return_value.get_gce_metadata.return_value = mocked_labels
+        gcp_md_mock.get_attribute.return_value = cluster_name_val
 
-        with mock_mr_method('k8s_utils.get_k8s_metadata', mocked_labels):
+        with mock_k8s_env():
+            r1 = monitored_resource.get_instance()
+
+        gcp_md_mock.get_attribute.assert_called_once_with(cluster_name_key)
+        self.assertEqual(r1.get_type(), 'k8s_container')
+        self.assertDictContainsSubset(mocked_labels, r1.get_labels())
+
+        with mock_oc_env():
             with mock_k8s_env():
-                resource = monitored_resource.get_instance()
-        self.assertEqual(resource.get_type(), 'k8s_container')
-        self.assertDictEqual(resource.get_labels(), mocked_labels)
+                r2 = monitored_resource.get_instance()
+
+        self.assertEqual(r1.get_type(), 'k8s_container')
+        self.assertDictContainsSubset(mocked_labels, r1.get_labels())
+        self.assertDictContainsSubset(
+            {'mock_label_key': 'mock_label_value'}, r2.get_labels())
 
     @mock.patch('opencensus.common.monitored_resource.monitored_resource'
                 '.aws_identity_doc_utils.AwsIdentityDocumentUtils')
-    def test_aws_monitored_resource(self, aws_metadata_mock):
+    def test_aws_monitored_resource(self, aws_md_mock):
 
         mocked_labels = {
             'instance_id': 'i-1234567890abcdef0',
@@ -109,14 +151,21 @@ class TestMonitoredResource(unittest.TestCase):
             'region': 'us-west-2'
         }
 
-        aws_metadata_mock.return_value = mock.Mock()
-        aws_metadata_mock.return_value.get_aws_metadata.return_value =\
-            mocked_labels
+        aws_md_mock.return_value = mock.Mock()
+        aws_md_mock.return_value.get_aws_metadata.return_value = mocked_labels
 
         with mock_aws_env():
             resource = monitored_resource.get_instance()
         self.assertEqual(resource.get_type(), 'aws_ec2_instance')
-        self.assertDictEqual(resource.get_labels(), mocked_labels)
+        self.assertEqual(resource.get_labels(), mocked_labels)
+
+        with mock_oc_env():
+            with mock_aws_env():
+                resource = monitored_resource.get_instance()
+        self.assertEqual(resource.get_type(), 'mock_resource_type')
+        self.assertDictContainsSubset(
+            {'mock_label_key': 'mock_label_value'}, resource.get_labels())
+        self.assertDictContainsSubset(mocked_labels, resource.get_labels())
 
     def test_k8s_environment(self):
         patch = mock.patch.dict(os.environ,
@@ -147,7 +196,7 @@ class TestMonitoredResource(unittest.TestCase):
                 'aws_identity_doc_utils.AwsIdentityDocumentUtils.'
                 'is_running_on_aws',
                 return_value=True)
-    def test_aws_environment(self, aws_util_mock, gcp_metadata_mock):
+    def test_aws_environment(self, aws_util_mock, gcp_md_mock):
         mr = monitored_resource.get_instance()
 
         self.assertIsNotNone(mr)
@@ -160,7 +209,13 @@ class TestMonitoredResource(unittest.TestCase):
                 'aws_identity_doc_utils.AwsIdentityDocumentUtils.'
                 'is_running_on_aws',
                 return_value=False)
-    def test_non_supported_environment(self, aws_util_mock, gcp_metadata_mock):
+    def test_non_supported_environment(self, aws_util_mock, gcp_md_mock):
         mr = monitored_resource.get_instance()
-
         self.assertIsNone(mr)
+
+        with mock_oc_env():
+            mr = monitored_resource.get_instance()
+        self.assertIsNotNone(mr)
+        self.assertEqual(mr.get_type(), 'mock_resource_type')
+        self.assertDictEqual(
+            mr.get_labels(), {'mock_label_key': 'mock_label_value'})

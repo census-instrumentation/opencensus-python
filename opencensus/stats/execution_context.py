@@ -12,18 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import threading
+from opencensus.common.runtime_context import RuntimeContext
 
-_thread_local = threading.local()
+_measure_to_view_map_slot = RuntimeContext.register_slot(
+    'measure_to_view_map',
+    lambda: {})
 
 
 def get_measure_to_view_map():
-    return getattr(_thread_local, 'measure_to_view_map', {})
+    return RuntimeContext.measure_to_view_map
 
 
 def set_measure_to_view_map(measure_to_view_map):
-    setattr(_thread_local, 'measure_to_view_map', measure_to_view_map)
+    RuntimeContext.measure_to_view_map = measure_to_view_map
 
 
 def clear():
-    _thread_local.__dict__.clear()
+    """Clear the context, used in test."""
+    _measure_to_view_map_slot.clear()

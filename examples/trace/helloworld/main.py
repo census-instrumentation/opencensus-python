@@ -15,7 +15,7 @@
 import time
 
 from opencensus.trace import execution_context
-from opencensus.trace.exporters import print_exporter
+from opencensus.trace import print_exporter
 from opencensus.trace.tracer import Tracer
 from opencensus.trace.samplers import always_on
 

@@ -49,22 +49,31 @@ _LABELS_RE = re.compile(r"""
 _UNQUOTE_RE = re.compile(r'^([\'"]?)([^\1]*)(\1)$')
 
 
-def merge_resources(r1, r2):
-    """Merge two resources to get a new resource.
+def merge_resources(resource_list):
+    """Merge multiple resources to get a new resource.
 
-    :type r1: :class:`Resource`
-    :param r1: The first resource to merge, takes priority in conflicts.
+    Resources earlier in the list take precedence: if multiple resources share
+    a label key, use the value from the first resource in the list with that
+    key. The combined resource's type will be the first non-null type in the
+    list.
 
-    :type r2: :class:`Resource`
-    :param r2: The second resource to merge.
+    :type resource_list: list(:class:`Resource`)
+    :param resource_list: The list of resources to combine.
 
     :rtype: :class:`Resource`
     :return: The new combined resource.
     """
-    type_ = r1.type or r2.type
-    labels = copy(r2.labels)
-    labels.update(r1.labels)
-    return Resource(type_, labels)
+    if not resource_list:
+        raise ValueError
+    rtype = None
+    for rr in resource_list:
+        if rr.type:
+            rtype = rr.type
+            break
+    labels = {}
+    for rr in reversed(resource_list):
+        labels.update(rr.labels)
+    return Resource(rtype, labels)
 
 
 def check_ascii_256(string):
@@ -150,7 +159,7 @@ class Resource(object):
         :rtype: :class:`Resource`
         :return: The new combined resource.
         """
-        return merge_resources(self, other)
+        return merge_resources([self, other])
 
 
 def unquote(string):

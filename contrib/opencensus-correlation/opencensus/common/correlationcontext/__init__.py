@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from opencensus.common.correlationcontext.correlationcontext import CorrelationContext
+from opencensus.common.correlationcontext.correlationcontext \
+    import CorrelationContext
 
 
 __all__ = ['CorrelationContext']

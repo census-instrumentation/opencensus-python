@@ -12,8 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from datetime import datetime
 import copy
+
+from opencensus.common import utils
 
 
 class ViewData(object):
@@ -62,11 +63,11 @@ class ViewData(object):
 
     def start(self):
         """sets the start time for the view data"""
-        self._start_time = datetime.utcnow().isoformat() + 'Z'
+        self._start_time = utils.to_iso_str()
 
     def end(self):
         """sets the end time for the view data"""
-        self._end_time = datetime.utcnow().isoformat() + 'Z'
+        self._end_time = utils.to_iso_str()
 
     def get_tag_values(self, tags, columns):
         """function to get the tag values from tags and columns"""

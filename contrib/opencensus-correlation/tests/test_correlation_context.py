@@ -15,6 +15,7 @@
 import unittest
 from opencensus.common.correlationcontext import CorrelationContext
 
+
 class CorrelationContextTest(unittest.TestCase):
     def test_ctor_default(self):
         self.assertTrue(CorrelationContext())
