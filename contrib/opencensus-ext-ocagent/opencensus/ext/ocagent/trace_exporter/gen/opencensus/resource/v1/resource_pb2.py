@@ -18,8 +18,8 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='opencensus/proto/resource/v1/resource.proto',
   package='opencensus.proto.resource.v1',
   syntax='proto3',
-  serialized_options=_b('\n\037io.opencensus.proto.resource.v1B\rResourceProtoP\001ZEgithub.com/census-instrumentation/opencensus-proto/gen-go/resource/v1'),
-  serialized_pb=_b('\n+opencensus/proto/resource/v1/resource.proto\x12\x1copencensus.proto.resource.v1\"\x8b\x01\n\x08Resource\x12\x0c\n\x04type\x18\x01 \x01(\t\x12\x42\n\x06labels\x18\x02 \x03(\x0b\x32\x32.opencensus.proto.resource.v1.Resource.LabelsEntry\x1a-\n\x0bLabelsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\x42y\n\x1fio.opencensus.proto.resource.v1B\rResourceProtoP\x01ZEgithub.com/census-instrumentation/opencensus-proto/gen-go/resource/v1b\x06proto3')
+  serialized_options=_b('\n\037io.opencensus.proto.resource.v1B\rResourceProtoP\001ZEgithub.com/census-instrumentation/opencensus-proto/gen-go/resource/v1\352\002\034OpenCensus.Proto.Resource.V1'),
+  serialized_pb=_b('\n+opencensus/proto/resource/v1/resource.proto\x12\x1copencensus.proto.resource.v1\"\x8b\x01\n\x08Resource\x12\x0c\n\x04type\x18\x01 \x01(\t\x12\x42\n\x06labels\x18\x02 \x03(\x0b\x32\x32.opencensus.proto.resource.v1.Resource.LabelsEntry\x1a-\n\x0bLabelsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\x42\x98\x01\n\x1fio.opencensus.proto.resource.v1B\rResourceProtoP\x01ZEgithub.com/census-instrumentation/opencensus-proto/gen-go/resource/v1\xea\x02\x1cOpenCensus.Proto.Resource.V1b\x06proto3')
 )
 
 

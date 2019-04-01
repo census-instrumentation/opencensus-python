@@ -1,4 +1,4 @@
-# Copyright 2018, OpenCensus Authors
+# Copyright 2019, OpenCensus Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,19 +14,21 @@
 
 from opencensus.common.runtime_context import RuntimeContext
 
-_measure_to_view_map_slot = RuntimeContext.register_slot(
-    'measure_to_view_map',
-    lambda: {})
+RuntimeContext.register_slot('correlation_context', lambda: {})
 
 
-def get_measure_to_view_map():
-    return RuntimeContext.measure_to_view_map
+def hello(name):
+    correlation_context = RuntimeContext.correlation_context.copy()
+    correlation_context['name'] = name
+    RuntimeContext.correlation_context = correlation_context
+
+    print(RuntimeContext)
 
 
-def set_measure_to_view_map(measure_to_view_map):
-    RuntimeContext.measure_to_view_map = measure_to_view_map
-
-
-def clear():
-    """Clear the context, used in test."""
-    _measure_to_view_map_slot.clear()
+if __name__ == '__main__':
+    print(RuntimeContext)
+    RuntimeContext.correlation_context['test'] = True
+    print(RuntimeContext)
+    hello('hello')
+    RuntimeContext.clear()
+    print(RuntimeContext)
