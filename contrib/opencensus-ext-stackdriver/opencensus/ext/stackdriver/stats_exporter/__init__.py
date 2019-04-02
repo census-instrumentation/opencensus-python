@@ -133,7 +133,9 @@ class Options(object):
 class StackdriverStatsExporter(object):
     """Stats exporter for the Stackdriver Monitoring backend."""
 
-    def __init__(self, options=Options(), client=None):
+    def __init__(self, options=None, client=None):
+        if options is None:
+            options = Options()
         self._options = options
         self._client = client
         self._md_cache = {}
