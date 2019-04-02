@@ -18,8 +18,7 @@ import unittest
 
 from opencensus.common import utils as common_utils
 from opencensus.ext.ocagent.trace_exporter import utils
-from opencensus.ext.ocagent.trace_exporter.gen.opencensus.trace.v1 \
-    import trace_pb2
+from opencensus.proto.trace.v1 import trace_pb2
 from opencensus.trace import attributes as attributes_module
 from opencensus.trace import link as link_module
 from opencensus.trace import span as span_module
