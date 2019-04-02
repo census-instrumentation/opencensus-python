@@ -62,10 +62,10 @@ class B3FormatPropagator(object):
             sampled = headers.get(_SAMPLED_KEY)
 
         if sampled is not None:
-            if len(sampled) != 1:
-                return SpanContext(from_header=False)
-
-            sampled = sampled in ('1', 'd')
+            # The specification encodes an enabled tracing decision as "1".
+            # In the wild pre-standard implementations might still send "true".
+            # "d" is set in the single header case when debugging is enabled.
+            sampled = sampled.lower() in ('1', 'd', 'true')
         else:
             # If there's no incoming sampling decision, it was deferred to us.
             # Even though we set it to False here, we might still sample
