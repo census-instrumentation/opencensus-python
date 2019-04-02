@@ -19,6 +19,7 @@ import os
 
 
 def _install_dev_packages(session):
+    session.install('-e', 'context/opencensus-context')
     session.install('-e', 'contrib/opencensus-correlation')
     session.install('-e', '.')
 
@@ -61,13 +62,12 @@ def unit(session, py):
     session.run(
         'py.test',
         '--quiet',
-        '--cov=opencensus',
+        '--cov=opencensus', '--cov=contrib',
         '--cov-append',
         '--cov-config=.coveragerc',
         '--cov-report=',
         '--cov-fail-under=97',
-        'tests/unit/',
-        'contrib/',
+        'tests/unit/', 'contrib/',
         *session.posargs
     )
 
@@ -117,7 +117,7 @@ def lint(session):
     session.run(
         'flake8',
         '--exclude=contrib/opencensus-ext-ocagent/opencensus/ext/ocagent/trace_exporter/gen/',
-        'contrib/', 'opencensus/', 'tests/', 'examples/')
+        'context/', 'contrib/', 'opencensus/', 'tests/', 'examples/')
 
 
 @nox.session

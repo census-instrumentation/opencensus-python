@@ -12,81 +12,69 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import threading
-
+from opencensus.common.runtime_context import RuntimeContext
 from opencensus.trace.tracers import noop_tracer
 
-_thread_local = threading.local()
+_attrs_slot = RuntimeContext.register_slot('attrs', lambda: {})
+_current_span_slot = RuntimeContext.register_slot('current_span', None)
+_tracer_slot = RuntimeContext.register_slot('tracer', noop_tracer.NoopTracer())
 
 
 def get_opencensus_tracer():
-    """Get the opencensus tracer from thread local."""
-    return getattr(_thread_local, 'tracer', noop_tracer.NoopTracer())
+    """Get the opencensus tracer from runtime context."""
+    return RuntimeContext.tracer
 
 
 def set_opencensus_tracer(tracer):
-    """Add the tracer to thread local."""
-    setattr(_thread_local, 'tracer', tracer)
+    """Add the tracer to runtime context."""
+    RuntimeContext.tracer = tracer
 
 
 def set_opencensus_attr(attr_key, attr_value):
-    # If there is no attrs, initialize it to empty dict.
-    attrs = getattr(_thread_local, 'attrs', {})
-
+    attrs = RuntimeContext.attrs.copy()
     attrs[attr_key] = attr_value
-
-    setattr(_thread_local, 'attrs', attrs)
+    RuntimeContext.attrs = attrs
 
 
 def set_opencensus_attrs(attrs):
-    setattr(_thread_local, 'attrs', attrs)
+    RuntimeContext.attrs = attrs
 
 
 def get_opencensus_attr(attr_key):
-    attrs = getattr(_thread_local, 'attrs', None)
-
-    if attrs is not None:
-        return attrs.get(attr_key)
-
-    return None
+    return RuntimeContext.attrs.get(attr_key)
 
 
 def get_opencensus_attrs():
-    return getattr(_thread_local, 'attrs', None)
+    return RuntimeContext.attrs
 
 
 def get_current_span():
-    return getattr(_thread_local, 'current_span', None)
+    return RuntimeContext.current_span
 
 
 def set_current_span(current_span):
-    setattr(_thread_local, 'current_span', current_span)
+    RuntimeContext.current_span = current_span
 
 
 def get_opencensus_full_context():
-    _tracer = get_opencensus_tracer()
-    _span = get_current_span()
-    _attrs = get_opencensus_attrs()
-    return _tracer, _span, _attrs
+    attrs = RuntimeContext.attrs
+    current_span = RuntimeContext.current_span
+    tracer = RuntimeContext.tracer
+    return tracer, current_span, attrs
 
 
 def set_opencensus_full_context(tracer, span, attrs):
     set_opencensus_tracer(tracer)
     set_current_span(span)
-    if not attrs:
-        set_opencensus_attrs({})
-    else:
-        set_opencensus_attrs(attrs)
+    set_opencensus_attrs(attrs or {})
 
 
 def clean():
-    setattr(_thread_local, 'attrs', {})
-    if hasattr(_thread_local, 'current_span'):
-        delattr(_thread_local, 'current_span')
-    if hasattr(_thread_local, 'tracer'):
-        delattr(_thread_local, 'tracer')
+    _attrs_slot.clear()
+    _current_span_slot.clear()
+    _tracer_slot.clear()
 
 
 def clear():
-    """Clear the thread local, used in test."""
-    _thread_local.__dict__.clear()
+    """Clear the context, used in test."""
+    clean()

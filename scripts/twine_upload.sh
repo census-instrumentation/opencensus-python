@@ -32,7 +32,7 @@ python3 -m pip install --upgrade twine wheel setuptools
 # Build the distribution.
 python3 setup.py bdist_wheel
 
-for d in contrib/*/ ; do
+for d in context/*/ contrib/*/ ; do
   pushd .
   cd "$d"
   python3 setup.py bdist_wheel --dist-dir "$BASEDIR/dist/"
