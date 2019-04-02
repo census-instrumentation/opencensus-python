@@ -68,20 +68,24 @@ class _RuntimeContext(object):
         slot = self._slots[name]
         slot.set(value)
 
+    class Closure(object):
+        def __init__(self, context, func):
+            self.context = context
+            self.snapshot = context.snapshot()
+            self.func = func
+
+        def __call__(self, *args, **kwargs):
+            try:
+                backup = self.context.snapshot()
+                self.context.apply(self.snapshot)
+                return self.func(*args, **kwargs)
+            finally:
+                self.context.apply(backup)
+
     def with_current_context(self, func):
         """Capture the current context and apply it to the provided func"""
 
-        caller_context = self.snapshot()
-
-        def call_with_current_context(*args, **kwargs):
-            try:
-                backup_context = self.snapshot()
-                self.apply(caller_context)
-                return func(*args, **kwargs)
-            finally:
-                self.apply(backup_context)
-
-        return call_with_current_context
+        return self.Closure(self, func)
 
 
 class _ThreadLocalRuntimeContext(_RuntimeContext):
