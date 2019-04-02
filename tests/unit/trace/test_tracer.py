@@ -91,9 +91,8 @@ class TestTracer(unittest.TestCase):
 
         self.assertFalse(sampled)
 
-    def get_tracer_noop_tracer(self):
+    def test_get_tracer_noop_tracer(self):
         from opencensus.trace.tracers import noop_tracer
-
         sampler = mock.Mock()
         sampler.should_sample.return_value = False
         tracer = tracer_module.Tracer(sampler=sampler)
@@ -102,7 +101,7 @@ class TestTracer(unittest.TestCase):
 
         assert isinstance(result, noop_tracer.NoopTracer)
 
-    def get_tracer_context_tracer(self):
+    def test_get_tracer_context_tracer(self):
         from opencensus.trace.tracers import context_tracer
 
         sampler = mock.Mock()
