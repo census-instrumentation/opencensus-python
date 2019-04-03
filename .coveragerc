@@ -2,6 +2,7 @@
 branch = True
 omit =
     # Test cases
+    context/*/tests/*
     contrib/*/tests/*
     # Auto generated files
     contrib/opencensus-ext-jaeger/opencensus/ext/jaeger/trace_exporter/gen/*
@@ -19,6 +20,8 @@ exclude_lines =
     # Ignore debug-only repr
     def __repr__
 omit =
+    # Test cases
+    context/*/tests/*
     # Side-effect introduced by namespace packages
     contrib/*/opencensus/__init__.py
     contrib/*/opencensus/ext/__init__.py

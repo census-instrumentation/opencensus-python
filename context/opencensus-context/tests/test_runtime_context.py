@@ -33,3 +33,39 @@ class RuntimeContextTest(unittest.TestCase):
             RuntimeContext.register_slot('dup'),
             RuntimeContext.register_slot('dup'),
         ])
+
+    def test_get_non_existing(self):
+        self.assertRaises(AttributeError, lambda: RuntimeContext.non_existing)
+
+    def test_set_non_existing(self):
+        def set_non_existing():
+            RuntimeContext.non_existing = 1
+
+        self.assertRaises(AttributeError, set_non_existing)
+
+    def test_clear(self):
+        RuntimeContext.register_slot('baz')
+        RuntimeContext.baz = 123
+        self.assertEqual(RuntimeContext.baz, 123)
+        RuntimeContext.clear()
+        self.assertEqual(RuntimeContext.baz, None)
+
+    def test_with_current_context(self):
+        from threading import Thread
+
+        RuntimeContext.register_slot('operation_id')
+
+        def work(name):
+            self.assertEqual(RuntimeContext.operation_id, 'foo')
+            RuntimeContext.operation_id = name
+            self.assertEqual(RuntimeContext.operation_id, name)
+
+        RuntimeContext.operation_id = 'foo'
+        thread = Thread(
+            target=RuntimeContext.with_current_context(work),
+            args=('bar'),
+        )
+        thread.start()
+        thread.join()
+
+        self.assertEqual(RuntimeContext.operation_id, 'foo')

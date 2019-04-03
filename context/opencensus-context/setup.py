@@ -38,11 +38,14 @@ setup(
     description='OpenCensus Runtime Context',
     include_package_data=True,
     long_description=open('README.rst').read(),
-    install_requires=[],
+    install_requires=[
+        # contextvars backport for Python 3.6
+        'contextvars ; python_version >= "3.6" and python_version < "3.7"',
+    ],
     extras_require={},
     license='Apache-2.0',
     packages=find_packages(exclude=('examples', 'tests',)),
     namespace_packages=[],
-    url='https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-context',  # noqa: E501
+    url='https://github.com/census-instrumentation/opencensus-python/tree/master/context/opencensus-context',  # noqa: E501
     zip_safe=False,
 )
