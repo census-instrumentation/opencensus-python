@@ -30,4 +30,8 @@ class Tag(Tag_):
 
     """
     def __new__(cls, key, value):
-        return super(Tag, cls).__new__(cls, key=TagKey(key), value=TagValue(value))
+        return super(Tag, cls).__new__(
+            cls,
+            key=TagKey(key),
+            value=TagValue(value),
+        )
