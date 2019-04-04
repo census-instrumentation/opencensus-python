@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import unittest
-from opencensus.tags import Tag, TagKey, TagValue
+from opencensus.tags import Tag
 
 
 class TestTag(unittest.TestCase):
