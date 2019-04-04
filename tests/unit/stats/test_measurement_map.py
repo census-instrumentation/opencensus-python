@@ -132,7 +132,7 @@ class TestMeasurementMap(unittest.TestCase):
             measure_to_view_map=measure_to_view_map)
 
         tags = {'testtag1': 'testtag1val'}
-        measurement_map.record(tag_map_tags=tags)
+        measurement_map.record(tags=tags)
         self.assertTrue(measure_to_view_map.record.called)
 
     def test_record_against_implicit_tag_map(self):
