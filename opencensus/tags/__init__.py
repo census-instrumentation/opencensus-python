@@ -12,9 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from opencensus.common.runtime_context import RuntimeContext
 from opencensus.tags.tag import Tag
 from opencensus.tags.tag_key import TagKey
 from opencensus.tags.tag_value import TagValue
 from opencensus.tags.tag_map import TagMap
 
-__all__ = ['Tag', 'TagKey', 'TagValue', 'TagMap']
+__all__ = ['Tag', 'TagContext', 'TagKey', 'TagValue', 'TagMap']
+
+TagContext = RuntimeContext.register_slot('tag_context', None)

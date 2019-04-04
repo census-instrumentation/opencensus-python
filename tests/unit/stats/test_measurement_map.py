@@ -16,7 +16,9 @@ import mock
 import unittest
 
 from opencensus.stats import measurement_map as measurement_map_module
-from opencensus.tags import execution_context
+from opencensus.tags import Tag
+from opencensus.tags import TagContext
+from opencensus.tags import TagMap
 
 logger_patch = mock.patch('opencensus.stats.measurement_map.logger')
 
@@ -137,9 +139,7 @@ class TestMeasurementMap(unittest.TestCase):
         measure_to_view_map = mock.Mock()
         measurement_map = measurement_map_module.MeasurementMap(
             measure_to_view_map=measure_to_view_map)
-
-        tags = {'testtag1': 'testtag1val'}
-        execution_context.set_current_tag_map(tags)
+        TagContext.set(TagMap(tags=[Tag('testtag1', 'testtag1val')]))
         measurement_map.record()
         self.assertTrue(measure_to_view_map.record.called)
 

@@ -21,7 +21,7 @@ class TestTag(unittest.TestCase):
     def test_constructor(self):
         key = 'key1'
         value = 'value1'
-        tag = Tag(key=TagKey(key), value=TagValue(value))
+        tag = Tag(key=key, value=value)
 
         self.assertEqual(tag.key, key)
         self.assertEqual(tag.value, value)
