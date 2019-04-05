@@ -25,3 +25,5 @@ class TestTag(unittest.TestCase):
 
         self.assertEqual(tag.key, key)
         self.assertEqual(tag.value, value)
+        self.assertRaises(ValueError, lambda: Tag(key='', value=value))
+        self.assertRaises(ValueError, lambda: Tag(key=key, value='\0'))
