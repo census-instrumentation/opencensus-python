@@ -15,7 +15,7 @@
 import logging
 
 from opencensus.common import utils
-from opencensus.tags import execution_context
+from opencensus.tags import TagContext
 
 
 logger = logging.getLogger(__name__)
@@ -90,13 +90,13 @@ class MeasurementMap(object):
 
         self._attachments[key] = value
 
-    def record(self, tag_map_tags=None):
+    def record(self, tags=None):
         """records all the measures at the same time with a tag_map.
         tag_map could either be explicitly passed to the method, or implicitly
-        read from current execution context.
+        read from current runtime context.
         """
-        if tag_map_tags is None:
-            tag_map_tags = execution_context.get_current_tag_map()
+        if tags is None:
+            tags = TagContext.get()
         if self._invalid:
             logger.warning("Measurement map has included negative value "
                            "measurements, refusing to record")
@@ -112,7 +112,7 @@ class MeasurementMap(object):
                 return
 
         self.measure_to_view_map.record(
-                tags=tag_map_tags,
+                tags=tags,
                 measurement_map=self.measurement_map,
                 timestamp=utils.to_iso_str(),
                 attachments=self.attachments
