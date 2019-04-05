@@ -13,6 +13,8 @@
 # limitations under the License.
 
 from collections import namedtuple
+from opencensus.tags.tag_key import TagKey
+from opencensus.tags.tag_value import TagValue
 
 Tag_ = namedtuple('Tag', ['key', 'value'])
 
@@ -20,11 +22,16 @@ Tag_ = namedtuple('Tag', ['key', 'value'])
 class Tag(Tag_):
     """A tag, in the format [KEY]:[VALUE].
 
-    :type key: '~opencensus.tags.tag_key.TagKey'
-    :param key: Key in the tag
+    :type key: str
+    :param key: The name of the tag
 
-    :type value: '~opencensus.tags.tag_key.TagValue'
-    :param value: Value of the key in the tag.
+    :type value: str
+    :param value: The value of the tag
 
     """
-    pass
+    def __new__(cls, key, value):
+        return super(Tag, cls).__new__(
+            cls,
+            key=TagKey(key),
+            value=TagValue(value),
+        )
