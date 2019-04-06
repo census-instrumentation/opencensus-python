@@ -44,6 +44,24 @@ class Object(dict):
 
 Object.prototype = Object()
 
+class Envelope(Object):
+    prototype = Object(
+        ver=1,
+        name='',
+        time='',
+        sampleRate=None,
+        seq=None,
+        iKey=None,
+        flags=None,
+        tags=None,
+        data=None,
+    )
+
+    def __init__(self, *args, **kwargs):
+        super(Envelope, self).__init__(*args, **kwargs)
+        self.name = self.name
+        self.time = self.time
+
 class Event(Object):
     prototype = Object(
         ver=2,
@@ -57,23 +75,19 @@ class Event(Object):
         self.ver = self.ver
         self.name = self.name
 
-class Envelope(Object):
+class Message(Object):
     prototype = Object(
-        ver=1,
-        name='',
-        time='',
-        sampleRate=100.0,
-        seq=None,
-        iKey=None,
-        flags=None,
-        tags=None,
-        data=None,
+        ver=2,
+        message='',
+        severityLevel=None,
+        properties=None,
+        measurements=None,
     )
 
     def __init__(self, *args, **kwargs):
-        super(Envelope, self).__init__(*args, **kwargs)
-        self.name = self.name
-        self.time = self.time
+        super(Message, self).__init__(*args, **kwargs)
+        self.ver = self.ver
+        self.message = self.message
 
 class Request(Object):
     prototype = Object(

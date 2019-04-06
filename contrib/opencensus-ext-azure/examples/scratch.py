@@ -14,6 +14,7 @@
 
 from opencensus.trace import tracer as tracer_module
 from opencensus.ext.azure.protocol import *
+from opencensus.ext.azure.util import azure_monitor_context
 from opencensus.ext.azure.trace_exporter import AzureExporter
 
 import json
@@ -22,18 +23,12 @@ import requests
 envelope = Envelope(
     iKey='33018a74-404a-45ba-ba5d-079020eb7bba',
     name='Microsoft.ApplicationInsights.Event',
+    tags=azure_monitor_context,
 )
 envelope.time = '2019-04-05T23:59:59.999999Z'
 envelope.data = {
     'baseData': Event(name='Hello, world!'),
     'baseType': 'EventData'
-}
-envelope.tags = {
-    'ai.device.id': 'reiley-surface',
-    'ai.device.locale': 'en_US',
-    'ai.device.osVersion': '10.0.17763',
-    'ai.device.type': 'Other',
-    'ai.internal.sdkVersion': 'ocpy3:0.1'
 }
 print(envelope)
 print(json.dumps(envelope))
