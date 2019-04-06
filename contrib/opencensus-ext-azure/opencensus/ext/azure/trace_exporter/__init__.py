@@ -12,12 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from collections import defaultdict
-import os
-
 from opencensus.common.transports import sync
 from opencensus.common.version import __version__
+from opencensus.ext.azure.protocol import Request
 from opencensus.trace import base_exporter
+from opencensus.trace.span import SpanKind
 
 class AzureExporter(base_exporter.Exporter):
     """An exporter that sends traces to Microsoft Azure Monitor.
@@ -46,6 +45,14 @@ class AzureExporter(base_exporter.Exporter):
         """
         for sd in span_datas:
             print('[AzMon]', sd)
+            print('trace_id:', sd.context.trace_id)
+            print('tracestate:', sd.context.tracestate)
+            print('span_id:', sd.span_id)
+            print('parent_span_id:', sd.parent_span_id)
+            print('attributes:', sd.attributes)
+            print('start_time:', sd.start_time)
+            print('end_time:', sd.end_time)
+            print('span_kind:', sd.span_kind, {'CLIENT': SpanKind.CLIENT, 'SERVER': SpanKind.SERVER})
 
     def export(self, span_datas):
         """
