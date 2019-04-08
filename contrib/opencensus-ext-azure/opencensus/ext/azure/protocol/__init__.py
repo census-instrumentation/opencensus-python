@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 class Object(dict):
     def __init__(self, *args, **kwargs):
         super(Object, self).__init__(*args, **kwargs)
@@ -42,7 +43,9 @@ class Object(dict):
             return super(Object, self).__getitem__(key)
         return self.prototype[key]
 
+
 Object.prototype = Object()
+
 
 class Envelope(Object):
     prototype = Object(
@@ -62,6 +65,7 @@ class Envelope(Object):
         self.name = self.name
         self.time = self.time
 
+
 class Event(Object):
     prototype = Object(
         ver=2,
@@ -74,6 +78,7 @@ class Event(Object):
         super(Event, self).__init__(*args, **kwargs)
         self.ver = self.ver
         self.name = self.name
+
 
 class Message(Object):
     prototype = Object(
@@ -88,6 +93,7 @@ class Message(Object):
         super(Message, self).__init__(*args, **kwargs)
         self.ver = self.ver
         self.message = self.message
+
 
 class Request(Object):
     prototype = Object(

@@ -13,10 +13,11 @@
 # limitations under the License.
 
 from opencensus.common.transports import sync
-from opencensus.common.version import __version__
-from opencensus.ext.azure.protocol import Request
+from opencensus.common import utils
+# from opencensus.ext.azure.protocol import Request
 from opencensus.trace import base_exporter
 from opencensus.trace.span import SpanKind
+
 
 class AzureExporter(base_exporter.Exporter):
     """An exporter that sends traces to Microsoft Azure Monitor.
@@ -44,15 +45,37 @@ class AzureExporter(base_exporter.Exporter):
             SpanData tuples to emit
         """
         for sd in span_datas:
+            start_time_microseconds = utils.timestamp_to_microseconds(sd.start_time)
+            end_time_microseconds = utils.timestamp_to_microseconds(sd.end_time)
+            duration_microseconds = int(end_time_microseconds - start_time_microseconds)
+
+            n = (duration_microseconds + 500) // 1000  # duration in milliseconds
+            ms = n % 1000  # millisecond
+            n = n // 1000
+            s = n % 60  # second
+            n = n // 60
+            m = n % 60  # minute
+            n = n // 60
+            h = n % 24  # hour
+            d = n // 24  # day
+            duration = '{:02d}:{:02d}:{:02d}.{:03d}'.format(h, m, s, ms)
+            if d:
+                duration = str(d) + '.' + duration
+
             print('[AzMon]', sd)
             print('trace_id:', sd.context.trace_id)
             print('tracestate:', sd.context.tracestate)
             print('span_id:', sd.span_id)
             print('parent_span_id:', sd.parent_span_id)
             print('attributes:', sd.attributes)
-            print('start_time:', sd.start_time)
+            print('start_time:', start_time_microseconds)
             print('end_time:', sd.end_time)
-            print('span_kind:', sd.span_kind, {'CLIENT': SpanKind.CLIENT, 'SERVER': SpanKind.SERVER})
+            print('span_kind:', sd.span_kind, {
+                'CLIENT': SpanKind.CLIENT,
+                'SERVER': SpanKind.SERVER,
+            })
+            print('duration(microseconds)', duration_microseconds)
+            print('duration', duration)
 
     def export(self, span_datas):
         """

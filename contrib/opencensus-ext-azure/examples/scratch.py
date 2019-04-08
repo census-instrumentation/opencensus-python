@@ -12,10 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from opencensus.trace import tracer as tracer_module
-from opencensus.ext.azure.protocol import *
+from opencensus.ext.azure.protocol import Envelope
+from opencensus.ext.azure.protocol import Event
 from opencensus.ext.azure.util import azure_monitor_context
 from opencensus.ext.azure.trace_exporter import AzureExporter
+from opencensus.trace import tracer as tracer_module
 
 import json
 import requests
@@ -39,7 +40,7 @@ response = requests.post(
     data=json.dumps([envelope]),
     headers={
         'Accept': 'application/json',
-        'Content-Type' : 'application/json; charset=utf-8',
+        'Content-Type': 'application/json; charset=utf-8',
     },
 )
 print(response.status_code)

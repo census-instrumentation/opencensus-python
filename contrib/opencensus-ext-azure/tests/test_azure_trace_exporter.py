@@ -13,15 +13,14 @@
 # limitations under the License.
 
 import unittest
-
-import mock
-
-from opencensus.common.version import __version__
 from opencensus.ext.azure import trace_exporter
 
 
 class TestAzureExporter(unittest.TestCase):
-    pass
+    def test_export(self):
+        exporter = trace_exporter.AzureExporter(transport=MockTransport)
+        exporter.export(None)
+        self.assertTrue(exporter.transport.export_called)
 
 
 class MockTransport(object):
@@ -29,5 +28,5 @@ class MockTransport(object):
         self.export_called = False
         self.exporter = exporter
 
-    def export(self, trace):
+    def export(self, datas):
         self.export_called = True
