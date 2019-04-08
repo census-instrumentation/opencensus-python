@@ -101,7 +101,7 @@ def _set_django_attributes(span, request):
     user_id = django_user.pk
     try:
         user_name = django_user.get_username()
-    except Exception:
+    except AttributeError:
         # AnonymousUser in some older versions of Django doesn't implement get_username()
         return
 
