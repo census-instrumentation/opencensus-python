@@ -21,6 +21,7 @@ from google.cloud import monitoring_v3
 import mock
 
 from opencensus.ext.stackdriver import stats_exporter as stackdriver
+from opencensus.metrics import transport
 from opencensus.stats import aggregation as aggregation_module
 from opencensus.stats import measure as measure_module
 from opencensus.stats import stats as stats_module
@@ -143,9 +144,8 @@ class TestBasicStats(unittest.TestCase):
         view_manager = stats.view_manager
         stats_recorder = stats.stats_recorder
 
-        exporter, transport = stackdriver.new_stats_exporter(
-            stackdriver.Options(project_id=PROJECT),
-            interval=ASYNC_TEST_INTERVAL)
+        exporter = stackdriver.new_stats_exporter(
+            stackdriver.Options(project_id=PROJECT))
         view_manager.register_exporter(exporter)
 
         # Register view.
@@ -164,7 +164,6 @@ class TestBasicStats(unittest.TestCase):
 
         measure_map.record(tag_map)
         # Give the exporter thread enough time to export exactly once
-        time.sleep(ASYNC_TEST_INTERVAL * 2 - 1)
-        transport.stop()
+        time.sleep(transport.DEFAULT_INTERVAL * 1.5)
 
         self.check_sd_md(exporter, view_description)
