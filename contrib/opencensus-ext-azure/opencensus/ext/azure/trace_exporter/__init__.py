@@ -17,6 +17,7 @@ import requests
 
 from opencensus.common.transports import sync
 from opencensus.common import utils
+from opencensus.ext.azure.protocol import Data
 from opencensus.ext.azure.protocol import Envelope
 from opencensus.ext.azure.protocol import Message
 from opencensus.ext.azure.protocol import RemoteDependency
@@ -71,38 +72,46 @@ class AzureExporter(base_exporter.Exporter):
 
             envelope = Envelope(
                 iKey=self.config.instrumentation_key,
-                tags=azure_monitor_context,
-                time=sd.end_time,
+                tags=dict(azure_monitor_context),
+                time=sd.start_time,  # TODO: revisit whether this should be the start or end
             )
-            if sd.span_kind == SpanKind.CLIENT:
-                envelope.name = 'Microsoft.ApplicationInsights.RemoteDependency'
-                envelope.data = {
-                    'baseData': RemoteDependency(
-                        name='GET /foobarbaz',  # TODO
-                        id='!{}.{}'.format(sd.context.trace_id, sd.span_id),  # TODO
-                        resultCode='200',  # TODO
-                        duration=duration,
-                        success=True,  # TODO
-                    ),
-                    'baseType': 'RemoteDependencyData',
-                }
-            elif sd.span_kind == SpanKind.SERVER:
+
+            envelope.tags['ai.operation.id'] = sd.context.trace_id
+            if sd.parent_span_id:
+                envelope.tags['ai.operation.parentId'] = '|{}.{}.'.format(sd.context.trace_id, sd.parent_span_id)
+
+            if sd.span_kind == SpanKind.SERVER:
                 envelope.name = 'Microsoft.ApplicationInsights.Request'
-                envelope.data = {
-                    'baseData': Request(
-                        id='!{}.{}'.format(sd.context.trace_id, sd.span_id),  # TODO
-                        duration=duration,
-                        responseCode='200',  # TODO
-                        success=True,  # TODO
-                    ),
-                    'baseType': 'RequestData',
-                }
-            else:  # unknown
-                envelope.name = 'Microsoft.ApplicationInsights.Message'
-                envelope.data = {
-                    'baseData': Message(message=str(sd)),
-                    'baseType': 'MessageData',
-                }
+                data = Request(
+                    id='|{}.{}.'.format(sd.context.trace_id, sd.span_id),
+                    duration=duration,
+                    responseCode='0',  # TODO
+                    success=True,  # TODO
+                )
+                envelope.data = Data(baseData=data, baseType='RequestData')
+                if 'http.method' in sd.attributes:
+                    data.name = sd.attributes['http.method']
+                if 'http.url' in sd.attributes:
+                    data.name = data.name + ' ' + sd.attributes['http.url']
+                if 'http.status_code' in sd.attributes:
+                    data.responseCode = sd.attributes['http.status_code']
+            else:
+                envelope.name = 'Microsoft.ApplicationInsights.RemoteDependency'
+                data = RemoteDependency(
+                    name=sd.name,  # TODO
+                    id='|{}.{}.'.format(sd.context.trace_id, sd.span_id),
+                    resultCode='0',  # TODO
+                    duration=duration,
+                    success=True,  # TODO
+                )
+                envelope.data = Data(baseData=data, baseType='RemoteDependencyData')
+                if 'http.status_code' in sd.attributes:
+                    data.resultCode = sd.attributes['http.status_code']
+                if sd.span_kind == SpanKind.CLIENT:
+                    data.type = 'HTTP'  # TODO
+                else:
+                    envelope.data.type = 'IN PROCESS'
+            # TODO: links, tracestate, tags, attrs
             print(json.dumps(envelope))
             envelopes.append(envelope)
 

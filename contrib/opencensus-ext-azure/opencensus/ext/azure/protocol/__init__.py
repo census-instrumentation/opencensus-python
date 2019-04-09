@@ -47,6 +47,18 @@ class Object(dict):
 Object.prototype = Object()
 
 
+class Data(Object):
+    prototype = Object(
+        baseData=None,
+        baseType=None,
+    )
+
+    def __init__(self, *args, **kwargs):
+        super(Data, self).__init__(*args, **kwargs)
+        self.baseData = self.baseData
+        self.baseType = self.baseType
+
+
 class Envelope(Object):
     prototype = Object(
         ver=1,

@@ -12,13 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import platform
 import locale
+import os
+import platform
+import sys
 from opencensus.common.version import __version__ as opencensus_version
 from opencensus.ext.azure.protocol import Object
 from opencensus.ext.azure.version import __version__ as extension_version
 
 azure_monitor_context = {
+    'ai.cloud.role': os.path.basename(sys.argv[0]) or 'Python Application',  # TODO
+    'ai.cloud.roleInstance': platform.node(),
     'ai.device.id': platform.node(),
     'ai.device.locale': locale.getdefaultlocale()[0],
     'ai.device.osVersion': platform.version(),

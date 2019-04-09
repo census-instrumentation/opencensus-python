@@ -28,6 +28,10 @@ class TestProtocol(unittest.TestCase):
         self.assertEqual(data['bar'], 2)
         self.assertRaises(KeyError, lambda: data['baz'])
 
+    def test_data(self):
+        data = protocol.Data()
+        self.assertEqual(data.ver, 1)
+
     def test_envelope(self):
         data = protocol.Envelope()
         self.assertEqual(data.ver, 1)

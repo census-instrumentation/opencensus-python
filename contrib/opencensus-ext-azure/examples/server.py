@@ -13,7 +13,10 @@
 # limitations under the License.
 
 from flask import Flask
+import requests
+
 from opencensus.ext.azure.utils import Config
+from opencensus.trace import config_integration
 from opencensus.ext.azure.trace_exporter import AzureExporter
 from opencensus.ext.flask.flask_middleware import FlaskMiddleware
 from opencensus.trace.propagation.trace_context_http_header_format \
@@ -31,6 +34,7 @@ middleware = FlaskMiddleware(
 
 @app.route('/')
 def hello():
+    requests.get('https://www.wikipedia.org/')
     return 'Hello World!'
 
 
@@ -38,4 +42,5 @@ if __name__ == '__main__':
     import logging
     logger = logging.getLogger('werkzeug')
     logger.setLevel(logging.ERROR)
+    config_integration.trace_integrations(['requests'])
     app.run(host='localhost', port=8080, threaded=True)
