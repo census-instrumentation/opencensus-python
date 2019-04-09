@@ -3,7 +3,7 @@
 ## Unreleased
 
 ## 0.2.0
-Released 2019-04-05
+Released 2019-04-08
 
 - Update for package changes in core library
 

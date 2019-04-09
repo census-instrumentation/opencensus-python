@@ -3,7 +3,7 @@
 ## Unreleased
 
 ## 0.4.0
-Released 2019-04-05
+Released 2019-04-08
 
 - Multiple bugfixes
 - Use separate context package instead of threadlocals for execution context
