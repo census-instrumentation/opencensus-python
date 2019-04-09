@@ -390,9 +390,8 @@ def new_stats_exporter(options, interval=None):
     client = monitoring_v3.MetricServiceClient(client_info=ci)
     exporter = StackdriverStatsExporter(client=client, options=options)
 
-    tt = transport.get_exporter_thread(stats.stats, exporter,
-                                       interval=interval)
-    return exporter, tt
+    transport.get_exporter_thread(stats.stats, exporter, interval=interval)
+    return exporter
 
 
 def get_task_value():
