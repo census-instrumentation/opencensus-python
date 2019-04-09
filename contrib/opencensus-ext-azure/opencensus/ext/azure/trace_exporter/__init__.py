@@ -24,6 +24,7 @@ from opencensus.ext.azure.protocol import Request
 from opencensus.ext.azure.utils import azure_monitor_context
 from opencensus.ext.azure.utils import microseconds_to_duration
 from opencensus.trace import base_exporter
+from opencensus.trace import execution_context
 from opencensus.trace.span import SpanKind
 
 
@@ -74,6 +75,10 @@ class AzureExporter(base_exporter.Exporter):
             print('duration(microseconds)', duration_microseconds)
             print('duration', duration)
 
+            if sd.attributes and 'http.url' in sd.attributes:
+                if sd.attributes['http.url'] == self.config.endpoint:
+                    continue
+
             envelope = Envelope(
                 iKey=self.config.instrumentation_key,
                 tags=azure_monitor_context,
@@ -112,6 +117,8 @@ class AzureExporter(base_exporter.Exporter):
             envelopes.append(envelope)
 
         # TODO: prevent requests being tracked
+        blacklist_hostnames = execution_context.get_opencensus_attr('blacklist_hostnames')
+        execution_context.set_opencensus_attr('blacklist_hostnames', ['dc.services.visualstudio.com'])
         response = requests.post(
             url=self.config.endpoint,
             data=json.dumps(envelopes),
@@ -120,6 +127,7 @@ class AzureExporter(base_exporter.Exporter):
                 'Content-Type': 'application/json; charset=utf-8',
             },
         )
+        execution_context.set_opencensus_attr('blacklist_hostnames', blacklist_hostnames)
         print(response.status_code)
         print(response.json())
 

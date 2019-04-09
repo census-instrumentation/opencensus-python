@@ -12,18 +12,30 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from flask import Flask
 from opencensus.ext.azure.utils import Config
 from opencensus.ext.azure.trace_exporter import AzureExporter
-from opencensus.trace import tracer as tracer_module
+from opencensus.ext.flask.flask_middleware import FlaskMiddleware
+from opencensus.trace.propagation.trace_context_http_header_format \
+    import TraceContextPropagator
 
-azure_monitor_exporter = AzureExporter(config=Config(
-    instrumentation_key='33018a74-404a-45ba-ba5d-079020eb7bba',
-))
-tracer = tracer_module.Tracer(exporter=azure_monitor_exporter)
+app = Flask(__name__)
+middleware = FlaskMiddleware(
+    app,
+    exporter=AzureExporter(config=Config(
+        instrumentation_key='33018a74-404a-45ba-ba5d-079020eb7bba',
+    )),
+    propagator=TraceContextPropagator(),
+)
 
-# pip install -e . && python examples\simple.py
+
+@app.route('/')
+def hello():
+    return 'Hello World!'
+
 
 if __name__ == '__main__':
-    with tracer.span(name='foo') as foo:
-        with foo.span(name='bar'):
-            print('Hello, world!')
+    import logging
+    logger = logging.getLogger('werkzeug')
+    logger.setLevel(logging.ERROR)
+    app.run(host='localhost', port=8080, threaded=True)

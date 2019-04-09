@@ -40,6 +40,10 @@ class TestProtocol(unittest.TestCase):
         data = protocol.Message()
         self.assertEqual(data.ver, 2)
 
+    def test_remote_dependency(self):
+        data = protocol.RemoteDependency()
+        self.assertEqual(data.ver, 2)
+
     def test_request(self):
         data = protocol.Request()
         self.assertEqual(data.ver, 2)

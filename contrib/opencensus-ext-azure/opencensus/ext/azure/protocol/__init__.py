@@ -111,7 +111,7 @@ class RemoteDependency(Object):
     )
 
     def __init__(self, *args, **kwargs):
-        super(Request, self).__init__(*args, **kwargs)
+        super(RemoteDependency, self).__init__(*args, **kwargs)
         self.ver = self.ver
         self.name = self.name
         self.resultCode = self.resultCode
