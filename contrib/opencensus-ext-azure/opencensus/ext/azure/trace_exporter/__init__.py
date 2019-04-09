@@ -68,12 +68,6 @@ class AzureExporter(base_exporter.Exporter):
             print('attributes:', sd.attributes)
             print('start_time:', start_time_microseconds)
             print('end_time:', sd.end_time)
-            print('span_kind:', sd.span_kind, {
-                'CLIENT': SpanKind.CLIENT,
-                'SERVER': SpanKind.SERVER,
-            })
-            print('duration(microseconds)', duration_microseconds)
-            print('duration', duration)
 
             envelope = Envelope(
                 iKey=self.config.instrumentation_key,
