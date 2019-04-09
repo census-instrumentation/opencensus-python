@@ -29,6 +29,7 @@ class TagValue(str):
         :param value: A string representing the value of a key in a tag
         :return: TagValue
         """
-        if not is_valid_tag_value(value):
-            raise ValueError(_TAG_VALUE_ERROR)
+        if not isinstance(value, cls):
+            if not is_valid_tag_value(value):
+                raise ValueError(_TAG_VALUE_ERROR)
         return super(TagValue, cls).__new__(cls, value)

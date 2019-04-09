@@ -12,7 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import sys
+
+try:
+    import contextvars
+except ImportError:
+    contextvars = None
+
 import threading
 
 __all__ = ['RuntimeContext']
@@ -132,7 +137,6 @@ class _AsyncRuntimeContext(_RuntimeContext):
 
     class Slot(object):
         def __init__(self, name, default):
-            import contextvars
             self.name = name
             self.contextvar = contextvars.ContextVar(name)
             self.default = default if callable(default) else (lambda: default)
@@ -169,6 +173,5 @@ class _AsyncRuntimeContext(_RuntimeContext):
 
 
 RuntimeContext = _ThreadLocalRuntimeContext()
-
-if sys.version_info >= (3, 7):
+if contextvars:
     RuntimeContext = _AsyncRuntimeContext()
