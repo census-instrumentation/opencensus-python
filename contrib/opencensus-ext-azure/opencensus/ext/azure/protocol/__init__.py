@@ -95,6 +95,29 @@ class Message(Object):
         self.message = self.message
 
 
+class RemoteDependency(Object):
+    prototype = Object(
+        ver=2,
+        name='',
+        id='',
+        resultCode='',
+        duration='',
+        success=True,
+        data=None,
+        type=None,
+        target=None,
+        properties=None,
+        measurements=None,
+    )
+
+    def __init__(self, *args, **kwargs):
+        super(Request, self).__init__(*args, **kwargs)
+        self.ver = self.ver
+        self.name = self.name
+        self.resultCode = self.resultCode
+        self.duration = self.duration
+
+
 class Request(Object):
     prototype = Object(
         ver=2,

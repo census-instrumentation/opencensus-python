@@ -15,18 +15,36 @@
 import platform
 import locale
 from opencensus.common.version import __version__ as opencensus_version
+from opencensus.ext.azure.protocol import Object
 from opencensus.ext.azure.version import __version__ as extension_version
-
-exporter_version = '0.1.dev0'
 
 azure_monitor_context = {
     'ai.device.id': platform.node(),
     'ai.device.locale': locale.getdefaultlocale()[0],
     'ai.device.osVersion': platform.version(),
     'ai.device.type': 'Other',
-    'ai.internal.sdkVersion': 'py{}:{}:{}'.format(
+    'ai.internal.sdkVersion': 'py{}:oc{}:ext{}'.format(
         platform.python_version(),
         opencensus_version,
         extension_version,
     ),
 }
+
+def microseconds_to_duration(microseconds):
+    n = (microseconds + 500) // 1000  # duration in milliseconds
+    ms = n % 1000  # millisecond
+    n = n // 1000
+    s = n % 60  # second
+    n = n // 60
+    m = n % 60  # minute
+    n = n // 60
+    h = n % 24  # hour
+    d = n // 24  # day
+    return '{:d}.{:02d}:{:02d}:{:02d}.{:03d}'.format(d, h, m, s, ms)
+
+
+class Config(Object):
+    prototype = Object(
+        endpoint='https://dc.services.visualstudio.com/v2/track',
+        instrumentation_key=None,
+    )

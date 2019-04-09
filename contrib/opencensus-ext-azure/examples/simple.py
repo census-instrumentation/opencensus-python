@@ -12,9 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from opencensus.ext.azure.utils import azure_monitor_context
+from opencensus.ext.azure.utils import Config
+from opencensus.ext.azure.trace_exporter import AzureExporter
 from opencensus.trace import tracer as tracer_module
 
-tracer = tracer_module.Tracer()
+azure_monitor_exporter = AzureExporter(config=Config(
+    instrumentation_key='33018a74-404a-45ba-ba5d-079020eb7bba',
+))
+tracer = tracer_module.Tracer(exporter=azure_monitor_exporter)
 
-with tracer.span(name='foo'):
-    print('Hello, world!')
+# pip install -e . && python examples\simple.py
+
+if __name__ == '__main__':
+    with tracer.span(name='foo') as foo:
+        with foo.span(name='bar'):
+            print('Hello, world!')

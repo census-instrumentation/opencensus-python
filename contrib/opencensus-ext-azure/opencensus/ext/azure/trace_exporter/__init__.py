@@ -12,9 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json
+import requests
+
 from opencensus.common.transports import sync
 from opencensus.common import utils
-# from opencensus.ext.azure.protocol import Request
+from opencensus.ext.azure.protocol import Envelope
+from opencensus.ext.azure.protocol import Message
+from opencensus.ext.azure.protocol import RemoteDependency
+from opencensus.ext.azure.protocol import Request
+from opencensus.ext.azure.utils import azure_monitor_context
+from opencensus.ext.azure.utils import microseconds_to_duration
 from opencensus.trace import base_exporter
 from opencensus.trace.span import SpanKind
 
@@ -44,23 +52,12 @@ class AzureExporter(base_exporter.Exporter):
         :param list of opencensus.trace.span_data.SpanData span_datas:
             SpanData tuples to emit
         """
+        envelopes = []
         for sd in span_datas:
             start_time_microseconds = utils.timestamp_to_microseconds(sd.start_time)
             end_time_microseconds = utils.timestamp_to_microseconds(sd.end_time)
             duration_microseconds = int(end_time_microseconds - start_time_microseconds)
-
-            n = (duration_microseconds + 500) // 1000  # duration in milliseconds
-            ms = n % 1000  # millisecond
-            n = n // 1000
-            s = n % 60  # second
-            n = n // 60
-            m = n % 60  # minute
-            n = n // 60
-            h = n % 24  # hour
-            d = n // 24  # day
-            duration = '{:02d}:{:02d}:{:02d}.{:03d}'.format(h, m, s, ms)
-            if d:
-                duration = str(d) + '.' + duration
+            duration = microseconds_to_duration(duration_microseconds)
 
             print('[AzMon]', sd)
             print('trace_id:', sd.context.trace_id)
@@ -76,6 +73,55 @@ class AzureExporter(base_exporter.Exporter):
             })
             print('duration(microseconds)', duration_microseconds)
             print('duration', duration)
+
+            envelope = Envelope(
+                iKey=self.config.instrumentation_key,
+                tags=azure_monitor_context,
+                time=sd.end_time,
+            )
+            if sd.span_kind == SpanKind.CLIENT:
+                envelope.name = 'Microsoft.ApplicationInsights.RemoteDependency'
+                envelope.data = {
+                    'baseData': RemoteDependency(
+                        name='GET /foobarbaz',  # TODO
+                        id='!{}.{}'.format(sd.context.trace_id, sd.span_id),  # TODO
+                        resultCode='200',  # TODO
+                        duration=duration,
+                        success=True,  # TODO
+                    ),
+                    'baseType': 'RemoteDependencyData',
+                }
+            elif sd.span_kind == SpanKind.SERVER:
+                envelope.name = 'Microsoft.ApplicationInsights.Request'
+                envelope.data = {
+                    'baseData': Request(
+                        id='!{}.{}'.format(sd.context.trace_id, sd.span_id),  # TODO
+                        duration=duration,
+                        responseCode='200',  # TODO
+                        success=True,  # TODO
+                    ),
+                    'baseType': 'RequestData',
+                }
+            else:  # unknown
+                envelope.name = 'Microsoft.ApplicationInsights.Message'
+                envelope.data = {
+                    'baseData': Message(message=str(sd)),
+                    'baseType': 'MessageData',
+                }
+            print(json.dumps(envelope))
+            envelopes.append(envelope)
+
+        # TODO: prevent requests being tracked
+        response = requests.post(
+            url=self.config.endpoint,
+            data=json.dumps(envelopes),
+            headers={
+                'Accept': 'application/json',
+                'Content-Type': 'application/json; charset=utf-8',
+            },
+        )
+        print(response.status_code)
+        print(response.json())
 
     def export(self, span_datas):
         """
