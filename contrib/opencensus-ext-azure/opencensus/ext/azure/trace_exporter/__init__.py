@@ -66,7 +66,7 @@ class AzureExporter(base_exporter.Exporter):
             print('span_id:', sd.span_id)
             print('parent_span_id:', sd.parent_span_id)
             print('attributes:', sd.attributes)
-            print('start_time:', start_time_microseconds)
+            print('start_time:', sd.start_time)
             print('end_time:', sd.end_time)
 
             envelope = Envelope(
