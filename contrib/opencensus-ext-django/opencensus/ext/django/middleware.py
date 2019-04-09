@@ -99,7 +99,12 @@ def _set_django_attributes(span, request):
         return
 
     user_id = django_user.pk
-    user_name = django_user.get_username()
+    try:
+        user_name = django_user.get_username()
+    except AttributeError:
+        # AnonymousUser in some older versions of Django doesn't implement
+        # get_username
+        return
 
     # User id is the django autofield for User model as the primary key
     if user_id is not None:
