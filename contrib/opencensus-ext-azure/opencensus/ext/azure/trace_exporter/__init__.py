@@ -75,10 +75,6 @@ class AzureExporter(base_exporter.Exporter):
             print('duration(microseconds)', duration_microseconds)
             print('duration', duration)
 
-            if sd.attributes and 'http.url' in sd.attributes:
-                if sd.attributes['http.url'] == self.config.endpoint:
-                    continue
-
             envelope = Envelope(
                 iKey=self.config.instrumentation_key,
                 tags=azure_monitor_context,
