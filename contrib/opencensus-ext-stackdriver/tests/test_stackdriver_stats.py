@@ -125,7 +125,7 @@ class TestStackdriverStatsExporter(unittest.TestCase):
              '.monitoring_v3.MetricServiceClient'), _Client)
 
         with patch_client:
-            exporter_created, transport = stackdriver.new_stats_exporter(
+            exporter_created = stackdriver.new_stats_exporter(
                 stackdriver.Options(project_id=1))
 
         self.assertIsInstance(exporter_created,
@@ -146,7 +146,7 @@ class TestStackdriverStatsExporter(unittest.TestCase):
             '.MetricServiceClient', _Client)
 
         with patch_client:
-            exporter, transport = stackdriver.new_stats_exporter(
+            exporter = stackdriver.new_stats_exporter(
                 stackdriver.Options(project_id=1))
 
         self.assertIn(stackdriver.get_user_agent_slug(),
@@ -372,8 +372,38 @@ class MockPeriodicTask(object):
             self.logger.exception("Error handling metric export")
 
 
+class MockGetExporterThread(object):
+    """Intercept calls to get_exporter_thread.
+
+    To get a reference to the running PeriodicTask created by
+    get_exporter_thread.
+    """
+    def __init__(self):
+        self.transport = None
+
+    def __enter__(self):
+        original_func = transport_module.get_exporter_thread
+
+        def get_exporter_thread(*aa, **kw):
+            self.transport = original_func(*aa, **kw)
+
+        mock_get = mock.Mock()
+        mock_get.side_effect = get_exporter_thread
+        self.patcher = mock.patch(
+            ('opencensus.ext.stackdriver.stats_exporter'
+             '.transport.get_exporter_thread'),
+            mock_get)
+        self.patcher.start()
+        return self
+
+    def __exit__(self, type, value, traceback):
+        self.patcher.stop()
+
+
 @mock.patch('opencensus.ext.stackdriver.stats_exporter'
             '.monitoring_v3.MetricServiceClient')
+@mock.patch('opencensus.ext.stackdriver.stats_exporter'
+            '.stats.stats')
 class TestAsyncStatsExport(unittest.TestCase):
     """Check that metrics are exported using the exporter thread."""
 
@@ -384,22 +414,19 @@ class TestAsyncStatsExport(unittest.TestCase):
         patcher.start()
         self.addCleanup(patcher.stop)
 
-    @mock.patch('opencensus.ext.stackdriver.stats_exporter'
-                '.stats.stats')
     def test_export_empty(self, mock_stats, mock_client):
         """Check that we don't attempt to export empty metric sets."""
 
         mock_stats.get_metrics.return_value = []
 
-        exporter, transport = stackdriver.new_stats_exporter(
-            stackdriver.Options(project_id=1))
+        with MockGetExporterThread() as mget:
+            exporter = stackdriver.new_stats_exporter(
+                stackdriver.Options(project_id=1))
+            mget.transport.step()
 
-        transport.step()
         exporter.client.create_metric_descriptor.assert_not_called()
         exporter.client.create_time_series.assert_not_called()
 
-    @mock.patch('opencensus.ext.stackdriver.stats_exporter'
-                '.stats.stats')
     def test_export_single_metric(self, mock_stats, mock_client):
         """Check that we can export a set of a single metric."""
 
@@ -424,10 +451,10 @@ class TestAsyncStatsExport(unittest.TestCase):
         mm = metric.Metric(descriptor=desc, time_series=ts)
         mock_stats.get_metrics.return_value = [mm]
 
-        exporter, transport = stackdriver.new_stats_exporter(
-            stackdriver.Options(project_id=1))
-
-        transport.step()
+        with MockGetExporterThread() as mget:
+            exporter = stackdriver.new_stats_exporter(
+                stackdriver.Options(project_id=1))
+            mget.transport.step()
 
         exporter.client.create_metric_descriptor.assert_called()
         self.assertEqual(
