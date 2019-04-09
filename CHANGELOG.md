@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+## 0.4.0
+Released 2019-04-08
+
+- Multiple bugfixes
+- Use separate context package instead of threadlocals for execution context
+  ([#573](https://github.com/census-instrumentation/opencensus-python/pull/573))
+
 ## 0.3.0
 Released 2019-03-11
 
