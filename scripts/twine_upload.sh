@@ -29,7 +29,7 @@ echo -e "password = $PYPI_PASSWORD" >> ~/.pypirc
 # Ensure that we have the latest versions of Twine, Wheel, and Setuptools.
 python3 -m pip install --upgrade twine wheel setuptools
 
-# Build the distribution.
+# Build the distributions.
 python3 setup.py bdist_wheel
 
 for d in context/*/ contrib/*/ ; do
@@ -39,5 +39,7 @@ for d in context/*/ contrib/*/ ; do
   popd
 done
 
-# Upload the distribution.
-twine upload dist/*
+# Upload the distributions.
+for p in dist/* ; do
+  twine upload $p
+done
