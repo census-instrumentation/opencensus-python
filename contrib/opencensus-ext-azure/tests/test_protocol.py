@@ -30,7 +30,6 @@ class TestProtocol(unittest.TestCase):
 
     def test_data(self):
         data = protocol.Data()
-        self.assertEqual(data.ver, 1)
 
     def test_envelope(self):
         data = protocol.Envelope()
