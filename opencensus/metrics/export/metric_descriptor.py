@@ -130,8 +130,8 @@ class MetricDescriptor(object):
         if type_ not in MetricDescriptorType:
             raise ValueError("Invalid type")
 
-        if not label_keys:
-            raise ValueError("label_keys must not be empty or null")
+        if label_keys is None:
+            raise ValueError("label_keys must not be None")
 
         if any(key is None for key in label_keys):
             raise ValueError("label_keys must not contain null keys")
