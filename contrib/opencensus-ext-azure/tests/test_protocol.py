@@ -30,6 +30,8 @@ class TestProtocol(unittest.TestCase):
 
     def test_data(self):
         data = protocol.Data()
+        self.assertIsNone(data.baseData)
+        self.assertIsNone(data.baseType)
 
     def test_envelope(self):
         data = protocol.Envelope()

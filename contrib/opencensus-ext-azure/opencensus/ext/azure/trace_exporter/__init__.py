@@ -18,7 +18,6 @@ import requests
 from opencensus.common.transports import sync
 from opencensus.ext.azure.protocol import Data
 from opencensus.ext.azure.protocol import Envelope
-from opencensus.ext.azure.protocol import Message
 from opencensus.ext.azure.protocol import RemoteDependency
 from opencensus.ext.azure.protocol import Request
 from opencensus.ext.azure import utils
@@ -97,7 +96,8 @@ class AzureExporter(base_exporter.Exporter):
                 if 'http.status_code' in sd.attributes:
                     data.responseCode = sd.attributes['http.status_code']
             else:
-                envelope.name = 'Microsoft.ApplicationInsights.RemoteDependency'
+                envelope.name = \
+                    'Microsoft.ApplicationInsights.RemoteDependency'
                 data = RemoteDependency(
                     name=sd.name,  # TODO
                     id='|{}.{}.'.format(sd.context.trace_id, sd.span_id),
@@ -105,11 +105,16 @@ class AzureExporter(base_exporter.Exporter):
                     duration=duration,
                     success=True,  # TODO
                 )
-                envelope.data = Data(baseData=data, baseType='RemoteDependencyData')
+                envelope.data = Data(
+                    baseData=data,
+                    baseType='RemoteDependencyData',
+                )
                 if sd.span_kind == SpanKind.CLIENT:
                     data.type = 'HTTP'  # TODO
                     if 'http.url' in sd.attributes:
-                        data.name = utils.urlparse(sd.attributes['http.url']).netloc  # TODO: error handling, probably put scheme as well (so that people can tell HTTP from HTTPS)
+                        url = sd.attributes['http.url']
+                        # TODO: error handling, probably put scheme as well
+                        data.name = utils.urlparse(url).netloc
                     if 'http.status_code' in sd.attributes:
                         data.resultCode = sd.attributes['http.status_code']
                 else:
@@ -119,8 +124,13 @@ class AzureExporter(base_exporter.Exporter):
             envelopes.append(envelope)
 
         # TODO: prevent requests being tracked
-        blacklist_hostnames = execution_context.get_opencensus_attr('blacklist_hostnames')
-        execution_context.set_opencensus_attr('blacklist_hostnames', ['dc.services.visualstudio.com'])
+        blacklist_hostnames = execution_context.get_opencensus_attr(
+            'blacklist_hostnames',
+        )
+        execution_context.set_opencensus_attr(
+            'blacklist_hostnames',
+            ['dc.services.visualstudio.com'],
+        )
         response = requests.post(
             url=self.config.endpoint,
             data=json.dumps(envelopes),
@@ -129,7 +139,10 @@ class AzureExporter(base_exporter.Exporter):
                 'Content-Type': 'application/json; charset=utf-8',
             },
         )
-        execution_context.set_opencensus_attr('blacklist_hostnames', blacklist_hostnames)
+        execution_context.set_opencensus_attr(
+            'blacklist_hostnames',
+            blacklist_hostnames,
+        )
         print(response.status_code)
         print(response.json())
 
