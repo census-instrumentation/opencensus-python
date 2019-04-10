@@ -30,8 +30,8 @@ from opencensus.trace.span import SpanKind
 class AzureExporter(base_exporter.Exporter):
     """An exporter that sends traces to Microsoft Azure Monitor.
 
-    :type project_id: str
-    :param project_id: project_id to create the Trace client.
+    :type config: dict
+    :param config: Configuration for the exporter. Defaults to None.
 
     :type transport: :class:`type`
     :param transport: Class for creating new transport objects. It should
@@ -54,10 +54,10 @@ class AzureExporter(base_exporter.Exporter):
         """
         envelopes = []
         for sd in span_datas:
-            start_time_microseconds = utils.timestamp_to_microseconds(sd.start_time)
-            end_time_microseconds = utils.timestamp_to_microseconds(sd.end_time)
-            duration_microseconds = int(end_time_microseconds - start_time_microseconds)
-            duration = utils.microseconds_to_duration(duration_microseconds)
+            start_time_us = utils.timestamp_to_microseconds(sd.start_time)
+            end_time_us = utils.timestamp_to_microseconds(sd.end_time)
+            duration_us = int(end_time_us - start_time_us)
+            duration = utils.microseconds_to_duration(duration_us)
 
             print('[AzMon]', sd)
             print('trace_id:', sd.context.trace_id)
@@ -71,12 +71,15 @@ class AzureExporter(base_exporter.Exporter):
             envelope = Envelope(
                 iKey=self.config.instrumentation_key,
                 tags=dict(utils.azure_monitor_context),
-                time=sd.start_time,  # TODO: revisit whether this should be the start or end
+                time=sd.start_time,
             )
 
             envelope.tags['ai.operation.id'] = sd.context.trace_id
             if sd.parent_span_id:
-                envelope.tags['ai.operation.parentId'] = '|{}.{}.'.format(sd.context.trace_id, sd.parent_span_id)
+                envelope.tags['ai.operation.parentId'] = '|{}.{}.'.format(
+                    sd.context.trace_id,
+                    sd.parent_span_id,
+                )
 
             if sd.span_kind == SpanKind.SERVER:
                 envelope.name = 'Microsoft.ApplicationInsights.Request'
