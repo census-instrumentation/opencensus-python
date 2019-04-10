@@ -22,6 +22,7 @@ import threading
 
 from google.api_core.gapic_v1 import client_info
 from google.cloud import monitoring_v3
+import google.auth
 
 from opencensus.common import utils
 from opencensus.common.monitored_resource import monitored_resource
@@ -365,11 +366,15 @@ def get_user_agent_slug():
     return "opencensus-python/{}".format(__version__)
 
 
-def new_stats_exporter(options, interval=None):
+def new_stats_exporter(options=None, interval=None):
     """Get a stats exporter and running transport thread.
 
     Create a new `StackdriverStatsExporter` with the given options and start
     periodically exporting stats to stackdriver in the background.
+
+    Fall back to default auth if `options` is null. This will raise
+    `google.auth.exceptions.DefaultCredentialsError` if default credentials
+    aren't configured.
 
     See `opencensus.metrics.transport.get_exporter_thread` for details on the
     transport thread.
@@ -380,9 +385,12 @@ def new_stats_exporter(options, interval=None):
     :type interval: int or float
     :param interval: Seconds between export calls.
 
-    :rtype: :class:`StackdriverStatsExporter` and :class:`PeriodicTask`
-    :return: A tuple of the exporter and transport thread.
+    :rtype: :class:`StackdriverStatsExporter`
+    :return: The newly-created exporter.
     """
+    if options is None:
+        _, project_id = google.auth.default()
+        options = Options(project_id=project_id)
     if str(options.project_id).strip() == "":
         raise ValueError(ERROR_BLANK_PROJECT_ID)
 
