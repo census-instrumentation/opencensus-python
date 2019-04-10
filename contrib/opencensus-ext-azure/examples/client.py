@@ -15,7 +15,6 @@
 import requests
 
 from opencensus.ext.azure.trace_exporter import AzureExporter
-from opencensus.ext.azure.utils import Config
 from opencensus.trace import config_integration
 from opencensus.trace.propagation.trace_context_http_header_format \
     import TraceContextPropagator
@@ -25,9 +24,8 @@ if __name__ == '__main__':
     config_integration.trace_integrations(['requests'])
     tracer = Tracer(
         propagator=TraceContextPropagator(),
-        exporter=AzureExporter(config=Config(
-            instrumentation_key='33018a74-404a-45ba-ba5d-079020eb7bba',
-        )))
+        exporter=AzureExporter(),
+    )
     with tracer.span(name='parent'):
         with tracer.span(name='child'):
             response = requests.get(url='http://localhost:8080/')

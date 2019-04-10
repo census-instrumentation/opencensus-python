@@ -23,6 +23,7 @@ except ImportError:
     from urlparse import urlparse
 
 from opencensus.common.version import __version__ as opencensus_version
+from opencensus.common.utils import timestamp_to_microseconds
 from opencensus.ext.azure.protocol import Object
 from opencensus.ext.azure.version import __version__ as extension_version
 
@@ -56,5 +57,5 @@ def microseconds_to_duration(microseconds):
 class Config(Object):
     prototype = Object(
         endpoint='https://dc.services.visualstudio.com/v2/track',
-        instrumentation_key=None,
+        instrumentation_key=os.getenv('APPINSIGHTS_INSTRUMENTATIONKEY', None),
     )

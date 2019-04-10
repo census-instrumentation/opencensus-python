@@ -15,7 +15,6 @@
 from flask import Flask
 import requests
 
-from opencensus.ext.azure.utils import Config
 from opencensus.trace import config_integration
 from opencensus.ext.azure.trace_exporter import AzureExporter
 from opencensus.ext.flask.flask_middleware import FlaskMiddleware
@@ -25,9 +24,7 @@ from opencensus.trace.propagation.trace_context_http_header_format \
 app = Flask(__name__)
 middleware = FlaskMiddleware(
     app,
-    exporter=AzureExporter(config=Config(
-        instrumentation_key='33018a74-404a-45ba-ba5d-079020eb7bba',
-    )),
+    exporter=AzureExporter(),
     propagator=TraceContextPropagator(),
 )
 
