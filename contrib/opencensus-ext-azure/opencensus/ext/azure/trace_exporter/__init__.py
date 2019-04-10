@@ -24,6 +24,7 @@ from opencensus.ext.azure.protocol import RemoteDependency
 from opencensus.ext.azure.protocol import Request
 from opencensus.ext.azure.utils import azure_monitor_context
 from opencensus.ext.azure.utils import microseconds_to_duration
+from opencensus.ext.azure.utils import urlparse
 from opencensus.trace import base_exporter
 from opencensus.trace import execution_context
 from opencensus.trace.span import SpanKind
@@ -105,10 +106,12 @@ class AzureExporter(base_exporter.Exporter):
                     success=True,  # TODO
                 )
                 envelope.data = Data(baseData=data, baseType='RemoteDependencyData')
-                if 'http.status_code' in sd.attributes:
-                    data.resultCode = sd.attributes['http.status_code']
                 if sd.span_kind == SpanKind.CLIENT:
                     data.type = 'HTTP'  # TODO
+                    if 'http.url' in sd.attributes:
+                        data.name = urlparse(sd.attributes['http.url']).netloc  # TODO: error handling, probably put scheme as well (so that people can tell HTTP from HTTPS)
+                    if 'http.status_code' in sd.attributes:
+                        data.resultCode = sd.attributes['http.status_code']
                 else:
                     envelope.data.type = 'IN PROCESS'
             # TODO: links, tracestate, tags, attrs

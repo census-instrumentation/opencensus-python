@@ -16,6 +16,12 @@ import locale
 import os
 import platform
 import sys
+
+try:
+    from urllib.parse import urlparse
+except ImportError:
+    from urlparse import urlparse
+
 from opencensus.common.version import __version__ as opencensus_version
 from opencensus.ext.azure.protocol import Object
 from opencensus.ext.azure.version import __version__ as extension_version
