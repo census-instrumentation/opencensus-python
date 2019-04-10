@@ -26,7 +26,7 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(ms_to_duration(86400 * 1000), '1.00:00:00.000')
 
     def test_timestamp_to_duration(self):
-        self.assertEqual(timestamp_to_duration(
+        self.assertEqual(utils.timestamp_to_duration(
                 '2010-10-24T07:28:38.123456Z',
                 '2010-10-24T07:28:38.234567Z',
             ), '0.00:00:00.111')
