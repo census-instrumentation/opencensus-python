@@ -17,6 +17,7 @@ import mock
 import unittest
 
 from google.cloud import monitoring_v3
+import google.auth
 
 from opencensus.common import utils
 from opencensus.common.version import __version__
@@ -114,6 +115,32 @@ class TestStackdriverStatsExporter(unittest.TestCase):
                 project_id=project_id,
                 default_monitoring_labels=default_labels))
         self.assertEqual(exporter.options.project_id, project_id)
+
+    def test_null_options(self):
+        # Check that we don't suppress auth errors
+        auth_error = google.auth.exceptions.DefaultCredentialsError
+        mock_auth_error = mock.Mock()
+        mock_auth_error.side_effect = auth_error
+        with mock.patch('opencensus.ext.stackdriver.stats_exporter'
+                        '.google.auth.default', mock_auth_error):
+            with self.assertRaises(auth_error):
+                stackdriver.new_stats_exporter()
+
+        # Check that we get the default credentials' project ID
+        mock_auth_ok = mock.Mock()
+        mock_auth_ok.return_value = (None, 123)
+        with mock.patch('opencensus.ext.stackdriver.stats_exporter'
+                        '.google.auth.default', mock_auth_ok):
+            sdse = stackdriver.new_stats_exporter()
+        self.assertEqual(sdse.options.project_id, 123)
+
+        # Check that we raise if auth works but the project is empty
+        mock_auth_no_project = mock.Mock()
+        mock_auth_no_project.return_value = (None, '')
+        with mock.patch('opencensus.ext.stackdriver.stats_exporter'
+                        '.google.auth.default', mock_auth_no_project):
+            with self.assertRaises(ValueError):
+                stackdriver.new_stats_exporter()
 
     def test_blank_project(self):
         self.assertRaises(ValueError, stackdriver.new_stats_exporter,
