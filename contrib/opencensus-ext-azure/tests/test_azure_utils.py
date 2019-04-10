@@ -18,12 +18,12 @@ from opencensus.ext.azure import utils
 
 class TestUtils(unittest.TestCase):
     def test_microseconds_to_duration(self):
-        ms_to_duration = utils.microseconds_to_duration
-        self.assertEqual(ms_to_duration(0), '0.00:00:00.000')
-        self.assertEqual(ms_to_duration(1000), '0.00:00:01.000')
-        self.assertEqual(ms_to_duration(60 * 1000), '0.00:01:00.000')
-        self.assertEqual(ms_to_duration(60 * 60 * 1000), '0.01:00:00.000')
-        self.assertEqual(ms_to_duration(86400 * 1000), '1.00:00:00.000')
+        us_to_duration = utils.microseconds_to_duration
+        self.assertEqual(us_to_duration(0), '0.00:00:00.000')
+        self.assertEqual(us_to_duration(1000000), '0.00:00:01.000')
+        self.assertEqual(us_to_duration(60 * 1000000), '0.00:01:00.000')
+        self.assertEqual(us_to_duration(60 * 60 * 1000000), '0.01:00:00.000')
+        self.assertEqual(us_to_duration(86400 * 1000000), '1.00:00:00.000')
 
     def test_timestamp_to_duration(self):
         self.assertEqual(utils.timestamp_to_duration(
