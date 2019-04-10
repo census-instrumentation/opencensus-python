@@ -53,6 +53,11 @@ class TestMetricDescriptor(unittest.TestCase):
                 NAME, DESCRIPTION, UNIT,
                 metric_descriptor.MetricDescriptorType.GAUGE_DOUBLE, None)
 
+    def test_empty_label_keys(self):
+        metric_descriptor.MetricDescriptor(
+            NAME, DESCRIPTION, UNIT,
+            metric_descriptor.MetricDescriptorType.GAUGE_DOUBLE, [])
+
     def test_null_label_key_values(self):
         with self.assertRaises(ValueError):
             metric_descriptor.MetricDescriptor(
