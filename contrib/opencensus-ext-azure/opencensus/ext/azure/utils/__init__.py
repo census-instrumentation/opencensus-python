@@ -41,6 +41,7 @@ azure_monitor_context = {
     ),
 }
 
+
 def microseconds_to_duration(microseconds):
     n = (microseconds + 500) // 1000  # duration in milliseconds
     ms = n % 1000  # millisecond
@@ -52,6 +53,13 @@ def microseconds_to_duration(microseconds):
     h = n % 24  # hour
     d = n // 24  # day
     return '{:d}.{:02d}:{:02d}:{:02d}.{:03d}'.format(d, h, m, s, ms)
+
+
+def timestamp_to_duration(start_time, end_time):
+    start_time_us = timestamp_to_microseconds(start_time)
+    end_time_us = timestamp_to_microseconds(end_time)
+    duration_us = int(end_time_us - start_time_us)
+    return microseconds_to_duration(duration_us)
 
 
 class Config(Object):

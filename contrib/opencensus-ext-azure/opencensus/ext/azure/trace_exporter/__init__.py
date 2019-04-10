@@ -53,11 +53,6 @@ class AzureExporter(base_exporter.Exporter):
         """
         envelopes = []
         for sd in span_datas:
-            start_time_us = utils.timestamp_to_microseconds(sd.start_time)
-            end_time_us = utils.timestamp_to_microseconds(sd.end_time)
-            duration_us = int(end_time_us - start_time_us)
-            duration = utils.microseconds_to_duration(duration_us)
-
             print('[AzMon]', sd)
             print('trace_id:', sd.context.trace_id)
             print('tracestate:', sd.context.tracestate)
@@ -84,7 +79,10 @@ class AzureExporter(base_exporter.Exporter):
                 envelope.name = 'Microsoft.ApplicationInsights.Request'
                 data = Request(
                     id='|{}.{}.'.format(sd.context.trace_id, sd.span_id),
-                    duration=duration,
+                    duration=timestamp_to_duration(
+                        sd.start_time,
+                        sd.end_time,
+                    ),
                     responseCode='0',  # TODO
                     success=True,  # TODO
                 )
@@ -102,7 +100,10 @@ class AzureExporter(base_exporter.Exporter):
                     name=sd.name,  # TODO
                     id='|{}.{}.'.format(sd.context.trace_id, sd.span_id),
                     resultCode='0',  # TODO
-                    duration=duration,
+                    duration=timestamp_to_duration(
+                        sd.start_time,
+                        sd.end_time,
+                    ),
                     success=True,  # TODO
                 )
                 envelope.data = Data(
