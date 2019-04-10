@@ -62,6 +62,10 @@ def timestamp_to_duration(start_time, end_time):
     return microseconds_to_duration(duration_us)
 
 
+def url_to_dependency_name(url):
+    return urlparse(url).netloc
+
+
 class Config(Object):
     prototype = Object(
         endpoint='https://dc.services.visualstudio.com/v2/track',

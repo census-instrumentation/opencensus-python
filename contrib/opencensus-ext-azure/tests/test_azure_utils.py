@@ -30,3 +30,10 @@ class TestUtils(unittest.TestCase):
                 '2010-10-24T07:28:38.123456Z',
                 '2010-10-24T07:28:38.234567Z',
             ), '0.00:00:00.111')
+
+    def test_url_to_dependency_name(self):
+        self.assertEqual(
+            utils.url_to_dependency_name(
+                'https://www.wikipedia.org/wiki/Rabbit'
+            ),
+            'www.wikipedia.org')
