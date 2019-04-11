@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import unittest
-from opencensus.ext.azure import protocol
+from opencensus.ext.azure.common import protocol
 
 
 class TestProtocol(unittest.TestCase):

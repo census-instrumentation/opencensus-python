@@ -24,8 +24,8 @@ except ImportError:
 
 from opencensus.common.version import __version__ as opencensus_version
 from opencensus.common.utils import timestamp_to_microseconds
-from opencensus.ext.azure.protocol import Object
-from opencensus.ext.azure.version import __version__ as extension_version
+from opencensus.ext.azure.common.protocol import Object
+from opencensus.ext.azure.common.version import __version__ as ext_version
 
 azure_monitor_context = {
     'ai.cloud.role': os.path.basename(sys.argv[0]) or 'Python Application',
@@ -37,7 +37,7 @@ azure_monitor_context = {
     'ai.internal.sdkVersion': 'py{}:oc{}:ext{}'.format(
         platform.python_version(),
         opencensus_version,
-        extension_version,
+        ext_version,
     ),
 }
 
@@ -64,10 +64,3 @@ def timestamp_to_duration(start_time, end_time):
 
 def url_to_dependency_name(url):
     return urlparse(url).netloc
-
-
-class Config(Object):
-    prototype = Object(
-        endpoint='https://dc.services.visualstudio.com/v2/track',
-        instrumentation_key=os.getenv('APPINSIGHTS_INSTRUMENTATIONKEY', None),
-    )

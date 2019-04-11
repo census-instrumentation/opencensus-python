@@ -29,7 +29,7 @@ class TestAzureExporter(unittest.TestCase):
         exporter.emit([])
 
     def test_span_data_to_envelope(self):
-        from opencensus.ext.azure.utils import Config
+        from opencensus.ext.azure.common import Config
         from opencensus.trace.span import SpanKind
         from opencensus.trace.span_context import SpanContext
         from opencensus.trace.span_data import SpanData

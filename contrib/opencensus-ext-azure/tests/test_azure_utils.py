@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import unittest
-from opencensus.ext.azure import utils
+from opencensus.ext.azure.common import utils
 
 
 class TestUtils(unittest.TestCase):

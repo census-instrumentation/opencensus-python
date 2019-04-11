@@ -16,11 +16,12 @@ import json
 import requests
 
 from opencensus.common.transports import sync
-from opencensus.ext.azure.protocol import Data
-from opencensus.ext.azure.protocol import Envelope
-from opencensus.ext.azure.protocol import RemoteDependency
-from opencensus.ext.azure.protocol import Request
-from opencensus.ext.azure import utils
+from opencensus.ext.azure.common import Config
+from opencensus.ext.azure.common import utils
+from opencensus.ext.azure.common.protocol import Data
+from opencensus.ext.azure.common.protocol import Envelope
+from opencensus.ext.azure.common.protocol import RemoteDependency
+from opencensus.ext.azure.common.protocol import Request
 from opencensus.trace import base_exporter
 from opencensus.trace import execution_context
 from opencensus.trace.span import SpanKind
@@ -41,7 +42,7 @@ class AzureExporter(base_exporter.Exporter):
     """
 
     def __init__(self, config=None, transport=sync.SyncTransport):
-        self.config = config or utils.Config()
+        self.config = config or Config()
         self.transport = transport(self)
 
     def span_data_to_envelope(self, sd):
