@@ -24,7 +24,6 @@ except ImportError:
 
 from opencensus.common.version import __version__ as opencensus_version
 from opencensus.common.utils import timestamp_to_microseconds
-from opencensus.ext.azure.common.protocol import Object
 from opencensus.ext.azure.common.version import __version__ as ext_version
 
 azure_monitor_context = {
