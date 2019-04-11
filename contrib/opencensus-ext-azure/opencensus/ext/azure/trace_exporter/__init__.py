@@ -45,14 +45,14 @@ class AzureExporter(base_exporter.Exporter):
         self.transport = transport(self)
 
     def span_data_to_envelope(self, sd):
-        print('[AzMon]', sd)
-        print('trace_id:', sd.context.trace_id)
-        print('tracestate:', sd.context.tracestate)
-        print('span_id:', sd.span_id)
-        print('parent_span_id:', sd.parent_span_id)
-        print('attributes:', sd.attributes)
-        print('start_time:', sd.start_time)
-        print('end_time:', sd.end_time)
+        # print('[AzMon]', sd)
+        # print('trace_id:', sd.context.trace_id)
+        # print('tracestate:', sd.context.tracestate)
+        # print('span_id:', sd.span_id)
+        # print('parent_span_id:', sd.parent_span_id)
+        # print('attributes:', sd.attributes)
+        # print('start_time:', sd.start_time)
+        # print('end_time:', sd.end_time)
         envelope = Envelope(
             iKey=self.config.instrumentation_key,
             tags=dict(utils.azure_monitor_context),
@@ -111,7 +111,7 @@ class AzureExporter(base_exporter.Exporter):
             else:
                 data.type = 'INPROC'
         # TODO: links, tracestate, tags, attrs
-        print(json.dumps(envelope))
+        # print(json.dumps(envelope))
         return envelope
 
     def emit(self, span_datas):
@@ -121,10 +121,7 @@ class AzureExporter(base_exporter.Exporter):
         :param list of opencensus.trace.span_data.SpanData span_datas:
             SpanData tuples to emit
         """
-        envelopes = []
-        for sd in span_datas:
-            envelope = self.span_data_to_envelope(sd)
-            envelopes.append(envelope)
+        envelopes = [self.span_data_to_envelope(sd) for sd in span_datas]
 
         # TODO: prevent requests being tracked
         blacklist_hostnames = execution_context.get_opencensus_attr(
@@ -146,8 +143,9 @@ class AzureExporter(base_exporter.Exporter):
             'blacklist_hostnames',
             blacklist_hostnames,
         )
-        print(response.status_code)
-        print(response.json())
+        response = response  # noqa
+        # print(response.status_code)
+        # print(response.json())
 
     def export(self, span_datas):
         """
