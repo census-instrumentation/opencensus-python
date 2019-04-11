@@ -47,13 +47,7 @@ class AzureExporter(base_exporter.Exporter):
 
     def span_data_to_envelope(self, sd):
         # print('[AzMon]', sd)
-        # print('trace_id:', sd.context.trace_id)
-        # print('tracestate:', sd.context.tracestate)
-        # print('span_id:', sd.span_id)
-        # print('parent_span_id:', sd.parent_span_id)
         # print('attributes:', sd.attributes)
-        # print('start_time:', sd.start_time)
-        # print('end_time:', sd.end_time)
         envelope = Envelope(
             iKey=self.config.instrumentation_key,
             tags=dict(utils.azure_monitor_context),
@@ -139,6 +133,7 @@ class AzureExporter(base_exporter.Exporter):
                 'Accept': 'application/json',
                 'Content-Type': 'application/json; charset=utf-8',
             },
+            timeout=self.config.timeout,
         )
         execution_context.set_opencensus_attr(
             'blacklist_hostnames',
@@ -146,7 +141,7 @@ class AzureExporter(base_exporter.Exporter):
         )
         response = response  # noqa
         # print(response.status_code)
-        # print(response.json())
+        # print(response.text)
 
     def export(self, span_datas):
         """

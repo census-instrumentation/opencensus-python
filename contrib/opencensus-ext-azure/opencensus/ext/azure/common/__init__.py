@@ -21,4 +21,6 @@ class Config(Object):
     prototype = Object(
         endpoint='https://dc.services.visualstudio.com/v2/track',
         instrumentation_key=os.getenv('APPINSIGHTS_INSTRUMENTATIONKEY', None),
+        proxy=None,
+        timeout=5.0,  # timeout in seconds
     )
