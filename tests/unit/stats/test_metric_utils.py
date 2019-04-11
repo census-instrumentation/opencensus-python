@@ -171,3 +171,36 @@ class TestMetricUtils(unittest.TestCase):
         ]
         for args in args_list:
             self.do_test_view_data_to_metric(*args)
+
+    def test_convert_view_without_labels(self):
+        mock_measure = mock.Mock(spec=measure.MeasureFloat)
+        mock_aggregation = mock.Mock(spec=aggregation.DistributionAggregation)
+        mock_aggregation.aggregation_type = aggregation.Type.DISTRIBUTION
+
+        vd = mock.Mock(spec=view_data.ViewData)
+        vd.view = view.View(
+            name=mock.Mock(),
+            description=mock.Mock(),
+            columns=[],
+            measure=mock_measure,
+            aggregation=mock_aggregation)
+        vd.start_time = '2019-04-11T22:33:44.555555Z'
+
+        mock_point = mock.Mock(spec=point.Point)
+        mock_point.value = mock.Mock(spec=value.ValueDistribution)
+
+        mock_agg = mock.Mock(spec=aggregation_data.SumAggregationDataFloat)
+        mock_agg.to_point.return_value = mock_point
+
+        vd.tag_value_aggregation_data_map = {tuple(): mock_agg}
+
+        current_time = '2019-04-11T22:33:55.666666Z'
+        metric = metric_utils.view_data_to_metric(vd, current_time)
+
+        self.assertEqual(metric.descriptor.label_keys, [])
+        self.assertEqual(len(metric.time_series), 1)
+        [ts] = metric.time_series
+        self.assertEqual(ts.label_values, [])
+        self.assertEqual(len(ts.points), 1)
+        [pt] = ts.points
+        self.assertEqual(pt, mock_point)
