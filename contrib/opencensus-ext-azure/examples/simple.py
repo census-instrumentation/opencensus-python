@@ -20,4 +20,4 @@ tracer = tracer_module.Tracer(exporter=AzureExporter())
 if __name__ == '__main__':
     with tracer.span(name='foo') as foo:
         with foo.span(name='bar'):
-            print('Hello, world!')
+            print('Hello, World!')

@@ -80,8 +80,9 @@ class AzureExporter(base_exporter.Exporter):
                 data.name = sd.attributes['http.method']
             if 'http.url' in sd.attributes:
                 data.name = data.name + ' ' + sd.attributes['http.url']
+                data.url = sd.attributes['http.url']
             if 'http.status_code' in sd.attributes:
-                data.responseCode = sd.attributes['http.status_code']
+                data.responseCode = str(sd.attributes['http.status_code'])
         else:
             envelope.name = \
                 'Microsoft.ApplicationInsights.RemoteDependency'
@@ -106,9 +107,9 @@ class AzureExporter(base_exporter.Exporter):
                     # TODO: error handling, probably put scheme as well
                     data.name = utils.url_to_dependency_name(url)
                 if 'http.status_code' in sd.attributes:
-                    data.resultCode = sd.attributes['http.status_code']
+                    data.resultCode = str(sd.attributes['http.status_code'])
             else:
-                envelope.data.type = 'IN PROCESS'
+                data.type = 'INPROC'
         # TODO: links, tracestate, tags, attrs
         print(json.dumps(envelope))
         return envelope

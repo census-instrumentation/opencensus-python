@@ -31,8 +31,8 @@ middleware = FlaskMiddleware(
 
 @app.route('/')
 def hello():
-    requests.get('https://www.wikipedia.org/')
-    return 'Hello World!'
+    requests.get('https://www.wikipedia.org/wiki/Rabbit')
+    return 'Hello, World!'
 
 
 if __name__ == '__main__':
