@@ -27,6 +27,7 @@ class TestProtocol(unittest.TestCase):
         self.assertEqual(data.bar, 2)
         self.assertEqual(data['bar'], 2)
         self.assertRaises(KeyError, lambda: data['baz'])
+        self.assertRaises(AttributeError, lambda: data.baz)
 
     def test_data(self):
         data = protocol.Data()
