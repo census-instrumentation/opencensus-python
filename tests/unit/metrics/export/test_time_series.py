@@ -50,8 +50,6 @@ class TestTimeSeries(unittest.TestCase):
         with self.assertRaises(ValueError):
             time_series.TimeSeries(None, POINTS, START_TIMESTAMP)
         with self.assertRaises(ValueError):
-            time_series.TimeSeries([], POINTS, START_TIMESTAMP)
-        with self.assertRaises(ValueError):
             time_series.TimeSeries(LABEL_VALUES, None, START_TIMESTAMP)
         with self.assertRaises(ValueError):
             time_series.TimeSeries(LABEL_VALUES, [], START_TIMESTAMP)
