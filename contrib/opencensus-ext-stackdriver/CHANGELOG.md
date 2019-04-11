@@ -3,6 +3,11 @@
 ## Unreleased
 
 ## 0.2.0
+Released 2019-04-11
+- Don't require exporter options, fall back to default GCP auth
+  ([#610](https://github.com/census-instrumentation/opencensus-python/pull/610))
+
+## 0.2.0
 Released 2019-04-08
 
 - Update for package changes in core library

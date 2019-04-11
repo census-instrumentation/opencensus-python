@@ -3,6 +3,13 @@
 ## Unreleased
 
 ## 0.4.0
+Released 2019-04-11
+
+- Allow for metrics with empty label keys and values
+  ([#611](https://github.com/census-instrumentation/opencensus-python/pull/611))
+  ([#614](https://github.com/census-instrumentation/opencensus-python/pull/614))
+
+## 0.4.0
 Released 2019-04-08
 
 - Multiple bugfixes
