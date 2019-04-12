@@ -15,7 +15,7 @@
 import json
 import requests
 
-from opencensus.common.transports import sync
+from opencensus.common.transports.async_ import AsyncTransport
 from opencensus.ext.azure.common import Options
 from opencensus.ext.azure.common import utils
 from opencensus.ext.azure.common.protocol import Data
@@ -26,24 +26,19 @@ from opencensus.trace import base_exporter
 from opencensus.trace import execution_context
 from opencensus.trace.span import SpanKind
 
+__all__ = ['AzureExporter']
+
 
 class AzureExporter(base_exporter.Exporter):
     """An exporter that sends traces to Microsoft Azure Monitor.
 
     :type options: dict
     :param options: Options for the exporter. Defaults to None.
-
-    :type transport: :class:`type`
-    :param transport: Class for creating new transport objects. It should
-                      extend from the base_exporter :class:`.Transport` type
-                      and implement :meth:`.Transport.export`. Defaults to
-                      :class:`.SyncTransport`. The other option is
-                      :class:`.AsyncTransport`.
     """
 
-    def __init__(self, options=None, transport=sync.SyncTransport):
+    def __init__(self, options=None):
         self.options = options or Options()
-        self.transport = transport(self)
+        self.transport = AsyncTransport(self, max_batch_size=100)
 
     def span_data_to_envelope(self, sd):
         # print('[AzMon]', sd)
