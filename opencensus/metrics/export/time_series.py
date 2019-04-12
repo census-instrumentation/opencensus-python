@@ -38,8 +38,8 @@ class TimeSeries(object):
     """  # noqa
 
     def __init__(self, label_values, points, start_timestamp):
-        if not label_values:
-            raise ValueError("label_values must not be null or empty")
+        if label_values is None:
+            raise ValueError("label_values must not be None")
         if not points:
             raise ValueError("points must not be null or empty")
         self._label_values = label_values
