@@ -29,7 +29,7 @@ class TestAzureExporter(unittest.TestCase):
         exporter.emit([])
 
     def test_span_data_to_envelope(self):
-        from opencensus.ext.azure.common import Config
+        from opencensus.ext.azure.common import Options
         from opencensus.trace.span import SpanKind
         from opencensus.trace.span_context import SpanContext
         from opencensus.trace.span_data import SpanData
@@ -38,7 +38,7 @@ class TestAzureExporter(unittest.TestCase):
 
         instrumentation_key = '12345678-1234-5678-abcd-12345678abcd'
         exporter = trace_exporter.AzureExporter(
-            Config(instrumentation_key=instrumentation_key),
+            Options(instrumentation_key=instrumentation_key),
         )
 
         # SpanKind.CLIENT HTTP

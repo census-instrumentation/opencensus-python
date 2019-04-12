@@ -17,7 +17,7 @@ import os
 from opencensus.ext.azure.common.protocol import Object
 
 
-class Config(Object):
+class Options(Object):
     prototype = Object(
         endpoint='https://dc.services.visualstudio.com/v2/track',
         instrumentation_key=os.getenv('APPINSIGHTS_INSTRUMENTATIONKEY', None),

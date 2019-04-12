@@ -16,7 +16,7 @@ import json
 import requests
 
 from opencensus.common.transports import sync
-from opencensus.ext.azure.common import Config
+from opencensus.ext.azure.common import Options
 from opencensus.ext.azure.common import utils
 from opencensus.ext.azure.common.protocol import Data
 from opencensus.ext.azure.common.protocol import Envelope
@@ -30,8 +30,8 @@ from opencensus.trace.span import SpanKind
 class AzureExporter(base_exporter.Exporter):
     """An exporter that sends traces to Microsoft Azure Monitor.
 
-    :type config: dict
-    :param config: Configuration for the exporter. Defaults to None.
+    :type options: dict
+    :param options: Options for the exporter. Defaults to None.
 
     :type transport: :class:`type`
     :param transport: Class for creating new transport objects. It should
@@ -41,15 +41,15 @@ class AzureExporter(base_exporter.Exporter):
                       :class:`.AsyncTransport`.
     """
 
-    def __init__(self, config=None, transport=sync.SyncTransport):
-        self.config = config or Config()
+    def __init__(self, options=None, transport=sync.SyncTransport):
+        self.options = options or Options()
         self.transport = transport(self)
 
     def span_data_to_envelope(self, sd):
         # print('[AzMon]', sd)
         # print('attributes:', sd.attributes)
         envelope = Envelope(
-            iKey=self.config.instrumentation_key,
+            iKey=self.options.instrumentation_key,
             tags=dict(utils.azure_monitor_context),
             time=sd.start_time,
         )
@@ -127,13 +127,13 @@ class AzureExporter(base_exporter.Exporter):
             ['dc.services.visualstudio.com'],
         )
         response = requests.post(
-            url=self.config.endpoint,
+            url=self.options.endpoint,
             data=json.dumps(envelopes),
             headers={
                 'Accept': 'application/json',
                 'Content-Type': 'application/json; charset=utf-8',
             },
-            timeout=self.config.timeout,
+            timeout=self.options.timeout,
         )
         execution_context.set_opencensus_attr(
             'blacklist_hostnames',
