@@ -43,14 +43,10 @@ azure_monitor_context = {
 
 def microseconds_to_duration(microseconds):
     n = (microseconds + 500) // 1000  # duration in milliseconds
-    ms = n % 1000  # millisecond
-    n = n // 1000
-    s = n % 60  # second
-    n = n // 60
-    m = n % 60  # minute
-    n = n // 60
-    h = n % 24  # hour
-    d = n // 24  # day
+    n, ms = divmod(n, 1000)
+    n, s = divmod(n, 60)
+    n, m = divmod(n, 60)
+    d, h = divmod(n, 24)
     return '{:d}.{:02d}:{:02d}:{:02d}.{:03d}'.format(d, h, m, s, ms)
 
 
