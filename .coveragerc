@@ -6,7 +6,6 @@ omit =
     contrib/*/tests/*
     # Auto generated files
     contrib/opencensus-ext-jaeger/opencensus/ext/jaeger/trace_exporter/gen/*
-    contrib/opencensus-ext-ocagent/opencensus/ext/ocagent/trace_exporter/gen/*
     # Side-effect introduced by namespace packages
     opencensus/__init__.py
     opencensus/common/__init__.py
@@ -29,4 +28,3 @@ omit =
     opencensus/common/__init__.py
     # Auto generated files
     contrib/opencensus-ext-jaeger/opencensus/ext/jaeger/trace_exporter/gen/*
-    contrib/opencensus-ext-ocagent/opencensus/ext/ocagent/trace_exporter/gen/*
