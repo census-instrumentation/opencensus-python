@@ -234,6 +234,7 @@ OpenCensus supports integration with popular web frameworks, client libraries an
 Trace Exporter
 --------------
 
+-  `Azure`_
 -  `Jaeger`_
 -  `OCAgent`_
 -  `Stackdriver`_
@@ -245,6 +246,7 @@ Stats Exporter
 -  `Prometheus`_
 -  `Stackdriver`_
 
+.. _Azure: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-azure
 .. _Django: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-django
 .. _Flask: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-flask
 .. _Google Cloud Client Libraries: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-google-cloud-clientlibs

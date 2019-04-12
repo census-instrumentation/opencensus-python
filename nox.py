@@ -23,6 +23,7 @@ def _install_dev_packages(session):
     session.install('-e', 'contrib/opencensus-correlation')
     session.install('-e', '.')
 
+    session.install('-e', 'contrib/opencensus-ext-azure')
     session.install('-e', 'contrib/opencensus-ext-dbapi')
     session.install('-e', 'contrib/opencensus-ext-django')
     session.install('-e', 'contrib/opencensus-ext-flask')

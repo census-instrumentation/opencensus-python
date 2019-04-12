@@ -1,4 +1,4 @@
-# Copyright 2017, OpenCensus Authors
+# Copyright 2019, OpenCensus Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,21 +13,31 @@
 # limitations under the License.
 
 from flask import Flask
+import requests
+
+from opencensus.trace import config_integration
+from opencensus.ext.azure.trace_exporter import AzureExporter
 from opencensus.ext.flask.flask_middleware import FlaskMiddleware
 from opencensus.trace.propagation.trace_context_http_header_format \
     import TraceContextPropagator
 
 app = Flask(__name__)
-middleware = FlaskMiddleware(app, propagator=TraceContextPropagator())
+middleware = FlaskMiddleware(
+    app,
+    exporter=AzureExporter(),
+    propagator=TraceContextPropagator(),
+)
 
 
 @app.route('/')
 def hello():
-    return 'Hello World!'
+    requests.get('https://www.wikipedia.org/wiki/Rabbit')
+    return 'Hello, World!'
 
 
 if __name__ == '__main__':
     import logging
     logger = logging.getLogger('werkzeug')
     logger.setLevel(logging.ERROR)
+    config_integration.trace_integrations(['requests'])
     app.run(host='localhost', port=8080, threaded=True)
