@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- Add stats exporter
 
 ## 0.2.0
 Released 2019-04-08

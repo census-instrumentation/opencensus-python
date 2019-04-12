@@ -15,11 +15,18 @@
 import unittest
 
 import mock
+import grpc
 
 from opencensus.ext.google_cloud_clientlibs import trace
 
 
 class Test_google_cloud_clientlibs_trace(unittest.TestCase):
+    def setUp(self):
+        self._insecure_channel_func = getattr(grpc, 'insecure_channel')
+
+    def tearDown(self):
+        setattr(grpc, 'insecure_channel', self._insecure_channel_func)
+
     def test_trace_integration(self):
         mock_trace_grpc = mock.Mock()
         mock_trace_http = mock.Mock()

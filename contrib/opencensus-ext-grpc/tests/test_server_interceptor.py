@@ -18,6 +18,7 @@ import mock
 from google.rpc import code_pb2
 
 from opencensus.ext.grpc import server_interceptor
+from opencensus.ext.grpc import utils as grpc_utils
 from opencensus.trace import execution_context
 from opencensus.trace import span as span_module
 
@@ -148,6 +149,17 @@ class TestOpenCensusServerInterceptor(unittest.TestCase):
             self.assertIsNotNone(current_span.status)
             self.assertEqual(current_span.status.code, code_pb2.UNKNOWN)
             self.assertEqual(current_span.status.message, 'Test')
+
+    @mock.patch(
+        'opencensus.trace.execution_context.get_opencensus_tracer')
+    def test_resp_streaming_span_end(self, mock_tracer):
+        mock_tracer.return_value = mock_tracer
+
+        it = grpc_utils.wrap_iter_with_end_span(iter(['test']))
+        for i in it:
+            pass
+
+        self.assertEqual(mock_tracer.end_span.call_count, 1)
 
     def test__wrap_rpc_behavior_none(self):
         new_handler = server_interceptor._wrap_rpc_behavior(None, lambda: None)
