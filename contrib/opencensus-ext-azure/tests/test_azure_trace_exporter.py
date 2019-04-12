@@ -19,13 +19,15 @@ from opencensus.ext.azure import trace_exporter
 
 class TestAzureExporter(unittest.TestCase):
     def test_export(self):
-        exporter = trace_exporter.AzureExporter(transport=MockTransport)
+        exporter = trace_exporter.AzureExporter()
+        exporter.transport = MockTransport()
         exporter.export(None)
         self.assertTrue(exporter.transport.export_called)
 
     @mock.patch('requests.post', return_value=mock.Mock())
     def test_emit(self, request_mock):
-        exporter = trace_exporter.AzureExporter(transport=MockTransport)
+        exporter = trace_exporter.AzureExporter()
+        exporter.transport = MockTransport()
         exporter.emit([])
 
     def test_span_data_to_envelope(self):

@@ -47,7 +47,10 @@ class _Worker(object):
     :param wait_period: The amount of time to wait before sending the next
                         batch of data.
     """
-    def __init__(self, exporter, grace_period, max_batch_size, wait_period):
+    def __init__(self, exporter,
+                 grace_period=_DEFAULT_GRACE_PERIOD,
+                 max_batch_size=_DEFAULT_MAX_BATCH_SIZE,
+                 wait_period=_DEFAULT_WAIT_PERIOD):
         self.exporter = exporter
         self._grace_period = grace_period
         self._max_batch_size = max_batch_size
