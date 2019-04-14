@@ -17,7 +17,8 @@
 import logging
 import re
 import six
-import uuid
+import random
+import time
 
 from opencensus.trace import trace_options as trace_options_module
 
@@ -156,8 +157,7 @@ def generate_span_id():
     :rtype: str
     :returns: 16 digit randomly generated hex trace id.
     """
-    span_id = uuid.uuid4().hex[:16]
-    return span_id
+    return '{:016x}'.format(random.getrandbits(64))
 
 
 def generate_trace_id():
@@ -167,5 +167,6 @@ def generate_trace_id():
     :rtype: str
     :returns: 32 digit randomly generated hex trace id.
     """
-    trace_id = uuid.uuid4().hex
-    return trace_id
+    t = int(time.time())
+    lower_96 = random.getrandbits(96)
+    return '{:032x}'.format((t << 96) | lower_96)
