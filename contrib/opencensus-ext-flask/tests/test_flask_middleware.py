@@ -104,6 +104,7 @@ class TestFlaskMiddleware(unittest.TestCase):
             'OPENCENSUS_TRACE': {
                 'SAMPLER': 'opencensus.trace.samplers.ProbabilitySampler()',
                 'EXPORTER': 'opencensus.trace.print_exporter.PrintExporter()',
+                'PROPAGATOR': 'opencensus.trace.propagation.trace_context_http_header_format.TraceContextPropagator()',  # noqa
             }
         }
 
