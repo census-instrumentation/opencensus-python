@@ -23,6 +23,7 @@ from opencensus.common.transports import async_
 from opencensus.ext.flask.flask_middleware import FlaskMiddleware
 from opencensus.ext.stackdriver import trace_exporter as stackdriver_exporter
 from opencensus.trace import config_integration
+from opencensus.trace.propagation import google_cloud_format
 
 INTEGRATIONS = ['mysql', 'postgresql', 'sqlalchemy']
 
@@ -41,10 +42,11 @@ app = flask.Flask(__name__)
 # Enable tracing, send traces to Stackdriver Trace using background thread
 # transport.  This is intentionally different from the Django system test which
 # is using sync transport to test both.
-exporter = stackdriver_exporter.StackdriverExporter(
-    transport=async_.AsyncTransport)
-
-middleware = FlaskMiddleware(app, exporter=exporter)
+middleware = FlaskMiddleware(app,
+    exporter=stackdriver_exporter.StackdriverExporter(
+        transport=async_.AsyncTransport),
+    propagator=google_cloud_format.GoogleCloudFormatPropagator(),
+)
 config_integration.trace_integrations(INTEGRATIONS)
 
 
