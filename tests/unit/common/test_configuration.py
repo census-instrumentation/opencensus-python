@@ -31,5 +31,7 @@ class TestConfiguration(unittest.TestCase):
             configuration.load(')')
 
     def test_load(self):
-        ns = configuration.load('opencensus.common.configuration.Namespace("foo")')
+        ns = configuration.load(
+            'opencensus.common.configuration.Namespace("foo")'
+        )
         self.assertEqual(ns.name, 'foo')
