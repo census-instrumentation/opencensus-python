@@ -80,25 +80,63 @@ class _Client(object):
 
 class TestOptions(unittest.TestCase):
     def test_options_blank(self):
-        option = stackdriver.Options()
+        options = stackdriver.Options()
 
-        self.assertEqual(option.project_id, "")
-        self.assertEqual(option.resource, "")
+        self.assertEqual(options.project_id, "")
+        self.assertEqual(options.resource, "")
 
     def test_options_parameters(self):
-        option = stackdriver.Options(
+        options = stackdriver.Options(
             project_id="project-id", metric_prefix="sample")
-        self.assertEqual(option.project_id, "project-id")
-        self.assertEqual(option.metric_prefix, "sample")
-
-    def test_default_monitoring_labels_blank(self):
-        option = stackdriver.Options()
-        self.assertIsNone(option.default_monitoring_labels)
+        self.assertEqual(options.project_id, "project-id")
+        self.assertEqual(options.metric_prefix, "sample")
 
     def test_default_monitoring_labels(self):
-        default_labels = {'key1': 'value1'}
-        option = stackdriver.Options(default_monitoring_labels=default_labels)
-        self.assertEqual(option.default_monitoring_labels, default_labels)
+        options = stackdriver.Options(default_monitoring_labels={
+                    label_key.LabelKey('lk_key', 'lk_desc'):
+                    label_value.LabelValue('lk_value')
+        })
+
+        self.assertEqual(len(options.default_monitoring_labels), 1)
+        [[lk, lv]] = options.default_monitoring_labels.items()
+        self.assertEqual(lk.key, 'lk_key')
+        self.assertEqual(lk.description, 'lk_desc')
+        self.assertEqual(lv.value, 'lk_value')
+
+    def test_default_monitoring_labels_blank(self):
+        with mock.patch('opencensus.ext.stackdriver.stats_exporter'
+                        '.get_task_value') as mock_gtv:
+            options = stackdriver.Options()
+
+        mock_gtv.assert_called()
+
+        self.assertEqual(len(options.default_monitoring_labels), 1)
+        [[lk, lv]] = options.default_monitoring_labels.items()
+        self.assertEqual(lk.key, stackdriver.OPENCENSUS_TASK)
+        self.assertEqual(lk.description,
+                         stackdriver.OPENCENSUS_TASK_DESCRIPTION)
+        self.assertEqual(lv.value, mock_gtv())
+
+    def test_bad_default_monitoring_labels(self):
+        with self.assertRaises(AttributeError):
+            stackdriver.Options(
+                default_monitoring_labels=[
+                    'not a dict'
+                ])
+
+        with self.assertRaises(TypeError):
+            stackdriver.Options(
+                default_monitoring_labels={
+                    'bad key':
+                    label_value.LabelValue('clk_value')
+                })
+
+        with self.assertRaises(TypeError):
+            stackdriver.Options(
+                default_monitoring_labels={
+                    label_key.LabelKey('clk_key', 'clk_desc'):
+                    'bad value'
+                })
 
 
 class TestStackdriverStatsExporter(unittest.TestCase):
@@ -108,13 +146,9 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         self.assertIsNone(exporter.client)
 
     def test_constructor_param(self):
-        project_id = 1
-        default_labels = {'key1': 'value1'}
         exporter = stackdriver.StackdriverStatsExporter(
-            options=stackdriver.Options(
-                project_id=project_id,
-                default_monitoring_labels=default_labels))
-        self.assertEqual(exporter.options.project_id, project_id)
+            options=stackdriver.Options(project_id=1))
+        self.assertEqual(exporter.options.project_id, 1)
 
     def test_null_options(self):
         # Check that we don't suppress auth errors
@@ -255,10 +289,135 @@ class TestStackdriverStatsExporter(unittest.TestCase):
     def test_get_task_value_without_hostname(self, mock_uname, mock_pid):
         self.assertEqual(stackdriver.get_task_value(), "py-12345@localhost")
 
+    def test_default_default_monitoring_labels(self):
+        """Check that metrics include OC task label by default."""
+        exporter = stackdriver.StackdriverStatsExporter(
+            options=stackdriver.Options(project_id='project_id'),
+            client=mock.Mock())
+
+        lv = label_value.LabelValue('val')
+        val = value.ValueLong(value=123)
+        dt = datetime(2019, 3, 20, 21, 34, 0, 537954)
+        pp = point.Point(value=val, timestamp=dt)
+        ts = [
+            time_series.TimeSeries(label_values=[lv], points=[pp],
+                                   start_timestamp=utils.to_iso_str(dt))
+        ]
+
+        desc = metric_descriptor.MetricDescriptor(
+            name='name',
+            description='description',
+            unit='unit',
+            type_=metric_descriptor.MetricDescriptorType.GAUGE_INT64,
+            label_keys=[label_key.LabelKey('key', 'description')]
+        )
+        mm = metric.Metric(descriptor=desc, time_series=ts)
+
+        sd_md = exporter.get_metric_descriptor(desc)
+        self.assertEqual(len(sd_md.labels), 2)
+        sd_descriptors = {ld.key: ld.description for ld in sd_md.labels}
+        self.assertIn('key', sd_descriptors)
+        self.assertEqual(sd_descriptors['key'], 'description')
+        self.assertIn(stackdriver.OPENCENSUS_TASK, sd_descriptors)
+        self.assertEqual(
+            sd_descriptors[stackdriver.OPENCENSUS_TASK],
+            stackdriver.OPENCENSUS_TASK_DESCRIPTION
+        )
+
+        sd_ts_list = exporter.create_time_series_list(mm)
+        self.assertEqual(len(sd_ts_list), 1)
+        [sd_ts] = sd_ts_list
+        self.assertIn('key', sd_ts.metric.labels)
+        self.assertEqual(sd_ts.metric.labels['key'], 'val')
+        self.assertIn(stackdriver.OPENCENSUS_TASK, sd_ts.metric.labels)
+
+    def test_empty_default_monitoring_labels(self):
+        """Check that it's possible to remove the default OC task label."""
+        exporter = stackdriver.StackdriverStatsExporter(
+            options=stackdriver.Options(
+                project_id='project_id',
+                default_monitoring_labels={}),
+            client=mock.Mock())
+
+        lv = label_value.LabelValue('val')
+        val = value.ValueLong(value=123)
+        dt = datetime(2019, 3, 20, 21, 34, 0, 537954)
+        pp = point.Point(value=val, timestamp=dt)
+        ts = [
+            time_series.TimeSeries(label_values=[lv], points=[pp],
+                                   start_timestamp=utils.to_iso_str(dt))
+        ]
+
+        desc = metric_descriptor.MetricDescriptor(
+            name='name',
+            description='description',
+            unit='unit',
+            type_=metric_descriptor.MetricDescriptorType.GAUGE_INT64,
+            label_keys=[label_key.LabelKey('key', 'description')]
+        )
+        mm = metric.Metric(descriptor=desc, time_series=ts)
+
+        sd_md = exporter.get_metric_descriptor(desc)
+        self.assertEqual(len(sd_md.labels), 1)
+        [sd_label] = sd_md.labels
+        self.assertEqual(sd_label.key, 'key')
+        self.assertEqual(sd_label.description, 'description')
+
+        sd_ts_list = exporter.create_time_series_list(mm)
+        self.assertEqual(len(sd_ts_list), 1)
+        [sd_ts] = sd_ts_list
+        self.assertIn('key', sd_ts.metric.labels)
+        self.assertEqual(sd_ts.metric.labels['key'], 'val')
+        self.assertNotIn(stackdriver.OPENCENSUS_TASK, sd_ts.metric.labels)
+
+    def test_custom_default_monitoring_labels(self):
+        """Check that custom labels are exported and included in descriptor."""
+        exporter = stackdriver.StackdriverStatsExporter(
+            options=stackdriver.Options(
+                project_id='project_id',
+                default_monitoring_labels={
+                    label_key.LabelKey('clk_key', 'clk_desc'):
+                    label_value.LabelValue('clk_value')
+                }),
+            client=mock.Mock())
+
+        lv = label_value.LabelValue('val')
+        val = value.ValueLong(value=123)
+        dt = datetime(2019, 3, 20, 21, 34, 0, 537954)
+        pp = point.Point(value=val, timestamp=dt)
+        ts = [
+            time_series.TimeSeries(label_values=[lv], points=[pp],
+                                   start_timestamp=utils.to_iso_str(dt))
+        ]
+
+        desc = metric_descriptor.MetricDescriptor(
+            name='name',
+            description='description',
+            unit='unit',
+            type_=metric_descriptor.MetricDescriptorType.GAUGE_INT64,
+            label_keys=[label_key.LabelKey('key', 'description')]
+        )
+        mm = metric.Metric(descriptor=desc, time_series=ts)
+
+        sd_md = exporter.get_metric_descriptor(desc)
+        self.assertEqual(len(sd_md.labels), 2)
+        sd_descriptors = {ld.key: ld.description for ld in sd_md.labels}
+        self.assertIn('key', sd_descriptors)
+        self.assertEqual(sd_descriptors['key'], 'description')
+        self.assertIn('clk_key', sd_descriptors)
+        self.assertEqual(sd_descriptors['clk_key'], 'clk_desc')
+
+        sd_ts_list = exporter.create_time_series_list(mm)
+        self.assertEqual(len(sd_ts_list), 1)
+        [sd_ts] = sd_ts_list
+        self.assertIn('key', sd_ts.metric.labels)
+        self.assertEqual(sd_ts.metric.labels['key'], 'val')
+        self.assertIn('clk_key', sd_ts.metric.labels)
+        self.assertEqual(sd_ts.metric.labels['clk_key'], 'clk_value')
+
     def test_get_metric_descriptor(self):
         exporter = stackdriver.StackdriverStatsExporter(
             options=stackdriver.Options(
-                default_monitoring_labels={'dk': 'dd'},
                 project_id='project_id'),
             client=mock.Mock())
 
@@ -303,7 +462,6 @@ class TestStackdriverStatsExporter(unittest.TestCase):
 
         exporter = stackdriver.StackdriverStatsExporter(
             options=stackdriver.Options(
-                default_monitoring_labels={'dk': 'dd'},
                 metric_prefix='metric_prefix',
                 project_id='project_id'),
             client=mock.Mock())
