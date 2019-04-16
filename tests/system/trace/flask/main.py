@@ -42,9 +42,10 @@ app = flask.Flask(__name__)
 # Enable tracing, send traces to Stackdriver Trace using background thread
 # transport.  This is intentionally different from the Django system test which
 # is using sync transport to test both.
-middleware = FlaskMiddleware(app,
+middleware = FlaskMiddleware(
+    app,
     exporter=stackdriver_exporter.StackdriverExporter(
-        transport=async_.AsyncTransport),
+                 transport=async_.AsyncTransport),
     propagator=google_cloud_format.GoogleCloudFormatPropagator(),
 )
 config_integration.trace_integrations(INTEGRATIONS)
