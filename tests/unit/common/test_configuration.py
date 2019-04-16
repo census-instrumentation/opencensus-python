@@ -12,11 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-try:
-    import mock
-except ImportError:
-    from unittest import mock
-
 import unittest
 
 from opencensus.common import configuration
