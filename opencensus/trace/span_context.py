@@ -18,7 +18,6 @@ import logging
 import re
 import six
 import random
-import time
 
 from opencensus.trace import trace_options as trace_options_module
 
@@ -161,12 +160,9 @@ def generate_span_id():
 
 
 def generate_trace_id():
-    """Generate a trace_id randomly. Must be a 32 character
-    hexadecimal encoded string
+    """Generate a random 32 char hex trace_id.
 
     :rtype: str
     :returns: 32 digit randomly generated hex trace id.
     """
-    t = int(time.time())
-    lower_96 = random.getrandbits(96)
-    return '{:032x}'.format((t << 96) | lower_96)
+    return '{:032x}'.format(random.getrandbits(128))
