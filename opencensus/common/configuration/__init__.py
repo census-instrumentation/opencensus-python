@@ -40,4 +40,7 @@ class Namespace(object):
 
 
 def load(expr):
+    """Dynamically import OpenCensus components and evaluate the provided
+    configuration expression.
+    """
     return Namespace.eval(expr)
