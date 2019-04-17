@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- Create WrappedResponseIterator for intercepted bi-directional rpc stream.
 
 ## 0.1.1
 Released 2019-04-08

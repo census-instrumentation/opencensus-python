@@ -14,15 +14,11 @@
 """Export opencensus spans to ocagent"""
 
 from threading import Lock
-import datetime
 import grpc
-import os
-import socket
 
 from opencensus.common.transports import sync
-from opencensus.common.version import __version__
+from opencensus.ext.ocagent import utils as ocagent_utils
 from opencensus.ext.ocagent.trace_exporter import utils
-from opencensus.proto.agent.common.v1 import common_pb2
 from opencensus.proto.agent.trace.v1 import trace_service_pb2
 from opencensus.proto.agent.trace.v1 import trace_service_pb2_grpc
 from opencensus.trace import base_exporter
@@ -75,20 +71,7 @@ class TraceExporter(base_exporter.Exporter):
             self.client = client
 
         self.service_name = service_name
-        self.node = common_pb2.Node(
-            identifier=common_pb2.ProcessIdentifier(
-                host_name=socket.gethostname() if host_name is None
-                else host_name,
-                pid=os.getpid(),
-                start_timestamp=utils.proto_ts_from_datetime(
-                    datetime.datetime.utcnow())
-            ),
-            library_info=common_pb2.LibraryInfo(
-                language=common_pb2.LibraryInfo.Language.Value('PYTHON'),
-                exporter_version=EXPORTER_VERSION,
-                core_library_version=__version__
-            ),
-            service_info=common_pb2.ServiceInfo(name=self.service_name))
+        self.node = ocagent_utils.get_node(self.service_name, host_name)
 
     def emit(self, span_datas):
         """
@@ -140,8 +123,10 @@ class TraceExporter(base_exporter.Exporter):
         :returns: List of span export requests.
         """
 
-        pb_spans = [utils.translate_to_trace_proto(
-            span_data) for span_data in span_datas]
+        pb_spans = [
+            utils.translate_to_trace_proto(span_data)
+            for span_data in span_datas
+        ]
 
         # TODO: send node once per channel
         yield trace_service_pb2.ExportTraceServiceRequest(

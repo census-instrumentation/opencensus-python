@@ -12,9 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import collections
+import mock
+import threading
 import unittest
 
-import mock
+from google.api_core import bidi
+from google.protobuf import proto_builder
+from grpc.framework.foundation import logging_pool
+import grpc
 
 from opencensus.ext.grpc import client_interceptor
 from opencensus.trace import execution_context
@@ -280,6 +286,108 @@ class TestOpenCensusClientInterceptor(unittest.TestCase):
                                             [])
         # Should skip tracing the cloud trace activities
         self.assertFalse(mock_tracer.end_span.called)
+
+
+class TestGrpcInterface(unittest.TestCase):
+
+    def setUp(self):
+        self._server = _start_server()
+        self._port = self._server.add_insecure_port('[::]:0')
+        self._channel = grpc.insecure_channel('localhost:%d' % self._port)
+
+    def tearDown(self):
+        self._server.stop(None)
+        self._channel.close()
+
+    def _intercepted_channel(self, tracer=None):
+        return grpc.intercept_channel(
+            self._channel,
+            client_interceptor.OpenCensusClientInterceptor(tracer=tracer))
+
+    def test_bidi_rpc_stream(self):
+        event = threading.Event()
+
+        def _helper(request_iterator, context):
+            counter = 0
+            for _ in request_iterator:
+                counter += 1
+                if counter == 2:
+                    event.set()
+            yield
+
+        self._server.add_generic_rpc_handlers(
+            (StreamStreamRpcHandler(_helper),))
+        self._server.start()
+
+        rpc = bidi.BidiRpc(
+            self._intercepted_channel().stream_stream(
+                '', EmptyMessage.SerializeToString),
+            initial_request=EmptyMessage())
+        done_event = threading.Event()
+        rpc.add_done_callback(lambda _: done_event.set())
+
+        rpc.open()
+        rpc.send(EmptyMessage())
+        self.assertTrue(event.wait(timeout=1))
+        rpc.close()
+        self.assertTrue(done_event.wait(timeout=1))
+
+    @mock.patch('opencensus.trace.execution_context.get_opencensus_tracer')
+    def test_close_span_on_done(self, mock_tracer):
+        def _helper(request_iterator, context):
+            for _ in request_iterator:
+                yield EmptyMessage()
+            yield
+
+        self._server.add_generic_rpc_handlers(
+            (StreamStreamRpcHandler(_helper), ))
+        self._server.start()
+
+        mock_tracer.return_value = mock_tracer
+        rpc = self._intercepted_channel(NoopTracer()).stream_stream(
+            method='',
+            request_serializer=EmptyMessage.SerializeToString,
+            response_deserializer=EmptyMessage.FromString)(iter(
+                [EmptyMessage()]))
+
+        for resp in rpc:
+            pass
+
+        self.assertEqual(mock_tracer.end_span.call_count, 1)
+
+
+EmptyMessage = proto_builder.MakeSimpleProtoClass(
+    collections.OrderedDict([]),
+    full_name='tests.test_client_interceptor.EmptyMessage')
+
+
+def _start_server():
+    """Starts an insecure grpc server."""
+    return grpc.server(logging_pool.pool(max_workers=1),
+                       options=(('grpc.so_reuseport', 0), ))
+
+
+class StreamStreamMethodHandler(grpc.RpcMethodHandler):
+
+    def __init__(self, stream_handler_func):
+        self.request_streaming = True
+        self.response_streaming = True
+        self.request_deserializer = None
+        self.response_serializer = EmptyMessage.SerializeToString
+        self.unary_unary = None
+        self.unary_stream = None
+        self.stream_unary = None
+        self.stream_stream = stream_handler_func
+
+
+class StreamStreamRpcHandler(grpc.GenericRpcHandler):
+
+    def __init__(self, stream_stream_handler):
+        self._stream_stream_handler = stream_stream_handler
+
+    def service(self, handler_call_details):
+        resp = StreamStreamMethodHandler(self._stream_stream_handler)
+        return resp
 
 
 class MockTracer(object):
