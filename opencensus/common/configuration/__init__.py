@@ -14,7 +14,7 @@
 
 import importlib
 
-__all__ = ['Namespace', 'eval']
+__all__ = ['Namespace', 'load']
 
 
 class Namespace(object):
