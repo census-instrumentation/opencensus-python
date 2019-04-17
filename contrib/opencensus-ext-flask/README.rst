@@ -34,7 +34,9 @@ Usage
         logger.setLevel(logging.ERROR)
         app.run(host='localhost', port=8080, threaded=True)
 
-Additional configuration can be provided:
+Additional configuration can be provided, please read
+`Customization <https://github.com/census-instrumentation/opencensus-python#customization>`_
+for a complete reference.
 
 .. code:: python
 
@@ -44,5 +46,3 @@ Additional configuration can be provided:
             service_name='foobar',
         )''',
     }
-
-For a complete reference, please read `Link Customization <https://github.com/census-instrumentation/opencensus-python#customization>`_
