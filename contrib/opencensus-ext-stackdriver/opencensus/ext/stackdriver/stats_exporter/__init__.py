@@ -27,6 +27,8 @@ import google.auth
 from opencensus.common import utils
 from opencensus.common.monitored_resource import monitored_resource
 from opencensus.common.version import __version__
+from opencensus.metrics import label_key
+from opencensus.metrics import label_value
 from opencensus.metrics import transport
 from opencensus.metrics.export import metric as metric_module
 from opencensus.metrics.export import metric_descriptor
@@ -65,70 +67,67 @@ OC_MD_TO_SD_TYPE = {
 
 
 class Options(object):
-    """ Options contains options for configuring the exporter.
+    """Exporter configuration options.
+
+     `resource` is an optional field that represents the Stackdriver monitored
+     resource type. If unset, this defaults to a `MonitoredResource` with type
+     "global" and no resource labels.
+
+     `default_monitoring_labels` are labels added to every metric created by
+     this exporter. If unset, this defaults to a single label with key
+     "opencensus_task" and value "py-<pid>@<hostname>". This default ensures
+     that the set of labels together with the default resource (global) are
+     unique to this process, as required by stackdriver.
+
+     If you set `default_monitoring_labels`, make sure that the `resource`
+     field together with these labels is unique to the current process. This is
+     to ensure that there is only a single writer to each time series in
+     Stackdriver.
+
+     Set `default_monitoring_labels` to `{}` to avoid getting the default
+     "opencensus_task" label. You should only do this if you know that
+     `resource` uniquely identifies this process.
+
+    :type project_id: str
+    :param project_id: The ID GCP project to export metrics to, fall back to
+        default application credentials if unset.
+
+    :type resource: str
+    :param resource: The stackdriver monitored resource type, defaults to
+        global.
+
+    :type metric_prefix: str
+    :param metric_prefix: Custom prefix for metric name and type.
+
+    :type default_monitoring_labels: dict(
+        :class:`opencensus.metrics.label_key.LabelKey`,
+        :class:`opencensus.metrics.label_value.LabelValue`)
+    :param default_monitoring_labels: Default labels to be set on each exported
+        metric.
     """
+
     def __init__(self,
                  project_id="",
                  resource="",
                  metric_prefix="",
                  default_monitoring_labels=None):
-        self._project_id = project_id
-        self._resource = resource
-        self._metric_prefix = metric_prefix
-        self._default_monitoring_labels = default_monitoring_labels
+        self.project_id = project_id
+        self.resource = resource
+        self.metric_prefix = metric_prefix
 
-    @property
-    def project_id(self):
-        """ project_id is the identifier of the Stackdriver
-        project the user is uploading the stats data to.
-        If not set, this will default to
-        your "Application Default Credentials".
-        """
-        return self._project_id
-
-    @property
-    def resource(self):
-        """ Resource is an optional field that represents the Stackdriver
-        MonitoredResource type, a resource that can be used for monitoring.
-        If no custom ResourceDescriptor is set, a default MonitoredResource
-        with type global and no resource labels will be used.
-        Optional.
-        """
-        return self._resource
-
-    @property
-    def metric_prefix(self):
-        """ metric_prefix overrides the
-        OpenCensus prefix of a stackdriver metric.
-        Optional.
-        """
-        return self._metric_prefix
-
-    @property
-    def default_monitoring_labels(self):
-        """ default_monitoring_labels are labels added to
-        every metric created by this
-        exporter in Stackdriver Monitoring.
-
-        If unset, this defaults to a single label
-        with key "opencensus_task" and value "py-<pid>@<hostname>".
-        This default ensures that the set of labels together with
-        the default Resource (global) are unique to this
-        process, as required by Stackdriver Monitoring.
-
-        If you set default_monitoring_labels,
-        make sure that the Resource field
-        together with these labels is unique to the
-        current process. This is to ensure that
-        there is only a single writer to
-        each TimeSeries in Stackdriver.
-
-        Set this to Labels to avoid getting the
-        default "opencensus_task" label.
-        You should only do this if you know that
-        the Resource you set uniquely identifies this Python process.
-        """
-        return self._default_monitoring_labels
+        if default_monitoring_labels is None:
+            self.default_monitoring_labels = {
+                label_key.LabelKey(OPENCENSUS_TASK,
+                                   OPENCENSUS_TASK_DESCRIPTION):
+                label_value.LabelValue(get_task_value())
+            }
+        else:
+            for key, val in default_monitoring_labels.items():
+                if not isinstance(key, label_key.LabelKey):
+                    raise TypeError
+                if not isinstance(val, label_value.LabelValue):
+                    raise TypeError
+            self.default_monitoring_labels = default_monitoring_labels
 
 
 class StackdriverStatsExporter(object):
@@ -173,10 +172,10 @@ class StackdriverStatsExporter(object):
     def _convert_series(self, metric, ts):
         """Convert an OC timeseries to a SD series."""
         series = monitoring_v3.types.TimeSeries()
-        series.metric.type = namespaced_view_name(
-            metric.descriptor.name, self.options.metric_prefix)
+        series.metric.type = self.get_metric_type(metric.descriptor)
 
-        series.metric.labels[OPENCENSUS_TASK] = get_task_value()
+        for lk, lv in self.options.default_monitoring_labels.items():
+            series.metric.labels[lk.key] = lv.value
 
         for key, val in zip(metric.descriptor.label_keys, ts.label_values):
             if val.value is not None:
@@ -252,8 +251,8 @@ class StackdriverStatsExporter(object):
         start_time.seconds = int(timestamp_start)
         start_time.nanos = int((timestamp_start - start_time.seconds) * 1e9)
 
-    def get_descriptor_type(self, oc_md):
-        """Get a SD descriptor type for an OC metric descriptor."""
+    def get_metric_type(self, oc_md):
+        """Get a SD metric type for an OC metric descriptor."""
         return namespaced_view_name(oc_md.name, self.options.metric_prefix)
 
     def get_metric_descriptor(self, oc_md):
@@ -268,13 +267,11 @@ class StackdriverStatsExporter(object):
         else:
             display_name_prefix = DEFAULT_DISPLAY_NAME_PREFIX
 
-        default_labels = self.options.default_monitoring_labels
-        if default_labels is None:
-            default_labels = {}
-        desc_labels = new_label_descriptors(default_labels, oc_md.label_keys)
+        desc_labels = new_label_descriptors(
+            self.options.default_monitoring_labels, oc_md.label_keys)
 
         descriptor = monitoring_v3.types.MetricDescriptor(labels=desc_labels)
-        metric_type = self.get_descriptor_type(oc_md)
+        metric_type = self.get_metric_type(oc_md)
         descriptor.type = metric_type
         descriptor.metric_kind = metric_kind
         descriptor.value_type = value_type
@@ -289,16 +286,16 @@ class StackdriverStatsExporter(object):
 
     def register_metric_descriptor(self, oc_md):
         """Register a metric descriptor with stackdriver."""
-        descriptor_type = self.get_descriptor_type(oc_md)
+        metric_type = self.get_metric_type(oc_md)
         with self._md_lock:
-            if descriptor_type in self._md_cache:
-                return self._md_cache[descriptor_type]
+            if metric_type in self._md_cache:
+                return self._md_cache[metric_type]
 
         descriptor = self.get_metric_descriptor(oc_md)
         project_name = self.client.project_path(self.options.project_id)
         sd_md = self.client.create_metric_descriptor(project_name, descriptor)
         with self._md_lock:
-            self._md_cache[descriptor_type] = sd_md
+            self._md_cache[metric_type] = sd_md
         return sd_md
 
 
@@ -424,19 +421,12 @@ def new_label_descriptors(defaults, keys):
         that will be sent to Stackdriver Monitoring
     """
     label_descriptors = []
-    for key, lbl in defaults.items():
+    for lk in itertools.chain.from_iterable((defaults.keys(), keys)):
         label = {}
-        label["key"] = sanitize_label(key)
-        label["description"] = lbl
+        label["key"] = sanitize_label(lk.key)
+        label["description"] = lk.description
         label_descriptors.append(label)
 
-    for label_key in keys:
-        label = {}
-        label["key"] = sanitize_label(label_key.key)
-        label["description"] = sanitize_label(label_key.description)
-        label_descriptors.append(label)
-    label_descriptors.append({"key": OPENCENSUS_TASK,
-                              "description": OPENCENSUS_TASK_DESCRIPTION})
     return label_descriptors
 
 
