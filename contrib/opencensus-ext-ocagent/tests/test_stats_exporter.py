@@ -439,7 +439,7 @@ class TestExportRpcInterface(unittest.TestCase):
 
     @mock.patch(
         'opencensus.common.monitored_resource.monitored_resource.get_instance')
-    def test_export_with_resource(self, mock_get_instance):
+    def test_export_with_no_resource_found(self, mock_get_instance):
         event = threading.Event()
         requests = []
 
