@@ -35,6 +35,7 @@ Usage
         app.run(host='localhost', port=8080, threaded=True)
 
 Additional configuration can be provided:
+
 .. code:: python
     app.config['OPENCENSUS_TRACE'] = {
         'SAMPLER': 'opencensus.trace.samplers.ProbabilitySampler(rate=1)',
@@ -43,6 +44,4 @@ Additional configuration can be provided:
         )''',
     }
 
-For a complete reference, please read `Link Customization
- https://github.com/census-instrumentation/opencensus-python#customization`_
- 
+For a complete reference, please read `Link Customization https://github.com/census-instrumentation/opencensus-python#customization`_
