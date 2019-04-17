@@ -437,6 +437,29 @@ class TestExportRpcInterface(unittest.TestCase):
             resource_pb2.Resource(type='gce_instance',
                                   labels={'key1': 'value1'}))
 
+    @mock.patch(
+        'opencensus.common.monitored_resource.monitored_resource.get_instance')
+    def test_export_with_resource(self, mock_get_instance):
+        event = threading.Event()
+        requests = []
+
+        def _helper(request_iterator, context):
+            for r in request_iterator:
+                requests.append(r)
+                event.set()
+            yield
+
+        self._add_and_start_service(GenericRpcHandler(_helper))
+
+        mock_get_instance.return_value = None
+
+        _create_rpc_handler(self._create_stub()).send(
+            metrics_service_pb2.ExportMetricsServiceRequest())
+
+        self.assertTrue(event.wait(timeout=1))
+        self.assertEqual(requests[0].resource,
+                         resource_pb2.Resource(type='global'))
+
 
 def _start_server():
     """Starts an insecure grpc server."""
