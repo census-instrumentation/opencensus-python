@@ -85,9 +85,7 @@ OPENCENSUS = {
         'SAMPLER':
             'opencensus.trace.samplers.always_on.AlwaysOnSampler()',
         'EXPORTER':
-            '''opencensus.ext.stackdriver.trace_exporter.StackdriverExporter(
-                transport=opencensus.common.transports.sync.SyncTransport(),
-            )''',
+            'opencensus.ext.stackdriver.trace_exporter.StackdriverExporter()',
         'PROPAGATOR':
             'opencensus.trace.propagation.google_cloud_format.'
             'GoogleCloudFormatPropagator()',
