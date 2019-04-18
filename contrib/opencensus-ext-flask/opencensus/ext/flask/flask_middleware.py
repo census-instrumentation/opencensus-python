@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import logging
+import six
 import sys
 
 import flask
@@ -50,20 +51,20 @@ class FlaskMiddleware(object):
     :param blacklist_paths: Paths that do not trace.
 
     :type sampler: :class:`~opencensus.trace.samplers.base.Sampler`
-    :param sampler: Instance of sampler objects. It should extend
-                    from the base :class:`.Sampler` type and implement
+    :param sampler: A sampler. It should extend from the base
+                    :class:`.Sampler` type and implement
                     :meth:`.Sampler.should_sample`. Defaults to
                     :class:`.AlwaysOnSampler`. The rest options are
                     :class:`.AlwaysOffSampler`, :class:`.FixedRateSampler`.
 
     :type exporter: :class:`~opencensus.trace.base_exporter.exporter`
-    :param exporter: Instance of exporter objects. Default to
+    :param exporter: An exporter. Default to
                      :class:`.PrintExporter`. The rest options are
                      :class:`.FileExporter`, :class:`.LoggingExporter` and
                      trace exporter extensions.
 
     :type propagator: :class: 'object'
-    :param propagator: Instance of propagator objects. Default to
+    :param propagator: A propagator. Default to
                        :class:`.TraceContextPropagator`. The rest options
                        are :class:`.BinaryFormatPropagator`,
                        :class:`.GoogleCloudFormatPropagator` and
@@ -85,24 +86,25 @@ class FlaskMiddleware(object):
         self.app = app
 
         # get settings from app config
-        settings = self.app.config.get('OPENCENSUS_TRACE', {})
+        settings = self.app.config.get('OPENCENSUS', {})
+        settings = settings.get('TRACE', {})
 
         if self.sampler is None:
             self.sampler = settings.get('SAMPLER', None) or \
                 always_on.AlwaysOnSampler()
-            if isinstance(self.sampler, str):
+            if isinstance(self.sampler, six.string_types):
                 self.sampler = configuration.load(self.sampler)
 
         if self.exporter is None:
             self.exporter = settings.get('EXPORTER', None) or \
                 print_exporter.PrintExporter()
-            if isinstance(self.exporter, str):
+            if isinstance(self.exporter, six.string_types):
                 self.exporter = configuration.load(self.exporter)
 
         if self.propagator is None:
             self.propagator = settings.get('PROPAGATOR', None) or \
                 trace_context_http_header_format.TraceContextPropagator()
-            if isinstance(self.propagator, str):
+            if isinstance(self.propagator, six.string_types):
                 self.propagator = configuration.load(self.propagator)
 
         self.blacklist_paths = settings.get(BLACKLIST_PATHS,

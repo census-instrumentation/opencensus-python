@@ -40,9 +40,11 @@ for a complete reference.
 
 .. code:: python
 
-    app.config['OPENCENSUS_TRACE'] = {
-        'SAMPLER': 'opencensus.trace.samplers.ProbabilitySampler(rate=1)',
-        'EXPORTER': '''opencensus.ext.ocagent.trace_exporter.TraceExporter(
-            service_name='foobar',
-        )''',
+    app.config['OPENCENSUS'] = {
+        'TRACE': {
+            'SAMPLER': 'opencensus.trace.samplers.ProbabilitySampler(rate=1)',
+            'EXPORTER': '''opencensus.ext.ocagent.trace_exporter.TraceExporter(
+                service_name='foobar',
+            )''',
+        }
     }

@@ -45,7 +45,8 @@ app = flask.Flask(__name__)
 middleware = FlaskMiddleware(
     app,
     exporter=stackdriver_exporter.StackdriverExporter(
-                 transport=async_.AsyncTransport),
+        transport=async_.AsyncTransport,
+    ),
     propagator=google_cloud_format.GoogleCloudFormatPropagator(),
 )
 config_integration.trace_integrations(INTEGRATIONS)

@@ -18,15 +18,9 @@ import requests
 from opencensus.trace import config_integration
 from opencensus.ext.azure.trace_exporter import AzureExporter
 from opencensus.ext.flask.flask_middleware import FlaskMiddleware
-from opencensus.trace.propagation.trace_context_http_header_format \
-    import TraceContextPropagator
 
 app = Flask(__name__)
-middleware = FlaskMiddleware(
-    app,
-    exporter=AzureExporter(),
-    propagator=TraceContextPropagator(),
-)
+middleware = FlaskMiddleware(app, exporter=AzureExporter())
 
 
 @app.route('/')

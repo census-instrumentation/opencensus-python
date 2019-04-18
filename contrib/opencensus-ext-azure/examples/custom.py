@@ -19,13 +19,15 @@ app = Flask(__name__)
 # TODO:
 # Replace 00000000-0000-0000-0000-000000000000 with your Instrumentation Key
 # https://docs.microsoft.com/en-us/azure/azure-monitor/app/create-new-resource
-app.config['OPENCENSUS_TRACE'] = {
-    'SAMPLER': 'opencensus.trace.samplers.ProbabilitySampler(rate=1)',
-    'EXPORTER': '''opencensus.ext.azure.trace_exporter.AzureExporter(
-        opencensus.ext.azure.common.Options(
-            instrumentation_key="00000000-0000-0000-0000-000000000000",
-            timeout=29.9,
-        ))''',
+app.config['OPENCENSUS'] = {
+    'TRACE': {
+        'SAMPLER': 'opencensus.trace.samplers.ProbabilitySampler(rate=1)',
+        'EXPORTER': '''opencensus.ext.azure.trace_exporter.AzureExporter(
+            opencensus.ext.azure.common.Options(
+                instrumentation_key="00000000-0000-0000-0000-000000000000",
+                timeout=29.9,
+            ))''',
+    },
 }
 middleware = FlaskMiddleware(app)
 

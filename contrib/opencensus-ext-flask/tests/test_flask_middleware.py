@@ -101,10 +101,12 @@ class TestFlaskMiddleware(unittest.TestCase):
     def test_init_app_config(self):
         app = mock.Mock()
         app.config = {
-            'OPENCENSUS_TRACE': {
-                'SAMPLER': 'opencensus.trace.samplers.ProbabilitySampler()',
-                'EXPORTER': 'opencensus.trace.print_exporter.PrintExporter()',
-                'PROPAGATOR': 'opencensus.trace.propagation.trace_context_http_header_format.TraceContextPropagator()',  # noqa
+            'OPENCENSUS': {
+                'TRACE': {
+                    'SAMPLER': 'opencensus.trace.samplers.ProbabilitySampler()',  # noqa
+                    'EXPORTER': 'opencensus.trace.print_exporter.PrintExporter()',  # noqa
+                    'PROPAGATOR': 'opencensus.trace.propagation.trace_context_http_header_format.TraceContextPropagator()',  # noqa
+                }
             }
         }
 
