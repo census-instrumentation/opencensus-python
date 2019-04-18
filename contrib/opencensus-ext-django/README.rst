@@ -35,29 +35,17 @@ And add this line to the ``INSTALLED_APPS`` section:
         'opencensus.ext.django',
     ]
 
-You can configure the sampler, exporter, propagator using the ``OPENCENSUS_TRACE`` setting in
-``settings.py``:
+Additional configuration can be provided, please read
+`Customization <https://github.com/census-instrumentation/opencensus-python#customization>`_
+for a complete reference.
 
 .. code:: python
 
-    OPENCENSUS_TRACE = {
-        'SAMPLER': 'opencensus.trace.samplers.probability.ProbabilitySampler',
-        'REPORTER': 'opencensus.trace.print_exporter.PrintExporter',
-        'PROPAGATOR': 'opencensus.trace.propagation.google_cloud_format.'
-                      'GoogleCloudFormatPropagator',
-    }
-
-You can configure the sampling rate and other parameters using the ``OPENCENSUS_TRACE_PARAMS``
-setting in ``settings.py``:
-
-.. code:: python
-
-    OPENCENSUS_TRACE_PARAMS = {
-        'BLACKLIST_PATHS': ['/_ah/health'],
-        'GCP_EXPORTER_PROJECT': None,
-        'SAMPLING_RATE': 0.5,
-        'SERVICE_NAME': 'my_service',
-        'ZIPKIN_EXPORTER_HOST_NAME': 'localhost',
-        'ZIPKIN_EXPORTER_PORT': 9411,
-        'ZIPKIN_EXPORTER_PROTOCOL': 'http',
+    OPENCENSUS = {
+        'TRACE': {
+            'SAMPLER': 'opencensus.trace.samplers.ProbabilitySampler(rate=1)',
+            'EXPORTER': '''opencensus.ext.ocagent.trace_exporter.TraceExporter(
+                service_name='foobar',
+            )''',
+        }
     }
