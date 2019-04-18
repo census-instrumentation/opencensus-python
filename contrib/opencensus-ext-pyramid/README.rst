@@ -27,8 +27,9 @@ traced.
         config.add_tween('opencensus.ext.pyramid'
                          '.pyramid_middleware.OpenCensusTweenFactory')
 
-To configure the sampler, exporter, and propagator, pass the instances
-into the pyramid settings
+Additional configuration can be provided, please read
+`Customization <https://github.com/census-instrumentation/opencensus-python#customization>`_
+for a complete reference.
 
 .. code:: python
 
@@ -36,11 +37,14 @@ into the pyramid settings
     from opencensus.trace.propagation import google_cloud_format
     from opencensus.trace.samplers import probability
 
-    settings = {}
-    settings['OPENCENSUS_TRACE'] = {
-        'EXPORTER': print_exporter.PrintExporter(),
-        'SAMPLER': probability.ProbabilitySampler(rate=0.5),
-        'PROPAGATOR': google_cloud_format.GoogleCloudFormatPropagator(),
+    settings = {
+        'OPENCENSUS': {
+            'TRACE': {
+                'EXPORTER': print_exporter.PrintExporter(),
+                'SAMPLER': probability.ProbabilitySampler(rate=0.5),
+                'PROPAGATOR': google_cloud_format.GoogleCloudFormatPropagator(),
+            }
+        }
     }
 
     config = Configurator(settings=settings)
