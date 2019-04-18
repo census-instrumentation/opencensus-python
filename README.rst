@@ -195,13 +195,15 @@ for a Flask application:
     blacklist_paths = ['_ah/health']
     middleware = FlaskMiddleware(app, blacklist_paths=blacklist_paths)
 
-For Django, you can configure the blacklist in the ``OPENCENSUS_TRACE_PARAMS`` in ``settings.py``:
+For Django, you can configure the blacklist in the ``OPENCENSUS`` in ``settings.py``:
 
 .. code:: python
 
-    OPENCENSUS_TRACE_PARAMS: {
-        ...
-        'BLACKLIST_PATHS': ['_ah/health',],
+    OPENCENSUS: {
+        'TRACE': {
+            ...
+            'BLACKLIST_PATHS': ['_ah/health',],
+        }
     }
 
 

@@ -80,22 +80,21 @@ TEMPLATES = [
     },
 ]
 
-OPENCENSUS_TRACE = {
-    'SAMPLER':
-    'opencensus.trace.samplers.always_on.AlwaysOnSampler',
-    'EXPORTER':
-    'opencensus.ext.stackdriver.trace_exporter.StackdriverExporter',
-    'PROPAGATOR':
-    'opencensus.trace.propagation.google_cloud_format.'
-    'GoogleCloudFormatPropagator',
-}
-
-OPENCENSUS_TRACE_PARAMS = {
-    'SAMPLING_RATE': 0.5,
-    'BLACKLIST_PATHS': [
-        '_ah/health',
-    ],
-    'TRANSPORT': 'opencensus.common.transports.sync.SyncTransport',
+OPENCENSUS = {
+    'TRACE': {
+        'SAMPLER':
+            'opencensus.trace.samplers.always_on.AlwaysOnSampler()',
+        'EXPORTER':
+            '''opencensus.ext.stackdriver.trace_exporter.StackdriverExporter(
+                transport=opencensus.common.transports.sync.SyncTransport(),
+            )''',
+        'PROPAGATOR':
+            'opencensus.trace.propagation.google_cloud_format.'
+            'GoogleCloudFormatPropagator()',
+        'BLACKLIST_PATHS': [
+            '_ah/health',
+        ],
+    }
 }
 
 # Internationalization
