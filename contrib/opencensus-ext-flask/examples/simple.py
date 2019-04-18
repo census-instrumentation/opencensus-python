@@ -14,11 +14,9 @@
 
 from flask import Flask
 from opencensus.ext.flask.flask_middleware import FlaskMiddleware
-from opencensus.trace.propagation.trace_context_http_header_format \
-    import TraceContextPropagator
 
 app = Flask(__name__)
-middleware = FlaskMiddleware(app, propagator=TraceContextPropagator())
+middleware = FlaskMiddleware(app)
 
 
 @app.route('/')

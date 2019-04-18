@@ -13,25 +13,32 @@
 # limitations under the License.
 
 from flask import Flask
-import requests
-
-from opencensus.trace import config_integration
-from opencensus.ext.azure.trace_exporter import AzureExporter
 from opencensus.ext.flask.flask_middleware import FlaskMiddleware
 
 app = Flask(__name__)
-middleware = FlaskMiddleware(app, exporter=AzureExporter())
+# TODO:
+# Replace 00000000-0000-0000-0000-000000000000 with your Instrumentation Key
+# https://docs.microsoft.com/en-us/azure/azure-monitor/app/create-new-resource
+app.config['OPENCENSUS'] = {
+    'TRACE': {
+        'SAMPLER': 'opencensus.trace.samplers.ProbabilitySampler(rate=1)',
+        'EXPORTER': '''opencensus.ext.azure.trace_exporter.AzureExporter(
+            opencensus.ext.azure.common.Options(
+                instrumentation_key="00000000-0000-0000-0000-000000000000",
+                timeout=29.9,
+            ))''',
+    },
+}
+middleware = FlaskMiddleware(app)
 
 
 @app.route('/')
 def hello():
-    requests.get('https://www.wikipedia.org/wiki/Rabbit')
-    return 'Hello, World!'
+    return 'Hello World!'
 
 
 if __name__ == '__main__':
     import logging
     logger = logging.getLogger('werkzeug')
     logger.setLevel(logging.ERROR)
-    config_integration.trace_integrations(['requests'])
     app.run(host='localhost', port=8080, threaded=True)
