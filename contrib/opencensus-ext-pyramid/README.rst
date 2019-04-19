@@ -34,7 +34,6 @@ for a complete reference.
 .. code:: python
 
     from opencensus.trace import print_exporter
-    from opencensus.trace.propagation import google_cloud_format
     from opencensus.trace.samplers import probability
 
     settings = {
@@ -42,7 +41,6 @@ for a complete reference.
             'TRACE': {
                 'EXPORTER': print_exporter.PrintExporter(),
                 'SAMPLER': probability.ProbabilitySampler(rate=0.5),
-                'PROPAGATOR': google_cloud_format.GoogleCloudFormatPropagator(),
             }
         }
     }

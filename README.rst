@@ -143,8 +143,9 @@ Propagators
 ~~~~~~~~~~~
 
 You can specify the propagator type for serializing and deserializing the
-``SpanContext`` and its headers. There are currently three built in propagators:
-``GoogleCloudFormatPropagator``, ``TextFormatPropagator`` and ``TraceContextPropagator``.
+``SpanContext`` and its headers. The default propagator is
+``TraceContextPropagator``, the rest options are ``BinaryFormatPropagator``,
+``GoogleCloudFormatPropagator`` and ``TextFormatPropagator``.
 
 This example shows how to use the ``GoogleCloudFormatPropagator``:
 
