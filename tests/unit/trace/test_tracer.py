@@ -23,7 +23,8 @@ from opencensus.trace import span_data
 class TestTracer(unittest.TestCase):
     def test_constructor_default(self):
         from opencensus.trace import print_exporter
-        from opencensus.trace.propagation import trace_context_http_header_format
+        from opencensus.trace.propagation \
+            import trace_context_http_header_format
         from opencensus.trace.samplers.always_on import AlwaysOnSampler
         from opencensus.trace.span_context import SpanContext
         from opencensus.trace.tracers import context_tracer
@@ -34,7 +35,7 @@ class TestTracer(unittest.TestCase):
         assert isinstance(tracer.sampler, AlwaysOnSampler)
         assert isinstance(tracer.exporter, print_exporter.PrintExporter)
         assert isinstance(tracer.propagator,
-                          trace_context_http_header_format.TraceContextPropagator)
+            trace_context_http_header_format.TraceContextPropagator)
         assert isinstance(tracer.tracer, context_tracer.ContextTracer)
 
     def test_constructor_explicit(self):
