@@ -34,7 +34,8 @@ class TestTracer(unittest.TestCase):
         assert isinstance(tracer.span_context, SpanContext)
         assert isinstance(tracer.sampler, AlwaysOnSampler)
         assert isinstance(tracer.exporter, print_exporter.PrintExporter)
-        assert isinstance(tracer.propagator,
+        assert isinstance(
+            tracer.propagator,
             trace_context_http_header_format.TraceContextPropagator)
         assert isinstance(tracer.tracer, context_tracer.ContextTracer)
 
