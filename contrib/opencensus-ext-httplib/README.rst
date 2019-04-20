@@ -27,7 +27,6 @@ Usage
 .. code:: python
 
     import requests
-
     from opencensus.trace import config_integration
     from opencensus.trace.tracer import Tracer
 
@@ -35,8 +34,7 @@ Usage
     tracer = Tracer()
 
     with tracer.span(name='parent'):
-        with tracer.span(name='child'):
-            response = requests.get('http://localhost:5000')
+        response = requests.get('https://www.wikipedia.org/wiki/Rabbit')
 
 References
 ----------

@@ -59,8 +59,7 @@ You can also specify the instrumentation key explicitly in the code.
             timeout=29.9,
         )))
         with tracer.span(name='parent'):
-            with tracer.span(name='child'):
-                response = requests.get(url='http://localhost:8080/')
+            response = requests.get(url='https://www.wikipedia.org/wiki/Rabbit')
 
 References
 ----------
