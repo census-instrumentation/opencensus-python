@@ -19,9 +19,10 @@ Usage
 Trace
 ~~~~~
 
-The **Azure Monitor Trace Exporter** allows you to export traces to `Azure Monitor`_.
+The **Azure Monitor Trace Exporter** allows you to export `OpenCensus`_ traces to `Azure Monitor`_.
 
 .. _Azure Monitor: https://docs.microsoft.com/azure/azure-monitor/
+.. _OpenCensus: https://github.com/census-instrumentation/opencensus-python/
 
 This example shows how to send a span "hello" to Azure Monitor.
 
