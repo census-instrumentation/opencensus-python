@@ -63,4 +63,4 @@ You can also specify the instrumentation key explicitly in the code.
             with tracer.span(name='child'):
                 response = requests.get(url='http://localhost:8080/')
 
-Take a look at the `examples <https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-azure/examples>` for more information.
+Take a look at the `examples <https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-azure/examples>`_ for more information.
