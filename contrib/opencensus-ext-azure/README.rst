@@ -65,6 +65,6 @@ You can also specify the instrumentation key explicitly in the code.
 References
 ~~~~~~~~~~
 
-* `Azure Monitor <https://docs.microsoft.com/azure/azure-monitor/>`_`
+* `Azure Monitor <https://docs.microsoft.com/azure/azure-monitor/>`_
 * `Examples <https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-azure/examples>`_
 * `OpenCensus <https://opencensus.io/>`_
