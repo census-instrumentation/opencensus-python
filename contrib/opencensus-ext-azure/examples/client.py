@@ -20,6 +20,8 @@ from opencensus.trace.tracer import Tracer
 
 if __name__ == '__main__':
     config_integration.trace_integrations(['requests'])
+    # TODO: you need to specify the instrumentation key in the
+    # APPINSIGHTS_INSTRUMENTATIONKEY environment variable.
     tracer = Tracer(exporter=AzureExporter())
     with tracer.span(name='parent'):
         with tracer.span(name='child'):

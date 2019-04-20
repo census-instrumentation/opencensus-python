@@ -36,9 +36,8 @@ This example shows how to send a span "hello" to Azure Monitor.
 
     tracer = tracer_module.Tracer(exporter=AzureExporter())
 
-    if __name__ == '__main__':
-        with tracer.span(name='hello'):
-            print('Hello, World!')
+    with tracer.span(name='hello'):
+        print('Hello, World!')
 
 You can also specify the instrumentation key explicitly in the code.
 
@@ -54,7 +53,7 @@ You can also specify the instrumentation key explicitly in the code.
     if __name__ == '__main__':
         config_integration.trace_integrations(['requests'])
         tracer = Tracer(exporter=AzureExporter(Options(
-            # TODO: replace this with your own instrumentation key
+            # TODO: replace this with your own instrumentation key.
             instrumentation_key='00000000-0000-0000-0000-000000000000',
             timeout=29.9,
         )))
