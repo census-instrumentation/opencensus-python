@@ -26,12 +26,14 @@ The **Azure Monitor Trace Exporter** allows you to export traces to `Azure Monit
 
 This example will send the span "hello" to the Azure Monitor.
 
-1. Provision an Azure Monitor resource and get the instrumentation key,
+* Provision an Azure Monitor resource and get the instrumentation key,
 more information can be found `here <https://docs.microsoft.com/azure/azure-monitor/app/create-new-resource>`_.
-2. Put the instrumentation key in ``APPINSIGHTS_INSTRUMENTATIONKEY`` environment variable.
+
+* Put the instrumentation key in ``APPINSIGHTS_INSTRUMENTATIONKEY`` environment variable.
 
 
 .. code:: python
+
     from opencensus.ext.azure.trace_exporter import AzureExporter
     from opencensus.trace import tracer as tracer_module
 
