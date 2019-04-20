@@ -16,6 +16,20 @@ Installation
 Usage
 -----
 
+The **OpenCensus Zipkin Exporter** allows you to export traces to `Zipkin`_.
+
+.. _Zipkin: https://zipkin.io/
+
 .. code:: python
 
-    # TBD
+    from opencensus.ext.zipkin.trace_exporter import ZipkinExporter
+    from opencensus.trace import tracer as tracer_module
+
+    tracer = tracer_module.Tracer(exporter=ZipkinExporter(
+        service_name='my service',
+        host_name='localhost',
+        port=9411,
+    ))
+
+    with tracer.span(name='hello'):
+        print('Hello, World!')
