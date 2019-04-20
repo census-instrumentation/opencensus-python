@@ -169,6 +169,30 @@ class GaugePointDouble(GaugePoint):
         return value_module.ValueDouble(self.value)
 
 
+class CumulativePointLong(GaugePointLong):
+    """A `GaugePointLong` that cannot decrease."""
+
+    def set(self, val):
+        if val > self.get_value():
+            super(CumulativePointLong, self).set(val)
+
+    def add(self, val):
+        if val > 0:
+            super(CumulativePointLong, self).add(val)
+
+
+class CumulativePointDouble(GaugePointDouble):
+    """A `GaugePointDouble` that cannot decrease."""
+
+    def set(self, val):
+        if val > self.get_value():
+            super(CumulativePointDouble, self).set(val)
+
+    def add(self, val):
+        if val > 0:
+            super(CumulativePointDouble, self).add(val)
+
+
 class DerivedGaugePoint(GaugePoint):
     """Wraps a `GaugePoint` to automatically track the value of a function.
 
@@ -374,6 +398,26 @@ class DoubleGauge(DoubleGaugeMixin, Gauge):
     """Gauge for recording float-valued measurements."""
 
 
+class LongCumulativeMixin(object):
+    """Type mixin for long-valued cumulative measures."""
+    descriptor_type = metric_descriptor.MetricDescriptorType.CUMULATIVE_INT64
+    point_type = CumulativePointLong
+
+
+class DoubleCumulativeMixin(object):
+    """Type mixin for float-valued cumulative measures."""
+    descriptor_type = metric_descriptor.MetricDescriptorType.CUMULATIVE_DOUBLE
+    point_type = CumulativePointDouble
+
+
+class LongCumulative(LongCumulativeMixin, Gauge):
+    """Records cumulative int-valued measurements."""
+
+
+class DoubleCumulative(DoubleCumulativeMixin, Gauge):
+    """Records cumulative float-valued measurements."""
+
+
 class DerivedGauge(BaseGauge):
     """Gauge that tracks values of other functions.
 
@@ -432,6 +476,14 @@ class DerivedLongGauge(LongGaugeMixin, DerivedGauge):
 
 class DerivedDoubleGauge(DoubleGaugeMixin, DerivedGauge):
     """Gauge for derived float-valued measurements."""
+
+
+class DerivedLongCumulative(LongCumulativeMixin, DerivedGauge):
+    """Records derived cumulative int-valued measurements."""
+
+
+class DerivedDoubleCumulative(DoubleCumulativeMixin, DerivedGauge):
+    """Records derived cumulative float-valued measurements."""
 
 
 class Registry(metric_producer.MetricProducer):
