@@ -39,4 +39,4 @@ References
 ----------
 
 * `Jaeger <https://www.jaegertracing.io/>`_
-* `OpenCensus <https://opencensus.io/>`_
+* `OpenCensus Project <https://opencensus.io/>`_

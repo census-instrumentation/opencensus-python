@@ -41,4 +41,4 @@ Usage
 References
 ----------
 
-* `OpenCensus <https://opencensus.io/>`_
+* `OpenCensus Project <https://opencensus.io/>`_

@@ -38,5 +38,5 @@ The **OpenCensus Zipkin Exporter** allows you to export `OpenCensus`_ traces to 
 References
 ----------
 
-* `OpenCensus <https://opencensus.io/>`_
+* `OpenCensus Project <https://opencensus.io/>`_
 * `Zipkin <https://zipkin.io/>`_
