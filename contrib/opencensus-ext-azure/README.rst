@@ -24,11 +24,9 @@ The **Azure Monitor Trace Exporter** allows you to export traces to `Azure Monit
 .. _Azure Monitor: https://docs.microsoft.com/azure/azure-monitor/
 
 
-This example will send the span "hello" to the Azure Monitor.
+This example shows how to send a span "hello" to Azure Monitor.
 
-* Provision an Azure Monitor resource and get the instrumentation key,
-more information can be found `here <https://docs.microsoft.com/azure/azure-monitor/app/create-new-resource>`_.
-
+* Provision an Azure Monitor resource and get the instrumentation key, more information can be found `here <https://docs.microsoft.com/azure/azure-monitor/app/create-new-resource>`_.
 * Put the instrumentation key in ``APPINSIGHTS_INSTRUMENTATIONKEY`` environment variable.
 
 
