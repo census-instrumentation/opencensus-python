@@ -16,8 +16,9 @@ Installation
 Usage
 -----
 
-The **OpenCensus Zipkin Exporter** allows you to export traces to `Zipkin`_.
+The **OpenCensus Zipkin Exporter** allows you to export `OpenCensus`_ traces to `Zipkin`_.
 
+.. _OpenCensus: https://github.com/census-instrumentation/opencensus-python/
 .. _Zipkin: https://zipkin.io/
 
 .. code:: python
@@ -33,3 +34,9 @@ The **OpenCensus Zipkin Exporter** allows you to export traces to `Zipkin`_.
 
     with tracer.span(name='hello'):
         print('Hello, World!')
+
+References
+----------
+
+* `OpenCensus <https://opencensus.io/>`_
+* `Zipkin <https://zipkin.io/>`_

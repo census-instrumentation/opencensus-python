@@ -16,9 +16,10 @@ Installation
 Usage
 -----
 
-The **OpenCensus Jaeger Exporter** allows you to export traces to `Jaeger`_.
+The **OpenCensus Jaeger Exporter** allows you to export `OpenCensus`_ traces to `Jaeger`_.
 
 .. _Jaeger: https://www.jaegertracing.io/
+.. _OpenCensus: https://github.com/census-instrumentation/opencensus-python/
 
 .. code:: python
 
@@ -33,3 +34,9 @@ The **OpenCensus Jaeger Exporter** allows you to export traces to `Jaeger`_.
 
     with tracer.span(name='hello'):
         print('Hello, World!')
+
+References
+----------
+
+* `Jaeger <https://www.jaegertracing.io/>`_
+* `OpenCensus <https://opencensus.io/>`_

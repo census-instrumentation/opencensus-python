@@ -16,6 +16,9 @@ Installation
 Usage
 -----
 
-.. code:: python
+TBD
 
-    # TBD
+References
+----------
+
+* `OpenCensus <https://opencensus.io/>`_

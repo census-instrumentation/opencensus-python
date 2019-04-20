@@ -26,4 +26,19 @@ Usage
 
 .. code:: python
 
-    # TBD
+    import requests
+
+    from opencensus.trace import config_integration
+    from opencensus.trace.tracer import Tracer
+
+    config_integration.trace_integrations(['httplib'])
+    tracer = Tracer()
+
+    with tracer.span(name='parent'):
+        with tracer.span(name='child'):
+            response = requests.get('http://localhost:5000')
+
+References
+----------
+
+* `OpenCensus <https://opencensus.io/>`_
