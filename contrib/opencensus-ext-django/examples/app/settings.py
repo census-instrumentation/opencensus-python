@@ -64,18 +64,13 @@ TEMPLATES = [
     },
 ]
 
-OPENCENSUS_TRACE = {
-    'SAMPLER':
-    'opencensus.trace.samplers.always_on.AlwaysOnSampler',
-    'EXPORTER':
-    'opencensus.ext.stackdriver.trace_exporter.StackdriverExporter',
-    'PROPAGATOR':
-    'opencensus.trace.propagation.google_cloud_format.'
-    'GoogleCloudFormatPropagator',
-}
-
-OPENCENSUS_TRACE_PARAMS = {
-    'SAMPLING_RATE': 0.5,
+OPENCENSUS = {
+    'TRACE': {
+        'SAMPLER': 'opencensus.trace.samplers.ProbabilitySampler(rate=0.5)',
+        'EXPORTER': '''opencensus.ext.ocagent.trace_exporter.TraceExporter(
+            service_name='foobar',
+        )''',
+    }
 }
 
 # Internationalization

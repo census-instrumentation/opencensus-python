@@ -143,8 +143,9 @@ Propagators
 ~~~~~~~~~~~
 
 You can specify the propagator type for serializing and deserializing the
-``SpanContext`` and its headers. There are currently three built in propagators:
-``GoogleCloudFormatPropagator``, ``TextFormatPropagator`` and ``TraceContextPropagator``.
+``SpanContext`` and its headers. The default propagator is
+``TraceContextPropagator``, the rest options are ``BinaryFormatPropagator``,
+``GoogleCloudFormatPropagator`` and ``TextFormatPropagator``.
 
 This example shows how to use the ``GoogleCloudFormatPropagator``:
 
@@ -195,13 +196,15 @@ for a Flask application:
     blacklist_paths = ['_ah/health']
     middleware = FlaskMiddleware(app, blacklist_paths=blacklist_paths)
 
-For Django, you can configure the blacklist in the ``OPENCENSUS_TRACE_PARAMS`` in ``settings.py``:
+For Django, you can configure the blacklist in the ``OPENCENSUS`` in ``settings.py``:
 
 .. code:: python
 
-    OPENCENSUS_TRACE_PARAMS: {
-        ...
-        'BLACKLIST_PATHS': ['_ah/health',],
+    OPENCENSUS: {
+        'TRACE': {
+            ...
+            'BLACKLIST_PATHS': ['_ah/health',],
+        }
     }
 
 
