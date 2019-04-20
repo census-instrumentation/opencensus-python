@@ -18,7 +18,7 @@ from opencensus.ext.flask.flask_middleware import FlaskMiddleware
 app = Flask(__name__)
 # TODO:
 # Replace 00000000-0000-0000-0000-000000000000 with your Instrumentation Key
-# https://docs.microsoft.com/en-us/azure/azure-monitor/app/create-new-resource
+# https://docs.microsoft.com/azure/azure-monitor/app/create-new-resource
 app.config['OPENCENSUS'] = {
     'TRACE': {
         'SAMPLER': 'opencensus.trace.samplers.ProbabilitySampler(rate=1)',
