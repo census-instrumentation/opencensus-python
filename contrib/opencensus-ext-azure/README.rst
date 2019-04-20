@@ -20,9 +20,9 @@ Trace
 ~~~~~
 
 The **Azure Monitor Trace Exporter** allows you to export traces to `Azure Monitor`_.
+Take a look at the `examples <https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-azure/examples>`_ for more information.
 
 .. _Azure Monitor: https://docs.microsoft.com/azure/azure-monitor/
-
 
 This example shows how to send a span "hello" to Azure Monitor.
 
@@ -62,5 +62,3 @@ You can also specify the instrumentation key explicitly in the code.
         with tracer.span(name='parent'):
             with tracer.span(name='child'):
                 response = requests.get(url='http://localhost:8080/')
-
-Take a look at the `examples <https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-azure/examples>`_ for more information.
