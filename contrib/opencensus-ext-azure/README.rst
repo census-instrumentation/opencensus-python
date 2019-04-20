@@ -62,7 +62,8 @@ You can also specify the instrumentation key explicitly in the code.
             with tracer.span(name='child'):
                 response = requests.get(url='http://localhost:8080/')
 
-References:
+References
+~~~~~~~~~~
 
 * `Azure Monitor <https://docs.microsoft.com/azure/azure-monitor/>`_`
 * `Examples <https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-azure/examples>`_
