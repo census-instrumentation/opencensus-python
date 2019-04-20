@@ -24,7 +24,7 @@ app.config['OPENCENSUS'] = {
         'SAMPLER': 'opencensus.trace.samplers.ProbabilitySampler(rate=1)',
         'EXPORTER': '''opencensus.ext.azure.trace_exporter.AzureExporter(
             opencensus.ext.azure.common.Options(
-                instrumentation_key="00000000-0000-0000-0000-000000000000",
+                instrumentation_key='00000000-0000-0000-0000-000000000000',
                 timeout=29.9,
             ))''',
     },

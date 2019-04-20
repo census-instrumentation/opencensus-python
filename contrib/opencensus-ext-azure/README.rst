@@ -41,3 +41,25 @@ This example shows how to send a span "hello" to Azure Monitor.
         with tracer.span(name='hello'):
             print('Hello, World!')
 
+You can also specify the instrumentation key explicitly in the code.
+
+.. code:: python
+
+    import requests
+
+    from opencensus.ext.azure.common import Options
+    from opencensus.ext.azure.trace_exporter import AzureExporter
+    from opencensus.trace import config_integration
+    from opencensus.trace.tracer import Tracer
+
+    if __name__ == '__main__':
+        config_integration.trace_integrations(['requests'])
+        tracer = Tracer(exporter=AzureExporter(Options(
+            # TODO: replace this with your own instrumentation key
+            instrumentation_key='00000000-0000-0000-0000-000000000000',
+            timeout=29.9,
+        )))
+        with tracer.span(name='parent'):
+            with tracer.span(name='child'):
+                response = requests.get(url='http://localhost:8080/')
+
