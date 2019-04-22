@@ -313,7 +313,7 @@ class Gauge(BaseGauge):
 
     End users should use :class:`LongGauge`, :class:`DoubleGauge`,
     :class:`opencensus.metrics.export.cumulative.LongCumulative`, or
-    :class:`opencensus.metrics.export.cumulative.DoubleCumulative`  instead of
+    :class:`opencensus.metrics.export.cumulative.DoubleCumulative` instead of
     using this class directly.
 
     The constructor arguments are used to create a

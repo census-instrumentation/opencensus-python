@@ -24,8 +24,7 @@ class CumulativePointLong(gauge.GaugePointLong):
     def set(self, val):
         """Set the current value to `val`
 
-        Return without changing the value if `val` is not greater than the
-        current value.
+        Return without changing the value if `val` is less than current value.
 
         :type val: int
         :param val: Value to set.
