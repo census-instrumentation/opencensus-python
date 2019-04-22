@@ -173,12 +173,27 @@ class CumulativePointLong(GaugePointLong):
     """A `GaugePointLong` that cannot decrease."""
 
     def set(self, val):
+        """Set the current value to `val`
+
+        Return without changing the value if `val` is not greater than the
+        current value.
+
+        :type val: int
+        :param val: Value to set.
+        """
         if not isinstance(val, six.integer_types):
             raise ValueError("CumulativePointLong only supports integer types")
         if val > self.get_value():
             super(CumulativePointLong, self).set(val)
 
     def add(self, val):
+        """Add `val` to the current value if it's positive.
+
+        Return without adding if `val` is not positive.
+
+        :type val: int
+        :param val: Value to add.
+        """
         if not isinstance(val, six.integer_types):
             raise ValueError("CumulativePointLong only supports integer types")
         if val > 0:
@@ -189,10 +204,25 @@ class CumulativePointDouble(GaugePointDouble):
     """A `GaugePointDouble` that cannot decrease."""
 
     def set(self, val):
+        """Set the current value to `val`
+
+        Return without changing the value if `val` is not greater than the
+        current value.
+
+        :type val: float
+        :param val: Value to set.
+        """
         if val > self.get_value():
             super(CumulativePointDouble, self).set(val)
 
     def add(self, val):
+        """Add `val` to the current value if it's positive.
+
+        Return without adding if `val` is not positive.
+
+        :type val: float
+        :param val: Value to add.
+        """
         if val > 0:
             super(CumulativePointDouble, self).add(val)
 
@@ -208,7 +238,8 @@ class DerivedGaugePoint(GaugePoint):
     :type func: function
     :param func: The function to track.
 
-    :type gauge_point: :class:`GaugePointLong` or :class:`GaugePointDouble`
+    :type gauge_point: :class:`GaugePointLong`, :class:`GaugePointDouble`,
+        :class:`CumulativePointLong`, or :class:`CumulativePointDouble`
     :param gauge_point: The underlying `GaugePoint`.
     """
     def __init__(self, func, gauge_point):
@@ -230,7 +261,7 @@ class DerivedGaugePoint(GaugePoint):
 
         :rtype: int, float, or None
         :return: The current value of the wrapped function, or `None` if it no
-        longer exists.
+            longer exists.
         """
         try:
             self.gauge_point.set(self.func()())
@@ -246,9 +277,9 @@ class DerivedGaugePoint(GaugePoint):
         measurement as a side-effect.
 
         :rtype: :class:`opencensus.metrics.export.value.ValueLong`,
-        :class:`opencensus.metrics.export.value.ValueDouble`, or None
+            :class:`opencensus.metrics.export.value.ValueDouble`, or None
         :return: The point value conversion of the underlying `GaugePoint`, or
-        None if the tracked function no longer exists.
+            None if the tracked function no longer exists.
         """
         if self.get_value() is None:
             return None
@@ -337,8 +368,9 @@ class BaseGauge(object):
 class Gauge(BaseGauge):
     """A set of mutable, instantaneous measurements of the same type.
 
-    End users should use :class:`LongGauge` or :class:`DoubleGauge` instead of
-    using this class directly.
+    End users should use :class:`LongGauge`, :class:`DoubleGauge`,
+    :class:`LongCumulative`, or :class:`DoubleCumulative`  instead of using
+    this class directly.
 
     The constructor arguments are used to create a
     :class:`opencensus.metrics.export.metric_descriptor.MetricDescriptor` for
@@ -356,9 +388,10 @@ class Gauge(BaseGauge):
         :type label_values: list(:class:`LabelValue`)
         :param label_values: The measurement's label values.
 
-        :rtype: :class:`GaugePointLong` or :class:`GaugePointDouble`
+        :rtype: :class:`GaugePointLong`, :class:`GaugePointDouble`
+            :class:`CumulativePointLong`, or :class:`CumulativePointDouble`
         :return: A mutable point that represents the last value of the
-        measurement.
+            measurement.
         """
         if label_values is None:
             raise ValueError
@@ -375,9 +408,10 @@ class Gauge(BaseGauge):
         values. When this gauge is exported as a metric via `get_metric` the
         time series associated with this point will have null label values.
 
-        :rtype: :class:`GaugePointLong` or :class:`GaugePointDouble`
+        :rtype: :class:`GaugePointLong`, :class:`GaugePointDouble`
+            :class:`CumulativePointLong`, or :class:`CumulativePointDouble`
         :return: A mutable point that represents the last value of the
-        measurement.
+            measurement.
         """
         return self._get_or_create_time_series(self.default_label_values)
 
@@ -428,8 +462,9 @@ class DerivedGauge(BaseGauge):
     Each of a `DerivedGauge`'s measurements are associated with a function
     which is called when the gauge is exported.
 
-    End users should use :class:`DerivedLongGauge` or
-    :class:`DerivedDoubleGauge` instead of using this class directly.
+    End users should use :class:`DerivedLongGauge`, :class:`DerivedDoubleGauge`
+    :class:`DerivedLongCumulative`, or :class:`DerivedDoubleCumulative` instead
+    of using this class directly.
     """
 
     def _create_time_series(self, label_values, func):
@@ -508,18 +543,16 @@ class Registry(metric_producer.MetricProducer):
                 ))
 
     def add_gauge(self, gauge):
-        """Add `gauge` to the registry and return it.
+        """Add `gauge` to the registry.
 
         Raises a `ValueError` if another gauge with the same name already
         exists in the registry.
 
         :type gauge: class:`LongGauge`, class:`DoubleGauge`,
-        :class:`DerivedLongGauge`, or :class:`DerivedDoubleGauge`
+            :class:`LongCumulative`, :class:`DoubleCumulative`,
+            :class:`DerivedLongGauge`, :class:`DerivedDoubleGauge`
+            :class:`DerivedLongCumulative`, or :class:`DerivedDoubleCumulative`
         :param gauge: The gauge to add to the registry.
-
-        :type gauge: class:`LongGauge`, class:`DoubleGauge`,
-        :class:`DerivedLongGauge`, or :class:`DerivedDoubleGauge`
-        :return: The gauge that was added to the registry.
         """
         if gauge is None:
             raise ValueError
