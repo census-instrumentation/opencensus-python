@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add cumulative gauge API
+
 ## 0.4.0
 Released 2019-04-08
 
