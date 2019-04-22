@@ -12,13 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-try:
-    from mock import Mock
-except ImportError:
-    from unittest.mock import Mock
-
 import gc
 import unittest
+
+from mock import Mock
 
 from opencensus.metrics.export import gauge
 from opencensus.metrics.export import metric_descriptor
