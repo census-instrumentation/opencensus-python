@@ -237,7 +237,8 @@ class TestDerivedLongCumulative(unittest.TestCase):
         point = derived_cumulative.create_time_series(
             [Mock(), Mock()], mock_fn)
         self.assertIsInstance(point, gauge.DerivedGaugePoint)
-        self.assertIsInstance(point.gauge_point, cumulative.CumulativePointLong)
+        self.assertIsInstance(point.gauge_point,
+                              cumulative.CumulativePointLong)
         mock_fn.assert_not_called()
 
     def test_get_metric(self):
@@ -284,7 +285,8 @@ class TestDerivedDoubleCumulative(unittest.TestCase):
         point = derived_cumulative.create_time_series(
             [Mock(), Mock()], mock_fn)
         self.assertIsInstance(point, gauge.DerivedGaugePoint)
-        self.assertIsInstance(point.gauge_point, cumulative.CumulativePointDouble)
+        self.assertIsInstance(point.gauge_point,
+                              cumulative.CumulativePointDouble)
         mock_fn.assert_not_called()
 
     def test_get_metric(self):
