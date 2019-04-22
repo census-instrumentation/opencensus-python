@@ -25,4 +25,11 @@ Usage
 
 .. code:: python
 
-    # TBD
+    from opencensus.trace import config_integration
+
+    config_integration.trace_integrations(['google_cloud_clientlibs'])
+
+References
+----------
+
+* `OpenCensus Project <https://opencensus.io/>`_
