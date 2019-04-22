@@ -26,3 +26,9 @@ Stats
     ocagent_stats_exporter.new_stats_exporter(
         service_name='service_name',
         endpoint='localhost:55678')
+
+References
+----------
+
+* `OpenCensus Project <https://opencensus.io/>`_
+* `OpenCensus Services <https://github.com/census-instrumentation/opencensus-service>`_

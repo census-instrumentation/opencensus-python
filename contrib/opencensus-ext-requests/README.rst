@@ -31,5 +31,17 @@ Usage
 
 .. code:: python
 
-    execution_context.set_opencensus_attr('blacklist_hostnames',['hostname:port'])
+    import requests
+    from opencensus.trace import config_integration
+    from opencensus.trace.tracer import Tracer
 
+    if __name__ == '__main__':
+        config_integration.trace_integrations(['requests'])
+        tracer = Tracer()
+        with tracer.span(name='parent'):
+            response = requests.get(url='https://www.wikipedia.org/wiki/Rabbit')
+
+References
+----------
+
+* `OpenCensus Project <https://opencensus.io/>`_
