@@ -40,21 +40,9 @@ class TestCumulativePointLong(unittest.TestCase):
         with self.assertRaises(ValueError):
             point.add(10.0)
 
-    def test_set(self):
-        point = cumulative.CumulativePointLong()
-        point.set(10)
-        self.assertEqual(point.value, 10)
-        point.set(9)
-        self.assertEqual(point.value, 10)
-        # Check that we report type errors for args that we'd otherwise ignore
-        with self.assertRaises(ValueError):
-            point.set(9.0)
-        with self.assertRaises(ValueError):
-            point.set(10.0)
-
     def test_get_value(self):
         point = cumulative.CumulativePointLong()
-        point.set(10)
+        point.add(10)
         self.assertEqual(point.value, 10)
         self.assertEqual(point.get_value(), point.value)
 
@@ -72,16 +60,9 @@ class TestCumulativePointDouble(unittest.TestCase):
         point.add(-1.0)
         self.assertEqual(point.value, 10.0)
 
-    def test_set(self):
-        point = cumulative.CumulativePointDouble()
-        point.set(10)
-        self.assertEqual(point.value, 10.0)
-        point.set(-20.2)
-        self.assertEqual(point.value, 10.0)
-
     def test_get_value(self):
         point = cumulative.CumulativePointDouble()
-        point.set(10.1)
+        point.add(10.1)
         self.assertEqual(point.value, 10.1)
         self.assertEqual(point.get_value(), point.value)
 
@@ -125,8 +106,8 @@ class TestLongCumulative(unittest.TestCase):
         self.assertEqual(metric.time_series[1].points[0].value.value, 0)
 
         timestamp2 = Mock()
-        point1.set(2)
-        point2.set(4)
+        point1.add(2)
+        point2.add(4)
         metric = long_cumulative.get_metric(timestamp2)
         self.assertEqual(metric.descriptor, long_cumulative.descriptor)
         self.assertEqual(len(metric.time_series), 2)
@@ -140,8 +121,8 @@ class TestLongCumulative(unittest.TestCase):
         self.assertEqual(metric.time_series[1].points[0].value.value, 4)
 
         timestamp3 = Mock()
-        point1.set(3)
-        point2.set(3)
+        point1.add(1)
+        point2.add(-1)
         metric = long_cumulative.get_metric(timestamp3)
         self.assertEqual(metric.descriptor, long_cumulative.descriptor)
         self.assertEqual(len(metric.time_series), 2)
@@ -191,8 +172,8 @@ class TestDoubleCumulative(unittest.TestCase):
         self.assertEqual(metric.time_series[1].points[0].value.value, 0)
 
         timestamp2 = Mock()
-        point1.set(2.2)
-        point2.set(4.4)
+        point1.add(2.125)
+        point2.add(1.125)
         metric = double_cumulative.get_metric(timestamp2)
         self.assertEqual(metric.descriptor, double_cumulative.descriptor)
         self.assertEqual(len(metric.time_series), 2)
@@ -202,12 +183,12 @@ class TestDoubleCumulative(unittest.TestCase):
                               value_module.ValueDouble)
         self.assertIsInstance(metric.time_series[1].points[0].value,
                               value_module.ValueDouble)
-        self.assertEqual(metric.time_series[0].points[0].value.value, 2.2)
-        self.assertEqual(metric.time_series[1].points[0].value.value, 4.4)
+        self.assertEqual(metric.time_series[0].points[0].value.value, 2.125)
+        self.assertEqual(metric.time_series[1].points[0].value.value, 1.125)
 
         timestamp3 = Mock()
-        point1.set(3.3)
-        point2.set(3.3)
+        point1.add(-1.125)
+        point2.add(1.125)
         metric = double_cumulative.get_metric(timestamp3)
         self.assertEqual(metric.descriptor, double_cumulative.descriptor)
         self.assertEqual(len(metric.time_series), 2)
@@ -217,8 +198,8 @@ class TestDoubleCumulative(unittest.TestCase):
                               value_module.ValueDouble)
         self.assertIsInstance(metric.time_series[1].points[0].value,
                               value_module.ValueDouble)
-        self.assertEqual(metric.time_series[0].points[0].value.value, 3.3)
-        self.assertEqual(metric.time_series[1].points[0].value.value, 4.4)
+        self.assertEqual(metric.time_series[0].points[0].value.value, 2.125)
+        self.assertEqual(metric.time_series[1].points[0].value.value, 2.25)
 
 
 class TestDerivedLongCumulative(unittest.TestCase):

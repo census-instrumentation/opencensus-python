@@ -21,18 +21,11 @@ from opencensus.metrics.export import gauge
 class CumulativePointLong(gauge.GaugePointLong):
     """A `GaugePointLong` that cannot decrease."""
 
-    def set(self, val):
-        """Set the current value to `val`
-
-        Return without changing the value if `val` is less than current value.
-
-        :type val: int
-        :param val: Value to set.
-        """
+    def _set(self, val):
         if not isinstance(val, six.integer_types):
             raise ValueError("CumulativePointLong only supports integer types")
         if val > self.get_value():
-            super(CumulativePointLong, self).set(val)
+            super(CumulativePointLong, self)._set(val)
 
     def add(self, val):
         """Add `val` to the current value if it's positive.
@@ -51,17 +44,9 @@ class CumulativePointLong(gauge.GaugePointLong):
 class CumulativePointDouble(gauge.GaugePointDouble):
     """A `GaugePointDouble` that cannot decrease."""
 
-    def set(self, val):
-        """Set the current value to `val`
-
-        Return without changing the value if `val` is not greater than the
-        current value.
-
-        :type val: float
-        :param val: Value to set.
-        """
+    def _set(self, val):
         if val > self.get_value():
-            super(CumulativePointDouble, self).set(val)
+            super(CumulativePointDouble, self)._set(val)
 
     def add(self, val):
         """Add `val` to the current value if it's positive.

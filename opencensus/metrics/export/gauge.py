@@ -88,16 +88,19 @@ class GaugePointLong(GaugePoint):
         with self._value_lock:
             self.value += val
 
+    def _set(self, val):
+        if not isinstance(val, six.integer_types):
+            raise ValueError("GaugePointLong only supports integer types")
+        with self._value_lock:
+            self.value = val
+
     def set(self, val):
         """Set the current value to `val`.
 
         :type val: int
         :param val: Value to set.
         """
-        if not isinstance(val, six.integer_types):
-            raise ValueError("GaugePointLong only supports integer types")
-        with self._value_lock:
-            self.value = val
+        self._set(val)
 
     def get_value(self):
         """Get the current value.
@@ -143,14 +146,17 @@ class GaugePointDouble(GaugePoint):
         with self._value_lock:
             self.value += val
 
+    def _set(self, val):
+        with self._value_lock:
+            self.value = float(val)
+
     def set(self, val):
         """Set the current value to `val`.
 
         :type val: float
         :param val: Value to set.
         """
-        with self._value_lock:
-            self.value = float(val)
+        self._set(val)
 
     def get_value(self):
         """Get the current value.
@@ -207,10 +213,11 @@ class DerivedGaugePoint(GaugePoint):
             longer exists.
         """
         try:
-            self.gauge_point.set(self.func()())
-        # The underlying function has been GC'd
-        except TypeError:
+            val = self.func()()
+        except TypeError:  # The underlying function has been GC'd
             return None
+
+        self.gauge_point._set(val)
         return self.gauge_point.get_value()
 
     def to_point_value(self):
