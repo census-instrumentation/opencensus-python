@@ -173,10 +173,14 @@ class CumulativePointLong(GaugePointLong):
     """A `GaugePointLong` that cannot decrease."""
 
     def set(self, val):
+        if not isinstance(val, six.integer_types):
+            raise ValueError("CumulativePointLong only supports integer types")
         if val > self.get_value():
             super(CumulativePointLong, self).set(val)
 
     def add(self, val):
+        if not isinstance(val, six.integer_types):
+            raise ValueError("CumulativePointLong only supports integer types")
         if val > 0:
             super(CumulativePointLong, self).add(val)
 
