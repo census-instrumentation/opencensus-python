@@ -49,3 +49,8 @@ for a complete reference.
             )''',
         }
     }
+
+References
+----------
+
+* `OpenCensus Project <https://opencensus.io/>`_

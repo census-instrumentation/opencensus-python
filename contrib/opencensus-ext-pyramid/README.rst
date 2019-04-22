@@ -46,3 +46,8 @@ for a complete reference.
     }
 
     config = Configurator(settings=settings)
+
+References
+----------
+
+* `OpenCensus Project <https://opencensus.io/>`_

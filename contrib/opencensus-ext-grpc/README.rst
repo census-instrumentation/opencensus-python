@@ -36,3 +36,9 @@ Usage
     from opencensus.trace import config_integration
 
     config_integration.trace_integrations(['grpc'])
+
+References
+----------
+
+* `gRPC <https://grpc.io/>`_
+* `OpenCensus Project <https://opencensus.io/>`_
