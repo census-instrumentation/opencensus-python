@@ -83,6 +83,70 @@ class TestGaugePointDouble(unittest.TestCase):
         self.assertEqual(point.get_value(), point.value)
 
 
+class TestCumulativePointLong(unittest.TestCase):
+    def test_init(self):
+        point = gauge.CumulativePointLong()
+        self.assertEqual(point.value, 0)
+        self.assertIsInstance(point.value, int)
+
+    def test_add(self):
+        point = gauge.CumulativePointLong()
+        point.add(10)
+        self.assertEqual(point.value, 10)
+        point.add(-1)
+        self.assertEqual(point.value, 10)
+        # Check that we report type errors for args that we'd otherwise ignore
+        with self.assertRaises(ValueError):
+            point.add(-1.0)
+        with self.assertRaises(ValueError):
+            point.add(10.0)
+
+    def test_set(self):
+        point = gauge.CumulativePointLong()
+        point.set(10)
+        self.assertEqual(point.value, 10)
+        point.set(9)
+        self.assertEqual(point.value, 10)
+        # Check that we report type errors for args that we'd otherwise ignore
+        with self.assertRaises(ValueError):
+            point.set(9.0)
+        with self.assertRaises(ValueError):
+            point.set(10.0)
+
+    def test_get_value(self):
+        point = gauge.CumulativePointLong()
+        point.set(10)
+        self.assertEqual(point.value, 10)
+        self.assertEqual(point.get_value(), point.value)
+
+
+class TestCumulativePointDouble(unittest.TestCase):
+    def test_init(self):
+        point = gauge.CumulativePointDouble()
+        self.assertEqual(point.value, 0.0)
+        self.assertIsInstance(point.value, float)
+
+    def test_add(self):
+        point = gauge.CumulativePointDouble()
+        point.add(10)
+        self.assertEqual(point.value, 10.0)
+        point.add(-1.0)
+        self.assertEqual(point.value, 10.0)
+
+    def test_set(self):
+        point = gauge.CumulativePointDouble()
+        point.set(10)
+        self.assertEqual(point.value, 10.0)
+        point.set(-20.2)
+        self.assertEqual(point.value, 10.0)
+
+    def test_get_value(self):
+        point = gauge.CumulativePointDouble()
+        point.set(10.1)
+        self.assertEqual(point.value, 10.1)
+        self.assertEqual(point.get_value(), point.value)
+
+
 class TestDerivedGaugePoint(unittest.TestCase):
     def test_get_value(self):
         mock_fn = Mock()
@@ -303,10 +367,10 @@ class TestLongGauge(unittest.TestCase):
         self.assertEqual(metric.time_series[0].points[0].value.value, 3)
 
 
+# TestLongGauge does the heavy lifting, this test just checks that DoubleGauge
+# creates points and metrics of the right type
 class TestDoubleGauge(unittest.TestCase):
 
-    # TestLongGauge does the heavy lifting, this test just checks that
-    # DoubleGauge creates points and metrics of the right type
     def test_init(self):
         name = Mock()
         description = Mock()
@@ -342,6 +406,141 @@ class TestDoubleGauge(unittest.TestCase):
                               value_module.ValueDouble)
         self.assertEqual(metric.time_series[0].points[0].value.value, 1.2)
         self.assertEqual(metric.time_series[1].points[0].value.value, 2.2)
+
+
+# TestLongCumulative and TestDoubleCumulative check that the reported value of
+# a cumulative gauge never decreases. We rely on the other tests to check the
+# behavior these classes have in common with (non-cumulative) gauges.
+class TestLongCumulative(unittest.TestCase):
+
+    def test_get_metric(self):
+        name = Mock()
+        description = Mock()
+        unit = Mock()
+        label_keys = [Mock(), Mock]
+        long_cumulative = gauge.LongCumulative(
+            name, description, unit, label_keys)
+
+        self.assertEqual(
+            long_cumulative.descriptor.type,
+            metric_descriptor.MetricDescriptorType.CUMULATIVE_INT64)
+
+        timestamp = Mock()
+        null_metric = long_cumulative.get_metric(timestamp)
+        self.assertIsNone(null_metric)
+
+        lv1 = [Mock(), Mock()]
+        lv2 = [Mock(), Mock()]
+        point1 = long_cumulative.get_or_create_time_series(lv1)
+        point2 = long_cumulative.get_or_create_time_series(lv2)
+
+        metric = long_cumulative.get_metric(timestamp)
+        self.assertEqual(metric.descriptor, long_cumulative.descriptor)
+        self.assertEqual(len(metric.time_series), 2)
+        self.assertEqual(len(metric.time_series[0].points), 1)
+        self.assertEqual(len(metric.time_series[1].points), 1)
+        self.assertIsInstance(metric.time_series[0].points[0].value,
+                              value_module.ValueLong)
+        self.assertIsInstance(metric.time_series[1].points[0].value,
+                              value_module.ValueLong)
+        self.assertEqual(metric.time_series[0].points[0].value.value, 0)
+        self.assertEqual(metric.time_series[1].points[0].value.value, 0)
+
+        timestamp2 = Mock()
+        point1.set(2)
+        point2.set(4)
+        metric = long_cumulative.get_metric(timestamp2)
+        self.assertEqual(metric.descriptor, long_cumulative.descriptor)
+        self.assertEqual(len(metric.time_series), 2)
+        self.assertEqual(len(metric.time_series[0].points), 1)
+        self.assertEqual(len(metric.time_series[1].points), 1)
+        self.assertIsInstance(metric.time_series[0].points[0].value,
+                              value_module.ValueLong)
+        self.assertIsInstance(metric.time_series[1].points[0].value,
+                              value_module.ValueLong)
+        self.assertEqual(metric.time_series[0].points[0].value.value, 2)
+        self.assertEqual(metric.time_series[1].points[0].value.value, 4)
+
+        timestamp3 = Mock()
+        point1.set(3)
+        point2.set(3)
+        metric = long_cumulative.get_metric(timestamp3)
+        self.assertEqual(metric.descriptor, long_cumulative.descriptor)
+        self.assertEqual(len(metric.time_series), 2)
+        self.assertEqual(len(metric.time_series[0].points), 1)
+        self.assertEqual(len(metric.time_series[1].points), 1)
+        self.assertIsInstance(metric.time_series[0].points[0].value,
+                              value_module.ValueLong)
+        self.assertIsInstance(metric.time_series[1].points[0].value,
+                              value_module.ValueLong)
+        self.assertEqual(metric.time_series[0].points[0].value.value, 3)
+        self.assertEqual(metric.time_series[1].points[0].value.value, 4)
+
+
+class TestDoubleCumulative(unittest.TestCase):
+
+    def test_get_metric(self):
+        name = Mock()
+        description = Mock()
+        unit = Mock()
+        label_keys = [Mock(), Mock]
+        double_cumulative = gauge.DoubleCumulative(
+            name, description, unit, label_keys)
+
+        self.assertEqual(
+            double_cumulative.descriptor.type,
+            metric_descriptor.MetricDescriptorType.CUMULATIVE_DOUBLE)
+
+        timestamp = Mock()
+        null_metric = double_cumulative.get_metric(timestamp)
+        self.assertIsNone(null_metric)
+
+        lv1 = [Mock(), Mock()]
+        lv2 = [Mock(), Mock()]
+        point1 = double_cumulative.get_or_create_time_series(lv1)
+        point2 = double_cumulative.get_or_create_time_series(lv2)
+
+        metric = double_cumulative.get_metric(timestamp)
+        self.assertEqual(metric.descriptor, double_cumulative.descriptor)
+        self.assertEqual(len(metric.time_series), 2)
+        self.assertEqual(len(metric.time_series[0].points), 1)
+        self.assertEqual(len(metric.time_series[1].points), 1)
+        self.assertIsInstance(metric.time_series[0].points[0].value,
+                              value_module.ValueDouble)
+        self.assertIsInstance(metric.time_series[1].points[0].value,
+                              value_module.ValueDouble)
+        self.assertEqual(metric.time_series[0].points[0].value.value, 0)
+        self.assertEqual(metric.time_series[1].points[0].value.value, 0)
+
+        timestamp2 = Mock()
+        point1.set(2.2)
+        point2.set(4.4)
+        metric = double_cumulative.get_metric(timestamp2)
+        self.assertEqual(metric.descriptor, double_cumulative.descriptor)
+        self.assertEqual(len(metric.time_series), 2)
+        self.assertEqual(len(metric.time_series[0].points), 1)
+        self.assertEqual(len(metric.time_series[1].points), 1)
+        self.assertIsInstance(metric.time_series[0].points[0].value,
+                              value_module.ValueDouble)
+        self.assertIsInstance(metric.time_series[1].points[0].value,
+                              value_module.ValueDouble)
+        self.assertEqual(metric.time_series[0].points[0].value.value, 2.2)
+        self.assertEqual(metric.time_series[1].points[0].value.value, 4.4)
+
+        timestamp3 = Mock()
+        point1.set(3.3)
+        point2.set(3.3)
+        metric = double_cumulative.get_metric(timestamp3)
+        self.assertEqual(metric.descriptor, double_cumulative.descriptor)
+        self.assertEqual(len(metric.time_series), 2)
+        self.assertEqual(len(metric.time_series[0].points), 1)
+        self.assertEqual(len(metric.time_series[1].points), 1)
+        self.assertIsInstance(metric.time_series[0].points[0].value,
+                              value_module.ValueDouble)
+        self.assertIsInstance(metric.time_series[1].points[0].value,
+                              value_module.ValueDouble)
+        self.assertEqual(metric.time_series[0].points[0].value.value, 3.3)
+        self.assertEqual(metric.time_series[1].points[0].value.value, 4.4)
 
 
 class TestDerivedGauge(unittest.TestCase):
@@ -424,6 +623,100 @@ class TestDerivedGauge(unittest.TestCase):
         self.assertIs(default_point, point3)
         self.assertEqual(default_point.get_value(), 12)
         unused_mock_fn2.assert_not_called()
+
+
+class TestDerivedLongCumulative(unittest.TestCase):
+
+    def test_ts_point_type(self):
+        derived_gauge = gauge.DerivedLongCumulative(
+            Mock(), Mock(), Mock(), [Mock(), Mock])
+
+        mock_fn = Mock()
+        default_point = derived_gauge.create_default_time_series(mock_fn)
+        self.assertIsInstance(default_point, gauge.DerivedGaugePoint)
+        self.assertIsInstance(default_point.gauge_point,
+                              gauge.CumulativePointLong)
+        mock_fn.assert_not_called()
+
+        point = derived_gauge.create_time_series(
+            [Mock(), Mock()], mock_fn)
+        self.assertIsInstance(point, gauge.DerivedGaugePoint)
+        self.assertIsInstance(point.gauge_point, gauge.CumulativePointLong)
+        mock_fn.assert_not_called()
+
+    def test_get_metric(self):
+        derived_gauge = gauge.DerivedLongCumulative(
+            Mock(), Mock(), Mock(), [])
+        mock_fn = Mock()
+        mock_fn.return_value = 123
+        derived_gauge.create_default_time_series(mock_fn)
+
+        now1 = Mock()
+        [ts] = derived_gauge.get_metric(now1).time_series
+        [ts_point] = ts.points
+        self.assertEqual(ts_point.timestamp, now1)
+        self.assertEqual(ts_point.value.value, 123)
+        self.assertIsInstance(ts_point.value, value_module.ValueLong)
+
+    def test_point_value_increases(self):
+        derived_gauge = gauge.DerivedDoubleCumulative(
+            Mock(), Mock(), Mock(), [])
+        mock_fn = Mock()
+        point = derived_gauge.create_default_time_series(mock_fn)
+
+        mock_fn.return_value = -10
+        self.assertEqual(point.get_value(), 0)
+        mock_fn.return_value = 10
+        self.assertEqual(point.get_value(), 10)
+        mock_fn.return_value = 9
+        self.assertEqual(point.get_value(), 10)
+
+
+class TestDerivedDoubleCumulative(unittest.TestCase):
+
+    def test_ts_point_type(self):
+        derived_gauge = gauge.DerivedDoubleCumulative(
+            Mock(), Mock(), Mock(), [Mock(), Mock])
+
+        mock_fn = Mock()
+        default_point = derived_gauge.create_default_time_series(mock_fn)
+        self.assertIsInstance(default_point, gauge.DerivedGaugePoint)
+        self.assertIsInstance(default_point.gauge_point,
+                              gauge.CumulativePointDouble)
+        mock_fn.assert_not_called()
+
+        point = derived_gauge.create_time_series(
+            [Mock(), Mock()], mock_fn)
+        self.assertIsInstance(point, gauge.DerivedGaugePoint)
+        self.assertIsInstance(point.gauge_point, gauge.CumulativePointDouble)
+        mock_fn.assert_not_called()
+
+    def test_get_metric(self):
+        derived_gauge = gauge.DerivedDoubleCumulative(
+            Mock(), Mock(), Mock(), [])
+        mock_fn = Mock()
+        mock_fn.return_value = 1.23
+        derived_gauge.create_default_time_series(mock_fn)
+
+        now1 = Mock()
+        [ts] = derived_gauge.get_metric(now1).time_series
+        [ts_point] = ts.points
+        self.assertEqual(ts_point.timestamp, now1)
+        self.assertEqual(ts_point.value.value, 1.23)
+        self.assertIsInstance(ts_point.value, value_module.ValueDouble)
+
+    def test_point_value_increases(self):
+        derived_gauge = gauge.DerivedDoubleCumulative(
+            Mock(), Mock(), Mock(), [])
+        mock_fn = Mock()
+        point = derived_gauge.create_default_time_series(mock_fn)
+
+        mock_fn.return_value = -1.1
+        self.assertEqual(point.get_value(), 0)
+        mock_fn.return_value = 2.3
+        self.assertEqual(point.get_value(), 2.3)
+        mock_fn.return_value = 1.2
+        self.assertEqual(point.get_value(), 2.3)
 
 
 class TestRegistry(unittest.TestCase):
