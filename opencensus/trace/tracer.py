@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from opencensus.trace import print_exporter
-from opencensus.trace.propagation import google_cloud_format
+from opencensus.trace.propagation import trace_context_http_header_format
 from opencensus.trace.samplers import always_on
 from opencensus.trace.span_context import SpanContext
 from opencensus.trace.tracers import context_tracer
@@ -56,7 +56,8 @@ class Tracer(object):
             exporter = print_exporter.PrintExporter()
 
         if propagator is None:
-            propagator = google_cloud_format.GoogleCloudFormatPropagator()
+            propagator = \
+                trace_context_http_header_format.TraceContextPropagator()
 
         self.span_context = span_context
         self.sampler = sampler

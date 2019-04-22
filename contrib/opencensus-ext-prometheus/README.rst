@@ -69,3 +69,7 @@ For further details for the Prometheus implementation, see the folder *prometheu
 | contrib/opencensus-ext-prometheus/opencensus/ext/prometheus/stats_exporter/   | Stats implementation for Prometheus |
 +-------------------------------------------------------------------------------+-------------------------------------+
 
+References
+----------
+
+* `OpenCensus Project <https://opencensus.io/>`_

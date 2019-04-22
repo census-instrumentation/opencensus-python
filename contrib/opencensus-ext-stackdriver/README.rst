@@ -112,3 +112,7 @@ For further details for the Stackdriver implementation, see the folder *stackdri
 | contrib/opencensus-ext-stackdriver/opencensus/ext/stackdriver/stats_exporter/   | Stats implementation for Stackdriver|
 +---------------------------------------------------------------------------------+-------------------------------------+
 
+References
+----------
+
+* `OpenCensus Project <https://opencensus.io/>`_

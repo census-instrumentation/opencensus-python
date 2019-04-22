@@ -26,4 +26,17 @@ Usage
 
 .. code:: python
 
-    # TBD
+    import requests
+    from opencensus.trace import config_integration
+    from opencensus.trace.tracer import Tracer
+
+    config_integration.trace_integrations(['httplib'])
+    tracer = Tracer()
+
+    with tracer.span(name='parent'):
+        response = requests.get('https://www.wikipedia.org/wiki/Rabbit')
+
+References
+----------
+
+* `OpenCensus Project <https://opencensus.io/>`_

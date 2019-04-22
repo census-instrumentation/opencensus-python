@@ -16,16 +16,13 @@ import requests
 
 from opencensus.ext.azure.trace_exporter import AzureExporter
 from opencensus.trace import config_integration
-from opencensus.trace.propagation.trace_context_http_header_format \
-    import TraceContextPropagator
 from opencensus.trace.tracer import Tracer
 
 if __name__ == '__main__':
     config_integration.trace_integrations(['requests'])
-    tracer = Tracer(
-        propagator=TraceContextPropagator(),
-        exporter=AzureExporter(),
-    )
+    # TODO: you need to specify the instrumentation key in the
+    # APPINSIGHTS_INSTRUMENTATIONKEY environment variable.
+    tracer = Tracer(exporter=AzureExporter())
     with tracer.span(name='parent'):
         with tracer.span(name='child'):
             response = requests.get(url='http://localhost:8080/')
