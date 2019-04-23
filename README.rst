@@ -103,12 +103,26 @@ Alternatively, you can explicitly start and end a span:
 Customization
 -------------
 
+There are several things you can customize how OpenCensus works:
+* Blacklist, which excludes certain hosts and paths from being tracked.
+* Exporter, which sends the telemetry data.
+  By default, the traces are printed to stdout in JSON format. You can choose
+  different exporters to send the traces to. There are three built-in exporters,
+  which are ``opencensus.trace.print_exporter``, ``opencensus.trace.file_exporter``
+  and ``opencensus.trace.logging_exporter``, other exporters are provided as
+  `extensions <#trace-exporter>`__.
+* Sampler, which determines how telemetry data got sampled.
+  By default is using ``AlwaysOnSampler``, the other options are
+  ``AlwaysOffSampler`` and ``ProbabilitySampler``
+* Propagator, which is in charge of serializing and deserializing the
+  ``SpanContext`` and its headers. The default propagator is
+  ``TraceContextPropagator``, the rest options are ``BinaryFormatPropagator``,
+  ``GoogleCloudFormatPropagator`` and ``TextFormatPropagator``.
+
 Samplers
 ~~~~~~~~
 
-You can specify different samplers when initializing a tracer, default
-is using ``AlwaysOnSampler``, the other options are ``AlwaysOffSampler``
-and ``ProbabilitySampler``
+You can specify different samplers when initializing a tracer, 
 
 .. code:: python
 
@@ -122,11 +136,7 @@ and ``ProbabilitySampler``
 Exporters
 ~~~~~~~~~
 
-By default, the traces are printed to stdout in JSON format. You can choose
-different exporters to send the traces to. There are three built-in exporters,
-which are ``opencensus.trace.print_exporter``, ``opencensus.trace.file_exporter``
-and ``opencensus.trace.logging_exporter``, other exporters are provided as
-`extensions <#trace-exporter>`__.
+
 
 This example shows how to configure OpenCensus to save the traces to a
 file:
@@ -142,10 +152,7 @@ file:
 Propagators
 ~~~~~~~~~~~
 
-You can specify the propagator type for serializing and deserializing the
-``SpanContext`` and its headers. The default propagator is
-``TraceContextPropagator``, the rest options are ``BinaryFormatPropagator``,
-``GoogleCloudFormatPropagator`` and ``TextFormatPropagator``.
+
 
 This example shows how to use the ``GoogleCloudFormatPropagator``:
 
