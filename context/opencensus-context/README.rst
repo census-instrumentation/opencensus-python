@@ -19,10 +19,13 @@ to install it explicitly.
 Usage
 -----
 
-By default, context would flow in the same thread and async task. There are
-cases where you may want to propagate the context explicitly:
+In most cases, the context would just work for you automatically. This is
+achieved by leveraging `threading.local()` and `contextvars`.
 
-* Explicit thread creation:
+There are cases where you may want to propagate the context explicitly:
+
+Explicit Thread Creation
+~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code:: python
 
@@ -41,7 +44,8 @@ cases where you may want to propagate the context explicitly:
     thread.start()
     thread.join()
 
-* Thread pool:
+Thread Pool
+~~~~~~~~~~~
 
 .. code:: python
 
