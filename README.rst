@@ -104,16 +104,20 @@ Customization
 -------------
 
 There are several things you can customize how OpenCensus works:
+
 * Blacklist, which excludes certain hosts and paths from being tracked.
+
 * Exporter, which sends the telemetry data.
   By default, the traces are printed to stdout in JSON format. You can choose
   different exporters to send the traces to. There are three built-in exporters,
   which are ``opencensus.trace.print_exporter``, ``opencensus.trace.file_exporter``
   and ``opencensus.trace.logging_exporter``, other exporters are provided as
   `extensions <#trace-exporter>`__.
+
 * Sampler, which determines how telemetry data got sampled.
   By default is using ``AlwaysOnSampler``, the other options are
   ``AlwaysOffSampler`` and ``ProbabilitySampler``
+
 * Propagator, which is in charge of serializing and deserializing the
   ``SpanContext`` and its headers. The default propagator is
   ``TraceContextPropagator``, the rest options are ``BinaryFormatPropagator``,
