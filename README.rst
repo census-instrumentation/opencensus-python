@@ -150,7 +150,8 @@ You can customize while initializing a tracer.
         with tracer.span(name='child'):
             response = requests.get('http://localhost:5000')
 
-You can use configuration file for Flask/Django/Pyramid:
+You can use configuration file for Flask/Django/Pyramid. For more information,
+please read the individual integration documentation `here <#integration>`_.
 
 .. code:: python
 
