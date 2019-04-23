@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Add cumulative API
+  ([#626](https://github.com/census-instrumentation/opencensus-python/pull/626))
+
 ## 0.4.0
 Released 2019-04-08
 

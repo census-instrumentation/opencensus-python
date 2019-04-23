@@ -88,16 +88,19 @@ class GaugePointLong(GaugePoint):
         with self._value_lock:
             self.value += val
 
+    def _set(self, val):
+        if not isinstance(val, six.integer_types):
+            raise ValueError("GaugePointLong only supports integer types")
+        with self._value_lock:
+            self.value = val
+
     def set(self, val):
         """Set the current value to `val`.
 
         :type val: int
         :param val: Value to set.
         """
-        if not isinstance(val, six.integer_types):
-            raise ValueError("GaugePointLong only supports integer types")
-        with self._value_lock:
-            self.value = val
+        self._set(val)
 
     def get_value(self):
         """Get the current value.
@@ -143,14 +146,17 @@ class GaugePointDouble(GaugePoint):
         with self._value_lock:
             self.value += val
 
+    def _set(self, val):
+        with self._value_lock:
+            self.value = float(val)
+
     def set(self, val):
         """Set the current value to `val`.
 
         :type val: float
         :param val: Value to set.
         """
-        with self._value_lock:
-            self.value = float(val)
+        self._set(val)
 
     def get_value(self):
         """Get the current value.
@@ -180,7 +186,9 @@ class DerivedGaugePoint(GaugePoint):
     :type func: function
     :param func: The function to track.
 
-    :type gauge_point: :class:`GaugePointLong` or :class:`GaugePointDouble`
+    :type gauge_point: :class:`GaugePointLong`, :class:`GaugePointDouble`,
+        :class:`opencensus.metrics.export.cumulative.CumulativePointLong`, or
+        :class:`opencensus.metrics.export.cumulative.CumulativePointDouble`
     :param gauge_point: The underlying `GaugePoint`.
     """
     def __init__(self, func, gauge_point):
@@ -202,13 +210,14 @@ class DerivedGaugePoint(GaugePoint):
 
         :rtype: int, float, or None
         :return: The current value of the wrapped function, or `None` if it no
-        longer exists.
+            longer exists.
         """
         try:
-            self.gauge_point.set(self.func()())
-        # The underlying function has been GC'd
-        except TypeError:
+            val = self.func()()
+        except TypeError:  # The underlying function has been GC'd
             return None
+
+        self.gauge_point._set(val)
         return self.gauge_point.get_value()
 
     def to_point_value(self):
@@ -218,9 +227,9 @@ class DerivedGaugePoint(GaugePoint):
         measurement as a side-effect.
 
         :rtype: :class:`opencensus.metrics.export.value.ValueLong`,
-        :class:`opencensus.metrics.export.value.ValueDouble`, or None
+            :class:`opencensus.metrics.export.value.ValueDouble`, or None
         :return: The point value conversion of the underlying `GaugePoint`, or
-        None if the tracked function no longer exists.
+            None if the tracked function no longer exists.
         """
         if self.get_value() is None:
             return None
@@ -309,7 +318,9 @@ class BaseGauge(object):
 class Gauge(BaseGauge):
     """A set of mutable, instantaneous measurements of the same type.
 
-    End users should use :class:`LongGauge` or :class:`DoubleGauge` instead of
+    End users should use :class:`LongGauge`, :class:`DoubleGauge`,
+    :class:`opencensus.metrics.export.cumulative.LongCumulative`, or
+    :class:`opencensus.metrics.export.cumulative.DoubleCumulative` instead of
     using this class directly.
 
     The constructor arguments are used to create a
@@ -328,9 +339,12 @@ class Gauge(BaseGauge):
         :type label_values: list(:class:`LabelValue`)
         :param label_values: The measurement's label values.
 
-        :rtype: :class:`GaugePointLong` or :class:`GaugePointDouble`
+        :rtype: :class:`GaugePointLong`, :class:`GaugePointDouble`
+            :class:`opencensus.metrics.export.cumulative.CumulativePointLong`,
+            or
+            :class:`opencensus.metrics.export.cumulative.CumulativePointDouble`
         :return: A mutable point that represents the last value of the
-        measurement.
+            measurement.
         """
         if label_values is None:
             raise ValueError
@@ -347,9 +361,12 @@ class Gauge(BaseGauge):
         values. When this gauge is exported as a metric via `get_metric` the
         time series associated with this point will have null label values.
 
-        :rtype: :class:`GaugePointLong` or :class:`GaugePointDouble`
+        :rtype: :class:`GaugePointLong`, :class:`GaugePointDouble`
+            :class:`opencensus.metrics.export.cumulative.CumulativePointLong`,
+            or
+            :class:`opencensus.metrics.export.cumulative.CumulativePointDouble`
         :return: A mutable point that represents the last value of the
-        measurement.
+            measurement.
         """
         return self._get_or_create_time_series(self.default_label_values)
 
@@ -380,8 +397,10 @@ class DerivedGauge(BaseGauge):
     Each of a `DerivedGauge`'s measurements are associated with a function
     which is called when the gauge is exported.
 
-    End users should use :class:`DerivedLongGauge` or
-    :class:`DerivedDoubleGauge` instead of using this class directly.
+    End users should use :class:`DerivedLongGauge`, :class:`DerivedDoubleGauge`
+    :class:`opencensus.metrics.export.cumulative.DerivedLongCumulative`, or
+    :class:`opencensus.metrics.export.cumulative.DerivedDoubleCumulative`
+    instead of using this class directly.
     """
 
     def _create_time_series(self, label_values, func):
@@ -452,18 +471,19 @@ class Registry(metric_producer.MetricProducer):
                 ))
 
     def add_gauge(self, gauge):
-        """Add `gauge` to the registry and return it.
+        """Add `gauge` to the registry.
 
         Raises a `ValueError` if another gauge with the same name already
         exists in the registry.
 
         :type gauge: class:`LongGauge`, class:`DoubleGauge`,
-        :class:`DerivedLongGauge`, or :class:`DerivedDoubleGauge`
+            :class:`opencensus.metrics.export.cumulative.LongCumulative`,
+            :class:`opencensus.metrics.export.cumulative.DoubleCumulative`,
+            :class:`DerivedLongGauge`, :class:`DerivedDoubleGauge`
+            :class:`opencensus.metrics.export.cumulative.DerivedLongCumulative`,
+            or
+            :class:`opencensus.metrics.export.cumulative.DerivedDoubleCumulative`
         :param gauge: The gauge to add to the registry.
-
-        :type gauge: class:`LongGauge`, class:`DoubleGauge`,
-        :class:`DerivedLongGauge`, or :class:`DerivedDoubleGauge`
-        :return: The gauge that was added to the registry.
         """
         if gauge is None:
             raise ValueError
