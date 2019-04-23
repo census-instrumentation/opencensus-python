@@ -237,7 +237,7 @@ class TestDerivedLongCumulative(unittest.TestCase):
         self.assertIsInstance(ts_point.value, value_module.ValueLong)
 
     def test_point_value_increases(self):
-        derived_cumulative = cumulative.DerivedDoubleCumulative(
+        derived_cumulative = cumulative.DerivedLongCumulative(
             Mock(), Mock(), Mock(), [])
         mock_fn = Mock()
         point = derived_cumulative.create_default_time_series(mock_fn)
@@ -248,6 +248,16 @@ class TestDerivedLongCumulative(unittest.TestCase):
         self.assertEqual(point.get_value(), 10)
         mock_fn.return_value = 9
         self.assertEqual(point.get_value(), 10)
+
+    def test_raise_on_float(self):
+        derived_cumulative = cumulative.DerivedLongCumulative(
+            Mock(), Mock(), Mock(), [])
+        mock_fn = Mock()
+        mock_fn.return_value = 1.125
+        point = derived_cumulative.create_default_time_series(mock_fn)
+
+        with self.assertRaises(ValueError):
+            point.get_value()
 
 
 class TestDerivedDoubleCumulative(unittest.TestCase):
