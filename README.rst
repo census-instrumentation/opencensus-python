@@ -106,6 +106,8 @@ Customization
 There are several things you can customize how OpenCensus works:
 
 * **Blacklist**, which excludes certain hosts and paths from being tracked.
+  By default, the health check path for the App Engine flexible environment is
+  not tracked, you can turn it on by excluding it from the blacklist setting.
 
 * **Exporter**, which sends the telemetry data.
   By default, the traces are printed to stdout in JSON format. You can choose
@@ -123,104 +125,49 @@ There are several things you can customize how OpenCensus works:
   ``TraceContextPropagator``, the rest options are ``BinaryFormatPropagator``,
   ``GoogleCloudFormatPropagator`` and ``TextFormatPropagator``.
 
-Samplers
-~~~~~~~~
 
-You can specify different samplers when initializing a tracer, 
-
-.. code:: python
-
-    from opencensus.trace.samplers import probability
-    from opencensus.trace import tracer as tracer_module
-
-    # Sampling the requests at the rate equals 0.5
-    sampler = probability.ProbabilitySampler(rate=0.5)
-    tracer = tracer_module.Tracer(sampler=sampler)
-
-Exporters
-~~~~~~~~~
-
-
-
-This example shows how to configure OpenCensus to save the traces to a
-file:
-
-.. code:: python
-
-    from opencensus.trace import file_exporter
-    from opencensus.trace.tracers import context_tracer
-
-    exporter = file_exporter.FileExporter(file_name='traces')
-    tracer = context_tracer.ContextTracer(exporter=exporter)
-
-Propagators
-~~~~~~~~~~~
-
-
-
-This example shows how to use the ``GoogleCloudFormatPropagator``:
-
-.. code:: python
-
-    from opencensus.trace.propagation import google_cloud_format
-
-    propagator = google_cloud_format.GoogleCloudFormatPropagator()
-
-    # Deserialize
-    span_context = propagator.from_header(header)
-
-    # Serialize
-    header = propagator.to_header(span_context)
-
-This example shows how to use the ``TraceContextPropagator``:
+You can customize while initializing a tracer.
 
 .. code:: python
 
     import requests
 
     from opencensus.trace import config_integration
-    from opencensus.trace.propagation.trace_context_http_header_format import TraceContextPropagator
-    from opencensus.trace.tracer import Tracer
+    from opencensus.trace import file_exporter
+    from opencensus.trace import tracer as tracer_module
+    from opencensus.trace.propagation import google_cloud_format
+    from opencensus.trace.samplers import probability
 
     config_integration.trace_integrations(['httplib'])
-    tracer = Tracer(propagator=TraceContextPropagator())
+
+    tracer = tracer_module.Tracer(
+        exporter=file_exporter.FileExporter(file_name='traces'),
+        propagator=google_cloud_format.GoogleCloudFormatPropagator(),
+        sampler=probability.ProbabilitySampler(rate=0.5),
+    )
 
     with tracer.span(name='parent'):
         with tracer.span(name='child'):
             response = requests.get('http://localhost:5000')
 
-Blacklist Paths
-~~~~~~~~~~~~~~~
-
-You can specify which paths you do not want to trace by configuring the
-blacklist paths.
-
-This example shows how to configure the blacklist to ignore the ``_ah/health`` endpoint
-for a Flask application:
+You can use configuration file for Flask/Django/Pyramid:
 
 .. code:: python
 
-    from opencensus.trace.ext.flask.flask_middleware import FlaskMiddleware
-
-    app = flask.Flask(__name__)
-
-    blacklist_paths = ['_ah/health']
-    middleware = FlaskMiddleware(app, blacklist_paths=blacklist_paths)
-
-For Django, you can configure the blacklist in the ``OPENCENSUS`` in ``settings.py``:
-
-.. code:: python
-
-    OPENCENSUS: {
+    `OPENCENSUS`: {
         'TRACE': {
-            ...
-            'BLACKLIST_PATHS': ['_ah/health',],
+            'BLACKLIST_HOSTNAMES': ['localhost', '127.0.0.1'],
+            'BLACKLIST_PATHS': ['_ah/health'],
+            'SAMPLER': 'opencensus.trace.samplers.ProbabilitySampler(rate=1)',
+            'EXPORTER': '''opencensus.ext.ocagent.trace_exporter.TraceExporter(
+                service_name='foobar',
+            )''',
+            'PROPAGATOR': 'opencensus.trace.propagation.google_cloud_format.GoogleCloudFormatPropagator()',
         }
     }
 
 
-.. note:: By default, the health check path for the App Engine flexible environment is not traced,
-    but you can turn it on by excluding it from the blacklist setting.
+.. note:: 
 
 ------------
  Extensions
