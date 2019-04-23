@@ -40,7 +40,7 @@ setup(
     long_description=open('README.rst').read(),
     install_requires=[
         'flask >= 0.12.3, < 2.0.0',
-        'opencensus >= 0.5.dev0, < 1.0.0',
+        'opencensus >= 0.6.dev0, < 1.0.0',
     ],
     extras_require={},
     license='Apache-2.0',

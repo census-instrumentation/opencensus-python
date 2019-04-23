@@ -2,8 +2,18 @@
 
 ## Unreleased
 
+## 0.5.0
+Released 2019-04-24
+
 - Add cumulative API
   ([#626](https://github.com/census-instrumentation/opencensus-python/pull/626))
+
+## 0.4.1
+Released 2019-04-11
+
+ - Allow for metrics with empty label keys and values
+  ([#611](https://github.com/census-instrumentation/opencensus-python/pull/611),
+  [#614](https://github.com/census-instrumentation/opencensus-python/pull/614))
 
 ## 0.4.0
 Released 2019-04-08
