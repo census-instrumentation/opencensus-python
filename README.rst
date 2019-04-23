@@ -103,23 +103,23 @@ Alternatively, you can explicitly start and end a span:
 Customization
 -------------
 
-There are several things you can customize how OpenCensus works:
+There are several ways you can customize how OpenCensus works:
 
 * **Blacklist**, which excludes certain hosts and paths from being tracked.
   By default, the health check path for the App Engine flexible environment is
   not tracked, you can turn it on by excluding it from the blacklist setting.
 
-* **Exporter**, which sends the telemetry data.
+* **Exporter**, which sends the traces.
   By default, the traces are printed to stdout in JSON format. You can choose
   different exporters to send the traces to. There are three built-in exporters,
   which are ``PrintExporter``, ``FileExporter`` and ``LoggingExporter``, the
   other exporters are provided as `extensions <#trace-exporter>`__.
 
-* **Sampler**, which determines how telemetry data got sampled.
-  By default is using ``AlwaysOnSampler``, the other options are
-  ``AlwaysOffSampler`` and ``ProbabilitySampler``
+* **Sampler**, which determines how traces are sampled.
+  The default sampler is ``AlwaysOnSampler``, other samplers include the
+  ``AlwaysOffSampler`` and ``ProbabilitySampler``.
 
-* **Propagator**, which is in charge of serializing and deserializing the
+* **Propagator**, which serializes and deserializes the
   ``SpanContext`` and its headers. The default propagator is
   ``TraceContextPropagator``, the rest options are ``BinaryFormatPropagator``,
   ``GoogleCloudFormatPropagator`` and ``TextFormatPropagator``.
@@ -149,8 +149,9 @@ You can customize while initializing a tracer.
         with tracer.span(name='child'):
             response = requests.get('http://localhost:5000')
 
-You can use configuration file for Flask/Django/Pyramid. For more information,
-please read the individual integration documentation `here <#integration>`_.
+You can use a configuration file for Flask/Django/Pyramid. For more
+information, please read the
+`individual integration documentation <#integration>`_.
 
 .. code:: python
 
