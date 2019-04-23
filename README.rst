@@ -154,7 +154,7 @@ You can use configuration file for Flask/Django/Pyramid:
 
 .. code:: python
 
-    `OPENCENSUS`: {
+    'OPENCENSUS': {
         'TRACE': {
             'BLACKLIST_HOSTNAMES': ['localhost', '127.0.0.1'],
             'BLACKLIST_PATHS': ['_ah/health'],
