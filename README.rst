@@ -112,8 +112,8 @@ There are several things you can customize how OpenCensus works:
 * **Exporter**, which sends the telemetry data.
   By default, the traces are printed to stdout in JSON format. You can choose
   different exporters to send the traces to. There are three built-in exporters,
-  which are ``PrintExporter``, ``FileExporter`` and ``LoggingExporter``, other
-  exporters are provided as `extensions <#trace-exporter>`__.
+  which are ``PrintExporter``, ``FileExporter`` and ``LoggingExporter``, the
+  other exporters are provided as `extensions <#trace-exporter>`__.
 
 * **Sampler**, which determines how telemetry data got sampled.
   By default is using ``AlwaysOnSampler``, the other options are
