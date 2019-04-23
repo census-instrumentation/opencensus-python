@@ -6,6 +6,10 @@ OpenCensus Runtime Context
 .. |pypi| image:: https://badge.fury.io/py/opencensus-context.svg
    :target: https://pypi.org/project/opencensus-context/
 
+The **OpenCensus Runtime Context** provides the in-process context propagation.
+By default, thread local storage is used for Python 2.7, 3.4 and 3.5;
+contextvars is used for Python >= 3.6, which provides asyncio support.
+
 Installation
 ------------
 
@@ -14,10 +18,6 @@ to install it explicitly.
 
 Usage
 -----
-
-The **OpenCensus Runtime Context** provides the in-process context propagation.
-By default, thread local storage is used for Python 2.7, 3.4 and 3.5;
-contextvars is used for Python >= 3.6, which provides asyncio support.
 
 By default, context would flow in the same thread and async task. There are
 cases where you may want to propagate the context explicitly:
