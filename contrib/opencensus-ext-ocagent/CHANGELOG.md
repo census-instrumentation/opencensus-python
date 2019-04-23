@@ -1,6 +1,10 @@
 # Changelog
 
 ## Unreleased
+
+## 0.3.0
+Released 2019-04-23
+
 - Add stats exporter
 
 ## 0.2.0

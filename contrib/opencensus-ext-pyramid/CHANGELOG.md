@@ -1,6 +1,10 @@
 # Changelog
 
 ## Unreleased
+
+## 0.3.0
+Released 2019-04-23
+
 - Refactor configuration, keep consistent with Flask/Django
 - Use W3C TraceContext propagation by default
 

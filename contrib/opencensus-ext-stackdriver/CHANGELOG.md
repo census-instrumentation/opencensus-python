@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## 0.3.0
+Released 2019-04-23
+
+- Use default GCP auth for stats exporter
+  ([#610](https://github.com/census-instrumentation/opencensus-python/pull/610))
+
 ## 0.2.0
 Released 2019-04-08
 

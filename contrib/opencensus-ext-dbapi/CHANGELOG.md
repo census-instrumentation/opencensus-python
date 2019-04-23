@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+## 0.1.2
+Released 2019-04-23
+
+- Updated docs and examples
+
 ## 0.1.1
 Released 2019-04-08
 
