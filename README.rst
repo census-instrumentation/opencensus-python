@@ -166,9 +166,6 @@ please read the individual integration documentation `here <#integration>`_.
         }
     }
 
-
-.. note:: 
-
 ------------
  Extensions
 ------------
