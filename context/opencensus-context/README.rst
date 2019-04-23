@@ -12,14 +12,10 @@ Installation
 This library comes by default when you install OpenCensus, there is no need
 to install it explicitly.
 
-::
-
-    pip install opencensus-context
-
 Usage
 -----
 
-The OpenCensus Runtime Context provides the in-process context propagation.
+The **OpenCensus Runtime Context** provides the in-process context propagation.
 By default, thread local storage is used for Python 2.7, 3.4 and 3.5;
 contextvars is used for Python >= 3.6, which provides asyncio support.
 
