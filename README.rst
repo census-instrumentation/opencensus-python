@@ -103,7 +103,7 @@ Alternatively, you can explicitly start and end a span:
 Customization
 -------------
 
-There are several ways you can customize how OpenCensus works:
+There are several things you can customize in OpenCensus:
 
 * **Blacklist**, which excludes certain hosts and paths from being tracked.
   By default, the health check path for the App Engine flexible environment is
