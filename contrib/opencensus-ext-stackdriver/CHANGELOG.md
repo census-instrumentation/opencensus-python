@@ -5,7 +5,11 @@
 ## 0.3.0
 Released 2019-04-23
 
-- Use default GCP auth for stats exporter
+- Multiple changes to stats exporter API
+
+## 0.2.1
+Released 2019-04-11
+- Don't require exporter options, fall back to default GCP auth
   ([#610](https://github.com/census-instrumentation/opencensus-python/pull/610))
 
 ## 0.2.0
