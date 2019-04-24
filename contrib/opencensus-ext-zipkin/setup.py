@@ -39,7 +39,7 @@ setup(
     include_package_data=True,
     long_description=open('README.rst').read(),
     install_requires=[
-        'opencensus >= 0.4.0, < 1.0.0',
+        'opencensus >= 0.5.0, < 1.0.0',
     ],
     extras_require={},
     license='Apache-2.0',
