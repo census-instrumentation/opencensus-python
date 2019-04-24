@@ -3,7 +3,7 @@
 ## Unreleased
 
 ## 0.2.1
-Released 2019-04-23
+Released 2019-04-24
 
 - Updated docs and examples
 
