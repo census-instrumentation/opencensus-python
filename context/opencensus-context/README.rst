@@ -19,8 +19,11 @@ to install it explicitly.
 Usage
 -----
 
-In most cases, the context would just work for you automatically. This is
-achieved by leveraging `threading.local()` and `contextvars`.
+In most cases context propagation happens automatically within a process,
+following the control flow of threads and asynchronous coroutines. The runtime
+context is a dictionary stored in a `context variable <https://docs.python.org/3/library/contextvars.html>`_
+when available, and in `thread local storage <https://docs.python.org/2/library/threading.html#threading.local>`_
+otherwise.
 
 There are cases where you may want to propagate the context explicitly:
 

@@ -121,8 +121,9 @@ There are several things you can customize in OpenCensus:
 
 * **Propagator**, which serializes and deserializes the
   ``SpanContext`` and its headers. The default propagator is
-  ``TraceContextPropagator``, the rest options are ``BinaryFormatPropagator``,
-  ``GoogleCloudFormatPropagator`` and ``TextFormatPropagator``.
+  ``TraceContextPropagator``, other propagators include
+  ``BinaryFormatPropagator``, ``GoogleCloudFormatPropagator`` and
+  ``TextFormatPropagator``.
 
 
 You can customize while initializing a tracer.
