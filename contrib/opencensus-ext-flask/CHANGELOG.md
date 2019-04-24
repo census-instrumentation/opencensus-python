@@ -1,6 +1,10 @@
 # Changelog
 
 ## Unreleased
+
+## 0.3.0
+Released 2019-04-24
+
 - Decoupled exporter specific logic from configuration
 
 ## 0.2.0
