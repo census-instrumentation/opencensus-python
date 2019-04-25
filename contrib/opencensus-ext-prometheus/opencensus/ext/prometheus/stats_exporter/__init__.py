@@ -206,7 +206,7 @@ class Collector(object):
             return metric
 
         elif isinstance(agg_data,
-                        aggregation_data_module.SumAggregationDataFloat):
+                        aggregation_data_module.SumAggregationData):
             metric = UnknownMetricFamily(name=metric_name,
                                          documentation=metric_description,
                                          labels=label_keys)

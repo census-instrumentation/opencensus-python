@@ -33,26 +33,54 @@ class TestBaseAggregationData(unittest.TestCase):
 
 
 class TestSumAggregationData(unittest.TestCase):
-    def test_constructor(self):
+    def test_constructor_float(self):
+        sum_data = 1.0
+        sum_aggregation_data = aggregation_data_module.SumAggregationData(
+            value_type=value.ValueDouble, sum_data=sum_data)
+
+        self.assertEqual(1.0, sum_aggregation_data.sum_data)
+
+    def test_constructor_int(self):
         sum_data = 1
-        sum_aggregation_data = aggregation_data_module.SumAggregationDataFloat(
-            sum_data=sum_data)
+        sum_aggregation_data = aggregation_data_module.SumAggregationData(
+            value_type=value.ValueLong, sum_data=sum_data)
 
         self.assertEqual(1, sum_aggregation_data.sum_data)
 
-    def test_add_sample(self):
+    def test_add_sample_float(self):
+        sum_data = 1
+        value = 3.5
+        sum_aggregation_data = aggregation_data_module.SumAggregationData(
+            value_type=value.ValueDouble, sum_data=sum_data)
+        sum_aggregation_data.add_sample(value, None, None)
+
+        self.assertEqual(4.5, sum_aggregation_data.sum_data)
+
+    def test_add_sample_int(self):
         sum_data = 1
         value = 3
-        sum_aggregation_data = aggregation_data_module.SumAggregationDataFloat(
-            sum_data=sum_data)
+        sum_aggregation_data = aggregation_data_module.SumAggregationData(
+            value_type=value.ValueLong, sum_data=sum_data)
         sum_aggregation_data.add_sample(value, None, None)
 
         self.assertEqual(4, sum_aggregation_data.sum_data)
 
-    def test_to_point(self):
+    def test_to_point_float(self):
         sum_data = 12.345
         timestamp = datetime(1970, 1, 1)
-        agg = aggregation_data_module.SumAggregationDataFloat(sum_data)
+        agg = aggregation_data_module.SumAggregationData(
+            value_type=value.ValueDouble, sum_data=sum_data)
+        converted_point = agg.to_point(timestamp)
+        self.assertTrue(isinstance(converted_point, point.Point))
+        self.assertTrue(isinstance(converted_point.value, value.ValueDouble))
+        self.assertEqual(converted_point.value.value, sum_data)
+        self.assertEqual(converted_point.timestamp, timestamp)
+
+    def test_to_point_int(self):
+        sum_data = 12
+        timestamp = datetime(1970, 1, 1)
+        agg = aggregation_data_module.SumAggregationData(
+            value_type=value.ValueLong, sum_data=sum_data)
         converted_point = agg.to_point(timestamp)
         self.assertTrue(isinstance(converted_point, point.Point))
         self.assertTrue(isinstance(converted_point.value, value.ValueDouble))
@@ -60,56 +88,60 @@ class TestSumAggregationData(unittest.TestCase):
         self.assertEqual(converted_point.timestamp, timestamp)
 
 
-class TestCountAggregationData(unittest.TestCase):
-    def test_constructor(self):
-        count_data = 0
-        count_aggregation_data = aggregation_data_module.CountAggregationData(
-            count_data=count_data)
-
-        self.assertEqual(0, count_aggregation_data.count_data)
-
-    def test_add_sample(self):
-        count_data = 0
-        count_aggregation_data = aggregation_data_module.CountAggregationData(
-            count_data=count_data)
-        count_aggregation_data.add_sample(10, None, None)
-
-        self.assertEqual(1, count_aggregation_data.count_data)
-
-    def test_to_point(self):
-        count_data = 123
-        timestamp = datetime(1970, 1, 1)
-        agg = aggregation_data_module.CountAggregationData(count_data)
-        converted_point = agg.to_point(timestamp)
-        self.assertTrue(isinstance(converted_point, point.Point))
-        self.assertTrue(isinstance(converted_point.value, value.ValueLong))
-        self.assertEqual(converted_point.value.value, count_data)
-        self.assertEqual(converted_point.timestamp, timestamp)
-
-
 class TestLastValueAggregationData(unittest.TestCase):
-    def test_constructor(self):
+    def test_constructor_float(self):
+        value_data = 0.0
+        last_value_aggregation_data =\
+            aggregation_data_module.LastValueAggregationData(
+                value_type=value.ValueDouble, value=value_data)
+
+        self.assertEqual(0.0, last_value_aggregation_data.value)
+
+    def test_constructor_int(self):
         value_data = 0
         last_value_aggregation_data =\
-            aggregation_data_module.LastValueAggregationData(value=value_data)
+            aggregation_data_module.LastValueAggregationData(
+                value_type=value.ValueLong, value=value_data)
 
         self.assertEqual(0, last_value_aggregation_data.value)
 
-    def test_overwrite_sample(self):
+    def test_overwrite_sample_float(self):
         first_data = 0
         last_value_aggregation_data =\
-            aggregation_data_module.LastValueAggregationData(value=first_data)
+            aggregation_data_module.LastValueAggregationData(
+                value_type=value.ValueDouble, value=first_data)
+        self.assertEqual(0, last_value_aggregation_data.value)
+        last_value_aggregation_data.add_sample(1.2, None, None)
+        self.assertEqual(1.2, last_value_aggregation_data.value)
+
+    def test_overwrite_sample_int(self):
+        first_data = 0
+        last_value_aggregation_data =\
+            aggregation_data_module.LastValueAggregationData(
+                value_type=value.ValueLong, value=first_data)
         self.assertEqual(0, last_value_aggregation_data.value)
         last_value_aggregation_data.add_sample(1, None, None)
         self.assertEqual(1, last_value_aggregation_data.value)
 
-    def test_to_point(self):
+    def test_to_point_float(self):
         val = 1.2
         timestamp = datetime(1970, 1, 1)
-        agg = aggregation_data_module.LastValueAggregationData(val)
+        agg = aggregation_data_module.LastValueAggregationData(
+            value_type=value.ValueDouble, value=val)
         converted_point = agg.to_point(timestamp)
         self.assertTrue(isinstance(converted_point, point.Point))
         self.assertTrue(isinstance(converted_point.value, value.ValueDouble))
+        self.assertEqual(converted_point.value.value, val)
+        self.assertEqual(converted_point.timestamp, timestamp)
+
+    def test_to_pointInt(self):
+        val = 1
+        timestamp = datetime(1970, 1, 1)
+        agg = aggregation_data_module.LastValueAggregationData(
+            value_type=value.ValueLong, value=val)
+        converted_point = agg.to_point(timestamp)
+        self.assertTrue(isinstance(converted_point, point.Point))
+        self.assertTrue(isinstance(converted_point.value, value.ValueLong))
         self.assertEqual(converted_point.value.value, val)
         self.assertEqual(converted_point.timestamp, timestamp)
 

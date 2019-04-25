@@ -78,6 +78,9 @@ class View(object):
         """the aggregation of the current view"""
         return self._aggregation
 
+    def new_aggregated_data(self):
+        return self._aggregation.new_aggregated_data(self.measure)
+
     def get_metric_descriptor(self):
         """Get a MetricDescriptor for this view.
 

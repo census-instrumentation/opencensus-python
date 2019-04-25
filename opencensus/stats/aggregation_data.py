@@ -14,6 +14,7 @@
 
 import copy
 import logging
+from functools import partial
 
 from opencensus.metrics.export import point
 from opencensus.metrics.export import value
@@ -52,16 +53,21 @@ class BaseAggregationData(object):
         raise NotImplementedError  # pragma: NO COVER
 
 
-class SumAggregationDataFloat(BaseAggregationData):
+class SumAggregationData(BaseAggregationData):
     """Sum Aggregation Data is the aggregated data for the Sum aggregation
 
-    :type sum_data: float
+    :type value_type: class that is either
+        :class:`opencensus.metrics.export.value.ValueDouble` or
+        :class:`opencensus.metrics.export.value.ValueLong`
+    :param value_type: the type of value to be used when creating a point
+    :type sum_data: meh
     :param sum_data: represents the aggregated sum
 
     """
 
-    def __init__(self, sum_data):
-        super(SumAggregationDataFloat, self).__init__(sum_data)
+    def __init__(self, value_type, sum_data):
+        super(SumAggregationData, self).__init__(sum_data)
+        self._value_type = value_type
         self._sum_data = sum_data
 
     def __repr__(self):
@@ -89,10 +95,10 @@ class SumAggregationDataFloat(BaseAggregationData):
         :param timestamp: The time to report the point as having been recorded.
 
         :rtype: :class: `opencensus.metrics.export.point.Point`
-        :return: a :class: `opencensus.metrics.export.value.ValueDouble`-valued
-        Point with value equal to `sum_data`.
+        :return: a Point with value equal to `sum_data` and of type
+            `_value_type`.
         """
-        return point.Point(value.ValueDouble(self.sum_data), timestamp)
+        return point.Point(self._value_type(self.sum_data), timestamp)
 
 
 class CountAggregationData(BaseAggregationData):
@@ -328,13 +334,18 @@ class LastValueAggregationData(BaseAggregationData):
     """
     LastValue Aggregation Data is the value of aggregated data
 
+    :type value_type: class that is either
+        :class:`opencensus.metrics.export.value.ValueDouble` or
+        :class:`opencensus.metrics.export.value.ValueLong`
+    :param value_type: the type of value to be used when creating a point
     :type value: long
     :param value: represents the current value
 
     """
 
-    def __init__(self, value):
+    def __init__(self, value_type, value):
         super(LastValueAggregationData, self).__init__(value)
+        self._value_type = value_type
         self._value = value
 
     def __repr__(self):
@@ -362,10 +373,9 @@ class LastValueAggregationData(BaseAggregationData):
         :param timestamp: The time to report the point as having been recorded.
 
         :rtype: :class: `opencensus.metrics.export.point.Point`
-        :return: a :class: `opencensus.metrics.export.value.ValueDouble`-valued
-        Point.
+        :return: a Point with value of type `_value_type`.
         """
-        return point.Point(value.ValueDouble(self.value), timestamp)
+        return point.Point(self._value_type(self.value), timestamp)
 
 
 class Exemplar(object):

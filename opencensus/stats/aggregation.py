@@ -14,8 +14,9 @@
 
 import logging
 
-from opencensus.stats import bucket_boundaries
 from opencensus.stats import aggregation_data
+from opencensus.stats import metric_utils
+from opencensus.metrics.export.metric_descriptor import MetricDescriptorType
 
 
 logger = logging.getLogger(__name__)
@@ -80,14 +81,14 @@ class SumAggregation(BaseAggregation):
     """
     def __init__(self, sum=None, aggregation_type=Type.SUM):
         super(SumAggregation, self).__init__(aggregation_type=aggregation_type)
-        self._sum = aggregation_data.SumAggregationDataFloat(
-            sum_data=float(sum or 0))
-        self.aggregation_data = self._sum
+        self._initial_sum = sum or 0
 
-    @property
-    def sum(self):
-        """The sum of the current aggregation"""
-        return self._sum
+    def new_aggregation_data(self, measure):
+        value_type = MetricDescriptorType.to_type_class(
+            metric_utils.get_metric_type(measure, self.aggregation_type))
+        # TODO: do we need to type cast `_initial_sum`?
+        return aggregation_data.SumAggregationData(
+            value_type=value_type, sum_data=self._initial_sum)
 
 
 class CountAggregation(BaseAggregation):
@@ -104,13 +105,10 @@ class CountAggregation(BaseAggregation):
     def __init__(self, count=0, aggregation_type=Type.COUNT):
         super(CountAggregation, self).__init__(
             aggregation_type=aggregation_type)
-        self._count = aggregation_data.CountAggregationData(count)
-        self.aggregation_data = self._count
+        self._initial_count = count
 
-    @property
-    def count(self):
-        """The count of the current aggregation"""
-        return self._count
+    def new_aggregation_data(self, _measure):
+        return aggregation_data.CountAggregationData(self._initial_count)
 
 
 class DistributionAggregation(BaseAggregation):
@@ -149,20 +147,11 @@ class DistributionAggregation(BaseAggregation):
 
         super(DistributionAggregation, self).__init__(
             buckets=boundaries, aggregation_type=aggregation_type)
-        self._boundaries = bucket_boundaries.BucketBoundaries(boundaries)
-        self._distribution = distribution or {}
-        self.aggregation_data = aggregation_data.DistributionAggregationData(
-            0, 0, 0, None, boundaries)
+        self._boundaries = boundaries
 
-    @property
-    def boundaries(self):
-        """The boundaries of the current aggregation"""
-        return self._boundaries
-
-    @property
-    def distribution(self):
-        """The distribution of the current aggregation"""
-        return self._distribution
+    def new_aggregation_data(self, _measure):
+        return aggregation_data.DistributionAggregationData(
+            0, 0, 0, None, self._boundaries)
 
 
 class LastValueAggregation(BaseAggregation):
@@ -179,12 +168,10 @@ class LastValueAggregation(BaseAggregation):
     def __init__(self, value=0, aggregation_type=Type.LASTVALUE):
         super(LastValueAggregation, self).__init__(
             aggregation_type=aggregation_type)
-        self.aggregation_data = aggregation_data.LastValueAggregationData(
-                                                                value=value)
-        self._value = value
+        self._initial_value = value
 
-    @property
-    def value(self):
-        """The current recorded value
-        """
-        return self._value
+    def new_aggregation_data(self, measure):
+        value_type = MetricDescriptorType.to_type_class(
+            metric_utils.get_metric_type(measure, self.aggregation_type))
+        return aggregation_data.LastValueAggregationData(
+            value=self._initial_value, value_type=value_type)
