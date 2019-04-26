@@ -22,6 +22,7 @@ from opencensus.ext.azure.common.protocol import Data
 from opencensus.ext.azure.common.protocol import Envelope
 from opencensus.ext.azure.common.protocol import RemoteDependency
 from opencensus.ext.azure.common.protocol import Request
+from opencensus.ext.azure.common.storage import LocalFileStorage
 from opencensus.trace import base_exporter
 from opencensus.trace import execution_context
 from opencensus.trace.span import SpanKind
@@ -38,6 +39,7 @@ class AzureExporter(base_exporter.Exporter):
 
     def __init__(self, options=None):
         self.options = options or Options()
+        self.storage = LocalFileStorage('.azure', maintenance_period=5)
         self.transport = AsyncTransport(self, max_batch_size=100)
 
     def span_data_to_envelope(self, sd):
@@ -104,6 +106,52 @@ class AzureExporter(base_exporter.Exporter):
         # print(json.dumps(envelope))
         return envelope
 
+    def transmit(self, envelopes):
+        """
+        Transmit the data envelopes to the ingestion service.
+        Return the number of envelopes that has been ingested.
+        This function should never throw exception, the unsent envelopes will
+        be persisted on local file system.
+        """
+        try:
+            response = requests.post(
+                url=self.options.endpoint,
+                data=json.dumps(envelopes),
+                headers={
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json; charset=utf-8',
+                },
+                timeout=self.options.timeout,
+            )
+            if response.status_code == 200:  # HTTP OK
+                return len(envelopes)
+            if response.status_code == 206:  # HTTP Partial Content
+                # TODO: store the unsent data
+                return len(envelopes)
+            if response.status_code == 400:  # HTTP Bad Request
+                return 0  # TODO: log data loss, don't retry
+            if response.status_code == 402:  # HTTP Payment Required
+                # store data, retry an hour later
+                blob = self.storage.put(envelopes, 3600)
+                return 0
+            if response.status_code == 429:  # HTTP Too Many Requests
+                # TODO: determine when to retry based on the retry policy
+                blob = self.storage.put(envelopes, 5 * 60)
+                return 0
+            if response.status_code == 500:  # HTTP Internal Server Error
+                # store data, retry 5 minutes later
+                blob = self.storage.put(envelopes, 5 * 60)
+                return 0
+            if response.status_code == 503:  # HTTP Service Unavailable
+                # TODO: determine when to retry based on the retry policy
+                blob = self.storage.put(envelopes, 5 * 60)
+                return 0
+            # TODO: log unknown HTTP status code
+            return 0
+        except Exception:
+            self.storage.put(envelopes, 60)
+            return 0
+
     def emit(self, span_datas):
         """
         :type span_datas: list of :class:
@@ -121,22 +169,11 @@ class AzureExporter(base_exporter.Exporter):
             'blacklist_hostnames',
             ['dc.services.visualstudio.com'],
         )
-        response = requests.post(
-            url=self.options.endpoint,
-            data=json.dumps(envelopes),
-            headers={
-                'Accept': 'application/json',
-                'Content-Type': 'application/json; charset=utf-8',
-            },
-            timeout=self.options.timeout,
-        )
+        self.transmit(envelopes)
         execution_context.set_opencensus_attr(
             'blacklist_hostnames',
             blacklist_hostnames,
         )
-        response = response  # noqa
-        # print(response.status_code)
-        # print(response.text)
 
     def export(self, span_datas):
         """
