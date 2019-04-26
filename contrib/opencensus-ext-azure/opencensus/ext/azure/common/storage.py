@@ -41,14 +41,14 @@ class LocalFileBlob(object):
         fullpath += '@{}.lock'.format(ts.strftime(_TIMESTAMP_FORMAT))
         try:
             os.rename(self.fullpath, fullpath)
-        except:
+        except Exception:
             return None
         self.fullpath = fullpath
         return self
 
 
 class LocalFileStorage(object):
-    def __init__(self, path, max_size=1024*1024, maintenance_period=60):
+    def __init__(self, path, max_size=100*1024*1024, maintenance_period=60):
         self.path = os.path.abspath(path)
         self.max_size = max_size
         self.maintenance_period = maintenance_period
@@ -66,12 +66,12 @@ class LocalFileStorage(object):
         if not os.path.isdir(self.path):
             try:
                 os.makedirs(self.path)
-            except:
+            except Exception:
                 pass  # keep silent
         try:
             for blob in self.gets():
                 pass  # keep silent
-        except:
+        except Exception:
             pass  # keep silent
 
     def gets(self):
@@ -86,17 +86,17 @@ class LocalFileStorage(object):
                 if name < deadline:
                     try:
                         os.remove(path)  # TODO: log data loss
-                    except:
+                    except Exception:
                         pass  # keep silent
                 continue
             if path.endswith('.lock'):
                 now = datetime.datetime.utcnow().strftime(_TIMESTAMP_FORMAT)
-                if path[path.rindex('@') + 1 : -5] > now:  # under lease
+                if path[path.rindex('@') + 1: -5] > now:  # under lease
                     continue
                 new_path = path[: path.rindex('@')]
                 try:
                     os.rename(path, new_path)
-                except:
+                except Exception:
                     continue  # keep silent
                 path = new_path
             if path.endswith('.blob'):
