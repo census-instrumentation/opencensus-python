@@ -132,19 +132,19 @@ class AzureExporter(base_exporter.Exporter):
                 return 0  # TODO: log data loss, don't retry
             if response.status_code == 402:  # HTTP Payment Required
                 # store data, retry an hour later
-                blob = self.storage.put(envelopes, 3600)
+                self.storage.put(envelopes, 3600)
                 return 0
             if response.status_code == 429:  # HTTP Too Many Requests
                 # TODO: determine when to retry based on the retry policy
-                blob = self.storage.put(envelopes, 5 * 60)
+                self.storage.put(envelopes, 5 * 60)
                 return 0
             if response.status_code == 500:  # HTTP Internal Server Error
                 # store data, retry 5 minutes later
-                blob = self.storage.put(envelopes, 5 * 60)
+                self.storage.put(envelopes, 5 * 60)
                 return 0
             if response.status_code == 503:  # HTTP Service Unavailable
                 # TODO: determine when to retry based on the retry policy
-                blob = self.storage.put(envelopes, 5 * 60)
+                self.storage.put(envelopes, 5 * 60)
                 return 0
             # TODO: log unknown HTTP status code
             return 0

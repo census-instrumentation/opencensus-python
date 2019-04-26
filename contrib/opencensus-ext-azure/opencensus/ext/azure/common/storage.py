@@ -88,12 +88,14 @@ class LocalFileStorage(object):
             pass  # keep silent
 
     def gets(self):
-        timeout_deadline = (datetime.datetime.utcnow() -
+        timeout_deadline = (
+            datetime.datetime.utcnow() -
             datetime.timedelta(seconds=self.write_timeout)
-        ).strftime(_TIMESTAMP_FORMAT)
-        retention_deadline = (datetime.datetime.utcnow() -
+            ).strftime(_TIMESTAMP_FORMAT)
+        retention_deadline = (
+            datetime.datetime.utcnow() -
             datetime.timedelta(seconds=self.retention_period)
-        ).strftime(_TIMESTAMP_FORMAT)
+            ).strftime(_TIMESTAMP_FORMAT)
         for name in sorted(os.listdir(self.path)):
             path = os.path.join(self.path, name)
             if not os.path.isfile(path):
