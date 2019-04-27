@@ -46,8 +46,10 @@ class AzureExporter(base_exporter.Exporter):
         if not self.options.instrumentation_key:
             raise ValueError('The instrumentation_key is not provided.')
         self.storage = LocalFileStorage(
-            self.options.storage_path,
+            path=self.options.storage_path,
+            max_size=self.options.storage_max_size,
             maintenance_period=self.options.storage_maintenance_period,
+            retention_period=self.options.storage_retention_period,
         )
         self.transport = AsyncTransport(self, max_batch_size=100)
         self._transmission_task = PeriodicTask(

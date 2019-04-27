@@ -24,6 +24,8 @@ class Options(Object):
         minimum_retry_interval=60,  # minimum retry interval in seconds
         proxy=None,
         storage_maintenance_period=60,
+        storage_max_size=100*1024*1024,
         storage_path='.azure',
+        storage_retention_period=7*24*60*60,
         timeout=5.0,  # networking timeout in seconds
     )
