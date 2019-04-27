@@ -19,8 +19,12 @@ class LocalFileBlob(object):
     def __init__(self, fullpath):
         self.fullpath = fullpath
 
-    def delete(self):
-        os.remove(self.fullpath)
+    def delete(self, silent=False):
+        try:
+            os.remove(self.fullpath)
+        except Exception:
+            if not silent:
+                raise
 
     def get(self):
         with open(self.fullpath, 'r') as file:

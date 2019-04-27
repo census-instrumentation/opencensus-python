@@ -21,6 +21,9 @@ class Options(Object):
     prototype = Object(
         endpoint='https://dc.services.visualstudio.com/v2/track',
         instrumentation_key=os.getenv('APPINSIGHTS_INSTRUMENTATIONKEY', None),
+        minimum_retry_interval=60,  # minimum retry interval in seconds
         proxy=None,
-        timeout=5.0,  # timeout in seconds
+        storage_maintenance_period=60,
+        storage_path='.azure',
+        timeout=5.0,  # networking timeout in seconds
     )

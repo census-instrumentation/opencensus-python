@@ -12,12 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
 import json
 import requests
 
 from opencensus.common.transports.async_ import AsyncTransport
 from opencensus.ext.azure.common import Options
 from opencensus.ext.azure.common import utils
+from opencensus.ext.azure.common.schedule import PeriodicTask
 from opencensus.ext.azure.common.protocol import Data
 from opencensus.ext.azure.common.protocol import Envelope
 from opencensus.ext.azure.common.protocol import RemoteDependency
@@ -26,6 +28,8 @@ from opencensus.ext.azure.common.storage import LocalFileStorage
 from opencensus.trace import base_exporter
 from opencensus.trace import execution_context
 from opencensus.trace.span import SpanKind
+
+logger = logging.getLogger(__name__)
 
 __all__ = ['AzureExporter']
 
@@ -39,8 +43,18 @@ class AzureExporter(base_exporter.Exporter):
 
     def __init__(self, options=None):
         self.options = options or Options()
-        self.storage = LocalFileStorage('.azure', maintenance_period=5)
+        if not self.options.instrumentation_key:
+            raise ValueError('The instrumentation_key is not provided.')
+        self.storage = LocalFileStorage(
+            self.options.storage_path,
+            maintenance_period=self.options.storage_maintenance_period,
+        )
         self.transport = AsyncTransport(self, max_batch_size=100)
+        self._transmission_task = PeriodicTask(
+            interval=self.options.storage_maintenance_period,
+            function=self._transmission_routine,
+        )
+        self._transmission_task.start()
 
     def span_data_to_envelope(self, sd):
         # print('[AzMon]', sd)
@@ -106,12 +120,22 @@ class AzureExporter(base_exporter.Exporter):
         # print(json.dumps(envelope))
         return envelope
 
-    def transmit(self, envelopes):
+    def _transmission_routine(self):
+        for blob in self.storage.gets():
+            if blob.lease(self.options.timeout + 5):
+                envelopes = blob.get()  # TODO: handle error
+                result = self._transmit(envelopes)
+                if result > 0:
+                    blob.lease(result)
+                blob.delete(silent=True)
+
+    def _transmit(self, envelopes):
         """
         Transmit the data envelopes to the ingestion service.
-        Return the number of envelopes that has been ingested.
-        This function should never throw exception, the unsent envelopes will
-        be persisted on local file system.
+        Return a negative value for partial success or non-retryable failure.
+        Return 0 if all envelopes have been successfully ingested.
+        Return the next retry time in seconds for retryable failure.
+        This function should never throw exception.
         """
         try:
             response = requests.post(
@@ -123,34 +147,39 @@ class AzureExporter(base_exporter.Exporter):
                 },
                 timeout=self.options.timeout,
             )
-            if response.status_code == 200:  # HTTP OK
-                return len(envelopes)
-            if response.status_code == 206:  # HTTP Partial Content
-                # TODO: store the unsent data
-                return len(envelopes)
-            if response.status_code == 400:  # HTTP Bad Request
-                return 0  # TODO: log data loss, don't retry
-            if response.status_code == 402:  # HTTP Payment Required
-                # store data, retry an hour later
-                self.storage.put(envelopes, 3600)
-                return 0
-            if response.status_code == 429:  # HTTP Too Many Requests
-                # TODO: determine when to retry based on the retry policy
-                self.storage.put(envelopes, 5 * 60)
-                return 0
-            if response.status_code == 500:  # HTTP Internal Server Error
-                # store data, retry 5 minutes later
-                self.storage.put(envelopes, 5 * 60)
-                return 0
-            if response.status_code == 503:  # HTTP Service Unavailable
-                # TODO: determine when to retry based on the retry policy
-                self.storage.put(envelopes, 5 * 60)
-                return 0
-            # TODO: log unknown HTTP status code
+        except Exception as ex:
+            logger.warning('Transient client side error {}.'.format(ex))
+            # client side error (retryable)
+            return self.options.minimum_retry_interval
+        text = 'N/A'
+        try:
+            text = response.text
+        except Exception as ex:
+            logger.warning('Error while reading response body {}.'.format(ex))
+        if response.status_code == 200:
+            logger.info('Transmission succeeded: {}.'.format(text))
             return 0
-        except Exception:
-            self.storage.put(envelopes, 60)
-            return 0
+        if response.status_code == 206:  # Partial Content
+            # TODO: store the unsent data
+            return -response.status_code
+        if response.status_code in (
+            402,  # Payment Required
+            429,  # Too Many Requests
+            500,  # Internal Server Error
+            503,  # Service Unavailable
+        ):
+            logger.warning('Transient server side error {}: {}.'.format(
+                response.status_code,
+                text,
+            ))
+            # server side error (retryable)
+            return self.options.minimum_retry_interval
+        logger.error('Non-retryable server side error {}: {}.'.format(
+            response.status_code,
+            text,
+        ))
+        # server side error (non-retryable)
+        return -response.status_code
 
     def emit(self, span_datas):
         """
@@ -169,11 +198,13 @@ class AzureExporter(base_exporter.Exporter):
             'blacklist_hostnames',
             ['dc.services.visualstudio.com'],
         )
-        self.transmit(envelopes)
+        result = self._transmit(envelopes)
         execution_context.set_opencensus_attr(
             'blacklist_hostnames',
             blacklist_hostnames,
         )
+        if result > 0:
+            self.storage.put(envelopes, result)
 
     def export(self, span_datas):
         """
