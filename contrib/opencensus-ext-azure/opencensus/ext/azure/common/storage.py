@@ -5,8 +5,15 @@ import os
 
 from opencensus.ext.azure.common.schedule import PeriodicTask
 
-_TIMESTAMP_FORMAT = '%Y-%m-%dT%H%M%S.%f'
 
+def _fmt(timestamp):
+    return timestamp.strftime('%Y-%m-%dT%H%M%S.%f')
+
+def _now():
+    return datetime.datetime.utcnow()
+
+def _seconds(seconds):
+    return datetime.timedelta(seconds=seconds)
 
 class LocalFileBlob(object):
     def __init__(self, fullpath):
@@ -32,17 +39,16 @@ class LocalFileBlob(object):
                 # default); use a single '\n' instead, on all platforms.
                 file.write('\n')
         if lease_period:
-            ts = datetime.datetime.utcnow()
-            ts += datetime.timedelta(seconds=lease_period)
-            self.fullpath += '@{}.lock'.format(ts.strftime(_TIMESTAMP_FORMAT))
+            timestamp = _now() + _seconds(lease_period)
+            self.fullpath += '@{}.lock'.format(_fmt(timestamp))
         os.rename(fullpath, self.fullpath)
 
     def lease(self, period):
-        ts = datetime.datetime.utcnow() + datetime.timedelta(seconds=period)
+        timestamp = _now() + _seconds(period)
         fullpath = self.fullpath
         if fullpath.endswith('.lock'):
             fullpath = fullpath[: fullpath.rindex('@')]
-        fullpath += '@{}.lock'.format(ts.strftime(_TIMESTAMP_FORMAT))
+        fullpath += '@{}.lock'.format(_fmt(timestamp))
         try:
             os.rename(self.fullpath, fullpath)
         except Exception:
@@ -88,14 +94,8 @@ class LocalFileStorage(object):
             pass  # keep silent
 
     def gets(self):
-        timeout_deadline = (
-            datetime.datetime.utcnow() -
-            datetime.timedelta(seconds=self.write_timeout)
-            ).strftime(_TIMESTAMP_FORMAT)
-        retention_deadline = (
-            datetime.datetime.utcnow() -
-            datetime.timedelta(seconds=self.retention_period)
-            ).strftime(_TIMESTAMP_FORMAT)
+        timeout_deadline = _fmt(_now() - _seconds(self.write_timeout))
+        retention_deadline = _fmt(_now() - _seconds(self.retention_period))
         for name in sorted(os.listdir(self.path)):
             path = os.path.join(self.path, name)
             if not os.path.isfile(path):
@@ -108,7 +108,7 @@ class LocalFileStorage(object):
                         pass  # keep silent
                 continue
             if path.endswith('.lock'):
-                now = datetime.datetime.utcnow().strftime(_TIMESTAMP_FORMAT)
+                now = _fmt(_now())
                 if path[path.rindex('@') + 1: -5] > now:  # under lease
                     continue
                 new_path = path[: path.rindex('@')]
@@ -138,7 +138,7 @@ class LocalFileStorage(object):
         blob = LocalFileBlob(os.path.join(
             self.path,
             '{}-{}.blob'.format(
-                datetime.datetime.utcnow().strftime(_TIMESTAMP_FORMAT),
+                _fmt(_now()),
                 '{:08x}'.format(random.getrandbits(32)),  # thread-safe random
             ),
         ))
