@@ -15,6 +15,7 @@
 import mock
 import unittest
 from opencensus.ext.azure import trace_exporter
+from opencensus.ext.azure.common import Options
 
 
 class TestAzureExporter(unittest.TestCase):
