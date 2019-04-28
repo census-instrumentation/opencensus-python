@@ -582,7 +582,7 @@ class MockGetExporterThread(object):
         return self
 
     def __exit__(self, type, value, traceback):
-        self.patcher.cancel()
+        self.patcher.stop()
 
 
 @mock.patch('opencensus.ext.stackdriver.stats_exporter'
@@ -597,7 +597,7 @@ class TestAsyncStatsExport(unittest.TestCase):
             'opencensus.metrics.transport.MetricExporterTask',
             MockMetricExporterTask)
         patcher.start()
-        self.addCleanup(patcher.cancel)
+        self.addCleanup(patcher.stop)
 
     def test_export_empty(self, mock_stats, mock_client):
         """Check that we don't attempt to export empty metric sets."""
@@ -673,7 +673,7 @@ class TestCreateTimeseries(unittest.TestCase):
             'opencensus.ext.stackdriver.stats_exporter.stats.stats',
             stats_module._Stats())
         patcher.start()
-        self.addCleanup(patcher.cancel)
+        self.addCleanup(patcher.stop)
 
     def check_labels(self,
                      actual_labels,
