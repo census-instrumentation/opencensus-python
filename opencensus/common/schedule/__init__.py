@@ -17,14 +17,27 @@ import time
 
 
 class PeriodicTask(threading.Thread):
-    daemon = True
+    """Thread that periodically calls a given function.
+
+    :type interval: int or float
+    :param interval: Seconds between calls to the function.
+
+    :type function: function
+    :param function: The function to call.
+
+    :type args: list
+    :param args: The args passed in while calling `function`.
+
+    :type kwargs: dict
+    :param args: The kwargs passed in while calling `function`.
+    """
 
     def __init__(self, interval, function, args=None, kwargs=None):
         super(PeriodicTask, self).__init__()
         self.interval = interval
         self.function = function
-        self.args = args if args is not None else []
-        self.kwargs = kwargs if kwargs is not None else {}
+        self.args = args or []
+        self.kwargs = kwargs or {}
         self.finished = threading.Event()
 
     def run(self):
@@ -33,9 +46,7 @@ class PeriodicTask(threading.Thread):
             start_time = time.time()
             self.function(*self.args, **self.kwargs)
             elapsed_time = time.time() - start_time
-            wait_time = self.interval - elapsed_time
-            if wait_time < 0:
-                wait_time = 0
+            wait_time = max(self.interval - elapsed_time, 0)
 
     def cancel(self):
         self.finished.set()

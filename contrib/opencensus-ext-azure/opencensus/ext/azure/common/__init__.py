@@ -20,6 +20,7 @@ from opencensus.ext.azure.common.protocol import Object
 class Options(Object):
     prototype = Object(
         endpoint='https://dc.services.visualstudio.com/v2/track',
+        export_interval=15.0,
         instrumentation_key=os.getenv('APPINSIGHTS_INSTRUMENTATIONKEY', None),
         minimum_retry_interval=60,  # minimum retry interval in seconds
         proxy=None,
@@ -27,5 +28,5 @@ class Options(Object):
         storage_max_size=100*1024*1024,
         storage_path='.azure',
         storage_retention_period=7*24*60*60,
-        timeout=5.0,  # networking timeout in seconds
+        timeout=10.0,  # networking timeout in seconds
     )

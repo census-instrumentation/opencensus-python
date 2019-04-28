@@ -3,17 +3,20 @@ import json
 import random
 import os
 
-from opencensus.ext.azure.common.schedule import PeriodicTask
+from opencensus.common.schedule import PeriodicTask
 
 
 def _fmt(timestamp):
     return timestamp.strftime('%Y-%m-%dT%H%M%S.%f')
 
+
 def _now():
     return datetime.datetime.utcnow()
 
+
 def _seconds(seconds):
     return datetime.timedelta(seconds=seconds)
+
 
 class LocalFileBlob(object):
     def __init__(self, fullpath):
@@ -80,6 +83,7 @@ class LocalFileStorage(object):
             interval=self.maintenance_period,
             function=self._maintenance_routine,
         )
+        self._maintenance_task.daemon = True
         self._maintenance_task.start()
 
     def close(self):

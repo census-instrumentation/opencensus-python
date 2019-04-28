@@ -13,9 +13,9 @@
 # limitations under the License.
 
 import logging
-import threading
 
 from opencensus.common import utils
+from opencensus.common.schedule import PeriodicTask
 
 
 logger = logging.getLogger(__name__)
@@ -28,38 +28,40 @@ class TransportError(Exception):
     pass
 
 
-class PeriodicTask(threading.Thread):
+class MetricExporterTask(PeriodicTask):
     """Thread that periodically calls a given function.
-
-    :type func: function
-    :param func: The function to call.
 
     :type interval: int or float
     :param interval: Seconds between calls to the function.
+
+    :type function: function
+    :param function: The function to call.
+
+    :type args: list
+    :param args: The args passed in while calling `function`.
+
+    :type kwargs: dict
+    :param args: The kwargs passed in while calling `function`.
     """
 
     daemon = True
 
-    def __init__(self, func, interval=None, **kwargs):
-        super(PeriodicTask, self).__init__(**kwargs)
+    def __init__(self, interval=None, function=None, args=None, kwargs=None):
         if interval is None:
             interval = DEFAULT_INTERVAL
-        self.func = func
-        self.interval = interval
-        self._stopped = threading.Event()
 
-    def run(self):
-        while not self._stopped.wait(self.interval):
+        self.func = function
+
+        def f(*args, **kwargs):
             try:
-                self.func()
+                return self.func(*args, **kwargs)
             except TransportError as ex:
                 logger.exception(ex)
-                self.stop()
+                self.cancel()
             except Exception:
                 logger.exception("Error handling metric export")
 
-    def stop(self):
-        self._stopped.set()
+        super(MetricExporterTask, self).__init__(interval, f, args, kwargs)
 
 
 def get_exporter_thread(metric_producer, exporter, interval=None):
@@ -95,6 +97,6 @@ def get_exporter_thread(metric_producer, exporter, interval=None):
             raise TransportError("Metric exporter is not available")
         export(get())
 
-    tt = PeriodicTask(export_all, interval=interval)
+    tt = MetricExporterTask(interval, export_all)
     tt.start()
     return tt
