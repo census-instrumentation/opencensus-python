@@ -19,14 +19,20 @@ from opencensus.ext.azure import trace_exporter
 
 class TestAzureExporter(unittest.TestCase):
     def test_export(self):
-        exporter = trace_exporter.AzureExporter()
+        instrumentation_key = '12345678-1234-5678-abcd-12345678abcd'
+        exporter = trace_exporter.AzureExporter(
+            Options(instrumentation_key=instrumentation_key),
+        )
         exporter.transport = MockTransport()
         exporter.export(None)
         self.assertTrue(exporter.transport.export_called)
 
     @mock.patch('requests.post', return_value=mock.Mock())
     def test_emit(self, request_mock):
-        exporter = trace_exporter.AzureExporter()
+        instrumentation_key = '12345678-1234-5678-abcd-12345678abcd'
+        exporter = trace_exporter.AzureExporter(
+            Options(instrumentation_key=instrumentation_key),
+        )
         exporter.transport = MockTransport()
         exporter.emit([])
 
