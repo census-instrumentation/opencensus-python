@@ -69,50 +69,47 @@ class TestLocalFileBlob(unittest.TestCase):
 
 class TestLocalFileStorage(unittest.TestCase):
     def test_get_nothing(self):
-        stor = LocalFileStorage(os.path.join(TEST_FOLDER, 'test', 'a'))
-        stor.close()
-        stor = LocalFileStorage(os.path.join(TEST_FOLDER, 'test'))
-        self.assertIsNone(stor.get())
-        stor.close()
+        with LocalFileStorage(os.path.join(TEST_FOLDER, 'test', 'a')) as stor:
+            pass
+        with LocalFileStorage(os.path.join(TEST_FOLDER, 'test')) as stor:
+            self.assertIsNone(stor.get())
 
     def test_get(self):
         now = _now()
-        stor = LocalFileStorage(os.path.join(TEST_FOLDER, 'foo'))
-        stor.put((1, 2, 3), lease_period=10)
-        with mock.patch('opencensus.ext.azure.common.storage._now') as m:
-            m.return_value = now - _seconds(30 * 24 * 60 * 60)
-            stor.put((1, 2, 3))
+        with LocalFileStorage(os.path.join(TEST_FOLDER, 'foo')) as stor:
             stor.put((1, 2, 3), lease_period=10)
+            with mock.patch('opencensus.ext.azure.common.storage._now') as m:
+                m.return_value = now - _seconds(30 * 24 * 60 * 60)
+                stor.put((1, 2, 3))
+                stor.put((1, 2, 3), lease_period=10)
+                with mock.patch('os.rename'):
+                    stor.put((1, 2, 3))
             with mock.patch('os.rename'):
                 stor.put((1, 2, 3))
-        with mock.patch('os.rename'):
-            stor.put((1, 2, 3))
-        with mock.patch('os.remove', side_effect=throw(Exception)):
-            with mock.patch('os.rename', side_effect=throw(Exception)):
-                self.assertIsNone(stor.get())
-        self.assertIsNone(stor.get())
-        stor.close()
+            with mock.patch('os.remove', side_effect=throw(Exception)):
+                with mock.patch('os.rename', side_effect=throw(Exception)):
+                    self.assertIsNone(stor.get())
+            self.assertIsNone(stor.get())
 
     def test_put(self):
-        stor = LocalFileStorage(os.path.join(TEST_FOLDER, 'bar'))
-        input = (1, 2, 3)
-        stor.put(input)
-        self.assertEqual(stor.get().get(), input)
-        stor.close()
-        stor = LocalFileStorage(os.path.join(TEST_FOLDER, 'bar'))
-        self.assertEqual(stor.get().get(), input)
-        stor.close()
+        with LocalFileStorage(os.path.join(TEST_FOLDER, 'bar')) as stor:
+            input = (1, 2, 3)
+            stor.put(input)
+            self.assertEqual(stor.get().get(), input)
+            stor.close()
+            stor = LocalFileStorage(os.path.join(TEST_FOLDER, 'bar'))
+            self.assertEqual(stor.get().get(), input)
 
     def test_maintanence_routine(self):
         with mock.patch('os.makedirs') as m:
             m.return_value = None
-            stor = LocalFileStorage(os.path.join(TEST_FOLDER, 'baz'))
-            self.assertTrue(stor)
+            with LocalFileStorage(os.path.join(TEST_FOLDER, 'baz')) as stor:
+                self.assertTrue(stor)
 
         with mock.patch('os.makedirs', side_effect=throw(Exception)):
-            stor = LocalFileStorage(os.path.join(TEST_FOLDER, 'baz'))
-            self.assertTrue(stor)
+            with LocalFileStorage(os.path.join(TEST_FOLDER, 'baz')) as stor:
+                self.assertTrue(stor)
 
         with mock.patch('os.listdir', side_effect=throw(Exception)):
-            stor = LocalFileStorage(os.path.join(TEST_FOLDER, 'baz'))
-            self.assertTrue(stor)
+            with LocalFileStorage(os.path.join(TEST_FOLDER, 'baz')) as stor:
+                self.assertTrue(stor)

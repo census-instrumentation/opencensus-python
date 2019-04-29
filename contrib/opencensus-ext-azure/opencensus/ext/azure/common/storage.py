@@ -29,26 +29,35 @@ class LocalFileBlob(object):
             if not silent:
                 raise
 
-    def get(self):
-        with open(self.fullpath, 'r') as file:
-            return tuple(
-                json.loads(line.strip())
-                for line in file.readlines()
-            )
+    def get(self, silent=False):
+        try:
+            with open(self.fullpath, 'r') as file:
+                return tuple(
+                    json.loads(line.strip())
+                    for line in file.readlines()
+                )
+        except Exception:
+            if not silent:
+                raise
 
-    def put(self, data, lease_period=0):
-        fullpath = self.fullpath + '.tmp'
-        with open(fullpath, 'w') as file:
-            for item in data:
-                file.write(json.dumps(item))
-                # The official Python doc: Do not use os.linesep as a line
-                # terminator when writing files opened in text mode (the
-                # default); use a single '\n' instead, on all platforms.
-                file.write('\n')
-        if lease_period:
-            timestamp = _now() + _seconds(lease_period)
-            self.fullpath += '@{}.lock'.format(_fmt(timestamp))
-        os.rename(fullpath, self.fullpath)
+    def put(self, data, lease_period=0, silent=False):
+        try:
+            fullpath = self.fullpath + '.tmp'
+            with open(fullpath, 'w') as file:
+                for item in data:
+                    file.write(json.dumps(item))
+                    # The official Python doc: Do not use os.linesep as a line
+                    # terminator when writing files opened in text mode (the
+                    # default); use a single '\n' instead, on all platforms.
+                    file.write('\n')
+            if lease_period:
+                timestamp = _now() + _seconds(lease_period)
+                self.fullpath += '@{}.lock'.format(_fmt(timestamp))
+            os.rename(fullpath, self.fullpath)
+            return self
+        except Exception:
+            if not silent:
+                raise
 
     def lease(self, period):
         timestamp = _now() + _seconds(period)
@@ -78,28 +87,38 @@ class LocalFileStorage(object):
         self.maintenance_period = maintenance_period
         self.retention_period = retention_period
         self.write_timeout = write_timeout
-        self._maintenance_routine()
+        self._maintenance_routine(silent=False)
         self._maintenance_task = PeriodicTask(
             interval=self.maintenance_period,
             function=self._maintenance_routine,
+            kwargs={'silent': True},
         )
         self._maintenance_task.daemon = True
         self._maintenance_task.start()
 
     def close(self):
         self._maintenance_task.cancel()
+        self._maintenance_task.join()
 
-    def _maintenance_routine(self):
-        if not os.path.isdir(self.path):
-            try:
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type, value, traceback):
+        self.close()
+
+    def _maintenance_routine(self, silent=False):
+        try:
+            if not os.path.isdir(self.path):
                 os.makedirs(self.path)
-            except Exception:
-                pass  # keep silent
+        except Exception:
+            if not silent:
+                raise
         try:
             for blob in self.gets():
-                pass  # keep silent
+                pass
         except Exception:
-            pass  # keep silent
+            if not silent:
+                raise
 
     def gets(self):
         timeout_deadline = _fmt(_now() - _seconds(self.write_timeout))
@@ -141,7 +160,7 @@ class LocalFileStorage(object):
             pass
         return None
 
-    def put(self, data, lease_period=0):
+    def put(self, data, lease_period=0, silent=False):
         blob = LocalFileBlob(os.path.join(
             self.path,
             '{}-{}.blob'.format(
@@ -149,5 +168,4 @@ class LocalFileStorage(object):
                 '{:08x}'.format(random.getrandbits(32)),  # thread-safe random
             ),
         ))
-        blob.put(data, lease_period)
-        return blob
+        return blob.put(data, lease_period=lease_period, silent=silent)
