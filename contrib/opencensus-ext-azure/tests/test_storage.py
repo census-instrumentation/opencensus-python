@@ -46,6 +46,17 @@ class TestLocalFileBlob(unittest.TestCase):
         self.assertRaises(Exception, lambda: blob.delete())
         self.assertRaises(Exception, lambda: blob.delete(silent=False))
 
+    def test_get(self):
+        blob = LocalFileBlob(os.path.join(TEST_FOLDER, 'foobar'))
+        self.assertIsNone(blob.get(silent=True))
+        self.assertRaises(Exception, lambda: blob.get())
+        self.assertRaises(Exception, lambda: blob.get(silent=False))
+
+    def test_put_error(self):
+        blob = LocalFileBlob(os.path.join(TEST_FOLDER, 'foobar'))
+        with mock.patch('os.rename', side_effect=throw(Exception)):
+            self.assertRaises(Exception, lambda: blob.put([1, 2, 3]))
+
     def test_put_without_lease(self):
         blob = LocalFileBlob(os.path.join(TEST_FOLDER, 'foobar.blob'))
         input = (1, 2, 3)
@@ -92,13 +103,15 @@ class TestLocalFileStorage(unittest.TestCase):
             self.assertIsNone(stor.get())
 
     def test_put(self):
+        input = (1, 2, 3)
         with LocalFileStorage(os.path.join(TEST_FOLDER, 'bar')) as stor:
-            input = (1, 2, 3)
             stor.put(input)
             self.assertEqual(stor.get().get(), input)
-            stor.close()
-            stor = LocalFileStorage(os.path.join(TEST_FOLDER, 'bar'))
+        with LocalFileStorage(os.path.join(TEST_FOLDER, 'bar')) as stor:
             self.assertEqual(stor.get().get(), input)
+            with mock.patch('os.rename', side_effect=throw(Exception)):
+                self.assertIsNone(stor.put(input, silent=True))
+                self.assertRaises(Exception, lambda: blob.put(input))
 
     def test_maintanence_routine(self):
         with mock.patch('os.makedirs') as m:
@@ -107,15 +120,17 @@ class TestLocalFileStorage(unittest.TestCase):
                 Exception,
                 lambda: LocalFileStorage(os.path.join(TEST_FOLDER, 'baz')),
             )
-
         with mock.patch('os.makedirs', side_effect=throw(Exception)):
             self.assertRaises(
                 Exception,
                 lambda: LocalFileStorage(os.path.join(TEST_FOLDER, 'baz')),
             )
-
         with mock.patch('os.listdir', side_effect=throw(Exception)):
             self.assertRaises(
                 Exception,
                 lambda: LocalFileStorage(os.path.join(TEST_FOLDER, 'baz')),
             )
+        with LocalFileStorage(os.path.join(TEST_FOLDER, 'baz')) as stor:
+            with mock.patch('os.listdir', side_effect=throw(Exception)):
+                stor._maintenance_routine(silent=True)
+                self.assertRaises(Exception, lambda: stor._maintenance_routine())
