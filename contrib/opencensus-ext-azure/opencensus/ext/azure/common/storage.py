@@ -36,7 +36,7 @@ class LocalFileBlob(object):
                 for line in file.readlines()
             )
 
-    def put(self, data, lease_period):
+    def put(self, data, lease_period=0):
         fullpath = self.fullpath + '.tmp'
         with open(fullpath, 'w') as file:
             for item in data:
@@ -114,7 +114,6 @@ class LocalFileStorage(object):
                         os.remove(path)  # TODO: log data loss
                     except Exception:
                         pass  # keep silent
-                continue
             if path.endswith('.lock'):
                 now = _fmt(_now())
                 if path[path.rindex('@') + 1: -5] > now:  # under lease
@@ -131,8 +130,8 @@ class LocalFileStorage(object):
                         os.remove(path)  # TODO: log data loss
                     except Exception:
                         pass  # keep silent
-                    continue
-                yield LocalFileBlob(path)
+                else:
+                    yield LocalFileBlob(path)
 
     def get(self):
         cursor = self.gets()
