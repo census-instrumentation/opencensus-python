@@ -39,11 +39,16 @@ def throw(exc_type, *args, **kwargs):
 
 
 class TestAzureExporter(unittest.TestCase):
+    def test_ctor(self):
+        instrumentation_key = Options.prototype.instrumentation_key
+        Options.prototype.instrumentation_key = None
+        self.assertRaises(ValueError, lambda: trace_exporter.AzureExporter())
+        Options.prototype.instrumentation_key = instrumentation_key
+
     def test_export(self):
-        instrumentation_key = '12345678-1234-5678-abcd-12345678abcd'
         exporter = trace_exporter.AzureExporter(
             Options(
-                instrumentation_key=instrumentation_key,
+                instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
                 storage_path=os.path.join(TEST_FOLDER, 'foo'),
             ),
         )
@@ -53,10 +58,9 @@ class TestAzureExporter(unittest.TestCase):
 
     @mock.patch('requests.post', return_value=mock.Mock())
     def test_emit(self, request_mock):
-        instrumentation_key = '12345678-1234-5678-abcd-12345678abcd'
         exporter = trace_exporter.AzureExporter(
             Options(
-                instrumentation_key=instrumentation_key,
+                instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
                 storage_path=os.path.join(TEST_FOLDER, 'foo'),
             ),
         )
@@ -77,10 +81,9 @@ class TestAzureExporter(unittest.TestCase):
         from opencensus.trace.trace_options import TraceOptions
         from opencensus.trace.tracestate import Tracestate
 
-        instrumentation_key = '12345678-1234-5678-abcd-12345678abcd'
         exporter = trace_exporter.AzureExporter(
             Options(
-                instrumentation_key=instrumentation_key,
+                instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
                 storage_path=os.path.join(TEST_FOLDER, 'bar'),
             ),
         )

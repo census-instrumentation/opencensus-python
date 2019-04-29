@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import os
+import sys
 
 from opencensus.ext.azure.common.protocol import Object
 
@@ -26,7 +27,12 @@ class Options(Object):
         proxy=None,
         storage_maintenance_period=60,
         storage_max_size=100*1024*1024,
-        storage_path='.azure',
+        storage_path=os.path.join(
+            os.path.expanduser('~'),
+            '.opencensus',
+            '.azure',
+            os.path.basename(sys.argv[0]) or '.console',
+        ),
         storage_retention_period=7*24*60*60,
         timeout=10.0,  # networking timeout in seconds
     )
