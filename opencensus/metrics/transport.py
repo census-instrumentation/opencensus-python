@@ -52,16 +52,16 @@ class MetricExporterTask(PeriodicTask):
 
         self.func = function
 
-        def f(*args, **kwargs):
+        def func(*aa, **kw):
             try:
-                return self.func(*args, **kwargs)
+                return self.func(*aa, **kw)
             except TransportError as ex:
                 logger.exception(ex)
                 self.cancel()
             except Exception:
                 logger.exception("Error handling metric export")
 
-        super(MetricExporterTask, self).__init__(interval, f, args, kwargs)
+        super(MetricExporterTask, self).__init__(interval, func, args, kwargs)
 
 
 def get_exporter_thread(metric_producer, exporter, interval=None):

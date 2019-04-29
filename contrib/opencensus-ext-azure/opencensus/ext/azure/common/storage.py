@@ -75,13 +75,13 @@ class LocalFileBlob(object):
 
 class LocalFileStorage(object):
     def __init__(
-        self,
-        path,
-        max_size=100*1024*1024,  # 100MB
-        maintenance_period=60,  # 1 minute
-        retention_period=7*24*60*60,  # 7 days
-        write_timeout=60,  # 1 minute
-    ):
+            self,
+            path,
+            max_size=100*1024*1024,  # 100MB
+            maintenance_period=60,  # 1 minute
+            retention_period=7*24*60*60,  # 7 days
+            write_timeout=60,  # 1 minute
+        ):
         self.path = os.path.abspath(path)
         self.max_size = max_size
         self.maintenance_period = maintenance_period

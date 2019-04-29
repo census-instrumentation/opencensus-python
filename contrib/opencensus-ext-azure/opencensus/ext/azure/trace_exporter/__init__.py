@@ -162,8 +162,8 @@ class AzureExporter(base_exporter.Exporter):
                 },
                 timeout=self.options.timeout,
             )
-        except Exception as ex:
-            logger.warning('Transient client side error {}.'.format(ex))
+        except Exception as ex:  # TODO: consider RequestException
+            logger.warning('Transient client side error %s.', ex)
             # client side error (retryable)
             return self.options.minimum_retry_interval
         finally:
@@ -172,18 +172,18 @@ class AzureExporter(base_exporter.Exporter):
                 blacklist_hostnames,
             )
         text = 'N/A'
+        data = None
         try:
             text = response.text
         except Exception as ex:
-            logger.warning('Error while reading response body {}.'.format(ex))
-        data = None
-        if text != 'N/A':
+            logger.warning('Error while reading response body %s.', ex)
+        else:
             try:
                 data = json.loads(text)
             except Exception:
                 pass
         if response.status_code == 200:
-            logger.info('Transmission succeeded: {}.'.format(text))
+            logger.info('Transmission succeeded: %s.', text)
             return 0
         if response.status_code == 206:  # Partial Content
             # TODO: store the unsent data
@@ -192,43 +192,47 @@ class AzureExporter(base_exporter.Exporter):
                     resend_envelopes = []
                     for error in data['errors']:
                         if error['statusCode'] in (
-                            429,  # Too Many Requests
-                            500,  # Internal Server Error
-                            503,  # Service Unavailable
-                        ):
+                                429,  # Too Many Requests
+                                500,  # Internal Server Error
+                                503,  # Service Unavailable
+                            ):
                             resend_envelopes.append(envelopes[error['index']])
                         else:
-                            logger.error('Data drop {}: {} {}.'.format(
+                            logger.error(
+                                'Data drop %s: %s %s.',
                                 error['statusCode'],
                                 error['message'],
                                 envelopes[error['index']],
-                            ))
+                            )
                     if resend_envelopes:
                         self.storage.put(resend_envelopes)
                 except Exception as ex:
-                    logger.error('Error while processing {}: {} {}.'.format(
+                    logger.error(
+                        'Error while processing %s: %s %s.',
                         response.status_code,
                         text,
                         ex,
-                    ))
+                    )
                 return -response.status_code
             # cannot parse response body, fallback to retry
         if response.status_code in (
-            206,  # Partial Content
-            429,  # Too Many Requests
-            500,  # Internal Server Error
-            503,  # Service Unavailable
-        ):
-            logger.warning('Transient server side error {}: {}.'.format(
+                206,  # Partial Content
+                429,  # Too Many Requests
+                500,  # Internal Server Error
+                503,  # Service Unavailable
+            ):
+            logger.warning(
+                'Transient server side error %s: %s.',
                 response.status_code,
                 text,
-            ))
+            )
             # server side error (retryable)
             return self.options.minimum_retry_interval
-        logger.error('Non-retryable server side error {}: {}.'.format(
+        logger.error(
+            'Non-retryable server side error %s: %s.',
             response.status_code,
             text,
-        ))
+        )
         # server side error (non-retryable)
         return -response.status_code
 
