@@ -134,3 +134,6 @@ class TestLocalFileStorage(unittest.TestCase):
             with mock.patch('os.listdir', side_effect=throw(Exception)):
                 stor._maintenance_routine(silent=True)
                 self.assertRaises(Exception, lambda: stor._maintenance_routine())
+            with mock.patch('os.path.isdir', side_effect=throw(Exception)):
+                stor._maintenance_routine(silent=True)
+                self.assertRaises(Exception, lambda: stor._maintenance_routine())
