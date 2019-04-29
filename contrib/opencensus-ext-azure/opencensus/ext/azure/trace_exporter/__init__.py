@@ -195,7 +195,7 @@ class AzureExporter(base_exporter.Exporter):
                                 429,  # Too Many Requests
                                 500,  # Internal Server Error
                                 503,  # Service Unavailable
-                            ):
+                        ):
                             resend_envelopes.append(envelopes[error['index']])
                         else:
                             logger.error(
@@ -220,7 +220,7 @@ class AzureExporter(base_exporter.Exporter):
                 429,  # Too Many Requests
                 500,  # Internal Server Error
                 503,  # Service Unavailable
-            ):
+        ):
             logger.warning(
                 'Transient server side error %s: %s.',
                 response.status_code,

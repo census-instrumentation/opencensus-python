@@ -81,7 +81,7 @@ class LocalFileStorage(object):
             maintenance_period=60,  # 1 minute
             retention_period=7*24*60*60,  # 7 days
             write_timeout=60,  # 1 minute
-        ):
+    ):
         self.path = os.path.abspath(path)
         self.max_size = max_size
         self.maintenance_period = maintenance_period
