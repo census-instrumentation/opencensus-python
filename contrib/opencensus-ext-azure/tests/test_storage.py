@@ -111,7 +111,7 @@ class TestLocalFileStorage(unittest.TestCase):
             self.assertEqual(stor.get().get(), input)
             with mock.patch('os.rename', side_effect=throw(Exception)):
                 self.assertIsNone(stor.put(input, silent=True))
-                self.assertRaises(Exception, lambda: blob.put(input))
+                self.assertRaises(Exception, lambda: stor.put(input))
 
     def test_maintanence_routine(self):
         with mock.patch('os.makedirs') as m:
@@ -133,7 +133,13 @@ class TestLocalFileStorage(unittest.TestCase):
         with LocalFileStorage(os.path.join(TEST_FOLDER, 'baz')) as stor:
             with mock.patch('os.listdir', side_effect=throw(Exception)):
                 stor._maintenance_routine(silent=True)
-                self.assertRaises(Exception, lambda: stor._maintenance_routine())
+                self.assertRaises(
+                    Exception,
+                    lambda: stor._maintenance_routine(),
+                )
             with mock.patch('os.path.isdir', side_effect=throw(Exception)):
                 stor._maintenance_routine(silent=True)
-                self.assertRaises(Exception, lambda: stor._maintenance_routine())
+                self.assertRaises(
+                    Exception,
+                    lambda: stor._maintenance_routine(),
+                )
