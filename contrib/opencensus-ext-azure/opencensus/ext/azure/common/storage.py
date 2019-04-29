@@ -121,8 +121,10 @@ class LocalFileStorage(object):
                 raise
 
     def gets(self):
-        timeout_deadline = _fmt(_now() - _seconds(self.write_timeout))
-        retention_deadline = _fmt(_now() - _seconds(self.retention_period))
+        now = _now()
+        lease_deadline = _fmt(now)
+        retention_deadline = _fmt(now - _seconds(self.retention_period))
+        timeout_deadline = _fmt(now - _seconds(self.write_timeout))
         for name in sorted(os.listdir(self.path)):
             path = os.path.join(self.path, name)
             if not os.path.isfile(path):
@@ -134,9 +136,8 @@ class LocalFileStorage(object):
                     except Exception:
                         pass  # keep silent
             if path.endswith('.lock'):
-                now = _fmt(_now())
-                if path[path.rindex('@') + 1: -5] > now:  # under lease
-                    continue
+                if path[path.rindex('@') + 1: -5] > lease_deadline:
+                    continue  # under lease
                 new_path = path[: path.rindex('@')]
                 try:
                     os.rename(path, new_path)
