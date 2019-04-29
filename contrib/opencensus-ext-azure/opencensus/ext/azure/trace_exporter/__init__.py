@@ -131,7 +131,8 @@ class AzureExporter(base_exporter.Exporter):
                 result = self._transmit(envelopes)
                 if result > 0:
                     blob.lease(result)
-                blob.delete(silent=True)
+                else:
+                    blob.delete(silent=True)
 
     def _transmit(self, envelopes):
         """
