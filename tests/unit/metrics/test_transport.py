@@ -32,24 +32,24 @@ else:
 INTERVAL = .1
 
 
-class TestPeriodicTask(unittest.TestCase):
+class TestMetricExporterTask(unittest.TestCase):
 
     def test_default_constructor(self):
         mock_func = mock.Mock()
-        task = transport.PeriodicTask(mock_func)
+        task = transport.MetricExporterTask(function=mock_func)
         self.assertEqual(task.func, mock_func)
         self.assertEqual(task.interval, transport.DEFAULT_INTERVAL)
 
     def test_periodic_task_not_started(self):
         mock_func = mock.Mock()
-        task = transport.PeriodicTask(mock_func, INTERVAL)
+        task = transport.MetricExporterTask(INTERVAL, mock_func)
         time.sleep(INTERVAL + INTERVAL / 2.0)
         mock_func.assert_not_called()
-        task.stop()
+        task.cancel()
 
     def test_periodic_task(self):
         mock_func = mock.Mock()
-        task = transport.PeriodicTask(mock_func, INTERVAL)
+        task = transport.MetricExporterTask(INTERVAL, mock_func)
         task.start()
         mock_func.assert_not_called()
         time.sleep(INTERVAL + INTERVAL / 2.0)
@@ -59,13 +59,13 @@ class TestPeriodicTask(unittest.TestCase):
         time.sleep(INTERVAL)
         self.assertEqual(mock_func.call_count, 3)
 
-    def test_periodic_task_stop(self):
+    def test_periodic_task_cancel(self):
         mock_func = mock.Mock()
-        task = transport.PeriodicTask(mock_func, INTERVAL)
+        task = transport.MetricExporterTask(INTERVAL, mock_func)
         task.start()
         time.sleep(INTERVAL + INTERVAL / 2.0)
         self.assertEqual(mock_func.call_count, 1)
-        task.stop()
+        task.cancel()
         time.sleep(INTERVAL)
         self.assertEqual(mock_func.call_count, 1)
 
@@ -87,7 +87,7 @@ class TestGetExporterThreadPeriodic(unittest.TestCase):
             producer.get_metrics.assert_called_once_with()
             exporter.export_metrics.assert_called_once_with(metrics)
         finally:
-            task.stop()
+            task.cancel()
             task.join()
 
     def test_producer_error(self, mock_logger):
@@ -99,7 +99,7 @@ class TestGetExporterThreadPeriodic(unittest.TestCase):
         task = transport.get_exporter_thread(producer, exporter)
         time.sleep(INTERVAL + INTERVAL / 2.0)
         mock_logger.exception.assert_called()
-        self.assertFalse(task._stopped.is_set())
+        self.assertFalse(task.finished.is_set())
 
     def test_producer_deleted(self, mock_logger):
         producer = mock.Mock()
@@ -109,7 +109,7 @@ class TestGetExporterThreadPeriodic(unittest.TestCase):
         gc.collect()
         time.sleep(INTERVAL + INTERVAL / 2.0)
         mock_logger.exception.assert_called()
-        self.assertTrue(task._stopped.is_set())
+        self.assertTrue(task.finished.is_set())
 
     def test_exporter_deleted(self, mock_logger):
         producer = mock.Mock()
@@ -119,4 +119,4 @@ class TestGetExporterThreadPeriodic(unittest.TestCase):
         gc.collect()
         time.sleep(INTERVAL + INTERVAL / 2.0)
         mock_logger.exception.assert_called()
-        self.assertTrue(task._stopped.is_set())
+        self.assertTrue(task.finished.is_set())

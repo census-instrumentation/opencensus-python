@@ -535,24 +535,24 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         self.assertEqual(sd_arg.points[0].value.int64_value, 123)
 
 
-class MockPeriodicTask(object):
-    """Testing mock of metrics.transport.PeriodicTask.
+class MockMetricExporterTask(object):
+    """Testing mock of metrics.transport.MetricExporterTask.
 
     Simulate calling export asynchronously from another thread synchronously
     from this one.
     """
-    def __init__(self, func, interval=None, **kwargs):
-        self.func = func
+    def __init__(self, interval=None, function=None, args=None, kwargs=None):
+        self.function = function
         self.logger = mock.Mock()
         self.start = mock.Mock()
         self.run = mock.Mock()
 
     def step(self):
         try:
-            self.func()
+            self.function()
         except transport_module.TransportError as ex:
             self.logger.exception(ex)
-            self.stop()
+            self.cancel()
         except Exception:
             self.logger.exception("Error handling metric export")
 
@@ -560,7 +560,7 @@ class MockPeriodicTask(object):
 class MockGetExporterThread(object):
     """Intercept calls to get_exporter_thread.
 
-    To get a reference to the running PeriodicTask created by
+    To get a reference to the running MetricExporterTask created by
     get_exporter_thread.
     """
     def __init__(self):
@@ -594,8 +594,8 @@ class TestAsyncStatsExport(unittest.TestCase):
 
     def setUp(self):
         patcher = mock.patch(
-            'opencensus.metrics.transport.PeriodicTask',
-            MockPeriodicTask)
+            'opencensus.metrics.transport.MetricExporterTask',
+            MockMetricExporterTask)
         patcher.start()
         self.addCleanup(patcher.stop)
 
