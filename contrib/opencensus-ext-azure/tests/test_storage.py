@@ -103,13 +103,19 @@ class TestLocalFileStorage(unittest.TestCase):
     def test_maintanence_routine(self):
         with mock.patch('os.makedirs') as m:
             m.return_value = None
-            with LocalFileStorage(os.path.join(TEST_FOLDER, 'baz')) as stor:
-                self.assertTrue(stor)
+            self.assertRaises(
+                Exception,
+                lambda: LocalFileStorage(os.path.join(TEST_FOLDER, 'baz')),
+            )
 
         with mock.patch('os.makedirs', side_effect=throw(Exception)):
-            with LocalFileStorage(os.path.join(TEST_FOLDER, 'baz')) as stor:
-                self.assertTrue(stor)
+            self.assertRaises(
+                Exception,
+                lambda: LocalFileStorage(os.path.join(TEST_FOLDER, 'baz')),
+            )
 
         with mock.patch('os.listdir', side_effect=throw(Exception)):
-            with LocalFileStorage(os.path.join(TEST_FOLDER, 'baz')) as stor:
-                self.assertTrue(stor)
+            self.assertRaises(
+                Exception,
+                lambda: LocalFileStorage(os.path.join(TEST_FOLDER, 'baz')),
+            )
