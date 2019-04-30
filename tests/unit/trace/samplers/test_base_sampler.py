@@ -14,6 +14,8 @@
 
 import unittest
 
+import mock
+
 
 class TestBaseSampler(unittest.TestCase):
     def test_should_sample_abstract(self):
@@ -21,5 +23,8 @@ class TestBaseSampler(unittest.TestCase):
 
         sampler = samplers.Sampler()
 
+        mock_context = mock.Mock()
+        mock_context.trace_id = 'fake_id'
+
         with self.assertRaises(NotImplementedError):
-            sampler.should_sample(trace_id='fake_id')
+            sampler.should_sample(mock_context)

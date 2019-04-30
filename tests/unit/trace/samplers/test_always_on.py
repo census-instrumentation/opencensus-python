@@ -14,12 +14,16 @@
 
 import unittest
 
+import mock
+
 
 class TestAlwaysOnSampler(unittest.TestCase):
     def test_should_sample(self):
         from opencensus.trace import samplers
 
         sampler = samplers.AlwaysOnSampler()
-        should_sample = sampler.should_sample(trace_id='fake_id')
+        mock_context = mock.Mock()
+        mock_context.trace_id = 'fake_id'
+        should_sample = sampler.should_sample(mock_context)
 
         self.assertTrue(should_sample)

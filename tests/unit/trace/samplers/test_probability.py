@@ -14,6 +14,8 @@
 
 import unittest
 
+import mock
+
 from opencensus.trace import samplers
 
 
@@ -37,27 +39,49 @@ class TestProbabilitySampler(unittest.TestCase):
     def test_should_sample_smaller(self):
         trace_id = 'f8739df974a4481f98748cd92b27177d'
         sampler = samplers.ProbabilitySampler(rate=1)
-        should_sample = sampler.should_sample(trace_id=trace_id)
+        mock_context = mock.Mock()
+        mock_context.trace_id = trace_id
+        mock_context.trace_options.get_enabled.return_value = False
+        should_sample = sampler.should_sample(mock_context)
 
         self.assertTrue(should_sample)
 
     def test_should_sample_greater(self):
         trace_id = 'f8739df974a4481f98748cd92b27177d'
         sampler = samplers.ProbabilitySampler(rate=0)
-        should_sample = sampler.should_sample(trace_id=trace_id)
+        mock_context = mock.Mock()
+        mock_context.trace_id = trace_id
+        mock_context.trace_options.get_enabled.return_value = False
+        should_sample = sampler.should_sample(mock_context)
 
         self.assertFalse(should_sample)
 
     def test_should_sample_trace_id_sampled(self):
         trace_id = '00000000000000000000000000000000'
         sampler = samplers.ProbabilitySampler(rate=0.5)
-        should_sample = sampler.should_sample(trace_id=trace_id)
+        mock_context = mock.Mock()
+        mock_context.trace_id = trace_id
+        mock_context.trace_options.get_enabled.return_value = False
+        should_sample = sampler.should_sample(mock_context)
 
         self.assertTrue(should_sample)
 
     def test_should_sample_trace_id_not_sampled(self):
         trace_id = 'ffffffffffffffffffffffffffffffff'
         sampler = samplers.ProbabilitySampler(rate=0.5)
-        should_sample = sampler.should_sample(trace_id=trace_id)
+        mock_context = mock.Mock()
+        mock_context.trace_id = trace_id
+        mock_context.trace_options.get_enabled.return_value = False
+        should_sample = sampler.should_sample(mock_context)
 
         self.assertFalse(should_sample)
+
+    def test_should_sample_short_circuit(self):
+        trace_id = 'ffffffffffffffffffffffffffffffff'
+        sampler = samplers.ProbabilitySampler(rate=0.5)
+        mock_context = mock.Mock()
+        mock_context.trace_id = trace_id
+        mock_context.trace_options.get_enabled.return_value = True
+        should_sample = sampler.should_sample(mock_context)
+
+        self.assertTrue(should_sample)

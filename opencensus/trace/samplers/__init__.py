@@ -19,28 +19,32 @@ MAX_VALUE = 0xffffffffffffffff
 class Sampler(object):
     """Base class for opencensus trace request samplers.
 
-    Subclasses of :class:`Sampler` must override :meth:`should_sample`.
+    Subclasses must override :meth:`should_sample`.
     """
 
-    def should_sample(self, trace_id):
-        """Determine whether to sample this request or not.
+    def should_sample(self, span_context):
+        """Whether to sample this request.
+
+        :type span_context: :class:`opencensus.trace.span_context.SpanContext`
+        :param span_context: The span context.
+
+        :rtype: bool
+        :returns: Whether to sample the request according to the context.
         """
         raise NotImplementedError
 
 
 class AlwaysOnSampler(Sampler):
-    """Sampler that samples every request."""
+    """Sampler that samples every request, regardless of trace options."""
 
-    def should_sample(self, trace_id):
-        """Always return True because we want to sample all requests."""
+    def should_sample(self, span_context):
         return True
 
 
 class AlwaysOffSampler(Sampler):
-    """Sampler that doesn't sample any request."""
+    """Sampler that doesn't sample any request, regardless of trace options."""
 
-    def should_sample(self, trace_id):
-        """Always return False because we don't want to sample."""
+    def should_sample(self, span_context):
         return False
 
 
@@ -59,16 +63,21 @@ class ProbabilitySampler(Sampler):
 
         self.rate = rate
 
-    def should_sample(self, trace_id):
+    def should_sample(self, span_context):
         """Make the sampling decision based on the lower 8 bytes of the trace
         ID. If the value is less than the bound, return True, else False.
 
-        :rtype: bool
-        :returns: The sampling decision.
-        """
-        lower_long = get_lower_long_from_trace_id(trace_id)
-        bound = self.rate * MAX_VALUE
+        :type span_context: :class:`opencensus.trace.span_context.SpanContext`
+        :param span_context: The span context.
 
+        :rtype: bool
+        :returns: Whether to sample the request according to the context.
+        """
+        if span_context.trace_options.get_enabled():
+            return True
+
+        lower_long = get_lower_long_from_trace_id(span_context.trace_id)
+        bound = self.rate * MAX_VALUE
         return lower_long <= bound
 
 
