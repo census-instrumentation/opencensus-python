@@ -16,14 +16,14 @@ from contextlib import contextmanager
 import os
 import sys
 
+import mock
+
 from opencensus.common.monitored_resource import monitored_resource
 
 if sys.version_info < (3,):
     import unittest2 as unittest
-    import mock
 else:
     import unittest
-    from unittest import mock
 
 
 @contextmanager
