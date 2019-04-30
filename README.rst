@@ -227,20 +227,22 @@ Stats Exporter
 .. _threading: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-threading
 .. _Zipkin: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-zipkin
 
-## Versioning
-  
+------------
+ Versioning
+------------
+
 This library follows `Semantic Versioning`_.
-  
-**GA**: Libraries defined at a GA quality level are stable, and will not introduce 
-backwards-incompatible changes in any minor or patch releases. We will address issues and requests 
-with the highest priority. If we were to make a backwards-incompatible changes on an API, we will 
+
+**GA**: Libraries defined at a GA quality level are stable, and will not introduce
+backwards-incompatible changes in any minor or patch releases. We will address issues and requests
+with the highest priority. If we were to make a backwards-incompatible changes on an API, we will
 first mark the existing API as deprecated and keep it for 18 months before removing it.
-  
-**Beta**: Libraries defined at a Beta quality level are expected to be mostly stable and we're 
+
+**Beta**: Libraries defined at a Beta quality level are expected to be mostly stable and we're
 working towards their release candidate. We will address issues and requests with a higher priority.
-There may be backwards incompatible changes in a minor version release, though not in a patch 
-release. If an element is part of an API that is only meant to be used by exporters or other 
-opencensus libraries, then there is no deprecation period. Otherwise, we will deprecate it for 18 
+There may be backwards incompatible changes in a minor version release, though not in a patch
+release. If an element is part of an API that is only meant to be used by exporters or other
+opencensus libraries, then there is no deprecation period. Otherwise, we will deprecate it for 18
 months before removing it, if possible.
 
 .. _Semantic Versioning: https://semver.org/
