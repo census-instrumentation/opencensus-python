@@ -54,4 +54,4 @@ Open a pull request against the main opencensus-go repo.
 
 ### Additional instructions for extension developers
 
-[extensions](README.md#extensions)
+[extensions](README.rst#extensions)
