@@ -44,7 +44,7 @@ class TestGcpMetadataConfig(unittest.TestCase):
         labels_list = gcp_metadata_config.GcpMetadataConfig().get_gce_metadata(
         )
 
-        self.assertEquals(len(labels_list), 3)
+        self.assertEqual(len(labels_list), 3)
 
         expected_labels = {
             'instance_id': 'my-instance',
@@ -81,7 +81,7 @@ class TestGcpMetadataConfig(unittest.TestCase):
         labels_list = gcp_metadata_config.GcpMetadataConfig().get_gce_metadata(
         )
 
-        self.assertEquals(len(labels_list), 3)
+        self.assertEqual(len(labels_list), 3)
 
         expected_labels = {
             'instance_id': 'my-instance',
@@ -103,5 +103,5 @@ class TestGcpMetadataConfig(unittest.TestCase):
         self.assertFalse(
             gcp_metadata_config.GcpMetadataConfig.is_running_on_gcp())
 
-        self.assertEquals(
+        self.assertEqual(
             len(gcp_metadata_config.GcpMetadataConfig().get_gce_metadata()), 0)
