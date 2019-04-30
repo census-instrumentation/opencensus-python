@@ -12,13 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-try:
-    import mock
-except ImportError:
-    from unittest import mock
-
 import os
 import unittest
+
+import mock
 
 from opencensus.common.monitored_resource import k8s_utils
 
