@@ -24,26 +24,26 @@ Prerequisites:
 
 Clone the upstream repo:
 
-```
-git clone https://github.com/census-instrumentation/opencensus-python.git
+```sh
+$ git clone https://github.com/census-instrumentation/opencensus-python.git
 ```
 
 Add your fork as an origin:
 
-```
-git remote add fork https://github.com/YOUR_GITHUB_USERNAME/opencensus-python.git
+```sh
+$ git remote add fork https://github.com/YOUR_GITHUB_USERNAME/opencensus-python.git
 ```
 
 Run tests:
 
-```
-pip install nox-automation  # Only first time.
-nox
+```sh
+$ pip install nox-automation  # Only first time.
+$ nox
 ```
 
 Checkout a new branch, make modifications and push the branch to your fork:
 
-```
+```sh
 $ git checkout -b feature
 # edit files
 $ git commit
