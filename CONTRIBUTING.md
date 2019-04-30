@@ -1,19 +1,36 @@
-# How to Contribute
+# How to contribute
 
-We'd love to accept your patches and contributions to this project. There are
-just a few small guidelines you need to follow.
+We definitely welcome patches and contributions to OpenCensus! Here are
+some guidelines and information about how to do so.
 
-## Contributor License Agreement
+## Before getting started
 
-Contributions to this project must be accompanied by a Contributor License
-Agreement. You (or your employer) retain the copyright to your contribution,
-this simply gives us permission to use and redistribute your contributions as
-part of the project. Head over to <https://cla.developers.google.com/> to see
-your current agreements on file or to sign a new one.
+In order to protect both you and ourselves, you will need to sign the
+[Contributor License Agreement](https://cla.developers.google.com/clas).
 
-You generally only need to submit a CLA once, so if you've already submitted one
-(even if it was for a different project), you probably don't need to do it
-again.
+## Run test locally
+
+```
+# Install nox with pip
+pip install nox-automation
+
+# See what's available in the nox suite
+nox -l
+
+# Run a single nox command
+nox -s "unit(py='2.7')"
+
+# Run all the nox commands
+nox
+
+# Integration test
+# We don't have script for integration test yet, but can test as below.
+python setup.py bdist_wheel
+cd dist
+pip install opencensus-0.0.1-py2.py3-none-any.whl
+
+# Then just run the tracers normally as you want to test.
+```
 
 ## Code reviews
 

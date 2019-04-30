@@ -227,57 +227,20 @@ Stats Exporter
 .. _threading: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-threading
 .. _Zipkin: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-zipkin
 
-------------------
- Additional Info
-------------------
+## Versioning
+  
+This library follows `Semantic Versioning`_.
+  
+**GA**: Libraries defined at a GA quality level are stable, and will not introduce 
+backwards-incompatible changes in any minor or patch releases. We will address issues and requests 
+with the highest priority. If we were to make a backwards-incompatible changes on an API, we will 
+first mark the existing API as deprecated and keep it for 18 months before removing it.
+  
+**Beta**: Libraries defined at a Beta quality level are expected to be mostly stable and we're 
+working towards their release candidate. We will address issues and requests with a higher priority.
+There may be backwards incompatible changes in a minor version release, though not in a patch 
+release. If an element is part of an API that is only meant to be used by exporters or other 
+opencensus libraries, then there is no deprecation period. Otherwise, we will deprecate it for 18 
+months before removing it, if possible.
 
-Contributing
-------------
-
-Contributions to this library are always welcome and highly encouraged.
-
-See `CONTRIBUTING <CONTRIBUTING.md>`__ for more information on how to
-get started.
-
-
-Development
------------
-
-Tests
-~~~~~
-
-::
-
-    cd trace
-    tox -e py34
-    source .tox/py34/bin/activate
-
-    # Install nox with pip
-    pip install nox-automation
-
-    # See what's available in the nox suite
-    nox -l
-
-    # Run a single nox command
-    nox -s "unit(py='2.7')"
-
-    # Run all the nox commands
-    nox
-
-    # Integration test
-    # We don't have script for integration test yet, but can test as below.
-    python setup.py bdist_wheel
-    cd dist
-    pip install opencensus-0.0.1-py2.py3-none-any.whl
-
-    # Then just run the tracers normally as you want to test.
-
-License
--------
-
-Apache 2.0 - See `LICENSE <LICENSE>`__ for more information.
-
-Disclaimer
-----------
-
-This is not an official Google product.
+.. _Semantic Versioning: https://semver.org/
