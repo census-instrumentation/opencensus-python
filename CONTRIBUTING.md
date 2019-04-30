@@ -54,4 +54,8 @@ Open a pull request against the main opencensus-go repo.
 
 ### Additional instructions for extension developers
 
-[extensions](README.rst#extensions)
+If you want to contribute new [extensions](README.rst#extensions), you need to:
+
+* Prepare the extension code, put it under `contrib` folder.
+* Update `nox.py` to include your new extension for testing purpose.
+* Update [README](README.rst#extensions) to include your extension.
