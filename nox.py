@@ -45,6 +45,14 @@ def _install_dev_packages(session):
     session.install('-e', 'contrib/opencensus-ext-google-cloud-clientlibs')
 
 
+def _install_test_dependencies(session):
+    session.install('mock')
+    session.install('pytest')
+    session.install('pytest-cov')
+    session.install('retrying')
+    session.install('unittest2')
+
+
 @nox.session
 @nox.parametrize('py', ['2.7', '3.4', '3.5', '3.6'])
 def unit(session, py):
@@ -53,8 +61,8 @@ def unit(session, py):
     # Run unit tests against all supported versions of Python.
     session.interpreter = 'python{}'.format(py)
 
-    # Install all test dependencies.
-    session.install('-r', 'requirements-test.txt')
+    # Install test dependencies.
+    _install_test_dependencies(session)
 
     # Install dev packages.
     _install_dev_packages(session)
@@ -92,8 +100,8 @@ def system(session, py):
     # Set the virtualenv dirname.
     session.virtualenv_dirname = 'sys-' + py
 
-    # Install all test dependencies.
-    session.install('-r', 'requirements-test.txt')
+    # Install test dependencies.
+    _install_test_dependencies(session)
 
     # Install dev packages into the virtualenv's dist-packages.
     _install_dev_packages(session)

@@ -142,7 +142,7 @@ class TestStatsExporter(unittest.TestCase):
 
         handler = mock.Mock(spec=ocagent.ExportRpcHandler)
         ocagent.StatsExporter(handler).export_metrics(view_data)
-        self.assertEquals(
+        self.assertEqual(
             handler.send.call_args[0]
             [0].metrics[0].timeseries[0].label_values[0],
             metrics_pb2.LabelValue(has_value=True, value='test-key'))
@@ -161,7 +161,7 @@ class TestStatsExporter(unittest.TestCase):
 
         handler = mock.Mock(spec=ocagent.ExportRpcHandler)
         ocagent.StatsExporter(handler).export_metrics(view_data)
-        self.assertEquals(
+        self.assertEqual(
             handler.send.call_args[0]
             [0].metrics[0].timeseries[0].points[0].double_value, 2.5)
 
@@ -185,7 +185,7 @@ class TestStatsExporter(unittest.TestCase):
         handler = mock.Mock(spec=ocagent.ExportRpcHandler)
         ocagent.StatsExporter(handler).export_metrics([metric])
 
-        self.assertEquals(
+        self.assertEqual(
             handler.send.call_args[0][0].metrics[0].timeseries[0].points[0].
             distribution_value.buckets[0].exemplar,
             metrics_pb2.DistributionValue.Exemplar(
@@ -323,8 +323,8 @@ class TestExportRpcInterface(unittest.TestCase):
         handler.send(request)
 
         self.assertTrue(event.wait(timeout=1))
-        self.assertEquals(len(initialized), 2)
-        self.assertEquals(len(requests), 2)
+        self.assertEqual(len(initialized), 2)
+        self.assertEqual(len(requests), 2)
 
     @mock.patch('opencensus.metrics.transport.get_exporter_thread')
     def test_create_stats_exporter_initialization(self, mock_transport):
@@ -358,7 +358,7 @@ class TestExportRpcInterface(unittest.TestCase):
     def test_create_stats_exporter_with_default_endpoint(
             self, mock_channel, _):
         ocagent.new_stats_exporter(SERVICE_NAME)
-        self.assertEquals(mock_channel.call_args[0][0], 'localhost:55678')
+        self.assertEqual(mock_channel.call_args[0][0], 'localhost:55678')
 
     def test_export_node(self):
         requests = []

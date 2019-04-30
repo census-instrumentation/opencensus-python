@@ -172,4 +172,4 @@ class TestBlankSpan(unittest.TestCase):
         span_name = 'root_span'
         with self._make_one(span_name) as s:
             self.assertIsNotNone(s)
-            self.assertEquals(s.name, span_name)
+            self.assertEqual(s.name, span_name)

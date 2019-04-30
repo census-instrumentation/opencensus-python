@@ -33,23 +33,23 @@ class TestUtils(unittest.TestCase):
 
     def test_datetime_str_to_proto_ts_conversion_none(self):
         proto_ts = utils.proto_ts_from_datetime_str(None)
-        self.assertEquals(proto_ts.seconds, 0)
-        self.assertEquals(proto_ts.nanos, 0)
+        self.assertEqual(proto_ts.seconds, 0)
+        self.assertEqual(proto_ts.nanos, 0)
 
     def test_datetime_str_to_proto_ts_conversion_empty(self):
         proto_ts = utils.proto_ts_from_datetime_str('')
-        self.assertEquals(proto_ts.seconds, 0)
-        self.assertEquals(proto_ts.nanos, 0)
+        self.assertEqual(proto_ts.seconds, 0)
+        self.assertEqual(proto_ts.nanos, 0)
 
     def test_datetime_str_to_proto_ts_conversion_invalid(self):
         proto_ts = utils.proto_ts_from_datetime_str('2018 08 22 T 11:53')
-        self.assertEquals(proto_ts.seconds, 0)
-        self.assertEquals(proto_ts.nanos, 0)
+        self.assertEqual(proto_ts.seconds, 0)
+        self.assertEqual(proto_ts.nanos, 0)
 
     def test_datetime_to_proto_ts_conversion_none(self):
         proto_ts = utils.proto_ts_from_datetime(None)
-        self.assertEquals(proto_ts.seconds, 0)
-        self.assertEquals(proto_ts.nanos, 0)
+        self.assertEqual(proto_ts.seconds, 0)
+        self.assertEqual(proto_ts.nanos, 0)
 
     def test_datetime_to_proto_ts_conversion(self):
         now = datetime.utcnow()
