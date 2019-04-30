@@ -12,13 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-try:
-    import mock
-except ImportError:
-    from unittest import mock
-
 import datetime
 import unittest
+
+import mock
 
 from opencensus.metrics.export import metric_descriptor
 from opencensus.metrics.export import point
