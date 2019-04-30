@@ -50,7 +50,7 @@ $ git commit
 $ git push fork feature
 ```
 
-Open a pull request against the main opencensus-go repo.
+Open a pull request against the main opencensus-python repo.
 
 ### Additional instructions for extension developers
 

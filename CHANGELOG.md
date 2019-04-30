@@ -1,9 +1,6 @@
 # Changelog
 
 ## Unreleased
-- Updated the README and CONTRIBUTING docs
-  ([#638](https://github.com/census-instrumentation/opencensus-python/pull/638))
-
 - Refactored PeriodicTask
   ([#632](https://github.com/census-instrumentation/opencensus-python/pull/632))
 
