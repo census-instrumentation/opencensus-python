@@ -34,14 +34,20 @@ Add your fork as an origin:
 git remote add fork https://github.com/YOUR_GITHUB_USERNAME/opencensus-python.git
 ```
 
-Install test harness:
+Run tests:
 
 ```
-pip install nox-automation
-```
-
-Run test:
-
-```
+pip install nox-automation  # Only first time.
 nox
 ```
+
+Checkout a new branch, make modifications and push the branch to your fork:
+
+```
+$ git checkout -b feature
+# edit files
+$ git commit
+$ git push fork feature
+```
+
+Open a pull request against the main opencensus-go repo.
