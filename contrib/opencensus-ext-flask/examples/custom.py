@@ -21,13 +21,13 @@ import psycopg2
 import requests
 import sqlalchemy
 
-import hello_world_pb2
-import hello_world_pb2_grpc
 from opencensus.ext.flask.flask_middleware import FlaskMiddleware
 from opencensus.ext.grpc import client_interceptor
 from opencensus.ext.stackdriver import trace_exporter as stackdriver_exporter
 from opencensus.trace import config_integration
-from opencensus.trace.samplers import probability
+from opencensus.trace import samplers
+import hello_world_pb2
+import hello_world_pb2_grpc
 
 INTEGRATIONS = ['mysql', 'postgresql', 'sqlalchemy', 'requests']
 
@@ -48,7 +48,7 @@ app = flask.Flask(__name__)
 
 # Enable tracing, configure the trace params, send traces to Stackdriver Trace
 exporter = stackdriver_exporter.StackdriverExporter()
-sampler = probability.ProbabilitySampler(rate=1)
+sampler = samplers.ProbabilitySampler(rate=1)
 middleware = FlaskMiddleware(app, exporter=exporter, sampler=sampler)
 config_integration.trace_integrations(INTEGRATIONS)
 

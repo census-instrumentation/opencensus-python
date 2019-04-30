@@ -17,9 +17,9 @@ import unittest
 
 class TestBaseSampler(unittest.TestCase):
     def test_should_sample_abstract(self):
-        from opencensus.trace.samplers import base
+        from opencensus.trace import samplers
 
-        sampler = base.Sampler()
+        sampler = samplers.Sampler()
 
         with self.assertRaises(NotImplementedError):
             sampler.should_sample(trace_id='fake_id')

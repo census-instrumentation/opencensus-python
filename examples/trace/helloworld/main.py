@@ -16,8 +16,8 @@ import time
 
 from opencensus.trace import execution_context
 from opencensus.trace import print_exporter
+from opencensus.trace import samplers
 from opencensus.trace.tracer import Tracer
-from opencensus.trace.samplers import always_on
 
 
 def function_to_trace():
@@ -25,7 +25,7 @@ def function_to_trace():
 
 
 def main():
-    sampler = always_on.AlwaysOnSampler()
+    sampler = samplers.AlwaysOnSampler()
     exporter = print_exporter.PrintExporter()
     tracer = Tracer(sampler=sampler, exporter=exporter)
 

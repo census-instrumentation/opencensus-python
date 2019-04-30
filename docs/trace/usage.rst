@@ -90,11 +90,11 @@ and ``ProbabilitySampler``
 
 .. code:: python
 
-    from opencensus.trace.samplers import probability
+    from opencensus.trace import samplers
     from opencensus.trace import tracer as tracer_module
 
     # Sampling the requests at the rate equals 0.5
-    sampler = probability.ProbabilitySampler(rate=0.5)
+    sampler = samplers.ProbabilitySampler(rate=0.5)
     tracer = tracer_module.Tracer(sampler=sampler)
 
 Exporters

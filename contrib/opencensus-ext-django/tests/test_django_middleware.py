@@ -20,11 +20,11 @@ from django.test.utils import teardown_test_environment
 
 from opencensus.trace import execution_context
 from opencensus.trace import print_exporter
+from opencensus.trace import samplers
 from opencensus.trace import span as span_module
 from opencensus.trace import utils
 from opencensus.trace.blank_span import BlankSpan
 from opencensus.trace.propagation import trace_context_http_header_format
-from opencensus.trace.samplers import always_on
 
 
 class TestOpencensusMiddleware(unittest.TestCase):
@@ -46,7 +46,7 @@ class TestOpencensusMiddleware(unittest.TestCase):
 
         middleware = middleware.OpencensusMiddleware()
 
-        assert isinstance(middleware.sampler, always_on.AlwaysOnSampler)
+        assert isinstance(middleware.sampler, samplers.AlwaysOnSampler)
         assert isinstance(middleware.exporter, print_exporter.PrintExporter)
         assert isinstance(
             middleware.propagator,
@@ -59,7 +59,7 @@ class TestOpencensusMiddleware(unittest.TestCase):
         settings = type('Test', (object,), {})
         settings.OPENCENSUS = {
             'TRACE': {
-                'SAMPLER': 'opencensus.trace.samplers.always_on.AlwaysOnSampler()',  # noqa
+                'SAMPLER': 'opencensus.trace.samplers.AlwaysOnSampler()',  # noqa
                 'EXPORTER': 'opencensus.trace.print_exporter.PrintExporter()',  # noqa
                 'PROPAGATOR': 'opencensus.trace.propagation.trace_context_http_header_format.TraceContextPropagator()',  # noqa
             }
@@ -71,7 +71,7 @@ class TestOpencensusMiddleware(unittest.TestCase):
         with patch_settings:
             middleware = middleware.OpencensusMiddleware()
 
-        assert isinstance(middleware.sampler, always_on.AlwaysOnSampler)
+        assert isinstance(middleware.sampler, samplers.AlwaysOnSampler)
         assert isinstance(middleware.exporter, print_exporter.PrintExporter)
         assert isinstance(
             middleware.propagator,

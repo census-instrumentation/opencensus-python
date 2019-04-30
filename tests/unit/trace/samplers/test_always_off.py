@@ -17,9 +17,9 @@ import unittest
 
 class TestAlwaysOffSampler(unittest.TestCase):
     def test_should_sample(self):
-        from opencensus.trace.samplers import always_off
+        from opencensus.trace import samplers
 
-        sampler = always_off.AlwaysOffSampler()
+        sampler = samplers.AlwaysOffSampler()
         should_sample = sampler.should_sample(trace_id='fake_id')
 
         self.assertFalse(should_sample)

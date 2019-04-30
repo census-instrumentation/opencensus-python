@@ -24,13 +24,13 @@ import mock
 from opencensus.ext.flask import flask_middleware
 from opencensus.trace import execution_context
 from opencensus.trace import print_exporter
+from opencensus.trace import samplers
 from opencensus.trace import span as span_module
 from opencensus.trace import span_data
 from opencensus.trace import stack_trace
 from opencensus.trace import status
 from opencensus.trace.blank_span import BlankSpan
 from opencensus.trace.propagation import trace_context_http_header_format
-from opencensus.trace.samplers import always_off, always_on
 from opencensus.trace.span_context import SpanContext
 from opencensus.trace.trace_options import TraceOptions
 from opencensus.trace.tracers import base
@@ -73,7 +73,7 @@ class TestFlaskMiddleware(unittest.TestCase):
         self.assertIs(app, middleware.app)
         self.assertTrue(app.before_request.called)
         self.assertTrue(app.after_request.called)
-        assert isinstance(middleware.sampler, always_on.AlwaysOnSampler)
+        assert isinstance(middleware.sampler, samplers.AlwaysOnSampler)
         assert isinstance(middleware.exporter, print_exporter.PrintExporter)
         assert isinstance(
             middleware.propagator,
@@ -245,7 +245,7 @@ class TestFlaskMiddleware(unittest.TestCase):
         trace_id = '2dd43a1d6b2549c6bc2a1a54c2fc0b05'
         span_id = '6e0c63257de34c92'
         flask_trace_id = '00-{}-{}-00'.format(trace_id, span_id)
-        sampler = always_off.AlwaysOffSampler()
+        sampler = samplers.AlwaysOffSampler()
 
         app = self.create_app()
         flask_middleware.FlaskMiddleware(app=app, sampler=sampler)
@@ -323,7 +323,7 @@ class TestFlaskMiddleware(unittest.TestCase):
         self.assertNotEqual(exported_spandata.stack_trace.stack_frames, [])
 
     def test_teardown_include_exception_and_traceback_span_disabled(self):
-        sampler = always_off.AlwaysOffSampler()
+        sampler = samplers.AlwaysOffSampler()
         app = self.create_app()
         app.config['TESTING'] = True
         middleware = flask_middleware.FlaskMiddleware(app=app, sampler=sampler)

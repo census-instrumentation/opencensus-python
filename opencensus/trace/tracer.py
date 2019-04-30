@@ -12,13 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from opencensus.trace import execution_context
 from opencensus.trace import print_exporter
+from opencensus.trace import samplers
 from opencensus.trace.propagation import trace_context_http_header_format
-from opencensus.trace.samplers import always_on
 from opencensus.trace.span_context import SpanContext
 from opencensus.trace.tracers import context_tracer
 from opencensus.trace.tracers import noop_tracer
-from opencensus.trace import execution_context
 
 
 class Tracer(object):
@@ -50,7 +50,7 @@ class Tracer(object):
             span_context = SpanContext()
 
         if sampler is None:
-            sampler = always_on.AlwaysOnSampler()
+            sampler = samplers.AlwaysOnSampler()
 
         if exporter is None:
             exporter = print_exporter.PrintExporter()

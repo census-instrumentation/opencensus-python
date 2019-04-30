@@ -25,7 +25,7 @@ class TestTracer(unittest.TestCase):
         from opencensus.trace import print_exporter
         from opencensus.trace.propagation \
             import trace_context_http_header_format
-        from opencensus.trace.samplers.always_on import AlwaysOnSampler
+        from opencensus.trace.samplers import AlwaysOnSampler
         from opencensus.trace.span_context import SpanContext
         from opencensus.trace.tracers import context_tracer
 
