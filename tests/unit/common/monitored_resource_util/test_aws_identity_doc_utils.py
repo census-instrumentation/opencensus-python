@@ -48,7 +48,7 @@ class TestAwsIdentityDocumentUtils(unittest.TestCase):
         labels_list = aws_identity_doc_utils.AwsIdentityDocumentUtils(
         ).get_aws_metadata()
 
-        self.assertEquals(len(labels_list), 3)
+        self.assertEqual(len(labels_list), 3)
 
         expected_labels = {
             'instance_id': 'i-1234567890abcdef0',
@@ -56,7 +56,7 @@ class TestAwsIdentityDocumentUtils(unittest.TestCase):
             'region': 'us-west-2'
         }
 
-        self.assertEquals(labels_list, expected_labels)
+        self.assertEqual(labels_list, expected_labels)
 
     @mock.patch('opencensus.common.monitored_resource.'
                 'aws_identity_doc_utils.get_request')
@@ -85,14 +85,14 @@ class TestAwsIdentityDocumentUtils(unittest.TestCase):
         labels_list = aws_identity_doc_utils.AwsIdentityDocumentUtils(
         ).get_aws_metadata()
 
-        self.assertEquals(len(labels_list), 2)
+        self.assertEqual(len(labels_list), 2)
 
         expected_labels = {
             'aws_account': '123456789012',
             'region': 'us-west-2'
         }
 
-        self.assertEquals(labels_list, expected_labels)
+        self.assertEqual(labels_list, expected_labels)
 
     @mock.patch('opencensus.common.monitored_resource.'
                 'aws_identity_doc_utils.get_request')
@@ -108,4 +108,4 @@ class TestAwsIdentityDocumentUtils(unittest.TestCase):
         labels_list = aws_identity_doc_utils.AwsIdentityDocumentUtils(
         ).get_aws_metadata()
 
-        self.assertEquals(len(labels_list), 0)
+        self.assertEqual(len(labels_list), 0)
