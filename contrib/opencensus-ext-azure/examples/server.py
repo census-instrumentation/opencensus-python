@@ -15,14 +15,19 @@
 from flask import Flask
 import requests
 
-from opencensus.trace import config_integration
 from opencensus.ext.azure.trace_exporter import AzureExporter
 from opencensus.ext.flask.flask_middleware import FlaskMiddleware
+from opencensus.trace import config_integration
+from opencensus.trace.samplers import ProbabilitySampler
 
 # TODO: you need to specify the instrumentation key in the
 # APPINSIGHTS_INSTRUMENTATIONKEY environment variable.
 app = Flask(__name__)
-middleware = FlaskMiddleware(app, exporter=AzureExporter())
+middleware = FlaskMiddleware(
+    app,
+    exporter=AzureExporter(),
+    sampler=ProbabilitySampler(rate=1.0),
+)
 
 
 @app.route('/')
