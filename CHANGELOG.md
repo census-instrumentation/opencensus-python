@@ -3,6 +3,9 @@
 ## Unreleased
 - Refactored PeriodicTask
   ([#632](https://github.com/census-instrumentation/opencensus-python/pull/632))
+- Make ProbabilitySampler default, change default sampling rate
+- Pass span context to samplers, allow samplers to override parent sampling
+  decision
 
 ## 0.5.0
 Released 2019-04-24
