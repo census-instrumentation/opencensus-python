@@ -12,14 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from opencensus.ext.azure.common import Options
 from opencensus.ext.azure.trace_exporter import AzureExporter
-from opencensus.trace import tracer as tracer_module
+from opencensus.trace.samplers import ProbabilitySampler
+from opencensus.trace.tracer import Tracer
 
-tracer = tracer_module.Tracer(exporter=AzureExporter(Options(
-    # TODO: replace the all-zero GUID with your instrumentation key.
-    instrumentation_key='00000000-0000-0000-0000-000000000000',
-)))
+tracer = Tracer(
+    exporter=AzureExporter(
+        # TODO: replace the all-zero GUID with your instrumentation key.
+        instrumentation_key='00000000-0000-0000-0000-000000000000',
+    ),
+    sampler=ProbabilitySampler(rate=1.0),
+)
 
 with tracer.span(name='foo'):
     print('Hello, World!')
