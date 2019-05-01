@@ -41,9 +41,10 @@ Installation & basic usage
 
     .. code:: python
 
-        from opencensus.trace import tracer as tracer_module
+        from opencensus.trace.tracer import Tracer
+        from opencensus.trace.samplers import AlwaysOnSampler
 
-        tracer = tracer_module.Tracer()
+        tracer = Tracer(sampler=AlwaysOnSampler())
 
     .. _pip: https://pip.pypa.io
     .. _pipenv: https://docs.pipenv.org/
@@ -66,10 +67,11 @@ You can collect traces using the ``Tracer`` `context manager`_:
 
 .. code:: python
 
-    from opencensus.trace import tracer as tracer_module
+    from opencensus.trace.tracer import Tracer
+    from opencensus.trace.samplers import AlwaysOnSampler
 
     # Initialize a tracer, by default using the `PrintExporter`
-    tracer = tracer_module.Tracer()
+    tracer = Tracer(sampler=AlwaysOnSampler())
 
     # Example for creating nested spans
     with tracer.span(name='span1') as span1:
@@ -87,10 +89,11 @@ Alternatively, you can explicitly start and end a span:
 
 .. code:: python
 
-    from opencensus.trace import tracer as tracer_module
+    from opencensus.trace.tracer import Tracer
+    from opencensus.trace.samplers import AlwaysOnSampler
 
     # Initialize a tracer, by default using the `PrintExporter`
-    tracer = tracer_module.Tracer()
+    tracer = Tracer(sampler=AlwaysOnSampler())
 
     tracer.start_span(name='span1')
     do_something_to_trace()
