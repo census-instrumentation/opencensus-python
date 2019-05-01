@@ -142,14 +142,14 @@ You can customize while initializing a tracer.
     from opencensus.trace import file_exporter
     from opencensus.trace import tracer as tracer_module
     from opencensus.trace.propagation import google_cloud_format
-    from opencensus.trace.samplers import probability
+    from opencensus.trace.samplers import ProbabilitySampler
 
     config_integration.trace_integrations(['httplib'])
 
     tracer = tracer_module.Tracer(
         exporter=file_exporter.FileExporter(file_name='traces'),
         propagator=google_cloud_format.GoogleCloudFormatPropagator(),
-        sampler=probability.ProbabilitySampler(rate=0.5),
+        sampler=ProbabilitySampler(rate=0.5),
     )
 
     with tracer.span(name='parent'):
