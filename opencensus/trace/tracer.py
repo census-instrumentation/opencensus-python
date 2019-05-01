@@ -30,8 +30,8 @@ class Tracer(object):
 
     :type sampler: :class:`~opencensus.trace.samplers.base.Sampler`
     :param sampler: Instances of Sampler objects. Defaults to
-                    :class:`.AlwaysOnSampler`. The rest options are
-                    :class:`.AlwaysOffSampler`, :class:`.FixedRateSampler`.
+                    :class:`.ProbabilitySampler`. Other options include
+                    :class:`.AlwaysOnSampler` and :class:`.AlwaysOffSampler`.
 
     :type exporter: :class:`~opencensus.trace.base_exporter.exporter`
     :param exporter: Instances of exporter objects. Default to

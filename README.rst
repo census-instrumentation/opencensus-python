@@ -116,8 +116,11 @@ There are several things you can customize in OpenCensus:
   other exporters are provided as `extensions <#trace-exporter>`__.
 
 * **Sampler**, which determines how traces are sampled.
-  The default sampler is ``AlwaysOnSampler``, other samplers include the
-  ``AlwaysOffSampler`` and ``ProbabilitySampler``.
+  The default sampler is the ``ProbabilitySampler``, which samples (i.e.
+  enables tracing for) a percentage of all requests. Sampling is deterministic
+  according to the trace ID. To force sampling for all requests, or to disable
+  prevent any request from being sampled, see ``AlwaysOnSampler`` and
+  ``AlwaysOffSampler``.
 
 * **Propagator**, which serializes and deserializes the
   ``SpanContext`` and its headers. The default propagator is
