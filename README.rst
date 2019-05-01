@@ -118,8 +118,8 @@ There are several things you can customize in OpenCensus:
 * **Sampler**, which determines how traces are sampled.
   The default sampler is the ``ProbabilitySampler``, which samples (i.e.
   enables tracing for) a percentage of all requests. Sampling is deterministic
-  according to the trace ID. To force sampling for all requests, or to disable
-  prevent any request from being sampled, see ``AlwaysOnSampler`` and
+  according to the trace ID. To force sampling for all requests, or to prevent
+  any request from being sampled, see ``AlwaysOnSampler`` and
   ``AlwaysOffSampler``.
 
 * **Propagator**, which serializes and deserializes the
