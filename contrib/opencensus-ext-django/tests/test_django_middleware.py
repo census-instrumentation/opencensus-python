@@ -88,7 +88,6 @@ class TestOpencensusMiddleware(unittest.TestCase):
         django_request = RequestFactory().get('/', **{
             'HTTP_TRACEPARENT': django_trace_id})
 
-
         # Force the test request to be sampled
         settings = type('Test', (object,), {})
         settings.OPENCENSUS = {

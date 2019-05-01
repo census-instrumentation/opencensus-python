@@ -90,8 +90,8 @@ class FlaskMiddleware(object):
         settings = settings.get('TRACE', {})
 
         if self.sampler is None:
-            self.sampler = (settings.get('SAMPLER', None) or
-                            samplers.ProbabilitySampler())
+            self.sampler = (settings.get('SAMPLER', None)
+                            or samplers.ProbabilitySampler())
             if isinstance(self.sampler, six.string_types):
                 self.sampler = configuration.load(self.sampler)
 
