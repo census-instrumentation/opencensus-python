@@ -27,10 +27,10 @@ from opencensus.ext.pyramid import pyramid_middleware
 from opencensus.ext.zipkin import trace_exporter as zipkin_exporter
 from opencensus.trace import execution_context
 from opencensus.trace import print_exporter
+from opencensus.trace import samplers
 from opencensus.trace import span as span_module
-from opencensus.trace.propagation import trace_context_http_header_format
-from opencensus.trace.samplers import always_on
 from opencensus.trace.blank_span import BlankSpan
+from opencensus.trace.propagation import trace_context_http_header_format
 from opencensus.trace.tracers import noop_tracer
 
 
@@ -65,7 +65,7 @@ class TestPyramidMiddleware(unittest.TestCase):
             mock_registry,
         )
 
-        assert isinstance(middleware.sampler, always_on.AlwaysOnSampler)
+        assert isinstance(middleware.sampler, samplers.AlwaysOnSampler)
         assert isinstance(
             middleware.exporter, print_exporter.PrintExporter)
         assert isinstance(
@@ -112,7 +112,7 @@ class TestPyramidMiddleware(unittest.TestCase):
             mock_registry,
         )
 
-        assert isinstance(middleware.sampler, always_on.AlwaysOnSampler)
+        assert isinstance(middleware.sampler, samplers.AlwaysOnSampler)
         assert isinstance(
             middleware.exporter, zipkin_exporter.ZipkinExporter)
         assert isinstance(

@@ -22,11 +22,11 @@ from opencensus.common import configuration
 from opencensus.trace import attributes_helper
 from opencensus.trace import execution_context
 from opencensus.trace import print_exporter
+from opencensus.trace import samplers
 from opencensus.trace import span as span_module
 from opencensus.trace import tracer as tracer_module
 from opencensus.trace import utils
 from opencensus.trace.propagation import trace_context_http_header_format
-from opencensus.trace.samplers import always_on
 
 try:
     from django.utils.deprecation import MiddlewareMixin
@@ -113,8 +113,8 @@ class OpencensusMiddleware(MiddlewareMixin):
         settings = getattr(django.conf.settings, 'OPENCENSUS', {})
         settings = settings.get('TRACE', {})
 
-        self.sampler = settings.get('SAMPLER', None) or \
-            always_on.AlwaysOnSampler()
+        self.sampler = (settings.get('SAMPLER', None)
+                        or samplers.ProbabilitySampler())
         if isinstance(self.sampler, six.string_types):
             self.sampler = configuration.load(self.sampler)
 

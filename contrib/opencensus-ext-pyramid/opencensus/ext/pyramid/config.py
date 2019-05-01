@@ -13,11 +13,11 @@
 # limitations under the License.
 
 from opencensus.trace import print_exporter
-from opencensus.trace.samplers import always_on
+from opencensus.trace import samplers
 from opencensus.trace.propagation import trace_context_http_header_format
 
 DEFAULT_PYRAMID_TRACER_CONFIG = {
-    'SAMPLER': always_on.AlwaysOnSampler(),
+    'SAMPLER': samplers.AlwaysOnSampler(),
     'EXPORTER': print_exporter.PrintExporter(),
     'PROPAGATOR': trace_context_http_header_format.TraceContextPropagator(),
     # https://cloud.google.com/appengine/docs/flexible/python/

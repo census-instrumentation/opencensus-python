@@ -22,7 +22,7 @@ import hello_world_pb2_grpc
 
 from opencensus.ext.grpc import server_interceptor
 from opencensus.ext.stackdriver import trace_exporter as stackdriver_exporter
-from opencensus.trace.samplers import always_on
+from opencensus.trace import samplers
 
 _ONE_DAY_IN_SECONDS = 60 * 60 * 24
 
@@ -34,7 +34,7 @@ class HelloWorld(hello_world_pb2_grpc.GreeterServicer):
 
 
 def serve():
-    sampler = always_on.AlwaysOnSampler()
+    sampler = samplers.AlwaysOnSampler()
     exporter = stackdriver_exporter.StackdriverExporter()
     tracer_interceptor = server_interceptor.OpenCensusServerInterceptor(
         sampler, exporter)

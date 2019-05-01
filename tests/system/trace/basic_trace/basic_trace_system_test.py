@@ -24,9 +24,9 @@ class TestBasicTrace(unittest.TestCase):
     def test_tracer(self):
         import json
 
-        from opencensus.trace import tracer as tracer_module
         from opencensus.trace import file_exporter
-        from opencensus.trace.samplers import always_on
+        from opencensus.trace import samplers
+        from opencensus.trace import tracer as tracer_module
         from opencensus.trace.propagation import google_cloud_format
 
         trace_id = 'f8739df974a4481f98748cd92b27177d'
@@ -35,7 +35,7 @@ class TestBasicTrace(unittest.TestCase):
 
         trace_header = '{}/{};o={}'.format(trace_id, span_id, trace_option)
 
-        sampler = always_on.AlwaysOnSampler()
+        sampler = samplers.AlwaysOnSampler()
         exporter = file_exporter.FileExporter()
         propagator = google_cloud_format.GoogleCloudFormatPropagator()
         span_context = propagator.from_header(header=trace_header)

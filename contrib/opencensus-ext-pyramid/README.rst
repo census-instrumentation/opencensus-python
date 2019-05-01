@@ -34,13 +34,13 @@ for a complete reference.
 .. code:: python
 
     from opencensus.trace import print_exporter
-    from opencensus.trace.samplers import probability
+    from opencensus.trace import samplers
 
     settings = {
         'OPENCENSUS': {
             'TRACE': {
                 'EXPORTER': print_exporter.PrintExporter(),
-                'SAMPLER': probability.ProbabilitySampler(rate=0.5),
+                'SAMPLER': samplers.ProbabilitySampler(rate=0.5),
             }
         }
     }

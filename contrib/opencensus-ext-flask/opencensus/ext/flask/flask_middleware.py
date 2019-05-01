@@ -23,13 +23,13 @@ from opencensus.common import configuration
 from opencensus.trace import attributes_helper
 from opencensus.trace import execution_context
 from opencensus.trace import print_exporter
+from opencensus.trace import samplers
 from opencensus.trace import span as span_module
 from opencensus.trace import stack_trace
 from opencensus.trace import status
 from opencensus.trace import tracer as tracer_module
 from opencensus.trace import utils
 from opencensus.trace.propagation import trace_context_http_header_format
-from opencensus.trace.samplers import always_on
 
 HTTP_METHOD = attributes_helper.COMMON_ATTRIBUTES['HTTP_METHOD']
 HTTP_URL = attributes_helper.COMMON_ATTRIBUTES['HTTP_URL']
@@ -54,8 +54,8 @@ class FlaskMiddleware(object):
     :param sampler: A sampler. It should extend from the base
                     :class:`.Sampler` type and implement
                     :meth:`.Sampler.should_sample`. Defaults to
-                    :class:`.AlwaysOnSampler`. The rest options are
-                    :class:`.AlwaysOffSampler`, :class:`.FixedRateSampler`.
+                    :class:`.ProbabilitySampler`. Other options include
+                    :class:`.AlwaysOnSampler` and :class:`.AlwaysOffSampler`.
 
     :type exporter: :class:`~opencensus.trace.base_exporter.exporter`
     :param exporter: An exporter. Default to
@@ -90,8 +90,8 @@ class FlaskMiddleware(object):
         settings = settings.get('TRACE', {})
 
         if self.sampler is None:
-            self.sampler = settings.get('SAMPLER', None) or \
-                always_on.AlwaysOnSampler()
+            self.sampler = (settings.get('SAMPLER', None)
+                            or samplers.ProbabilitySampler())
             if isinstance(self.sampler, six.string_types):
                 self.sampler = configuration.load(self.sampler)
 

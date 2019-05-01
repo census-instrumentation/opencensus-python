@@ -83,7 +83,7 @@ TEMPLATES = [
 OPENCENSUS = {
     'TRACE': {
         'SAMPLER':
-            'opencensus.trace.samplers.always_on.AlwaysOnSampler()',
+            'opencensus.trace.samplers.AlwaysOnSampler()',
         'EXPORTER':
             'opencensus.ext.stackdriver.trace_exporter.StackdriverExporter()',
         'PROPAGATOR':
