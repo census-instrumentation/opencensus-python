@@ -46,7 +46,7 @@ class TestOpencensusMiddleware(unittest.TestCase):
 
         middleware = middleware.OpencensusMiddleware()
 
-        assert isinstance(middleware.sampler, samplers.AlwaysOnSampler)
+        assert isinstance(middleware.sampler, samplers.ProbabilitySampler)
         assert isinstance(middleware.exporter, print_exporter.PrintExporter)
         assert isinstance(
             middleware.propagator,
@@ -123,6 +123,7 @@ class TestOpencensusMiddleware(unittest.TestCase):
         settings = type('Test', (object,), {})
         settings.OPENCENSUS = {
             'TRACE': {
+                'SAMPLER': 'opencensus.trace.samplers.AlwaysOnSampler()',  # noqa
                 'BLACKLIST_PATHS': blacklist_paths,
                 'EXPORTER': mock.Mock(),
             }
@@ -176,7 +177,19 @@ class TestOpencensusMiddleware(unittest.TestCase):
             'traceparent': django_trace_id,
         })
 
-        middleware_obj = middleware.OpencensusMiddleware()
+        # Force the test request to be sampled
+        settings = type('Test', (object,), {})
+        settings.OPENCENSUS = {
+            'TRACE': {
+                'SAMPLER': 'opencensus.trace.samplers.AlwaysOnSampler()',  # noqa
+            }
+        }
+        patch_settings = mock.patch(
+            'django.conf.settings',
+            settings)
+
+        with patch_settings:
+            middleware_obj = middleware.OpencensusMiddleware()
 
         middleware_obj.process_request(django_request)
         tracer = middleware._get_current_tracer()
@@ -216,7 +229,19 @@ class TestOpencensusMiddleware(unittest.TestCase):
             'traceparent': django_trace_id,
         })
 
-        middleware_obj = middleware.OpencensusMiddleware()
+        # Force the test request to be sampled
+        settings = type('Test', (object,), {})
+        settings.OPENCENSUS = {
+            'TRACE': {
+                'SAMPLER': 'opencensus.trace.samplers.AlwaysOnSampler()',  # noqa
+            }
+        }
+        patch_settings = mock.patch(
+            'django.conf.settings',
+            settings)
+
+        with patch_settings:
+            middleware_obj = middleware.OpencensusMiddleware()
 
         middleware_obj.process_request(django_request)
         tracer = middleware._get_current_tracer()
@@ -254,7 +279,19 @@ class TestOpencensusMiddleware(unittest.TestCase):
             'traceparent': django_trace_id,
         })
 
-        middleware_obj = middleware.OpencensusMiddleware()
+        # Force the test request to be sampled
+        settings = type('Test', (object,), {})
+        settings.OPENCENSUS = {
+            'TRACE': {
+                'SAMPLER': 'opencensus.trace.samplers.AlwaysOnSampler()',  # noqa
+            }
+        }
+        patch_settings = mock.patch(
+            'django.conf.settings',
+            settings)
+
+        with patch_settings:
+            middleware_obj = middleware.OpencensusMiddleware()
 
         middleware_obj.process_request(django_request)
         tracer = middleware._get_current_tracer()

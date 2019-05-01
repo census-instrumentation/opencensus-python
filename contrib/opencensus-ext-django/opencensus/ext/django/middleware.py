@@ -114,7 +114,7 @@ class OpencensusMiddleware(MiddlewareMixin):
         settings = settings.get('TRACE', {})
 
         self.sampler = (settings.get('SAMPLER', None) or
-                        samplers.AlwaysOnSampler())
+                        samplers.ProbabilitySampler())
         if isinstance(self.sampler, six.string_types):
             self.sampler = configuration.load(self.sampler)
 

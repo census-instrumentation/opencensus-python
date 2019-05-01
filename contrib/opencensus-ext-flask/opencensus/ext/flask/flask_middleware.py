@@ -54,8 +54,8 @@ class FlaskMiddleware(object):
     :param sampler: A sampler. It should extend from the base
                     :class:`.Sampler` type and implement
                     :meth:`.Sampler.should_sample`. Defaults to
-                    :class:`.AlwaysOnSampler`. The rest options are
-                    :class:`.AlwaysOffSampler`, :class:`.FixedRateSampler`.
+                    :class:`.ProbabilitySampler`. Other options include
+                    :class:`.AlwaysOnSampler` and :class:`.AlwaysOffSampler`.
 
     :type exporter: :class:`~opencensus.trace.base_exporter.exporter`
     :param exporter: An exporter. Default to
@@ -91,7 +91,7 @@ class FlaskMiddleware(object):
 
         if self.sampler is None:
             self.sampler = (settings.get('SAMPLER', None) or
-                            samplers.AlwaysOnSampler())
+                            samplers.ProbabilitySampler())
             if isinstance(self.sampler, six.string_types):
                 self.sampler = configuration.load(self.sampler)
 

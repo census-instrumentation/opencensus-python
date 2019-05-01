@@ -73,7 +73,7 @@ class TestFlaskMiddleware(unittest.TestCase):
         self.assertIs(app, middleware.app)
         self.assertTrue(app.before_request.called)
         self.assertTrue(app.after_request.called)
-        assert isinstance(middleware.sampler, samplers.AlwaysOnSampler)
+        assert isinstance(middleware.sampler, samplers.ProbabilitySampler)
         assert isinstance(middleware.exporter, print_exporter.PrintExporter)
         assert isinstance(
             middleware.propagator,
@@ -138,7 +138,8 @@ class TestFlaskMiddleware(unittest.TestCase):
         flask_trace_id = '00-{}-{}-00'.format(trace_id, span_id)
 
         app = self.create_app()
-        flask_middleware.FlaskMiddleware(app=app)
+        flask_middleware.FlaskMiddleware(app=app,
+                                         sampler=samplers.AlwaysOnSampler())
         context = app.test_request_context(
             path='/',
             headers={flask_trace_header: flask_trace_id})
@@ -169,7 +170,10 @@ class TestFlaskMiddleware(unittest.TestCase):
         flask_trace_id = '00-{}-{}-00'.format(trace_id, span_id)
 
         app = self.create_app()
-        flask_middleware.FlaskMiddleware(app=app)
+        # Use the AlwaysOnSampler here to prove that the blacklist takes
+        # precedence over the sampler
+        flask_middleware.FlaskMiddleware(app=app,
+                                         sampler=samplers.AlwaysOnSampler())
         context = app.test_request_context(
             path='/_ah/health',
             headers={flask_trace_header: flask_trace_id})
@@ -196,7 +200,8 @@ class TestFlaskMiddleware(unittest.TestCase):
         flask_trace_id = '00-{}-{}-00'.format(trace_id, span_id)
 
         app = self.create_app()
-        flask_middleware.FlaskMiddleware(app=app)
+        flask_middleware.FlaskMiddleware(app=app,
+                                         sampler=samplers.AlwaysOnSampler())
         context = app.test_request_context(
             path='/',
             headers={flask_trace_header: flask_trace_id})
@@ -221,7 +226,8 @@ class TestFlaskMiddleware(unittest.TestCase):
 
     def test_header_is_none(self):
         app = self.create_app()
-        flask_middleware.FlaskMiddleware(app=app)
+        flask_middleware.FlaskMiddleware(app=app,
+                                         sampler=samplers.AlwaysOnSampler())
         context = app.test_request_context(
             path='/')
 
@@ -292,7 +298,8 @@ class TestFlaskMiddleware(unittest.TestCase):
     def test_teardown_include_exception(self):
         mock_exporter = mock.MagicMock()
         app = self.create_app()
-        flask_middleware.FlaskMiddleware(app=app, exporter=mock_exporter)
+        flask_middleware.FlaskMiddleware(app=app, exporter=mock_exporter,
+                                         sampler=samplers.AlwaysOnSampler())
         response = app.test_client().get('/error')
 
         self.assertEqual(response.status_code, 500)
@@ -307,7 +314,8 @@ class TestFlaskMiddleware(unittest.TestCase):
         mock_exporter = mock.MagicMock()
         app = self.create_app()
         app.config['TESTING'] = True
-        flask_middleware.FlaskMiddleware(app=app, exporter=mock_exporter)
+        flask_middleware.FlaskMiddleware(app=app, exporter=mock_exporter,
+                                         sampler=samplers.AlwaysOnSampler())
         with self.assertRaises(FlaskTestException):
             app.test_client().get('/error')
 
