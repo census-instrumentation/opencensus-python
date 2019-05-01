@@ -31,57 +31,55 @@ class TestProbabilitySampler(unittest.TestCase):
         self.assertEqual(sampler.rate, rate)
 
     def test_constructor_default(self):
-        rate = 0.5
         sampler = samplers.ProbabilitySampler()
-
-        self.assertEqual(sampler.rate, rate)
+        self.assertEqual(sampler.rate, samplers.DEFAULT_SAMPLING_RATE)
 
     def test_should_sample_smaller(self):
         trace_id = 'f8739df974a4481f98748cd92b27177d'
-        sampler = samplers.ProbabilitySampler(rate=1)
         mock_context = mock.Mock()
         mock_context.trace_id = trace_id
         mock_context.trace_options.get_enabled.return_value = False
-        should_sample = sampler.should_sample(mock_context)
 
-        self.assertTrue(should_sample)
+        sampler = samplers.ProbabilitySampler(rate=1)
+        self.assertTrue(sampler.should_sample(mock_context))
 
     def test_should_sample_greater(self):
         trace_id = 'f8739df974a4481f98748cd92b27177d'
-        sampler = samplers.ProbabilitySampler(rate=0)
         mock_context = mock.Mock()
         mock_context.trace_id = trace_id
         mock_context.trace_options.get_enabled.return_value = False
-        should_sample = sampler.should_sample(mock_context)
 
-        self.assertFalse(should_sample)
+        sampler = samplers.ProbabilitySampler()
+        self.assertFalse(sampler.should_sample(mock_context))
 
-    def test_should_sample_trace_id_sampled(self):
-        trace_id = '00000000000000000000000000000000'
-        sampler = samplers.ProbabilitySampler(rate=0.5)
+    def test_should_sample_low_traceid(self):
+        trace_id = '000000000000000000068db8bac710cb'
         mock_context = mock.Mock()
         mock_context.trace_id = trace_id
         mock_context.trace_options.get_enabled.return_value = False
-        should_sample = sampler.should_sample(mock_context)
 
-        self.assertTrue(should_sample)
+        sampler = samplers.ProbabilitySampler()
+        self.assertTrue(sampler.should_sample(mock_context))
 
-    def test_should_sample_trace_id_not_sampled(self):
-        trace_id = 'ffffffffffffffffffffffffffffffff'
-        sampler = samplers.ProbabilitySampler(rate=0.5)
+        # Check that we only check the last 8 bytes
+        trace_id2 = 'ffffffffffffffff00068db8bac710cb'
+        mock_context.trace_id = trace_id2
+        self.assertTrue(sampler.should_sample(mock_context))
+
+    def test_should_sample_high_traceid(self):
+        trace_id = '000000000000000000068db8bac710cc'
         mock_context = mock.Mock()
         mock_context.trace_id = trace_id
         mock_context.trace_options.get_enabled.return_value = False
-        should_sample = sampler.should_sample(mock_context)
 
-        self.assertFalse(should_sample)
+        sampler = samplers.ProbabilitySampler()
+        self.assertFalse(sampler.should_sample(mock_context))
 
     def test_should_sample_short_circuit(self):
         trace_id = 'ffffffffffffffffffffffffffffffff'
-        sampler = samplers.ProbabilitySampler(rate=0.5)
         mock_context = mock.Mock()
         mock_context.trace_id = trace_id
         mock_context.trace_options.get_enabled.return_value = True
-        should_sample = sampler.should_sample(mock_context)
 
-        self.assertTrue(should_sample)
+        sampler = samplers.ProbabilitySampler()
+        self.assertTrue(sampler.should_sample(mock_context))

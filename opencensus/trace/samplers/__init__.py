@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-DEFAULT_SAMPLING_RATE = 0.5
-MAX_VALUE = 0xffffffffffffffff
+
+DEFAULT_SAMPLING_RATE = 1e-4
 
 
 class Sampler(object):
@@ -77,7 +77,7 @@ class ProbabilitySampler(Sampler):
             return True
 
         lower_long = get_lower_long_from_trace_id(span_context.trace_id)
-        bound = self.rate * MAX_VALUE
+        bound = self.rate * 0xffffffffffffffff
         return lower_long <= bound
 
 
