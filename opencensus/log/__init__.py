@@ -61,7 +61,7 @@ def get_log_attrs():
         span_id = ATTR_DEFAULTS.span_id
 
     try:
-        sampling_decision = tracer.span_context.trace_options.get_enabled
+        sampling_decision = tracer.span_context.trace_options.get_enabled()
         if sampling_decision is None:
             sampling_decision = ATTR_DEFAULTS.sampling_decision
     except AttributeError:

@@ -50,7 +50,7 @@ class Tracer(object):
             span_context = SpanContext()
 
         if sampler is None:
-            sampler = samplers.AlwaysOnSampler()
+            sampler = samplers.ProbabilitySampler()
 
         if exporter is None:
             exporter = print_exporter.PrintExporter()
@@ -85,8 +85,7 @@ class Tracer(object):
             return context_tracer.ContextTracer(
                 exporter=self.exporter,
                 span_context=self.span_context)
-        else:
-            return noop_tracer.NoopTracer()
+        return noop_tracer.NoopTracer()
 
     def store_tracer(self):
         """Add the current tracer to thread_local"""

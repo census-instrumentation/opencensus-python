@@ -16,8 +16,9 @@ import unittest
 
 import mock
 
-from opencensus.trace import tracer as tracer_module
+from opencensus.trace import samplers
 from opencensus.trace import span_data
+from opencensus.trace import tracer as tracer_module
 
 
 class TestTracer(unittest.TestCase):
@@ -25,19 +26,19 @@ class TestTracer(unittest.TestCase):
         from opencensus.trace import print_exporter
         from opencensus.trace.propagation \
             import trace_context_http_header_format
-        from opencensus.trace.samplers import AlwaysOnSampler
+        from opencensus.trace.samplers import ProbabilitySampler
         from opencensus.trace.span_context import SpanContext
-        from opencensus.trace.tracers import context_tracer
+        from opencensus.trace.tracers import noop_tracer
 
         tracer = tracer_module.Tracer()
 
         assert isinstance(tracer.span_context, SpanContext)
-        assert isinstance(tracer.sampler, AlwaysOnSampler)
+        assert isinstance(tracer.sampler, ProbabilitySampler)
         assert isinstance(tracer.exporter, print_exporter.PrintExporter)
         assert isinstance(
             tracer.propagator,
             trace_context_http_header_format.TraceContextPropagator)
-        assert isinstance(tracer.tracer, context_tracer.ContextTracer)
+        assert isinstance(tracer.tracer, noop_tracer.NoopTracer)
 
     def test_constructor_explicit(self):
         from opencensus.trace.tracers import noop_tracer
@@ -271,7 +272,8 @@ class TestTracer(unittest.TestCase):
 
     def test_trace_decorator(self):
         mock_exporter = mock.MagicMock()
-        tracer = tracer_module.Tracer(exporter=mock_exporter)
+        tracer = tracer_module.Tracer(exporter=mock_exporter,
+                                      sampler=samplers.AlwaysOnSampler())
 
         return_value = "test"
 
