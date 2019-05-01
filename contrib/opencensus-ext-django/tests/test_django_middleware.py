@@ -88,7 +88,20 @@ class TestOpencensusMiddleware(unittest.TestCase):
         django_request = RequestFactory().get('/', **{
             'HTTP_TRACEPARENT': django_trace_id})
 
-        middleware_obj = middleware.OpencensusMiddleware()
+
+        # Force the test request to be sampled
+        settings = type('Test', (object,), {})
+        settings.OPENCENSUS = {
+            'TRACE': {
+                'SAMPLER': 'opencensus.trace.samplers.AlwaysOnSampler()',  # noqa
+            }
+        }
+        patch_settings = mock.patch(
+            'django.conf.settings',
+            settings)
+
+        with patch_settings:
+            middleware_obj = middleware.OpencensusMiddleware()
 
         # test process_request
         middleware_obj.process_request(django_request)
