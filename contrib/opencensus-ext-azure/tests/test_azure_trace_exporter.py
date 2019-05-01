@@ -19,7 +19,6 @@ import shutil
 import unittest
 
 from opencensus.ext.azure import trace_exporter
-from opencensus.ext.azure.common import Options
 
 TEST_FOLDER = os.path.abspath('.test.exporter')
 
@@ -40,6 +39,7 @@ def throw(exc_type, *args, **kwargs):
 
 class TestAzureExporter(unittest.TestCase):
     def test_ctor(self):
+        from opencensus.ext.azure.common import Options
         instrumentation_key = Options.prototype.instrumentation_key
         Options.prototype.instrumentation_key = None
         self.assertRaises(ValueError, lambda: trace_exporter.AzureExporter())
@@ -47,10 +47,8 @@ class TestAzureExporter(unittest.TestCase):
 
     def test_export(self):
         exporter = trace_exporter.AzureExporter(
-            Options(
-                instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
-                storage_path=os.path.join(TEST_FOLDER, 'foo'),
-            ),
+            instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
+            storage_path=os.path.join(TEST_FOLDER, 'foo'),
         )
         exporter.transport = MockTransport()
         exporter.export(None)
@@ -59,10 +57,8 @@ class TestAzureExporter(unittest.TestCase):
     @mock.patch('requests.post', return_value=mock.Mock())
     def test_emit(self, request_mock):
         exporter = trace_exporter.AzureExporter(
-            Options(
-                instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
-                storage_path=os.path.join(TEST_FOLDER, 'foo'),
-            ),
+            instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
+            storage_path=os.path.join(TEST_FOLDER, 'foo'),
         )
         exporter.transport = MockTransport()
         exporter.emit([])
@@ -74,7 +70,6 @@ class TestAzureExporter(unittest.TestCase):
         self.assertIsNone(exporter.storage.get())
 
     def test_span_data_to_envelope(self):
-        from opencensus.ext.azure.common import Options
         from opencensus.trace.span import SpanKind
         from opencensus.trace.span_context import SpanContext
         from opencensus.trace.span_data import SpanData
@@ -82,10 +77,8 @@ class TestAzureExporter(unittest.TestCase):
         from opencensus.trace.tracestate import Tracestate
 
         exporter = trace_exporter.AzureExporter(
-            Options(
-                instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
-                storage_path=os.path.join(TEST_FOLDER, 'bar'),
-            ),
+            instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
+            storage_path=os.path.join(TEST_FOLDER, 'bar'),
         )
 
         # SpanKind.CLIENT HTTP
@@ -368,10 +361,8 @@ class TestAzureExporter(unittest.TestCase):
 
     def test_transmission_nothing(self):
         exporter = trace_exporter.AzureExporter(
-            Options(
-                instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
-                storage_path=os.path.join(TEST_FOLDER, 'baz'),
-            ),
+            instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
+            storage_path=os.path.join(TEST_FOLDER, 'baz'),
         )
 
         with mock.patch('requests.post') as post:
@@ -380,10 +371,8 @@ class TestAzureExporter(unittest.TestCase):
 
     def test_transmission_request_exception(self):
         exporter = trace_exporter.AzureExporter(
-            Options(
-                instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
-                storage_path=os.path.join(TEST_FOLDER, 'request.exception'),
-            ),
+            instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
+            storage_path=os.path.join(TEST_FOLDER, 'request.exception'),
         )
         exporter.storage.put([1, 2, 3])
         with mock.patch('requests.post', throw(Exception)):
@@ -393,10 +382,8 @@ class TestAzureExporter(unittest.TestCase):
 
     def test_transmission_lease_failure(self):
         exporter = trace_exporter.AzureExporter(
-            Options(
-                instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
-                storage_path=os.path.join(TEST_FOLDER, 'lease.failure'),
-            ),
+            instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
+            storage_path=os.path.join(TEST_FOLDER, 'lease.failure'),
         )
         exporter.storage.put([1, 2, 3])
         with mock.patch('opencensus.ext.azure.common.storage.LocalFileBlob.lease') as lease:  # noqa: E501
@@ -406,10 +393,8 @@ class TestAzureExporter(unittest.TestCase):
 
     def test_transmission_response_exception(self):
         exporter = trace_exporter.AzureExporter(
-            Options(
-                instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
-                storage_path=os.path.join(TEST_FOLDER, 'response.exception'),
-            ),
+            instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
+            storage_path=os.path.join(TEST_FOLDER, 'response.exception'),
         )
         exporter.storage.put([1, 2, 3])
         with mock.patch('requests.post') as post:
@@ -421,10 +406,8 @@ class TestAzureExporter(unittest.TestCase):
 
     def test_transmission_200(self):
         exporter = trace_exporter.AzureExporter(
-            Options(
-                instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
-                storage_path=os.path.join(TEST_FOLDER, '200'),
-            ),
+            instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
+            storage_path=os.path.join(TEST_FOLDER, '200'),
         )
         exporter.storage.put([1, 2, 3])
         exporter.storage.put([1, 2, 3])
@@ -436,10 +419,8 @@ class TestAzureExporter(unittest.TestCase):
 
     def test_transmission_206(self):
         exporter = trace_exporter.AzureExporter(
-            Options(
-                instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
-                storage_path=os.path.join(TEST_FOLDER, '206'),
-            ),
+            instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
+            storage_path=os.path.join(TEST_FOLDER, '206'),
         )
         exporter.storage.put([1, 2, 3])
         with mock.patch('requests.post') as post:
@@ -450,10 +431,8 @@ class TestAzureExporter(unittest.TestCase):
 
     def test_transmission_206_500(self):
         exporter = trace_exporter.AzureExporter(
-            Options(
-                instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
-                storage_path=os.path.join(TEST_FOLDER, '206.500'),
-            ),
+            instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
+            storage_path=os.path.join(TEST_FOLDER, '206.500'),
         )
         exporter.storage.put([1, 2, 3, 4, 5])
         with mock.patch('requests.post') as post:
@@ -479,10 +458,8 @@ class TestAzureExporter(unittest.TestCase):
 
     def test_transmission_206_nothing_to_retry(self):
         exporter = trace_exporter.AzureExporter(
-            Options(
-                instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
-                storage_path=os.path.join(TEST_FOLDER, 'nothing.to.retry'),
-            ),
+            instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
+            storage_path=os.path.join(TEST_FOLDER, 'nothing.to.retry'),
         )
         exporter.storage.put([1, 2, 3])
         with mock.patch('requests.post') as post:
@@ -502,10 +479,8 @@ class TestAzureExporter(unittest.TestCase):
 
     def test_transmission_206_bogus(self):
         exporter = trace_exporter.AzureExporter(
-            Options(
-                instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
-                storage_path=os.path.join(TEST_FOLDER, '206.bogus'),
-            ),
+            instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
+            storage_path=os.path.join(TEST_FOLDER, '206.bogus'),
         )
         exporter.storage.put([1, 2, 3, 4, 5])
         with mock.patch('requests.post') as post:
@@ -525,10 +500,8 @@ class TestAzureExporter(unittest.TestCase):
 
     def test_transmission_400(self):
         exporter = trace_exporter.AzureExporter(
-            Options(
-                instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
-                storage_path=os.path.join(TEST_FOLDER, '400'),
-            ),
+            instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
+            storage_path=os.path.join(TEST_FOLDER, '400'),
         )
         exporter.storage.put([1, 2, 3])
         with mock.patch('requests.post') as post:
@@ -538,10 +511,8 @@ class TestAzureExporter(unittest.TestCase):
 
     def test_transmission_500(self):
         exporter = trace_exporter.AzureExporter(
-            Options(
-                instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
-                storage_path=os.path.join(TEST_FOLDER, '500'),
-            ),
+            instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
+            storage_path=os.path.join(TEST_FOLDER, '500'),
         )
         exporter.storage.put([1, 2, 3])
         with mock.patch('requests.post') as post:
