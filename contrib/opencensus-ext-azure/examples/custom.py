@@ -19,12 +19,11 @@ app = Flask(__name__)
 # TODO: replace the all-zero GUID with your instrumentation key.
 app.config['OPENCENSUS'] = {
     'TRACE': {
-        'SAMPLER': 'opencensus.trace.samplers.ProbabilitySampler(rate=1)',
+        'SAMPLER': 'opencensus.trace.samplers.ProbabilitySampler(rate=1.0)',
         'EXPORTER': '''opencensus.ext.azure.trace_exporter.AzureExporter(
-            opencensus.ext.azure.common.Options(
-                instrumentation_key='00000000-0000-0000-0000-000000000000',
-                timeout=29.9,
-            ))''',
+            instrumentation_key='00000000-0000-0000-0000-000000000000',
+            timeout=29.9,
+        )''',
     },
 }
 middleware = FlaskMiddleware(app)

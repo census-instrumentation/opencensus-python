@@ -41,8 +41,8 @@ class AzureExporter(base_exporter.Exporter):
     :param options: Options for the exporter. Defaults to None.
     """
 
-    def __init__(self, options=None):
-        self.options = options or Options()
+    def __init__(self, **options):
+        self.options = Options(**options)
         if not self.options.instrumentation_key:
             raise ValueError('The instrumentation_key is not provided.')
         self.storage = LocalFileStorage(
