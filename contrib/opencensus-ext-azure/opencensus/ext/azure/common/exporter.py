@@ -20,12 +20,19 @@ from six.moves import queue
 from opencensus.ext.azure.common import Options
 
 
-class QueueEvent(threading.Event):
+class QueueEvent(object):
     def __init__(self, name):
         self.name = name
-        super(QueueEvent, self).__init__()
+        self.event = threading.Event()
+
     def __repr__(self):
         return ('{}({})'.format(type(self).__name__, self.name))
+
+    def set(self):
+        return self.event.set()
+
+    def wait(self, timeout=None):
+        return self.event.wait(timeout)
 
 
 class BaseExporter(object):
