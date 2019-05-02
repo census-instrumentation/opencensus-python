@@ -17,15 +17,14 @@ import json
 import requests
 
 from opencensus.common.transports.async_ import AsyncTransport
-from opencensus.common.schedule import PeriodicTask
 from opencensus.ext.azure.common import Options
 from opencensus.ext.azure.common import utils
+from opencensus.ext.azure.common.exporter import BaseExporter
 from opencensus.ext.azure.common.protocol import Data
 from opencensus.ext.azure.common.protocol import Envelope
 from opencensus.ext.azure.common.protocol import RemoteDependency
 from opencensus.ext.azure.common.protocol import Request
 from opencensus.ext.azure.common.storage import LocalFileStorage
-from opencensus.trace import base_exporter
 from opencensus.trace import execution_context
 from opencensus.trace.span import SpanKind
 
@@ -34,7 +33,7 @@ logger = logging.getLogger(__name__)
 __all__ = ['AzureExporter']
 
 
-class AzureExporter(base_exporter.Exporter):
+class AzureExporter(BaseExporter):
     """An exporter that sends traces to Microsoft Azure Monitor.
 
     :type options: dict
@@ -51,17 +50,7 @@ class AzureExporter(base_exporter.Exporter):
             maintenance_period=self.options.storage_maintenance_period,
             retention_period=self.options.storage_retention_period,
         )
-        self.transport = AsyncTransport(
-            self,
-            max_batch_size=100,
-            wait_period=self.options.export_interval,
-        )
-        self._transmission_task = PeriodicTask(
-            interval=self.options.storage_maintenance_period,
-            function=self._transmission_routine,
-        )
-        self._transmission_task.daemon = True
-        self._transmission_task.start()
+        super(AzureExporter, self).__init__(**options)
 
     def span_data_to_envelope(self, sd):
         envelope = Envelope(
@@ -236,23 +225,16 @@ class AzureExporter(base_exporter.Exporter):
         # server side error (non-retryable)
         return -response.status_code
 
-    def emit(self, span_datas):
-        """
-        :type span_datas: list of :class:
-            `~opencensus.trace.span_data.SpanData`
-        :param list of opencensus.trace.span_data.SpanData span_datas:
-            SpanData tuples to emit
-        """
-        envelopes = [self.span_data_to_envelope(sd) for sd in span_datas]
-        result = self._transmit(envelopes)
-        if result > 0:
-            self.storage.put(envelopes, result)
-
-    def export(self, span_datas):
-        """
-        :type span_datas: list of :class:
-            `~opencensus.trace.span_data.SpanData`
-        :param list of opencensus.trace.span_data.SpanData span_datas:
-            SpanData tuples to export
-        """
-        self.transport.export(span_datas)
+    def emit(self, batch, event=None):
+        if batch:
+            envelopes = [self.span_data_to_envelope(sd) for sd in batch]
+            result = self._transmit(envelopes)
+            if result > 0:
+                self.storage.put(envelopes, result)
+        if event:
+            if event is BaseExporter.EXIT_EVENT:
+                self._transmission_routine()  # try to send files before exit
+            event.set()
+            return
+        if not batch or len(batch) < self.options.max_batch_size:
+            self._transmission_routine()

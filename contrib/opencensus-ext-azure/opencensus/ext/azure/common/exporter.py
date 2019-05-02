@@ -29,7 +29,7 @@ class QueueEvent(threading.Event):
 
 
 class BaseExporter(object):
-    _EXIT_EVENT = QueueEvent('EXIT')
+    EXIT_EVENT = QueueEvent('EXIT')
 
     def __init__(self, **options):
         self.options = Options(**options)
@@ -82,7 +82,7 @@ class BaseExporter(object):
         wait_time = timeout
         if self._thread.is_alive() and not self._stopping:
             self._stopping = True
-            self._queue.put(self._EXIT_EVENT, block=True, timeout=wait_time)
+            self._queue.put(self.EXIT_EVENT, block=True, timeout=wait_time)
             elapsed_time = time.time() - start_time
             wait_time = timeout and max(timeout - elapsed_time, 0)
         self._thread.join(timeout=wait_time)
@@ -95,7 +95,7 @@ class BaseExporter(object):
             batch = self._gets(self.max_batch_size, timeout=self.interval)
             if batch and isinstance(batch[-1], QueueEvent):
                 self.emit(batch[:-1], event=batch[-1])
-                if batch[-1] is self._EXIT_EVENT:
+                if batch[-1] is self.EXIT_EVENT:
                     break
                 else:
                     continue
