@@ -16,19 +16,28 @@ import atexit
 import threading
 import time
 
-from six.moves.queue import Empty
-from six.moves.queue import Queue
+from six.moves import queue
+from opencensus.ext.azure.common import Options
+
+
+class QueueEvent(threading.Event):
+    def __init__(self, name):
+        self.name = name
+        super(QueueEvent, self).__init__()
+    def __repr__(self):
+        return ('{}({})'.format(type(self).__name__, self.name))
 
 
 class BaseExporter(object):
-    _EXIT_MESSAGE = object()
+    _EXIT_EVENT = QueueEvent('EXIT')
 
-    def __init__(self, interval=15, max_batch_size=100, grace_period=5):
-        self.grace_period = grace_period
-        self.interval = interval
-        self.max_batch_size = max_batch_size
+    def __init__(self, **options):
+        self.options = Options(**options)
+        self.grace_period = self.options.grace_period
+        self.interval = self.options.export_interval
+        self.max_batch_size = self.options.max_batch_size
         self._stopping = False
-        self._queue = Queue(0)
+        self._queue = queue.Queue(maxsize=self.options.max_queue_size)
         self._thread = threading.Thread(target=self._thread_entry)
         self._thread.daemon = True
         self._thread.start()
@@ -48,9 +57,9 @@ class BaseExporter(object):
             try:
                 item = self._queue.get(block=False)
                 yield item
-                if item is self._EXIT_MESSAGE:
+                if isinstance(item, QueueEvent):
                     return
-            except Empty:
+            except queue.Empty:
                 break
             cnt += 1
         while cnt < count:
@@ -58,9 +67,9 @@ class BaseExporter(object):
             try:
                 item = self._queue.get(block=True, timeout=wait_time)
                 yield item
-                if item is self._EXIT_MESSAGE:
+                if isinstance(item, QueueEvent):
                     return
-            except Empty:
+            except queue.Empty:
                 break
             cnt += 1
             elapsed_time = time.time() - start_time
@@ -71,21 +80,46 @@ class BaseExporter(object):
     def _stop(self, timeout):
         start_time = time.time()
         wait_time = timeout
-        if not self._stopping:
+        if self._thread.is_alive() and not self._stopping:
             self._stopping = True
-            self._queue.put(self._EXIT_MESSAGE, block=True, timeout=wait_time)
+            self._queue.put(self._EXIT_EVENT, block=True, timeout=wait_time)
             elapsed_time = time.time() - start_time
             wait_time = timeout and max(timeout - elapsed_time, 0)
         self._thread.join(timeout=wait_time)
+        if self._thread.is_alive():
+            return
+        return time.time() - start_time  # time taken to flush
 
     def _thread_entry(self):
         while True:
-            batch = self._gets(self.max_batch_size, self.interval)
-            if batch and batch[-1] is self._EXIT_MESSAGE:
-                self.emit(batch[:-1], emergency_mode=True)
-                break
+            batch = self._gets(self.max_batch_size, timeout=self.interval)
+            if batch and isinstance(batch[-1], QueueEvent):
+                self.emit(batch[:-1], event=batch[-1])
+                if batch[-1] is self._EXIT_EVENT:
+                    break
+                else:
+                    continue
             self.emit(batch)
 
-    def emit(self, batch, emergency_mode=False):
-        # if emergency_mode is True, persist the data before sending, do not pick up files unless batch is empty
+    def emit(self, batch, event=None):
         raise NotImplementedError  # pragma: NO COVER
+
+    def export(self, items):
+        for item in items:
+            try:
+                self._queue.put(item, block=False)
+            except queue.Full:
+                pass  # TODO: log data loss
+
+    def flush(self, timeout=None):
+        start_time = time.time()
+        wait_time = timeout
+        event = QueueEvent('SYNC(timeout={})'.format(wait_time))
+        try:
+            self._queue.put(event, block=True, timeout=wait_time)
+        except queue.Full:
+            return
+        elapsed_time = time.time() - start_time
+        wait_time = timeout and max(timeout - elapsed_time, 0)
+        if event.wait(timeout):
+            return time.time() - start_time  # time taken to flush
