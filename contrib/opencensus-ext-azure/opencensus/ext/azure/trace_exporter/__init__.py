@@ -131,8 +131,6 @@ class AzureExporter(BaseExporter):
         Return the next retry time in seconds for retryable failure.
         This function should never throw exception.
         """
-        if not envelopes:
-            return 0
         # TODO: prevent requests being tracked
         blacklist_hostnames = execution_context.get_opencensus_attr(
             'blacklist_hostnames',
@@ -238,3 +236,7 @@ class AzureExporter(BaseExporter):
             return
         if not batch or len(batch) < self.options.max_batch_size:
             self._transmit_from_storage()
+
+    def _stop(self, timeout=None):
+        self.storage.close()
+        return super(AzureExporter, self)._stop(timeout)

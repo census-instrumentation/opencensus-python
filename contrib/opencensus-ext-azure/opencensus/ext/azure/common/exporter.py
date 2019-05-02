@@ -84,7 +84,7 @@ class BaseExporter(object):
     def _gets(self, count, timeout):
         return tuple(self.__gets(count, timeout))
 
-    def _stop(self, timeout):
+    def _stop(self, timeout=None):
         start_time = time.time()
         wait_time = timeout
         if self._thread.is_alive() and not self._stopping:
@@ -92,10 +92,8 @@ class BaseExporter(object):
             self._queue.put(self.EXIT_EVENT, block=True, timeout=wait_time)
             elapsed_time = time.time() - start_time
             wait_time = timeout and max(timeout - elapsed_time, 0)
-        self._thread.join(timeout=wait_time)
-        if self._thread.is_alive():
-            return
-        return time.time() - start_time  # time taken to flush
+        if self.EXIT_EVENT.wait(timeout=wait_time):
+            return time.time() - start_time  # time taken to stop
 
     def _thread_entry(self):
         while True:
