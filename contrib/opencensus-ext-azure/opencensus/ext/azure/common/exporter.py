@@ -82,9 +82,10 @@ class BaseExporter(object):
         while True:
             batch = self._gets(self.max_batch_size, self.interval)
             if batch and batch[-1] is self._EXIT_MESSAGE:
-                self.emit(batch[:-1], last_batch=True)
+                self.emit(batch[:-1], emergency_mode=True)
                 break
             self.emit(batch)
 
-    def emit(self, batch, last_batch=False):
+    def emit(self, batch, emergency_mode=False):
+        # if emergency_mode is True, persist the data before sending, do not pick up files unless batch is empty
         raise NotImplementedError  # pragma: NO COVER
