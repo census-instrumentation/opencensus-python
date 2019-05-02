@@ -76,6 +76,7 @@ class TestAzureExporter(unittest.TestCase):
         span_data_to_envelope_mock.return_value = ['bar']
         exporter = trace_exporter.AzureExporter(
             instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
+            max_batch_size=1,
             storage_path=os.path.join(TEST_FOLDER, 'emit.success'),
         )
         with mock.patch('opencensus.ext.azure.trace_exporter.AzureExporter._transmit') as transmit:  # noqa: E501
