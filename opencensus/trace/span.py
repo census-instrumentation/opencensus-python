@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from collections import OrderedDict
+from collections import abc
+from collections import deque
 from datetime import datetime
 from itertools import chain
 
@@ -24,6 +27,88 @@ from opencensus.trace import status
 from opencensus.trace import time_event as time_event_module
 from opencensus.trace.span_context import generate_span_id
 from opencensus.trace.tracers import base
+
+
+# https://github.com/census-instrumentation/opencensus-specs/blob/master/trace/TraceConfig.md  # noqa
+MAX_NUM_LINKS = 32
+MAX_NUM_ATTRIBUTES = 32
+
+
+class BoundedList(abc.Sequence):
+    """An append only list with a fixed max size."""
+    def __init__(self, maxlen):
+        self.dropped = 0
+        self._dq = deque(maxlen=maxlen)
+
+    def __repr__(self):
+        return repr(self._dq)
+
+    def __getitem__(self, index):
+        return self._dq[index]
+
+    def __len__(self):
+        return len(self._dq)
+
+    def __iter__(self):
+        return iter(self._dq)
+
+    def append(self, item):
+        if len(self._dq) == self._dq.maxlen:
+            self.dropped += 1
+        self._dq.append(item)
+
+    def extend(self, seq):
+        to_drop = len(seq) + len(self._dq) - self._dq.maxlen
+        if to_drop > 0:
+            self.dropped += to_drop
+        self._dq.extend(seq)
+
+    @classmethod
+    def from_seq(cls, maxlen, seq):
+        if len(seq) > maxlen:
+            raise ValueError
+        bounded_list = cls(maxlen)
+        bounded_list._dq = deque(seq, maxlen=maxlen)
+        return bounded_list
+
+
+class BoundedDict(abc.MutableMapping):
+    """A dict with a fixed max capacity."""
+    def __init__(self, maxlen):
+        self.maxlen = maxlen
+        self.dropped = 0
+        self._dict = OrderedDict()
+
+    def __repr__(self):
+        return repr(self._dict)
+
+    def __getitem__(self, key):
+        return self._dict[key]
+
+    def __setitem__(self, key, value):
+        if key in self._dict:
+            del self._dict[key]
+        elif len(self._dict) == self.maxlen:
+            del self._dict[next(iter(self._dict.keys()))]
+            self.dropped += 1
+        self._dict[key] = value
+
+    def __delitem__(self, key):
+        del self._dict[key]
+
+    def __iter__(self):
+        return iter(self._dict)
+
+    def __len__(self):
+        return len(self._dict)
+
+    @classmethod
+    def from_map(cls, maxlen, mapping):
+        if len(mapping) > maxlen:
+            raise ValueError
+        bounded_dict = cls(maxlen)
+        bounded_dict._dict = OrderedDict(mapping)
+        return bounded_dict
 
 
 class SpanKind(object):
@@ -123,7 +208,10 @@ class Span(base_span.BaseSpan):
             span_id = generate_span_id()
 
         if attributes is None:
-            attributes = {}
+            self.attributes = BoundedDict(MAX_NUM_ATTRIBUTES)
+        else:
+            self.attributes = BoundedDict.from_map(
+                MAX_NUM_ATTRIBUTES, attributes)
 
         # Do not manipulate spans directly using the methods in Span Class,
         # make sure to use the Tracer.
@@ -134,13 +222,13 @@ class Span(base_span.BaseSpan):
             time_events = []
 
         if links is None:
-            links = []
+            self.links = BoundedList(MAX_NUM_LINKS)
+        else:
+            self.links = BoundedList.from_seq(MAX_NUM_LINKS, links)
 
-        self.attributes = attributes
         self.span_id = span_id
         self.stack_trace = stack_trace
         self.time_events = time_events
-        self.links = links
         self.status = status
         self.same_process_as_parent_span = same_process_as_parent_span
         self._child_spans = []
