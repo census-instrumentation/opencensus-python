@@ -49,9 +49,11 @@ class TestAzureExporter(unittest.TestCase):
     def test_emit_empty(self, request_mock):
         exporter = trace_exporter.AzureExporter(
             instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
-            storage_path=os.path.join(TEST_FOLDER, 'foo'),
+            storage_path=os.path.join(TEST_FOLDER, 'emit.empty'),
         )
         exporter.emit([])
+        self.assertEqual(len(os.listdir(exporter.storage.path)), 0)
+        exporter.emit([], exporter.EXIT_EVENT)
         self.assertEqual(len(os.listdir(exporter.storage.path)), 0)
         exporter._stop()
 
@@ -60,13 +62,29 @@ class TestAzureExporter(unittest.TestCase):
         span_data_to_envelope_mock.return_value = ['bar']
         exporter = trace_exporter.AzureExporter(
             instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
-            storage_path=os.path.join(TEST_FOLDER, 'foo'),
+            storage_path=os.path.join(TEST_FOLDER, 'emit.failure'),
         )
         with mock.patch('opencensus.ext.azure.trace_exporter.AzureExporter._transmit') as transmit:  # noqa: E501
             transmit.return_value = 10
             exporter.emit(['foo'])
         self.assertEqual(len(os.listdir(exporter.storage.path)), 1)
         self.assertIsNone(exporter.storage.get())
+        exporter._stop()
+
+    @mock.patch('opencensus.ext.azure.trace_exporter.AzureExporter.span_data_to_envelope')  # noqa: E501
+    def test_emit_success(self, span_data_to_envelope_mock):
+        span_data_to_envelope_mock.return_value = ['bar']
+        exporter = trace_exporter.AzureExporter(
+            instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
+            storage_path=os.path.join(TEST_FOLDER, 'emit.success'),
+        )
+        with mock.patch('opencensus.ext.azure.trace_exporter.AzureExporter._transmit') as transmit:  # noqa: E501
+            transmit.return_value = 0
+            exporter.emit([])
+            exporter.emit(['foo'])
+            self.assertEqual(len(os.listdir(exporter.storage.path)), 0)
+            exporter.emit(['foo'], mock.Mock())
+            self.assertEqual(len(os.listdir(exporter.storage.path)), 0)
         exporter._stop()
 
     def test_span_data_to_envelope(self):

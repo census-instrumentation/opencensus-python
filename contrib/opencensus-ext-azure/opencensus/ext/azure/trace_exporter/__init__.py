@@ -16,7 +16,6 @@ import logging
 import json
 import requests
 
-from opencensus.common.transports.async_ import AsyncTransport
 from opencensus.ext.azure.common import Options
 from opencensus.ext.azure.common import utils
 from opencensus.ext.azure.common.exporter import BaseExporter
@@ -230,11 +229,11 @@ class AzureExporter(BaseExporter):
             if result > 0:
                 self.storage.put(envelopes, result)
         if event:
-            if event is BaseExporter.EXIT_EVENT:
+            if event is self.EXIT_EVENT:
                 self._transmit_from_storage()  # try to send files before exit
             event.set()
             return
-        if not batch or len(batch) < self.options.max_batch_size:
+        if len(batch) < self.options.max_batch_size:
             self._transmit_from_storage()
 
     def _stop(self, timeout=None):
