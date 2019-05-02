@@ -113,7 +113,7 @@ class AzureExporter(BaseExporter):
         # TODO: links, tracestate, tags, attrs
         return envelope
 
-    def _transmission_routine(self):
+    def _transmit_from_storage(self):
         for blob in self.storage.gets():
             if blob.lease(self.options.timeout + 5):
                 envelopes = blob.get()  # TODO: handle error
@@ -233,8 +233,8 @@ class AzureExporter(BaseExporter):
                 self.storage.put(envelopes, result)
         if event:
             if event is BaseExporter.EXIT_EVENT:
-                self._transmission_routine()  # try to send files before exit
+                self._transmit_from_storage()  # try to send files before exit
             event.set()
             return
         if not batch or len(batch) < self.options.max_batch_size:
-            self._transmission_routine()
+            self._transmit_from_storage()
