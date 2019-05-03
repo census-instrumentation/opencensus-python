@@ -144,11 +144,14 @@ class BaseExporter(object):
     # 1) on_span_begin (run synchronously, similar like IRQ)
     # 2) on_span_end (run synchronously, similar like IRQ)
     # 3) export (run asynchronously in the worker thread, like DPC)
-    # IRQ should do as less as possible, capture all the required context information
-    # All the context insensitive processing (e.g. format time string, serialization,
-    # validation, networking operation, file operation) should be deferred to DPC.
-    # The exporter can optionally provide the 4th API, transmit(data), which can be
-    # used to transmit the data synchronously and return the status to the caller.
+    # IRQ should do as less as possible, capture all the required context
+    # information.
+    # All the context insensitive processing (e.g. format time string,
+    # serialization, validation, networking operation, file operation)
+    # should be deferred to DPC.
+    # The exporter can optionally provide the 4th API, transmit(data),
+    # which can be used to transmit the data synchronously and return
+    # the status to the caller.
     # This could be useful for auditing scenario.
     # One possible way of consuming the API is:
     # def on_span_end(self, span, span_data):
@@ -158,12 +161,15 @@ class BaseExporter(object):
         raise NotImplementedError  # pragma: NO COVER
 
     # TODO: we shouldn't have this at the beginning
-    # Tracer should own the queue, exporter shouldn't even know if the source is a queue or not
-    # Tracer puts span_data into the queue
-    # Worker gets span_data from the src (here is the queue) and feed into the dst (exporter)
-    # Exporter defines the MTU (max_batch_size) and exporter_interval
-    # There can be one worker for each queue, or multiple workers for each queue, or
-    # shared workers among queues (e.g. queue for traces, queue for logs)
+    # Tracer should own the queue, exporter shouldn't even know if the
+    # source is a queue or not.
+    # Tracer puts span_data into the queue.
+    # Worker gets span_data from the src (here is the queue) and feed into
+    # the dst (exporter).
+    # Exporter defines the MTU (max_batch_size) and exporter_interval.
+    # There can be one worker for each queue, or multiple workers for each
+    # queue, or shared workers among queues (e.g. queue for traces, queue
+    # for logs).
     def export(self, items):
         for item in items:
             try:
