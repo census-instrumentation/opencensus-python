@@ -25,7 +25,6 @@ class Options(Object):
         grace_period=5.0,
         instrumentation_key=os.getenv('APPINSIGHTS_INSTRUMENTATIONKEY', None),
         max_batch_size=100,
-        max_queue_size=10000,
         minimum_retry_interval=60,  # minimum retry interval in seconds
         proxy=None,
         storage_maintenance_period=60,

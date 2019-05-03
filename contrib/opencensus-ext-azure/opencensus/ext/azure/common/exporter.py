@@ -35,28 +35,18 @@ class QueueEvent(object):
         return self.event.wait(timeout)
 
 
-class BaseExporter(object):
-    EXIT_EVENT = QueueEvent('EXIT')
+class QueueExitEvent(QueueEvent):
+    pass
 
-    def __init__(self, **options):
-        self.options = Options(**options)
-        self.grace_period = self.options.grace_period
-        self.interval = self.options.export_interval
-        self.max_batch_size = self.options.max_batch_size
-        self._stopping = False
-        self._queue = queue.Queue(maxsize=self.options.max_queue_size)
-        self._thread = threading.Thread(target=self._thread_entry)
-        self._thread.daemon = True
-        self._thread.start()
-        atexit.register(self._stop, self.grace_period)
 
-    def __enter__(self):
-        return self
+class Queue(queue.Queue):
+    CAPACITY = 8192  # TODO: make it configurable
 
-    def __exit__(self, type, value, traceback):
-        self._stop(None)
+    def __init__(self):
+        self.EXIT_EVENT = QueueExitEvent('EXIT')
+        self._queue = queue.Queue(maxsize=self.CAPACITY)
 
-    def __gets(self, count, timeout):
+    def _gets(self, count, timeout):
         start_time = time.time()
         elapsed_time = 0
         cnt = 0
@@ -81,40 +71,8 @@ class BaseExporter(object):
             cnt += 1
             elapsed_time = time.time() - start_time
 
-    def _gets(self, count, timeout):
-        return tuple(self.__gets(count, timeout))
-
-    def _stop(self, timeout=None):
-        start_time = time.time()
-        wait_time = timeout
-        if self._thread.is_alive() and not self._stopping:
-            self._stopping = True
-            self._queue.put(self.EXIT_EVENT, block=True, timeout=wait_time)
-            elapsed_time = time.time() - start_time
-            wait_time = timeout and max(timeout - elapsed_time, 0)
-        if self.EXIT_EVENT.wait(timeout=wait_time):
-            return time.time() - start_time  # time taken to stop
-
-    def _thread_entry(self):
-        while True:
-            batch = self._gets(self.max_batch_size, timeout=self.interval)
-            if batch and isinstance(batch[-1], QueueEvent):
-                self.emit(batch[:-1], event=batch[-1])
-                if batch[-1] is self.EXIT_EVENT:
-                    break
-                else:
-                    continue
-            self.emit(batch)
-
-    def emit(self, batch, event=None):
-        raise NotImplementedError  # pragma: NO COVER
-
-    def export(self, items):
-        for item in items:
-            try:
-                self._queue.put(item, block=False)
-            except queue.Full:
-                pass  # TODO: log data loss
+    def gets(self, count, timeout):
+        return tuple(self._gets(count, timeout))
 
     def flush(self, timeout=None):
         start_time = time.time()
@@ -128,3 +86,87 @@ class BaseExporter(object):
         wait_time = timeout and max(timeout - elapsed_time, 0)
         if event.wait(timeout):
             return time.time() - start_time  # time taken to flush
+
+    def put(self, item, block=True, timeout=None):
+        self._queue.put(item, block, timeout)
+
+
+class Worker(threading.Thread):
+    daemon = True
+
+    def __init__(self, src, dst):
+        self.src = src
+        self.dst = dst
+        self._stopping = False
+        super(Worker, self).__init__()
+
+    def run(self):
+        src = self.src
+        dst = self.dst
+        while True:
+            batch = src.gets(dst.max_batch_size, dst.export_interval)
+            if batch and isinstance(batch[-1], QueueEvent):
+                dst.emit(batch[:-1], event=batch[-1])
+                if batch[-1] is src.EXIT_EVENT:
+                    break
+                else:
+                    continue
+            dst.emit(batch)
+
+    def stop(self, timeout=None):
+        start_time = time.time()
+        wait_time = timeout
+        if self.is_alive() and not self._stopping:
+            self._stopping = True
+            self.src.put(self.src.EXIT_EVENT, block=True, timeout=wait_time)
+            elapsed_time = time.time() - start_time
+            wait_time = timeout and max(timeout - elapsed_time, 0)
+        if self.src.EXIT_EVENT.wait(timeout=wait_time):
+            return time.time() - start_time  # time taken to stop
+
+
+class BaseExporter(object):
+    def __init__(self, **options):
+        options = Options(**options)
+        self.export_interval = options.export_interval
+        self.max_batch_size = options.max_batch_size
+        # TODO: queue should be moved to tracer
+        # too much refactor work, leave to the next PR
+        self._queue = Queue()
+        self.EXIT_EVENT = self._queue.EXIT_EVENT
+        # TODO: worker should not be created in the base exporter
+        self._worker = Worker(self._queue, self)
+        self._worker.start()
+        atexit.register(self._worker.stop, options.grace_period)
+
+    # Ideally we don't want to have emit and exporter
+    # Exporter will have three APIs:
+    # 1) on_span_begin (run synchronously, similar like IRQ)
+    # 2) on_span_end (run synchronously, similar like IRQ)
+    # 3) exporter (run asynchronously in the worker thread, like DPC)
+    # IRQ should do as less as possible, capture all the required context information
+    # All the context insensitive processing (e.g. format time string, serialization,
+    # validation, networking operation, file operation) should be deferred to DPC.
+    # The exporter can optionally provide the 4th API, transmit(data), which can be
+    # used to transmit the data synchronously and return the status to the caller.
+    # This could be useful for auditing scenario.
+    # One possible way of consuming the API is:
+    # def on_span_end(self, span, span_data):
+    #     payload = transform(span_data)
+    #     self.transmit(payload)
+    def emit(self, batch, event=None):
+        raise NotImplementedError  # pragma: NO COVER
+
+    # TODO: we shouldn't have this at the beginning
+    # Tracer should own the queue, exporter shouldn't even know if the source is a queue or not
+    # Tracer puts span_data into the queue
+    # Worker gets span_data from the src (here is the queue) and feed into the dst (exporter)
+    # Exporter defines the MTU (max_batch_size) and exporter_interval
+    # There can be one worker for each queue, or multiple workers for each queue, or
+    # shared workers among queues (e.g. queue for traces, queue for logs)
+    def export(self, items):
+        for item in items:
+            try:
+                self._queue.put(item, block=False)
+            except queue.Full:
+                pass  # TODO: log data loss

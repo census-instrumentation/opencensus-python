@@ -238,4 +238,4 @@ class AzureExporter(BaseExporter):
 
     def _stop(self, timeout=None):
         self.storage.close()
-        return super(AzureExporter, self)._stop(timeout)
+        return self._worker.stop(timeout)
