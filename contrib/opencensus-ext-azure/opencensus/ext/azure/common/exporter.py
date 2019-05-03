@@ -166,7 +166,7 @@ class BaseExporter(object):
     # Tracer puts span_data into the queue.
     # Worker gets span_data from the src (here is the queue) and feed into
     # the dst (exporter).
-    # Exporter defines the MTU (max_batch_size) and exporter_interval.
+    # Exporter defines the MTU (max_batch_size) and export_interval.
     # There can be one worker for each queue, or multiple workers for each
     # queue, or shared workers among queues (e.g. queue for traces, queue
     # for logs).
