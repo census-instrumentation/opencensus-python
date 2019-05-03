@@ -139,11 +139,11 @@ class BaseExporter(object):
         self._worker.start()
         atexit.register(self._worker.stop, options.grace_period)
 
-    # Ideally we don't want to have emit and exporter
+    # Ideally we don't want to have emit and export
     # Exporter will have three APIs:
     # 1) on_span_begin (run synchronously, similar like IRQ)
     # 2) on_span_end (run synchronously, similar like IRQ)
-    # 3) exporter (run asynchronously in the worker thread, like DPC)
+    # 3) export (run asynchronously in the worker thread, like DPC)
     # IRQ should do as less as possible, capture all the required context information
     # All the context insensitive processing (e.g. format time string, serialization,
     # validation, networking operation, file operation) should be deferred to DPC.
