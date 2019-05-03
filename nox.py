@@ -27,6 +27,7 @@ def _install_dev_packages(session):
     session.install('-e', 'contrib/opencensus-ext-dbapi')
     session.install('-e', 'contrib/opencensus-ext-django')
     session.install('-e', 'contrib/opencensus-ext-flask')
+    session.install('-e', 'contrib/opencensus-ext-gevent')
     session.install('-e', 'contrib/opencensus-ext-grpc')
     session.install('-e', 'contrib/opencensus-ext-httplib')
     session.install('-e', 'contrib/opencensus-ext-jaeger')
