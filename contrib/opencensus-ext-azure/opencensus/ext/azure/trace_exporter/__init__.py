@@ -223,18 +223,21 @@ class AzureExporter(BaseExporter):
         return -response.status_code
 
     def emit(self, batch, event=None):
-        if batch:
-            envelopes = [self.span_data_to_envelope(sd) for sd in batch]
-            result = self._transmit(envelopes)
-            if result > 0:
-                self.storage.put(envelopes, result)
-        if event:
-            if event is self.EXIT_EVENT:
-                self._transmit_from_storage()  # try to send files before exit
-            event.set()
-            return
-        if len(batch) < self.options.max_batch_size:
-            self._transmit_from_storage()
+        try:
+            if batch:
+                envelopes = [self.span_data_to_envelope(sd) for sd in batch]
+                result = self._transmit(envelopes)
+                if result > 0:
+                    self.storage.put(envelopes, result)
+            if event:
+                if event is self.EXIT_EVENT:
+                    self._transmit_from_storage()  # send files before exit
+                event.set()
+                return
+            if len(batch) < self.options.max_batch_size:
+                self._transmit_from_storage()
+        except Exception as ex:
+            logger.error('Transmission exception: %s.', ex)
 
     def _stop(self, timeout=None):
         self.storage.close()
