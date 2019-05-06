@@ -15,6 +15,8 @@
 import threading
 import time
 
+from six.moves import queue
+
 
 class PeriodicTask(threading.Thread):
     """Thread that periodically calls a given function.
@@ -50,3 +52,108 @@ class PeriodicTask(threading.Thread):
 
     def cancel(self):
         self.finished.set()
+
+
+class QueueEvent(object):
+    def __init__(self, name):
+        self.name = name
+        self.event = threading.Event()
+
+    def __repr__(self):
+        return ('{}({})'.format(type(self).__name__, self.name))
+
+    def set(self):
+        return self.event.set()
+
+    def wait(self, timeout=None):
+        return self.event.wait(timeout)
+
+
+class QueueExitEvent(QueueEvent):
+    pass
+
+
+class Queue(queue.Queue):
+    CAPACITY = 8192  # TODO: make it configurable
+
+    def __init__(self):
+        self.EXIT_EVENT = QueueExitEvent('EXIT')
+        self._queue = queue.Queue(maxsize=self.CAPACITY)
+
+    def _gets(self, count, timeout):
+        start_time = time.time()
+        elapsed_time = 0
+        cnt = 0
+        while cnt < count:
+            try:
+                item = self._queue.get(block=False)
+                yield item
+                if isinstance(item, QueueEvent):
+                    return
+            except queue.Empty:
+                break
+            cnt += 1
+        while cnt < count:
+            wait_time = max(timeout - elapsed_time, 0)
+            try:
+                item = self._queue.get(block=True, timeout=wait_time)
+                yield item
+                if isinstance(item, QueueEvent):
+                    return
+            except queue.Empty:
+                break
+            cnt += 1
+            elapsed_time = time.time() - start_time
+
+    def gets(self, count, timeout):
+        return tuple(self._gets(count, timeout))
+
+    def flush(self, timeout=None):
+        start_time = time.time()
+        wait_time = timeout
+        event = QueueEvent('SYNC(timeout={})'.format(wait_time))
+        try:
+            self._queue.put(event, block=True, timeout=wait_time)
+        except queue.Full:
+            return
+        elapsed_time = time.time() - start_time
+        wait_time = timeout and max(timeout - elapsed_time, 0)
+        if event.wait(timeout):
+            return time.time() - start_time  # time taken to flush
+
+    def put(self, item, block=True, timeout=None):
+        self._queue.put(item, block, timeout)
+
+
+class Worker(threading.Thread):
+    daemon = True
+
+    def __init__(self, src, dst):
+        self.src = src
+        self.dst = dst
+        self._stopping = False
+        super(Worker, self).__init__()
+
+    def run(self):
+        src = self.src
+        dst = self.dst
+        while True:
+            batch = src.gets(dst.max_batch_size, dst.export_interval)
+            if batch and isinstance(batch[-1], QueueEvent):
+                dst.emit(batch[:-1], event=batch[-1])
+                if batch[-1] is src.EXIT_EVENT:
+                    break
+                else:
+                    continue
+            dst.emit(batch)
+
+    def stop(self, timeout=None):
+        start_time = time.time()
+        wait_time = timeout
+        if self.is_alive() and not self._stopping:
+            self._stopping = True
+            self.src.put(self.src.EXIT_EVENT, block=True, timeout=wait_time)
+            elapsed_time = time.time() - start_time
+            wait_time = timeout and max(timeout - elapsed_time, 0)
+        if self.src.EXIT_EVENT.wait(timeout=wait_time):
+            return time.time() - start_time  # time taken to stop
