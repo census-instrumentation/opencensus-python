@@ -26,7 +26,7 @@ class BaseExporter(object):
         self.max_batch_size = options.max_batch_size
         # TODO: queue should be moved to tracer
         # too much refactor work, leave to the next PR
-        self._queue = Queue()
+        self._queue = Queue(capacity=8192)  # TODO: make this configurable
         self.EXIT_EVENT = self._queue.EXIT_EVENT
         # TODO: worker should not be created in the base exporter
         self._worker = Worker(self._queue, self)
@@ -65,8 +65,4 @@ class BaseExporter(object):
     # queue, or shared workers among queues (e.g. queue for traces, queue
     # for logs).
     def export(self, items):
-        for item in items:
-            try:
-                self._queue.put(item, block=False)
-            except queue.Full:
-                pass  # TODO: log data loss
+        self._queue.puts(items, block=False)

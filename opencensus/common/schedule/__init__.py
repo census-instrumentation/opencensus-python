@@ -74,11 +74,9 @@ class QueueExitEvent(QueueEvent):
 
 
 class Queue(queue.Queue):
-    CAPACITY = 8192  # TODO: make it configurable
-
-    def __init__(self):
+    def __init__(self, capacity):
         self.EXIT_EVENT = QueueExitEvent('EXIT')
-        self._queue = queue.Queue(maxsize=self.CAPACITY)
+        self._queue = queue.Queue(maxsize=capacity)
 
     def _gets(self, count, timeout):
         start_time = time.time()
@@ -122,7 +120,22 @@ class Queue(queue.Queue):
             return time.time() - start_time  # time taken to flush
 
     def put(self, item, block=True, timeout=None):
-        self._queue.put(item, block, timeout)
+        try:
+            self._queue.put(item, block, timeout)
+        except queue.Full:
+            pass  # TODO: log data loss
+
+    def puts(self, items, block=True, timeout=None):
+        if block and timeout is not None:
+            start_time = time.time()
+            elapsed_time = 0
+            for item in items:
+                wait_time = max(timeout - elapsed_time, 0)
+                self.put(item, block=True, timeout=wait_time)
+                elapsed_time = time.time() - start_time
+        else:
+            for item in items:
+                self.put(item, block, timeout)
 
 
 class Worker(threading.Thread):
