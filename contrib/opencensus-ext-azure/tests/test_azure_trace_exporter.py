@@ -57,6 +57,16 @@ class TestAzureExporter(unittest.TestCase):
         self.assertEqual(len(os.listdir(exporter.storage.path)), 0)
         exporter._stop()
 
+    @mock.patch('opencensus.ext.azure.trace_exporter.logger')
+    def test_emit_exception(self, mock_logger):
+        exporter = trace_exporter.AzureExporter(
+            instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
+            storage_path=os.path.join(TEST_FOLDER, self.id()),
+        )
+        exporter.emit([1, 2, 3])
+        mock_logger.exception.assert_called()
+        exporter._stop()
+
     @mock.patch('opencensus.ext.azure.trace_exporter.AzureExporter.span_data_to_envelope')  # noqa: E501
     def test_emit_failure(self, span_data_to_envelope_mock):
         span_data_to_envelope_mock.return_value = ['bar']

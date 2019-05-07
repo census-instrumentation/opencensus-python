@@ -20,6 +20,13 @@ from opencensus.common.schedule import QueueEvent
 TIMEOUT = .1
 
 
+class TestQueueEvent(unittest.TestCase):
+    def test_basic(self):
+        evt = QueueEvent('foobar')
+        self.assertFalse(evt.wait(timeout=TIMEOUT))
+        evt.set()
+        self.assertTrue(evt.wait(timeout=TIMEOUT))
+
 class TestQueue(unittest.TestCase):
     def test_gets(self):
         queue = Queue(capacity=100)
