@@ -33,24 +33,9 @@ class BaseExporter(object):
         self._worker.start()
         atexit.register(self._worker.stop, options.grace_period)
 
-    # Ideally we don't want to have emit and export
-    # Exporter will have three APIs:
-    # 1) on_span_begin (run synchronously, similar like IRQ)
-    # 2) on_span_end (run synchronously, similar like IRQ)
-    # 3) export (run asynchronously in the worker thread, like DPC)
-    # IRQ should do as less as possible, capture all the required context
-    # information.
-    # All the context insensitive processing (e.g. format time string,
-    # serialization, validation, networking operation, file operation)
-    # should be deferred to DPC.
-    # The exporter can optionally provide the 4th API, transmit(data),
-    # which can be used to transmit the data synchronously and return
-    # the status to the caller.
-    # This could be useful for auditing scenario.
-    # One possible way of consuming the API is:
-    # def on_span_end(self, span, span_data):
-    #     payload = transform(span_data)
-    #     self.transmit(payload)
+    # Ideally we don't want to have `emit`
+    # Exporter will have one public method - `export`, which is a blocking
+    # method, running inside worker threads.
     def emit(self, batch, event=None):
         raise NotImplementedError  # pragma: NO COVER
 
