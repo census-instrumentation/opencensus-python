@@ -73,7 +73,7 @@ class QueueExitEvent(QueueEvent):
     pass
 
 
-class Queue(queue.Queue):
+class Queue(object):
     def __init__(self, capacity):
         self.EXIT_EVENT = QueueExitEvent('EXIT')
         self._queue = queue.Queue(maxsize=capacity)
