@@ -44,6 +44,7 @@ class Test_pymongo_trace(unittest.TestCase):
             'filter': 'filter',
             'sort': 'sort',
             'limit': 'limit',
+            'pipeline': 'pipeline',
             'command_name': 'find'
         }
 
@@ -51,6 +52,7 @@ class Test_pymongo_trace(unittest.TestCase):
             'filter': 'filter',
             'sort': 'sort',
             'limit': 'limit',
+            'pipeline': 'pipeline',
             'request_id': 'request_id',
             'connection_id': 'connection_id'
         }

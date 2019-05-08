@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Include aggregation pipeline in trace attributes
+
 ## 0.1.2
 Released 2019-04-24
 

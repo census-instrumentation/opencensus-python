@@ -24,7 +24,7 @@ log = logging.getLogger(__name__)
 
 MODULE_NAME = 'pymongo'
 
-COMMAND_ATTRIBUTES = ['filter', 'sort', 'skip', 'limit']
+COMMAND_ATTRIBUTES = ['filter', 'sort', 'skip', 'limit', 'pipeline']
 
 
 def trace_integration(tracer=None):
