@@ -19,19 +19,21 @@ from datetime import datetime
 from itertools import chain
 
 from opencensus.common import utils
-from opencensus.trace import attributes
+from opencensus.trace import attributes as attributes_module
 from opencensus.trace import base_span
 from opencensus.trace import link as link_module
-from opencensus.trace import stack_trace
-from opencensus.trace import status
-from opencensus.trace import time_event as time_event_module
+from opencensus.trace import stack_trace as stack_trace_module
+from opencensus.trace import status as status_module
+from opencensus.trace import time_event
 from opencensus.trace.span_context import generate_span_id
 from opencensus.trace.tracers import base
 
 
 # https://github.com/census-instrumentation/opencensus-specs/blob/master/trace/TraceConfig.md  # noqa
-MAX_NUM_LINKS = 32
 MAX_NUM_ATTRIBUTES = 32
+MAX_NUM_ANNOTATIONS = 32
+MAX_NUM_MESSAGE_EVENTS = 128
+MAX_NUM_LINKS = 32
 
 
 class BoundedList(abc.Sequence):
@@ -152,9 +154,12 @@ class Span(base_span.BaseSpan):
     :type stack_trace: :class: `~opencensus.trace.stack_trace.StackTrace`
     :param stack_trace: (Optional) A call stack appearing in a trace
 
-    :type time_events: list
-    :param time_events: (Optional) A set of time events. You can have up to 32
-                        annotations and 128 message events per span.
+    :type annotations: list(:class:`opencensus.trace.time_event.Annotation`)
+    :param annotations: (Optional) The list of span annotations.
+
+    :type message_events:
+        list(:class:`opencensus.trace.time_event.MessageEvent`)
+    :param message_events: (Optional) The list of span message events.
 
     :type links: list
     :param links: (Optional) Links associated with the span. You can have up
@@ -193,7 +198,8 @@ class Span(base_span.BaseSpan):
             end_time=None,
             span_id=None,
             stack_trace=None,
-            time_events=None,
+            annotations=None,
+            message_events=None,
             links=None,
             status=None,
             same_process_as_parent_span=None,
@@ -218,8 +224,16 @@ class Span(base_span.BaseSpan):
         if parent_span is None:
             parent_span = base.NullContextManager()
 
-        if time_events is None:
-            time_events = []
+        if annotations is None:
+            self.annotations = BoundedList(MAX_NUM_ANNOTATIONS)
+        else:
+            self.annotations = BoundedList.from_seq(MAX_NUM_LINKS, annotations)
+
+        if message_events is None:
+            self.message_events = BoundedList(MAX_NUM_MESSAGE_EVENTS)
+        else:
+            self.message_events = BoundedList.from_seq(
+                MAX_NUM_LINKS, message_events)
 
         if links is None:
             self.links = BoundedList(MAX_NUM_LINKS)
@@ -228,7 +242,6 @@ class Span(base_span.BaseSpan):
 
         self.span_id = span_id
         self.stack_trace = stack_trace
-        self.time_events = time_events
         self.status = status
         self.same_process_as_parent_span = same_process_as_parent_span
         self._child_spans = []
@@ -283,21 +296,19 @@ class Span(base_span.BaseSpan):
         :type attrs: kwargs
         :param attrs: keyworded arguments e.g. failed=True, name='Caching'
         """
-        at = attributes.Attributes(attrs)
-        self.add_time_event(time_event_module.TimeEvent(datetime.utcnow(),
-                            time_event_module.Annotation(description, at)))
+        self.annotations.append(time_event.Annotation(
+            datetime.utcnow(),
+            description,
+            attributes_module.Attributes(attrs)
+        ))
 
-    def add_time_event(self, time_event):
-        """Add a TimeEvent.
+    def add_message_event(self, message_event):
+        """Add a message event to this span.
 
-        :type time_event: :class: `~opencensus.trace.time_event.TimeEvent`
-        :param time_event: A TimeEvent object.
+        :type message_event: :class:`opencensus.trace.time_event.MessageEvent`
+        :param message_event: The message event to attach to this span.
         """
-        if isinstance(time_event, time_event_module.TimeEvent):
-            self.time_events.append(time_event)
-        else:
-            raise TypeError("Type Error: received {}, but requires TimeEvent.".
-                            format(type(time_event).__name__))
+        self.message_events.append(message_event)
 
     def add_link(self, link):
         """Add a Link.
@@ -333,9 +344,10 @@ class Span(base_span.BaseSpan):
     def __exit__(self, exception_type, exception_value, traceback):
         """Finish a span."""
         if traceback is not None:
-            self.stack_trace = stack_trace.StackTrace.from_traceback(traceback)
+            self.stack_trace =\
+                stack_trace_module.StackTrace.from_traceback(traceback)
         if exception_value is not None:
-            self.status = status.Status.from_exception(exception_value)
+            self.status = status_module.Status.from_exception(exception_value)
         if self.context_tracer is not None:
             self.context_tracer.end_span()
             return
@@ -369,16 +381,25 @@ def format_span_json(span):
         span_json['parentSpanId'] = parent_span_id
 
     if span.attributes:
-        span_json['attributes'] = attributes.Attributes(
+        span_json['attributes'] = attributes_module.Attributes(
             span.attributes).format_attributes_json()
 
     if span.stack_trace is not None:
         span_json['stackTrace'] = span.stack_trace.format_stack_trace_json()
 
-    if span.time_events:
+    formatted_time_events = []
+    formatted_time_events.extend(
+        {'time': aa.timestamp,
+         'annotation': aa.format_annotation_json()}
+        for aa in span.annotations)
+    formatted_time_events.extend(
+        {'time': aa.timestamp,
+         'message_event': aa.format_message_event_json()}
+        for aa in span.message_events)
+
+    if formatted_time_events:
         span_json['timeEvents'] = {
-            'timeEvent': [time_event.format_time_event_json()
-                          for time_event in span.time_events]
+            'timeEvent': formatted_time_events
         }
 
     if span.links:

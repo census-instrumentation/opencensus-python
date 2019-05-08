@@ -49,7 +49,8 @@ class BlankSpan(base_span.BaseSpan):
             end_time=None,
             span_id=None,
             stack_trace=None,
-            time_events=None,
+            annotations=None,
+            message_events=None,
             links=None,
             status=None,
             same_process_as_parent_span=None,
@@ -65,7 +66,8 @@ class BlankSpan(base_span.BaseSpan):
 
         self.attributes = {}
         self.stack_trace = stack_trace
-        self.time_events = time_events
+        self.annotations = annotations
+        self.message_events = message_events
         self.links = []
         self.status = status
         self.same_process_as_parent_span = same_process_as_parent_span
@@ -119,15 +121,21 @@ class BlankSpan(base_span.BaseSpan):
         """
         pass
 
-    def add_time_event(self, time_event):
+    def add_annotation(self, annotation):
         """No-op implementation of this method.
 
-        :type time_event: :class: `~opencensus.trace.time_event.TimeEvent`
-        :param time_event: A TimeEvent object.
+        :type annotation: :class:`opencensus.trace.time_event.Annotation`
+        :param annotation: The annotation to attach to this span.
         """
-        if not isinstance(time_event, time_event_module.TimeEvent):
-            raise TypeError("Type Error: received {}, but requires TimeEvent.".
-                            format(type(time_event).__name__))
+        pass
+
+    def add_message_event(self, message_event):
+        """No-op implementation of this method.
+
+        :type message_event: :class:`opencensus.trace.time_event.MessageEvent`
+        :param message_event: The message event to attach to this span.
+        """
+        pass
 
     def add_link(self, link):
         """No-op implementation of this method.

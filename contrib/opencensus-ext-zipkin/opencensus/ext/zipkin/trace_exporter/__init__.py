@@ -201,16 +201,12 @@ def _extract_tags_from_span(attr):
 
 def _extract_annotations_from_span(span):
     """Extract and convert time event annotations to zipkin annotations"""
-    if span.time_events is None:
+    if span.annotations is None:
         return []
 
     annotations = []
-    for time_event in span.time_events:
-        annotation = time_event.annotation
-        if not annotation:
-            continue
-
-        event_timestamp_mus = timestamp_to_microseconds(time_event.timestamp)
+    for annotation in span.annotations:
+        event_timestamp_mus = timestamp_to_microseconds(annotation.timestamp)
         annotations.append({'timestamp': int(round(event_timestamp_mus)),
                             'value': annotation.description})
 

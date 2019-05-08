@@ -170,7 +170,8 @@ class TestContextTracer(unittest.TestCase):
         mock_span.status = None
         mock_span.links = None
         mock_span.stack_trace = None
-        mock_span.time_events = None
+        mock_span.annotations = None
+        mock_span.message_events = None
         mock_span.attributes = {}
         mock_span.__iter__ = mock.Mock(return_value=iter([mock_span]))
         parent_span_id = '6e0c63257de34c92'
@@ -193,7 +194,8 @@ class TestContextTracer(unittest.TestCase):
         mock_span.status = None
         mock_span.links = None
         mock_span.stack_trace = None
-        mock_span.time_events = None
+        mock_span.annotations = None
+        mock_span.message_events = None
         mock_span.attributes = {}
         mock_span.__iter__ = mock.Mock(return_value=iter([mock_span]))
         mock_current_span.return_value = mock_span
