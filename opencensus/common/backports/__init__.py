@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import six
+from six import raise_from
 import weakref
 
 
@@ -35,7 +35,7 @@ class WeakMethod(weakref.ref):  # pragma: NO COVER
         except AttributeError:
             error = TypeError("argument should be a bound method, not {}"
                               .format(type(meth)))
-            six.raise_from(error, None)
+            raise_from(error, None)
 
         def _cb(arg):
             # The self-weakref trick is needed to avoid creating a reference
