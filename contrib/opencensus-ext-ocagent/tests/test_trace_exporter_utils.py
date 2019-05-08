@@ -12,14 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from datetime import datetime
+from datetime import timedelta
 import codecs
-from datetime import datetime, timedelta
 import unittest
 
-from opencensus.common import utils as common_utils
 from opencensus.ext.ocagent.trace_exporter import utils
-from opencensus.ext.ocagent.trace_exporter.gen.opencensus.trace.v1 \
-    import trace_pb2
+from opencensus.proto.trace.v1 import trace_pb2
 from opencensus.trace import attributes as attributes_module
 from opencensus.trace import link as link_module
 from opencensus.trace import span as span_module
@@ -527,32 +526,6 @@ class TestTraceExporterUtils(unittest.TestCase):
         self.assertEqual(len(pb_event0.annotation.attributes.attribute_map), 0)
         self.assertEqual(len(pb_event1.annotation.attributes.attribute_map), 0)
 
-    def test_datetime_str_to_proto_ts_conversion(self):
-        now = datetime.utcnow()
-        delta = now - datetime(1970, 1, 1)
-        expected_seconds = int(delta.total_seconds())
-        expected_nanos = delta.microseconds * 1000
-
-        proto_ts = utils.proto_ts_from_datetime_str(
-            common_utils.to_iso_str(now))
-        self.assertEqual(proto_ts.seconds, int(expected_seconds))
-        self.assertEqual(proto_ts.nanos, expected_nanos)
-
-    def test_datetime_str_to_proto_ts_conversion_none(self):
-        proto_ts = utils.proto_ts_from_datetime_str(None)
-        self.assertEquals(proto_ts.seconds, 0)
-        self.assertEquals(proto_ts.nanos, 0)
-
-    def test_datetime_str_to_proto_ts_conversion_empty(self):
-        proto_ts = utils.proto_ts_from_datetime_str('')
-        self.assertEquals(proto_ts.seconds, 0)
-        self.assertEquals(proto_ts.nanos, 0)
-
-    def test_datetime_str_to_proto_ts_conversion_invalid(self):
-        proto_ts = utils.proto_ts_from_datetime_str('2018 08 22 T 11:53')
-        self.assertEquals(proto_ts.seconds, 0)
-        self.assertEquals(proto_ts.nanos, 0)
-
     def test_hex_str_to_proto_bytes_conversion(self):
         hex_encoder = codecs.getencoder('hex')
 
@@ -560,25 +533,3 @@ class TestTraceExporterUtils(unittest.TestCase):
             '00010203040506070a0b0c0d0eff')
         self.assertEqual(
             hex_encoder(proto_bytes)[0], b'00010203040506070a0b0c0d0eff')
-
-    def test_datetime_to_proto_ts_conversion_none(self):
-        proto_ts = utils.proto_ts_from_datetime(None)
-        self.assertEquals(proto_ts.seconds, 0)
-        self.assertEquals(proto_ts.nanos, 0)
-
-    def test_datetime_to_proto_ts_conversion(self):
-        now = datetime.utcnow()
-        delta = now - datetime(1970, 1, 1)
-        expected_seconds = int(delta.total_seconds())
-        expected_nanos = delta.microseconds * 1000
-
-        proto_ts = utils.proto_ts_from_datetime(now)
-        self.assertEqual(proto_ts.seconds, int(expected_seconds))
-        self.assertEqual(proto_ts.nanos, expected_nanos)
-
-    def test_datetime_to_proto_ts_conversion_zero(self):
-        zero = datetime(1970, 1, 1)
-
-        proto_ts = utils.proto_ts_from_datetime(zero)
-        self.assertEqual(proto_ts.seconds, 0)
-        self.assertEqual(proto_ts.nanos, 0)

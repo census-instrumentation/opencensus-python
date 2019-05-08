@@ -16,26 +16,22 @@ from wsgiref.simple_server import make_server
 
 from opencensus.trace import config_integration
 from opencensus.trace import print_exporter
-from opencensus.trace.samplers import probability
+from opencensus.trace import samplers
 
 from app import main
 
 
-INTEGRATIONS = ['requests']
-
-
-config_integration.trace_integrations(INTEGRATIONS)
+config_integration.trace_integrations(['requests'])
 
 
 def run_app():
-    settings = {}
-
-    exporter = print_exporter.PrintExporter()
-    sampler = probability.ProbabilitySampler(rate=1)
-
-    settings['OPENCENSUS_TRACE'] = {
-        'EXPORTER': exporter,
-        'SAMPLER': sampler,
+    settings = {
+        'OPENCENSUS': {
+            'TRACE': {
+                'EXPORTER': print_exporter.PrintExporter(),
+                'SAMPLER': samplers.ProbabilitySampler(rate=1),
+            }
+        }
     }
 
     app = main({}, **settings)

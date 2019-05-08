@@ -39,7 +39,7 @@ setup(
     include_package_data=True,
     long_description=open('README.rst').read(),
     install_requires=[
-        'opencensus >= 0.4.dev0, < 1.0.0',
+        'opencensus >= 0.6.dev0, < 1.0.0',
         'thrift >= 0.10.0',
     ],
     extras_require={},

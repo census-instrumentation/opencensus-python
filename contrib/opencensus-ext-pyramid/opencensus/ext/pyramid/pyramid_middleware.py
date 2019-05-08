@@ -60,7 +60,7 @@ class OpenCensusTweenFactory(object):
         self.exporter = settings.EXPORTER
         self.propagator = settings.PROPAGATOR
 
-        self._blacklist_paths = settings.params.get(BLACKLIST_PATHS)
+        self._blacklist_paths = settings.BLACKLIST_PATHS
 
     def __call__(self, request):
         self._before_request(request)

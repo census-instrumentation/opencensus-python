@@ -23,4 +23,11 @@ Usage
 
 .. code:: python
 
-    # TBD
+    from opencensus.trace import config_integration
+
+    config_integration.trace_integrations(['pymongo'])
+
+References
+----------
+
+* `OpenCensus Project <https://opencensus.io/>`_

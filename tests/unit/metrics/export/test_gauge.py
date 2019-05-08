@@ -12,13 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-try:
-    from mock import Mock
-except ImportError:
-    from unittest.mock import Mock
-
 import gc
 import unittest
+
+from mock import Mock
 
 from opencensus.metrics.export import gauge
 from opencensus.metrics.export import metric_descriptor
@@ -303,10 +300,10 @@ class TestLongGauge(unittest.TestCase):
         self.assertEqual(metric.time_series[0].points[0].value.value, 3)
 
 
+# TestLongGauge does the heavy lifting, this test just checks that DoubleGauge
+# creates points and metrics of the right type
 class TestDoubleGauge(unittest.TestCase):
 
-    # TestLongGauge does the heavy lifting, this test just checks that
-    # DoubleGauge creates points and metrics of the right type
     def test_init(self):
         name = Mock()
         description = Mock()

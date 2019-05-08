@@ -89,7 +89,7 @@ Register the Stackdriver exporter
 
     .. code:: python
 
-        stats = stats_module.Stats()
+        stats = stats_module.stats
         view_manager = stats.view_manager
 
         exporter = stackdriver.new_stats_exporter(stackdriver.Options(project_id="<id_value>"))
@@ -112,3 +112,7 @@ For further details for the Stackdriver implementation, see the folder *stackdri
 | contrib/opencensus-ext-stackdriver/opencensus/ext/stackdriver/stats_exporter/   | Stats implementation for Stackdriver|
 +---------------------------------------------------------------------------------+-------------------------------------+
 
+References
+----------
+
+* `OpenCensus Project <https://opencensus.io/>`_

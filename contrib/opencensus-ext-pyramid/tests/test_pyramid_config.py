@@ -28,9 +28,7 @@ class TestPyramidTraceSettings(unittest.TestCase):
         assert trace_settings.SAMPLER == default_config['SAMPLER']
         assert trace_settings.EXPORTER == default_config['EXPORTER']
         assert trace_settings.PROPAGATOR == default_config['PROPAGATOR']
-
-        default_params = config.DEFAULT_PYRAMID_TRACER_PARAMS
-        assert trace_settings.params['BLACKLIST_PATHS'] == default_params[
+        assert trace_settings.BLACKLIST_PATHS == default_config[
             'BLACKLIST_PATHS']
 
     def test_trace_settings_override(self):
@@ -41,14 +39,14 @@ class TestPyramidTraceSettings(unittest.TestCase):
 
         registry = mock.Mock()
         registry.settings = {
-            'OPENCENSUS_TRACE': {
-                'SAMPLER': mock_sampler,
-                'EXPORTER': mock_exporter,
-                'PROPAGATOR': mock_propagator,
+            'OPENCENSUS': {
+                'TRACE': {
+                    'SAMPLER': mock_sampler,
+                    'EXPORTER': mock_exporter,
+                    'PROPAGATOR': mock_propagator,
+                    'BLACKLIST_PATHS': mock_blacklist_paths,
+                },
             },
-            'OPENCENSUS_TRACE_PARAMS': {
-                'BLACKLIST_PATHS': mock_blacklist_paths,
-            }
         }
 
         trace_settings = config.PyramidTraceSettings(registry)
@@ -56,8 +54,7 @@ class TestPyramidTraceSettings(unittest.TestCase):
         assert trace_settings.SAMPLER == mock_sampler
         assert trace_settings.EXPORTER == mock_exporter
         assert trace_settings.PROPAGATOR == mock_propagator
-
-        assert trace_settings.params['BLACKLIST_PATHS'] == mock_blacklist_paths
+        assert trace_settings.BLACKLIST_PATHS == mock_blacklist_paths
 
     def test_trace_settings_invalid(self):
         registry = mock.Mock()

@@ -19,12 +19,15 @@ import os
 
 
 def _install_dev_packages(session):
+    session.install('-e', 'context/opencensus-context')
     session.install('-e', 'contrib/opencensus-correlation')
     session.install('-e', '.')
 
+    session.install('-e', 'contrib/opencensus-ext-azure')
     session.install('-e', 'contrib/opencensus-ext-dbapi')
     session.install('-e', 'contrib/opencensus-ext-django')
     session.install('-e', 'contrib/opencensus-ext-flask')
+    session.install('-e', 'contrib/opencensus-ext-gevent')
     session.install('-e', 'contrib/opencensus-ext-grpc')
     session.install('-e', 'contrib/opencensus-ext-httplib')
     session.install('-e', 'contrib/opencensus-ext-jaeger')
@@ -43,6 +46,14 @@ def _install_dev_packages(session):
     session.install('-e', 'contrib/opencensus-ext-google-cloud-clientlibs')
 
 
+def _install_test_dependencies(session):
+    session.install('mock')
+    session.install('pytest')
+    session.install('pytest-cov')
+    session.install('retrying')
+    session.install('unittest2')
+
+
 @nox.session
 @nox.parametrize('py', ['2.7', '3.4', '3.5', '3.6'])
 def unit(session, py):
@@ -51,8 +62,8 @@ def unit(session, py):
     # Run unit tests against all supported versions of Python.
     session.interpreter = 'python{}'.format(py)
 
-    # Install all test dependencies.
-    session.install('-r', 'requirements-test.txt')
+    # Install test dependencies.
+    _install_test_dependencies(session)
 
     # Install dev packages.
     _install_dev_packages(session)
@@ -61,12 +72,16 @@ def unit(session, py):
     session.run(
         'py.test',
         '--quiet',
-        '--cov=opencensus', '--cov=contrib',
+        '--cov=opencensus',
+        '--cov=context',
+        '--cov=contrib',
         '--cov-append',
         '--cov-config=.coveragerc',
         '--cov-report=',
         '--cov-fail-under=97',
-        'tests/unit/', 'contrib/',
+        'tests/unit/',
+        'context/',
+        'contrib/',
         *session.posargs
     )
 
@@ -86,8 +101,8 @@ def system(session, py):
     # Set the virtualenv dirname.
     session.virtualenv_dirname = 'sys-' + py
 
-    # Install all test dependencies.
-    session.install('-r', 'requirements-test.txt')
+    # Install test dependencies.
+    _install_test_dependencies(session)
 
     # Install dev packages into the virtualenv's dist-packages.
     _install_dev_packages(session)
@@ -115,8 +130,12 @@ def lint(session):
 
     session.run(
         'flake8',
-        '--exclude=contrib/opencensus-ext-ocagent/opencensus/ext/ocagent/trace_exporter/gen/',
-        'contrib/', 'opencensus/', 'tests/', 'examples/')
+        'context/',
+        'contrib/',
+        'opencensus/',
+        'tests/',
+        'examples/',
+    )
 
 
 @nox.session

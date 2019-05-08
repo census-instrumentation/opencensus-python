@@ -39,7 +39,7 @@ VIDEO_SIZE_VIEW = view_module.View(
 
 
 def main():
-    stats = stats_module.Stats()
+    stats = stats_module.stats
     view_manager = stats.view_manager
     stats_recorder = stats.stats_recorder
 

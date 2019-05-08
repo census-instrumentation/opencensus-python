@@ -12,20 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import flask
+from flask import Flask
+from opencensus.ext.flask.flask_middleware import FlaskMiddleware
 
-from opencensus.trace.ext.flask.flask_middleware import FlaskMiddleware
-
-app = flask.Flask(__name__)
-
-# Enable tracing the requests
+app = Flask(__name__)
 middleware = FlaskMiddleware(app)
 
 
 @app.route('/')
 def hello():
-    return 'Hello world!'
+    return 'Hello World!'
 
 
 if __name__ == '__main__':
-    app.run(host='localhost', port=8080)
+    import logging
+    logger = logging.getLogger('werkzeug')
+    logger.setLevel(logging.ERROR)
+    app.run(host='localhost', port=8080, threaded=True)

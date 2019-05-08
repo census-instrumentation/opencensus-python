@@ -30,23 +30,44 @@ class TestB3FormatPropagator(unittest.TestCase):
     def test_from_headers_keys_exist(self):
         test_trace_id = '6e0c63257de34c92bf9efcd03927272e'
         test_span_id = '00f067aa0ba902b7'
-        test_sampled = '1'
 
-        headers = {
-            b3_format._TRACE_ID_KEY: test_trace_id,
-            b3_format._SPAN_ID_KEY: test_span_id,
-            b3_format._SAMPLED_KEY: test_sampled,
-        }
+        for test_sampled in ['1', 'True', 'true', 'd']:
+            headers = {
+                b3_format._TRACE_ID_KEY: test_trace_id,
+                b3_format._SPAN_ID_KEY: test_span_id,
+                b3_format._SAMPLED_KEY: test_sampled,
+            }
 
-        propagator = b3_format.B3FormatPropagator()
-        span_context = propagator.from_headers(headers)
+            propagator = b3_format.B3FormatPropagator()
+            span_context = propagator.from_headers(headers)
 
-        self.assertEqual(span_context.trace_id, test_trace_id)
-        self.assertEqual(span_context.span_id, test_span_id)
-        self.assertEqual(
-            span_context.trace_options.enabled,
-            bool(test_sampled)
-        )
+            self.assertEqual(span_context.trace_id, test_trace_id)
+            self.assertEqual(span_context.span_id, test_span_id)
+            self.assertEqual(
+                span_context.trace_options.enabled,
+                True
+            )
+
+    def test_from_headers_keys_exist_disabled_sampling(self):
+        test_trace_id = '6e0c63257de34c92bf9efcd03927272e'
+        test_span_id = '00f067aa0ba902b7'
+
+        for test_sampled in ['0', 'False', 'false', None]:
+            headers = {
+                b3_format._TRACE_ID_KEY: test_trace_id,
+                b3_format._SPAN_ID_KEY: test_span_id,
+                b3_format._SAMPLED_KEY: test_sampled,
+            }
+
+            propagator = b3_format.B3FormatPropagator()
+            span_context = propagator.from_headers(headers)
+
+            self.assertEqual(span_context.trace_id, test_trace_id)
+            self.assertEqual(span_context.span_id, test_span_id)
+            self.assertEqual(
+                span_context.trace_options.enabled,
+                False
+            )
 
     def test_from_headers_keys_not_exist(self):
         propagator = b3_format.B3FormatPropagator()

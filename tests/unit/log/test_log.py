@@ -12,18 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import sys
 from contextlib import contextmanager
 import logging
+import sys
+
+import mock
 
 from opencensus import log
 
 if sys.version_info < (3,):
     import unittest2 as unittest
-    import mock
 else:
     import unittest
-    from unittest import mock
 
 
 @contextmanager
@@ -49,7 +49,8 @@ def mock_tracer(trace_id=None, span_id=None, sampling_decision=None):
     tracer = mock.Mock()
     tracer.span_context.trace_id = trace_id
     tracer.span_context.span_id = span_id
-    tracer.span_context.trace_options.get_enabled = sampling_decision
+    tracer.span_context.trace_options.get_enabled.return_value =\
+        sampling_decision
 
     with mock_context() as mock_ec:
         mock_ec.get_opencensus_tracer.return_value = tracer
@@ -275,8 +276,8 @@ class TestTraceLogger(unittest.TestCase):
         self.assertEqual(r2.traceSampled, log.ATTR_DEFAULTS.sampling_decision)
 
         with mock_tracer(trace_id="trace_id", span_id="span_id") as mt3:
-            type(mt3.span_context.trace_options).get_enabled =\
-                 mock.PropertyMock(side_effect=ValueError)
+            mt3.span_context.trace_options.get_enabled.side_effect =\
+                ValueError
             logger = logging.getLogger('sd_error')
 
             with self.assertLogs('sd_error', level=logging.INFO) as cm3:

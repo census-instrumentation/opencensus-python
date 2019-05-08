@@ -19,11 +19,6 @@ import mock
 from opencensus.common.transports import async_
 
 
-# Don't let workers wait between exports in testing
-wait_period_patch = mock.patch(
-    'opencensus.common.transports.async_._WAIT_PERIOD', 0)
-
-
 class Test_Worker(unittest.TestCase):
 
     def _start_worker(self, worker):
@@ -118,7 +113,7 @@ class Test_Worker(unittest.TestCase):
 
     def test__thread_main(self):
         exporter = mock.Mock()
-        worker = async_._Worker(exporter)
+        worker = async_._Worker(exporter, wait_period=0)
 
         trace1 = {
             'traceId': 'test1',
@@ -133,15 +128,14 @@ class Test_Worker(unittest.TestCase):
         worker.enqueue(trace2)
         worker._queue.put_nowait(async_._WORKER_TERMINATOR)
 
-        with wait_period_patch:
-            worker._thread_main()
+        worker._thread_main()
 
         self.assertTrue(worker.exporter.emit.called)
         self.assertEqual(worker._queue.qsize(), 0)
 
     def test__thread_main_batches(self):
         exporter = mock.Mock()
-        worker = async_._Worker(exporter, max_batch_size=2)
+        worker = async_._Worker(exporter, max_batch_size=2, wait_period=0)
 
         # Enqueue three records and the termination signal. This should be
         # enough to perform two separate batches and a third loop with just
@@ -169,8 +163,7 @@ class Test_Worker(unittest.TestCase):
 
         worker._queue.put_nowait(async_._WORKER_TERMINATOR)
 
-        with wait_period_patch:
-            worker._thread_main()
+        worker._thread_main()
 
         self.assertEqual(worker._queue.qsize(), 0)
 
@@ -184,7 +177,7 @@ class Test_Worker(unittest.TestCase):
                 self.exported.append(span)
 
         exporter = Exporter()
-        worker = async_._Worker(exporter, max_batch_size=2)
+        worker = async_._Worker(exporter, max_batch_size=2, wait_period=0)
 
         # Enqueue three records and the termination signal. This should be
         # enough to perform two separate batches and a third loop with just
@@ -199,8 +192,7 @@ class Test_Worker(unittest.TestCase):
         worker.enqueue(span_data1)
         worker.enqueue(span_data2)
 
-        with wait_period_patch:
-            worker._thread_main()
+        worker._thread_main()
 
         self.assertEqual(exporter.exported, [span_data1])
 
@@ -221,7 +213,7 @@ class Test_Worker(unittest.TestCase):
                     raise Exception("This exporter is broken !")
 
         exporter = Exporter()
-        worker = async_._Worker(exporter, max_batch_size=2)
+        worker = async_._Worker(exporter, max_batch_size=2, wait_period=0)
 
         span_data0 = [mock.Mock()]
         span_data1 = [mock.Mock()]
@@ -232,8 +224,7 @@ class Test_Worker(unittest.TestCase):
         worker.enqueue(span_data2)
         worker.enqueue(async_._WORKER_TERMINATOR)
 
-        with wait_period_patch:
-            worker._thread_main()
+        worker._thread_main()
 
         # Span 2 should throw an exception, only span 0 and 1 are left
         self.assertEqual(exporter.exported, span_data0 + span_data1)

@@ -14,11 +14,9 @@
 
 """Translates opencensus span data to trace proto"""
 
-from google.protobuf.internal.well_known_types import ParseError
-from google.protobuf.timestamp_pb2 import Timestamp
 from google.protobuf.wrappers_pb2 import BoolValue, UInt32Value
-from opencensus.ext.ocagent.trace_exporter.gen.opencensus.trace.v1 \
-    import trace_pb2
+from opencensus.ext.ocagent import utils as ocagent_utils
+from opencensus.proto.trace.v1 import trace_pb2
 
 
 def translate_to_trace_proto(span_data):
@@ -41,8 +39,9 @@ def translate_to_trace_proto(span_data):
         span_id=hex_str_to_bytes_str(span_data.span_id),
         parent_span_id=hex_str_to_bytes_str(span_data.parent_span_id)
         if span_data.parent_span_id is not None else None,
-        start_time=proto_ts_from_datetime_str(span_data.start_time),
-        end_time=proto_ts_from_datetime_str(span_data.end_time),
+        start_time=ocagent_utils.proto_ts_from_datetime_str(
+            span_data.start_time),
+        end_time=ocagent_utils.proto_ts_from_datetime_str(span_data.end_time),
         status=trace_pb2.Status(
             code=span_data.status.code,
             message=span_data.status.message)
@@ -161,41 +160,6 @@ def hex_str_to_bytes_str(hex_str):
     """
 
     return bytes(bytearray.fromhex(hex_str))
-
-
-def proto_ts_from_datetime_str(dt):
-    """Converts string datetime in ISO format to protobuf timestamp.
-
-    :type dt: str
-    :param dt: string with datetime in ISO format
-
-    :rtype: :class:`~google.protobuf.timestamp_pb2.Timestamp`
-    :returns: protobuf timestamp
-    """
-
-    ts = Timestamp()
-    if (dt is not None):
-        try:
-            ts.FromJsonString(dt)
-        except ParseError:
-            pass
-    return ts
-
-
-def proto_ts_from_datetime(dt):
-    """Converts datetime to protobuf timestamp.
-
-    :type dt: datetime
-    :param dt: date and time
-
-    :rtype: :class:`~google.protobuf.timestamp_pb2.Timestamp`
-    :returns: protobuf timestamp
-    """
-
-    ts = Timestamp()
-    if (dt is not None):
-        ts.FromDatetime(dt)
-    return ts
 
 
 def add_proto_attribute_value(

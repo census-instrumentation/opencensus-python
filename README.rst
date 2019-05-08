@@ -41,9 +41,10 @@ Installation & basic usage
 
     .. code:: python
 
-        from opencensus.trace import tracer as tracer_module
+        from opencensus.trace.tracer import Tracer
+        from opencensus.trace.samplers import AlwaysOnSampler
 
-        tracer = tracer_module.Tracer()
+        tracer = Tracer(sampler=AlwaysOnSampler())
 
     .. _pip: https://pip.pypa.io
     .. _pipenv: https://docs.pipenv.org/
@@ -54,7 +55,7 @@ Installation & basic usage
 
         from opencensus.stats import stats as stats_module
 
-        stats = stats_module.Stats()
+        stats = stats_module.stats
         view_manager = stats.view_manager
         stats_recorder = stats.stats_recorder
 
@@ -66,10 +67,11 @@ You can collect traces using the ``Tracer`` `context manager`_:
 
 .. code:: python
 
-    from opencensus.trace import tracer as tracer_module
+    from opencensus.trace.tracer import Tracer
+    from opencensus.trace.samplers import AlwaysOnSampler
 
     # Initialize a tracer, by default using the `PrintExporter`
-    tracer = tracer_module.Tracer()
+    tracer = Tracer(sampler=AlwaysOnSampler())
 
     # Example for creating nested spans
     with tracer.span(name='span1') as span1:
@@ -87,10 +89,11 @@ Alternatively, you can explicitly start and end a span:
 
 .. code:: python
 
-    from opencensus.trace import tracer as tracer_module
+    from opencensus.trace.tracer import Tracer
+    from opencensus.trace.samplers import AlwaysOnSampler
 
     # Initialize a tracer, by default using the `PrintExporter`
-    tracer = tracer_module.Tracer()
+    tracer = Tracer(sampler=AlwaysOnSampler())
 
     tracer.start_span(name='span1')
     do_something_to_trace()
@@ -103,110 +106,73 @@ Alternatively, you can explicitly start and end a span:
 Customization
 -------------
 
-Samplers
-~~~~~~~~
+There are several things you can customize in OpenCensus:
 
-You can specify different samplers when initializing a tracer, default
-is using ``AlwaysOnSampler``, the other options are ``AlwaysOffSampler``
-and ``ProbabilitySampler``
+* **Blacklist**, which excludes certain hosts and paths from being tracked.
+  By default, the health check path for the App Engine flexible environment is
+  not tracked, you can turn it on by excluding it from the blacklist setting.
 
-.. code:: python
+* **Exporter**, which sends the traces.
+  By default, the traces are printed to stdout in JSON format. You can choose
+  different exporters to send the traces to. There are three built-in exporters,
+  which are ``PrintExporter``, ``FileExporter`` and ``LoggingExporter``, the
+  other exporters are provided as `extensions <#trace-exporter>`__.
 
-    from opencensus.trace.samplers import probability
-    from opencensus.trace import tracer as tracer_module
+* **Sampler**, which determines how traces are sampled.
+  The default sampler is the ``ProbabilitySampler``, which samples (i.e.
+  enables tracing for) a percentage of all requests. Sampling is deterministic
+  according to the trace ID. To force sampling for all requests, or to prevent
+  any request from being sampled, see ``AlwaysOnSampler`` and
+  ``AlwaysOffSampler``.
 
-    # Sampling the requests at the rate equals 0.5
-    sampler = probability.ProbabilitySampler(rate=0.5)
-    tracer = tracer_module.Tracer(sampler=sampler)
+* **Propagator**, which serializes and deserializes the
+  ``SpanContext`` and its headers. The default propagator is
+  ``TraceContextPropagator``, other propagators include
+  ``BinaryFormatPropagator``, ``GoogleCloudFormatPropagator`` and
+  ``TextFormatPropagator``.
 
-Exporters
-~~~~~~~~~
 
-By default, the traces are printed to stdout in JSON format. You can choose
-different exporters to send the traces to. There are three built-in exporters,
-which are ``opencensus.trace.print_exporter``, ``opencensus.trace.file_exporter``
-and ``opencensus.trace.logging_exporter``, other exporters are provided as
-`extensions <#trace-exporter>`__.
-
-This example shows how to configure OpenCensus to save the traces to a
-file:
-
-.. code:: python
-
-    from opencensus.trace import file_exporter
-    from opencensus.trace.tracers import context_tracer
-
-    exporter = file_exporter.FileExporter(file_name='traces')
-    tracer = context_tracer.ContextTracer(exporter=exporter)
-
-Propagators
-~~~~~~~~~~~
-
-You can specify the propagator type for serializing and deserializing the
-``SpanContext`` and its headers. There are currently three built in propagators:
-``GoogleCloudFormatPropagator``, ``TextFormatPropagator`` and ``TraceContextPropagator``.
-
-This example shows how to use the ``GoogleCloudFormatPropagator``:
-
-.. code:: python
-
-    from opencensus.trace.propagation import google_cloud_format
-
-    propagator = google_cloud_format.GoogleCloudFormatPropagator()
-
-    # Deserialize
-    span_context = propagator.from_header(header)
-
-    # Serialize
-    header = propagator.to_header(span_context)
-
-This example shows how to use the ``TraceContextPropagator``:
+You can customize while initializing a tracer.
 
 .. code:: python
 
     import requests
 
     from opencensus.trace import config_integration
-    from opencensus.trace.propagation.trace_context_http_header_format import TraceContextPropagator
-    from opencensus.trace.tracer import Tracer
+    from opencensus.trace import file_exporter
+    from opencensus.trace import tracer as tracer_module
+    from opencensus.trace.propagation import google_cloud_format
+    from opencensus.trace.samplers import ProbabilitySampler
 
     config_integration.trace_integrations(['httplib'])
-    tracer = Tracer(propagator=TraceContextPropagator())
+
+    tracer = tracer_module.Tracer(
+        exporter=file_exporter.FileExporter(file_name='traces'),
+        propagator=google_cloud_format.GoogleCloudFormatPropagator(),
+        sampler=ProbabilitySampler(rate=0.5),
+    )
 
     with tracer.span(name='parent'):
         with tracer.span(name='child'):
             response = requests.get('http://localhost:5000')
 
-Blacklist Paths
-~~~~~~~~~~~~~~~
-
-You can specify which paths you do not want to trace by configuring the
-blacklist paths.
-
-This example shows how to configure the blacklist to ignore the ``_ah/health`` endpoint
-for a Flask application:
+You can use a configuration file for Flask/Django/Pyramid. For more
+information, please read the
+`individual integration documentation <#integration>`_.
 
 .. code:: python
 
-    from opencensus.trace.ext.flask.flask_middleware import FlaskMiddleware
-
-    app = flask.Flask(__name__)
-
-    blacklist_paths = ['_ah/health']
-    middleware = FlaskMiddleware(app, blacklist_paths=blacklist_paths)
-
-For Django, you can configure the blacklist in the ``OPENCENSUS_TRACE_PARAMS`` in ``settings.py``:
-
-.. code:: python
-
-    OPENCENSUS_TRACE_PARAMS: {
-        ...
-        'BLACKLIST_PATHS': ['_ah/health',],
+    'OPENCENSUS': {
+        'TRACE': {
+            'BLACKLIST_HOSTNAMES': ['localhost', '127.0.0.1'],
+            'BLACKLIST_PATHS': ['_ah/health'],
+            'SAMPLER': 'opencensus.trace.samplers.ProbabilitySampler(rate=1)',
+            'EXPORTER': '''opencensus.ext.ocagent.trace_exporter.TraceExporter(
+                service_name='foobar',
+            )''',
+            'PROPAGATOR': 'opencensus.trace.propagation.google_cloud_format.GoogleCloudFormatPropagator()',
+        }
     }
-
-
-.. note:: By default, the health check path for the App Engine flexible environment is not traced,
-    but you can turn it on by excluding it from the blacklist setting.
 
 ------------
  Extensions
@@ -219,6 +185,7 @@ OpenCensus supports integration with popular web frameworks, client libraries an
 
 -  `Django`_
 -  `Flask`_
+-  `gevent`_
 -  `Google Cloud Client Libraries`_
 -  `gRPC`_
 -  `httplib`_
@@ -234,6 +201,7 @@ OpenCensus supports integration with popular web frameworks, client libraries an
 Trace Exporter
 --------------
 
+-  `Azure`_
 -  `Jaeger`_
 -  `OCAgent`_
 -  `Stackdriver`_
@@ -242,11 +210,14 @@ Trace Exporter
 Stats Exporter
 --------------
 
+-  `OCAgent`_
 -  `Prometheus`_
 -  `Stackdriver`_
 
+.. _Azure: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-azure
 .. _Django: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-django
 .. _Flask: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-flask
+.. _gevent: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-gevent
 .. _Google Cloud Client Libraries: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-google-cloud-clientlibs
 .. _gRPC: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-grpc
 .. _httplib: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-httplib
@@ -264,57 +235,22 @@ Stats Exporter
 .. _threading: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-threading
 .. _Zipkin: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-zipkin
 
-------------------
- Additional Info
-------------------
-
-Contributing
+------------
+ Versioning
 ------------
 
-Contributions to this library are always welcome and highly encouraged.
+This library follows `Semantic Versioning`_.
 
-See `CONTRIBUTING <CONTRIBUTING.md>`__ for more information on how to
-get started.
+**GA**: Libraries defined at a GA quality level are stable, and will not introduce
+backwards-incompatible changes in any minor or patch releases. We will address issues and requests
+with the highest priority. If we were to make a backwards-incompatible changes on an API, we will
+first mark the existing API as deprecated and keep it for 18 months before removing it.
 
+**Beta**: Libraries defined at a Beta quality level are expected to be mostly stable and we're
+working towards their release candidate. We will address issues and requests with a higher priority.
+There may be backwards incompatible changes in a minor version release, though not in a patch
+release. If an element is part of an API that is only meant to be used by exporters or other
+opencensus libraries, then there is no deprecation period. Otherwise, we will deprecate it for 18
+months before removing it, if possible.
 
-Development
------------
-
-Tests
-~~~~~
-
-::
-
-    cd trace
-    tox -e py34
-    source .tox/py34/bin/activate
-
-    # Install nox with pip
-    pip install nox-automation
-
-    # See what's available in the nox suite
-    nox -l
-
-    # Run a single nox command
-    nox -s "unit(py='2.7')"
-
-    # Run all the nox commands
-    nox
-
-    # Integration test
-    # We don't have script for integration test yet, but can test as below.
-    python setup.py bdist_wheel
-    cd dist
-    pip install opencensus-0.0.1-py2.py3-none-any.whl
-
-    # Then just run the tracers normally as you want to test.
-
-License
--------
-
-Apache 2.0 - See `LICENSE <LICENSE>`__ for more information.
-
-Disclaimer
-----------
-
-This is not an official Google product.
+.. _Semantic Versioning: https://semver.org/

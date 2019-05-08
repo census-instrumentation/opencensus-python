@@ -33,7 +33,7 @@ class TraceOptions(object):
             trace_options_byte = DEFAULT
 
         self.trace_options_byte = self.check_trace_options(trace_options_byte)
-        self.enabled = self.get_enabled
+        self.enabled = self.get_enabled()
 
     def check_trace_options(self, trace_options_byte):
         trace_options_int = int(trace_options_byte)
@@ -48,10 +48,9 @@ class TraceOptions(object):
         fmt = '{}(enabled={})'
         return fmt.format(
             type(self).__name__,
-            self.get_enabled,
+            self.get_enabled(),
         )
 
-    @property
     def get_enabled(self):
         """Get the last bit from the trace options which is the enabled field.
 
@@ -76,4 +75,4 @@ class TraceOptions(object):
         enabled_bit = '1' if enabled else '0'
         self.trace_options_byte = str(
             self.trace_options_byte)[:-1] + enabled_bit
-        self.enabled = self.get_enabled
+        self.enabled = self.get_enabled()

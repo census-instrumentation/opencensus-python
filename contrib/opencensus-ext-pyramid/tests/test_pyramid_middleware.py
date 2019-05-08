@@ -27,10 +27,10 @@ from opencensus.ext.pyramid import pyramid_middleware
 from opencensus.ext.zipkin import trace_exporter as zipkin_exporter
 from opencensus.trace import execution_context
 from opencensus.trace import print_exporter
+from opencensus.trace import samplers
 from opencensus.trace import span as span_module
-from opencensus.trace.propagation import google_cloud_format
-from opencensus.trace.samplers import always_on
 from opencensus.trace.blank_span import BlankSpan
+from opencensus.trace.propagation import trace_context_http_header_format
 from opencensus.trace.tracers import noop_tracer
 
 
@@ -41,10 +41,10 @@ class TestPyramidMiddleware(unittest.TestCase):
         execution_context.clear()
 
     def test_constructor(self):
-        pyramid_trace_header = 'X-Cloud-Trace-Context'
+        pyramid_trace_header = 'traceparent'
         trace_id = '2dd43a1d6b2549c6bc2a1a54c2fc0b05'
         span_id = '6e0c63257de34c92'
-        pyramid_trace_id = '{}/{}'.format(trace_id, span_id)
+        pyramid_trace_id = '00-{}-{}-00'.format(trace_id, span_id)
 
         response = Response()
 
@@ -52,21 +52,25 @@ class TestPyramidMiddleware(unittest.TestCase):
             return response
 
         mock_registry = mock.Mock(spec=Registry)
-        mock_registry.settings = {}
-        mock_registry.settings['OPENCENSUS_TRACE'] = {
-            'EXPORTER': print_exporter.PrintExporter()}
+        mock_registry.settings = {
+            'OPENCENSUS': {
+                'TRACE': {
+                    'EXPORTER': print_exporter.PrintExporter(),
+                }
+            }
+        }
 
         middleware = pyramid_middleware.OpenCensusTweenFactory(
             dummy_handler,
             mock_registry,
         )
 
-        assert isinstance(middleware.sampler, always_on.AlwaysOnSampler)
+        assert isinstance(middleware.sampler, samplers.AlwaysOnSampler)
         assert isinstance(
             middleware.exporter, print_exporter.PrintExporter)
         assert isinstance(
             middleware.propagator,
-            google_cloud_format.GoogleCloudFormatPropagator)
+            trace_context_http_header_format.TraceContextPropagator)
 
         # Just a smoke test to make sure things work
         request = DummyRequest(
@@ -95,9 +99,12 @@ class TestPyramidMiddleware(unittest.TestCase):
         )
 
         mock_registry = mock.Mock(spec=Registry)
-        mock_registry.settings = {}
-        mock_registry.settings['OPENCENSUS_TRACE'] = {
-            'EXPORTER': exporter,
+        mock_registry.settings = {
+            'OPENCENSUS': {
+                'TRACE': {
+                    'EXPORTER': exporter,
+                }
+            }
         }
 
         middleware = pyramid_middleware.OpenCensusTweenFactory(
@@ -105,22 +112,22 @@ class TestPyramidMiddleware(unittest.TestCase):
             mock_registry,
         )
 
-        assert isinstance(middleware.sampler, always_on.AlwaysOnSampler)
+        assert isinstance(middleware.sampler, samplers.AlwaysOnSampler)
         assert isinstance(
             middleware.exporter, zipkin_exporter.ZipkinExporter)
         assert isinstance(
             middleware.propagator,
-            google_cloud_format.GoogleCloudFormatPropagator)
+            trace_context_http_header_format.TraceContextPropagator)
 
         self.assertEqual(middleware.exporter.service_name, service_name)
         self.assertEqual(middleware.exporter.host_name, host_name)
         self.assertEqual(middleware.exporter.port, port)
 
     def test__before_request(self):
-        pyramid_trace_header = 'X-Cloud-Trace-Context'
+        pyramid_trace_header = 'traceparent'
         trace_id = '2dd43a1d6b2549c6bc2a1a54c2fc0b05'
         span_id = '6e0c63257de34c92'
-        pyramid_trace_id = '{}/{}'.format(trace_id, span_id)
+        pyramid_trace_id = '00-{}-{}-00'.format(trace_id, span_id)
 
         response = Response()
 
@@ -160,10 +167,10 @@ class TestPyramidMiddleware(unittest.TestCase):
         self.assertEqual(span_context.trace_id, trace_id)
 
     def test__before_request_blacklist(self):
-        pyramid_trace_header = 'X-Cloud-Trace-Context'
+        pyramid_trace_header = 'traceparent'
         trace_id = '2dd43a1d6b2549c6bc2a1a54c2fc0b05'
         span_id = '6e0c63257de34c92'
-        pyramid_trace_id = '{}/{}'.format(trace_id, span_id)
+        pyramid_trace_id = '00-{}-{}-00'.format(trace_id, span_id)
 
         response = Response()
 
@@ -194,10 +201,10 @@ class TestPyramidMiddleware(unittest.TestCase):
         assert isinstance(span, BlankSpan)
 
     def test__after_request(self):
-        pyramid_trace_header = 'X-Cloud-Trace-Context'
+        pyramid_trace_header = 'traceparent'
         trace_id = '2dd43a1d6b2549c6bc2a1a54c2fc0b05'
         span_id = '6e0c63257de34c92'
-        pyramid_trace_id = '{}/{}'.format(trace_id, span_id)
+        pyramid_trace_id = '00-{}-{}-00'.format(trace_id, span_id)
 
         response = Response(status=200)
 
@@ -238,10 +245,10 @@ class TestPyramidMiddleware(unittest.TestCase):
         self.assertEqual(span.attributes, expected_attributes)
 
     def test__after_request_blacklist(self):
-        pyramid_trace_header = 'X-Cloud-Trace-Context'
+        pyramid_trace_header = 'traceparent'
         trace_id = '2dd43a1d6b2549c6bc2a1a54c2fc0b05'
         span_id = '6e0c63257de34c92'
-        pyramid_trace_id = '{}/{}'.format(trace_id, span_id)
+        pyramid_trace_id = '00-{}-{}-00'.format(trace_id, span_id)
 
         response = Response()
 

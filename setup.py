@@ -25,7 +25,7 @@ setup(
     author_email='census-developers@googlegroups.com',
     classifiers=[
         'Intended Audience :: Developers',
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: Apache Software License',
         'Programming Language :: Python',
@@ -35,11 +35,13 @@ setup(
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
     ],
     description='A stats collection and distributed tracing framework',
     include_package_data=True,
     long_description=open('README.rst').read(),
     install_requires=[
+        'opencensus-context == 0.2.dev0',
         'google-api-core >= 1.0.0, < 2.0.0',
     ],
     extras_require={},

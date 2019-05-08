@@ -13,17 +13,13 @@
 # limitations under the License.
 
 from opencensus.trace import print_exporter
-from opencensus.trace.samplers import always_on
-from opencensus.trace.propagation import google_cloud_format
+from opencensus.trace import samplers
+from opencensus.trace.propagation import trace_context_http_header_format
 
 DEFAULT_PYRAMID_TRACER_CONFIG = {
-    'SAMPLER': always_on.AlwaysOnSampler(),
+    'SAMPLER': samplers.AlwaysOnSampler(),
     'EXPORTER': print_exporter.PrintExporter(),
-    'PROPAGATOR': google_cloud_format.GoogleCloudFormatPropagator()
-}
-
-
-DEFAULT_PYRAMID_TRACER_PARAMS = {
+    'PROPAGATOR': trace_context_http_header_format.TraceContextPropagator(),
     # https://cloud.google.com/appengine/docs/flexible/python/
     # how-instances-are-managed#health_checking
     'BLACKLIST_PATHS': ['_ah/health'],
@@ -32,17 +28,11 @@ DEFAULT_PYRAMID_TRACER_PARAMS = {
 
 class PyramidTraceSettings(object):
     def __init__(self, registry):
-        self.settings = registry.settings.get(
-            'OPENCENSUS_TRACE',
-            DEFAULT_PYRAMID_TRACER_CONFIG)
-
-        self.params = registry.settings.get(
-            'OPENCENSUS_TRACE_PARAMS',
-            DEFAULT_PYRAMID_TRACER_PARAMS)
+        self.settings = registry.settings.get('OPENCENSUS', {})
+        self.settings = self.settings.get(
+            'TRACE', DEFAULT_PYRAMID_TRACER_CONFIG)
 
         _set_default_configs(self.settings, DEFAULT_PYRAMID_TRACER_CONFIG)
-
-        _set_default_configs(self.params, DEFAULT_PYRAMID_TRACER_PARAMS)
 
     def __getattr__(self, attr):
         # If not in defaults, it is something we cannot parse.

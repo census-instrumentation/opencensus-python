@@ -73,11 +73,15 @@ class MeasureToViewMap(object):
         views = set(all_views)
         return views
 
+    # TODO: deprecate
     def register_view(self, view, timestamp):
         """registers the view's measure name to View Datas given a view"""
         if len(self.exporters) > 0:
-            for e in self.exporters:
-                e.on_register_view(view)
+            try:
+                for e in self.exporters:
+                    e.on_register_view(view)
+            except AttributeError:
+                pass
 
         self._exported_views = None
         existing_view = self._registered_views.get(view.name)
@@ -118,13 +122,17 @@ class MeasureToViewMap(object):
                     attachments=attachments)
             self.export(view_datas)
 
+    # TODO: deprecate
     def export(self, view_datas):
         """export view datas to registered exporters"""
         view_datas_copy = \
             [self.copy_and_finalize_view_data(vd) for vd in view_datas]
         if len(self.exporters) > 0:
             for e in self.exporters:
-                e.export(view_datas_copy)
+                try:
+                    e.export(view_datas_copy)
+                except AttributeError:
+                    pass
 
     def get_metrics(self, timestamp):
         """Get a Metric for each registered view.

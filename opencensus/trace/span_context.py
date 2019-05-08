@@ -17,9 +17,9 @@
 import logging
 import re
 import six
-import uuid
+import random
 
-from opencensus.trace import trace_options
+from opencensus.trace import trace_options as trace_options_module
 
 _INVALID_TRACE_ID = '0' * 32
 INVALID_SPAN_ID = '0' * 16
@@ -27,11 +27,8 @@ INVALID_SPAN_ID = '0' * 16
 TRACE_ID_PATTERN = re.compile('[0-9a-f]{32}?')
 SPAN_ID_PATTERN = re.compile('[0-9a-f]{16}?')
 
-# Default options, enable tracing
-DEFAULT_OPTIONS = 1
-
-# Default trace options
-DEFAULT = trace_options.TraceOptions(DEFAULT_OPTIONS)
+# Default options, don't force sampling
+DEFAULT_OPTIONS = '0'
 
 
 class SpanContext(object):
@@ -65,7 +62,7 @@ class SpanContext(object):
             trace_id = generate_trace_id()
 
         if trace_options is None:
-            trace_options = DEFAULT
+            trace_options = trace_options_module.TraceOptions(DEFAULT_OPTIONS)
 
         self.from_header = from_header
         self.trace_id = self._check_trace_id(trace_id)
@@ -159,16 +156,13 @@ def generate_span_id():
     :rtype: str
     :returns: 16 digit randomly generated hex trace id.
     """
-    span_id = uuid.uuid4().hex[:16]
-    return span_id
+    return '{:016x}'.format(random.getrandbits(64))
 
 
 def generate_trace_id():
-    """Generate a trace_id randomly. Must be a 32 character
-    hexadecimal encoded string
+    """Generate a random 32 char hex trace_id.
 
     :rtype: str
     :returns: 32 digit randomly generated hex trace id.
     """
-    trace_id = uuid.uuid4().hex
-    return trace_id
+    return '{:032x}'.format(random.getrandbits(128))

@@ -12,13 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from opencensus.trace import execution_context
 from opencensus.trace import print_exporter
-from opencensus.trace.propagation import google_cloud_format
-from opencensus.trace.samplers import always_on
+from opencensus.trace import samplers
+from opencensus.trace.propagation import trace_context_http_header_format
 from opencensus.trace.span_context import SpanContext
 from opencensus.trace.tracers import context_tracer
 from opencensus.trace.tracers import noop_tracer
-from opencensus.trace import execution_context
 
 
 class Tracer(object):
@@ -30,8 +30,8 @@ class Tracer(object):
 
     :type sampler: :class:`~opencensus.trace.samplers.base.Sampler`
     :param sampler: Instances of Sampler objects. Defaults to
-                    :class:`.AlwaysOnSampler`. The rest options are
-                    :class:`.AlwaysOffSampler`, :class:`.FixedRateSampler`.
+                    :class:`.ProbabilitySampler`. Other options include
+                    :class:`.AlwaysOnSampler` and :class:`.AlwaysOffSampler`.
 
     :type exporter: :class:`~opencensus.trace.base_exporter.exporter`
     :param exporter: Instances of exporter objects. Default to
@@ -50,13 +50,14 @@ class Tracer(object):
             span_context = SpanContext()
 
         if sampler is None:
-            sampler = always_on.AlwaysOnSampler()
+            sampler = samplers.ProbabilitySampler()
 
         if exporter is None:
             exporter = print_exporter.PrintExporter()
 
         if propagator is None:
-            propagator = google_cloud_format.GoogleCloudFormatPropagator()
+            propagator = \
+                trace_context_http_header_format.TraceContextPropagator()
 
         self.span_context = span_context
         self.sampler = sampler
@@ -73,8 +74,7 @@ class Tracer(object):
         :rtype: bool
         :returns: Whether to trace the request or not.
         """
-        return self.span_context.trace_options.enabled \
-            or self.sampler.should_sample(self.span_context.trace_id)
+        return self.sampler.should_sample(self.span_context)
 
     def get_tracer(self):
         """Return a tracer according to the sampling decision."""
@@ -85,8 +85,7 @@ class Tracer(object):
             return context_tracer.ContextTracer(
                 exporter=self.exporter,
                 span_context=self.span_context)
-        else:
-            return noop_tracer.NoopTracer()
+        return noop_tracer.NoopTracer()
 
     def store_tracer(self):
         """Add the current tracer to thread_local"""

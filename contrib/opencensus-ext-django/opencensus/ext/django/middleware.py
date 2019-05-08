@@ -14,14 +14,19 @@
 
 """Django middleware helper to capture and trace a request."""
 import logging
+import six
 
-from opencensus.ext.django.config import (settings, convert_to_import)
+import django.conf
+
+from opencensus.common import configuration
 from opencensus.trace import attributes_helper
 from opencensus.trace import execution_context
+from opencensus.trace import print_exporter
+from opencensus.trace import samplers
 from opencensus.trace import span as span_module
 from opencensus.trace import tracer as tracer_module
 from opencensus.trace import utils
-from opencensus.trace.samplers import probability
+from opencensus.trace.propagation import trace_context_http_header_format
 
 import django
 from django.db import connection
@@ -38,20 +43,6 @@ REQUEST_THREAD_LOCAL_KEY = 'django_request'
 SPAN_THREAD_LOCAL_KEY = 'django_span'
 
 BLACKLIST_PATHS = 'BLACKLIST_PATHS'
-GCP_EXPORTER_PROJECT = 'GCP_EXPORTER_PROJECT'
-SAMPLING_RATE = 'SAMPLING_RATE'
-TRANSPORT = 'TRANSPORT'
-SERVICE_NAME = 'SERVICE_NAME'
-ZIPKIN_EXPORTER_SERVICE_NAME = 'ZIPKIN_EXPORTER_SERVICE_NAME'
-ZIPKIN_EXPORTER_HOST_NAME = 'ZIPKIN_EXPORTER_HOST_NAME'
-ZIPKIN_EXPORTER_PORT = 'ZIPKIN_EXPORTER_PORT'
-ZIPKIN_EXPORTER_PROTOCOL = 'ZIPKIN_EXPORTER_PROTOCOL'
-JAEGER_EXPORTER_HOST_NAME = 'JAEGER_EXPORTER_HOST_NAME'
-JAEGER_EXPORTER_PORT = 'JAEGER_EXPORTER_PORT'
-JAEGER_EXPORTER_AGENT_HOST_NAME = 'JAEGER_EXPORTER_AGENT_HOST_NAME'
-JAEGER_EXPORTER_AGENT_PORT = 'JAEGER_EXPORTER_AGENT_PORT'
-JAEGER_EXPORTER_SERVICE_NAME = 'JAEGER_EXPORTER_SERVICE_NAME'
-OCAGENT_TRACE_EXPORTER_ENDPOINT = 'OCAGENT_TRACE_EXPORTER_ENDPOINT'
 BLACKLIST_HOSTNAMES = 'BLACKLIST_HOSTNAMES'
 
 log = logging.getLogger(__name__)
@@ -101,7 +92,12 @@ def _set_django_attributes(span, request):
         return
 
     user_id = django_user.pk
-    user_name = django_user.get_username()
+    try:
+        user_name = django_user.get_username()
+    except AttributeError:
+        # AnonymousUser in some older versions of Django doesn't implement
+        # get_username
+        return
 
     # User id is the django autofield for User model as the primary key
     if user_id is not None:
@@ -115,79 +111,28 @@ class OpencensusMiddleware(MiddlewareMixin):
     """Saves the request in thread local"""
 
     def __init__(self, get_response=None):
-        # One-time configuration and initialization.
         self.get_response = get_response
-        self._sampler = settings.SAMPLER
-        self._exporter = settings.EXPORTER
-        self._propagator = settings.PROPAGATOR
+        settings = getattr(django.conf.settings, 'OPENCENSUS', {})
+        settings = settings.get('TRACE', {})
 
-        self._blacklist_paths = settings.params.get(BLACKLIST_PATHS)
+        self.sampler = (settings.get('SAMPLER', None)
+                        or samplers.ProbabilitySampler())
+        if isinstance(self.sampler, six.string_types):
+            self.sampler = configuration.load(self.sampler)
 
-        # Initialize the sampler
-        if self._sampler.__name__ == 'ProbabilitySampler':
-            _rate = settings.params.get(
-                SAMPLING_RATE, probability.DEFAULT_SAMPLING_RATE)
-            self.sampler = self._sampler(_rate)
-        else:
-            self.sampler = self._sampler()
+        self.exporter = settings.get('EXPORTER', None) or \
+            print_exporter.PrintExporter()
+        if isinstance(self.exporter, six.string_types):
+            self.exporter = configuration.load(self.exporter)
 
-        # Initialize the exporter
-        transport = convert_to_import(settings.params.get(TRANSPORT))
+        self.propagator = settings.get('PROPAGATOR', None) or \
+            trace_context_http_header_format.TraceContextPropagator()
+        if isinstance(self.propagator, six.string_types):
+            self.propagator = configuration.load(self.propagator)
 
-        if self._exporter.__name__ == 'GoogleCloudExporter':
-            _project_id = settings.params.get(GCP_EXPORTER_PROJECT, None)
-            self.exporter = self._exporter(
-                project_id=_project_id,
-                transport=transport)
-        elif self._exporter.__name__ == 'ZipkinExporter':
-            _service_name = self._get_service_name(settings.params)
-            _zipkin_host_name = settings.params.get(
-                ZIPKIN_EXPORTER_HOST_NAME, 'localhost')
-            _zipkin_port = settings.params.get(
-                ZIPKIN_EXPORTER_PORT, 9411)
-            _zipkin_protocol = settings.params.get(
-                ZIPKIN_EXPORTER_PROTOCOL, 'http')
-            self.exporter = self._exporter(
-                service_name=_service_name,
-                host_name=_zipkin_host_name,
-                port=_zipkin_port,
-                protocol=_zipkin_protocol,
-                transport=transport)
-        elif self._exporter.__name__ == 'TraceExporter':
-            _service_name = self._get_service_name(settings.params)
-            _endpoint = settings.params.get(
-                OCAGENT_TRACE_EXPORTER_ENDPOINT, None)
-            self.exporter = self._exporter(
-                service_name=_service_name,
-                endpoint=_endpoint,
-                transport=transport)
-        elif self._exporter.__name__ == 'JaegerExporter':
-            _service_name = settings.params.get(
-                JAEGER_EXPORTER_SERVICE_NAME,
-                self._get_service_name(settings.params))
-            _jaeger_host_name = settings.params.get(
-                JAEGER_EXPORTER_HOST_NAME, None)
-            _jaeger_port = settings.params.get(
-                JAEGER_EXPORTER_PORT, None)
-            _jaeger_agent_host_name = settings.params.get(
-                JAEGER_EXPORTER_AGENT_HOST_NAME, 'localhost')
-            _jaeger_agent_port = settings.params.get(
-                JAEGER_EXPORTER_AGENT_PORT, 6831)
-            self.exporter = self._exporter(
-                service_name=_service_name,
-                host_name=_jaeger_host_name,
-                port=_jaeger_port,
-                agent_host_name=_jaeger_agent_host_name,
-                agent_port=_jaeger_agent_port,
-                transport=transport)
-        else:
-            self.exporter = self._exporter(transport=transport)
+        self.blacklist_paths = settings.get(BLACKLIST_PATHS, None)
 
-        self.blacklist_hostnames = settings.params.get(
-            BLACKLIST_HOSTNAMES, None)
-
-        # Initialize the propagator
-        self.propagator = self._propagator()
+        self.blacklist_hostnames = settings.get(BLACKLIST_HOSTNAMES, None)
 
     def process_request(self, request):
         """Called on each request, before Django decides which view to execute.
@@ -196,7 +141,7 @@ class OpencensusMiddleware(MiddlewareMixin):
         :param request: Django http request.
         """
         # Do not trace if the url is blacklisted
-        if utils.disable_tracing_url(request.path, self._blacklist_paths):
+        if utils.disable_tracing_url(request.path, self.blacklist_paths):
             return
 
         # Add the request to thread local
@@ -278,7 +223,7 @@ class OpencensusMiddleware(MiddlewareMixin):
         """
 
         # Do not trace if the url is blacklisted
-        if utils.disable_tracing_url(request.path, self._blacklist_paths):
+        if utils.disable_tracing_url(request.path, self.blacklist_paths):
             return
 
         try:
@@ -292,7 +237,7 @@ class OpencensusMiddleware(MiddlewareMixin):
 
     def process_response(self, request, response):
         # Do not trace if the url is blacklisted
-        if utils.disable_tracing_url(request.path, self._blacklist_paths):
+        if utils.disable_tracing_url(request.path, self.blacklist_paths):
             return response
 
         try:
@@ -310,13 +255,3 @@ class OpencensusMiddleware(MiddlewareMixin):
             log.error('Failed to trace request', exc_info=True)
         finally:
             return response
-
-    def _get_service_name(self, params):
-        _service_name = params.get(
-            SERVICE_NAME, None)
-
-        if _service_name is None:
-            _service_name = params.get(
-                ZIPKIN_EXPORTER_SERVICE_NAME, 'my_service')
-
-        return _service_name
