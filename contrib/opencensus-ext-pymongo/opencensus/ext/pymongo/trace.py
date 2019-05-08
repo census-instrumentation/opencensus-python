@@ -51,7 +51,7 @@ class MongoCommandListener(monitoring.CommandListener):
         span.span_kind = span_module.SpanKind.CLIENT
 
         for attr in COMMAND_ATTRIBUTES:
-            _attr = event.command.get(attr, default=None)
+            _attr = event.command.get(attr)
             if _attr is not None:
                 self.tracer.add_attribute_to_current_span(attr, str(_attr))
 

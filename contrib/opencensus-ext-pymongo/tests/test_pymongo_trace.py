@@ -103,9 +103,8 @@ class MockCommand(object):
     def __init__(self, command_attrs):
         self.command_attrs = command_attrs
 
-    def get(self, key, default=None):
-        return self.command_attrs[key] \
-            if key in self.command_attrs else default
+    def get(self, key):
+        return self.command_attrs.get(key)
 
 
 class MockEvent(object):
