@@ -19,7 +19,7 @@ information on using pull requests.
 
 Prerequisites:
 
-* You need to have Python installed.
+* You must have every major version of Python that OpenCensus supports installed (see https://pypi.org/project/opencensus/ for which versions are supported).
 * You need to fork the project in GitHub.
 
 Clone the upstream repo:
