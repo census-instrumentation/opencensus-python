@@ -14,12 +14,12 @@
 
 
 from copy import copy
-import logging
-import os
+from logging import getLogger
+from os import getenv
 import re
 
 
-logger = logging.getLogger(__name__)
+logger = getLogger(__name__)
 
 
 OC_RESOURCE_TYPE = 'OC_RESOURCE_TYPE'
@@ -205,12 +205,12 @@ def get_from_env():
     :rtype: :class:`Resource`
     :return: A resource with type and labels from the environment.
     """
-    type_env = os.getenv(OC_RESOURCE_TYPE)
+    type_env = getenv(OC_RESOURCE_TYPE)
     if type_env is None:
         return None
     type_env = type_env.strip()
 
-    labels_env = os.getenv(OC_RESOURCE_LABELS)
+    labels_env = getenv(OC_RESOURCE_LABELS)
     if labels_env is None:
         return Resource(type_env)
 

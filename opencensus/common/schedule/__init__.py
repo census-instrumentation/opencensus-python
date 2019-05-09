@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import threading
-import time
+from threading import Event, Thread
+from time import time
 
 
-class PeriodicTask(threading.Thread):
+class PeriodicTask(Thread):
     """Thread that periodically calls a given function.
 
     :type interval: int or float
@@ -38,14 +38,14 @@ class PeriodicTask(threading.Thread):
         self.function = function
         self.args = args or []
         self.kwargs = kwargs or {}
-        self.finished = threading.Event()
+        self.finished = Event()
 
     def run(self):
         wait_time = self.interval
         while not self.finished.wait(wait_time):
-            start_time = time.time()
+            start_time = time()
             self.function(*self.args, **self.kwargs)
-            elapsed_time = time.time() - start_time
+            elapsed_time = time() - start_time
             wait_time = max(self.interval - elapsed_time, 0)
 
     def cancel(self):
