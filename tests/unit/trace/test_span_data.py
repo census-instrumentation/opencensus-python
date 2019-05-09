@@ -90,7 +90,12 @@ class TestSpanData(unittest.TestCase):
                     description='description'
                 )
             ],
-            message_events=None,
+            message_events=[
+                time_event.MessageEvent(
+                    timestamp=datetime.datetime(1970, 1, 1),
+                    id=0,
+                )
+            ],
             same_process_as_parent_span=False,
             child_span_count=0,
             span_kind=0,

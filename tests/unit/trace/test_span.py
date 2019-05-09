@@ -368,7 +368,9 @@ class Test_format_span_json(unittest.TestCase):
         annotation = Annotation(datetime.datetime.utcnow(), mock.Mock())
         annotation.timestamp = mock_time
         span.annotations = [annotation]
-        span.message_events = []
+        message_event = MessageEvent(datetime.datetime.utcnow(), mock.Mock())
+        message_event.timestamp = mock_time
+        span.message_events = [message_event]
         span.stack_trace = StackTrace()
         span.status = Status(code='200', message='test')
         span.links = [Link(trace_id, span_id)]
@@ -411,6 +413,9 @@ class Test_format_span_json(unittest.TestCase):
             'timeEvents': {
                 'timeEvent': [{
                     'annotation': mock_annotation,
+                    'time': mock_time,
+                }, {
+                    'message_event': mock_message_event,
                     'time': mock_time,
                 }]
             },
