@@ -1,4 +1,4 @@
-# Copyright 2017, OpenCensus Authors
+# Copyright 2019, OpenCensus Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,21 +11,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""A setup module for OpenCensus Instrumentation Library"""
 
 from setuptools import find_packages
 from setuptools import setup
-
-exec(open('opencensus/common/version/__init__.py').read())
+from version import __version__
 
 setup(
-    name='opencensus',
+    name='opencensus-ext-gevent',
     version=__version__,  # noqa
     author='OpenCensus Authors',
     author_email='census-developers@googlegroups.com',
     classifiers=[
         'Intended Audience :: Developers',
-        'Development Status :: 4 - Beta',
+        'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: Apache Software License',
         'Programming Language :: Python',
@@ -37,16 +35,22 @@ setup(
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
     ],
-    description='A stats collection and distributed tracing framework',
+    description='OpenCensus gevent compatibility helper',
     include_package_data=True,
     long_description=open('README.rst').read(),
     install_requires=[
-        'opencensus-context == 0.2.dev0',
-        'google-api-core >= 1.0.0, < 2.0.0',
+        'opencensus >= 0.6.dev0, < 1.0.0',
+        'gevent >= 1.3'
     ],
     extras_require={},
     license='Apache-2.0',
     packages=find_packages(exclude=('tests',)),
     namespace_packages=[],
-    url='https://github.com/census-instrumentation/opencensus-python',
+    url='https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-gevent',  # noqa: E501
+    zip_safe=False,
+    entry_points={
+        "gevent.plugins.monkey.did_patch_builtins": [
+            "opencensus = opencensus.ext.gevent.geventcompatibility:patch_opencensus"  # noqa: E501
+        ]
+    },
 )

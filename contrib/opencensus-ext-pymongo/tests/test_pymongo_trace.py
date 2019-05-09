@@ -44,6 +44,7 @@ class Test_pymongo_trace(unittest.TestCase):
             'filter': 'filter',
             'sort': 'sort',
             'limit': 'limit',
+            'pipeline': 'pipeline',
             'command_name': 'find'
         }
 
@@ -51,6 +52,7 @@ class Test_pymongo_trace(unittest.TestCase):
             'filter': 'filter',
             'sort': 'sort',
             'limit': 'limit',
+            'pipeline': 'pipeline',
             'request_id': 'request_id',
             'connection_id': 'connection_id'
         }
@@ -101,9 +103,8 @@ class MockCommand(object):
     def __init__(self, command_attrs):
         self.command_attrs = command_attrs
 
-    def get(self, key, default=None):
-        return self.command_attrs[key] \
-            if key in self.command_attrs else default
+    def get(self, key):
+        return self.command_attrs.get(key)
 
 
 class MockEvent(object):

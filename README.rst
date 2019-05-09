@@ -142,14 +142,14 @@ You can customize while initializing a tracer.
     from opencensus.trace import file_exporter
     from opencensus.trace import tracer as tracer_module
     from opencensus.trace.propagation import google_cloud_format
-    from opencensus.trace.samplers import probability
+    from opencensus.trace.samplers import ProbabilitySampler
 
     config_integration.trace_integrations(['httplib'])
 
     tracer = tracer_module.Tracer(
         exporter=file_exporter.FileExporter(file_name='traces'),
         propagator=google_cloud_format.GoogleCloudFormatPropagator(),
-        sampler=probability.ProbabilitySampler(rate=0.5),
+        sampler=ProbabilitySampler(rate=0.5),
     )
 
     with tracer.span(name='parent'):
@@ -185,6 +185,7 @@ OpenCensus supports integration with popular web frameworks, client libraries an
 
 -  `Django`_
 -  `Flask`_
+-  `gevent`_
 -  `Google Cloud Client Libraries`_
 -  `gRPC`_
 -  `httplib`_
@@ -216,6 +217,7 @@ Stats Exporter
 .. _Azure: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-azure
 .. _Django: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-django
 .. _Flask: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-flask
+.. _gevent: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-gevent
 .. _Google Cloud Client Libraries: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-google-cloud-clientlibs
 .. _gRPC: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-grpc
 .. _httplib: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-httplib
