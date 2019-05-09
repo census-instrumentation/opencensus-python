@@ -62,21 +62,19 @@ def translate_to_trace_proto(span_data):
                 attribute_key,
                 attribute_value)
 
-    # time events
-    if span_data.time_events is not None:
-        for span_data_event in span_data.time_events:
-            if span_data_event.message_event is not None:
-                pb_event = pb_span.time_events.time_event.add()
-                pb_event.time.FromJsonString(span_data_event.timestamp)
-                set_proto_message_event(
-                    pb_event.message_event,
-                    span_data_event.message_event)
-            elif span_data_event.annotation is not None:
-                pb_event = pb_span.time_events.time_event.add()
-                pb_event.time.FromJsonString(span_data_event.timestamp)
-                set_proto_annotation(
-                    pb_event.annotation,
-                    span_data_event.annotation)
+    # annotations
+    if span_data.annotations is not None:
+        for annotation in span_data.annotations:
+            pb_event = pb_span.time_events.time_event.add()
+            pb_event.time.FromJsonString(annotation.timestamp)
+            set_proto_annotation(pb_event.annotation, annotation)
+
+    # message events
+    if span_data.message_events is not None:
+        for message_event in span_data.message_events:
+            pb_event = pb_span.time_events.time_event.add()
+            pb_event.time.FromJsonString(message_event.timestamp)
+            set_proto_message_event(pb_event.message_event, message_event)
 
     # links
     if span_data.links is not None:

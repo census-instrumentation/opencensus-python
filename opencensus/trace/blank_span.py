@@ -13,7 +13,6 @@
 # limitations under the License.
 
 from opencensus.trace import base_span
-from opencensus.trace import time_event as time_event_module
 from opencensus.trace.span_context import generate_span_id
 from opencensus.trace.tracers import base
 
