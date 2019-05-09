@@ -14,9 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import random
-import time
-
+from random import randint
+from time import sleep
 from opencensus.stats import aggregation as aggregation_module
 from opencensus.stats import measure as measure_module
 from opencensus.stats import stats as stats_module
@@ -47,7 +46,7 @@ def main():
     view_manager.register_view(VIDEO_SIZE_VIEW)
 
     # Sleep for [0, 10] milliseconds to fake work.
-    time.sleep(random.randint(1, 10) / 1000.0)
+    sleep(randint(1, 10) / 1000.0)
 
     # Process video.
     # Record the processed video size.

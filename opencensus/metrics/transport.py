@@ -12,13 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import logging
-
+from logging import getLogger
 from opencensus.common import utils
 from opencensus.common.schedule import PeriodicTask
 
 
-logger = logging.getLogger(__name__)
+logger = getLogger(__name__)
 
 DEFAULT_INTERVAL = 60
 GRACE_PERIOD = 5

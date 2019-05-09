@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import time
-
+from time import sleep
 from opencensus.trace import execution_context
 from opencensus.trace import print_exporter
 from opencensus.trace import samplers
@@ -21,7 +20,7 @@ from opencensus.trace.tracer import Tracer
 
 
 def function_to_trace():
-    time.sleep(1)
+    sleep(1)
 
 
 def main():

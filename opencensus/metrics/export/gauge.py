@@ -14,8 +14,8 @@
 
 from collections import OrderedDict
 from datetime import datetime
-import six
-import threading
+from six import integer_types
+from threading import Lock
 
 from opencensus.common import utils
 from opencensus.metrics.export import metric
@@ -68,7 +68,7 @@ class GaugePointLong(GaugePoint):
 
     def __init__(self):
         self.value = 0
-        self._value_lock = threading.Lock()
+        self._value_lock = ()
 
     def __repr__(self):
         return ("{}({})"
@@ -83,13 +83,13 @@ class GaugePointLong(GaugePoint):
         :type val: int
         :param val: Value to add.
         """
-        if not isinstance(val, six.integer_types):
+        if not isinstance(val, integer_types):
             raise ValueError("GaugePointLong only supports integer types")
         with self._value_lock:
             self.value += val
 
     def _set(self, val):
-        if not isinstance(val, six.integer_types):
+        if not isinstance(val, integer_types):
             raise ValueError("GaugePointLong only supports integer types")
         with self._value_lock:
             self.value = val
@@ -128,7 +128,7 @@ class GaugePointDouble(GaugePoint):
 
     def __init__(self):
         self.value = 0.0
-        self._value_lock = threading.Lock()
+        self._value_lock = Lock()
 
     def __repr__(self):
         return ("{}({})"
@@ -245,7 +245,7 @@ class BaseGauge(object):
         self.descriptor = metric_descriptor.MetricDescriptor(
             name, description, unit, self.descriptor_type, label_keys)
         self.points = OrderedDict()
-        self._points_lock = threading.Lock()
+        self._points_lock = Lock()
 
     def __repr__(self):
         return ('{}(descriptor.name="{}", points={})'
@@ -461,7 +461,7 @@ class Registry(metric_producer.MetricProducer):
 
     def __init__(self):
         self.gauges = {}
-        self._gauges_lock = threading.Lock()
+        self._gauges_lock = Lock()
 
     def __repr__(self):
         return ('{}(gauges={}'

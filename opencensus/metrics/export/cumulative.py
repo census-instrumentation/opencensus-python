@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import six
-
+from six import integer_types
 from opencensus.metrics.export import metric_descriptor
 from opencensus.metrics.export import gauge
 
@@ -22,7 +21,7 @@ class CumulativePointLong(gauge.GaugePointLong):
     """A `GaugePointLong` that cannot decrease."""
 
     def _set(self, val):
-        if not isinstance(val, six.integer_types):
+        if not isinstance(val, integer_types):
             raise ValueError("CumulativePointLong only supports integer types")
         if val > self.get_value():
             super(CumulativePointLong, self)._set(val)
@@ -35,7 +34,7 @@ class CumulativePointLong(gauge.GaugePointLong):
         :type val: int
         :param val: Value to add.
         """
-        if not isinstance(val, six.integer_types):
+        if not isinstance(val, integer_types):
             raise ValueError("CumulativePointLong only supports integer types")
         if val > 0:
             super(CumulativePointLong, self).add(val)

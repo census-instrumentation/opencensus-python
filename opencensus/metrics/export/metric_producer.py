@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import threading
+from threading import Lock
 
 
 class MetricProducer(object):
@@ -39,7 +39,7 @@ class MetricProducerManager(object):
             self.metric_producers = set()
         else:
             self.metric_producers = set(metric_producers)
-        self.mp_lock = threading.Lock()
+        self.mp_lock = Lock()
 
     def add(self, metric_producer):
         """Add a metric producer.
