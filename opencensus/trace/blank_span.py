@@ -121,14 +121,6 @@ class BlankSpan(base_span.BaseSpan):
         """
         pass
 
-    def add_annotation(self, annotation):
-        """No-op implementation of this method.
-
-        :type annotation: :class:`opencensus.trace.time_event.Annotation`
-        :param annotation: The annotation to attach to this span.
-        """
-        pass
-
     def add_message_event(self, message_event):
         """No-op implementation of this method.
 

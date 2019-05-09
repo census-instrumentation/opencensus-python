@@ -37,7 +37,8 @@ class TestSpanData(unittest.TestCase):
             stack_trace=None,
             links=None,
             status=None,
-            time_events=None,
+            annotations=None,
+            message_events=None,
             same_process_as_parent_span=None,
             child_span_count=None,
             span_kind=0,
@@ -55,7 +56,8 @@ class TestSpanData(unittest.TestCase):
             stack_trace=None,
             links=None,
             status=None,
-            time_events=None,
+            annotations=None,
+            message_events=None,
             same_process_as_parent_span=None,
             child_span_count=None,
             span_kind=0,
@@ -82,11 +84,13 @@ class TestSpanData(unittest.TestCase):
             stack_trace=stack_trace.StackTrace(stack_trace_hash_id='111'),
             links=[link.Link('1111', span_id='6e0c63257de34c92')],
             status=status.Status(code=0, message='pok'),
-            time_events=[
-                time_event.TimeEvent(
-                    timestamp=datetime.datetime(1970, 1, 1)
+            annotations=[
+                time_event.Annotation(
+                    timestamp=datetime.datetime(1970, 1, 1),
+                    description='description'
                 )
             ],
+            message_events=None,
             same_process_as_parent_span=False,
             child_span_count=0,
             span_kind=0,

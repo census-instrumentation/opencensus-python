@@ -388,15 +388,16 @@ def format_span_json(span):
         span_json['stackTrace'] = span.stack_trace.format_stack_trace_json()
 
     formatted_time_events = []
-    formatted_time_events.extend(
-        {'time': aa.timestamp,
-         'annotation': aa.format_annotation_json()}
-        for aa in span.annotations)
-    formatted_time_events.extend(
-        {'time': aa.timestamp,
-         'message_event': aa.format_message_event_json()}
-        for aa in span.message_events)
-
+    if span.annotations:
+        formatted_time_events.extend(
+            {'time': aa.timestamp,
+             'annotation': aa.format_annotation_json()}
+            for aa in span.annotations)
+    if span.message_events:
+        formatted_time_events.extend(
+            {'time': aa.timestamp,
+             'message_event': aa.format_message_event_json()}
+            for aa in span.message_events)
     if formatted_time_events:
         span_json['timeEvents'] = {
             'timeEvent': formatted_time_events
