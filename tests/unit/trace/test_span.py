@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from collections import OrderedDict
 import datetime
 import unittest
 
@@ -20,6 +21,8 @@ import mock
 from google.rpc import code_pb2
 
 from opencensus.common import utils
+from opencensus.trace.span import BoundedDict
+from opencensus.trace.span import BoundedList
 from opencensus.trace.stack_trace import StackTrace
 from opencensus.trace.status import Status
 from opencensus.trace.time_event import Annotation
@@ -421,3 +424,101 @@ class Test_format_span_json(unittest.TestCase):
 
         span_json = format_span_json(span)
         self.assertEqual(span_json, expected_span_json)
+
+
+class TestBoundedList(unittest.TestCase):
+
+    def test_append(self):
+        bl = BoundedList(3)
+
+        bl.append(1)
+        bl.append(2)
+        bl.append(3)
+        self.assertEqual(list(bl), [1, 2, 3])
+        self.assertEqual(bl.dropped, 0)
+
+        bl.append(4)
+        self.assertEqual(list(bl), [2, 3, 4])
+        self.assertEqual(bl.dropped, 1)
+
+    def test_extend(self):
+        bl = BoundedList(3)
+
+        bl.extend([1, 2, 3])
+        self.assertEqual(list(bl), [1, 2, 3])
+        self.assertEqual(bl.dropped, 0)
+
+        bl.extend([4])
+        self.assertEqual(list(bl), [2, 3, 4])
+        self.assertEqual(bl.dropped, 1)
+
+        bl.extend([5, 6, 7, 8])
+        self.assertEqual(list(bl), [6, 7, 8])
+        self.assertEqual(bl.dropped, 5)
+
+    def test_from_seq(self):
+        with self.assertRaises(ValueError):
+            BoundedList.from_seq(3, range(4))
+
+        bl = BoundedList.from_seq(3, [1, 2, 3])
+        self.assertEqual(list(bl), [1, 2, 3])
+
+
+class TestBoundedDict(unittest.TestCase):
+
+    def test_set_get(self):
+        bd = BoundedDict(3)
+
+        bd['one'] = 1
+        bd['two'] = 2
+        bd['three'] = 3
+        self.assertListEqual(
+            list(bd.items()),
+            [('one', 1), ('two', 2), ('three', 3)])
+        self.assertEqual(bd.dropped, 0)
+
+        bd['four'] = 4
+        self.assertListEqual(
+            list(bd.items()),
+            [('two', 2), ('three', 3), ('four', 4)])
+        self.assertEqual(bd.dropped, 1)
+
+        # Reassignment changes iter order, but doesn't drop anything
+        bd['three'] = 333
+        self.assertListEqual(
+            list(bd.items()),
+            [('two', 2), ('four', 4), ('three', 333)])
+        self.assertEqual(bd.dropped, 1)
+
+    def test_del(self):
+        bd = BoundedDict(3)
+
+        bd['one'] = 1
+        bd['two'] = 2
+        bd['three'] = 3
+        del bd['two']
+        with self.assertRaises(KeyError):
+            bd['two']
+        self.assertListEqual(
+            list(bd.items()),
+            [('one', 1), ('three', 3)])
+        self.assertEqual(bd.dropped, 0)
+
+        bd['four'] = 4
+        self.assertListEqual(
+            list(bd.items()),
+            [('one', 1), ('three', 3), ('four', 4)])
+        self.assertEqual(bd.dropped, 0)
+
+    def test_from_map(self):
+        with self.assertRaises(ValueError):
+            bd = BoundedDict.from_map(3, {xx: xx for xx in range(4)})
+
+        # Creating from an ordered map should preserve the order
+        bd = BoundedDict.from_map(
+            3,
+            OrderedDict((('one', 1), ('two', 2), ('three', 3))))
+        self.assertListEqual(
+            list(bd.items()),
+            [('one', 1), ('two', 2), ('three', 3)])
+        self.assertEqual(bd.dropped, 0)

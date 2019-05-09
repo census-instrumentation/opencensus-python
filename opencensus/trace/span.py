@@ -12,8 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+try:
+    from collections.abc import MutableMapping
+    from collections.abc import Sequence
+except ImportError:
+    from collections import MutableMapping
+    from collections import Sequence
+
 from collections import OrderedDict
-from collections import abc
 from collections import deque
 from datetime import datetime
 from itertools import chain
@@ -36,7 +42,7 @@ MAX_NUM_MESSAGE_EVENTS = 128
 MAX_NUM_LINKS = 32
 
 
-class BoundedList(abc.Sequence):
+class BoundedList(Sequence):
     """An append only list with a fixed max size."""
     def __init__(self, maxlen):
         self.dropped = 0
@@ -74,7 +80,7 @@ class BoundedList(abc.Sequence):
         return bounded_list
 
 
-class BoundedDict(abc.MutableMapping):
+class BoundedDict(MutableMapping):
     """A dict with a fixed max capacity."""
     def __init__(self, maxlen):
         self.maxlen = maxlen
