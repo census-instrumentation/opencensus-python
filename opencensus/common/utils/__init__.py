@@ -17,9 +17,9 @@ try:
 except ImportError:
     from opencensus.common.backports import WeakMethod
 
-import calendar
+from calendar import timegm
 import datetime
-import weakref
+from weakref import ref
 
 UTF8 = 'utf-8'
 
@@ -82,7 +82,7 @@ def timestamp_to_microseconds(timestamp):
     :return time in microseconds
     """
     timestamp_str = datetime.datetime.strptime(timestamp, ISO_DATETIME_REGEX)
-    epoch_time_secs = calendar.timegm(timestamp_str.timetuple())
+    epoch_time_secs = timegm(timestamp_str.timetuple())
     epoch_time_mus = epoch_time_secs * 1e6 + timestamp_str.microsecond
     return epoch_time_mus
 
@@ -127,5 +127,5 @@ def get_weakref(func):
     if func is None:
         raise ValueError
     if not hasattr(func, '__self__'):
-        return weakref.ref(func)
+        return ref(func)
     return WeakMethod(func)

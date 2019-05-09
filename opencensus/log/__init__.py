@@ -14,12 +14,13 @@
 
 from collections import namedtuple
 from copy import copy
-import logging
+from logging import (getLogger, LoggerAdapter,
+                     setLoggerClass, getLoggerClass)
 
 from opencensus.trace import execution_context
 
 
-_meta_logger = logging.getLogger(__name__)
+_meta_logger = getLogger(__name__)
 
 TRACE_ID_KEY = 'traceId'
 SPAN_ID_KEY = 'spanId'
@@ -83,7 +84,7 @@ def _set_extra_attrs(extra):
 # See
 # https://docs.python.org/3.7/library/logging.html#loggeradapter-objects,
 # https://docs.python.org/3.7/howto/logging-cookbook.html#context-info
-class TraceLoggingAdapter(logging.LoggerAdapter):
+class TraceLoggingAdapter(LoggerAdapter):
     """Adapter to add opencensus context attrs to records."""
     def process(self, msg, kwargs):
         kwargs = copy(kwargs)
@@ -100,7 +101,7 @@ class TraceLoggingAdapter(logging.LoggerAdapter):
 
 # This is the idiomatic way to stack logger customizations, see
 # https://docs.python.org/3.7/library/logging.html#logging.getLoggerClass
-class TraceLogger(logging.getLoggerClass()):
+class TraceLogger(getLoggerClass()):
     """Logger class that adds opencensus context attrs to records."""
     def makeRecord(self, *args, **kwargs):
         try:
@@ -123,4 +124,4 @@ def use_oc_logging():
     with extra traceId, spanId, and traceSampled attributes from the opencensus
     context.
     """
-    logging.setLoggerClass(TraceLogger)
+    setLoggerClass(TraceLogger)
