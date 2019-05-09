@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from opencensus.common.http_handler import get_request
-import json
+from json import loads
 
 # AWS provides Instance Metadata via below url
 _AWS_INSTANCE_IDENTITY_DOCUMENT_URI = \
@@ -63,7 +63,7 @@ class AwsIdentityDocumentUtils(object):
 
         content = get_request(_AWS_INSTANCE_IDENTITY_DOCUMENT_URI)
         if content is not None:
-            content = json.loads(content)
+            content = loads(content)
             for env_var, attribute_key in _AWS_ATTRIBUTES.items():
                 attribute_value = content.get(env_var)
                 if attribute_value is not None:

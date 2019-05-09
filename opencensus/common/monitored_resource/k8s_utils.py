@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
+from os import environ
 
 from opencensus.common.monitored_resource import gcp_metadata_config
 
@@ -44,7 +44,7 @@ def is_k8s_environment():
 
     The KUBERNETES_SERVICE_HOST environment variable must be set.
     """
-    return _KUBERNETES_SERVICE_HOST in os.environ
+    return _KUBERNETES_SERVICE_HOST in environ
 
 
 def get_k8s_metadata():
@@ -57,7 +57,7 @@ def get_k8s_metadata():
         k8s_metadata[CLUSTER_NAME_KEY] = gcp_cluster
 
     for attribute_key, attribute_env in _K8S_ENV_ATTRIBUTES.items():
-        attribute_value = os.environ.get(attribute_env)
+        attribute_value = environ.get(attribute_env)
         if attribute_value is not None:
             k8s_metadata[attribute_key] = attribute_value
 

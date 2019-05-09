@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import importlib
+from importlib import import_module
 
 __all__ = ['Namespace', 'load']
 
@@ -31,7 +31,7 @@ class Namespace(object):
         return '{!s}.{}'.format(self.parent, self.name)
 
     def __call__(self, *args, **kwargs):
-        ctor = getattr(importlib.import_module(str(self.parent)), self.name)
+        ctor = getattr(import_module(str(self.parent)), self.name)
         return ctor(*args, **kwargs)
 
     @classmethod

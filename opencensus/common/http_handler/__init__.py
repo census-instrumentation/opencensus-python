@@ -22,7 +22,7 @@ except ImportError:
     from urllib2 import HTTPError, URLError
 
 
-import socket
+from socket import timeout
 
 _REQUEST_TIMEOUT = 2  # in secs
 
@@ -37,7 +37,7 @@ def get_request(request_url, request_headers=dict()):
     try:
         response = urlopen(request, timeout=_REQUEST_TIMEOUT)
         response_content = response.read()
-    except (HTTPError, URLError, socket.timeout):
+    except (HTTPError, URLError, timeout):
         response_content = None
 
     return response_content
