@@ -27,6 +27,7 @@ class TestQueueEvent(unittest.TestCase):
         evt.set()
         self.assertTrue(evt.wait(timeout=TIMEOUT))
 
+
 class TestQueue(unittest.TestCase):
     def test_gets(self):
         queue = Queue(capacity=100)
