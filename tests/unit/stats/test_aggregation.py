@@ -21,8 +21,6 @@ class TestBaseAggregation(unittest.TestCase):
     def test_constructor_defaults(self):
         base_aggregation = aggregation_module.BaseAggregation()
 
-        self.assertEqual(aggregation_module.Type.NONE,
-                         base_aggregation.aggregation_type)
         self.assertEqual([], base_aggregation.buckets)
 
     def test_constructor_explicit(self):
@@ -30,73 +28,46 @@ class TestBaseAggregation(unittest.TestCase):
         buckets = ["test"]
         base_aggregation = aggregation_module.BaseAggregation(buckets=buckets)
 
-        self.assertEqual(aggregation_module.Type.NONE,
-                         base_aggregation.aggregation_type)
         self.assertEqual(["test"], base_aggregation.buckets)
 
 
 class TestSumAggregation(unittest.TestCase):
     def test_constructor_defaults(self):
         sum_aggregation = aggregation_module.SumAggregation()
-
-        self.assertEqual(0, sum_aggregation.sum.sum_data)
-        self.assertEqual(aggregation_module.Type.SUM,
-                         sum_aggregation.aggregation_type)
+        self.assertEqual(0, sum_aggregation.new_aggregation_data().sum_data)
 
     def test_constructor_explicit(self):
-        sum = 1
-
-        sum_aggregation = aggregation_module.SumAggregation(sum=sum)
-
-        self.assertEqual(1, sum_aggregation.sum.sum_data)
-        self.assertEqual(aggregation_module.Type.SUM,
-                         sum_aggregation.aggregation_type)
+        sum_aggregation = aggregation_module.SumAggregation(sum=1)
+        self.assertEqual(1, sum_aggregation.new_aggregation_data().sum_data)
 
 
 class TestCountAggregation(unittest.TestCase):
     def test_constructor_defaults(self):
         count_aggregation = aggregation_module.CountAggregation()
-
-        self.assertEqual(0, count_aggregation.count.count_data)
-        self.assertEqual(aggregation_module.Type.COUNT,
-                         count_aggregation.aggregation_type)
+        self.assertEqual(0, count_aggregation.new_aggregation_data().count_data)
 
     def test_constructor_explicit(self):
-        count = 4
-
-        count_aggregation = aggregation_module.CountAggregation(count=count)
-
-        self.assertEqual(4, count_aggregation.count.count_data)
-        self.assertEqual(aggregation_module.Type.COUNT,
-                         count_aggregation.aggregation_type)
+        count_aggregation = aggregation_module.CountAggregation(count=4)
+        self.assertEqual(4, count_aggregation.new_aggregation_data().count_data)
 
 
 class TestLastValueAggregation(unittest.TestCase):
     def test_constructor_defaults(self):
         last_value_aggregation = aggregation_module.LastValueAggregation()
-
-        self.assertEqual(0, last_value_aggregation.value)
-        self.assertEqual(aggregation_module.Type.LASTVALUE,
-                         last_value_aggregation.aggregation_type)
+        self.assertEqual(0, last_value_aggregation.new_aggregation_data().value)
 
     def test_constructor_explicit(self):
-        val = 16
         last_value_aggregation = aggregation_module.LastValueAggregation(
-            value=val)
-
-        self.assertEqual(16, last_value_aggregation.value)
-        self.assertEqual(aggregation_module.Type.LASTVALUE,
-                         last_value_aggregation.aggregation_type)
+            value=6)
+        self.assertEqual(6, last_value_aggregation.new_aggregation_data().value)
 
 
 class TestDistributionAggregation(unittest.TestCase):
     def test_constructor_defaults(self):
         distribution_aggregation = aggregation_module.DistributionAggregation()
 
-        self.assertEqual([], distribution_aggregation.boundaries.boundaries)
-        self.assertEqual({}, distribution_aggregation.distribution)
-        self.assertEqual(aggregation_module.Type.DISTRIBUTION,
-                         distribution_aggregation.aggregation_type)
+        self.assertEqual([], distribution_aggregation.new_aggregation_data().boundaries.boundaries)
+        self.assertEqual({}, distribution_aggregation.new_aggregation_data().distribution)
 
     def test_constructor_explicit(self):
         boundaries = [1, 2]
@@ -105,10 +76,8 @@ class TestDistributionAggregation(unittest.TestCase):
             boundaries=boundaries, distribution=distribution)
 
         self.assertEqual([1, 2],
-                         distribution_aggregation.boundaries.boundaries)
-        self.assertEqual([0, 1, 2], distribution_aggregation.distribution)
-        self.assertEqual(aggregation_module.Type.DISTRIBUTION,
-                         distribution_aggregation.aggregation_type)
+                         distribution_aggregation.new_aggregation_data().boundaries.boundaries)
+        self.assertEqual([0, 1, 2], distribution_aggregation.new_aggregation_data().distribution)
 
     def test_init_bad_boundaries(self):
         """Check that boundaries must be sorted and unique."""
@@ -121,8 +90,8 @@ class TestDistributionAggregation(unittest.TestCase):
         """Check that non-positive boundaries are dropped."""
         da = aggregation_module.DistributionAggregation([-2, -1, 0, 1, 2])
         self.assertEqual(da.boundaries.boundaries, [1, 2])
-        self.assertEqual(da.aggregation_data.bounds, [1, 2])
+        self.assertEqual(da.new_aggregation_data().bounds, [1, 2])
 
         da2 = aggregation_module.DistributionAggregation([-2, -1])
         self.assertEqual(da2.boundaries.boundaries, [])
-        self.assertEqual(da2.aggregation_data.bounds, [])
+        self.assertEqual(da2.new_aggregation_data().bounds, [])

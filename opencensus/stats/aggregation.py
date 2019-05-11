@@ -15,28 +15,11 @@
 import logging
 
 from opencensus.stats import aggregation_data
-from opencensus.stats import metric_utils
+from opencensus.stats import measure as measure_module
 from opencensus.metrics.export.metric_descriptor import MetricDescriptorType
 
 
 logger = logging.getLogger(__name__)
-
-
-class Type(object):
-    """ The type of aggregation function used on a View.
-
-    Attributes:
-      NONE (int): The aggregation type of the view is 'unknown'.
-      SUM (int): The aggregation type of the view is 'sum'.
-      COUNT (int): The aggregation type of the view is 'count'.
-      DISTRIBUTION (int): The aggregation type of the view is 'distribution'.
-      LASTVALUE (int): The aggregation type of the view is 'lastvalue'.
-    """
-    NONE = 0
-    SUM = 1
-    COUNT = 2
-    DISTRIBUTION = 3
-    LASTVALUE = 4
 
 
 class BaseAggregation(object):
@@ -52,8 +35,7 @@ class BaseAggregation(object):
     :param aggregation_type: represents the type of this aggregation
 
     """
-    def __init__(self, buckets=None, aggregation_type=Type.NONE):
-        self._aggregation_type = aggregation_type
+    def __init__(self, buckets=None):
         self._buckets = buckets or []
 
     @property
@@ -79,16 +61,25 @@ class SumAggregation(BaseAggregation):
     :param aggregation_type: represents the type of this aggregation
 
     """
-    def __init__(self, sum=None, aggregation_type=Type.SUM):
-        super(SumAggregation, self).__init__(aggregation_type=aggregation_type)
+    def __init__(self, sum=None):
+        super(SumAggregation, self).__init__()
         self._initial_sum = sum or 0
 
     def new_aggregation_data(self, measure):
         value_type = MetricDescriptorType.to_type_class(
-            metric_utils.get_metric_type(measure, self.aggregation_type))
+            self.get_metric_type(measure))
         # TODO: do we need to type cast `_initial_sum`?
         return aggregation_data.SumAggregationData(
             value_type=value_type, sum_data=self._initial_sum)
+
+    @staticmethod
+    def get_metric_type(measure):
+        if isinstance(measure, measure_module.MeasureInt):
+            return MetricDescriptorType.CUMULATIVE_INT64
+        elif isinstance(measure, measure_module.MeasureFloat):
+            return MetricDescriptorType.CUMULATIVE_DOUBLE
+        else:
+            raise ValueError
 
 
 class CountAggregation(BaseAggregation):
@@ -102,13 +93,16 @@ class CountAggregation(BaseAggregation):
     :param aggregation_type: represents the type of this aggregation
 
     """
-    def __init__(self, count=0, aggregation_type=Type.COUNT):
-        super(CountAggregation, self).__init__(
-            aggregation_type=aggregation_type)
+    def __init__(self, count=0):
+        super(CountAggregation, self).__init__()
         self._initial_count = count
 
-    def new_aggregation_data(self, _measure):
+    def new_aggregation_data(self, measure=None):
         return aggregation_data.CountAggregationData(self._initial_count)
+
+    @staticmethod
+    def get_metric_type(measure):
+        return MetricDescriptorType.CUMULATIVE_INT64
 
 
 class DistributionAggregation(BaseAggregation):
@@ -127,10 +121,7 @@ class DistributionAggregation(BaseAggregation):
 
     """
 
-    def __init__(self,
-                 boundaries=None,
-                 distribution=None,
-                 aggregation_type=Type.DISTRIBUTION):
+    def __init__(self, boundaries=None, distribution=None):
         if boundaries:
             if not all(boundaries[ii] < boundaries[ii + 1]
                        for ii in range(len(boundaries) - 1)):
@@ -145,13 +136,16 @@ class DistributionAggregation(BaseAggregation):
                                ii)
             boundaries = boundaries[ii:]
 
-        super(DistributionAggregation, self).__init__(
-            buckets=boundaries, aggregation_type=aggregation_type)
+        super(DistributionAggregation, self).__init__(buckets=boundaries)
         self._boundaries = boundaries
 
-    def new_aggregation_data(self, _measure):
+    def new_aggregation_data(self, measure=None):
         return aggregation_data.DistributionAggregationData(
             0, 0, 0, None, self._boundaries)
+
+    @staticmethod
+    def get_metric_type(measure):
+        return MetricDescriptorType.CUMULATIVE_DISTRIBUTION
 
 
 class LastValueAggregation(BaseAggregation):
@@ -165,13 +159,21 @@ class LastValueAggregation(BaseAggregation):
     :param aggregation_type: represents the type of this aggregation
 
     """
-    def __init__(self, value=0, aggregation_type=Type.LASTVALUE):
-        super(LastValueAggregation, self).__init__(
-            aggregation_type=aggregation_type)
+    def __init__(self, value=0):
+        super(LastValueAggregation, self).__init__()
         self._initial_value = value
 
     def new_aggregation_data(self, measure):
         value_type = MetricDescriptorType.to_type_class(
-            metric_utils.get_metric_type(measure, self.aggregation_type))
+            self.get_metric_type(measure))
         return aggregation_data.LastValueAggregationData(
             value=self._initial_value, value_type=value_type)
+
+    @staticmethod
+    def get_metric_type(measure):
+        if isinstance(measure, measure_module.MeasureInt):
+            return MetricDescriptorType.GAUGE_INT64
+        elif isinstance(measure, measure_module.MeasureFloat):
+            return MetricDescriptorType.GAUGE_DOUBLE
+        else:
+            raise ValueError

@@ -78,8 +78,8 @@ class View(object):
         """the aggregation of the current view"""
         return self._aggregation
 
-    def new_aggregated_data(self):
-        return self._aggregation.new_aggregated_data(self.measure)
+    def new_aggregation_data(self):
+        return self._aggregation.new_aggregation_data(self.measure)
 
     def get_metric_descriptor(self):
         """Get a MetricDescriptor for this view.
@@ -96,8 +96,7 @@ class View(object):
                     self.name,
                     self.description,
                     self.measure.unit,
-                    metric_utils.get_metric_type(self.measure,
-                                                 self.aggregation),
+                    self.aggregation.get_metric_type(self.measure),
                     # TODO: add label key description
                     [label_key.LabelKey(tk, "") for tk in self.columns])
         return self._metric_descriptor

@@ -87,7 +87,7 @@ class TestMetricUtils(unittest.TestCase):
         with self.assertRaises(ValueError):
             metric_utils.get_metric_type(base_measure, agg_lv)
 
-    def do_test_view_data_to_metric(self, aggregation_type, aggregation_class,
+    def do_test_view_data_to_metric(self, aggregation_class,
                                     value_type, metric_descriptor_type):
         """Test that ViewDatas are converted correctly into Metrics.
 
@@ -101,7 +101,6 @@ class TestMetricUtils(unittest.TestCase):
 
         mock_measure = mock.Mock(spec=measure.MeasureFloat)
         mock_aggregation = mock.Mock(spec=aggregation_class)
-        mock_aggregation.aggregation_type = aggregation_type
 
         vv = view.View(
             name=mock.Mock(),
@@ -148,19 +147,16 @@ class TestMetricUtils(unittest.TestCase):
     def test_view_data_to_metric(self):
         args_list = [
             [
-                aggregation.Type.SUM,
                 aggregation.SumAggregation,
                 value.ValueDouble,
                 metric_descriptor.MetricDescriptorType.CUMULATIVE_DOUBLE
             ],
             [
-                aggregation.Type.COUNT,
                 aggregation.CountAggregation,
                 value.ValueLong,
                 metric_descriptor.MetricDescriptorType.CUMULATIVE_INT64
             ],
             [
-                aggregation.Type.DISTRIBUTION,
                 aggregation.DistributionAggregation,
                 value.ValueDistribution,
                 metric_descriptor.MetricDescriptorType.CUMULATIVE_DISTRIBUTION
