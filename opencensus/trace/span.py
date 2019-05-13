@@ -51,7 +51,12 @@ class BoundedList(Sequence):
         self._lock = threading.Lock()
 
     def __repr__(self):
-        return repr(self._dq)
+        return ("{}({}, maxlen={})"
+                .format(
+                    type(self).__name__,
+                    list(self._dq),
+                    self._dq.maxlen
+                ))
 
     def __getitem__(self, index):
         return self._dq[index]
@@ -94,7 +99,12 @@ class BoundedDict(MutableMapping):
         self._lock = threading.Lock()
 
     def __repr__(self):
-        return repr(self._dict)
+        return ("{}({}, maxlen={})"
+                .format(
+                    type(self).__name__,
+                    dict(self._dict),
+                    self.maxlen
+                ))
 
     def __getitem__(self, key):
         return self._dict[key]
