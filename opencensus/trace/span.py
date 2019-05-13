@@ -23,6 +23,7 @@ from collections import OrderedDict
 from collections import deque
 from datetime import datetime
 from itertools import chain
+import threading
 
 from opencensus.common import utils
 from opencensus.trace import attributes as attributes_module
@@ -47,6 +48,7 @@ class BoundedList(Sequence):
     def __init__(self, maxlen):
         self.dropped = 0
         self._dq = deque(maxlen=maxlen)
+        self._lock = threading.Lock()
 
     def __repr__(self):
         return repr(self._dq)
@@ -61,18 +63,21 @@ class BoundedList(Sequence):
         return iter(self._dq)
 
     def append(self, item):
-        if len(self._dq) == self._dq.maxlen:
-            self.dropped += 1
-        self._dq.append(item)
+        with self._lock:
+            if len(self._dq) == self._dq.maxlen:
+                self.dropped += 1
+            self._dq.append(item)
 
     def extend(self, seq):
-        to_drop = len(seq) + len(self._dq) - self._dq.maxlen
-        if to_drop > 0:
-            self.dropped += to_drop
-        self._dq.extend(seq)
+        with self._lock:
+            to_drop = len(seq) + len(self._dq) - self._dq.maxlen
+            if to_drop > 0:
+                self.dropped += to_drop
+            self._dq.extend(seq)
 
     @classmethod
     def from_seq(cls, maxlen, seq):
+        seq = tuple(seq)
         if len(seq) > maxlen:
             raise ValueError
         bounded_list = cls(maxlen)
@@ -86,6 +91,7 @@ class BoundedDict(MutableMapping):
         self.maxlen = maxlen
         self.dropped = 0
         self._dict = OrderedDict()
+        self._lock = threading.Lock()
 
     def __repr__(self):
         return repr(self._dict)
@@ -94,12 +100,13 @@ class BoundedDict(MutableMapping):
         return self._dict[key]
 
     def __setitem__(self, key, value):
-        if key in self._dict:
-            del self._dict[key]
-        elif len(self._dict) == self.maxlen:
-            del self._dict[next(iter(self._dict.keys()))]
-            self.dropped += 1
-        self._dict[key] = value
+        with self._lock:
+            if key in self._dict:
+                del self._dict[key]
+            elif len(self._dict) == self.maxlen:
+                del self._dict[next(iter(self._dict.keys()))]
+                self.dropped += 1
+            self._dict[key] = value
 
     def __delitem__(self, key):
         del self._dict[key]
@@ -112,10 +119,11 @@ class BoundedDict(MutableMapping):
 
     @classmethod
     def from_map(cls, maxlen, mapping):
+        mapping = OrderedDict(mapping)
         if len(mapping) > maxlen:
             raise ValueError
         bounded_dict = cls(maxlen)
-        bounded_dict._dict = OrderedDict(mapping)
+        bounded_dict._dict = mapping
         return bounded_dict
 
 
