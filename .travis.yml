@@ -3,10 +3,10 @@ python:
   - '3.6'
 
 install:
-  - pip install --upgrade nox-automation
+  - pip install nox-automation==0.19.1
 
 script:
-  - nox -s docs
+  - nox -f nox.py -s docs
   - touch docs/.nojekyll
 
 branches:
