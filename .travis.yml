@@ -3,7 +3,7 @@ python:
   - '3.6'
 
 install:
-  - pip install nox-automation==0.19.1
+  - pip install --upgrade nox
 
 script:
   - nox -f nox.py -s docs
