@@ -40,7 +40,8 @@ jobs:
       - run:
           name: Run tests - opencensus
           command: |
-            nox -f nox.py
+            pip install --upgrade nox
+            nox -f noxfile.py
       - deploy:
           name: Push to PyPI (if this is a release tag).
           command: scripts/twine_upload.sh
