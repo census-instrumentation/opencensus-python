@@ -15,13 +15,16 @@
 import datetime
 import unittest
 
-from opencensus.common import utils
 from opencensus.trace import link
 from opencensus.trace import span_context
 from opencensus.trace import span_data as span_data_module
 from opencensus.trace import stack_trace
 from opencensus.trace import status
 from opencensus.trace import time_event
+
+
+ISOTIME_START = '2019-05-14T15:16:17.001819Z'
+ISOTIME_END = '2019-05-14T15:17:18.001920Z'
 
 
 class TestSpanData(unittest.TestCase):
@@ -32,8 +35,8 @@ class TestSpanData(unittest.TestCase):
             span_id='6e0c63257de34c92',
             parent_span_id='6e0c63257de34c93',
             attributes={'key1': 'value1'},
-            start_time=utils.to_iso_str(),
-            end_time=utils.to_iso_str(),
+            start_time=ISOTIME_START,
+            end_time=ISOTIME_END,
             stack_trace=None,
             links=None,
             status=None,
@@ -51,8 +54,8 @@ class TestSpanData(unittest.TestCase):
             span_id='6e0c63257de34c92',
             parent_span_id='6e0c63257de34c93',
             attributes={'key1': 'value1'},
-            start_time=utils.to_iso_str(),
-            end_time=utils.to_iso_str(),
+            start_time=ISOTIME_START,
+            end_time=ISOTIME_END,
             stack_trace=None,
             links=None,
             status=None,
@@ -79,8 +82,8 @@ class TestSpanData(unittest.TestCase):
             span_id='6e0c63257de34c92',
             parent_span_id='6e0c63257de34c93',
             attributes={'key1': 'value1'},
-            start_time=utils.to_iso_str(),
-            end_time=utils.to_iso_str(),
+            start_time=ISOTIME_START,
+            end_time=ISOTIME_END,
             stack_trace=stack_trace.StackTrace(stack_trace_hash_id='111'),
             links=[link.Link('1111', span_id='6e0c63257de34c92')],
             status=status.Status(code=0, message='pok'),
@@ -103,3 +106,40 @@ class TestSpanData(unittest.TestCase):
         trace_json = span_data_module.format_legacy_trace_json([span_data])
         self.assertEqual(trace_json.get('traceId'), trace_id)
         self.assertEqual(len(trace_json.get('spans')), 1)
+        [span] = trace_json['spans']
+
+        expected_data = {
+            'annotations': [{
+                'description': 'description',
+                'timestamp': '1970-01-01T00:00:00.000000Z'
+            }],
+            'attributes': {
+                'key1': 'value1'
+            },
+            'child_span_count': 0,
+            'end_time': '2019-05-14T15:17:18.001920Z',
+            'links': [{
+                'span_id': '6e0c63257de34c92',
+                'trace_id': '1111',
+                'type': 0
+            }],
+            'message_events': [{
+                'id': 0,
+                'timestamp': '1970-01-01T00:00:00.000000Z',
+                'type': 0
+            }],
+            'name': 'root',
+            'parent_span_id': '6e0c63257de34c93',
+            'span_id': '6e0c63257de34c92',
+            'stack_trace': {
+                'stack_trace_hash_id': '111'
+            },
+            'start_time': '2019-05-14T15:16:17.001819Z',
+            'status': {
+                'code': 0,
+                'message': 'pok'
+            },
+            'same_process_as_parent_span': False,
+            'span_kind': 0
+        }
+        self.assertDictEqual(span, expected_data)

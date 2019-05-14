@@ -14,9 +14,11 @@
 
 from collections import defaultdict
 import os
+import six
 
 from google.cloud.trace.client import Client
 
+from opencensus.common import utils
 from opencensus.common.monitored_resource import aws_identity_doc_utils
 from opencensus.common.monitored_resource import gcp_metadata_config
 from opencensus.common.monitored_resource import k8s_utils
@@ -25,7 +27,7 @@ from opencensus.common.transports import sync
 from opencensus.common.version import __version__
 from opencensus.trace import attributes_helper
 from opencensus.trace import base_exporter
-from opencensus.trace import span_data
+from opencensus.trace import span_data as span_data_module
 from opencensus.trace.attributes import Attributes
 
 # Agent
@@ -101,8 +103,8 @@ def set_monitored_resource_attributes(span):
         pair = {RESOURCE_LABEL % (resource_type, label_key):
                 label_value_prefix + resource_labels[attribute_key]
                 }
-        pair_attrs = Attributes(pair).format_attributes_json()\
-            .get('attributeMap')
+        pair_attrs = (format_attributes_json(Attributes(pair))
+                      .get('attributeMap'))
 
         _update_attr_map(span, pair_attrs)
 
@@ -133,9 +135,8 @@ def set_common_attributes(span):
     common = {
         attributes_helper.COMMON_ATTRIBUTES.get('AGENT'): AGENT,
     }
-    common_attrs = Attributes(common)\
-        .format_attributes_json()\
-        .get('attributeMap')
+    common_attrs = (format_attributes_json(Attributes(common))
+                    .get('attributeMap'))
 
     _update_attr_map(span, common_attrs)
 
@@ -147,9 +148,8 @@ def set_gae_attributes(span):
 
         if attribute_value is not None:
             pair = {attribute_key: attribute_value}
-            pair_attrs = Attributes(pair)\
-                .format_attributes_json()\
-                .get('attributeMap')
+            pair_attrs = (format_attributes_json(Attributes(pair))
+                          .get('attributeMap'))
 
             _update_attr_map(span, pair_attrs)
 
@@ -159,6 +159,159 @@ def is_gae_environment():
     if (_APPENGINE_FLEXIBLE_ENV_VM in os.environ or
             _APPENGINE_FLEXIBLE_ENV_FLEX in os.environ):
         return True
+    return False
+
+
+def format_annotation_json(annotation):
+    """Format an Annotation for use by stackdriver.
+
+    :type annotation: :class:`opencensus.trace.time_event.Annotation`
+    :param points: The Annotation to format.
+    """
+    data = {}
+    data['description'] = utils.get_truncatable_str(annotation.description)
+
+    if annotation.attributes is not None:
+        data['attributes'] = annotation.attributes.format_attributes_json()
+
+    return data
+
+
+def format_message_event_json(message_event):
+    """Format a MessageEvent for use by stackdriver.
+
+    :type message_event: :class:`opencensus.trace.time_event.MessageEvent`
+    :param points: The MessageEvent to format.
+    """
+    data = {}
+    data['id'] = message_event.id
+    data['type'] = message_event.type
+
+    if message_event.uncompressed_size_bytes is not None:
+        data['uncompressed_size_bytes'] = message_event.uncompressed_size_bytes
+
+    if message_event.compressed_size_bytes is not None:
+        data['compressed_size_bytes'] = message_event.compressed_size_bytes
+
+    return data
+
+
+def _format_attribute_value(value):
+    if isinstance(value, bool):
+        value_type = 'bool_value'
+    elif isinstance(value, int):
+        value_type = 'int_value'
+    elif isinstance(value, six.string_types):
+        value_type = 'string_value'
+        value = utils.get_truncatable_str(value)
+    elif isinstance(value, float):
+        value_type = 'double_value'
+    else:
+        return None
+
+    return {value_type: value}
+
+
+def format_attributes_json(attributes):
+    """Format an Attributes object for use by stackdriver.
+
+    :type message_event: :class:`opencensus.trace.time_event.MessageEvent`
+    :param points: The MessageEvent to format.
+    """
+    attributes_json = {}
+
+    for key, value in attributes.attributes.items():
+        key = utils.check_str_length(key)[0]
+        value = _format_attribute_value(value)
+
+        if value is not None:
+            attributes_json[key] = value
+
+    result = {
+        'attributeMap': attributes_json
+    }
+
+    return result
+
+
+def _format_legacy_span_json(span_data):
+    """
+    :param SpanData span_data: SpanData object to convert
+    :rtype: dict
+    :return: Dictionary representing the Span
+    """
+    span_json = {
+        'displayName': utils.get_truncatable_str(span_data.name),
+        'spanId': span_data.span_id,
+        'startTime': span_data.start_time,
+        'endTime': span_data.end_time,
+        'childSpanCount': span_data.child_span_count,
+        'kind': span_data.span_kind
+    }
+
+    if span_data.parent_span_id is not None:
+        span_json['parentSpanId'] = span_data.parent_span_id
+
+    if span_data.attributes:
+        span_json['attributes'] = span_data.attributes.format_attributes_json()
+
+    if span_data.stack_trace is not None:
+        span_json['stackTrace'] =\
+            span_data.stack_trace.format_stack_trace_json()
+
+    formatted_time_events = []
+    if span_data.annotations:
+        formatted_time_events.extend(
+            {'time': aa.timestamp,
+             'annotation': format_annotation_json(aa)}
+            for aa in span_data.annotations)
+    if span_data.message_events:
+        formatted_time_events.extend(
+            {'time': me.timestamp,
+             'messageEvent': format_message_event_json(me)}
+            for me in span_data.message_events)
+    if formatted_time_events:
+        span_json['timeEvents'] = {
+            'timeEvent': formatted_time_events
+        }
+
+    if span_data.links:
+        span_json['links'] = {
+            'link': [
+                link.format_link_json() for link in span_data.links]
+        }
+
+    if span_data.status is not None:
+        span_json['status'] = span_data.status.format_status_json()
+
+    if span_data.same_process_as_parent_span is not None:
+        span_json['sameProcessAsParentSpan'] = \
+            span_data.same_process_as_parent_span
+
+    return span_json
+
+
+def format_legacy_trace_json(span_datas):
+    """Formats a list of SpanData tuples into the legacy 'trace' dictionary
+    format for backwards compatibility
+    :type span_datas: list of :class:
+            `~opencensus.trace.span_data.SpanData`
+    :param list of opencensus.trace.span_data.SpanData span_datas:
+        SpanData tuples to emit
+    :rtype: dict
+    :return: Legacy 'trace' dictionary representing given SpanData tuples
+    """
+    if not span_datas:
+        return {}
+    top_span = span_datas[0]
+    assert isinstance(top_span, span_data_module.SpanData)
+    trace_id = top_span.context.trace_id if top_span.context is not None \
+        else None
+    assert trace_id is not None
+    return {
+        'traceId': trace_id,
+        'spans': [_format_legacy_span_json(sd) for sd in span_datas],
+    }
 
 
 class StackdriverExporter(base_exporter.Exporter):
@@ -208,7 +361,7 @@ class StackdriverExporter(base_exporter.Exporter):
         for _, sds in trace_span_map.items():
             # convert to the legacy trace json for easier refactoring
             # TODO: refactor this to use the span data directly
-            trace = span_data.format_legacy_trace_json(sds)
+            trace = format_legacy_trace_json(sds)
             stackdriver_spans.extend(self.translate_to_stackdriver(trace))
 
         self.client.batch_write_spans(project, {'spans': stackdriver_spans})
@@ -225,15 +378,15 @@ class StackdriverExporter(base_exporter.Exporter):
     def translate_to_stackdriver(self, trace):
         """Translate the spans json to Stackdriver format.
 
-        See: https://cloud.google.com/trace/docs/reference/v2/rest/v2/
-             projects.traces/batchWrite
+        See:
+        https://cloud.google.com/trace/docs/reference/v2/rest/v2/projects.traces/batchWrite
 
         :type trace: dict
         :param trace: Trace dictionary
 
         :rtype: dict
         :returns: Spans in Google Cloud StackDriver Trace format.
-        """
+        """  # noqa
         set_attributes(trace)
         spans_json = trace.get('spans')
         trace_id = trace.get('traceId')

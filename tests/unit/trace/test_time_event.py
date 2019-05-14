@@ -19,14 +19,17 @@ import mock
 
 from opencensus.trace import time_event as time_event_module
 
+DATETIME = datetime(2019, 5, 14, 15, 16, 17, 1819)
+ISOTIME = '2019-05-14T15:16:17.001819Z'
+
 
 class TestAnnotation(unittest.TestCase):
     def test_constructor(self):
         description = 'test description'
         attributes = mock.Mock()
 
-        ts = datetime.utcnow()
-        annotation = time_event_module.Annotation(ts, description, attributes)
+        annotation = time_event_module.Annotation(
+            DATETIME, description, attributes)
 
         self.assertEqual(annotation.description, description)
         self.assertEqual(annotation.attributes, attributes)
@@ -37,16 +40,14 @@ class TestAnnotation(unittest.TestCase):
         attributes = mock.Mock()
         attributes.format_attributes_json.return_value = attrs_json
 
-        ts = datetime.utcnow()
-        annotation = time_event_module.Annotation(ts, description, attributes)
+        annotation = time_event_module.Annotation(
+            DATETIME, description, attributes)
 
         annotation_json = annotation.format_annotation_json()
 
         expected_annotation_json = {
-            'description': {
-                'value': description,
-                'truncated_byte_count': 0
-            },
+            'timestamp': ISOTIME,
+            'description': description,
             'attributes': {}
         }
 
@@ -55,16 +56,13 @@ class TestAnnotation(unittest.TestCase):
     def test_format_annotation_json_without_attributes(self):
         description = 'test description'
 
-        ts = datetime.utcnow()
-        annotation = time_event_module.Annotation(ts, description)
+        annotation = time_event_module.Annotation(DATETIME, description)
 
         annotation_json = annotation.format_annotation_json()
 
         expected_annotation_json = {
-            'description': {
-                'value': description,
-                'truncated_byte_count': 0
-            }
+            'timestamp': ISOTIME,
+            'description': description
         }
 
         self.assertEqual(annotation_json, expected_annotation_json)
@@ -74,8 +72,7 @@ class TestMessageEvent(unittest.TestCase):
     def test_constructor_default(self):
         id = '1234'
 
-        ts = datetime.utcnow()
-        message_event = time_event_module.MessageEvent(ts, id)
+        message_event = time_event_module.MessageEvent(DATETIME, id)
 
         self.assertEqual(message_event.id, id)
         self.assertEqual(message_event.type,
@@ -88,9 +85,8 @@ class TestMessageEvent(unittest.TestCase):
         type = time_event_module.Type.SENT
         uncompressed_size_bytes = '100'
 
-        ts = datetime.utcnow()
         message_event = time_event_module.MessageEvent(
-            ts, id, type, uncompressed_size_bytes)
+            DATETIME, id, type, uncompressed_size_bytes)
 
         self.assertEqual(message_event.id, id)
         self.assertEqual(message_event.type, type)
@@ -104,11 +100,11 @@ class TestMessageEvent(unittest.TestCase):
         type = time_event_module.Type.SENT
         uncompressed_size_bytes = '100'
 
-        ts = datetime.utcnow()
         message_event = time_event_module.MessageEvent(
-            ts, id, type, uncompressed_size_bytes)
+            DATETIME, id, type, uncompressed_size_bytes)
 
         expected_message_event_json = {
+            'timestamp': ISOTIME,
             'type': type,
             'id': id,
             'uncompressed_size_bytes': uncompressed_size_bytes,
@@ -123,10 +119,10 @@ class TestMessageEvent(unittest.TestCase):
         id = '1234'
         type = time_event_module.Type.SENT
 
-        ts = datetime.utcnow()
-        message_event = time_event_module.MessageEvent(ts, id, type)
+        message_event = time_event_module.MessageEvent(DATETIME, id, type)
 
         expected_message_event_json = {
+            'timestamp': ISOTIME,
             'type': type,
             'id': id,
         }

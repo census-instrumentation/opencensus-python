@@ -50,12 +50,12 @@ class Annotation(object):
 
     def format_annotation_json(self):
         annotation_json = {}
-        annotation_json['description'] = utils.get_truncatable_str(
-            self.description)
+        annotation_json['timestamp'] = self.timestamp
+        annotation_json['description'] = self.description
 
         if self.attributes is not None:
-            annotation_json['attributes'] = self.attributes.\
-                format_attributes_json()
+            annotation_json['attributes'] =\
+                self.attributes.format_attributes_json()
 
         return annotation_json
 
@@ -103,15 +103,16 @@ class MessageEvent(object):
     def format_message_event_json(self):
         message_event_json = {}
 
+        message_event_json['timestamp'] = self.timestamp
         message_event_json['id'] = self.id
         message_event_json['type'] = self.type
 
         if self.uncompressed_size_bytes is not None:
-            message_event_json[
-                'uncompressed_size_bytes'] = self.uncompressed_size_bytes
+            message_event_json['uncompressed_size_bytes'] =\
+                self.uncompressed_size_bytes
 
         if self.compressed_size_bytes is not None:
-            message_event_json[
-                'compressed_size_bytes'] = self.compressed_size_bytes
+            message_event_json['compressed_size_bytes'] =\
+                self.compressed_size_bytes
 
         return message_event_json
