@@ -6,7 +6,7 @@ install:
   - pip install --upgrade nox
 
 script:
-  - nox -f nox.py -s docs
+  - nox -f noxfile.py -s docs
   - touch docs/.nojekyll
 
 branches:
