@@ -13,9 +13,11 @@
 # limitations under the License.
 
 import atexit
+import threading
+import time
 
 from opencensus.common.schedule import Queue
-from opencensus.common.schedule import Worker
+from opencensus.common.schedule import QueueEvent
 from opencensus.ext.azure.common import Options
 
 
@@ -51,3 +53,37 @@ class BaseExporter(object):
     # for logs).
     def export(self, items):
         self._queue.puts(items, block=False)
+
+
+class Worker(threading.Thread):
+    daemon = True
+
+    def __init__(self, src, dst):
+        self.src = src
+        self.dst = dst
+        self._stopping = False
+        super(Worker, self).__init__()
+
+    def run(self):
+        src = self.src
+        dst = self.dst
+        while True:
+            batch = src.gets(dst.max_batch_size, dst.export_interval)
+            if batch and isinstance(batch[-1], QueueEvent):
+                dst.emit(batch[:-1], event=batch[-1])
+                if batch[-1] is src.EXIT_EVENT:
+                    break
+                else:
+                    continue
+            dst.emit(batch)
+
+    def stop(self, timeout=None):
+        start_time = time.time()
+        wait_time = timeout
+        if self.is_alive() and not self._stopping:
+            self._stopping = True
+            self.src.put(self.src.EXIT_EVENT, block=True, timeout=wait_time)
+            elapsed_time = time.time() - start_time
+            wait_time = timeout and max(timeout - elapsed_time, 0)
+        if self.src.EXIT_EVENT.wait(timeout=wait_time):
+            return time.time() - start_time  # time taken to stop

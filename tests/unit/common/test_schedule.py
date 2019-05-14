@@ -38,3 +38,12 @@ class TestQueue(unittest.TestCase):
         queue.puts((1, 2, 3, 4, 5))
         result = queue.gets(count=5, timeout=0)
         self.assertEquals(result, (1, 2, 3, 4, 5))
+
+    def test_gets_event(self):
+        queue = Queue(capacity=100)
+        event = QueueEvent('test')
+        queue.puts((event, 1, 2, 3, event))
+        result = queue.gets(count=5, timeout=TIMEOUT)
+        self.assertEquals(result, (event,))
+        result = queue.gets(count=5, timeout=TIMEOUT)
+        self.assertEquals(result, (1, 2, 3, event))
