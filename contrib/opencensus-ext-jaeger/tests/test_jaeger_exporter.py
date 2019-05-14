@@ -410,21 +410,15 @@ class TestJaegerExporter(unittest.TestCase):
         ]
 
         for span, expected_span in zip(spans, expected_spans):
-
-            try:
-                listsEqual = self.assertCountEqual
-            except AttributeError:
-                listsEqual = self.assertItemsEqual
-
             if expected_span.logs:
                 log = span.logs[0]
                 expected_log = expected_span.logs[0]
                 self.assertEqual(log.timestamp, expected_log.timestamp)
-                listsEqual(log.fields, expected_log.fields)
+                self.assertListEqual(log.fields, expected_log.fields)
 
             if expected_span.tags:
-                listsEqual(span.tags, expected_span.tags)
-                listsEqual(span.references, expected_span.references)
+                self.assertListEqual(span.tags, expected_span.tags)
+                self.assertListEqual(span.references, expected_span.references)
 
             self.assertEqual(
                 span.traceIdHigh, expected_span.traceIdHigh)
