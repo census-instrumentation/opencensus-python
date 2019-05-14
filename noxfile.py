@@ -55,7 +55,7 @@ def _install_test_dependencies(session):
 
 
 @nox.session(python=['2.7', '3.4', '3.5', '3.6'])
-def unit(session, py):
+def unit(session):
     """Run the unit test suite."""
 
     # Install test dependencies.
@@ -83,15 +83,12 @@ def unit(session, py):
 
 
 @nox.session(python=['2.7', '3.6'])
-def system(session, py):
+def system(session):
     """Run the system test suite."""
 
     # Sanity check: Only run system tests if the environment variable is set.
     if not os.environ.get('GOOGLE_APPLICATION_CREDENTIALS', ''):
         session.skip('Credentials must be set via environment variable.')
-
-    # Set the virtualenv dirname.
-    session.virtualenv_dirname = 'sys-' + py
 
     # Install test dependencies.
     _install_test_dependencies(session)
@@ -108,7 +105,7 @@ def system(session, py):
     )
 
 
-@nox.session(python=['3.6'])
+@nox.session(python='3.6')
 def lint(session):
     """Run flake8.
     Returns a failure if flake8 finds linting errors or sufficiently
@@ -129,7 +126,7 @@ def lint(session):
     )
 
 
-@nox.session(python=['3.6'])
+@nox.session(python='3.6')
 def lint_setup_py(session):
     """Verify that setup.py is valid (including RST check)."""
     session.install('docutils', 'pygments')
@@ -137,7 +134,7 @@ def lint_setup_py(session):
         'python', 'setup.py', 'check', '--restructuredtext', '--strict')
 
 
-@nox.session(python=['3.6'])
+@nox.session(python='3.6')
 def cover(session):
     """Run the final coverage report.
     This outputs the coverage report aggregating coverage from the unit
@@ -148,12 +145,9 @@ def cover(session):
     session.run('coverage', 'erase')
 
 
-@nox.session(python=['3.6'])
+@nox.session(python='3.6')
 def docs(session):
     """Build the docs."""
-
-    # Set the virtualenv dirname.
-    session.virtualenv_dirname = 'docs'
 
     # Install Sphinx and also all of the google-cloud-* packages.
     session.chdir(os.path.realpath(os.path.dirname(__file__)))
