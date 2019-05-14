@@ -37,7 +37,7 @@ $ git remote add fork https://github.com/YOUR_GITHUB_USERNAME/opencensus-python.
 Run tests:
 
 ```sh
-$ pip install nox-automation  # Only first time.
+$ pip install nox  # Only first time.
 $ nox
 ```
 
