@@ -12,22 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import logging
-import unittest
+from opencensus.ext.logging import trace
 
-from opencensus.trace import config_integration
-
-
-class TestLoggingIntegration(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls._old_logger_class = logging.getLoggerClass()
-
-    @classmethod
-    def tearDownClass(cls):
-        logging.setLoggerClass(cls._old_logger_class)
-
-    def test_integration(self):
-        self.assertEqual(self._old_logger_class, logging.getLoggerClass())
-        config_integration.trace_integrations(['logging'])
-        self.assertNotEqual(self._old_logger_class, logging.getLoggerClass())
+__all__ = ['trace']
