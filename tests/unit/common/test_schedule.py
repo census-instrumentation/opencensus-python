@@ -63,10 +63,14 @@ class TestQueue(unittest.TestCase):
     def test_flush_timeout(self):
         queue = Queue(capacity=10)
         self.assertIsNone(queue.flush(timeout=TIMEOUT))
+        queue.puts(range(100), timeout=TIMEOUT)
+        self.assertIsNone(queue.flush(timeout=TIMEOUT))
+
         def proc():
             for item in queue.gets(count=1, timeout=TIMEOUT):
                 if isinstance(item, QueueEvent):
                     item.set()
+
         task = PeriodicTask(TIMEOUT / 10, proc)
         task.start()
         try:
