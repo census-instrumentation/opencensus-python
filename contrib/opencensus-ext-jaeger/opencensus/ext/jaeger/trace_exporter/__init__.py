@@ -314,8 +314,7 @@ def _convert_attribute_to_tag(key, attr):
             key=key,
             vDouble=attr,
             vType=jaeger.TagType.DOUBLE)
-    logging.warn('Could not serialize attribute \
-            {}:{} to tag'.format(key, attr))
+    logging.warning('Could not serialize attribute %s:%r to tag', key, attr)
     return None
 
 
@@ -450,8 +449,10 @@ class AgentClientUDP(base_exporter.Exporter):
             self.client.emitBatch(batch)
             buff = self.buffer.getvalue()
             if len(buff) > self.max_packet_size:
-                logging.warn('Data exceeds the max UDP packet size; size {},\
-                        max {}'.format(len(buff), self.max_packet_size))
+                logging.warning(
+                    'Data exceeds the max UDP packet size; size %r, max %r',
+                    len(buff),
+                    self.max_packet_size)
             else:
                 udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
                 udp_socket.sendto(buff, self.address)
