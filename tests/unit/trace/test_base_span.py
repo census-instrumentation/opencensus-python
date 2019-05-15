@@ -61,11 +61,11 @@ class TestBaseSpan(unittest.TestCase):
         with self.assertRaises(NotImplementedError):
             span.add_annotation("desc")
 
-    def test_add_time_event_abstract(self):
+    def test_add_message_event_abstract(self):
         span = BaseSpan()
 
         with self.assertRaises(NotImplementedError):
-            span.add_time_event(None)
+            span.add_message_event(None)
 
     def test_add_link_abstract(self):
         span = BaseSpan()

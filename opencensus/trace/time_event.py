@@ -32,6 +32,9 @@ class Type(object):
 class Annotation(object):
     """Text annotation with a set of attributes.
 
+    :type timestamp: :class:`~datetime.datetime`
+    :param timestamp: The timestamp indicating the time the event occurred.
+
     :type description: str
     :param description: A user-supplied message describing the event.
                         The maximum length for the description is 256 bytes.
@@ -40,7 +43,8 @@ class Annotation(object):
     :param attributes: A set of attributes on the annotation.
                        You can have up to 4 attributes per Annotation.
     """
-    def __init__(self, description, attributes=None):
+    def __init__(self, timestamp, description, attributes=None):
+        self.timestamp = utils.to_iso_str(timestamp)
         self.description = description
         self.attributes = attributes
 
@@ -58,6 +62,9 @@ class Annotation(object):
 
 class MessageEvent(object):
     """An event describing a message sent/received between Spans.
+
+    :type timestamp: :class:`~datetime.datetime`
+    :param timestamp: The timestamp indicating the time the event occurred.
 
     :type type: Enum of :class: `~opencensus.trace.time_event.Type`
     :param type: Indicates whether the message was sent or received.
@@ -77,8 +84,10 @@ class MessageEvent(object):
                                   size as uncompressed.
 
     """
-    def __init__(self, id, type=None, uncompressed_size_bytes=None,
+    def __init__(self, timestamp, id, type=None, uncompressed_size_bytes=None,
                  compressed_size_bytes=None):
+        self.timestamp = utils.to_iso_str(timestamp)
+
         if type is None:
             type = Type.TYPE_UNSPECIFIED
 
@@ -106,46 +115,3 @@ class MessageEvent(object):
                 'compressed_size_bytes'] = self.compressed_size_bytes
 
         return message_event_json
-
-
-class TimeEvent(object):
-    """A collection of TimeEvents. A TimeEvent is a time-stamped annotation on
-    the span, consisting of either user-supplied key:value pairs, or details
-    of a message sent/received between Spans.
-
-    Note: A TimeEvent can contain either an Annotation object or a MessageEvent
-          object, but not both.
-
-    :type timestamp: :class:`~datetime.datetime`
-    :param timestamp: The timestamp indicating the time the event occurred.
-
-    :type annotation: :class: `~opencensus.trace.time_event.Annotation`
-    :param annotation: (Optional) Text annotation with a set of attributes.
-
-    :type message_event: :class: `~opencensus.trace.time_event.MessageEvent`
-    :param message_event: An event describing a message sent/received between
-                          spans.
-    """
-    def __init__(self, timestamp, annotation=None, message_event=None):
-        self.timestamp = utils.to_iso_str(timestamp)
-
-        if annotation is not None and message_event is not None:
-            raise ValueError("A TimeEvent can contain either an Annotation"
-                             "object or a MessageEvent object, but not both.")
-
-        self.annotation = annotation
-        self.message_event = message_event
-
-    def format_time_event_json(self):
-        """Convert a TimeEvent object to json format."""
-        time_event = {}
-        time_event['time'] = self.timestamp
-
-        if self.annotation is not None:
-            time_event['annotation'] = self.annotation.format_annotation_json()
-
-        if self.message_event is not None:
-            time_event['message_event'] = \
-                self.message_event.format_message_event_json()
-
-        return time_event

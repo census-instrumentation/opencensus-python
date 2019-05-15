@@ -49,7 +49,8 @@ class TestTraceExporterUtils(unittest.TestCase):
             end_time='2017-08-15T18:02:36.071158Z',
             child_span_count=None,
             stack_trace=None,
-            time_events=None,
+            annotations=None,
+            message_events=None,
             links=None,
             status=None,
             same_process_as_parent_span=None,
@@ -114,7 +115,8 @@ class TestTraceExporterUtils(unittest.TestCase):
             attributes=None,
             child_span_count=None,
             stack_trace=None,
-            time_events=None,
+            annotations=None,
+            message_events=None,
             links=None,
             status=None)
 
@@ -137,7 +139,8 @@ class TestTraceExporterUtils(unittest.TestCase):
             attributes=None,
             same_process_as_parent_span=False,
             stack_trace=None,
-            time_events=None,
+            annotations=None,
+            message_events=None,
             links=None,
             status=None)
 
@@ -162,7 +165,8 @@ class TestTraceExporterUtils(unittest.TestCase):
             attributes=None,
             same_process_as_parent_span=False,
             stack_trace=None,
-            time_events=None,
+            annotations=None,
+            message_events=None,
             links=None)
 
         pb_span = utils.translate_to_trace_proto(span_data)
@@ -208,7 +212,8 @@ class TestTraceExporterUtils(unittest.TestCase):
             attributes=None,
             same_process_as_parent_span=False,
             stack_trace=None,
-            time_events=None)
+            annotations=None,
+            message_events=None)
 
         pb_span = utils.translate_to_trace_proto(span_data)
 
@@ -269,43 +274,39 @@ class TestTraceExporterUtils(unittest.TestCase):
             context=span_context_module.SpanContext(
                 trace_id='6e0c63257de34c92bf9efcd03927272e'),
             span_id='6e0c63257de34c92',
-            time_events=[
-                time_event_module.TimeEvent(
+            annotations=[
+                time_event_module.Annotation(
                     timestamp=annotation0_ts,
-                    annotation=time_event_module.Annotation(
-                        description="hi there0",
-                        attributes=attributes_module.Attributes(
-                            attributes={
-                                'test_str_key': 'test_str_value',
-                                'test_int_key': 1,
-                                'test_bool_key': False,
-                                'test_double_key': 567.89
-                            }))),
-                time_event_module.TimeEvent(
-                    timestamp=annotation1_ts,
-                    annotation=time_event_module.Annotation(
-                        description="hi there1")),
-                time_event_module.TimeEvent(
+                    description="hi there0",
+                    attributes=attributes_module.Attributes(
+                        attributes={
+                            'test_str_key': 'test_str_value',
+                            'test_int_key': 1,
+                            'test_bool_key': False,
+                            'test_double_key': 567.89
+                        })),
+                time_event_module.Annotation(
+                    timestamp=annotation1_ts, description="hi there1"),
+            ],
+            message_events=[
+                time_event_module.MessageEvent(
                     timestamp=message0_ts,
-                    message_event=time_event_module.MessageEvent(
-                        id=0,
-                        type=time_event_module.Type.SENT,
-                        uncompressed_size_bytes=10,
-                        compressed_size_bytes=1)),
-                time_event_module.TimeEvent(
+                    id=0,
+                    type=time_event_module.Type.SENT,
+                    uncompressed_size_bytes=10,
+                    compressed_size_bytes=1),
+                time_event_module.MessageEvent(
                     timestamp=message1_ts,
-                    message_event=time_event_module.MessageEvent(
-                        id=1,
-                        type=time_event_module.Type.RECEIVED,
-                        uncompressed_size_bytes=20,
-                        compressed_size_bytes=2)),
-                time_event_module.TimeEvent(
+                    id=1,
+                    type=time_event_module.Type.RECEIVED,
+                    uncompressed_size_bytes=20,
+                    compressed_size_bytes=2),
+                time_event_module.MessageEvent(
                     timestamp=message2_ts,
-                    message_event=time_event_module.MessageEvent(
-                        id=2,
-                        type=time_event_module.Type.TYPE_UNSPECIFIED,
-                        uncompressed_size_bytes=30,
-                        compressed_size_bytes=3))
+                    id=2,
+                    type=time_event_module.Type.TYPE_UNSPECIFIED,
+                    uncompressed_size_bytes=30,
+                    compressed_size_bytes=3)
             ],
             span_kind=span_module.SpanKind.SERVER,
             status=None,
@@ -372,15 +373,19 @@ class TestTraceExporterUtils(unittest.TestCase):
         self.assertEqual(event3.message_event.type, 2)
         self.assertEqual(event4.message_event.type, 0)
 
-    def test_translate_time_events_invalid(self):
+    def test_translate_annotation(self):
 
         ts = datetime.utcnow() + timedelta(seconds=-10)
 
+        annotation = time_event_module.Annotation(
+            timestamp=ts,
+            description='description')
         span_data = span_data_module.SpanData(
             context=span_context_module.SpanContext(
                 trace_id='6e0c63257de34c92bf9efcd03927272e'),
             span_id='6e0c63257de34c92',
-            time_events=[time_event_module.TimeEvent(timestamp=ts)],
+            annotations=[annotation],
+            message_events=None,
             span_kind=span_module.SpanKind.SERVER,
             status=None,
             start_time=None,
@@ -395,7 +400,39 @@ class TestTraceExporterUtils(unittest.TestCase):
 
         pb_span = utils.translate_to_trace_proto(span_data)
 
-        self.assertEqual(len(pb_span.time_events.time_event), 0)
+        self.assertEqual(len(pb_span.time_events.time_event), 1)
+
+    def test_translate_message_event(self):
+
+        ts = datetime.utcnow() + timedelta(seconds=-10)
+
+        message_event = time_event_module.MessageEvent(
+            timestamp=ts,
+            id=0,
+            type=time_event_module.Type.SENT,
+            uncompressed_size_bytes=10,
+            compressed_size_bytes=1)
+        span_data = span_data_module.SpanData(
+            context=span_context_module.SpanContext(
+                trace_id='6e0c63257de34c92bf9efcd03927272e'),
+            span_id='6e0c63257de34c92',
+            annotations=None,
+            message_events=[message_event],
+            span_kind=span_module.SpanKind.SERVER,
+            status=None,
+            start_time=None,
+            end_time=None,
+            child_span_count=None,
+            name=None,
+            parent_span_id=None,
+            attributes=None,
+            same_process_as_parent_span=False,
+            stack_trace=None,
+            links=None)
+
+        pb_span = utils.translate_to_trace_proto(span_data)
+
+        self.assertEqual(len(pb_span.time_events.time_event), 1)
 
     def test_translate_tracestate(self):
 
@@ -418,7 +455,8 @@ class TestTraceExporterUtils(unittest.TestCase):
             attributes=None,
             child_span_count=None,
             stack_trace=None,
-            time_events=None,
+            annotations=None,
+            message_events=None,
             links=None,
             status=None)
 
@@ -464,6 +502,7 @@ class TestTraceExporterUtils(unittest.TestCase):
         pb_event = pb_span.time_events.time_event.add()
 
         message_event = time_event_module.MessageEvent(
+            timestamp=datetime.utcnow(),
             id=0,
             type=time_event_module.Type.SENT,
             uncompressed_size_bytes=10,
@@ -481,6 +520,7 @@ class TestTraceExporterUtils(unittest.TestCase):
         pb_event = pb_span.time_events.time_event.add()
 
         annotation = time_event_module.Annotation(
+            timestamp=datetime.utcnow(),
             description="hi there",
             attributes=attributes_module.Attributes(
                 attributes={
@@ -514,9 +554,13 @@ class TestTraceExporterUtils(unittest.TestCase):
         pb_event0 = pb_span.time_events.time_event.add()
         pb_event1 = pb_span.time_events.time_event.add()
 
-        annotation0 = time_event_module.Annotation(description="hi there0")
+        annotation0 = time_event_module.Annotation(
+            timestamp=datetime.utcnow(),
+            description="hi there0")
         annotation1 = time_event_module.Annotation(
-            description="hi there1", attributes=attributes_module.Attributes())
+            timestamp=datetime.utcnow(),
+            description="hi there1",
+            attributes=attributes_module.Attributes())
 
         utils.set_proto_annotation(pb_event0.annotation, annotation0)
         utils.set_proto_annotation(pb_event1.annotation, annotation1)

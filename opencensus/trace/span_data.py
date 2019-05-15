@@ -29,7 +29,8 @@ _SpanData = collections.namedtuple(
         'end_time',
         'child_span_count',
         'stack_trace',
-        'time_events',
+        'annotations',
+        'message_events',
         'links',
         'status',
         'same_process_as_parent_span',
@@ -73,9 +74,12 @@ class SpanData(_SpanData):
     :type stack_trace: :class: `~opencensus.trace.stack_trace.StackTrace`
     :param stack_trace: (Optional) A call stack appearing in a trace
 
-    :type time_events: list
-    :param time_events: (Optional) A set of time events. You can have up to 32
-                        annotations and 128 message events per span.
+    :type annotations: list(:class:`opencensus.trace.time_event.Annotation`)
+    :param annotations: (Optional) The list of span annotations.
+
+    :type message_events:
+        list(:class:`opencensus.trace.time_event.MessageEvent`)
+    :param message_events: (Optional) The list of span message events.
 
     :type links: list
     :param links: (Optional) Links associated with the span. You can have up
@@ -125,10 +129,20 @@ def _format_legacy_span_json(span_data):
         span_json['stackTrace'] = \
             span_data.stack_trace.format_stack_trace_json()
 
-    if span_data.time_events:
+    formatted_time_events = []
+    if span_data.annotations:
+        formatted_time_events.extend(
+            {'time': aa.timestamp,
+             'annotation': aa.format_annotation_json()}
+            for aa in span_data.annotations)
+    if span_data.message_events:
+        formatted_time_events.extend(
+            {'time': aa.timestamp,
+             'message_event': aa.format_message_event_json()}
+            for aa in span_data.message_events)
+    if formatted_time_events:
         span_json['timeEvents'] = {
-            'timeEvent': [time_event.format_time_event_json()
-                          for time_event in span_data.time_events]
+            'timeEvent': formatted_time_events
         }
 
     if span_data.links:
