@@ -114,13 +114,3 @@ class TraceLogger(logging.getLoggerClass()):
                 kwargs['extra'] = extra
         _set_extra_attrs(extra)
         return super(TraceLogger, self).makeRecord(*args, **kwargs)
-
-
-def use_oc_logging():
-    """Replace the global default logging class with `TraceLogger`.
-
-    Loggers created after calling `use_oc_logging` will produce `LogRecord`s
-    with extra traceId, spanId, and traceSampled attributes from the opencensus
-    context.
-    """
-    logging.setLoggerClass(TraceLogger)

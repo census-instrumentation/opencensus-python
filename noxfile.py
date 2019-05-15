@@ -31,6 +31,7 @@ def _install_dev_packages(session):
     session.install('-e', 'contrib/opencensus-ext-grpc')
     session.install('-e', 'contrib/opencensus-ext-httplib')
     session.install('-e', 'contrib/opencensus-ext-jaeger')
+    session.install('-e', 'contrib/opencensus-ext-logging')
     session.install('-e', 'contrib/opencensus-ext-mysql')
     session.install('-e', 'contrib/opencensus-ext-ocagent')
     session.install('-e', 'contrib/opencensus-ext-postgresql')

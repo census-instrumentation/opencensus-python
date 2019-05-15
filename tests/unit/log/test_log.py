@@ -97,7 +97,7 @@ class TestTraceLogger(unittest.TestCase):
     def setUpClass(cls):
         cls._old_logger_names = get_logger_names()
         cls._old_logger_class = logging.getLoggerClass()
-        log.use_oc_logging()
+        logging.setLoggerClass(log.TraceLogger)
 
     @classmethod
     def tearDownClass(cls):
