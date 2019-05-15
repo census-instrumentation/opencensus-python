@@ -52,7 +52,7 @@ class BaseExporter(object):
     # queue, or shared workers among queues (e.g. queue for traces, queue
     # for logs).
     def export(self, items):
-        self._queue.puts(items, block=False)
+        self._queue.puts(items, block=False)  # pragma: NO COVER
 
 
 class Worker(threading.Thread):
@@ -64,7 +64,7 @@ class Worker(threading.Thread):
         self._stopping = False
         super(Worker, self).__init__()
 
-    def run(self):
+    def run(self):  # pragma: NO COVER
         src = self.src
         dst = self.dst
         while True:
@@ -77,7 +77,7 @@ class Worker(threading.Thread):
                     continue
             dst.emit(batch)
 
-    def stop(self, timeout=None):
+    def stop(self, timeout=None):  # pragma: NO COVER
         start_time = time.time()
         wait_time = timeout
         if self.is_alive() and not self._stopping:
