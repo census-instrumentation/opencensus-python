@@ -15,6 +15,10 @@
 from opencensus.common.http_handler import get_request
 import json
 
+REGION_KEY = 'region'
+ACCOUNT_ID_KEY = 'aws_account'
+INSTANCE_ID_KEY = 'instance_id'
+
 # AWS provides Instance Metadata via below url
 _AWS_INSTANCE_IDENTITY_DOCUMENT_URI = \
     "http://169.254.169.254/latest/dynamic/instance-identity/document"
@@ -23,13 +27,13 @@ _AWS_ATTRIBUTES = {
     # Region is the AWS region for the VM. The format of this field is
     # "aws:{region}", where supported values for {region} are listed at
     # http://docs.aws.amazon.com/general/latest/gr/rande.html.
-    'region': 'region',
+    'region': REGION_KEY,
 
     # accountId is the AWS account number for the VM.
-    'accountId': 'aws_account',
+    'accountId': ACCOUNT_ID_KEY,
 
     # instanceId is the instance id of the instance.
-    'instanceId': 'instance_id'
+    'instanceId': INSTANCE_ID_KEY
 }
 
 # inited is used to make sure AWS initialize executes only once.

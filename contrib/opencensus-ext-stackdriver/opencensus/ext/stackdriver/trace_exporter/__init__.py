@@ -17,6 +17,7 @@ import os
 
 from google.cloud.trace.client import Client
 
+from opencensus.common.monitored_resource import aws_identity_doc_utils
 from opencensus.common.monitored_resource import gcp_metadata_config
 from opencensus.common.monitored_resource import k8s_utils
 from opencensus.common.monitored_resource import monitored_resource
@@ -119,9 +120,12 @@ def set_monitored_resource_attributes(span):
         set_attribute_label(gcp_metadata_config.ZONE_KEY, 'zone')
 
     elif resource_type == 'aws_ec2_instance':
-        set_attribute_label('aws_account', 'aws_account')
-        set_attribute_label('instance_id', 'instance_id')
-        set_attribute_label('region', 'region', label_value_prefix='aws:')
+        set_attribute_label(aws_identity_doc_utils.ACCOUNT_ID_KEY,
+                            'aws_account')
+        set_attribute_label(aws_identity_doc_utils.INSTANCE_ID_KEY,
+                            'instance_id')
+        set_attribute_label(aws_identity_doc_utils.REGION_KEY, 'region',
+                            label_value_prefix='aws:')
 
 
 def set_common_attributes(span):
