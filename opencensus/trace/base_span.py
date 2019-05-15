@@ -64,11 +64,11 @@ class BaseSpan(object):
         """
         raise NotImplementedError
 
-    def add_time_event(self, time_event):
-        """Add a TimeEvent.
+    def add_message_event(self, message_event):
+        """Add a message event to this span.
 
-        :type time_event: :class: `~opencensus.trace.time_event.TimeEvent`
-        :param time_event: A TimeEvent object.
+        :type message_event: :class:`opencensus.trace.time_event.MessageEvent`
+        :param message_event: The message event to attach to this span.
         """
         raise NotImplementedError
 

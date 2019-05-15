@@ -104,7 +104,8 @@ class TestZipkinExporter(unittest.TestCase):
                 end_time='2017-08-15T18:02:36.071158Z',
                 child_span_count=None,
                 stack_trace=None,
-                time_events=None,
+                annotations=None,
+                message_events=None,
                 links=None,
                 status=None,
                 same_process_as_parent_span=None,
@@ -120,7 +121,8 @@ class TestZipkinExporter(unittest.TestCase):
                 end_time='2017-08-15T18:02:36.071158Z',
                 child_span_count=None,
                 stack_trace=None,
-                time_events=None,
+                annotations=None,
+                message_events=None,
                 links=None,
                 status=None,
                 same_process_as_parent_span=None,
@@ -144,7 +146,8 @@ class TestZipkinExporter(unittest.TestCase):
                 end_time='2017-08-15T18:02:36.071158Z',
                 child_span_count=None,
                 stack_trace=None,
-                time_events=None,
+                annotations=None,
+                message_events=None,
                 links=None,
                 status=None,
                 same_process_as_parent_span=None,
@@ -241,18 +244,20 @@ class TestZipkinExporter(unittest.TestCase):
 
         s = '2017-08-15T18:02:26.071158'
         time = datetime.strptime(s, '%Y-%m-%dT%H:%M:%S.%f')
-        time_events = [
-            time_event.TimeEvent(
+
+        annotations = [
+            time_event.Annotation(
                 timestamp=time,
-                annotation=time_event.Annotation(
-                    description='First Annotation',
-                    attributes=annotation_attributes)),
-            time_event.TimeEvent(
+                description='First Annotation',
+                attributes=annotation_attributes,
+            )
+        ]
+        message_events = [
+            time_event.MessageEvent(
                 timestamp=time,
-                message_event=time_event.MessageEvent(
-                    id='message-event-id',
-                    uncompressed_size_bytes=0,
-                )),
+                id='message-event-id',
+                uncompressed_size_bytes=0,
+            )
         ]
 
         spans_ipv4 = [
@@ -266,7 +271,8 @@ class TestZipkinExporter(unittest.TestCase):
                 end_time='2017-08-15T18:02:36.071158Z',
                 child_span_count=None,
                 stack_trace=None,
-                time_events=time_events,
+                annotations=annotations,
+                message_events=message_events,
                 links=None,
                 status=None,
                 same_process_as_parent_span=None,
@@ -282,7 +288,8 @@ class TestZipkinExporter(unittest.TestCase):
                 end_time='2017-08-15T18:02:36.071158Z',
                 child_span_count=None,
                 stack_trace=None,
-                time_events=time_events,
+                annotations=annotations,
+                message_events=message_events,
                 links=None,
                 status=None,
                 same_process_as_parent_span=None,
@@ -305,7 +312,8 @@ class TestZipkinExporter(unittest.TestCase):
                 end_time='2017-08-15T18:02:36.071158Z',
                 child_span_count=None,
                 stack_trace=None,
-                time_events=time_events,
+                annotations=annotations,
+                message_events=message_events,
                 links=None,
                 status=None,
                 same_process_as_parent_span=None,

@@ -217,7 +217,8 @@ class TestTracer(unittest.TestCase):
         tracer = tracer_module.Tracer(sampler=sampler)
         span = mock.Mock()
         span.attributes = {}
-        span.time_events = []
+        span.annotations = []
+        span.message_events = []
         span.links = []
         span.children = []
         span.__iter__ = mock.Mock(return_value=iter([span]))

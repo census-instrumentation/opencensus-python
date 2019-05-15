@@ -104,14 +104,14 @@ class TestJaegerExporter(unittest.TestCase):
 
         agent_client.emit({})
         self.assertTrue(agent_client.client.emit_called)
-        self.assertFalse(mock_logging.warn.called)
+        self.assertFalse(mock_logging.warning.called)
 
     @mock.patch('opencensus.ext.jaeger.trace_exporter.logging')
     def test_packet_capacity_exceeded(self, mock_logging):
         agent_client = trace_exporter.AgentClientUDP(
             client=MockClient, max_packet_size=-1)
         agent_client.emit({})
-        self.assertTrue(mock_logging.warn.called)
+        self.assertTrue(mock_logging.warning.called)
 
     @mock.patch('opencensus.ext.jaeger.trace_exporter.logging')
     def test_collector_emit_failed(self, mock_logging):
@@ -197,32 +197,33 @@ class TestJaegerExporter(unittest.TestCase):
         import datetime
         s = '2017-08-15T18:02:26.071158'
         time = datetime.datetime.strptime(s, '%Y-%m-%dT%H:%M:%S.%f')
-        time_events = [
-            time_event.TimeEvent(
+
+        annotations = [
+            time_event.Annotation(
                 timestamp=time,
-                annotation=time_event.Annotation(
-                    description='First Annotation',
-                    attributes=attributes.Attributes(annotation_attributes))),
-            time_event.TimeEvent(
+                description='First Annotation',
+                attributes=attributes.Attributes(annotation_attributes))
+        ]
+        message_events = [
+            time_event.MessageEvent(
                 timestamp=time,
-                message_event=time_event.MessageEvent(
-                    id='message-event-id',
-                    uncompressed_size_bytes=0,
-                )),
+                id='message-event-id',
+                uncompressed_size_bytes=0,
+            )
         ]
 
-        time_events2 = [
-            time_event.TimeEvent(
+        annotations2 = [
+            time_event.Annotation(
                 timestamp=time,
-                annotation=time_event.Annotation(
-                    description='First Annotation',
-                    attributes=None)),
-            time_event.TimeEvent(
+                description='First Annotation',
+                attributes=None)
+        ]
+        message_events2 = [
+            time_event.MessageEvent(
                 timestamp=time,
-                message_event=time_event.MessageEvent(
-                    id='message-event-id',
-                    uncompressed_size_bytes=0,
-                )),
+                id='message-event-id',
+                uncompressed_size_bytes=0,
+            )
         ]
 
         links = [
@@ -259,7 +260,8 @@ class TestJaegerExporter(unittest.TestCase):
                 end_time=end_time,
                 child_span_count=0,
                 stack_trace=None,
-                time_events=time_events,
+                annotations=annotations,
+                message_events=message_events,
                 links=links,
                 status=span_status,
                 same_process_as_parent_span=None,
@@ -275,7 +277,8 @@ class TestJaegerExporter(unittest.TestCase):
                 end_time=end_time,
                 child_span_count=None,
                 stack_trace=None,
-                time_events=time_events2,
+                annotations=annotations2,
+                message_events=message_events2,
                 links=None,
                 status=None,
                 same_process_as_parent_span=None,
@@ -291,7 +294,8 @@ class TestJaegerExporter(unittest.TestCase):
                 end_time=end_time,
                 child_span_count=None,
                 stack_trace=None,
-                time_events=None,
+                annotations=None,
+                message_events=None,
                 links=None,
                 status=None,
                 same_process_as_parent_span=None,

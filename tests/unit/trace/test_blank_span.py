@@ -19,7 +19,7 @@ import unittest
 from opencensus.common import utils
 from opencensus.trace.link import Link
 from opencensus.trace.span import format_span_json
-from opencensus.trace.time_event import TimeEvent
+from opencensus.trace.time_event import MessageEvent
 
 
 class TestBlankSpan(unittest.TestCase):
@@ -59,13 +59,9 @@ class TestBlankSpan(unittest.TestCase):
         link = Link(span_id='1234', trace_id='4567')
         span.add_link(link)
 
-        time_event = mock.Mock()
-
-        with self.assertRaises(TypeError):
-            span.add_time_event(time_event)
-
-        time_event = TimeEvent(datetime.datetime.utcnow())
-        span.add_time_event(time_event)
+        message_event = mock.Mock()
+        message_event = MessageEvent(datetime.datetime.utcnow(), mock.Mock())
+        span.add_message_event(message_event)
 
         span_iter_list = list(iter(span))
         self.assertEqual(span_iter_list, [span])
@@ -97,7 +93,7 @@ class TestBlankSpan(unittest.TestCase):
             'http.status_code': '200',
             'component': 'HTTP load balancer',
         }
-        time_events = mock.Mock()
+        message_events = [mock.Mock()]
         links = mock.Mock()
         stack_trace = mock.Mock()
         status = mock.Mock()
@@ -111,7 +107,7 @@ class TestBlankSpan(unittest.TestCase):
             end_time=end_time,
             span_id=span_id,
             stack_trace=stack_trace,
-            time_events=time_events,
+            message_events=message_events,
             links=links,
             status=status,
             context_tracer=context_tracer)
@@ -121,7 +117,7 @@ class TestBlankSpan(unittest.TestCase):
         self.assertEqual(span.attributes, {})
         self.assertEqual(span.start_time, start_time)
         self.assertEqual(span.end_time, end_time)
-        self.assertEqual(span.time_events, time_events)
+        self.assertEqual(list(span.message_events), message_events)
         self.assertEqual(span.stack_trace, stack_trace)
         self.assertEqual(span.links, [])
         self.assertEqual(span.status, status)

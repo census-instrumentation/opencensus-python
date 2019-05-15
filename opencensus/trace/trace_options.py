@@ -39,7 +39,7 @@ class TraceOptions(object):
         trace_options_int = int(trace_options_byte)
 
         if trace_options_int < 0 or trace_options_int > 255:
-            logging.warn("Trace options invalid, should be 1 byte.")
+            logging.warning("Trace options invalid, should be 1 byte.")
             trace_options_byte = DEFAULT
 
         return trace_options_byte

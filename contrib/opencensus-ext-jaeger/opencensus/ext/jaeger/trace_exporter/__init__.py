@@ -259,15 +259,12 @@ def _convert_hex_str_to_int(val):
 
 
 def _extract_logs_from_span(span):
-    if span.time_events is None:
+    if span.annotations is None:
         return None
 
     logs = []
-    for time_event in span.time_events:
-        annotation = time_event.annotation
-        if not annotation:
-            continue
 
+    for annotation in span.annotations:
         fields = []
         if annotation.attributes is not None:
             fields = _extract_tags(annotation.attributes.attributes)
@@ -277,7 +274,7 @@ def _extract_logs_from_span(span):
             vType=jaeger.TagType.STRING,
             vStr=annotation.description))
 
-        event_timestamp = timestamp_to_microseconds(time_event.timestamp)
+        event_timestamp = timestamp_to_microseconds(annotation.timestamp)
         logs.append(jaeger.Log(timestamp=int(round(event_timestamp)),
                                fields=fields))
     return logs
@@ -317,8 +314,7 @@ def _convert_attribute_to_tag(key, attr):
             key=key,
             vDouble=attr,
             vType=jaeger.TagType.DOUBLE)
-    logging.warn('Could not serialize attribute \
-            {}:{} to tag'.format(key, attr))
+    logging.warning('Could not serialize attribute %s:%r to tag', key, attr)
     return None
 
 
@@ -453,8 +449,10 @@ class AgentClientUDP(base_exporter.Exporter):
             self.client.emitBatch(batch)
             buff = self.buffer.getvalue()
             if len(buff) > self.max_packet_size:
-                logging.warn('Data exceeds the max UDP packet size; size {},\
-                        max {}'.format(len(buff), self.max_packet_size))
+                logging.warning(
+                    'Data exceeds the max UDP packet size; size %r, max %r',
+                    len(buff),
+                    self.max_packet_size)
             else:
                 udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
                 udp_socket.sendto(buff, self.address)
