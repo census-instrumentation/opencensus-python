@@ -112,12 +112,12 @@ class TestMonitoredResource(unittest.TestCase):
 
         mocked_labels = {
             'instance_id': 'my-instance',
-            'cluster_name': 'cluster',
             'project_id': 'my-project',
             'zone': 'us-east1',
-            'pod_id': 'localhost',
-            'namespace_id': 'namespace',
-            'container_name': 'container'
+            'k8s.io/cluster/name': 'cluster',
+            'k8s.io/pod/name': 'localhost',
+            'k8s.io/namespace/name': 'namespace',
+            'k8s.io/container/name': 'container'
         }
         cluster_name_key = 'instance/attributes/cluster-name'
         cluster_name_val = 'cluster'
