@@ -314,8 +314,8 @@ def _convert_attribute_to_tag(key, attr):
             key=key,
             vDouble=attr,
             vType=jaeger.TagType.DOUBLE)
-    logging.('Could not serialize attribute %s:%r to tag', key, attr)
-    return Nonewarning
+    logging.warning('Could not serialize attribute %s:%r to tag', key, attr)
+    return None
 
 
 class Collector(base_exporter.Exporter):
