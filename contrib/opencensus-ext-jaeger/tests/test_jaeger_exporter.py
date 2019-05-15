@@ -104,14 +104,14 @@ class TestJaegerExporter(unittest.TestCase):
 
         agent_client.emit({})
         self.assertTrue(agent_client.client.emit_called)
-        self.assertFalse(mock_logging.warn.called)
+        self.assertFalse(mock_logging.warning.called)
 
     @mock.patch('opencensus.ext.jaeger.trace_exporter.logging')
     def test_packet_capacity_exceeded(self, mock_logging):
         agent_client = trace_exporter.AgentClientUDP(
             client=MockClient, max_packet_size=-1)
         agent_client.emit({})
-        self.assertTrue(mock_logging.warn.called)
+        self.assertTrue(mock_logging.warning.called)
 
     @mock.patch('opencensus.ext.jaeger.trace_exporter.logging')
     def test_collector_emit_failed(self, mock_logging):

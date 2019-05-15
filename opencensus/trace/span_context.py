@@ -102,7 +102,7 @@ class SpanContext(object):
 
         if span_id is INVALID_SPAN_ID:
             logging.warning(
-                'Span_id {} is invalid (cannot be all zero)'.format(span_id))
+                'Span_id %s is invalid (cannot be all zero)', span_id)
             self.from_header = False
             return None
 
@@ -112,8 +112,8 @@ class SpanContext(object):
             return span_id
         else:
             logging.warning(
-                'Span_id {} does not the match the '
-                'required format'.format(span_id))
+                'Span_id %s does not the match the '
+                'required format', span_id)
             self.from_header = False
             return None
 
@@ -132,8 +132,8 @@ class SpanContext(object):
 
         if trace_id is _INVALID_TRACE_ID:
             logging.warning(
-                'Trace_id {} is invalid (cannot be all zero), '
-                'generating a new one.'.format(trace_id))
+                'Trace_id %s is invalid (cannot be all zero), '
+                'generating a new one.', trace_id)
             self.from_header = False
             return generate_trace_id()
 
@@ -143,8 +143,8 @@ class SpanContext(object):
             return trace_id
         else:
             logging.warning(
-                'Trace_id {} does not the match the required format,'
-                'generating a new one instead.'.format(trace_id))
+                'Trace_id %s does not the match the required format,'
+                'generating a new one instead.', trace_id)
             self.from_header = False
             return generate_trace_id()
 

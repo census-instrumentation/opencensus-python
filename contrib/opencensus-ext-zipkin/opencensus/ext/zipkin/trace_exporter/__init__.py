@@ -193,7 +193,7 @@ def _extract_tags_from_span(attr):
             res, _ = check_str_length(str_to_check=attribute_value)
             value = res
         else:
-            logging.warn('Could not serialize tag {}'.format(attribute_key))
+            logging.warning('Could not serialize tag %s', attribute_key)
             continue
         tags[attribute_key] = value
     return tags

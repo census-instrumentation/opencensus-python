@@ -50,8 +50,8 @@ class GoogleCloudFormatPropagator(object):
             match = re.search(_TRACE_CONTEXT_HEADER_RE, header)
         except TypeError:
             logging.warning(
-                'Header should be str, got {}. Cannot parse the header.'
-                .format(header.__class__.__name__))
+                'Header should be str, got %s. Cannot parse the header.',
+                header.__class__.__name__)
             raise
 
         if match:
@@ -70,8 +70,8 @@ class GoogleCloudFormatPropagator(object):
             return span_context
         else:
             logging.warning(
-                'Cannot parse the header {}, generate a new context instead.'
-                .format(header))
+                'Cannot parse the header %s, generate a new context instead.',
+                header)
             return SpanContext()
 
     def from_headers(self, headers):

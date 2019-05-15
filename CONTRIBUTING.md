@@ -57,5 +57,5 @@ Open a pull request against the main opencensus-python repo.
 If you want to contribute new [extensions](README.rst#extensions), you need some extra steps:
 
 * Prepare the extension code, put it under the [contrib](./contrib/) folder.
-* Update [nox.py](./nox.py) to include your new extension for testing purpose.
+* Update [noxfile.py](./noxfile.py) to include your new extension for testing purpose.
 * Update [README](./README.rst#extensions) to include your extension.
