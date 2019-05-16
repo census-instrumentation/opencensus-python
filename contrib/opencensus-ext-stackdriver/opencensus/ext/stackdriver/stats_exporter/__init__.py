@@ -327,7 +327,7 @@ def set_monitored_resource(series, option_resource_type):
         :param series: TimeSeries object based on view data
         :param resource_labels: collection of labels
         :param attribute_key: actual label key
-        :param label_key: exporter specific label key, Optional
+        :param label_key: optional exporter-specific label key
         :param label_value_prefix: optional exporter-specific prefix
         """
         if attribute_key not in resource_labels:
