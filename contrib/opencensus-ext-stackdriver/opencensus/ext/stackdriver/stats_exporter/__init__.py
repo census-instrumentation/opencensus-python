@@ -25,6 +25,9 @@ from google.cloud import monitoring_v3
 import google.auth
 
 from opencensus.common import utils
+from opencensus.common.monitored_resource import aws_identity_doc_utils
+from opencensus.common.monitored_resource import gcp_metadata_config
+from opencensus.common.monitored_resource import k8s_utils
 from opencensus.common.monitored_resource import monitored_resource
 from opencensus.common.version import __version__
 from opencensus.metrics import label_key
@@ -300,62 +303,65 @@ class StackdriverStatsExporter(object):
 
 
 def set_monitored_resource(series, option_resource_type):
-    """Set a resource(type and labels) that can be used for monitoring.
+    """Set this series' monitored resource and labels.
+
     :param series: TimeSeries object based on view data
     :param option_resource_type: Resource is an optional field that
     represents the Stackdriver MonitoredResource type.
     """
-    resource_type = GLOBAL_RESOURCE_TYPE
+    if option_resource_type != "":
+        series.resource.type = option_resource_type
+        return
 
-    if option_resource_type == "":
-        resource = monitored_resource.get_instance()
-        if resource is not None:
-            resource_labels = resource.get_labels()
+    resource = monitored_resource.get_instance()
+    if resource is None:
+        series.resource.type = GLOBAL_RESOURCE_TYPE
+        return
 
-            if resource.get_type() == 'gke_container':
-                resource_type = 'k8s_container'
-                set_attribute_label(series, resource_labels, 'project_id')
-                set_attribute_label(series, resource_labels, 'cluster_name')
-                set_attribute_label(series, resource_labels, 'container_name')
-                set_attribute_label(series, resource_labels, 'namespace_id',
-                                    'namespace_name')
-                set_attribute_label(series, resource_labels, 'pod_id',
-                                    'pod_name')
-                set_attribute_label(series, resource_labels, 'zone',
-                                    'location')
+    resource_type = resource.get_type()
+    resource_labels = resource.get_labels()
 
-            elif resource.get_type() == 'gce_instance':
-                resource_type = 'gce_instance'
-                set_attribute_label(series, resource_labels, 'project_id')
-                set_attribute_label(series, resource_labels, 'instance_id')
-                set_attribute_label(series, resource_labels, 'zone')
+    def set_attribute_label(attribute_key, label_key, label_value_prefix=''):
+        """Set a label to timeseries that can be used for monitoring.
 
-            elif resource.get_type() == 'aws_ec2_instance':
-                resource_type = 'aws_ec2_instance'
-                set_attribute_label(series, resource_labels, 'aws_account')
-                set_attribute_label(series, resource_labels, 'instance_id')
-                set_attribute_label(series, resource_labels, 'region',
-                                    label_value_prefix='aws:')
+        :param series: TimeSeries object based on view data
+        :param resource_labels: collection of labels
+        :param attribute_key: actual label key
+        :param label_key: optional exporter-specific label key
+        :param label_value_prefix: optional exporter-specific prefix
+        """
+        if attribute_key not in resource_labels:
+            return
+
+        series.resource.labels[label_key] = (label_value_prefix +
+                                             resource_labels[attribute_key])
+
+    if resource_type == 'k8s_container':
+        series.resource.type = 'k8s_container'
+        set_attribute_label(gcp_metadata_config.PROJECT_ID_KEY, 'project_id')
+        set_attribute_label(k8s_utils.CLUSTER_NAME_KEY, 'cluster_name')
+        set_attribute_label(k8s_utils.CONTAINER_NAME_KEY, 'container_name')
+        set_attribute_label(k8s_utils.NAMESPACE_NAME_KEY, 'namespace_name')
+        set_attribute_label(k8s_utils.POD_NAME_KEY, 'pod_name')
+        set_attribute_label(gcp_metadata_config.ZONE_KEY, 'location')
+
+    elif resource_type == 'gce_instance':
+        series.resource.type = 'gce_instance'
+        set_attribute_label(gcp_metadata_config.PROJECT_ID_KEY, 'project_id')
+        set_attribute_label(gcp_metadata_config.INSTANCE_ID_KEY, 'instance_id')
+        set_attribute_label(gcp_metadata_config.ZONE_KEY, 'zone')
+
+    elif resource_type == 'aws_ec2_instance':
+        series.resource.type = 'aws_ec2_instance'
+        set_attribute_label(aws_identity_doc_utils.ACCOUNT_ID_KEY,
+                            'aws_account')
+        set_attribute_label(aws_identity_doc_utils.INSTANCE_ID_KEY,
+                            'instance_id')
+        set_attribute_label(aws_identity_doc_utils.REGION_KEY, 'region',
+                            label_value_prefix='aws:')
+
     else:
-        resource_type = option_resource_type
-    series.resource.type = resource_type
-
-
-def set_attribute_label(series, resource_labels, attribute_key,
-                        canonical_key=None, label_value_prefix=''):
-    """Set a label to timeseries that can be used for monitoring
-    :param series: TimeSeries object based on view data
-    :param resource_labels: collection of labels
-    :param attribute_key: actual label key
-    :param canonical_key: exporter specific label key, Optional
-    :param label_value_prefix: exporter specific label value prefix, Optional
-    """
-    if attribute_key in resource_labels:
-        if canonical_key is None:
-            canonical_key = attribute_key
-
-        series.resource.labels[canonical_key] = \
-            label_value_prefix + resource_labels[attribute_key]
+        series.resource.type = GLOBAL_RESOURCE_TYPE
 
 
 def get_user_agent_slug():

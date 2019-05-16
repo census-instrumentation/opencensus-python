@@ -93,8 +93,8 @@ class TestOptions(unittest.TestCase):
 
     def test_default_monitoring_labels(self):
         options = stackdriver.Options(default_monitoring_labels={
-                    label_key.LabelKey('lk_key', 'lk_desc'):
-                    label_value.LabelValue('lk_value')
+            label_key.LabelKey('lk_key', 'lk_desc'):
+            label_value.LabelValue('lk_value')
         })
 
         self.assertEqual(len(options.default_monitoring_labels), 1)
@@ -876,8 +876,8 @@ class TestCreateTimeseries(unittest.TestCase):
             'instance_id': 'my-instance',
             'project_id': 'my-project',
             'zone': 'us-east1',
-            'pod_id': 'localhost',
-            'namespace_id': 'namespace'
+            'k8s.io/pod/name': 'localhost',
+            'k8s.io/namespace/name': 'namespace',
         }
 
         mock_resource = mock.Mock()
@@ -908,18 +908,18 @@ class TestCreateTimeseries(unittest.TestCase):
             time_series.metric.type,
             "custom.googleapis.com/opencensus/my.org/views/video_size_test2")
 
-        # check for gke_container monitored resource
+        # check for k8s_container monitored resource
         mocked_labels = {
             'instance_id': 'my-instance',
             'project_id': 'my-project',
             'zone': 'us-east1',
-            'pod_id': 'localhost',
-            'cluster_name': 'cluster',
-            'namespace_id': 'namespace'
+            'k8s.io/pod/name': 'localhost',
+            'k8s.io/cluster/name': 'cluster',
+            'k8s.io/namespace/name': 'namespace',
         }
 
         mock_resource = mock.Mock()
-        mock_resource.get_type.return_value = 'gke_container'
+        mock_resource.get_type.return_value = 'k8s_container'
         mock_resource.get_labels.return_value = mocked_labels
         monitor_resource_mock.return_value = mock_resource
 

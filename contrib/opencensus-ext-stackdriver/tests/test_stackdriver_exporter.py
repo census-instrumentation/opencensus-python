@@ -678,14 +678,13 @@ class TestMonitoredResourceAttributes(unittest.TestCase):
         }
 
         mock_resource = mock.Mock()
-        mock_resource.get_type.return_value = 'gke_container'
+        mock_resource.get_type.return_value = 'k8s_container'
         mock_resource.get_labels.return_value = {
-            'pod_id': 'pod',
-            'cluster_name': 'cluster',
-            'namespace_id': 'namespace',
-            'container_name': 'c1',
+            'k8s.io/pod/name': 'pod',
+            'k8s.io/cluster/name': 'cluster',
+            'k8s.io/namespace/name': 'namespace',
+            'k8s.io/container/name': 'c1',
             'project_id': 'my_project',
-            'instance_id': 'instance',
             'zone': 'zone1'
         }
         gmr_mock.return_value = mock_resource
