@@ -25,7 +25,7 @@ Usage
     from opencensus.trace.tracer import Tracer
 
     config_integration.trace_integrations(['logging'])
-    logging.basicConfig(format='%(asctime)-15s traceId=%(traceId)s spanId=%(spanId)s %(message)s')
+    logging.basicConfig(format='%(asctime)s traceId=%(traceId)s spanId=%(spanId)s %(message)s')
     tracer = Tracer(sampler=AlwaysOffSampler())
 
     logger = logging.getLogger(__name__)
