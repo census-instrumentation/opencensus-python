@@ -685,7 +685,6 @@ class TestMonitoredResourceAttributes(unittest.TestCase):
             'k8s.io/namespace/name': 'namespace',
             'k8s.io/container/name': 'c1',
             'project_id': 'my_project',
-            'instance_id': 'instance',
             'zone': 'zone1'
         }
         gmr_mock.return_value = mock_resource
