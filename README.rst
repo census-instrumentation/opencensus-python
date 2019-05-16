@@ -189,6 +189,7 @@ OpenCensus supports integration with popular web frameworks, client libraries an
 -  `Google Cloud Client Libraries`_
 -  `gRPC`_
 -  `httplib`_
+-  `logging`_
 -  `MySQL`_
 -  `PostgreSQL`_
 -  `pymongo`_
@@ -222,6 +223,7 @@ Stats Exporter
 .. _gRPC: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-grpc
 .. _httplib: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-httplib
 .. _Jaeger: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-jaeger
+.. _logging: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-logging
 .. _MySQL: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-mysql
 .. _OCAgent: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-ocagent
 .. _PostgreSQL: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-postgresql
