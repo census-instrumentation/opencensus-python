@@ -414,10 +414,18 @@ class TestJaegerExporter(unittest.TestCase):
                 log = span.logs[0]
                 expected_log = expected_span.logs[0]
                 self.assertEqual(log.timestamp, expected_log.timestamp)
-                self.assertListEqual(log.fields, expected_log.fields)
+                # Log fields are ordered in jaeger, but created from unordered
+                # span annotation attributes. Ignore the order here.
+                log_fields = {tag.key: tag for tag in log.fields}
+                expected_log_fields = {
+                    tag.key: tag for tag in expected_log.fields}
+                self.assertDictEqual(log_fields, expected_log_fields)
 
             if expected_span.tags:
-                self.assertListEqual(span.tags, expected_span.tags)
+                tags = {tag.key: tag for tag in span.tags}
+                expected_tags = {
+                    tag.key: tag for tag in expected_span.tags}
+                self.assertDictEqual(tags, expected_tags)
                 self.assertListEqual(span.references, expected_span.references)
 
             self.assertEqual(
