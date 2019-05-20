@@ -86,7 +86,7 @@ This example shows how to send a warning level log to Azure Monitor.
     )
     logger.warning('Hello, World!')
 
-You can enrich the logs with trace IDs and span IDs by using the logging integration.
+You can enrich the logs with trace IDs and span IDs by using the `logging integration <../opencensus-ext-logging>`_.
 
 * Create an Azure Monitor resource and get the instrumentation key, more information can be found `here <https://docs.microsoft.com/azure/azure-monitor/app/create-new-resource>`_.
 * Install the `logging integration package <../opencensus-ext-logging>`_ using ``pip install opencensus-ext-logging``.
