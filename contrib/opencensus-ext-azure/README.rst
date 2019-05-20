@@ -1,4 +1,4 @@
-OpenCensus Azure Monitor Trace Exporter
+OpenCensus Azure Monitor Exporters
 ============================================================================
 
 |pypi|
@@ -21,14 +21,10 @@ Trace
 
 The **Azure Monitor Trace Exporter** allows you to export `OpenCensus`_ traces to `Azure Monitor`_.
 
-.. _Azure Monitor: https://docs.microsoft.com/azure/azure-monitor/
-.. _OpenCensus: https://github.com/census-instrumentation/opencensus-python/
-
 This example shows how to send a span "hello" to Azure Monitor.
 
 * Create an Azure Monitor resource and get the instrumentation key, more information can be found `here <https://docs.microsoft.com/azure/azure-monitor/app/create-new-resource>`_.
 * Put the instrumentation key in ``APPINSIGHTS_INSTRUMENTATIONKEY`` environment variable.
-
 
 .. code:: python
 
@@ -42,6 +38,10 @@ This example shows how to send a span "hello" to Azure Monitor.
         print('Hello, World!')
 
 You can also specify the instrumentation key explicitly in the code.
+
+* Create an Azure Monitor resource and get the instrumentation key, more information can be found `here <https://docs.microsoft.com/azure/azure-monitor/app/create-new-resource>`_.
+* Install the `requests integration package <../opencensus-ext-requests>`_ using ``pip install opencensus-ext-requests``.
+* Put the instrumentation key in the following code.
 
 .. code:: python
 
@@ -64,9 +64,62 @@ You can also specify the instrumentation key explicitly in the code.
     with tracer.span(name='parent'):
         response = requests.get(url='https://www.wikipedia.org/wiki/Rabbit')
 
+Log
+~~~
+
+The **Azure Monitor Log Exporter** allows you to export Python logs to `Azure Monitor`_.
+
+This example shows how to send a warning level log to Azure Monitor.
+
+* Create an Azure Monitor resource and get the instrumentation key, more information can be found `here <https://docs.microsoft.com/azure/azure-monitor/app/create-new-resource>`_.
+* Put the instrumentation key in ``APPINSIGHTS_INSTRUMENTATIONKEY`` environment variable.
+
+.. code:: python
+
+    import logging
+
+    from opencensus.ext.azure import log_exporter
+
+    logger = logging.getLogger(__name__)
+    logger.addHandler(
+        log_exporter.LogHandler(exporter=log_exporter.AzureExporter())
+    )
+    logger.warning('Hello, World!')
+
+You can enrich the logs with trace IDs and span IDs by using the logging integration.
+
+* Create an Azure Monitor resource and get the instrumentation key, more information can be found `here <https://docs.microsoft.com/azure/azure-monitor/app/create-new-resource>`_.
+* Install the `logging integration package <../opencensus-ext-logging>`_ using ``pip install opencensus-ext-logging``.
+* Put the instrumentation key in ``APPINSIGHTS_INSTRUMENTATIONKEY`` environment variable.
+
+.. code:: python
+
+    import logging
+
+    from opencensus.ext.azure import log_exporter
+    from opencensus.trace import config_integration
+    from opencensus.trace.tracer import Tracer
+
+    config_integration.trace_integrations(['logging'])
+
+    tracer = Tracer()
+
+    logger = logging.getLogger(__name__)
+    logger.addHandler(
+        log_exporter.LogHandler(exporter=log_exporter.AzureExporter())
+    )
+    logger.warning('Before the span')
+    with tracer.span(name='test'):
+        logger.warning('In the span')
+    logger.warning('After the span')
+
+
 References
 ----------
 
 * `Azure Monitor <https://docs.microsoft.com/azure/azure-monitor/>`_
 * `Examples <https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-azure/examples>`_
 * `OpenCensus Project <https://opencensus.io/>`_
+
+.. _Azure Monitor: https://docs.microsoft.com/azure/azure-monitor/
+.. _OpenCensus: https://github.com/census-instrumentation/opencensus-python/

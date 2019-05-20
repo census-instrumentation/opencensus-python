@@ -107,6 +107,8 @@ class Queue(object):
         return tuple(self._gets(count, timeout))
 
     def flush(self, timeout=None):
+        if self._queue.qsize() == 0:
+            return 0
         start_time = time.time()
         wait_time = timeout
         event = QueueEvent('SYNC(timeout={})'.format(wait_time))
