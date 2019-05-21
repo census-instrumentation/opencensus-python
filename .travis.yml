@@ -9,7 +9,6 @@ install:
   - pip install tox-travis
 
 script:
-  # - nox -f noxfile.py -s docs
   - tox
   - touch docs/.nojekyll
 
