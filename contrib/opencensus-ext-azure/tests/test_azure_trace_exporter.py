@@ -18,6 +18,7 @@ import os
 import shutil
 import unittest
 
+from opencensus.common.schedule import QueueExitEvent
 from opencensus.ext.azure import trace_exporter
 
 TEST_FOLDER = os.path.abspath('.test.exporter')
@@ -52,6 +53,8 @@ class TestAzureExporter(unittest.TestCase):
             storage_path=os.path.join(TEST_FOLDER, self.id()),
         )
         exporter.emit([])
+        self.assertEqual(len(os.listdir(exporter.storage.path)), 0)
+        exporter.emit([], QueueExitEvent('EXIT'))
         self.assertEqual(len(os.listdir(exporter.storage.path)), 0)
         exporter._stop()
 
