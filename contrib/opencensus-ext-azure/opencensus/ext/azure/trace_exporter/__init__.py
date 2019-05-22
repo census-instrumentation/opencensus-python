@@ -16,6 +16,7 @@ import logging
 import json
 import requests
 
+from opencensus.common.schedule import QueueExitEvent
 from opencensus.ext.azure.common import Options
 from opencensus.ext.azure.common import utils
 from opencensus.ext.azure.common.exporter import BaseExporter
@@ -230,7 +231,7 @@ class AzureExporter(BaseExporter):
                 if result > 0:
                     self.storage.put(envelopes, result)
             if event:
-                if event is self.EXIT_EVENT:
+                if isinstance(event, QueueExitEvent):
                     self._transmit_from_storage()  # send files before exit
                 event.set()
                 return

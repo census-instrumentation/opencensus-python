@@ -29,7 +29,6 @@ class BaseExporter(object):
         # TODO: queue should be moved to tracer
         # too much refactor work, leave to the next PR
         self._queue = Queue(capacity=8192)  # TODO: make this configurable
-        self.EXIT_EVENT = self._queue.EXIT_EVENT
         # TODO: worker should not be created in the base exporter
         self._worker = Worker(self._queue, self)
         self._worker.start()
