@@ -150,10 +150,10 @@ class Test_httplib_trace(unittest.TestCase):
         wrapped = trace.wrap_httplib_request(mock_request_func)
 
         mock_self = mock.Mock()
-        mock_self._dns_host = 'localhost'
+        mock_self.host = 'localhost'
         mock_self.port = '8080'
         method = 'GET'
-        url = 'http://{}:{}'.format(mock_self._dns_host, mock_self.port)
+        url = 'http://{}:{}'.format(mock_self.host, mock_self.port)
         body = None
         headers = {}
 
