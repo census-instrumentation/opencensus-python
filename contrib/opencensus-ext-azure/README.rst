@@ -67,7 +67,7 @@ You can also specify the instrumentation key explicitly in the code.
 Log
 ~~~
 
-The **Azure Monitor Log Exporter** allows you to export Python logs to `Azure Monitor`_.
+The **Azure Monitor Log Handler** allows you to export Python logs to `Azure Monitor`_.
 
 This example shows how to send a warning level log to Azure Monitor.
 
