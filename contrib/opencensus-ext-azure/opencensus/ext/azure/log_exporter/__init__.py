@@ -42,7 +42,7 @@ class OpenCensusLogHandler(logging.Handler):
         self._queue.put(record, block=False)
 
     def export(self, batch, event=None):
-        raise NotImplementedError  # pragma: NO COVER
+        raise NotImplementedError
 
     def flush(self, timeout=None):
         self._queue.flush(timeout=timeout)
@@ -57,7 +57,7 @@ class Worker(threading.Thread):
         self._stopping = False
         super(Worker, self).__init__()
 
-    def run(self):  # pragma: NO COVER
+    def run(self):
         src = self.src
         dst = self.dst
         while True:
@@ -70,7 +70,7 @@ class Worker(threading.Thread):
                     continue
             dst.export(batch)
 
-    def stop(self, timeout=None):  # pragma: NO COVER
+    def stop(self, timeout=None):
         start_time = time.time()
         wait_time = timeout
         if self.is_alive() and not self._stopping:
@@ -85,8 +85,7 @@ class Worker(threading.Thread):
 class AzureLogHandler(OpenCensusLogHandler):
     """Handler for logging to Microsoft Azure Monitor.
 
-    :type options: dict
-    :param options: Options for the exporter. Defaults to None.
+    :param \**options: Options for the log handler.
     """
 
     def __init__(self, **options):
