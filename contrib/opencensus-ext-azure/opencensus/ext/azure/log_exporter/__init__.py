@@ -12,17 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import atexit
 import logging
-import json
 import requests
-import threading
 import time
 
 from opencensus.common.schedule import Queue
 from opencensus.common.schedule import QueueEvent
 from opencensus.ext.azure.common import Options
-from opencensus.ext.azure.common import utils
 
 logger = logging.getLogger(__name__)
 

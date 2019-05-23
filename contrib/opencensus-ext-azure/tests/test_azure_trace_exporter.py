@@ -18,7 +18,6 @@ import os
 import shutil
 import unittest
 
-from opencensus.common.schedule import QueueExitEvent
 from opencensus.ext.azure import trace_exporter
 
 TEST_FOLDER = os.path.abspath('.test.exporter')

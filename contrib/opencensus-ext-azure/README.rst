@@ -57,7 +57,6 @@ You can also specify the instrumentation key explicitly in the code.
         exporter=AzureExporter(
             # TODO: replace this with your own instrumentation key.
             instrumentation_key='00000000-0000-0000-0000-000000000000',
-            timeout=29.9,
         ),
         sampler=ProbabilitySampler(1.0),
     )
