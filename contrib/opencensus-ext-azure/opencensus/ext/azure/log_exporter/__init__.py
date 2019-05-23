@@ -26,39 +26,14 @@ from opencensus.ext.azure.common import utils
 
 logger = logging.getLogger(__name__)
 
-__all__ = ['AzureExporter', 'LogHandler']
+__all__ = ['AzureLogHandler']
 
 
-class AzureExporter(object):
-    """An exporter that sends logs to Microsoft Azure Monitor.
-
-    :type options: dict
-    :param options: Options for the exporter. Defaults to None.
-    """
-
-    def __init__(self, **options):
-        self.options = Options(**options)
-        if not self.options.instrumentation_key:
-            raise ValueError('The instrumentation_key is not provided.')
-        self.export_interval = self.options.export_interval
-        self.max_batch_size = self.options.max_batch_size
-
-    def export(self, batch, event=None):
-        if batch:
-            for item in batch:
-                trace_id = getattr(item, 'traceId', 'N/A')
-                span_id = getattr(item, 'spanId', 'N/A')
-                print('{levelname} {trace_id} {span_id} {pathname}:L{lineno} {msg}'.format(trace_id=trace_id, span_id=span_id, **vars(item)))
-        if event:
-            event.set()
-
-
-class LogHandler(logging.Handler):
-    def __init__(self, exporter):
+class OpenCensusLogHandler(logging.Handler):
+    def __init__(self):
         logging.Handler.__init__(self)
-        self.exporter = exporter
         self._queue = Queue(capacity=8192)  # TODO: make this configurable
-        self._worker = Worker(self._queue, self.exporter)
+        self._worker = Worker(self._queue, self)
         self._worker.start()
 
     def close(self):
@@ -69,6 +44,9 @@ class LogHandler(logging.Handler):
 
     def emit(self, record):
         self._queue.put(record, block=False)
+
+    def export(self, batch, event=None):
+        raise NotImplementedError  # pragma: NO COVER
 
     def flush(self, timeout=None):
         self._queue.flush(timeout=timeout)
@@ -106,3 +84,28 @@ class Worker(threading.Thread):
             wait_time = timeout and max(timeout - elapsed_time, 0)
         if self.src.EXIT_EVENT.wait(timeout=wait_time):
             return time.time() - start_time  # time taken to stop
+
+
+class AzureLogHandler(OpenCensusLogHandler):
+    """Handler for logging to Microsoft Azure Monitor.
+
+    :type options: dict
+    :param options: Options for the exporter. Defaults to None.
+    """
+
+    def __init__(self, **options):
+        self.options = Options(**options)
+        if not self.options.instrumentation_key:
+            raise ValueError('The instrumentation_key is not provided.')
+        self.export_interval = self.options.export_interval
+        self.max_batch_size = self.options.max_batch_size
+        OpenCensusLogHandler.__init__(self)
+
+    def export(self, batch, event=None):
+        if batch:
+            for item in batch:
+                item.traceId = getattr(item, 'traceId', 'N/A')
+                item.spanId = getattr(item, 'spanId', 'N/A')
+                print(self.format(item))
+        if event:
+            event.set()

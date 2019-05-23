@@ -14,12 +14,10 @@
 
 import logging
 
-from opencensus.ext.azure import log_exporter
+from opencensus.ext.azure.log_exporter import AzureLogHandler
 
 logger = logging.getLogger(__name__)
 # TODO: you need to specify the instrumentation key in the
 # APPINSIGHTS_INSTRUMENTATIONKEY environment variable.
-logger.addHandler(
-    log_exporter.LogHandler(exporter=log_exporter.AzureExporter())
-)
+logger.addHandler(AzureLogHandler())
 logger.warning('Hello, World!')

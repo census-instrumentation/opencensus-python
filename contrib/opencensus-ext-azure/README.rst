@@ -78,12 +78,10 @@ This example shows how to send a warning level log to Azure Monitor.
 
     import logging
 
-    from opencensus.ext.azure import log_exporter
+    from opencensus.ext.azure.log_exporter import AzureLogHandler
 
     logger = logging.getLogger(__name__)
-    logger.addHandler(
-        log_exporter.LogHandler(exporter=log_exporter.AzureExporter())
-    )
+    logger.addHandler(AzureLogHandler())
     logger.warning('Hello, World!')
 
 You can enrich the logs with trace IDs and span IDs by using the `logging integration <../opencensus-ext-logging>`_.
@@ -96,23 +94,26 @@ You can enrich the logs with trace IDs and span IDs by using the `logging integr
 
     import logging
 
-    from opencensus.ext.azure import log_exporter
+    from opencensus.ext.azure.log_exporter import AzureLogHandler
+    from opencensus.ext.azure.trace_exporter import AzureExporter
     from opencensus.trace import config_integration
+    from opencensus.trace.samplers import ProbabilitySampler
     from opencensus.trace.tracer import Tracer
 
     config_integration.trace_integrations(['logging'])
 
-    tracer = Tracer()
-
     logger = logging.getLogger(__name__)
-    logger.addHandler(
-        log_exporter.LogHandler(exporter=log_exporter.AzureExporter())
-    )
+
+    handler = AzureLogHandler()
+    handler.setFormatter(logging.Formatter('%(traceId)s %(spanId)s %(message)s'))
+    logger.addHandler(handler)
+
+    tracer = Tracer(exporter=AzureExporter(), sampler=ProbabilitySampler(1.0))
+
     logger.warning('Before the span')
     with tracer.span(name='test'):
         logger.warning('In the span')
     logger.warning('After the span')
-
 
 References
 ----------

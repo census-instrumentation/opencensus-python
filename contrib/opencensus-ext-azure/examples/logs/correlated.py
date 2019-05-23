@@ -14,8 +14,8 @@
 
 import logging
 
-from opencensus.ext.azure import log_exporter
-from opencensus.ext.azure import trace_exporter
+from opencensus.ext.azure.log_exporter import AzureLogHandler
+from opencensus.ext.azure.trace_exporter import AzureExporter
 from opencensus.trace import config_integration
 from opencensus.trace.samplers import ProbabilitySampler
 from opencensus.trace.tracer import Tracer
@@ -23,16 +23,14 @@ from opencensus.trace.tracer import Tracer
 config_integration.trace_integrations(['logging'])
 
 logger = logging.getLogger(__name__)
+
 # TODO: you need to specify the instrumentation key in the
 # APPINSIGHTS_INSTRUMENTATIONKEY environment variable.
-logger.addHandler(
-    log_exporter.LogHandler(exporter=log_exporter.AzureExporter())
-)
+handler = AzureLogHandler()
+handler.setFormatter(logging.Formatter('%(traceId)s %(spanId)s %(message)s'))
+logger.addHandler(handler)
 
-tracer = Tracer(
-    exporter=trace_exporter.AzureExporter(),
-    sampler=ProbabilitySampler(1.0),
-)
+tracer = Tracer(exporter=AzureExporter(), sampler=ProbabilitySampler(1.0))
 
 logger.warning('Before the span')
 with tracer.span(name='test'):
