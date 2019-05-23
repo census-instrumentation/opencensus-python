@@ -85,7 +85,7 @@ class Worker(threading.Thread):
 class AzureLogHandler(OpenCensusLogHandler):
     """Handler for logging to Microsoft Azure Monitor.
 
-    :param \**options: Options for the log handler.
+    :param options: Options for the log handler.
     """
 
     def __init__(self, **options):

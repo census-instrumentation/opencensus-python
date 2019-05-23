@@ -36,7 +36,7 @@ __all__ = ['AzureExporter']
 class AzureExporter(BaseExporter):
     """An exporter that sends traces to Microsoft Azure Monitor.
 
-    :param \**options: Options for the exporter.
+    :param options: Options for the exporter.
     """
 
     def __init__(self, **options):
