@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import logging
-import requests
+import threading
 import time
 
 from opencensus.common.schedule import Queue
