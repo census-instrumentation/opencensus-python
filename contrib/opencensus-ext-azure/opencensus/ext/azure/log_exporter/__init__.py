@@ -25,9 +25,9 @@ logger = logging.getLogger(__name__)
 __all__ = ['AzureLogHandler']
 
 
-class OpenCensusLogHandler(logging.Handler):
+class BaseLogHandler(logging.Handler):
     def __init__(self):
-        logging.Handler.__init__(self)
+        super(BaseLogHandler, self).__init__()
         self._queue = Queue(capacity=8192)  # TODO: make this configurable
         self._worker = Worker(self._queue, self)
         self._worker.start()
@@ -82,7 +82,7 @@ class Worker(threading.Thread):
             return time.time() - start_time  # time taken to stop
 
 
-class AzureLogHandler(OpenCensusLogHandler):
+class AzureLogHandler(BaseLogHandler):
     """Handler for logging to Microsoft Azure Monitor.
 
     :param options: Options for the log handler.
@@ -94,7 +94,7 @@ class AzureLogHandler(OpenCensusLogHandler):
             raise ValueError('The instrumentation_key is not provided.')
         self.export_interval = self.options.export_interval
         self.max_batch_size = self.options.max_batch_size
-        OpenCensusLogHandler.__init__(self)
+        super(AzureLogHandler, self).__init__()
 
     def export(self, batch, event=None):
         if batch:
