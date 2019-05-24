@@ -41,7 +41,14 @@ class BaseLogHandler(logging.Handler):
     def emit(self, record):
         self._queue.put(record, block=False)
 
-    def export(self, batch, event=None):
+    def _export(self, batch, event=None):
+        try:
+            return self.export(batch)
+        finally:
+            if event:
+                event.set()
+
+    def export(self, batch):
         raise NotImplementedError
 
     def flush(self, timeout=None):
@@ -64,16 +71,15 @@ class Worker(threading.Thread):
             batch = src.gets(dst.max_batch_size, dst.export_interval)
             if batch and isinstance(batch[-1], QueueEvent):
                 try:
-                    dst.export(batch[:-1], event=batch[-1])
+                    dst._export(batch[:-1], event=batch[-1])
                 except Exception:
                     logger.exception('Unhandled exception from exporter.')
-                    batch[-1].set()
                 if batch[-1] is src.EXIT_EVENT:
                     break
                 else:
                     continue
             try:
-                dst.export(batch)
+                dst._export(batch)
             except Exception:
                 logger.exception('Unhandled exception from exporter.')
 
@@ -103,11 +109,9 @@ class AzureLogHandler(BaseLogHandler):
         self.max_batch_size = self.options.max_batch_size
         super(AzureLogHandler, self).__init__()
 
-    def export(self, batch, event=None):
+    def export(self, batch):
         if batch:
             for item in batch:
                 item.traceId = getattr(item, 'traceId', 'N/A')
                 item.spanId = getattr(item, 'spanId', 'N/A')
                 print(self.format(item))
-        if event:
-            event.set()
