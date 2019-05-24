@@ -1,0 +1,178 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="Python">
+  <head>
+    <meta charset="utf-8" />
+    <title>opencensus.trace.propagation.text_format &#8212; OPENCENSUS 0.0.1 documentation</title>
+    <link rel="stylesheet" href="../../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for opencensus.trace.propagation.text_format</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2017, OpenCensus Authors</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+<span class="kn">from</span> <span class="nn">opencensus.trace.span_context</span> <span class="k">import</span> <span class="n">SpanContext</span>
+<span class="kn">from</span> <span class="nn">opencensus.trace.trace_options</span> <span class="k">import</span> <span class="n">TraceOptions</span>
+
+<span class="n">_OPENCENSUS_TRACE_PREFIX</span> <span class="o">=</span> <span class="s1">&#39;opencensus-trace&#39;</span>
+<span class="n">_TRACE_ID_KEY</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">-traceid&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">_OPENCENSUS_TRACE_PREFIX</span><span class="p">)</span>
+<span class="n">_SPAN_ID_KEY</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">-spanid&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">_OPENCENSUS_TRACE_PREFIX</span><span class="p">)</span>
+<span class="n">_TRACE_OPTIONS_KEY</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">-traceoptions&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">_OPENCENSUS_TRACE_PREFIX</span><span class="p">)</span>
+
+<span class="n">DEFAULT_TRACE_OPTIONS</span> <span class="o">=</span> <span class="s1">&#39;1&#39;</span>
+
+
+<div class="viewcode-block" id="TextFormatPropagator"><a class="viewcode-back" href="../../../../trace/api/text_format_propagation.html#opencensus.trace.propagation.text_format.TextFormatPropagator">[docs]</a><span class="k">class</span> <span class="nc">TextFormatPropagator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;This class provides the basic utilities for extracting the trace</span>
+<span class="sd">    information from a carrier which is a dict to form a SpanContext. And</span>
+<span class="sd">    generating a dict using the provided SpanContext.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="TextFormatPropagator.from_carrier"><a class="viewcode-back" href="../../../../trace/api/text_format_propagation.html#opencensus.trace.propagation.text_format.TextFormatPropagator.from_carrier">[docs]</a>    <span class="k">def</span> <span class="nf">from_carrier</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">carrier</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Generate a SpanContext object using the information in the carrier.</span>
+
+<span class="sd">        :type carrier: dict</span>
+<span class="sd">        :param carrier: The carrier which has the trace_id, span_id, options</span>
+<span class="sd">                        information for creating a SpanContext.</span>
+
+<span class="sd">        :rtype: :class:`~opencensus.trace.span_context.SpanContext`</span>
+<span class="sd">        :returns: SpanContext generated from the carrier.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">trace_id</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">span_id</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">trace_options</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">carrier</span><span class="p">:</span>
+            <span class="n">key</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="n">_TRACE_ID_KEY</span><span class="p">:</span>
+                <span class="n">trace_id</span> <span class="o">=</span> <span class="n">carrier</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="n">_SPAN_ID_KEY</span><span class="p">:</span>
+                <span class="n">span_id</span> <span class="o">=</span> <span class="n">carrier</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="n">_TRACE_OPTIONS_KEY</span><span class="p">:</span>
+                <span class="n">trace_options</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">carrier</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="n">trace_options</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">trace_options</span> <span class="o">=</span> <span class="n">DEFAULT_TRACE_OPTIONS</span>
+
+        <span class="k">return</span> <span class="n">SpanContext</span><span class="p">(</span>
+            <span class="n">trace_id</span><span class="o">=</span><span class="n">trace_id</span><span class="p">,</span>
+            <span class="n">span_id</span><span class="o">=</span><span class="n">span_id</span><span class="p">,</span>
+            <span class="n">trace_options</span><span class="o">=</span><span class="n">TraceOptions</span><span class="p">(</span><span class="n">trace_options</span><span class="p">),</span>
+            <span class="n">from_header</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TextFormatPropagator.to_carrier"><a class="viewcode-back" href="../../../../trace/api/text_format_propagation.html#opencensus.trace.propagation.text_format.TextFormatPropagator.to_carrier">[docs]</a>    <span class="k">def</span> <span class="nf">to_carrier</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">span_context</span><span class="p">,</span> <span class="n">carrier</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Inject the SpanContext fields to carrier dict.</span>
+
+<span class="sd">        :type span_context:</span>
+<span class="sd">            :class:`~opencensus.trace.span_context.SpanContext`</span>
+<span class="sd">        :param span_context: SpanContext object.</span>
+
+<span class="sd">        :type carrier: dict</span>
+<span class="sd">        :param carrier: The carrier which holds the trace_id, span_id, options</span>
+<span class="sd">                        information from a SpanContext.</span>
+
+<span class="sd">        :rtype: dict</span>
+<span class="sd">        :returns: The carrier which holds the span context information.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">carrier</span><span class="p">[</span><span class="n">_TRACE_ID_KEY</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">span_context</span><span class="o">.</span><span class="n">trace_id</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">span_context</span><span class="o">.</span><span class="n">span_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">carrier</span><span class="p">[</span><span class="n">_SPAN_ID_KEY</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">span_context</span><span class="o">.</span><span class="n">span_id</span><span class="p">)</span>
+
+        <span class="n">carrier</span><span class="p">[</span><span class="n">_TRACE_OPTIONS_KEY</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span>
+            <span class="n">span_context</span><span class="o">.</span><span class="n">trace_options</span><span class="o">.</span><span class="n">trace_options_byte</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">carrier</span></div></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../index.html">OPENCENSUS</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../trace/usage.html">OpenCensus Trace for Python</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../trace/api/index.html">API Documentation</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, OpenCensus Authors.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.0.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

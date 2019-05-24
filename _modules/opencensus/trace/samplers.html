@@ -1,0 +1,187 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="Python">
+  <head>
+    <meta charset="utf-8" />
+    <title>opencensus.trace.samplers &#8212; OPENCENSUS 0.0.1 documentation</title>
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for opencensus.trace.samplers</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2017, OpenCensus Authors</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+
+<span class="n">DEFAULT_SAMPLING_RATE</span> <span class="o">=</span> <span class="mf">1e-4</span>
+
+
+<div class="viewcode-block" id="Sampler"><a class="viewcode-back" href="../../../trace/api/samplers.html#opencensus.trace.samplers.Sampler">[docs]</a><span class="k">class</span> <span class="nc">Sampler</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Base class for opencensus trace request samplers.</span>
+
+<span class="sd">    Subclasses must override :meth:`should_sample`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Sampler.should_sample"><a class="viewcode-back" href="../../../trace/api/samplers.html#opencensus.trace.samplers.Sampler.should_sample">[docs]</a>    <span class="k">def</span> <span class="nf">should_sample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">span_context</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Whether to sample this request.</span>
+
+<span class="sd">        :type span_context: :class:`opencensus.trace.span_context.SpanContext`</span>
+<span class="sd">        :param span_context: The span context.</span>
+
+<span class="sd">        :rtype: bool</span>
+<span class="sd">        :returns: Whether to sample the request according to the context.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div></div>
+
+
+<div class="viewcode-block" id="AlwaysOnSampler"><a class="viewcode-back" href="../../../trace/api/samplers.html#opencensus.trace.samplers.AlwaysOnSampler">[docs]</a><span class="k">class</span> <span class="nc">AlwaysOnSampler</span><span class="p">(</span><span class="n">Sampler</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Sampler that samples every request, regardless of trace options.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="AlwaysOnSampler.should_sample"><a class="viewcode-back" href="../../../trace/api/samplers.html#opencensus.trace.samplers.AlwaysOnSampler.should_sample">[docs]</a>    <span class="k">def</span> <span class="nf">should_sample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">span_context</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">True</span></div></div>
+
+
+<div class="viewcode-block" id="AlwaysOffSampler"><a class="viewcode-back" href="../../../trace/api/samplers.html#opencensus.trace.samplers.AlwaysOffSampler">[docs]</a><span class="k">class</span> <span class="nc">AlwaysOffSampler</span><span class="p">(</span><span class="n">Sampler</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Sampler that doesn&#39;t sample any request, regardless of trace options.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="AlwaysOffSampler.should_sample"><a class="viewcode-back" href="../../../trace/api/samplers.html#opencensus.trace.samplers.AlwaysOffSampler.should_sample">[docs]</a>    <span class="k">def</span> <span class="nf">should_sample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">span_context</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">False</span></div></div>
+
+
+<div class="viewcode-block" id="ProbabilitySampler"><a class="viewcode-back" href="../../../trace/api/samplers.html#opencensus.trace.samplers.ProbabilitySampler">[docs]</a><span class="k">class</span> <span class="nc">ProbabilitySampler</span><span class="p">(</span><span class="n">Sampler</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Sample a request at a fixed rate.</span>
+
+<span class="sd">    :type rate: float</span>
+<span class="sd">    :param rate: The rate of sampling.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rate</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">rate</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">rate</span> <span class="o">=</span> <span class="n">DEFAULT_SAMPLING_RATE</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">rate</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Rate must between 0 and 1.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">rate</span> <span class="o">=</span> <span class="n">rate</span>
+
+<div class="viewcode-block" id="ProbabilitySampler.should_sample"><a class="viewcode-back" href="../../../trace/api/samplers.html#opencensus.trace.samplers.ProbabilitySampler.should_sample">[docs]</a>    <span class="k">def</span> <span class="nf">should_sample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">span_context</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Make the sampling decision based on the lower 8 bytes of the trace</span>
+<span class="sd">        ID. If the value is less than the bound, return True, else False.</span>
+
+<span class="sd">        :type span_context: :class:`opencensus.trace.span_context.SpanContext`</span>
+<span class="sd">        :param span_context: The span context.</span>
+
+<span class="sd">        :rtype: bool</span>
+<span class="sd">        :returns: Whether to sample the request according to the context.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">span_context</span><span class="o">.</span><span class="n">trace_options</span><span class="o">.</span><span class="n">get_enabled</span><span class="p">():</span>
+            <span class="k">return</span> <span class="kc">True</span>
+
+        <span class="n">lower_long</span> <span class="o">=</span> <span class="n">get_lower_long_from_trace_id</span><span class="p">(</span><span class="n">span_context</span><span class="o">.</span><span class="n">trace_id</span><span class="p">)</span>
+        <span class="n">bound</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rate</span> <span class="o">*</span> <span class="mh">0xffffffffffffffff</span>
+        <span class="k">return</span> <span class="n">lower_long</span> <span class="o">&lt;=</span> <span class="n">bound</span></div></div>
+
+
+<div class="viewcode-block" id="get_lower_long_from_trace_id"><a class="viewcode-back" href="../../../trace/api/samplers.html#opencensus.trace.samplers.get_lower_long_from_trace_id">[docs]</a><span class="k">def</span> <span class="nf">get_lower_long_from_trace_id</span><span class="p">(</span><span class="n">trace_id</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Returns the lower 8 bytes of the trace ID as a long value, assuming</span>
+<span class="sd">    little endian order.</span>
+
+<span class="sd">    :rtype: long</span>
+<span class="sd">    :returns: Lower 8 bytes of trace ID</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">lower_bytes</span> <span class="o">=</span> <span class="n">trace_id</span><span class="p">[</span><span class="mi">16</span><span class="p">:]</span>
+    <span class="n">lower_long</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">lower_bytes</span><span class="p">,</span> <span class="mi">16</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">lower_long</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">OPENCENSUS</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../trace/usage.html">OpenCensus Trace for Python</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../trace/api/index.html">API Documentation</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, OpenCensus Authors.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.0.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

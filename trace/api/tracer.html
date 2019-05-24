@@ -1,0 +1,228 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="Python">
+  <head>
+    <meta charset="utf-8" />
+    <title>Request Tracer &#8212; OPENCENSUS 0.0.1 documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Execution Context" href="execution_context.html" />
+    <link rel="prev" title="Span Context" href="span_context.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="module-opencensus.trace.tracer">
+<span id="request-tracer"></span><h1>Request Tracer<a class="headerlink" href="#module-opencensus.trace.tracer" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="opencensus.trace.tracer.Tracer">
+<em class="property">class </em><code class="descclassname">opencensus.trace.tracer.</code><code class="descname">Tracer</code><span class="sig-paren">(</span><em>span_context=None</em>, <em>sampler=None</em>, <em>exporter=None</em>, <em>propagator=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/opencensus/trace/tracer.html#Tracer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#opencensus.trace.tracer.Tracer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>The Tracer is for tracing a request for web applications.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>span_context</strong> (<a class="reference internal" href="span_context.html#opencensus.trace.span_context.SpanContext" title="opencensus.trace.span_context.SpanContext"><code class="xref py py-class docutils literal notranslate"><span class="pre">SpanContext</span></code></a>) -- SpanContext encapsulates the current context within
+the request's trace.</p></li>
+<li><p><strong>sampler</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Sampler</span></code>) -- Instances of Sampler objects. Defaults to
+<a class="reference internal" href="samplers.html#opencensus.trace.samplers.ProbabilitySampler" title="opencensus.trace.samplers.ProbabilitySampler"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProbabilitySampler</span></code></a>. Other options include
+<a class="reference internal" href="samplers.html#opencensus.trace.samplers.AlwaysOnSampler" title="opencensus.trace.samplers.AlwaysOnSampler"><code class="xref py py-class docutils literal notranslate"><span class="pre">AlwaysOnSampler</span></code></a> and <a class="reference internal" href="samplers.html#opencensus.trace.samplers.AlwaysOffSampler" title="opencensus.trace.samplers.AlwaysOffSampler"><code class="xref py py-class docutils literal notranslate"><span class="pre">AlwaysOffSampler</span></code></a>.</p></li>
+<li><p><strong>exporter</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">exporter</span></code>) -- Instances of exporter objects. Default to
+<code class="xref py py-class docutils literal notranslate"><span class="pre">Printexporter</span></code>. The rest options are
+<code class="xref py py-class docutils literal notranslate"><span class="pre">Fileexporter</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Printexporter</span></code>,
+<code class="xref py py-class docutils literal notranslate"><span class="pre">Loggingexporter</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Zipkinexporter</span></code>,
+<code class="xref py py-class docutils literal notranslate"><span class="pre">GoogleCloudexporter</span></code></p></li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="opencensus.trace.tracer.Tracer.add_attribute_to_current_span">
+<code class="descname">add_attribute_to_current_span</code><span class="sig-paren">(</span><em>attribute_key</em>, <em>attribute_value</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/opencensus/trace/tracer.html#Tracer.add_attribute_to_current_span"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#opencensus.trace.tracer.Tracer.add_attribute_to_current_span" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add attribute to current span.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>attribute_key</strong> (<em>str</em>) -- Attribute key.</p>
+</dd>
+</dl>
+<p>:type attribute_value:str
+:param attribute_value: Attribute value.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="opencensus.trace.tracer.Tracer.current_span">
+<code class="descname">current_span</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/opencensus/trace/tracer.html#Tracer.current_span"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#opencensus.trace.tracer.Tracer.current_span" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the current span.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="opencensus.trace.tracer.Tracer.end_span">
+<code class="descname">end_span</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/opencensus/trace/tracer.html#Tracer.end_span"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#opencensus.trace.tracer.Tracer.end_span" title="Permalink to this definition">¶</a></dt>
+<dd><p>End a span. Update the span_id in SpanContext to the current span's
+parent span id; Update the current span; Send the span to exporter.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="opencensus.trace.tracer.Tracer.finish">
+<code class="descname">finish</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/opencensus/trace/tracer.html#Tracer.finish"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#opencensus.trace.tracer.Tracer.finish" title="Permalink to this definition">¶</a></dt>
+<dd><p>End all spans.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="opencensus.trace.tracer.Tracer.get_tracer">
+<code class="descname">get_tracer</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/opencensus/trace/tracer.html#Tracer.get_tracer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#opencensus.trace.tracer.Tracer.get_tracer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a tracer according to the sampling decision.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="opencensus.trace.tracer.Tracer.should_sample">
+<code class="descname">should_sample</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/opencensus/trace/tracer.html#Tracer.should_sample"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#opencensus.trace.tracer.Tracer.should_sample" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine whether to sample this request or not.
+If the context enables tracing, return True.
+Else follow the decision of the sampler.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Whether to trace the request or not.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="opencensus.trace.tracer.Tracer.span">
+<code class="descname">span</code><span class="sig-paren">(</span><em>name='span'</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/opencensus/trace/tracer.html#Tracer.span"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#opencensus.trace.tracer.Tracer.span" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a new span with the trace using the context information.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>name</strong> (<em>str</em>) -- The name of the span.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="span.html#opencensus.trace.span.Span" title="opencensus.trace.span.Span"><code class="xref py py-class docutils literal notranslate"><span class="pre">Span</span></code></a></p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The Span object.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="opencensus.trace.tracer.Tracer.store_tracer">
+<code class="descname">store_tracer</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/opencensus/trace/tracer.html#Tracer.store_tracer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#opencensus.trace.tracer.Tracer.store_tracer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add the current tracer to thread_local</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="opencensus.trace.tracer.Tracer.trace_decorator">
+<code class="descname">trace_decorator</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/opencensus/trace/tracer.html#Tracer.trace_decorator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#opencensus.trace.tracer.Tracer.trace_decorator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decorator to trace a function.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">OPENCENSUS</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../usage.html">OpenCensus Trace for Python</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">API Documentation</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="span.html">Span</a></li>
+<li class="toctree-l2"><a class="reference internal" href="span_context.html">Span Context</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Request Tracer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="execution_context.html">Execution Context</a></li>
+<li class="toctree-l2"><a class="reference internal" href="trace_options.html">Trace Options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="print_exporter.html">Exporter - Print Exporter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="logging_exporter.html">Exporter - Logging Exporter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="stackdriver_exporter.html">Exporter - Stackdriver Exporter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="zipkin_exporter.html">Exporter - Zipkin Exporter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="file_exporter.html">Exporter - File Exporter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="binary_format_propagation.html">Propagator - BinaryFormatPropagator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="google_cloud_format_propagation.html">Propagator - GoogleCloudFormatPropagator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="text_format_propagation.html">Propagator - TextFormatPropagator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="trace_context_http_header_format_propagation.html">Propagator - TraceContextPropagator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="noop_tracer.html">Noop Tracer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="context_tracer.html">Context Tracer</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">&lt;no title&gt;</a><ul>
+  <li><a href="index.html">API Documentation</a><ul>
+      <li>Previous: <a href="span_context.html" title="previous chapter">Span Context</a></li>
+      <li>Next: <a href="execution_context.html" title="next chapter">Execution Context</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, OpenCensus Authors.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.0.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../../_sources/trace/api/tracer.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

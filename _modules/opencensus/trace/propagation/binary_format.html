@@ -1,0 +1,261 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="Python">
+  <head>
+    <meta charset="utf-8" />
+    <title>opencensus.trace.propagation.binary_format &#8212; OPENCENSUS 0.0.1 documentation</title>
+    <link rel="stylesheet" href="../../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for opencensus.trace.propagation.binary_format</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2017, OpenCensus Authors</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+<span class="kn">import</span> <span class="nn">binascii</span>
+<span class="kn">import</span> <span class="nn">collections</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">struct</span>
+
+<span class="kn">from</span> <span class="nn">opencensus.trace</span> <span class="k">import</span> <span class="n">span_context</span> <span class="k">as</span> <span class="n">span_context_module</span>
+<span class="kn">from</span> <span class="nn">opencensus.trace.trace_options</span> <span class="k">import</span> <span class="n">TraceOptions</span>
+
+<span class="c1"># Used for decoding hex bytes to hex string.</span>
+<span class="n">UTF8</span> <span class="o">=</span> <span class="s1">&#39;utf-8&#39;</span>
+
+<span class="n">VERSION_ID</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">TRACE_ID_FIELD_ID</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">SPAN_ID_FIELD_ID</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">TRACE_OPTION_FIELD_ID</span> <span class="o">=</span> <span class="mi">2</span>
+
+<span class="c1"># Sizes are number of bytes.</span>
+<span class="n">ID_SIZE</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">TRACE_ID_SIZE</span> <span class="o">=</span> <span class="mi">16</span>
+<span class="n">SPAN_ID_SIZE</span> <span class="o">=</span> <span class="mi">8</span>
+<span class="n">TRACE_OPTION_SIZE</span> <span class="o">=</span> <span class="mi">1</span>
+
+<span class="n">FORMAT_LENGTH</span> <span class="o">=</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">ID_SIZE</span> <span class="o">+</span> <span class="n">TRACE_ID_SIZE</span> <span class="o">+</span> <span class="n">SPAN_ID_SIZE</span> <span class="o">+</span> <span class="n">TRACE_OPTION_SIZE</span>
+
+<span class="c1"># See: https://docs.python.org/3/library/struct.html#format-characters</span>
+<span class="n">BIG_ENDIAN</span> <span class="o">=</span> <span class="s1">&#39;&gt;&#39;</span>
+<span class="n">CHAR_ARRAY_FORMAT</span> <span class="o">=</span> <span class="s1">&#39;s&#39;</span>
+<span class="n">UNSIGNED_CHAR</span> <span class="o">=</span> <span class="s1">&#39;B&#39;</span>
+<span class="n">UNSIGNED_LONG_LONG</span> <span class="o">=</span> <span class="s1">&#39;Q&#39;</span>
+
+<span class="c1"># Adding big endian indicator at the beginning to avoid auto padding. This is</span>
+<span class="c1"># for ensuring the length of binary is not changed when propagating.</span>
+<span class="n">BINARY_FORMAT</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{big_endian}{version_id}</span><span class="s1">&#39;</span> \
+    <span class="s1">&#39;</span><span class="si">{trace_id_field_id}{trace_id}</span><span class="s1">&#39;</span> \
+    <span class="s1">&#39;</span><span class="si">{span_id_field_id}{span_id}</span><span class="s1">&#39;</span> \
+    <span class="s1">&#39;</span><span class="si">{trace_option_field_id}{trace_option}</span><span class="s1">&#39;</span>\
+    <span class="o">.</span><span class="n">format</span><span class="p">(</span>
+        <span class="n">big_endian</span><span class="o">=</span><span class="n">BIG_ENDIAN</span><span class="p">,</span>
+        <span class="n">version_id</span><span class="o">=</span><span class="n">UNSIGNED_CHAR</span><span class="p">,</span>
+        <span class="n">trace_id_field_id</span><span class="o">=</span><span class="n">UNSIGNED_CHAR</span><span class="p">,</span>
+        <span class="n">trace_id</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{}{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">TRACE_ID_SIZE</span><span class="p">,</span> <span class="n">CHAR_ARRAY_FORMAT</span><span class="p">),</span>
+        <span class="n">span_id_field_id</span><span class="o">=</span><span class="n">UNSIGNED_CHAR</span><span class="p">,</span>
+        <span class="n">span_id</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{}{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">SPAN_ID_SIZE</span><span class="p">,</span> <span class="n">CHAR_ARRAY_FORMAT</span><span class="p">),</span>
+        <span class="n">trace_option_field_id</span><span class="o">=</span><span class="n">UNSIGNED_CHAR</span><span class="p">,</span>
+        <span class="n">trace_option</span><span class="o">=</span><span class="n">UNSIGNED_CHAR</span><span class="p">)</span>
+
+<span class="n">Header</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">namedtuple</span><span class="p">(</span>
+    <span class="s1">&#39;Header&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;version_id &#39;</span>
+    <span class="s1">&#39;trace_id_field_id &#39;</span>
+    <span class="s1">&#39;trace_id &#39;</span>
+    <span class="s1">&#39;span_id_field_id &#39;</span>
+    <span class="s1">&#39;span_id &#39;</span>
+    <span class="s1">&#39;trace_option_field_id &#39;</span>
+    <span class="s1">&#39;trace_option&#39;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="BinaryFormatPropagator"><a class="viewcode-back" href="../../../../trace/api/binary_format_propagation.html#opencensus.trace.propagation.binary_format.BinaryFormatPropagator">[docs]</a><span class="k">class</span> <span class="nc">BinaryFormatPropagator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;This propagator contains the method for serializing and deserializing</span>
+<span class="sd">    SpanContext using a binary format.</span>
+
+<span class="sd">    See: https://github.com/census-instrumentation/opencensus-specs/blob/</span>
+<span class="sd">         master/encodings/BinaryEncoding.md</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        [SpanContext]</span>
+<span class="sd">            trace_id: hex string with length 32.</span>
+<span class="sd">                e.g. &#39;a0b72ca15c1a4bd18962d0ac59dc90b9&#39;</span>
+<span class="sd">            span_id: hex string with length 16.</span>
+<span class="sd">                e.g. &#39;a0b72ca15c1a4bd1&#39;</span>
+<span class="sd">            enabled (trace option): bool.</span>
+<span class="sd">                e.g. True</span>
+<span class="sd">        [Binary Format]</span>
+<span class="sd">            trace_id: Bytes with length 16.</span>
+<span class="sd">                e.g. b&#39;\xa0\xb7,\xa1\\\x1aK\xd1\x89b\xd0\xacY\xdc\x90\xb9&#39;</span>
+<span class="sd">            span_id: Bytes with length 8.</span>
+<span class="sd">                e.g. b&#39;\x00\xf0g\xaa\x0b\xa9\x02\xb7&#39;</span>
+<span class="sd">            trace_option: Byte with length 1.</span>
+<span class="sd">                e.g. b&#39;\x01&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="BinaryFormatPropagator.from_header"><a class="viewcode-back" href="../../../../trace/api/binary_format_propagation.html#opencensus.trace.propagation.binary_format.BinaryFormatPropagator.from_header">[docs]</a>    <span class="k">def</span> <span class="nf">from_header</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">binary</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Generate a SpanContext object using the trace context header.</span>
+<span class="sd">        The value of enabled parsed from header is int. Need to convert to</span>
+<span class="sd">        bool.</span>
+
+<span class="sd">        :type binary: bytes</span>
+<span class="sd">        :param binary: Trace context header which was extracted from the</span>
+<span class="sd">                       request headers.</span>
+
+<span class="sd">        :rtype: :class:`~opencensus.trace.span_context.SpanContext`</span>
+<span class="sd">        :returns: SpanContext generated from the trace context header.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># If no binary provided, generate a new SpanContext</span>
+        <span class="k">if</span> <span class="n">binary</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">span_context_module</span><span class="o">.</span><span class="n">SpanContext</span><span class="p">(</span><span class="n">from_header</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="c1"># If cannot parse, return a new SpanContext and ignore the context</span>
+        <span class="c1"># from binary.</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">Header</span><span class="o">.</span><span class="n">_make</span><span class="p">(</span><span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="n">BINARY_FORMAT</span><span class="p">,</span> <span class="n">binary</span><span class="p">))</span>
+        <span class="k">except</span> <span class="n">struct</span><span class="o">.</span><span class="n">error</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="s1">&#39;Cannot parse the incoming binary data </span><span class="si">{}</span><span class="s1">, &#39;</span>
+                <span class="s1">&#39;wrong format. Total bytes length should be </span><span class="si">{}</span><span class="s1">.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">binary</span><span class="p">,</span> <span class="n">FORMAT_LENGTH</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="n">span_context_module</span><span class="o">.</span><span class="n">SpanContext</span><span class="p">(</span><span class="n">from_header</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="c1"># data.trace_id is in bytes with length 16, hexlify it to hex bytes</span>
+        <span class="c1"># with length 32, then decode it to hex string using utf-8.</span>
+        <span class="n">trace_id</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">binascii</span><span class="o">.</span><span class="n">hexlify</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">trace_id</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">UTF8</span><span class="p">))</span>
+        <span class="n">span_id</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">binascii</span><span class="o">.</span><span class="n">hexlify</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">span_id</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">UTF8</span><span class="p">))</span>
+        <span class="n">trace_options</span> <span class="o">=</span> <span class="n">TraceOptions</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">trace_option</span><span class="p">)</span>
+
+        <span class="n">span_context</span> <span class="o">=</span> <span class="n">span_context_module</span><span class="o">.</span><span class="n">SpanContext</span><span class="p">(</span>
+                <span class="n">trace_id</span><span class="o">=</span><span class="n">trace_id</span><span class="p">,</span>
+                <span class="n">span_id</span><span class="o">=</span><span class="n">span_id</span><span class="p">,</span>
+                <span class="n">trace_options</span><span class="o">=</span><span class="n">trace_options</span><span class="p">,</span>
+                <span class="n">from_header</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">span_context</span></div>
+
+<div class="viewcode-block" id="BinaryFormatPropagator.to_header"><a class="viewcode-back" href="../../../../trace/api/binary_format_propagation.html#opencensus.trace.propagation.binary_format.BinaryFormatPropagator.to_header">[docs]</a>    <span class="k">def</span> <span class="nf">to_header</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">span_context</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Convert a SpanContext object to header in binary format.</span>
+
+<span class="sd">        :type span_context:</span>
+<span class="sd">            :class:`~opencensus.trace.span_context.SpanContext`</span>
+<span class="sd">        :param span_context: SpanContext object.</span>
+
+<span class="sd">        :rtype: bytes</span>
+<span class="sd">        :returns: A trace context header in binary format.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">trace_id</span> <span class="o">=</span> <span class="n">span_context</span><span class="o">.</span><span class="n">trace_id</span>
+        <span class="n">span_id</span> <span class="o">=</span> <span class="n">span_context</span><span class="o">.</span><span class="n">span_id</span>
+        <span class="n">trace_options</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">span_context</span><span class="o">.</span><span class="n">trace_options</span><span class="o">.</span><span class="n">trace_options_byte</span><span class="p">)</span>
+
+        <span class="c1"># If there is no span_id in this context, set it to 0, which is</span>
+        <span class="c1"># considered invalid and won&#39;t be set as the downstream parent span_id.</span>
+        <span class="k">if</span> <span class="n">span_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">span_id</span> <span class="o">=</span> <span class="n">span_context_module</span><span class="o">.</span><span class="n">INVALID_SPAN_ID</span>
+
+        <span class="c1"># Convert trace_id to bytes with length 16, treat span_id as 64 bit</span>
+        <span class="c1"># integer which is unsigned long long type and convert it to bytes with</span>
+        <span class="c1"># length 8, trace_option is integer with length 1.</span>
+        <span class="k">return</span> <span class="n">struct</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span>
+            <span class="n">BINARY_FORMAT</span><span class="p">,</span>
+            <span class="n">VERSION_ID</span><span class="p">,</span>
+            <span class="n">TRACE_ID_FIELD_ID</span><span class="p">,</span>
+            <span class="n">binascii</span><span class="o">.</span><span class="n">unhexlify</span><span class="p">(</span><span class="n">trace_id</span><span class="p">),</span>
+            <span class="n">SPAN_ID_FIELD_ID</span><span class="p">,</span>
+            <span class="n">binascii</span><span class="o">.</span><span class="n">unhexlify</span><span class="p">(</span><span class="n">span_id</span><span class="p">),</span>
+            <span class="n">TRACE_OPTION_FIELD_ID</span><span class="p">,</span>
+            <span class="n">trace_options</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../index.html">OPENCENSUS</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../trace/usage.html">OpenCensus Trace for Python</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../trace/api/index.html">API Documentation</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, OpenCensus Authors.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.0.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

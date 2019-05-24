@@ -1,0 +1,140 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="Python">
+  <head>
+    <meta charset="utf-8" />
+    <title>Execution Context &#8212; OPENCENSUS 0.0.1 documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Trace Options" href="trace_options.html" />
+    <link rel="prev" title="Request Tracer" href="tracer.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="module-opencensus.trace.execution_context">
+<span id="execution-context"></span><h1>Execution Context<a class="headerlink" href="#module-opencensus.trace.execution_context" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="opencensus.trace.execution_context.clear">
+<code class="descclassname">opencensus.trace.execution_context.</code><code class="descname">clear</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/opencensus/trace/execution_context.html#clear"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#opencensus.trace.execution_context.clear" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clear the context, used in test.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="opencensus.trace.execution_context.get_opencensus_tracer">
+<code class="descclassname">opencensus.trace.execution_context.</code><code class="descname">get_opencensus_tracer</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/opencensus/trace/execution_context.html#get_opencensus_tracer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#opencensus.trace.execution_context.get_opencensus_tracer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the opencensus tracer from runtime context.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="opencensus.trace.execution_context.set_opencensus_tracer">
+<code class="descclassname">opencensus.trace.execution_context.</code><code class="descname">set_opencensus_tracer</code><span class="sig-paren">(</span><em>tracer</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/opencensus/trace/execution_context.html#set_opencensus_tracer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#opencensus.trace.execution_context.set_opencensus_tracer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add the tracer to runtime context.</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">OPENCENSUS</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../usage.html">OpenCensus Trace for Python</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">API Documentation</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="span.html">Span</a></li>
+<li class="toctree-l2"><a class="reference internal" href="span_context.html">Span Context</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tracer.html">Request Tracer</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Execution Context</a></li>
+<li class="toctree-l2"><a class="reference internal" href="trace_options.html">Trace Options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="print_exporter.html">Exporter - Print Exporter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="logging_exporter.html">Exporter - Logging Exporter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="stackdriver_exporter.html">Exporter - Stackdriver Exporter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="zipkin_exporter.html">Exporter - Zipkin Exporter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="file_exporter.html">Exporter - File Exporter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="binary_format_propagation.html">Propagator - BinaryFormatPropagator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="google_cloud_format_propagation.html">Propagator - GoogleCloudFormatPropagator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="text_format_propagation.html">Propagator - TextFormatPropagator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="trace_context_http_header_format_propagation.html">Propagator - TraceContextPropagator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="noop_tracer.html">Noop Tracer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="context_tracer.html">Context Tracer</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">&lt;no title&gt;</a><ul>
+  <li><a href="index.html">API Documentation</a><ul>
+      <li>Previous: <a href="tracer.html" title="previous chapter">Request Tracer</a></li>
+      <li>Next: <a href="trace_options.html" title="next chapter">Trace Options</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, OpenCensus Authors.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.0.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../../_sources/trace/api/execution_context.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

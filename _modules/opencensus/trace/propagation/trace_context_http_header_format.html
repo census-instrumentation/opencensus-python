@@ -1,0 +1,207 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="Python">
+  <head>
+    <meta charset="utf-8" />
+    <title>opencensus.trace.propagation.trace_context_http_header_format &#8212; OPENCENSUS 0.0.1 documentation</title>
+    <link rel="stylesheet" href="../../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for opencensus.trace.propagation.trace_context_http_header_format</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2017, OpenCensus Authors</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+<span class="kn">import</span> <span class="nn">re</span>
+
+<span class="kn">from</span> <span class="nn">opencensus.trace.span_context</span> <span class="k">import</span> <span class="n">SpanContext</span>
+<span class="kn">from</span> <span class="nn">opencensus.trace.trace_options</span> <span class="k">import</span> <span class="n">TraceOptions</span>
+<span class="kn">from</span> <span class="nn">opencensus.trace.propagation.tracestate_string_format</span> \
+    <span class="kn">import</span> <span class="nn">TracestateStringFormatter</span>
+
+<span class="n">_TRACEPARENT_HEADER_NAME</span> <span class="o">=</span> <span class="s1">&#39;traceparent&#39;</span>
+<span class="n">_TRACESTATE_HEADER_NAME</span> <span class="o">=</span> <span class="s1">&#39;tracestate&#39;</span>
+<span class="n">_TRACEPARENT_HEADER_FORMAT</span> <span class="o">=</span> \
+    <span class="s1">&#39;^[ </span><span class="se">\t</span><span class="s1">]*([0-9a-f]</span><span class="si">{2}</span><span class="s1">)-([0-9a-f]</span><span class="si">{32}</span><span class="s1">)-([0-9a-f]</span><span class="si">{16}</span><span class="s1">)-([0-9a-f]</span><span class="si">{2}</span><span class="s1">)&#39;</span> <span class="o">+</span> \
+    <span class="s1">&#39;(-.*)?[ </span><span class="se">\t</span><span class="s1">]*$&#39;</span>
+<span class="n">_TRACEPARENT_HEADER_FORMAT_RE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">_TRACEPARENT_HEADER_FORMAT</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="TraceContextPropagator"><a class="viewcode-back" href="../../../../trace/api/trace_context_http_header_format_propagation.html#opencensus.trace.propagation.trace_context_http_header_format.TraceContextPropagator">[docs]</a><span class="k">class</span> <span class="nc">TraceContextPropagator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Propagator for processing the trace context HTTP header format.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="TraceContextPropagator.from_headers"><a class="viewcode-back" href="../../../../trace/api/trace_context_http_header_format_propagation.html#opencensus.trace.propagation.trace_context_http_header_format.TraceContextPropagator.from_headers">[docs]</a>    <span class="k">def</span> <span class="nf">from_headers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">headers</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Generate a SpanContext object using the W3C Distributed Tracing headers.</span>
+
+<span class="sd">        :type headers: dict</span>
+<span class="sd">        :param headers: HTTP request headers.</span>
+
+<span class="sd">        :rtype: :class:`~opencensus.trace.span_context.SpanContext`</span>
+<span class="sd">        :returns: SpanContext generated from the trace context header.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">headers</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">SpanContext</span><span class="p">()</span>
+
+        <span class="n">header</span> <span class="o">=</span> <span class="n">headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">_TRACEPARENT_HEADER_NAME</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">header</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">SpanContext</span><span class="p">()</span>
+
+        <span class="n">match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">_TRACEPARENT_HEADER_FORMAT_RE</span><span class="p">,</span> <span class="n">header</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">match</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">SpanContext</span><span class="p">()</span>
+
+        <span class="n">version</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">trace_id</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">span_id</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+        <span class="n">trace_options</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">trace_id</span> <span class="o">==</span> <span class="s1">&#39;0&#39;</span> <span class="o">*</span> <span class="mi">32</span> <span class="ow">or</span> <span class="n">span_id</span> <span class="o">==</span> <span class="s1">&#39;0&#39;</span> <span class="o">*</span> <span class="mi">16</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">SpanContext</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">version</span> <span class="o">==</span> <span class="s1">&#39;00&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">SpanContext</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">version</span> <span class="o">==</span> <span class="s1">&#39;ff&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">SpanContext</span><span class="p">()</span>
+
+        <span class="n">span_context</span> <span class="o">=</span> <span class="n">SpanContext</span><span class="p">(</span>
+            <span class="n">trace_id</span><span class="o">=</span><span class="n">trace_id</span><span class="p">,</span>
+            <span class="n">span_id</span><span class="o">=</span><span class="n">span_id</span><span class="p">,</span>
+            <span class="n">trace_options</span><span class="o">=</span><span class="n">TraceOptions</span><span class="p">(</span><span class="n">trace_options</span><span class="p">),</span>
+            <span class="n">from_header</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="n">header</span> <span class="o">=</span> <span class="n">headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">_TRACESTATE_HEADER_NAME</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">header</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">span_context</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">tracestate</span> <span class="o">=</span> <span class="n">TracestateStringFormatter</span><span class="p">()</span><span class="o">.</span><span class="n">from_string</span><span class="p">(</span><span class="n">header</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">tracestate</span><span class="o">.</span><span class="n">is_valid</span><span class="p">():</span>
+                <span class="n">span_context</span><span class="o">.</span><span class="n">tracestate</span> <span class="o">=</span> \
+                    <span class="n">TracestateStringFormatter</span><span class="p">()</span><span class="o">.</span><span class="n">from_string</span><span class="p">(</span><span class="n">header</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">return</span> <span class="n">span_context</span></div>
+
+<div class="viewcode-block" id="TraceContextPropagator.to_headers"><a class="viewcode-back" href="../../../../trace/api/trace_context_http_header_format_propagation.html#opencensus.trace.propagation.trace_context_http_header_format.TraceContextPropagator.to_headers">[docs]</a>    <span class="k">def</span> <span class="nf">to_headers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">span_context</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Convert a SpanContext object to W3C Distributed Tracing headers,</span>
+<span class="sd">        using version 0.</span>
+
+<span class="sd">        :type span_context:</span>
+<span class="sd">            :class:`~opencensus.trace.span_context.SpanContext`</span>
+<span class="sd">        :param span_context: SpanContext object.</span>
+
+<span class="sd">        :rtype: dict</span>
+<span class="sd">        :returns: W3C Distributed Tracing headers.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">trace_id</span> <span class="o">=</span> <span class="n">span_context</span><span class="o">.</span><span class="n">trace_id</span>
+        <span class="n">span_id</span> <span class="o">=</span> <span class="n">span_context</span><span class="o">.</span><span class="n">span_id</span>
+        <span class="n">trace_options</span> <span class="o">=</span> <span class="n">span_context</span><span class="o">.</span><span class="n">trace_options</span><span class="o">.</span><span class="n">enabled</span>
+
+        <span class="c1"># Convert the trace options</span>
+        <span class="n">trace_options</span> <span class="o">=</span> <span class="s1">&#39;01&#39;</span> <span class="k">if</span> <span class="n">trace_options</span> <span class="k">else</span> <span class="s1">&#39;00&#39;</span>
+
+        <span class="n">headers</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">_TRACEPARENT_HEADER_NAME</span><span class="p">:</span> <span class="s1">&#39;00-</span><span class="si">{}</span><span class="s1">-</span><span class="si">{}</span><span class="s1">-</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">trace_id</span><span class="p">,</span>
+                <span class="n">span_id</span><span class="p">,</span>
+                <span class="n">trace_options</span>
+            <span class="p">),</span>
+        <span class="p">}</span>
+        <span class="n">tracestate</span> <span class="o">=</span> <span class="n">span_context</span><span class="o">.</span><span class="n">tracestate</span>
+        <span class="k">if</span> <span class="n">tracestate</span><span class="p">:</span>
+            <span class="n">headers</span><span class="p">[</span><span class="n">_TRACESTATE_HEADER_NAME</span><span class="p">]</span> <span class="o">=</span> \
+                <span class="n">TracestateStringFormatter</span><span class="p">()</span><span class="o">.</span><span class="n">to_string</span><span class="p">(</span><span class="n">tracestate</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">headers</span></div></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../index.html">OPENCENSUS</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../trace/usage.html">OpenCensus Trace for Python</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../trace/api/index.html">API Documentation</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, OpenCensus Authors.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.0.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,245 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="Python">
+  <head>
+    <meta charset="utf-8" />
+    <title>Propagator - BinaryFormatPropagator &#8212; OPENCENSUS 0.0.1 documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Propagator - GoogleCloudFormatPropagator" href="google_cloud_format_propagation.html" />
+    <link rel="prev" title="Exporter - File Exporter" href="file_exporter.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="module-opencensus.trace.propagation.binary_format">
+<span id="propagator-binaryformatpropagator"></span><h1>Propagator - BinaryFormatPropagator<a class="headerlink" href="#module-opencensus.trace.propagation.binary_format" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="opencensus.trace.propagation.binary_format.BinaryFormatPropagator">
+<em class="property">class </em><code class="descclassname">opencensus.trace.propagation.binary_format.</code><code class="descname">BinaryFormatPropagator</code><a class="reference internal" href="../../_modules/opencensus/trace/propagation/binary_format.html#BinaryFormatPropagator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#opencensus.trace.propagation.binary_format.BinaryFormatPropagator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl>
+<dt>This propagator contains the method for serializing and deserializing</dt><dd><p>SpanContext using a binary format.</p>
+<dl class="simple">
+<dt>See: <a class="reference external" href="https://github.com/census-instrumentation/opencensus-specs/blob/">https://github.com/census-instrumentation/opencensus-specs/blob/</a></dt><dd><p>master/encodings/BinaryEncoding.md</p>
+</dd>
+<dt>Example:</dt><dd><dl class="simple">
+<dt>[SpanContext]</dt><dd><dl class="simple">
+<dt>trace_id: hex string with length 32.</dt><dd><p>e.g. 'a0b72ca15c1a4bd18962d0ac59dc90b9'</p>
+</dd>
+<dt>span_id: hex string with length 16.</dt><dd><p>e.g. 'a0b72ca15c1a4bd1'</p>
+</dd>
+<dt>enabled (trace option): bool.</dt><dd><p>e.g. True</p>
+</dd>
+</dl>
+</dd>
+<dt>[Binary Format]</dt><dd><dl class="simple">
+<dt>trace_id: Bytes with length 16.</dt><dd><p>e.g. b' ·,¡KÑbÐ¬YÜ¹'</p>
+</dd>
+<dt>span_id: Bytes with length 8.</dt><dd><p>e.g. b'ðgª</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+<dt>©·'</dt><dd><dl class="simple">
+<dt>trace_option: Byte with length 1.</dt><dd><p>e.g. b''</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="method">
+<dt id="opencensus.trace.propagation.binary_format.BinaryFormatPropagator.from_header">
+<code class="descname">from_header</code><span class="sig-paren">(</span><em>binary</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/opencensus/trace/propagation/binary_format.html#BinaryFormatPropagator.from_header"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#opencensus.trace.propagation.binary_format.BinaryFormatPropagator.from_header" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a SpanContext object using the trace context header.
+The value of enabled parsed from header is int. Need to convert to
+bool.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>binary</strong> (<em>bytes</em>) -- Trace context header which was extracted from the
+request headers.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="span_context.html#opencensus.trace.span_context.SpanContext" title="opencensus.trace.span_context.SpanContext"><code class="xref py py-class docutils literal notranslate"><span class="pre">SpanContext</span></code></a></p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>SpanContext generated from the trace context header.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="opencensus.trace.propagation.binary_format.BinaryFormatPropagator.to_header">
+<code class="descname">to_header</code><span class="sig-paren">(</span><em>span_context</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/opencensus/trace/propagation/binary_format.html#BinaryFormatPropagator.to_header"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#opencensus.trace.propagation.binary_format.BinaryFormatPropagator.to_header" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a SpanContext object to header in binary format.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>span_context</strong> (<a class="reference internal" href="span_context.html#opencensus.trace.span_context.SpanContext" title="opencensus.trace.span_context.SpanContext"><code class="xref py py-class docutils literal notranslate"><span class="pre">SpanContext</span></code></a>) -- SpanContext object.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>bytes</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A trace context header in binary format.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="opencensus.trace.propagation.binary_format.Header">
+<em class="property">class </em><code class="descclassname">opencensus.trace.propagation.binary_format.</code><code class="descname">Header</code><span class="sig-paren">(</span><em>version_id</em>, <em>trace_id_field_id</em>, <em>trace_id</em>, <em>span_id_field_id</em>, <em>span_id</em>, <em>trace_option_field_id</em>, <em>trace_option</em><span class="sig-paren">)</span><a class="headerlink" href="#opencensus.trace.propagation.binary_format.Header" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></p>
+<dl class="attribute">
+<dt id="opencensus.trace.propagation.binary_format.Header.span_id">
+<code class="descname">span_id</code><a class="headerlink" href="#opencensus.trace.propagation.binary_format.Header.span_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 4</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="opencensus.trace.propagation.binary_format.Header.span_id_field_id">
+<code class="descname">span_id_field_id</code><a class="headerlink" href="#opencensus.trace.propagation.binary_format.Header.span_id_field_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 3</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="opencensus.trace.propagation.binary_format.Header.trace_id">
+<code class="descname">trace_id</code><a class="headerlink" href="#opencensus.trace.propagation.binary_format.Header.trace_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 2</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="opencensus.trace.propagation.binary_format.Header.trace_id_field_id">
+<code class="descname">trace_id_field_id</code><a class="headerlink" href="#opencensus.trace.propagation.binary_format.Header.trace_id_field_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 1</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="opencensus.trace.propagation.binary_format.Header.trace_option">
+<code class="descname">trace_option</code><a class="headerlink" href="#opencensus.trace.propagation.binary_format.Header.trace_option" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 6</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="opencensus.trace.propagation.binary_format.Header.trace_option_field_id">
+<code class="descname">trace_option_field_id</code><a class="headerlink" href="#opencensus.trace.propagation.binary_format.Header.trace_option_field_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 5</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="opencensus.trace.propagation.binary_format.Header.version_id">
+<code class="descname">version_id</code><a class="headerlink" href="#opencensus.trace.propagation.binary_format.Header.version_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 0</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">OPENCENSUS</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../usage.html">OpenCensus Trace for Python</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">API Documentation</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="span.html">Span</a></li>
+<li class="toctree-l2"><a class="reference internal" href="span_context.html">Span Context</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tracer.html">Request Tracer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="execution_context.html">Execution Context</a></li>
+<li class="toctree-l2"><a class="reference internal" href="trace_options.html">Trace Options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="print_exporter.html">Exporter - Print Exporter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="logging_exporter.html">Exporter - Logging Exporter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="stackdriver_exporter.html">Exporter - Stackdriver Exporter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="zipkin_exporter.html">Exporter - Zipkin Exporter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="file_exporter.html">Exporter - File Exporter</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Propagator - BinaryFormatPropagator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="google_cloud_format_propagation.html">Propagator - GoogleCloudFormatPropagator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="text_format_propagation.html">Propagator - TextFormatPropagator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="trace_context_http_header_format_propagation.html">Propagator - TraceContextPropagator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="noop_tracer.html">Noop Tracer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="context_tracer.html">Context Tracer</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">&lt;no title&gt;</a><ul>
+  <li><a href="index.html">API Documentation</a><ul>
+      <li>Previous: <a href="file_exporter.html" title="previous chapter">Exporter - File Exporter</a></li>
+      <li>Next: <a href="google_cloud_format_propagation.html" title="next chapter">Propagator - GoogleCloudFormatPropagator</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, OpenCensus Authors.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.0.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../../_sources/trace/api/binary_format_propagation.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

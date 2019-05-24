@@ -1,0 +1,177 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="Python">
+  <head>
+    <meta charset="utf-8" />
+    <title>Exporter - Logging Exporter &#8212; OPENCENSUS 0.0.1 documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Exporter - Stackdriver Exporter" href="stackdriver_exporter.html" />
+    <link rel="prev" title="Exporter - Print Exporter" href="print_exporter.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="module-opencensus.trace.logging_exporter">
+<span id="exporter-logging-exporter"></span><h1>Exporter - Logging Exporter<a class="headerlink" href="#module-opencensus.trace.logging_exporter" title="Permalink to this headline">¶</a></h1>
+<p>Export the spans data to python logging.</p>
+<dl class="class">
+<dt id="opencensus.trace.logging_exporter.LoggingExporter">
+<em class="property">class </em><code class="descclassname">opencensus.trace.logging_exporter.</code><code class="descname">LoggingExporter</code><span class="sig-paren">(</span><em>handler=None</em>, <em>transport=&lt;class 'opencensus.common.transports.sync.SyncTransport'&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/opencensus/trace/logging_exporter.html#LoggingExporter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#opencensus.trace.logging_exporter.LoggingExporter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">opencensus.trace.base_exporter.Exporter</span></code></p>
+<p>A exporter to export the spans data to python logging. Also can use
+handlers like CloudLoggingHandler to log to Stackdriver Logging API.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>handler</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">logging.handler</span></code>) -- the handler to attach to the global handler</p></li>
+<li><p><strong>transport</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">type</span></code>) -- Class for creating new transport objects. It should
+extend from the base_exporter <code class="xref py py-class docutils literal notranslate"><span class="pre">Transport</span></code> type
+and implement <code class="xref py py-meth docutils literal notranslate"><span class="pre">Transport.export()</span></code>. Defaults to
+<code class="xref py py-class docutils literal notranslate"><span class="pre">SyncTransport</span></code>. The other option is
+<code class="xref py py-class docutils literal notranslate"><span class="pre">AsyncTransport</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">google.cloud.logging</span>
+<span class="kn">from</span> <span class="nn">google.cloud.logging.handlers</span> <span class="kn">import</span> <span class="n">CloudLoggingHandler</span>
+<span class="kn">from</span> <span class="nn">opencensus.trace</span> <span class="kn">import</span> <span class="n">logging_exporter</span>
+
+<span class="n">client</span> <span class="o">=</span> <span class="n">google</span><span class="o">.</span><span class="n">cloud</span><span class="o">.</span><span class="n">logging</span><span class="o">.</span><span class="n">Client</span><span class="p">()</span>
+<span class="n">cloud_handler</span> <span class="o">=</span> <span class="n">CloudLoggingHandler</span><span class="p">(</span><span class="n">client</span><span class="p">)</span>
+<span class="n">exporter</span> <span class="o">=</span> <span class="n">logging_exporter</span><span class="o">.</span><span class="n">LoggingExporter</span><span class="p">(</span><span class="n">handler</span><span class="o">=</span><span class="n">cloud_handler</span><span class="p">)</span>
+
+<span class="n">exporter</span><span class="o">.</span><span class="n">export</span><span class="p">(</span><span class="n">your_spans_list</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Or initialize a context tracer with the logging exporter, then the traces
+will be exported to logging when finished.</p>
+<dl class="method">
+<dt id="opencensus.trace.logging_exporter.LoggingExporter.emit">
+<code class="descname">emit</code><span class="sig-paren">(</span><em>span_datas</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/opencensus/trace/logging_exporter.html#LoggingExporter.emit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#opencensus.trace.logging_exporter.LoggingExporter.emit" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>of opencensus.trace.span_data.SpanData span_datas</strong> (<em>list</em>) -- SpanData tuples to emit</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="opencensus.trace.logging_exporter.LoggingExporter.export">
+<code class="descname">export</code><span class="sig-paren">(</span><em>span_datas</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/opencensus/trace/logging_exporter.html#LoggingExporter.export"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#opencensus.trace.logging_exporter.LoggingExporter.export" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>of opencensus.trace.span_data.SpanData span_datas</strong> (<em>list</em>) -- SpanData tuples to export</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">OPENCENSUS</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../usage.html">OpenCensus Trace for Python</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">API Documentation</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="span.html">Span</a></li>
+<li class="toctree-l2"><a class="reference internal" href="span_context.html">Span Context</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tracer.html">Request Tracer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="execution_context.html">Execution Context</a></li>
+<li class="toctree-l2"><a class="reference internal" href="trace_options.html">Trace Options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="print_exporter.html">Exporter - Print Exporter</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Exporter - Logging Exporter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="stackdriver_exporter.html">Exporter - Stackdriver Exporter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="zipkin_exporter.html">Exporter - Zipkin Exporter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="file_exporter.html">Exporter - File Exporter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="binary_format_propagation.html">Propagator - BinaryFormatPropagator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="google_cloud_format_propagation.html">Propagator - GoogleCloudFormatPropagator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="text_format_propagation.html">Propagator - TextFormatPropagator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="trace_context_http_header_format_propagation.html">Propagator - TraceContextPropagator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="noop_tracer.html">Noop Tracer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="context_tracer.html">Context Tracer</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">&lt;no title&gt;</a><ul>
+  <li><a href="index.html">API Documentation</a><ul>
+      <li>Previous: <a href="print_exporter.html" title="previous chapter">Exporter - Print Exporter</a></li>
+      <li>Next: <a href="stackdriver_exporter.html" title="next chapter">Exporter - Stackdriver Exporter</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, OpenCensus Authors.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.0.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../../_sources/trace/api/logging_exporter.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

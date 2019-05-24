@@ -1,0 +1,240 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="Python">
+  <head>
+    <meta charset="utf-8" />
+    <title>opencensus.trace.tracer &#8212; OPENCENSUS 0.0.1 documentation</title>
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for opencensus.trace.tracer</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2017, OpenCensus Authors</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+<span class="kn">from</span> <span class="nn">opencensus.trace</span> <span class="k">import</span> <span class="n">execution_context</span>
+<span class="kn">from</span> <span class="nn">opencensus.trace</span> <span class="k">import</span> <span class="n">print_exporter</span>
+<span class="kn">from</span> <span class="nn">opencensus.trace</span> <span class="k">import</span> <span class="n">samplers</span>
+<span class="kn">from</span> <span class="nn">opencensus.trace.propagation</span> <span class="k">import</span> <span class="n">trace_context_http_header_format</span>
+<span class="kn">from</span> <span class="nn">opencensus.trace.span_context</span> <span class="k">import</span> <span class="n">SpanContext</span>
+<span class="kn">from</span> <span class="nn">opencensus.trace.tracers</span> <span class="k">import</span> <span class="n">context_tracer</span>
+<span class="kn">from</span> <span class="nn">opencensus.trace.tracers</span> <span class="k">import</span> <span class="n">noop_tracer</span>
+
+
+<div class="viewcode-block" id="Tracer"><a class="viewcode-back" href="../../../trace/api/tracer.html#opencensus.trace.tracer.Tracer">[docs]</a><span class="k">class</span> <span class="nc">Tracer</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;The Tracer is for tracing a request for web applications.</span>
+
+<span class="sd">    :type span_context: :class:`~opencensus.trace.span_context.SpanContext`</span>
+<span class="sd">    :param span_context: SpanContext encapsulates the current context within</span>
+<span class="sd">                         the request&#39;s trace.</span>
+
+<span class="sd">    :type sampler: :class:`~opencensus.trace.samplers.base.Sampler`</span>
+<span class="sd">    :param sampler: Instances of Sampler objects. Defaults to</span>
+<span class="sd">                    :class:`.ProbabilitySampler`. Other options include</span>
+<span class="sd">                    :class:`.AlwaysOnSampler` and :class:`.AlwaysOffSampler`.</span>
+
+<span class="sd">    :type exporter: :class:`~opencensus.trace.base_exporter.exporter`</span>
+<span class="sd">    :param exporter: Instances of exporter objects. Default to</span>
+<span class="sd">                     :class:`.Printexporter`. The rest options are</span>
+<span class="sd">                     :class:`.Fileexporter`, :class:`.Printexporter`,</span>
+<span class="sd">                     :class:`.Loggingexporter`, :class:`.Zipkinexporter`,</span>
+<span class="sd">                     :class:`.GoogleCloudexporter`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">span_context</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">sampler</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">exporter</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">propagator</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">span_context</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">span_context</span> <span class="o">=</span> <span class="n">SpanContext</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">sampler</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">sampler</span> <span class="o">=</span> <span class="n">samplers</span><span class="o">.</span><span class="n">ProbabilitySampler</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">exporter</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">exporter</span> <span class="o">=</span> <span class="n">print_exporter</span><span class="o">.</span><span class="n">PrintExporter</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">propagator</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">propagator</span> <span class="o">=</span> \
+                <span class="n">trace_context_http_header_format</span><span class="o">.</span><span class="n">TraceContextPropagator</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">span_context</span> <span class="o">=</span> <span class="n">span_context</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sampler</span> <span class="o">=</span> <span class="n">sampler</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exporter</span> <span class="o">=</span> <span class="n">exporter</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">propagator</span> <span class="o">=</span> <span class="n">propagator</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tracer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_tracer</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">store_tracer</span><span class="p">()</span>
+
+<div class="viewcode-block" id="Tracer.should_sample"><a class="viewcode-back" href="../../../trace/api/tracer.html#opencensus.trace.tracer.Tracer.should_sample">[docs]</a>    <span class="k">def</span> <span class="nf">should_sample</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Determine whether to sample this request or not.</span>
+<span class="sd">        If the context enables tracing, return True.</span>
+<span class="sd">        Else follow the decision of the sampler.</span>
+
+<span class="sd">        :rtype: bool</span>
+<span class="sd">        :returns: Whether to trace the request or not.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampler</span><span class="o">.</span><span class="n">should_sample</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">span_context</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Tracer.get_tracer"><a class="viewcode-back" href="../../../trace/api/tracer.html#opencensus.trace.tracer.Tracer.get_tracer">[docs]</a>    <span class="k">def</span> <span class="nf">get_tracer</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a tracer according to the sampling decision.&quot;&quot;&quot;</span>
+        <span class="n">sampled</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">should_sample</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">sampled</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">span_context</span><span class="o">.</span><span class="n">trace_options</span><span class="o">.</span><span class="n">set_enabled</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">context_tracer</span><span class="o">.</span><span class="n">ContextTracer</span><span class="p">(</span>
+                <span class="n">exporter</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">exporter</span><span class="p">,</span>
+                <span class="n">span_context</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">span_context</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">noop_tracer</span><span class="o">.</span><span class="n">NoopTracer</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Tracer.store_tracer"><a class="viewcode-back" href="../../../trace/api/tracer.html#opencensus.trace.tracer.Tracer.store_tracer">[docs]</a>    <span class="k">def</span> <span class="nf">store_tracer</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add the current tracer to thread_local&quot;&quot;&quot;</span>
+        <span class="n">execution_context</span><span class="o">.</span><span class="n">set_opencensus_tracer</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Tracer.finish"><a class="viewcode-back" href="../../../trace/api/tracer.html#opencensus.trace.tracer.Tracer.finish">[docs]</a>    <span class="k">def</span> <span class="nf">finish</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;End all spans.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tracer</span><span class="o">.</span><span class="n">finish</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Tracer.span"><a class="viewcode-back" href="../../../trace/api/tracer.html#opencensus.trace.tracer.Tracer.span">[docs]</a>    <span class="k">def</span> <span class="nf">span</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;span&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create a new span with the trace using the context information.</span>
+
+<span class="sd">        :type name: str</span>
+<span class="sd">        :param name: The name of the span.</span>
+
+<span class="sd">        :rtype: :class:`~opencensus.trace.span.Span`</span>
+<span class="sd">        :returns: The Span object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">tracer</span><span class="o">.</span><span class="n">span</span><span class="p">(</span><span class="n">name</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">start_span</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;span&#39;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">tracer</span><span class="o">.</span><span class="n">start_span</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Tracer.end_span"><a class="viewcode-back" href="../../../trace/api/tracer.html#opencensus.trace.tracer.Tracer.end_span">[docs]</a>    <span class="k">def</span> <span class="nf">end_span</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;End a span. Update the span_id in SpanContext to the current span&#39;s</span>
+<span class="sd">        parent span id; Update the current span; Send the span to exporter.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tracer</span><span class="o">.</span><span class="n">end_span</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Tracer.current_span"><a class="viewcode-back" href="../../../trace/api/tracer.html#opencensus.trace.tracer.Tracer.current_span">[docs]</a>    <span class="k">def</span> <span class="nf">current_span</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the current span.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">tracer</span><span class="o">.</span><span class="n">current_span</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Tracer.add_attribute_to_current_span"><a class="viewcode-back" href="../../../trace/api/tracer.html#opencensus.trace.tracer.Tracer.add_attribute_to_current_span">[docs]</a>    <span class="k">def</span> <span class="nf">add_attribute_to_current_span</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attribute_key</span><span class="p">,</span> <span class="n">attribute_value</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add attribute to current span.</span>
+
+<span class="sd">        :type attribute_key: str</span>
+<span class="sd">        :param attribute_key: Attribute key.</span>
+
+<span class="sd">        :type attribute_value:str</span>
+<span class="sd">        :param attribute_value: Attribute value.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tracer</span><span class="o">.</span><span class="n">add_attribute_to_current_span</span><span class="p">(</span>
+            <span class="n">attribute_key</span><span class="p">,</span> <span class="n">attribute_value</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Tracer.trace_decorator"><a class="viewcode-back" href="../../../trace/api/tracer.html#opencensus.trace.tracer.Tracer.trace_decorator">[docs]</a>    <span class="k">def</span> <span class="nf">trace_decorator</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Decorator to trace a function.&quot;&quot;&quot;</span>
+
+        <span class="k">def</span> <span class="nf">decorator</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+
+            <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">tracer</span><span class="o">.</span><span class="n">start_span</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">func</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+                <span class="n">return_value</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">tracer</span><span class="o">.</span><span class="n">end_span</span><span class="p">()</span>
+                <span class="k">return</span> <span class="n">return_value</span>
+
+            <span class="k">return</span> <span class="n">wrapper</span>
+
+        <span class="k">return</span> <span class="n">decorator</span></div></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">OPENCENSUS</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../trace/usage.html">OpenCensus Trace for Python</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../trace/api/index.html">API Documentation</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, OpenCensus Authors.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.0.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
