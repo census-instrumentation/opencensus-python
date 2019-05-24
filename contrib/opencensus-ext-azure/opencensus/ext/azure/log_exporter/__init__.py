@@ -63,12 +63,19 @@ class Worker(threading.Thread):
         while True:
             batch = src.gets(dst.max_batch_size, dst.export_interval)
             if batch and isinstance(batch[-1], QueueEvent):
-                dst.export(batch[:-1], event=batch[-1])
+                try:
+                    dst.export(batch[:-1], event=batch[-1])
+                except Exception:
+                    logger.exception('Unhandled exception from exporter.')
+                    batch[-1].set()
                 if batch[-1] is src.EXIT_EVENT:
                     break
                 else:
                     continue
-            dst.export(batch)
+            try:
+                dst.export(batch)
+            except Exception:
+                logger.exception('Unhandled exception from exporter.')
 
     def stop(self, timeout=None):
         start_time = time.time()
@@ -97,13 +104,10 @@ class AzureLogHandler(BaseLogHandler):
         super(AzureLogHandler, self).__init__()
 
     def export(self, batch, event=None):
-        try:
-            if batch:
-                for item in batch:
-                    item.traceId = getattr(item, 'traceId', 'N/A')
-                    item.spanId = getattr(item, 'spanId', 'N/A')
-                    print(self.format(item))
-            if event:
-                event.set()
-        except Exception:
-            logger.exception('Exception occurred while exporting the data.')
+        if batch:
+            for item in batch:
+                item.traceId = getattr(item, 'traceId', 'N/A')
+                item.spanId = getattr(item, 'spanId', 'N/A')
+                print(self.format(item))
+        if event:
+            event.set()
