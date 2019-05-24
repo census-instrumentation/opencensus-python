@@ -59,14 +59,16 @@ class Worker(threading.Thread):
     daemon = True
 
     def __init__(self, src, dst):
-        self.src = src
-        self.dst = dst
+        self._src = src
+        self._dst = dst
         self._stopping = False
-        super(Worker, self).__init__()
+        super(Worker, self).__init__(
+            name='{} Worker'.format(type(dst).__name__)
+        )
 
     def run(self):
-        src = self.src
-        dst = self.dst
+        src = self._src
+        dst = self._dst
         while True:
             batch = src.gets(dst.max_batch_size, dst.export_interval)
             if batch and isinstance(batch[-1], QueueEvent):
@@ -88,10 +90,10 @@ class Worker(threading.Thread):
         wait_time = timeout
         if self.is_alive() and not self._stopping:
             self._stopping = True
-            self.src.put(self.src.EXIT_EVENT, block=True, timeout=wait_time)
+            self._src.put(self._src.EXIT_EVENT, block=True, timeout=wait_time)
             elapsed_time = time.time() - start_time
             wait_time = timeout and max(timeout - elapsed_time, 0)
-        if self.src.EXIT_EVENT.wait(timeout=wait_time):
+        if self._src.EXIT_EVENT.wait(timeout=wait_time):
             return time.time() - start_time  # time taken to stop
 
 
