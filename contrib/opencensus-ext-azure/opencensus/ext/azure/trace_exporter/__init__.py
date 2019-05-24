@@ -16,6 +16,7 @@ import logging
 import json
 import requests
 
+from opencensus.common.schedule import QueueExitEvent
 from opencensus.ext.azure.common import Options
 from opencensus.ext.azure.common import utils
 from opencensus.ext.azure.common.exporter import BaseExporter
@@ -35,8 +36,7 @@ __all__ = ['AzureExporter']
 class AzureExporter(BaseExporter):
     """An exporter that sends traces to Microsoft Azure Monitor.
 
-    :type options: dict
-    :param options: Options for the exporter. Defaults to None.
+    :param options: Options for the exporter.
     """
 
     def __init__(self, **options):
@@ -230,14 +230,14 @@ class AzureExporter(BaseExporter):
                 if result > 0:
                     self.storage.put(envelopes, result)
             if event:
-                if event is self.EXIT_EVENT:
+                if isinstance(event, QueueExitEvent):
                     self._transmit_from_storage()  # send files before exit
                 event.set()
                 return
             if len(batch) < self.options.max_batch_size:
                 self._transmit_from_storage()
-        except Exception as ex:
-            logger.exception('Transmission exception: %s.', ex)
+        except Exception:
+            logger.exception('Exception occurred while exporting the data.')
 
     def _stop(self, timeout=None):
         self.storage.close()

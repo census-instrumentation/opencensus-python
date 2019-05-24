@@ -62,6 +62,8 @@ class TestQueue(unittest.TestCase):
 
     def test_flush_timeout(self):
         queue = Queue(capacity=10)
+        self.assertEqual(queue.flush(timeout=TIMEOUT), 0)
+        queue.put('test', timeout=TIMEOUT)
         self.assertIsNone(queue.flush(timeout=TIMEOUT))
         queue.puts(range(100), timeout=TIMEOUT)
         self.assertIsNone(queue.flush(timeout=TIMEOUT))

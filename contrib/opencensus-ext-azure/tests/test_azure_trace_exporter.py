@@ -53,8 +53,6 @@ class TestAzureExporter(unittest.TestCase):
         )
         exporter.emit([])
         self.assertEqual(len(os.listdir(exporter.storage.path)), 0)
-        exporter.emit([], exporter.EXIT_EVENT)
-        self.assertEqual(len(os.listdir(exporter.storage.path)), 0)
         exporter._stop()
 
     @mock.patch('opencensus.ext.azure.trace_exporter.logger')
