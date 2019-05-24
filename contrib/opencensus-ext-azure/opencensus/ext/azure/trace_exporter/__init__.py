@@ -236,8 +236,8 @@ class AzureExporter(BaseExporter):
                 return
             if len(batch) < self.options.max_batch_size:
                 self._transmit_from_storage()
-        except Exception as ex:
-            logger.exception('Transmission exception: %s.', ex)
+        except Exception:
+            logger.exception('Exception occurred while exporting the data.')
 
     def _stop(self, timeout=None):
         self.storage.close()

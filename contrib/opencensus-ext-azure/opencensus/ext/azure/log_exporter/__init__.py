@@ -97,10 +97,13 @@ class AzureLogHandler(BaseLogHandler):
         super(AzureLogHandler, self).__init__()
 
     def export(self, batch, event=None):
-        if batch:
-            for item in batch:
-                item.traceId = getattr(item, 'traceId', 'N/A')
-                item.spanId = getattr(item, 'spanId', 'N/A')
-                print(self.format(item))
-        if event:
-            event.set()
+        try:
+            if batch:
+                for item in batch:
+                    item.traceId = getattr(item, 'traceId', 'N/A')
+                    item.spanId = getattr(item, 'spanId', 'N/A')
+                    print(self.format(item))
+            if event:
+                event.set()
+        except Exception:
+            logger.exception('Exception occurred while exporting the data.')
