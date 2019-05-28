@@ -22,7 +22,8 @@ function pylint_dir {
   find opencensus/ -type f -name "*.py" >> output
   find tests/ -type f -name "*.py" >> output
   find examples/ -type f -name "*.py" >> output
-  cat output | xargs pylint || true # ignores errors for now
+  # TODO fix lint errors
+  cat output | xargs pylint || true # ignores errors
   rm -rf output
 
   return $?
