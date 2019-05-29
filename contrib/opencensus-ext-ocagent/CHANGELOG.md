@@ -1,6 +1,9 @@
 # Changelog
 
 ## Unreleased
+- Remove well_known_types.Error and well_known_types.ParseError.
+Note this could be a breaking change if you depend on an older 
+version of protobuf and use ParseError.
 
 ## 0.3.0
 Released 2019-04-24
