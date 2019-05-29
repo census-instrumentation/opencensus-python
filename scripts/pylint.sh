@@ -18,10 +18,11 @@ set -ev
 function pylint_dir {
   python -m pip install --upgrade pylint
   find context/ -type f -name "*.py" > output
-  find contrib/ -type f -name "*.py" >> output
-  find opencensus/ -type f -name "*.py" >> output
-  find tests/ -type f -name "*.py" >> output
-  find examples/ -type f -name "*.py" >> output
+  # find contrib/ -type f -name "*.py" >> output
+  # find opencensus/ -type f -name "*.py" >> output
+  # find tests/ -type f -name "*.py" >> output
+  # find examples/ -type f -name "*.py" >> output
+  
   # TODO fix lint errors
   cat output | xargs pylint || true # ignores errors
   rm -rf output
