@@ -17,8 +17,11 @@ import threading
 import time
 
 from opencensus.common.schedule import Queue
+from opencensus.common.schedule import QueueExitEvent
 from opencensus.common.schedule import QueueEvent
 from opencensus.ext.azure.common import Options
+from opencensus.ext.azure.common.storage import LocalFileStorage
+from opencensus.ext.azure.common.transport import TransportMixin
 
 logger = logging.getLogger(__name__)
 
@@ -97,7 +100,7 @@ class Worker(threading.Thread):
             return time.time() - start_time  # time taken to stop
 
 
-class AzureLogHandler(BaseLogHandler):
+class AzureLogHandler(TransportMixin, BaseLogHandler):
     """Handler for logging to Microsoft Azure Monitor.
 
     :param options: Options for the log handler.
@@ -109,11 +112,37 @@ class AzureLogHandler(BaseLogHandler):
             raise ValueError('The instrumentation_key is not provided.')
         self.export_interval = self.options.export_interval
         self.max_batch_size = self.options.max_batch_size
+        self.storage = LocalFileStorage(
+            path=self.options.storage_path,
+            max_size=self.options.storage_max_size,
+            maintenance_period=self.options.storage_maintenance_period,
+            retention_period=self.options.storage_retention_period,
+        )
         super(AzureLogHandler, self).__init__()
 
-    def export(self, batch):
-        if batch:
-            for item in batch:
-                item.traceId = getattr(item, 'traceId', 'N/A')
-                item.spanId = getattr(item, 'spanId', 'N/A')
-                print(self.format(item))
+    def close(self):
+        self.storage.close()
+        super(AzureLogHandler, self).close()
+
+    def _export(self, batch, event=None):
+        try:
+            if batch:
+                envelopes = [self.log_record_to_envelope(x) for x in batch]
+                result = self._transmit(envelopes)
+                if result > 0:
+                    self.storage.put(envelopes, result)
+            if event:
+                if isinstance(event, QueueExitEvent):
+                    self._transmit_from_storage()  # send files before exit
+                return
+            if len(batch) < self.options.max_batch_size:
+                self._transmit_from_storage()
+        finally:
+            if event:
+                event.set()
+
+    def log_record_to_envelope(self, record):
+        record.traceId = getattr(record, 'traceId', 'N/A')
+        record.spanId = getattr(record, 'spanId', 'N/A')
+        print(self.format(record))
+        return 1
