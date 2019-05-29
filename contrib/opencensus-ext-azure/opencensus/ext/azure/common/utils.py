@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import datetime
 import locale
 import os
 import platform
@@ -24,6 +25,7 @@ except ImportError:
 
 from opencensus.common.version import __version__ as opencensus_version
 from opencensus.common.utils import timestamp_to_microseconds
+from opencensus.common.utils import to_iso_str
 from opencensus.ext.azure.common.version import __version__ as ext_version
 
 azure_monitor_context = {
@@ -55,6 +57,10 @@ def timestamp_to_duration(start_time, end_time):
     end_time_us = timestamp_to_microseconds(end_time)
     duration_us = int(end_time_us - start_time_us)
     return microseconds_to_duration(duration_us)
+
+
+def timestamp_to_iso_str(timestamp):
+    return to_iso_str(datetime.datetime.utcfromtimestamp(timestamp))
 
 
 def url_to_dependency_name(url):

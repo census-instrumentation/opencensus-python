@@ -20,6 +20,10 @@ from opencensus.common.schedule import Queue
 from opencensus.common.schedule import QueueExitEvent
 from opencensus.common.schedule import QueueEvent
 from opencensus.ext.azure.common import Options
+from opencensus.ext.azure.common import utils
+from opencensus.ext.azure.common.protocol import Data
+from opencensus.ext.azure.common.protocol import Envelope
+from opencensus.ext.azure.common.protocol import Message
 from opencensus.ext.azure.common.storage import LocalFileStorage
 from opencensus.ext.azure.common.transport import TransportMixin
 
@@ -142,7 +146,31 @@ class AzureLogHandler(TransportMixin, BaseLogHandler):
                 event.set()
 
     def log_record_to_envelope(self, record):
-        record.traceId = getattr(record, 'traceId', 'N/A')
-        record.spanId = getattr(record, 'spanId', 'N/A')
-        print(self.format(record))
-        return 1
+        envelope = Envelope(
+            iKey=self.options.instrumentation_key,
+            tags=dict(utils.azure_monitor_context),
+            time=utils.timestamp_to_iso_str(record.created),
+        )
+        envelope.tags['ai.operation.id'] = getattr(
+            record,
+            'traceId',
+            '00000000000000000000000000000000',
+        )
+        envelope.tags['ai.operation.parentId'] = '|{}.{}.'.format(
+            envelope.tags['ai.operation.id'],
+            getattr(record, 'spanId', '0000000000000000'),
+        )
+        envelope.name = 'Microsoft.ApplicationInsights.Message'
+        data = Message(
+            message=self.format(record),
+            severityLevel=max(0, record.levelno - 1) // 10,
+            properties={
+                'process': record.processName,
+                'module': record.module,
+                'fileName': record.pathname,
+                'lineNumber': record.lineno,
+                'level': record.levelname,
+            },
+        )
+        envelope.data = Data(baseData=data, baseType='MessageData')
+        return envelope
