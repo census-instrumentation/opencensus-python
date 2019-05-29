@@ -40,10 +40,10 @@ def throw(exc_type, *args, **kwargs):
 class TestAzureExporter(unittest.TestCase):
     def test_ctor(self):
         from opencensus.ext.azure.common import Options
-        instrumentation_key = Options.prototype.instrumentation_key
-        Options.prototype.instrumentation_key = None
+        instrumentation_key = Options._default.instrumentation_key
+        Options._default.instrumentation_key = None
         self.assertRaises(ValueError, lambda: trace_exporter.AzureExporter())
-        Options.prototype.instrumentation_key = instrumentation_key
+        Options._default.instrumentation_key = instrumentation_key
 
     @mock.patch('requests.post', return_value=mock.Mock())
     def test_emit_empty(self, request_mock):
