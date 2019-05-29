@@ -2,7 +2,6 @@ import datetime
 import os
 import socket
 
-from google.protobuf.internal.well_known_types import ParseError
 from google.protobuf.timestamp_pb2 import Timestamp
 from opencensus.common.version import __version__ as opencensus_version
 from opencensus.proto.agent.common.v1 import common_pb2
@@ -59,6 +58,6 @@ def proto_ts_from_datetime_str(dt):
     if (dt is not None):
         try:
             ts.FromJsonString(dt)
-        except ParseError:
+        except ValueError:
             pass
     return ts
