@@ -37,8 +37,10 @@ $ git remote add fork https://github.com/YOUR_GITHUB_USERNAME/opencensus-python.
 Run tests:
 
 ```sh
-$ pip install nox  # Only first time.
-$ nox
+# Make sure you have all supported versions of Python installed
+# Currently these are 2.7, 3.4, 3.5, 3.6 and 3.7
+$ pip install tox  # Only first time.
+$ tox -e py27-unit,py34-unit,p35-unit,py36-unit,py37-unit # unit tests
 ```
 
 Checkout a new branch, make modifications and push the branch to your fork:
