@@ -15,6 +15,7 @@
 import logging
 import threading
 import time
+import traceback
 
 from opencensus.common.schedule import Queue
 from opencensus.common.schedule import QueueExitEvent
@@ -169,9 +170,29 @@ class AzureLogHandler(TransportMixin, BaseLogHandler):
             'level': record.levelname,
         }
         if record.exc_info:
+            exctype, _value, tb = record.exc_info
+            callstack = []
+            level = 0
+            for fileName, line, method, _text in traceback.extract_tb(tb):
+                callstack.append({
+                    'level': level,
+                    'method': method,
+                    'fileName': fileName,
+                    'line': line,
+                })
+                level += 1
+            callstack.reverse()
+
             envelope.name = 'Microsoft.ApplicationInsights.Exception'
             data = ExceptionData(
-                message=self.format(record),
+                exceptions=[{
+                    'id': 1,
+                    'outerId': 0,
+                    'typeName': exctype.__name__,
+                    'message': self.format(record),
+                    'hasFullStack': True,
+                    'parsedStack': callstack,
+                }],
                 severityLevel=max(0, record.levelno - 1) // 10,
                 properties=properties,
             )

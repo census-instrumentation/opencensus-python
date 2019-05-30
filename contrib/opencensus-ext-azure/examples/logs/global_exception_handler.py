@@ -20,7 +20,12 @@ logger = logging.getLogger(__name__)
 # TODO: you need to specify the instrumentation key in the
 # APPINSIGHTS_INSTRUMENTATIONKEY environment variable.
 logger.addHandler(AzureLogHandler())
-try:
-    raise Exception('Hello from exception.')
-except:
-    logger.exception('Got an exception.')
+
+def main():
+    try:
+        n = 1 / 0  # generate a ZeroDivisionError
+    except:
+        logger.exception('Captured an exception.')
+
+if __name__ == '__main__':
+    main()

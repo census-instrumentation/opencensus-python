@@ -36,10 +36,10 @@ class BaseObject(dict):
     def __getattr__(self, name):
         try:
             return self[name]
-        except KeyError as ex:
+        except KeyError:
             raise AttributeError("'{}' object has no attribute {}".format(
                 type(self).__name__,
-                ex,
+                name,
             ))
 
     def __getitem__(self, key):
