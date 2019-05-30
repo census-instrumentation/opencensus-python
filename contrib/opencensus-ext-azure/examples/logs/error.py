@@ -21,11 +21,13 @@ logger = logging.getLogger(__name__)
 # APPINSIGHTS_INSTRUMENTATIONKEY environment variable.
 logger.addHandler(AzureLogHandler())
 
+
 def main():
     try:
         return 1 / 0  # generate a ZeroDivisionError
-    except:
+    except Exception:
         logger.exception('Captured an exception.')
+
 
 if __name__ == '__main__':
     main()
