@@ -12,9 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import mock
 import unittest
 
 from opencensus.stats import aggregation as aggregation_module
+from opencensus.stats import measure as measure_module
 
 
 class TestBaseAggregation(unittest.TestCase):
@@ -33,12 +35,14 @@ class TestBaseAggregation(unittest.TestCase):
 
 class TestSumAggregation(unittest.TestCase):
     def test_constructor_defaults(self):
+        measure = mock.Mock(spec=measure_module.MeasureInt)
         sum_aggregation = aggregation_module.SumAggregation()
-        self.assertEqual(0, sum_aggregation.new_aggregation_data().sum_data)
+        self.assertEqual(0, sum_aggregation.new_aggregation_data(measure).sum_data)
 
     def test_constructor_explicit(self):
+        measure = mock.Mock(spec=measure_module.MeasureInt)
         sum_aggregation = aggregation_module.SumAggregation(sum=1)
-        self.assertEqual(1, sum_aggregation.new_aggregation_data().sum_data)
+        self.assertEqual(1, sum_aggregation.new_aggregation_data(measure).sum_data)
 
 
 class TestCountAggregation(unittest.TestCase):
@@ -53,13 +57,15 @@ class TestCountAggregation(unittest.TestCase):
 
 class TestLastValueAggregation(unittest.TestCase):
     def test_constructor_defaults(self):
+        measure = mock.Mock(spec=measure_module.MeasureInt)
         last_value_aggregation = aggregation_module.LastValueAggregation()
-        self.assertEqual(0, last_value_aggregation.new_aggregation_data().value)
+        self.assertEqual(0, last_value_aggregation.new_aggregation_data(measure).value)
 
     def test_constructor_explicit(self):
+        measure = mock.Mock(spec=measure_module.MeasureInt)
         last_value_aggregation = aggregation_module.LastValueAggregation(
             value=6)
-        self.assertEqual(6, last_value_aggregation.new_aggregation_data().value)
+        self.assertEqual(6, last_value_aggregation.new_aggregation_data(measure).value)
 
 
 class TestDistributionAggregation(unittest.TestCase):
