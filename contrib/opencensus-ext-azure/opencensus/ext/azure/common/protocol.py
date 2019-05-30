@@ -98,6 +98,22 @@ class Event(BaseObject):
         self.name = self.name
 
 
+class ExceptionData(BaseObject):
+    _default = BaseObject(
+        ver=2,
+        exceptions=[],
+        severityLevel=None,
+        problemId=None,
+        properties=None,
+        measurements=None,
+    )
+
+    def __init__(self, *args, **kwargs):
+        super(ExceptionData, self).__init__(*args, **kwargs)
+        self.ver = self.ver
+        self.exceptions = self.exceptions
+
+
 class Message(BaseObject):
     _default = BaseObject(
         ver=2,

@@ -15,23 +15,12 @@
 import logging
 
 from opencensus.ext.azure.log_exporter import AzureLogHandler
-from opencensus.ext.azure.trace_exporter import AzureExporter
-from opencensus.trace import config_integration
-from opencensus.trace.samplers import ProbabilitySampler
-from opencensus.trace.tracer import Tracer
-
-config_integration.trace_integrations(['logging'])
 
 logger = logging.getLogger(__name__)
-
 # TODO: you need to specify the instrumentation key in the
 # APPINSIGHTS_INSTRUMENTATIONKEY environment variable.
-handler = AzureLogHandler()
-logger.addHandler(handler)
-
-tracer = Tracer(exporter=AzureExporter(), sampler=ProbabilitySampler(1.0))
-
-logger.warning('Before the span')
-with tracer.span(name='test'):
-    logger.warning('In the span')
-logger.warning('After the span')
+logger.addHandler(AzureLogHandler())
+try:
+    raise Exception('Hello from exception.')
+except:
+    logger.exception('Got an exception.')

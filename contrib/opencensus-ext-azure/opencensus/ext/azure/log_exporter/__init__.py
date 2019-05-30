@@ -23,6 +23,7 @@ from opencensus.ext.azure.common import Options
 from opencensus.ext.azure.common import utils
 from opencensus.ext.azure.common.protocol import Data
 from opencensus.ext.azure.common.protocol import Envelope
+from opencensus.ext.azure.common.protocol import ExceptionData
 from opencensus.ext.azure.common.protocol import Message
 from opencensus.ext.azure.common.storage import LocalFileStorage
 from opencensus.ext.azure.common.transport import TransportMixin
@@ -160,17 +161,27 @@ class AzureLogHandler(TransportMixin, BaseLogHandler):
             envelope.tags['ai.operation.id'],
             getattr(record, 'spanId', '0000000000000000'),
         )
-        envelope.name = 'Microsoft.ApplicationInsights.Message'
-        data = Message(
-            message=self.format(record),
-            severityLevel=max(0, record.levelno - 1) // 10,
-            properties={
-                'process': record.processName,
-                'module': record.module,
-                'fileName': record.pathname,
-                'lineNumber': record.lineno,
-                'level': record.levelname,
-            },
-        )
-        envelope.data = Data(baseData=data, baseType='MessageData')
+        properties = {
+            'process': record.processName,
+            'module': record.module,
+            'fileName': record.pathname,
+            'lineNumber': record.lineno,
+            'level': record.levelname,
+        }
+        if record.exc_info:
+            envelope.name = 'Microsoft.ApplicationInsights.Exception'
+            data = ExceptionData(
+                message=self.format(record),
+                severityLevel=max(0, record.levelno - 1) // 10,
+                properties=properties,
+            )
+            envelope.data = Data(baseData=data, baseType='ExceptionData')
+        else:
+            envelope.name = 'Microsoft.ApplicationInsights.Message'
+            data = Message(
+                message=self.format(record),
+                severityLevel=max(0, record.levelno - 1) // 10,
+                properties=properties,
+            )
+            envelope.data = Data(baseData=data, baseType='MessageData')
         return envelope
