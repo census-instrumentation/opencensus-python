@@ -42,6 +42,10 @@ class TestProtocol(unittest.TestCase):
         data = protocol.Event()
         self.assertEqual(data.ver, 2)
 
+    def test_exception_data(self):
+        data = protocol.ExceptionData()
+        self.assertEqual(data.ver, 2)
+
     def test_message(self):
         data = protocol.Message()
         self.assertEqual(data.ver, 2)
