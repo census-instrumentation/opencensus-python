@@ -23,7 +23,7 @@ logger.addHandler(AzureLogHandler())
 
 def main():
     try:
-        n = 1 / 0  # generate a ZeroDivisionError
+        return 1 / 0  # generate a ZeroDivisionError
     except:
         logger.exception('Captured an exception.')
 
