@@ -58,7 +58,7 @@ class BaseLogHandler(logging.Handler):
                 event.set()
 
     def export(self, batch):
-        raise NotImplementedError
+        raise NotImplementedError  # pragma: NO COVER
 
     def flush(self, timeout=None):
         self._queue.flush(timeout=timeout)
@@ -87,8 +87,7 @@ class Worker(threading.Thread):
                     logger.exception('Unhandled exception from exporter.')
                 if batch[-1] is src.EXIT_EVENT:
                     break
-                else:
-                    continue
+                continue  # pragma: NO COVER
             try:
                 dst._export(batch)
             except Exception:

@@ -415,7 +415,9 @@ class TestAzureExporter(unittest.TestCase):
         self.assertEqual(len(os.listdir(exporter.storage.path)), 1)
         exporter._stop()
 
-    def test_transmission_lease_failure(self):
+    @mock.patch('requests.post', return_value=mock.Mock())
+    def test_transmission_lease_failure(self, requests_mock):
+        requests_mock.return_value = MockResponse(200, 'unknown')
         exporter = trace_exporter.AzureExporter(
             instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
             storage_path=os.path.join(TEST_FOLDER, self.id()),
