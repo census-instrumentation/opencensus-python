@@ -93,7 +93,7 @@ class Worker(threading.Thread):
             except Exception:
                 logger.exception('Unhandled exception from exporter.')
 
-    def stop(self, timeout=None):
+    def stop(self, timeout=None):  # pragma: NO COVER
         start_time = time.time()
         wait_time = timeout
         if self.is_alive() and not self._stopping:
@@ -129,7 +129,7 @@ class AzureLogHandler(TransportMixin, BaseLogHandler):
         self.storage.close()
         super(AzureLogHandler, self).close()
 
-    def _export(self, batch, event=None):
+    def _export(self, batch, event=None):  # pragma: NO COVER
         try:
             if batch:
                 envelopes = [self.log_record_to_envelope(x) for x in batch]
