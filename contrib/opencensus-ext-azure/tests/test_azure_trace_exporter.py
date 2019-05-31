@@ -40,10 +40,10 @@ def throw(exc_type, *args, **kwargs):
 class TestAzureExporter(unittest.TestCase):
     def test_ctor(self):
         from opencensus.ext.azure.common import Options
-        instrumentation_key = Options.prototype.instrumentation_key
-        Options.prototype.instrumentation_key = None
+        instrumentation_key = Options._default.instrumentation_key
+        Options._default.instrumentation_key = None
         self.assertRaises(ValueError, lambda: trace_exporter.AzureExporter())
-        Options.prototype.instrumentation_key = instrumentation_key
+        Options._default.instrumentation_key = instrumentation_key
 
     @mock.patch('requests.post', return_value=mock.Mock())
     def test_emit_empty(self, request_mock):
@@ -415,7 +415,9 @@ class TestAzureExporter(unittest.TestCase):
         self.assertEqual(len(os.listdir(exporter.storage.path)), 1)
         exporter._stop()
 
-    def test_transmission_lease_failure(self):
+    @mock.patch('requests.post', return_value=mock.Mock())
+    def test_transmission_lease_failure(self, requests_mock):
+        requests_mock.return_value = MockResponse(200, 'unknown')
         exporter = trace_exporter.AzureExporter(
             instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
             storage_path=os.path.join(TEST_FOLDER, self.id()),

@@ -13,9 +13,9 @@
 # limitations under the License.
 
 
-class Object(dict):
+class BaseObject(dict):
     def __init__(self, *args, **kwargs):
-        super(Object, self).__init__(*args, **kwargs)
+        super(BaseObject, self).__init__(*args, **kwargs)
         for key in kwargs:
             self[key] = kwargs[key]
 
@@ -25,9 +25,9 @@ class Object(dict):
             for item in self.items():
                 if item[0] not in tmp:
                     tmp[item[0]] = item[1]
-            if self.prototype == self:
+            if self._default == self:
                 break
-            self = self.prototype
+            self = self._default
         return repr(tmp)
 
     def __setattr__(self, name, value):
@@ -36,25 +36,25 @@ class Object(dict):
     def __getattr__(self, name):
         try:
             return self[name]
-        except KeyError as ex:
+        except KeyError:
             raise AttributeError("'{}' object has no attribute {}".format(
                 type(self).__name__,
-                ex,
+                name,
             ))
 
     def __getitem__(self, key):
-        if self.prototype is self:
-            return super(Object, self).__getitem__(key)
+        if self._default is self:
+            return super(BaseObject, self).__getitem__(key)
         if key in self:
-            return super(Object, self).__getitem__(key)
-        return self.prototype[key]
+            return super(BaseObject, self).__getitem__(key)
+        return self._default[key]
 
 
-Object.prototype = Object()
+BaseObject._default = BaseObject()
 
 
-class Data(Object):
-    prototype = Object(
+class Data(BaseObject):
+    _default = BaseObject(
         baseData=None,
         baseType=None,
     )
@@ -65,8 +65,8 @@ class Data(Object):
         self.baseType = self.baseType
 
 
-class Envelope(Object):
-    prototype = Object(
+class Envelope(BaseObject):
+    _default = BaseObject(
         ver=1,
         name='',
         time='',
@@ -84,8 +84,8 @@ class Envelope(Object):
         self.time = self.time
 
 
-class Event(Object):
-    prototype = Object(
+class Event(BaseObject):
+    _default = BaseObject(
         ver=2,
         name='',
         properties=None,
@@ -98,8 +98,24 @@ class Event(Object):
         self.name = self.name
 
 
-class Message(Object):
-    prototype = Object(
+class ExceptionData(BaseObject):
+    _default = BaseObject(
+        ver=2,
+        exceptions=[],
+        severityLevel=None,
+        problemId=None,
+        properties=None,
+        measurements=None,
+    )
+
+    def __init__(self, *args, **kwargs):
+        super(ExceptionData, self).__init__(*args, **kwargs)
+        self.ver = self.ver
+        self.exceptions = self.exceptions
+
+
+class Message(BaseObject):
+    _default = BaseObject(
         ver=2,
         message='',
         severityLevel=None,
@@ -113,8 +129,8 @@ class Message(Object):
         self.message = self.message
 
 
-class RemoteDependency(Object):
-    prototype = Object(
+class RemoteDependency(BaseObject):
+    _default = BaseObject(
         ver=2,
         name='',
         id='',
@@ -136,8 +152,8 @@ class RemoteDependency(Object):
         self.duration = self.duration
 
 
-class Request(Object):
-    prototype = Object(
+class Request(BaseObject):
+    _default = BaseObject(
         ver=2,
         id='',
         duration='',

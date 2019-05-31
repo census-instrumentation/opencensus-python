@@ -15,11 +15,11 @@
 import os
 import sys
 
-from opencensus.ext.azure.common.protocol import Object
+from opencensus.ext.azure.common.protocol import BaseObject
 
 
-class Options(Object):
-    prototype = Object(
+class Options(BaseObject):
+    _default = BaseObject(
         endpoint='https://dc.services.visualstudio.com/v2/track',
         export_interval=15.0,
         grace_period=5.0,
