@@ -90,6 +90,9 @@ class TestAzureLogHandler(unittest.TestCase):
         except Exception:
             logger.exception('Captured an exception.')
         handler.close()
+        self.assertEqual(len(requests_mock.call_args_list), 1)
+        post_body = requests_mock.call_args_list[0][1]['data']
+        self.assertTrue('ZeroDivisionError' in post_body)
 
     @mock.patch('requests.post', return_value=mock.Mock())
     def test_export_empty(self, request_mock):
@@ -101,14 +104,16 @@ class TestAzureLogHandler(unittest.TestCase):
         self.assertEqual(len(os.listdir(handler.storage.path)), 0)
         handler.close()
 
-    @mock.patch('opencensus.ext.azure.log_exporter.AzureLogHandler.log_record_to_envelope')  # noqa: E501
+    @mock.patch('opencensus.ext.azure.log_exporter'
+                '.AzureLogHandler.log_record_to_envelope')
     def test_export_failure(self, log_record_to_envelope_mock):
         log_record_to_envelope_mock.return_value = ['bar']
         handler = log_exporter.AzureLogHandler(
             instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
             storage_path=os.path.join(TEST_FOLDER, self.id()),
         )
-        with mock.patch('opencensus.ext.azure.log_exporter.AzureLogHandler._transmit') as transmit:  # noqa: E501
+        with mock.patch('opencensus.ext.azure.log_exporter'
+                        '.AzureLogHandler._transmit') as transmit:
             transmit.return_value = 10
             handler._export(['foo'])
         self.assertEqual(len(os.listdir(handler.storage.path)), 1)
