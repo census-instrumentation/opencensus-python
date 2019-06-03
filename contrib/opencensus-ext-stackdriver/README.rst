@@ -30,9 +30,6 @@ This example shows how to report the traces to Stackdriver Trace:
         project_id='your_cloud_project')
     tracer = tracer_module.Tracer(exporter=exporter)
 
-StackdriverExporter requires the google-cloud-trace package. Install
-google-cloud-trace using `pip`_ or `pipenv`_:
-
 ::
 
     pip install google-cloud-trace
