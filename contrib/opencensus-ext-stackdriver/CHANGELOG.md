@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## 0.4.0
+Released 2019-05-31
+
+- Fix stackdriver k8s label keys
+  ([#656](https://github.com/census-instrumentation/opencensus-python/pull/656))
+
 ## 0.3.0
 Released 2019-04-24
 
