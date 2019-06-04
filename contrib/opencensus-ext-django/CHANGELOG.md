@@ -1,6 +1,10 @@
 # Changelog
 
 ## Unreleased
+
+## 0.3.1
+Released 2019-06-04
+
 - Make ProbabilitySampler default
 
 ## 0.3.0
