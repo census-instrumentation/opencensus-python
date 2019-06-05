@@ -18,7 +18,7 @@ from opencensus.ext.azure.common import protocol
 
 class TestProtocol(unittest.TestCase):
     def test_object(self):
-        data = protocol.Object()
+        data = protocol.BaseObject()
         self.assertEqual(repr(data), '{}')
         data.foo = 1
         self.assertEqual(data.foo, 1)
@@ -40,6 +40,10 @@ class TestProtocol(unittest.TestCase):
 
     def test_event(self):
         data = protocol.Event()
+        self.assertEqual(data.ver, 2)
+
+    def test_exception_data(self):
+        data = protocol.ExceptionData()
         self.assertEqual(data.ver, 2)
 
     def test_message(self):

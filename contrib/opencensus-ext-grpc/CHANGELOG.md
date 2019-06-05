@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+## 0.3.0
+Released 2019-05-31
+
+- Limit span attachments
+
 ## 0.2.0
 Released 2019-04-24
 

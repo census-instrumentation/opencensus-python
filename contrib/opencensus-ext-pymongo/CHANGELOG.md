@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+## 0.1.3
+Released 2019-05-31
+
 - Include aggregation pipeline in trace attributes
 - Fix support command dictionaries
 

@@ -13,8 +13,6 @@
 # limitations under the License.
 
 import logging
-import json
-import requests
 
 from opencensus.common.schedule import QueueExitEvent
 from opencensus.ext.azure.common import Options
@@ -25,7 +23,7 @@ from opencensus.ext.azure.common.protocol import Envelope
 from opencensus.ext.azure.common.protocol import RemoteDependency
 from opencensus.ext.azure.common.protocol import Request
 from opencensus.ext.azure.common.storage import LocalFileStorage
-from opencensus.trace import execution_context
+from opencensus.ext.azure.common.transport import TransportMixin
 from opencensus.trace.span import SpanKind
 
 logger = logging.getLogger(__name__)
@@ -33,7 +31,7 @@ logger = logging.getLogger(__name__)
 __all__ = ['AzureExporter']
 
 
-class AzureExporter(BaseExporter):
+class AzureExporter(TransportMixin, BaseExporter):
     """An exporter that sends traces to Microsoft Azure Monitor.
 
     :param options: Options for the exporter.
@@ -111,116 +109,6 @@ class AzureExporter(BaseExporter):
                 data.type = 'INPROC'
         # TODO: links, tracestate, tags, attrs
         return envelope
-
-    def _transmit_from_storage(self):
-        for blob in self.storage.gets():
-            if blob.lease(self.options.timeout + 5):
-                envelopes = blob.get()  # TODO: handle error
-                result = self._transmit(envelopes)
-                if result > 0:
-                    blob.lease(result)
-                else:
-                    blob.delete(silent=True)
-
-    def _transmit(self, envelopes):
-        """
-        Transmit the data envelopes to the ingestion service.
-        Return a negative value for partial success or non-retryable failure.
-        Return 0 if all envelopes have been successfully ingested.
-        Return the next retry time in seconds for retryable failure.
-        This function should never throw exception.
-        """
-        # TODO: prevent requests being tracked
-        blacklist_hostnames = execution_context.get_opencensus_attr(
-            'blacklist_hostnames',
-        )
-        execution_context.set_opencensus_attr(
-            'blacklist_hostnames',
-            ['dc.services.visualstudio.com'],
-        )
-        try:
-            response = requests.post(
-                url=self.options.endpoint,
-                data=json.dumps(envelopes),
-                headers={
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json; charset=utf-8',
-                },
-                timeout=self.options.timeout,
-            )
-        except Exception as ex:  # TODO: consider RequestException
-            logger.warning('Transient client side error %s.', ex)
-            # client side error (retryable)
-            return self.options.minimum_retry_interval
-        finally:
-            execution_context.set_opencensus_attr(
-                'blacklist_hostnames',
-                blacklist_hostnames,
-            )
-        text = 'N/A'
-        data = None
-        try:
-            text = response.text
-        except Exception as ex:
-            logger.warning('Error while reading response body %s.', ex)
-        else:
-            try:
-                data = json.loads(text)
-            except Exception:
-                pass
-        if response.status_code == 200:
-            logger.info('Transmission succeeded: %s.', text)
-            return 0
-        if response.status_code == 206:  # Partial Content
-            # TODO: store the unsent data
-            if data:
-                try:
-                    resend_envelopes = []
-                    for error in data['errors']:
-                        if error['statusCode'] in (
-                                429,  # Too Many Requests
-                                500,  # Internal Server Error
-                                503,  # Service Unavailable
-                        ):
-                            resend_envelopes.append(envelopes[error['index']])
-                        else:
-                            logger.error(
-                                'Data drop %s: %s %s.',
-                                error['statusCode'],
-                                error['message'],
-                                envelopes[error['index']],
-                            )
-                    if resend_envelopes:
-                        self.storage.put(resend_envelopes)
-                except Exception as ex:
-                    logger.error(
-                        'Error while processing %s: %s %s.',
-                        response.status_code,
-                        text,
-                        ex,
-                    )
-                return -response.status_code
-            # cannot parse response body, fallback to retry
-        if response.status_code in (
-                206,  # Partial Content
-                429,  # Too Many Requests
-                500,  # Internal Server Error
-                503,  # Service Unavailable
-        ):
-            logger.warning(
-                'Transient server side error %s: %s.',
-                response.status_code,
-                text,
-            )
-            # server side error (retryable)
-            return self.options.minimum_retry_interval
-        logger.error(
-            'Non-retryable server side error %s: %s.',
-            response.status_code,
-            text,
-        )
-        # server side error (non-retryable)
-        return -response.status_code
 
     def emit(self, batch, event=None):
         try:

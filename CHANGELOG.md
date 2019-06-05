@@ -1,6 +1,10 @@
 # Changelog
 
 ## Unreleased
+
+## 0.6.0
+Released 2019-05-31
+
 - Refactored PeriodicTask
   ([#632](https://github.com/census-instrumentation/opencensus-python/pull/632))
 - Make ProbabilitySampler default, change default sampling rate

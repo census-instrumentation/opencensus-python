@@ -15,10 +15,19 @@
 import logging
 import threading
 import time
+import traceback
 
 from opencensus.common.schedule import Queue
+from opencensus.common.schedule import QueueExitEvent
 from opencensus.common.schedule import QueueEvent
 from opencensus.ext.azure.common import Options
+from opencensus.ext.azure.common import utils
+from opencensus.ext.azure.common.protocol import Data
+from opencensus.ext.azure.common.protocol import Envelope
+from opencensus.ext.azure.common.protocol import ExceptionData
+from opencensus.ext.azure.common.protocol import Message
+from opencensus.ext.azure.common.storage import LocalFileStorage
+from opencensus.ext.azure.common.transport import TransportMixin
 
 logger = logging.getLogger(__name__)
 
@@ -49,7 +58,7 @@ class BaseLogHandler(logging.Handler):
                 event.set()
 
     def export(self, batch):
-        raise NotImplementedError
+        raise NotImplementedError  # pragma: NO COVER
 
     def flush(self, timeout=None):
         self._queue.flush(timeout=timeout)
@@ -78,14 +87,13 @@ class Worker(threading.Thread):
                     logger.exception('Unhandled exception from exporter.')
                 if batch[-1] is src.EXIT_EVENT:
                     break
-                else:
-                    continue
+                continue  # pragma: NO COVER
             try:
                 dst._export(batch)
             except Exception:
                 logger.exception('Unhandled exception from exporter.')
 
-    def stop(self, timeout=None):
+    def stop(self, timeout=None):  # pragma: NO COVER
         start_time = time.time()
         wait_time = timeout
         if self.is_alive() and not self._stopping:
@@ -97,7 +105,7 @@ class Worker(threading.Thread):
             return time.time() - start_time  # time taken to stop
 
 
-class AzureLogHandler(BaseLogHandler):
+class AzureLogHandler(TransportMixin, BaseLogHandler):
     """Handler for logging to Microsoft Azure Monitor.
 
     :param options: Options for the log handler.
@@ -109,11 +117,91 @@ class AzureLogHandler(BaseLogHandler):
             raise ValueError('The instrumentation_key is not provided.')
         self.export_interval = self.options.export_interval
         self.max_batch_size = self.options.max_batch_size
+        self.storage = LocalFileStorage(
+            path=self.options.storage_path,
+            max_size=self.options.storage_max_size,
+            maintenance_period=self.options.storage_maintenance_period,
+            retention_period=self.options.storage_retention_period,
+        )
         super(AzureLogHandler, self).__init__()
 
-    def export(self, batch):
-        if batch:
-            for item in batch:
-                item.traceId = getattr(item, 'traceId', 'N/A')
-                item.spanId = getattr(item, 'spanId', 'N/A')
-                print(self.format(item))
+    def close(self):
+        self.storage.close()
+        super(AzureLogHandler, self).close()
+
+    def _export(self, batch, event=None):  # pragma: NO COVER
+        try:
+            if batch:
+                envelopes = [self.log_record_to_envelope(x) for x in batch]
+                result = self._transmit(envelopes)
+                if result > 0:
+                    self.storage.put(envelopes, result)
+            if event:
+                if isinstance(event, QueueExitEvent):
+                    self._transmit_from_storage()  # send files before exit
+                return
+            if len(batch) < self.options.max_batch_size:
+                self._transmit_from_storage()
+        finally:
+            if event:
+                event.set()
+
+    def log_record_to_envelope(self, record):
+        envelope = Envelope(
+            iKey=self.options.instrumentation_key,
+            tags=dict(utils.azure_monitor_context),
+            time=utils.timestamp_to_iso_str(record.created),
+        )
+        envelope.tags['ai.operation.id'] = getattr(
+            record,
+            'traceId',
+            '00000000000000000000000000000000',
+        )
+        envelope.tags['ai.operation.parentId'] = '|{}.{}.'.format(
+            envelope.tags['ai.operation.id'],
+            getattr(record, 'spanId', '0000000000000000'),
+        )
+        properties = {
+            'process': record.processName,
+            'module': record.module,
+            'fileName': record.pathname,
+            'lineNumber': record.lineno,
+            'level': record.levelname,
+        }
+        if record.exc_info:
+            exctype, _value, tb = record.exc_info
+            callstack = []
+            level = 0
+            for fileName, line, method, _text in traceback.extract_tb(tb):
+                callstack.append({
+                    'level': level,
+                    'method': method,
+                    'fileName': fileName,
+                    'line': line,
+                })
+                level += 1
+            callstack.reverse()
+
+            envelope.name = 'Microsoft.ApplicationInsights.Exception'
+            data = ExceptionData(
+                exceptions=[{
+                    'id': 1,
+                    'outerId': 0,
+                    'typeName': exctype.__name__,
+                    'message': self.format(record),
+                    'hasFullStack': True,
+                    'parsedStack': callstack,
+                }],
+                severityLevel=max(0, record.levelno - 1) // 10,
+                properties=properties,
+            )
+            envelope.data = Data(baseData=data, baseType='ExceptionData')
+        else:
+            envelope.name = 'Microsoft.ApplicationInsights.Message'
+            data = Message(
+                message=self.format(record),
+                severityLevel=max(0, record.levelno - 1) // 10,
+                properties=properties,
+            )
+            envelope.data = Data(baseData=data, baseType='MessageData')
+        return envelope
