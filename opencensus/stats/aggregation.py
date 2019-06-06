@@ -121,7 +121,7 @@ class DistributionAggregation(BaseAggregation):
 
     """
 
-    def __init__(self, boundaries=None, distribution=None):
+    def __init__(self, boundaries=None):
         if boundaries:
             if not all(boundaries[ii] < boundaries[ii + 1]
                        for ii in range(len(boundaries) - 1)):

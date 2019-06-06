@@ -19,7 +19,7 @@ import unittest
 import mock
 
 from opencensus.metrics.export import point
-from opencensus.metrics.export import value
+from opencensus.metrics.export import value as value_module
 from opencensus.stats import aggregation_data as aggregation_data_module
 
 
@@ -36,14 +36,14 @@ class TestSumAggregationData(unittest.TestCase):
     def test_constructor_float(self):
         sum_data = 1.0
         sum_aggregation_data = aggregation_data_module.SumAggregationData(
-            value_type=value.ValueDouble, sum_data=sum_data)
+            value_type=value_module.ValueDouble, sum_data=sum_data)
 
         self.assertEqual(1.0, sum_aggregation_data.sum_data)
 
     def test_constructor_int(self):
         sum_data = 1
         sum_aggregation_data = aggregation_data_module.SumAggregationData(
-            value_type=value.ValueLong, sum_data=sum_data)
+            value_type=value_module.ValueLong, sum_data=sum_data)
 
         self.assertEqual(1, sum_aggregation_data.sum_data)
 
@@ -51,7 +51,7 @@ class TestSumAggregationData(unittest.TestCase):
         sum_data = 1
         value = 3.5
         sum_aggregation_data = aggregation_data_module.SumAggregationData(
-            value_type=value.ValueDouble, sum_data=sum_data)
+            value_type=value_module.ValueDouble, sum_data=sum_data)
         sum_aggregation_data.add_sample(value, None, None)
 
         self.assertEqual(4.5, sum_aggregation_data.sum_data)
@@ -60,7 +60,7 @@ class TestSumAggregationData(unittest.TestCase):
         sum_data = 1
         value = 3
         sum_aggregation_data = aggregation_data_module.SumAggregationData(
-            value_type=value.ValueLong, sum_data=sum_data)
+            value_type=value_module.ValueLong, sum_data=sum_data)
         sum_aggregation_data.add_sample(value, None, None)
 
         self.assertEqual(4, sum_aggregation_data.sum_data)
@@ -69,10 +69,10 @@ class TestSumAggregationData(unittest.TestCase):
         sum_data = 12.345
         timestamp = datetime(1970, 1, 1)
         agg = aggregation_data_module.SumAggregationData(
-            value_type=value.ValueDouble, sum_data=sum_data)
+            value_type=value_module.ValueDouble, sum_data=sum_data)
         converted_point = agg.to_point(timestamp)
         self.assertTrue(isinstance(converted_point, point.Point))
-        self.assertTrue(isinstance(converted_point.value, value.ValueDouble))
+        self.assertTrue(isinstance(converted_point.value, value_module.ValueDouble))
         self.assertEqual(converted_point.value.value, sum_data)
         self.assertEqual(converted_point.timestamp, timestamp)
 
@@ -80,10 +80,10 @@ class TestSumAggregationData(unittest.TestCase):
         sum_data = 12
         timestamp = datetime(1970, 1, 1)
         agg = aggregation_data_module.SumAggregationData(
-            value_type=value.ValueLong, sum_data=sum_data)
+            value_type=value_module.ValueLong, sum_data=sum_data)
         converted_point = agg.to_point(timestamp)
         self.assertTrue(isinstance(converted_point, point.Point))
-        self.assertTrue(isinstance(converted_point.value, value.ValueDouble))
+        self.assertTrue(isinstance(converted_point.value, value_module.ValueLong))
         self.assertEqual(converted_point.value.value, sum_data)
         self.assertEqual(converted_point.timestamp, timestamp)
 
@@ -93,7 +93,7 @@ class TestLastValueAggregationData(unittest.TestCase):
         value_data = 0.0
         last_value_aggregation_data =\
             aggregation_data_module.LastValueAggregationData(
-                value_type=value.ValueDouble, value=value_data)
+                value_type=value_module.ValueDouble, value=value_data)
 
         self.assertEqual(0.0, last_value_aggregation_data.value)
 
@@ -101,7 +101,7 @@ class TestLastValueAggregationData(unittest.TestCase):
         value_data = 0
         last_value_aggregation_data =\
             aggregation_data_module.LastValueAggregationData(
-                value_type=value.ValueLong, value=value_data)
+                value_type=value_module.ValueLong, value=value_data)
 
         self.assertEqual(0, last_value_aggregation_data.value)
 
@@ -109,7 +109,7 @@ class TestLastValueAggregationData(unittest.TestCase):
         first_data = 0
         last_value_aggregation_data =\
             aggregation_data_module.LastValueAggregationData(
-                value_type=value.ValueDouble, value=first_data)
+                value_type=value_module.ValueDouble, value=first_data)
         self.assertEqual(0, last_value_aggregation_data.value)
         last_value_aggregation_data.add_sample(1.2, None, None)
         self.assertEqual(1.2, last_value_aggregation_data.value)
@@ -118,7 +118,7 @@ class TestLastValueAggregationData(unittest.TestCase):
         first_data = 0
         last_value_aggregation_data =\
             aggregation_data_module.LastValueAggregationData(
-                value_type=value.ValueLong, value=first_data)
+                value_type=value_module.ValueLong, value=first_data)
         self.assertEqual(0, last_value_aggregation_data.value)
         last_value_aggregation_data.add_sample(1, None, None)
         self.assertEqual(1, last_value_aggregation_data.value)
@@ -127,10 +127,10 @@ class TestLastValueAggregationData(unittest.TestCase):
         val = 1.2
         timestamp = datetime(1970, 1, 1)
         agg = aggregation_data_module.LastValueAggregationData(
-            value_type=value.ValueDouble, value=val)
+            value_type=value_module.ValueDouble, value=val)
         converted_point = agg.to_point(timestamp)
         self.assertTrue(isinstance(converted_point, point.Point))
-        self.assertTrue(isinstance(converted_point.value, value.ValueDouble))
+        self.assertTrue(isinstance(converted_point.value, value_module.ValueDouble))
         self.assertEqual(converted_point.value.value, val)
         self.assertEqual(converted_point.timestamp, timestamp)
 
@@ -138,10 +138,10 @@ class TestLastValueAggregationData(unittest.TestCase):
         val = 1
         timestamp = datetime(1970, 1, 1)
         agg = aggregation_data_module.LastValueAggregationData(
-            value_type=value.ValueLong, value=val)
+            value_type=value_module.ValueLong, value=val)
         converted_point = agg.to_point(timestamp)
         self.assertTrue(isinstance(converted_point, point.Point))
-        self.assertTrue(isinstance(converted_point.value, value.ValueLong))
+        self.assertTrue(isinstance(converted_point.value, value_module.ValueLong))
         self.assertEqual(converted_point.value.value, val)
         self.assertEqual(converted_point.timestamp, timestamp)
 
@@ -149,7 +149,7 @@ class TestLastValueAggregationData(unittest.TestCase):
 def exemplars_equal(stats_ex, metrics_ex):
     """Compare a stats exemplar to a metrics exemplar."""
     assert isinstance(stats_ex, aggregation_data_module.Exemplar)
-    assert isinstance(metrics_ex, value.Exemplar)
+    assert isinstance(metrics_ex, value_module.Exemplar)
     return (stats_ex.value == metrics_ex.value and
             stats_ex.timestamp == metrics_ex.timestamp and
             stats_ex.attachments == metrics_ex.attachments)
@@ -506,7 +506,7 @@ class TestDistributionAggregationData(unittest.TestCase):
         )
         converted_point = dist_agg_data.to_point(timestamp)
         self.assertTrue(isinstance(converted_point.value,
-                                   value.ValueDistribution))
+                                   value_module.ValueDistribution))
         self.assertEqual(converted_point.value.count, 99)
         self.assertEqual(converted_point.value.sum, 4950)
         self.assertEqual(converted_point.value.sum_of_squared_deviation,
@@ -533,7 +533,7 @@ class TestDistributionAggregationData(unittest.TestCase):
         )
         converted_point = dist_agg_data.to_point(timestamp)
         self.assertTrue(isinstance(converted_point.value,
-                                   value.ValueDistribution))
+                                   value_module.ValueDistribution))
         self.assertEqual(converted_point.value.count, 99)
         self.assertEqual(converted_point.value.sum, 4950)
         self.assertEqual(converted_point.value.sum_of_squared_deviation,

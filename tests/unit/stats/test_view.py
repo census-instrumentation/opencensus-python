@@ -46,7 +46,6 @@ class TestView(unittest.TestCase):
     def test_view_to_metric_descriptor(self):
         mock_measure = mock.Mock(spec=measure.MeasureFloat)
         mock_agg = mock.Mock(spec=aggregation.SumAggregation)
-        mock_agg.aggregation_type = aggregation.Type.SUM
         test_view = view.View("name", "description", ["tk1", "tk2"],
                               mock_measure, mock_agg)
 

@@ -35,13 +35,9 @@ class TestMetricUtils(unittest.TestCase):
         measure_int = mock.Mock(spec=measure.MeasureInt)
         measure_float = mock.Mock(spec=measure.MeasureFloat)
         agg_sum = mock.Mock(spec=aggregation.SumAggregation)
-        agg_sum.aggregation_type = aggregation.Type.SUM
         agg_count = mock.Mock(spec=aggregation.CountAggregation)
-        agg_count.aggregation_type = aggregation.Type.COUNT
         agg_dist = mock.Mock(spec=aggregation.DistributionAggregation)
-        agg_dist.aggregation_type = aggregation.Type.DISTRIBUTION
         agg_lv = mock.Mock(spec=aggregation.LastValueAggregation)
-        agg_lv.aggregation_type = aggregation.Type.LASTVALUE
 
         view_to_metric_type = {
             (measure_int, agg_sum):
@@ -67,21 +63,17 @@ class TestMetricUtils(unittest.TestCase):
 
     def test_get_metric_type_bad_aggregation(self):
         base_agg = mock.Mock(spec=aggregation.BaseAggregation)
-        base_agg.aggregation_type = aggregation.Type.NONE
         with self.assertRaises(ValueError):
             metric_utils.get_metric_type(mock.Mock(), base_agg)
 
         bad_agg = mock.Mock(spec=aggregation.SumAggregation)
-        bad_agg.aggregation_type = aggregation.Type.COUNT
         with self.assertRaises(AssertionError):
             metric_utils.get_metric_type(mock.Mock(), bad_agg)
 
     def test_get_metric_type_bad_measure(self):
         base_measure = mock.Mock(spec=measure.BaseMeasure)
         agg_sum = mock.Mock(spec=aggregation.SumAggregation)
-        agg_sum.aggregation_type = aggregation.Type.SUM
         agg_lv = mock.Mock(spec=aggregation.LastValueAggregation)
-        agg_lv.aggregation_type = aggregation.Type.LASTVALUE
         with self.assertRaises(ValueError):
             metric_utils.get_metric_type(base_measure, agg_sum)
         with self.assertRaises(ValueError):
@@ -116,7 +108,7 @@ class TestMetricUtils(unittest.TestCase):
         mock_point = mock.Mock(spec=point.Point)
         mock_point.value = mock.Mock(spec=value_type)
 
-        mock_agg = mock.Mock(spec=aggregation_data.SumAggregationDataFloat)
+        mock_agg = mock.Mock(spec=aggregation_data.SumAggregationData)
         mock_agg.to_point.return_value = mock_point
 
         vd.tag_value_aggregation_data_map = {
@@ -168,7 +160,6 @@ class TestMetricUtils(unittest.TestCase):
     def test_convert_view_without_labels(self):
         mock_measure = mock.Mock(spec=measure.MeasureFloat)
         mock_aggregation = mock.Mock(spec=aggregation.DistributionAggregation)
-        mock_aggregation.aggregation_type = aggregation.Type.DISTRIBUTION
 
         vd = mock.Mock(spec=view_data.ViewData)
         vd.view = view.View(
@@ -182,7 +173,7 @@ class TestMetricUtils(unittest.TestCase):
         mock_point = mock.Mock(spec=point.Point)
         mock_point.value = mock.Mock(spec=value.ValueDistribution)
 
-        mock_agg = mock.Mock(spec=aggregation_data.SumAggregationDataFloat)
+        mock_agg = mock.Mock(spec=aggregation_data.SumAggregationData)
         mock_agg.to_point.return_value = mock_point
 
         vd.tag_value_aggregation_data_map = {tuple(): mock_agg}
