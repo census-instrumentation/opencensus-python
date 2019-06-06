@@ -137,38 +137,56 @@ Metrics Exporter Prerequisites
 * Create an Azure Monitor resource and get the instrumentation key, more information can be found `here <https://docs.microsoft.com/azure/azure-monitor/app/create-new-resource>`_.
 * Put the instrumentation key in ``APPINSIGHTS_INSTRUMENTATIONKEY`` environment variable.
 
-Register the Metrics exporter
+Using the Metrics exporter
 *****************************
 
     .. code:: python
 
+        import time
+
+        from opencensus.ext.azure import metric_exporter
+        from opencensus.stats import aggregation as aggregation_module
+        from opencensus.stats import measure as measure_module
+        from opencensus.stats import stats as stats_module
+        from opencensus.stats import view as view_module
+        from opencensus.tags import tag_map as tag_map_module
+
+
+        # The stats recorder
         stats = stats_module.stats
         view_manager = stats.view_manager
+        stats_recorder = stats.stats_recorder
 
-        exporter = metric_exporter.new_metrics_exporter()
-        view_manager.register_exporter(exporter)
+        PROBLEMS_SOLVED_MEASURE = measure_module.MeasureInt("problems_solved", "number of problems solved", "chips")
+        PROBLEMS_SOLVED_VIEW = view_module.View('problems_solved_view', "number of problems eaten", [], PROBLEMS_SOLVED_MEASURE, aggregation_module.CountAggregation())
+
+        def main():
+            # Enable metrics
+            # Set the interval in seconds in which you want to send metrics
+            exporter = metric_exporter.new_metrics_exporter(export_interval=5)
+            view_manager.register_exporter(exporter)
+
+            view_manager.register_view(PROBLEMS_SOLVED_VIEW)
+            mmap = stats_recorder.new_measurement_map()
+            tmap = tag_map_module.TagMap()
+
+            mmap.measure_int_put(PROBLEMS_SOLVED_MEASURE, 1000)
+            mmap.record(tmap)
+            time.sleep(5)
+
+            print("Done recording metrics")
+
+
+        if __name__ == "__main__":
+            main()
         ...
-
-Metrics Exporter Code Reference
-*******************************
-
-In the *examples* folder, you can find all the necessary steps to get the exporter, register a view, put tags on the measure, and see the values in `Azure Monitor`_
-
-For further details for the Stackdriver implementation, see the folder *stackdriver/stats_exporter/*.
-
-+---------------------------------------------------------------------------------+-----------------------------------------+
-| Path & File                                                                     | Short Description                       |
-+=================================================================================+=========================================+
-| contrib/opencensus-ext-azure/examples/metrics                                   | End to end example                      |
-+---------------------------------------------------------------------------------+-----------------------------------------+
-| contrib/opencensus-ext-azure/opencensus/ext/azure/metric_exporter/              | Metrics implementation for Azure Monitor|
-+---------------------------------------------------------------------------------+-----------------------------------------+
 
 References
 ----------
 
 * `Azure Monitor <https://docs.microsoft.com/azure/azure-monitor/>`_
 * `Examples <https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-azure/examples>`_
+* `Implementation <https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-azure/opencensus/ext/azure/metric_exporter>`_
 * `OpenCensus Project <https://opencensus.io/>`_
 
 .. _Azure Monitor: https://docs.microsoft.com/azure/azure-monitor/

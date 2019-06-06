@@ -238,7 +238,7 @@ Stats Exporter
 .. _Zipkin: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-zipkin
 
 Metrics Exporter
---------------
+----------------
 
 -  `Azure`_
 
