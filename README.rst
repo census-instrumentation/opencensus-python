@@ -237,6 +237,11 @@ Stats Exporter
 .. _threading: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-threading
 .. _Zipkin: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-zipkin
 
+Metrics Exporter
+--------------
+
+-  `Azure`_
+
 Log Exporter
 --------------
 

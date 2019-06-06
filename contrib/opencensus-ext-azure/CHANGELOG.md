@@ -1,6 +1,8 @@
 # Changelog
 
 ## Unreleased
+- Added metrics exporter
+ ([#](https://github.com/census-instrumentation/opencensus-python/pull/#)
 
 ## 0.2.0
 Released 2019-05-31

@@ -114,6 +114,56 @@ You can enrich the logs with trace IDs and span IDs by using the `logging integr
         logger.warning('In the span')
     logger.warning('After the span')
 
+Metric
+~~~
+
+The **OpenCensus Azure Monitor Metrics Exporter** allows you to export metrics to `Azure Monitor`_.
+
+Metrics Exporter Usage
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Metrics Exporter Import
+************************
+
+.. code:: python
+
+        from opencensus.ext.azure import metric_exporter
+        from opencensus.stats import stats as stats_module
+
+Metrics Exporter Prerequisites
+************************
+
+* OpenCensus Python libraries require Python 2.7 or later.
+* Create an Azure Monitor resource and get the instrumentation key, more information can be found `here <https://docs.microsoft.com/azure/azure-monitor/app/create-new-resource>`_.
+* Put the instrumentation key in ``APPINSIGHTS_INSTRUMENTATIONKEY`` environment variable.
+
+Register the Metrics exporter
+**********************************
+
+    .. code:: python
+
+        stats = stats_module.stats
+        view_manager = stats.view_manager
+
+        exporter = metric_exporter.new_metrics_exporter()
+        view_manager.register_exporter(exporter)
+        ...
+
+Metrics Exporter Code Reference
+******************************
+
+In the *examples* folder, you can find all the necessary steps to get the exporter, register a view, put tags on the measure, and see the values in `Azure Monitor`_
+
+For further details for the Stackdriver implementation, see the folder *stackdriver/stats_exporter/*.
+
++---------------------------------------------------------------------------------+-----------------------------------------+
+| Path & File                                                                     | Short Description                       |
++=================================================================================+=========================================+
+| contrib/opencensus-ext-azure/examples/metrics                                   | End to end example                      |
++---------------------------------------------------------------------------------+-----------------------------------------+
+| contrib/opencensus-ext-azure/opencensus/ext/azure/metric_exporter/              | Metrics implementation for Azure Monitor|
++---------------------------------------------------------------------------------+-----------------------------------------+
+
 References
 ----------
 
