@@ -115,12 +115,12 @@ You can enrich the logs with trace IDs and span IDs by using the `logging integr
     logger.warning('After the span')
 
 Metric
-~~~
+~~~~~~
 
 The **OpenCensus Azure Monitor Metrics Exporter** allows you to export metrics to `Azure Monitor`_.
 
 Metrics Exporter Usage
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
 
 Metrics Exporter Import
 ************************
@@ -131,14 +131,14 @@ Metrics Exporter Import
         from opencensus.stats import stats as stats_module
 
 Metrics Exporter Prerequisites
-************************
+******************************
 
 * OpenCensus Python libraries require Python 2.7 or later.
 * Create an Azure Monitor resource and get the instrumentation key, more information can be found `here <https://docs.microsoft.com/azure/azure-monitor/app/create-new-resource>`_.
 * Put the instrumentation key in ``APPINSIGHTS_INSTRUMENTATIONKEY`` environment variable.
 
 Register the Metrics exporter
-**********************************
+*****************************
 
     .. code:: python
 
@@ -150,7 +150,7 @@ Register the Metrics exporter
         ...
 
 Metrics Exporter Code Reference
-******************************
+*******************************
 
 In the *examples* folder, you can find all the necessary steps to get the exporter, register a view, put tags on the measure, and see the values in `Azure Monitor`_
 

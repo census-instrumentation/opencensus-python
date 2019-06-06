@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from datetime import datetime
-import os
 import threading
 
 from opencensus.ext.azure.common import Options
@@ -24,6 +22,7 @@ __all__ = ['MetricsExporter']
 
 class MetricsExporter(object):
     """Metrics exporter for Microsoft Azure Monitoring."""
+
 
     def __init__(self, options):
         self._options = options
@@ -38,6 +37,7 @@ class MetricsExporter(object):
         metrics = list(metrics)
         for metric in metrics:
             print(repr(metric))
+
 
 def new_metrics_exporter(interval=None, **options):
     options = Options(**options)
