@@ -41,7 +41,7 @@ class MetricsExporter(object):
 
 def new_metrics_exporter(interval=None, **options):
     options = Options(**options)
-    if not options.instrumentation_key and 1 == 2:
+    if not options.instrumentation_key:
         raise ValueError('The instrumentation_key is not provided.')
     exporter = MetricsExporter(options=options)
     transport.get_exporter_thread(stats.stats, exporter, interval=interval)
