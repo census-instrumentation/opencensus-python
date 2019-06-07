@@ -27,8 +27,8 @@ stats = stats_module.stats
 view_manager = stats.view_manager
 stats_recorder = stats.stats_recorder
 
-PROBLEMS_SOLVED_MEASURE = measure_module.MeasureInt("problems_solved", "number of problems solved", "chips")
-PROBLEMS_SOLVED_VIEW = view_module.View('problems_solved_view', "number of problems eaten", [], PROBLEMS_SOLVED_MEASURE, aggregation_module.CountAggregation())
+PROBLEMS_SOLVED_MEASURE = measure_module.MeasureInt("problems_solved", "number of problems solved", "problems")
+PROBLEMS_SOLVED_VIEW = view_module.View('problems_solved_view', "number of problems solved", [], PROBLEMS_SOLVED_MEASURE, aggregation_module.CountAggregation())
 
 def main():
     # Enable metrics
