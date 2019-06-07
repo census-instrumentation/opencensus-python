@@ -4,6 +4,8 @@ OpenCensus - A stats collection and distributed tracing framework
 |gitter|
 |circleci|
 |pypi|
+|compat_check_pypi|
+|compat_check_github|
 
 .. |circleci| image:: https://circleci.com/gh/census-instrumentation/opencensus-python.svg?style=shield
    :target: https://circleci.com/gh/census-instrumentation/opencensus-python
@@ -11,6 +13,10 @@ OpenCensus - A stats collection and distributed tracing framework
    :target: https://gitter.im/census-instrumentation/lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
 .. |pypi| image:: https://badge.fury.io/py/opencensus.svg
    :target: https://pypi.org/project/opencensus/
+.. |compat_check_pypi| image:: https://python-compatibility-tools.appspot.com/one_badge_image?package=opencensus
+   :target: https://python-compatibility-tools.appspot.com/one_badge_target?package=opencensus
+.. |compat_check_github| image:: https://python-compatibility-tools.appspot.com/one_badge_image?package=git%2Bgit%3A//github.com/census-instrumentation/opencensus-python.git
+   :target: https://python-compatibility-tools.appspot.com/one_badge_target?package=git%2Bgit%3A//github.com/census-instrumentation/opencensus-python.git
 
 `OpenCensus`_ for Python. OpenCensus provides a framework to measure a
 server's resource usage and collect performance stats. This repository
