@@ -21,7 +21,7 @@ from opencensus.stats import stats
 __all__ = ['MetricsExporter']
 
 class MetricsExporter(object):
-    """Metrics exporter for Microsoft Azure Monitoring."""
+    """Metrics exporter for Microsoft Azure Monitor."""
 
 
     def __init__(self, options):

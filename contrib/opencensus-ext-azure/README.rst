@@ -122,18 +122,9 @@ The **OpenCensus Azure Monitor Metrics Exporter** allows you to export metrics t
 Metrics Exporter Usage
 ~~~~~~~~~~~~~~~~~~~~~~
 
-Metrics Exporter Import
-************************
-
-.. code:: python
-
-        from opencensus.ext.azure import metric_exporter
-        from opencensus.stats import stats as stats_module
-
 Metrics Exporter Prerequisites
 ******************************
 
-* OpenCensus Python libraries require Python 2.7 or later.
 * Create an Azure Monitor resource and get the instrumentation key, more information can be found `here <https://docs.microsoft.com/azure/azure-monitor/app/create-new-resource>`_.
 * Put the instrumentation key in ``APPINSIGHTS_INSTRUMENTATIONKEY`` environment variable.
 
@@ -179,7 +170,7 @@ Using the Metrics exporter
 
         if __name__ == "__main__":
             main()
-        ...
+        
 
 References
 ----------
