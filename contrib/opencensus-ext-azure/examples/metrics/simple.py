@@ -14,7 +14,7 @@
 
 import time
 
-from opencensus.ext.azure import metric_exporter
+from opencensus.ext.azure import metrics_exporter
 from opencensus.metrics.export import aggregation as aggregation_module
 from opencensus.metrics.export import measure as measure_module
 from opencensus.metrics.export import metric_producer as metric_module
@@ -31,7 +31,7 @@ PROBLEMS_SOLVED_VIEW = view_module.View('problems_solved_view', "number of probl
 def main():
     # Enable metrics
     # Set the interval in seconds in which you want to send metrics
-    exporter = metric_exporter.new_metrics_exporter(export_interval = 2)
+    exporter = metrics_exporter.new_metrics_exporter(export_interval=2)
     view_manager.register_exporter(exporter)
 
     view_manager.register_view(PROBLEMS_SOLVED_VIEW)
