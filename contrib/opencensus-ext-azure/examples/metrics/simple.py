@@ -15,17 +15,15 @@
 import time
 
 from opencensus.ext.azure import metric_exporter
-from opencensus.stats import aggregation as aggregation_module
-from opencensus.stats import measure as measure_module
-from opencensus.stats import stats as stats_module
-from opencensus.stats import view as view_module
+from opencensus.metrics.export import aggregation as aggregation_module
+from opencensus.metrics.export import measure as measure_module
+from opencensus.metrics.export import metric_producer as metric_module
+from opencensus.metrics.export import view as view_module
 from opencensus.tags import tag_map as tag_map_module
 
-
-# The stats recorder
-stats = stats_module.stats
-view_manager = stats.view_manager
-stats_recorder = stats.stats_recorder
+metrics = metric_module.metrics
+view_manager = metrics.view_manager
+metrics_recorder = metrics.metrics_recorder
 
 PROBLEMS_SOLVED_MEASURE = measure_module.MeasureInt("problems_solved", "number of problems solved", "problems")
 PROBLEMS_SOLVED_VIEW = view_module.View('problems_solved_view', "number of problems solved", [], PROBLEMS_SOLVED_MEASURE, aggregation_module.CountAggregation())
@@ -33,16 +31,16 @@ PROBLEMS_SOLVED_VIEW = view_module.View('problems_solved_view', "number of probl
 def main():
     # Enable metrics
     # Set the interval in seconds in which you want to send metrics
-    exporter = metric_exporter.new_metrics_exporter()
+    exporter = metric_exporter.new_metrics_exporter(export_interval = 2)
     view_manager.register_exporter(exporter)
 
     view_manager.register_view(PROBLEMS_SOLVED_VIEW)
-    mmap = stats_recorder.new_measurement_map()
+    mmap = metrics_recorder.new_measurement_map()
     tmap = tag_map_module.TagMap()
 
     mmap.measure_int_put(PROBLEMS_SOLVED_MEASURE, 1000)
     mmap.record(tmap)
-    time.sleep(5)
+    time.sleep(10)
 
     print("Done recording metrics")
 

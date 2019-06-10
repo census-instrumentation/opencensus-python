@@ -16,21 +16,20 @@ import random
 import time
 
 from opencensus.ext.azure import metric_exporter
-from opencensus.stats import aggregation as aggregation_module
-from opencensus.stats import measure as measure_module
-from opencensus.stats import stats as stats_module
-from opencensus.stats import view as view_module
+from opencensus.metrics.export import aggregation as aggregation_module
+from opencensus.metrics.export import measure as measure_module
+from opencensus.metrics.export import metric_producer as metric_module
+from opencensus.metrics.export import view as view_module
 from opencensus.tags import tag_map as tag_map_module
+
+metrics = metric_module.metrics
+view_manager = metrics.view_manager
+metrics_recorder = metrics.metrics_recorder
 
 # Create the measures
 # The latency in milliseconds
 m_latency_ms = measure_module.MeasureFloat(
     "task_latency", "The task latency in milliseconds", "ms")
-
-# The stats recorder
-stats = stats_module.stats
-view_manager = stats.view_manager
-stats_recorder = stats.stats_recorder
 
 # Create a view in which defines an aggregation and tag keys
 latency_view = view_module.View(
@@ -49,7 +48,7 @@ def main():
     view_manager.register_exporter(exporter)
 
     view_manager.register_view(latency_view)
-    mmap = stats_recorder.new_measurement_map()
+    mmap = metrics_recorder.new_measurement_map()
     tmap = tag_map_module.TagMap()
 
     for i in range(100):

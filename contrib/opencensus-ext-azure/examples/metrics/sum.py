@@ -16,17 +16,15 @@ import random
 import time
 
 from opencensus.ext.azure import metric_exporter
-from opencensus.stats import aggregation as aggregation_module
-from opencensus.stats import measure as measure_module
-from opencensus.stats import stats as stats_module
-from opencensus.stats import view as view_module
+from opencensus.metrics.export import aggregation as aggregation_module
+from opencensus.metrics.export import measure as measure_module
+from opencensus.metrics.export import metric_producer as metric_module
+from opencensus.metrics.export import view as view_module
 from opencensus.tags import tag_map as tag_map_module
 
-
-# The stats recorder
-stats = stats_module.stats
-view_manager = stats.view_manager
-stats_recorder = stats.stats_recorder
+metrics = metric_module.metrics
+view_manager = metrics.view_manager
+metrics_recorder = metrics.metrics_recorder
 
 CHIPS_EATEN_MEASURE = measure_module.MeasureFloat("chips_eaten", "number of chips eaten", "chips")
 CHIPS_EATEN_VIEW = view_module.View('chips_eaten_view', "number of chips eaten", [], CHIPS_EATEN_MEASURE, aggregation_module.SumAggregation())
@@ -38,7 +36,7 @@ def main():
     view_manager.register_exporter(exporter)
 
     view_manager.register_view(CHIPS_EATEN_VIEW)
-    mmap = stats_recorder.new_measurement_map()
+    mmap = metrics_recorder.new_measurement_map()
     tmap = tag_map_module.TagMap()
 
     for i in range(100):

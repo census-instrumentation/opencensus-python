@@ -13,18 +13,30 @@
 # limitations under the License.
 
 import threading
+from datetime import datetime
 
+from opencensus.metrics.export.metrics_recorder import MetricsRecorder
+from opencensus.metrics.export.view_manager import ViewManager
 
 class MetricProducer(object):
-    """Produces a set of metrics for export."""
+    """MetricProducer defines a View Manager and a Metrics Recorder in order for the
+    collection of Metrics
+    """
+
+    def __init__(self):
+        self.metrics_recorder = MetricsRecorder()
+        self.view_manager = ViewManager()
 
     def get_metrics(self):
-        """Get a set of metrics to be exported.
+        """Get a Metric for each of the view manager's registered views.
 
-        :rtype: set(:class: `opencensus.metrics.export.metric.Metric`)
-        :return: A set of metrics to be exported.
+        Convert each registered view's associated `ViewData` into a `Metric` to
+        be exported, using the current time for metric conversions.
+
+        :rtype: Iterator[:class: `opencensus.metrics.export.metric.Metric`]
         """
-        raise NotImplementedError  # pragma: NO COVER
+        return self.view_manager.measure_to_view_map.get_metrics(
+            datetime.utcnow())
 
 
 class MetricProducerManager(object):
@@ -79,3 +91,5 @@ class MetricProducerManager(object):
         with self.mp_lock:
             mps_copy = set(self.metric_producers)
         return mps_copy
+
+metrics = MetricProducer()
