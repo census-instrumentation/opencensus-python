@@ -37,6 +37,7 @@ $ git remote add fork https://github.com/YOUR_GITHUB_USERNAME/opencensus-python.
 Run tests:
 
 ```sh
+# Make sure you have all supported versions of Python installed
 $ pip install nox  # Only first time.
 $ nox
 ```
