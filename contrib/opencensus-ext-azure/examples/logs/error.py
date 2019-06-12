@@ -14,7 +14,7 @@
 
 import logging
 
-from opencensus.ext.azure.log_exporter import AzureLogHandler
+from opencensus.ext.azure.logs_exporter import AzureLogHandler
 
 logger = logging.getLogger(__name__)
 # TODO: you need to specify the instrumentation key in the

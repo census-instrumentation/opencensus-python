@@ -18,7 +18,7 @@ from opencensus.ext.azure.common import Options
 from opencensus.metrics import transport
 from opencensus.stats import stats
 
-__all__ = ['MetricsExporter']
+__all__ = ['MetricsExporter', 'new_metrics_exporter']
 
 class MetricsExporter(object):
     """Metrics exporter for Microsoft Azure Monitor."""
@@ -29,13 +29,10 @@ class MetricsExporter(object):
         self._md_cache = {}
         self._md_lock = threading.Lock()
 
-    @property
-    def options(self):
-        return self._options
-
     def export_metrics(self, metrics):
         metrics = list(metrics)
         for metric in metrics:
+            # TODO: implement export to Azure Monitor functionality
             print(repr(metric))
 
 

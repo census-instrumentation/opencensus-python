@@ -63,7 +63,7 @@ You can also specify the instrumentation key explicitly in the code.
     with tracer.span(name='parent'):
         response = requests.get(url='https://www.wikipedia.org/wiki/Rabbit')
 
-Log
+Logs
 ~~~
 
 The **Azure Monitor Log Handler** allows you to export Python logs to `Azure Monitor`_.
@@ -77,7 +77,7 @@ This example shows how to send a warning level log to Azure Monitor.
 
     import logging
 
-    from opencensus.ext.azure.log_exporter import AzureLogHandler
+    from opencensus.ext.azure.logs_exporter import AzureLogHandler
 
     logger = logging.getLogger(__name__)
     logger.addHandler(AzureLogHandler())
@@ -145,7 +145,7 @@ Using the Metrics exporter
 
         PROBLEMS_SOLVED_MEASURE = measure_module.MeasureInt("problems_solved",
             "number of problems solved", "problems")
-        PROBLEMS_SOLVED_VIEW = view_module.View('problems_solved_view', "number of problems solved", [],
+        PROBLEMS_SOLVED_VIEW = view_module.View("problems_solved_view", "number of problems solved", [],
             PROBLEMS_SOLVED_MEASURE, aggregation_module.CountAggregation())
 
         def main():

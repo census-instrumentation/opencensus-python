@@ -205,6 +205,23 @@ OpenCensus supports integration with popular web frameworks, client libraries an
 -  `SQLAlchemy`_
 -  `threading`_
 
+Logs Exporter
+--------------
+
+-  `Azure`_
+
+Metrics Exporter
+----------------
+
+-  `Azure`_
+
+Stats Exporter
+--------------
+
+-  `OCAgent`_
+-  `Prometheus`_
+-  `Stackdriver`_
+
 Trace Exporter
 --------------
 
@@ -213,13 +230,6 @@ Trace Exporter
 -  `OCAgent`_
 -  `Stackdriver`_
 -  `Zipkin`_
-
-Stats Exporter
---------------
-
--  `OCAgent`_
--  `Prometheus`_
--  `Stackdriver`_
 
 .. _Azure: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-azure
 .. _Django: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-django
@@ -242,16 +252,6 @@ Stats Exporter
 .. _Stackdriver: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-stackdriver
 .. _threading: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-threading
 .. _Zipkin: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-zipkin
-
-Stats Exporter
-----------------
-
--  `Azure`_
-
-Log Exporter
---------------
-
--  `Azure`_
 
 ------------
  Versioning
