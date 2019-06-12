@@ -14,6 +14,7 @@
 
 import threading
 
+
 class MetricProducer(object):
     """Produces a set of metrics for export."""
 

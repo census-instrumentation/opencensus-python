@@ -119,9 +119,6 @@ Metric
 
 The **OpenCensus Azure Monitor Metrics Exporter** allows you to export metrics to `Azure Monitor`_.
 
-Metrics Exporter Usage
-~~~~~~~~~~~~~~~~~~~~~~
-
 Metrics Exporter Prerequisites
 ******************************
 
@@ -135,26 +132,26 @@ Using the Metrics exporter
 
         import time
 
-        from opencensus.ext.azure import metric_exporter
+        from opencensus.ext.azure import metrics_exporter
         from opencensus.stats import aggregation as aggregation_module
         from opencensus.stats import measure as measure_module
         from opencensus.stats import stats as stats_module
         from opencensus.stats import view as view_module
         from opencensus.tags import tag_map as tag_map_module
 
-
-        # The stats recorder
         stats = stats_module.stats
         view_manager = stats.view_manager
         stats_recorder = stats.stats_recorder
 
-        PROBLEMS_SOLVED_MEASURE = measure_module.MeasureInt("problems_solved", "number of problems solved", "problems")
-        PROBLEMS_SOLVED_VIEW = view_module.View('problems_solved_view', "number of problems solved", [], PROBLEMS_SOLVED_MEASURE, aggregation_module.CountAggregation())
+        PROBLEMS_SOLVED_MEASURE = measure_module.MeasureInt("problems_solved",
+            "number of problems solved", "problems")
+        PROBLEMS_SOLVED_VIEW = view_module.View('problems_solved_view', "number of problems solved", [],
+            PROBLEMS_SOLVED_MEASURE, aggregation_module.CountAggregation())
 
         def main():
             # Enable metrics
             # Set the interval in seconds in which you want to send metrics
-            exporter = metric_exporter.new_metrics_exporter(export_interval=5)
+            exporter = metrics_exporter.new_metrics_exporter(export_interval=2)
             view_manager.register_exporter(exporter)
 
             view_manager.register_view(PROBLEMS_SOLVED_VIEW)
@@ -163,7 +160,7 @@ Using the Metrics exporter
 
             mmap.measure_int_put(PROBLEMS_SOLVED_MEASURE, 1000)
             mmap.record(tmap)
-            time.sleep(5)
+            time.sleep(10)
 
             print("Done recording metrics")
 
@@ -177,7 +174,6 @@ References
 
 * `Azure Monitor <https://docs.microsoft.com/azure/azure-monitor/>`_
 * `Examples <https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-azure/examples>`_
-* `Implementation <https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-azure/opencensus/ext/azure/metric_exporter>`_
 * `OpenCensus Project <https://opencensus.io/>`_
 
 .. _Azure Monitor: https://docs.microsoft.com/azure/azure-monitor/
