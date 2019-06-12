@@ -26,14 +26,19 @@ view_manager = stats.view_manager
 stats_recorder = stats.stats_recorder
 
 PROBLEMS_SOLVED_MEASURE = measure_module.MeasureInt("problems_solved",
-    "number of problems solved", "problems")
-PROBLEMS_SOLVED_VIEW = view_module.View("problems_solved_view", "number of problems solved", [],
-    PROBLEMS_SOLVED_MEASURE, aggregation_module.CountAggregation())
+                                                    "number of problems solved", 
+                                                    "problems")
+PROBLEMS_SOLVED_VIEW = view_module.View("problems_solved_view", 
+                                        "number of problems solved", 
+                                        [], 
+                                        PROBLEMS_SOLVED_MEASURE, 
+                                        aggregation_module.CountAggregation())
+
 
 def main():
     # Enable metrics
     # Set the interval in seconds in which you want to send metrics
-    exporter = metrics_exporter.new_metrics_exporter(export_interval=2, instrumentation_key='123')
+    exporter = metrics_exporter.new_metrics_exporter(export_interval=2)
     view_manager.register_exporter(exporter)
 
     view_manager.register_view(PROBLEMS_SOLVED_VIEW)

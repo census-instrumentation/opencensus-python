@@ -41,6 +41,7 @@ latency_view = view_module.View(
     aggregation_module.DistributionAggregation(
         [100.0, 200.0, 400.0, 1000.0, 2000.0, 4000.0]))
 
+
 def main():
     # Enable metrics
     # Set the interval in seconds in which you want to send metrics

@@ -20,9 +20,9 @@ from opencensus.stats import stats
 
 __all__ = ['MetricsExporter', 'new_metrics_exporter']
 
+
 class MetricsExporter(object):
     """Metrics exporter for Microsoft Azure Monitor."""
-
 
     def __init__(self, options):
         self._options = options
@@ -41,5 +41,7 @@ def new_metrics_exporter(**options):
     if not options.instrumentation_key:
         raise ValueError('The instrumentation_key is not provided.')
     exporter = MetricsExporter(options=options)
-    transport.get_exporter_thread(stats.stats, exporter, interval=options.export_interval)
+    transport.get_exporter_thread(stats.stats, 
+                                    exporter, 
+                                    interval=options.export_interval)
     return exporter

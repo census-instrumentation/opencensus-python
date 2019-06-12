@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import random
 import time
 
 from opencensus.ext.azure import metrics_exporter
@@ -26,8 +25,15 @@ stats = stats_module.stats
 view_manager = stats.view_manager
 stats_recorder = stats.stats_recorder
 
-CHIPS_EATEN_MEASURE = measure_module.MeasureFloat("chips_eaten", "number of chips eaten", "chips")
-CHIPS_EATEN_VIEW = view_module.View("chips_eaten_view", "number of chips eaten", [], CHIPS_EATEN_MEASURE, aggregation_module.SumAggregation())
+CHIPS_EATEN_MEASURE = measure_module.MeasureFloat("chips_eaten", 
+                                                "number of chips eaten", 
+                                                "chips")
+CHIPS_EATEN_VIEW = view_module.View("chips_eaten_view", 
+                                    "number of chips eaten", 
+                                    [], 
+                                    CHIPS_EATEN_MEASURE, 
+                                    aggregation_module.SumAggregation())
+
 
 def main():
     # Enable metrics
