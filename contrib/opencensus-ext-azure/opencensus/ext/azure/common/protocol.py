@@ -128,6 +128,19 @@ class Message(BaseObject):
         self.ver = self.ver
         self.message = self.message
 
+class MetricData(BaseObject):
+    _default = BaseObject(
+        ver=2,
+        metric=[],
+        properties=None,
+    )
+
+    def __init__(self, *args, **kwargs):
+        super(MetricData, self).__init__(*args, **kwargs)
+        self.ver = self.ver
+        self.metric = self.metric
+
+
 
 class RemoteDependency(BaseObject):
     _default = BaseObject(

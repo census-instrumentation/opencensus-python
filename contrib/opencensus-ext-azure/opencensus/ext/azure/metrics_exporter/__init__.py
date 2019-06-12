@@ -13,14 +13,20 @@
 # limitations under the License.
 
 import threading
+import time
 
 from opencensus.ext.azure.common import Options
 from opencensus.metrics import transport
 from opencensus.metrics.export import metric_producer
+from opencensus.ext.azure.common.protocol import Data
+from opencensus.ext.azure.common.protocol import Envelope
+from opencensus.ext.azure.common.protocol import MetricData
+from opencensus.ext.azure.common import utils
+from opencensus.ext.azure.common.transport import TransportMixin
 
 __all__ = ['MetricsExporter']
 
-class MetricsExporter(object):
+class MetricsExporter(TransportMixin):
     """Metrics exporter for Microsoft Azure Monitor."""
 
 
@@ -34,9 +40,25 @@ class MetricsExporter(object):
         return self._options
 
     def export_metrics(self, metrics):
-        metrics = list(metrics)
-        for metric in metrics:
-            print(repr(metric))
+        if metrics:
+            metrics = list(metrics)
+        envelopes = [self.metric_to_envelope(metric) for metric in metrics]
+        self._transmit(envelopes)
+
+    def metric_to_envelope(self, metric):
+        envelope = Envelope(
+            iKey=self.options.instrumentation_key,
+            tags=dict(utils.azure_monitor_context),
+            time=utils.timestamp_to_iso_str(time.time()),
+        )
+        envelope.name = 'Microsoft.ApplicationInsights.Metric'
+        data = MetricData(
+            namespace=metric.descriptor.name
+            metrics=
+        )
+        envelope.data = Data(baseData=data, baseType="MetricData")
+        return envelope
+
 
 
 def new_metrics_exporter(**options):
