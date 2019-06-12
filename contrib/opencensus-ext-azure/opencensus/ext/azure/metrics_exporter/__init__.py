@@ -16,7 +16,7 @@ import threading
 
 from opencensus.ext.azure.common import Options
 from opencensus.metrics import transport
-from opencensus.metrics.export import metric_producer
+from opencensus.stats import stats
 
 __all__ = ['MetricsExporter']
 
@@ -44,5 +44,5 @@ def new_metrics_exporter(**options):
     if not options.instrumentation_key:
         raise ValueError('The instrumentation_key is not provided.')
     exporter = MetricsExporter(options=options)
-    transport.get_exporter_thread(metric_producer.metrics, exporter, interval=options.export_interval)
+    transport.get_exporter_thread(stats.stats, exporter, interval=options.export_interval)
     return exporter
