@@ -33,7 +33,7 @@ PROBLEMS_SOLVED_VIEW = view_module.View("problems_solved_view", "number of probl
 def main():
     # Enable metrics
     # Set the interval in seconds in which you want to send metrics
-    exporter = metrics_exporter.new_metrics_exporter(export_interval=2)
+    exporter = metrics_exporter.new_metrics_exporter(export_interval=2, instrumentation_key='123')
     view_manager.register_exporter(exporter)
 
     view_manager.register_view(PROBLEMS_SOLVED_VIEW)

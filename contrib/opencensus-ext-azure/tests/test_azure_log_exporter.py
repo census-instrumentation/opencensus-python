@@ -18,7 +18,7 @@ import os
 import shutil
 import unittest
 
-from opencensus.ext.azure import log_exporter
+from opencensus.ext.azure import logs_exporter
 
 TEST_FOLDER = os.path.abspath('.test.logs')
 
@@ -37,7 +37,7 @@ def throw(exc_type, *args, **kwargs):
     return func
 
 
-class CustomLogHandler(log_exporter.BaseLogHandler):
+class CustomLogHandler(logs_exporter.BaseLogHandler):
     def __init__(self, max_batch_size, callback):
         self.export_interval = 1
         self.max_batch_size = max_batch_size
@@ -74,13 +74,13 @@ class TestAzureLogHandler(unittest.TestCase):
         from opencensus.ext.azure.common import Options
         instrumentation_key = Options._default.instrumentation_key
         Options._default.instrumentation_key = None
-        self.assertRaises(ValueError, lambda: log_exporter.AzureLogHandler())
+        self.assertRaises(ValueError, lambda: logs_exporter.AzureLogHandler())
         Options._default.instrumentation_key = instrumentation_key
 
     @mock.patch('requests.post', return_value=mock.Mock())
     def test_exception(self, requests_mock):
         logger = logging.getLogger(self.id())
-        handler = log_exporter.AzureLogHandler(
+        handler = logs_exporter.AzureLogHandler(
             instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
             storage_path=os.path.join(TEST_FOLDER, self.id()),
         )
@@ -96,7 +96,7 @@ class TestAzureLogHandler(unittest.TestCase):
 
     @mock.patch('requests.post', return_value=mock.Mock())
     def test_export_empty(self, request_mock):
-        handler = log_exporter.AzureLogHandler(
+        handler = logs_exporter.AzureLogHandler(
             instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
             storage_path=os.path.join(TEST_FOLDER, self.id()),
         )
@@ -104,15 +104,15 @@ class TestAzureLogHandler(unittest.TestCase):
         self.assertEqual(len(os.listdir(handler.storage.path)), 0)
         handler.close()
 
-    @mock.patch('opencensus.ext.azure.log_exporter'
+    @mock.patch('opencensus.ext.azure.logs_exporter'
                 '.AzureLogHandler.log_record_to_envelope')
     def test_export_failure(self, log_record_to_envelope_mock):
         log_record_to_envelope_mock.return_value = ['bar']
-        handler = log_exporter.AzureLogHandler(
+        handler = logs_exporter.AzureLogHandler(
             instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
             storage_path=os.path.join(TEST_FOLDER, self.id()),
         )
-        with mock.patch('opencensus.ext.azure.log_exporter'
+        with mock.patch('opencensus.ext.azure.logs_exporter'
                         '.AzureLogHandler._transmit') as transmit:
             transmit.return_value = 10
             handler._export(['foo'])
@@ -121,7 +121,7 @@ class TestAzureLogHandler(unittest.TestCase):
         handler.close()
 
     def test_log_record_to_envelope(self):
-        handler = log_exporter.AzureLogHandler(
+        handler = logs_exporter.AzureLogHandler(
             instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
             storage_path=os.path.join(TEST_FOLDER, self.id()),
         )
