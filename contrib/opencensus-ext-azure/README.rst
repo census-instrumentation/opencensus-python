@@ -16,55 +16,8 @@ Installation
 Usage
 -----
 
-Trace
-~~~~~
-
-The **Azure Monitor Trace Exporter** allows you to export `OpenCensus`_ traces to `Azure Monitor`_.
-
-This example shows how to send a span "hello" to Azure Monitor.
-
-* Create an Azure Monitor resource and get the instrumentation key, more information can be found `here <https://docs.microsoft.com/azure/azure-monitor/app/create-new-resource>`_.
-* Put the instrumentation key in ``APPINSIGHTS_INSTRUMENTATIONKEY`` environment variable.
-
-.. code:: python
-
-    from opencensus.ext.azure.trace_exporter import AzureExporter
-    from opencensus.trace.samplers import ProbabilitySampler
-    from opencensus.trace.tracer import Tracer
-
-    tracer = Tracer(exporter=AzureExporter(), sampler=ProbabilitySampler(1.0))
-
-    with tracer.span(name='hello'):
-        print('Hello, World!')
-
-You can also specify the instrumentation key explicitly in the code.
-
-* Create an Azure Monitor resource and get the instrumentation key, more information can be found `here <https://docs.microsoft.com/azure/azure-monitor/app/create-new-resource>`_.
-* Install the `requests integration package <../opencensus-ext-requests>`_ using ``pip install opencensus-ext-requests``.
-* Put the instrumentation key in the following code.
-
-.. code:: python
-
-    import requests
-
-    from opencensus.ext.azure.trace_exporter import AzureExporter
-    from opencensus.trace import config_integration
-    from opencensus.trace.samplers import ProbabilitySampler
-    from opencensus.trace.tracer import Tracer
-
-    config_integration.trace_integrations(['requests'])
-    tracer = Tracer(
-        exporter=AzureExporter(
-            # TODO: replace this with your own instrumentation key.
-            instrumentation_key='00000000-0000-0000-0000-000000000000',
-        ),
-        sampler=ProbabilitySampler(1.0),
-    )
-    with tracer.span(name='parent'):
-        response = requests.get(url='https://www.wikipedia.org/wiki/Rabbit')
-
 Logs
-~~~
+~~~~
 
 The **Azure Monitor Log Handler** allows you to export Python logs to `Azure Monitor`_.
 
@@ -72,6 +25,7 @@ This example shows how to send a warning level log to Azure Monitor.
 
 * Create an Azure Monitor resource and get the instrumentation key, more information can be found `here <https://docs.microsoft.com/azure/azure-monitor/app/create-new-resource>`_.
 * Put the instrumentation key in ``APPINSIGHTS_INSTRUMENTATIONKEY`` environment variable.
+* You can also specify the instrumentation key explicitly in the code, which will take priority over a set environment variable.
 
 .. code:: python
 
@@ -88,6 +42,7 @@ You can enrich the logs with trace IDs and span IDs by using the `logging integr
 * Create an Azure Monitor resource and get the instrumentation key, more information can be found `here <https://docs.microsoft.com/azure/azure-monitor/app/create-new-resource>`_.
 * Install the `logging integration package <../opencensus-ext-logging>`_ using ``pip install opencensus-ext-logging``.
 * Put the instrumentation key in ``APPINSIGHTS_INSTRUMENTATIONKEY`` environment variable.
+* You can also specify the instrumentation key explicitly in the code, which will take priority over a set environment variable.
 
 .. code:: python
 
@@ -114,16 +69,14 @@ You can enrich the logs with trace IDs and span IDs by using the `logging integr
         logger.warning('In the span')
     logger.warning('After the span')
 
-Metric
-~~~~~~
+Metrics
+~~~~~~~
 
 The **OpenCensus Azure Monitor Metrics Exporter** allows you to export metrics to `Azure Monitor`_.
 
-Metrics Exporter Prerequisites
-******************************
-
 * Create an Azure Monitor resource and get the instrumentation key, more information can be found `here <https://docs.microsoft.com/azure/azure-monitor/app/create-new-resource>`_.
 * Put the instrumentation key in ``APPINSIGHTS_INSTRUMENTATIONKEY`` environment variable.
+* You can also specify the instrumentation key explicitly in the code, which will take priority over a set environment variable.
 
 Using the Metrics exporter
 *****************************
@@ -167,7 +120,56 @@ Using the Metrics exporter
 
         if __name__ == "__main__":
             main()
-        
+
+Trace
+~~~~~
+
+The **Azure Monitor Trace Exporter** allows you to export `OpenCensus`_ traces to `Azure Monitor`_.
+
+This example shows how to send a span "hello" to Azure Monitor.
+
+* Create an Azure Monitor resource and get the instrumentation key, more information can be found `here <https://docs.microsoft.com/azure/azure-monitor/app/create-new-resource>`_.
+* Put the instrumentation key in ``APPINSIGHTS_INSTRUMENTATIONKEY`` environment variable.
+* You can also specify the instrumentation key explicitly in the code, which will take priority over a set environment variable.
+
+.. code:: python
+
+    from opencensus.ext.azure.trace_exporter import AzureExporter
+    from opencensus.trace.samplers import ProbabilitySampler
+    from opencensus.trace.tracer import Tracer
+
+    tracer = Tracer(exporter=AzureExporter(), sampler=ProbabilitySampler(1.0))
+
+    with tracer.span(name='hello'):
+        print('Hello, World!')
+
+You can also specify the instrumentation key explicitly in the code.
+
+* Create an Azure Monitor resource and get the instrumentation key, more information can be found `here <https://docs.microsoft.com/azure/azure-monitor/app/create-new-resource>`_.
+* Install the `requests integration package <../opencensus-ext-requests>`_ using ``pip install opencensus-ext-requests``.
+* Put the instrumentation key in ``APPINSIGHTS_INSTRUMENTATIONKEY`` environment variable.
+* You can also specify the instrumentation key explicitly in the code, which will take priority over a set environment variable.
+
+.. code:: python
+
+    import requests
+
+    from opencensus.ext.azure.trace_exporter import AzureExporter
+    from opencensus.trace import config_integration
+    from opencensus.trace.samplers import ProbabilitySampler
+    from opencensus.trace.tracer import Tracer
+
+    config_integration.trace_integrations(['requests'])
+    tracer = Tracer(
+        exporter=AzureExporter(
+            # TODO: replace this with your own instrumentation key.
+            instrumentation_key='00000000-0000-0000-0000-000000000000',
+        ),
+        sampler=ProbabilitySampler(1.0),
+    )
+    with tracer.span(name='parent'):
+        response = requests.get(url='https://www.wikipedia.org/wiki/Rabbit')
+
 
 References
 ----------
