@@ -25,14 +25,14 @@ stats = stats_module.stats
 view_manager = stats.view_manager
 stats_recorder = stats.stats_recorder
 
-CARROTS_MEASURE = measure_module.MeasureFloat("carrots",
-                                              "number of carrots",
-                                              "carrots")
-CARROTS_VIEW = view_module.View("carrots_view",
-                                "number of carrots",
-                                [],
-                                CARROTS_MEASURE,
-                                aggregation_module.SumAggregation())
+CHIPS_EATEN_MEASURE = measure_module.MeasureFloat("chips_eaten",
+                                                "number of chips eaten",
+                                                "chips")
+CHIPS_EATEN_VIEW = view_module.View("chips_eaten_view",
+                                    "number of chips eaten",
+                                    [],
+                                    CHIPS_EATEN_MEASURE,
+                                    aggregation_module.SumAggregation())
 
 
 def main():
@@ -41,13 +41,13 @@ def main():
     exporter = metrics_exporter.new_metrics_exporter(export_interval=5)
     view_manager.register_exporter(exporter)
 
-    view_manager.register_view(CARROTS_VIEW)
+    view_manager.register_view(CHIPS_EATEN_VIEW)
     mmap = stats_recorder.new_measurement_map()
     tmap = tag_map_module.TagMap()
 
     for i in range(100):
         print(i)
-        mmap.measure_int_put(CARROTS_MEASURE, 1)
+        mmap.measure_int_put(CHIPS_EATEN_MEASURE, 1)
         mmap.record(tmap)
         time.sleep(1)
 

@@ -25,14 +25,14 @@ stats = stats_module.stats
 view_manager = stats.view_manager
 stats_recorder = stats.stats_recorder
 
-PROBLEMS_SOLVED_MEASURE = measure_module.MeasureInt("problems_solved",
-                                                    "number of problems solved",
-                                                    "problems")
-PROBLEMS_SOLVED_VIEW = view_module.View("problems_solved_view",
-                                        "number of problems solved",
-                                        [],
-                                        PROBLEMS_SOLVED_MEASURE,
-                                        aggregation_module.CountAggregation())
+CARROTS_MEASURE = measure_module.MeasureInt("carrots",
+                                              "number of carrots",
+                                              "carrots")
+CARROTS_VIEW = view_module.View("carrots_view",
+                                "number of carrots",
+                                [],
+                                CARROTS_MEASURE,
+                                aggregation_module.CountAggregation())
 
 
 def main():
@@ -41,11 +41,11 @@ def main():
     exporter = metrics_exporter.new_metrics_exporter(export_interval=2)
     view_manager.register_exporter(exporter)
 
-    view_manager.register_view(PROBLEMS_SOLVED_VIEW)
+    view_manager.register_view(CARROTS_VIEW)
     mmap = stats_recorder.new_measurement_map()
     tmap = tag_map_module.TagMap()
 
-    mmap.measure_int_put(PROBLEMS_SOLVED_MEASURE, 1000)
+    mmap.measure_int_put(CARROTS_MEASURE, 1000)
     mmap.record(tmap)
     time.sleep(10)
 
