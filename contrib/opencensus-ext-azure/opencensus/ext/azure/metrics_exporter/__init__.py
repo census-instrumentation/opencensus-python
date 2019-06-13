@@ -23,21 +23,18 @@ from opencensus.ext.azure.common.protocol import Envelope
 from opencensus.ext.azure.common.protocol import MetricData
 from opencensus.ext.azure.common import utils
 from opencensus.ext.azure.common.transport import TransportMixin
+from opencensus.stats import stats
 
-__all__ = ['MetricsExporter']
+__all__ = ['MetricsExporter', 'new_metrics_exporter']
+
 
 class MetricsExporter(TransportMixin):
     """Metrics exporter for Microsoft Azure Monitor."""
-
 
     def __init__(self, options):
         self._options = options
         self._md_cache = {}
         self._md_lock = threading.Lock()
-
-    @property
-    def options(self):
-        return self._options
 
     def export_metrics(self, metrics):
         if metrics:
@@ -54,10 +51,15 @@ class MetricsExporter(TransportMixin):
         envelope.name = 'Microsoft.ApplicationInsights.Metric'
         data = MetricData(
             namespace=metric.descriptor.name
-            metrics=
+            metrics=time_series_to_data_points(metric.time_series)
         )
         envelope.data = Data(baseData=data, baseType="MetricData")
         return envelope
+
+    def time_series_to_data_points(self, time_series):
+        """Convert an OC timeseries to a list of Azure data points."""
+        data_points = []
+        for points in time_series:
 
 
 
@@ -66,5 +68,7 @@ def new_metrics_exporter(**options):
     if not options.instrumentation_key:
         raise ValueError('The instrumentation_key is not provided.')
     exporter = MetricsExporter(options=options)
-    transport.get_exporter_thread(metric_producer.metrics, exporter, interval=options.export_interval)
+    transport.get_exporter_thread(stats.stats,
+                                  exporter,
+                                  interval=options.export_interval)
     return exporter
