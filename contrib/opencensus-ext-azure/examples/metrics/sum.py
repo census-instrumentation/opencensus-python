@@ -26,8 +26,8 @@ view_manager = stats.view_manager
 stats_recorder = stats.stats_recorder
 
 CHIPS_EATEN_MEASURE = measure_module.MeasureFloat("chips_eaten",
-                                                "number of chips eaten",
-                                                "chips")
+                                                  "number of chips eaten",
+                                                  "chips")
 CHIPS_EATEN_VIEW = view_module.View("chips_eaten_view",
                                     "number of chips eaten",
                                     [],

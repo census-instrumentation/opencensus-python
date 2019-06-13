@@ -26,8 +26,8 @@ view_manager = stats.view_manager
 stats_recorder = stats.stats_recorder
 
 CARROTS_MEASURE = measure_module.MeasureInt("carrots",
-                                              "number of carrots",
-                                              "carrots")
+                                            "number of carrots",
+                                            "carrots")
 CARROTS_VIEW = view_module.View("carrots_view",
                                 "number of carrots",
                                 [],
