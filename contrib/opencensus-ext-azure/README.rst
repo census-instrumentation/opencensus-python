@@ -31,7 +31,7 @@ This example shows how to send a warning level log to Azure Monitor.
 
     import logging
 
-    from opencensus.ext.azure.logs_exporter import AzureLogHandler
+    from opencensus.ext.azure.log_exporter import AzureLogHandler
 
     logger = logging.getLogger(__name__)
     logger.addHandler(AzureLogHandler())
@@ -48,7 +48,7 @@ You can enrich the logs with trace IDs and span IDs by using the `logging integr
 
     import logging
 
-    from opencensus.ext.azure.logs_exporter import AzureLogHandler
+    from opencensus.ext.azure.log_exporter import AzureLogHandler
     from opencensus.ext.azure.trace_exporter import AzureExporter
     from opencensus.trace import config_integration
     from opencensus.trace.samplers import ProbabilitySampler
@@ -77,9 +77,6 @@ The **OpenCensus Azure Monitor Metrics Exporter** allows you to export metrics t
 * Create an Azure Monitor resource and get the instrumentation key, more information can be found `here <https://docs.microsoft.com/azure/azure-monitor/app/create-new-resource>`_.
 * Put the instrumentation key in ``APPINSIGHTS_INSTRUMENTATIONKEY`` environment variable.
 * You can also specify the instrumentation key explicitly in the code, which will take priority over a set environment variable.
-
-Using the Metrics exporter
-*****************************
 
     .. code:: python
 
@@ -121,7 +118,6 @@ Using the Metrics exporter
             time.sleep(10)
 
             print("Done recording metrics")
-
 
         if __name__ == "__main__":
             main()
