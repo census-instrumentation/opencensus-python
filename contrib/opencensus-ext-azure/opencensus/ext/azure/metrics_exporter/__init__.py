@@ -32,7 +32,9 @@ class MetricsExporter(TransportMixin):
     """Metrics exporter for Microsoft Azure Monitor."""
 
     def __init__(self, options):
-        self._options = options
+        self.options = options
+        if not self.options.instrumentation_key:
+            raise ValueError('The instrumentation_key is not provided.')
         self._md_cache = {}
         self._md_lock = threading.Lock()
 
@@ -65,8 +67,6 @@ class MetricsExporter(TransportMixin):
 
 def new_metrics_exporter(**options):
     options = Options(**options)
-    if not options.instrumentation_key:
-        raise ValueError('The instrumentation_key is not provided.')
     exporter = MetricsExporter(options=options)
     transport.get_exporter_thread(stats.stats,
                                   exporter,
