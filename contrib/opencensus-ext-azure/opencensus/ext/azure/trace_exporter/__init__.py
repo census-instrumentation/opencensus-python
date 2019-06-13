@@ -71,6 +71,7 @@ class AzureExporter(TransportMixin, BaseExporter):
                 ),
                 responseCode='0',  # TODO
                 success=True,  # TODO
+                properties={},
             )
             envelope.data = Data(baseData=data, baseType='RequestData')
             if 'http.method' in sd.attributes:
@@ -92,6 +93,7 @@ class AzureExporter(TransportMixin, BaseExporter):
                     sd.end_time,
                 ),
                 success=True,  # TODO
+                properties={},
             )
             envelope.data = Data(
                 baseData=data,
@@ -107,7 +109,9 @@ class AzureExporter(TransportMixin, BaseExporter):
                     data.resultCode = str(sd.attributes['http.status_code'])
             else:
                 data.type = 'INPROC'
-        # TODO: links, tracestate, tags, attrs
+        # TODO: links, tracestate, tags
+        for key in sd.attributes:
+            data.properties[key] = sd.attributes[key]
         return envelope
 
     def emit(self, batch, event=None):
