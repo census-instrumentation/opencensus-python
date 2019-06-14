@@ -16,8 +16,8 @@ Installation
 Usage
 -----
 
-Logs
-~~~~
+Log
+~~~
 
 The **Azure Monitor Log Handler** allows you to export Python logs to `Azure Monitor`_.
 

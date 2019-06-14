@@ -205,8 +205,8 @@ OpenCensus supports integration with popular web frameworks, client libraries an
 -  `SQLAlchemy`_
 -  `threading`_
 
-Logs Exporter
---------------
+Log Exporter
+------------
 
 -  `Azure`_
 
