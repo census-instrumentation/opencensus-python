@@ -206,7 +206,7 @@ OpenCensus supports integration with popular web frameworks, client libraries an
 -  `threading`_
 
 Log Exporter
---------------
+------------
 
 -  `Azure`_
 
