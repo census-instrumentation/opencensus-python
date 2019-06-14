@@ -31,7 +31,7 @@ This example shows how to send a warning level log to Azure Monitor.
 
     import logging
 
-    from opencensus.ext.azure.logs_exporter import AzureLogHandler
+    from opencensus.ext.azure.log_exporter import AzureLogHandler
 
     logger = logging.getLogger(__name__)
     logger.addHandler(AzureLogHandler())
@@ -48,7 +48,7 @@ You can enrich the logs with trace IDs and span IDs by using the `logging integr
 
     import logging
 
-    from opencensus.ext.azure.logs_exporter import AzureLogHandler
+    from opencensus.ext.azure.log_exporter import AzureLogHandler
     from opencensus.ext.azure.trace_exporter import AzureExporter
     from opencensus.trace import config_integration
     from opencensus.trace.samplers import ProbabilitySampler
