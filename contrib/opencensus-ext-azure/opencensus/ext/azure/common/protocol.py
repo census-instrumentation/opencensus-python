@@ -141,8 +141,8 @@ class MetricData(BaseObject):
         self.metrics = self.metrics
 
 class DataPointType(object):
-    MEASUREMENT = 'measurement'
-    AGGREGATION = 'aggregation'
+    MEASUREMENT = 'Measurement'
+    AGGREGATION = 'Aggregation'
 
 class DataPoint(BaseObject):
     _default = BaseObject(
@@ -154,7 +154,7 @@ class DataPoint(BaseObject):
     def __init__(self, *args, **kwargs):
         super(DataPoint, self).__init__(*args, **kwargs)
         self.name = self.name
-        self.value = self.valie
+        self.value = self.value
 
 class RemoteDependency(BaseObject):
     _default = BaseObject(

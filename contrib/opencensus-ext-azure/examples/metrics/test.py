@@ -25,11 +25,11 @@ stats = stats_module.stats
 view_manager = stats.view_manager
 stats_recorder = stats.stats_recorder
 
-CARROTS_MEASURE = measure_module.MeasureInt("carrots",
-                                            "number of carrots",
-                                            "carrots")
-CARROTS_VIEW = view_module.View("carrots_view",
-                                "number of carrots",
+CARROTS_MEASURE = measure_module.MeasureInt("test",
+                                            "test desc",
+                                            "test units")
+CARROTS_VIEW = view_module.View("test_view_name",
+                                "test_view_desc",
                                 [],
                                 CARROTS_MEASURE,
                                 aggregation_module.CountAggregation())

@@ -48,6 +48,7 @@ class MetricsExporter(TransportMixin):
             metrics = list(metrics)
         envelopes = []
         for metric in metrics:
+            # Does not support Histograms
             if metric.descriptor.type != MetricDescriptorType.SUMMARY:
                 envelopes.append(self.metric_to_envelope(metric))
         self._transmit(envelopes)
@@ -76,27 +77,27 @@ class MetricsExporter(TransportMixin):
         if MetricDescriptorType.to_type_class(metric.descriptor.type) == ValueDistribution:
             is_distribution_type = True
         
-        for point in metric.time_series.points:
+        for point in metric.time_series[0].points:
             if point.value is not None:
                 value = None
                 count = None
-                stdDev = None
+                std_dev = None
                 if is_distribution_type:
                     value = point.value.sum
                     count = point.value.count
-                    stdDev = point.value.sum_of_squared_deviation
+                    std_dev = point.value.sum_of_squared_deviation
                     value = point.value.value
                 else:
                     value = point.value.value
 
                 data_point = DataPoint(ns=metric.descriptor.name,
                                     name=metric.descriptor.name,
-                                    kind=data_point_type,
+                                    kind=DataPointType.MEASUREMENT,
                                     value=value,
                                     count=count,
                                     min=None,
                                     max=None,
-                                    stdDev=stdDev)
+                                    stdDev=std_dev)
                 data_points.append(data_point)
             return data_points
 
