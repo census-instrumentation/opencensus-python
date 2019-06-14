@@ -18,12 +18,17 @@ import time
 from opencensus.ext.azure.common import Options
 from opencensus.metrics import transport
 from opencensus.metrics.export import metric_producer
+from opencensus.metrics.export.metric_descriptor import MetricDescriptorType
+from opencensus.metrics.export.value import ValueDistribution
 from opencensus.ext.azure.common.protocol import Data
+from opencensus.ext.azure.common.protocol import DataPoint
+from opencensus.ext.azure.common.protocol import DataPointType
 from opencensus.ext.azure.common.protocol import Envelope
 from opencensus.ext.azure.common.protocol import MetricData
 from opencensus.ext.azure.common import utils
 from opencensus.ext.azure.common.transport import TransportMixin
 from opencensus.stats import stats
+from opencensus.stats import metric_utils
 
 __all__ = ['MetricsExporter', 'new_metrics_exporter']
 
@@ -41,7 +46,10 @@ class MetricsExporter(TransportMixin):
     def export_metrics(self, metrics):
         if metrics:
             metrics = list(metrics)
-        envelopes = [self.metric_to_envelope(metric) for metric in metrics]
+        envelopes = []
+        for metric in metrics:
+            if metric.descriptor.type != MetricDescriptorType.SUMMARY:
+                envelopes.append(self.metric_to_envelope(metric))
         self._transmit(envelopes)
 
     def metric_to_envelope(self, metric):
@@ -52,17 +60,45 @@ class MetricsExporter(TransportMixin):
         )
         envelope.name = 'Microsoft.ApplicationInsights.Metric'
         data = MetricData(
-            namespace=metric.descriptor.name
-            metrics=time_series_to_data_points(metric.time_series)
+            namespace=metric.descriptor.name,
+            metrics=self.metric_to_data_points(metric),
         )
         envelope.data = Data(baseData=data, baseType="MetricData")
         return envelope
 
-    def time_series_to_data_points(self, time_series):
-        """Convert an OC timeseries to a list of Azure data points."""
+    def metric_to_data_points(self, metric):
+        """Convert an metric's OC time series to a list of Azure data points."""
         data_points = []
-        for points in time_series:
+        data_point_type = DataPointType.AGGREGATION
+        is_distribution_type = False
+        if metric_utils.is_gauge(metric.descriptor.type):
+            data_point_type = DataPointType.MEASUREMENT
+        if MetricDescriptorType.to_type_class(metric.descriptor.type) == ValueDistribution:
+            is_distribution_type = True
+        
+        for point in metric.time_series.points:
+            if point.value is not None:
+                value = None
+                count = None
+                stdDev = None
+                if is_distribution_type:
+                    value = point.value.sum
+                    count = point.value.count
+                    stdDev = point.value.sum_of_squared_deviation
+                    value = point.value.value
+                else:
+                    value = point.value.value
 
+                data_point = DataPoint(ns=metric.descriptor.name,
+                                    name=metric.descriptor.name,
+                                    kind=data_point_type,
+                                    value=value,
+                                    count=count,
+                                    min=None,
+                                    max=None,
+                                    stdDev=stdDev)
+                data_points.append(data_point)
+            return data_points
 
 
 def new_metrics_exporter(**options):

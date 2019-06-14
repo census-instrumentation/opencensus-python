@@ -38,7 +38,7 @@ CARROTS_VIEW = view_module.View("carrots_view",
 def main():
     # Enable metrics
     # Set the interval in seconds in which you want to send metrics
-    exporter = metrics_exporter.new_metrics_exporter(export_interval=2.0)
+    exporter = metrics_exporter.new_metrics_exporter(export_interval=2.0, instrumentation_key='70c241c9-206e-4811-82b4-2bc8a52170b9')
     view_manager.register_exporter(exporter)
 
     view_manager.register_view(CARROTS_VIEW)

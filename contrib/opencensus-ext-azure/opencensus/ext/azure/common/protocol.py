@@ -131,16 +131,30 @@ class Message(BaseObject):
 class MetricData(BaseObject):
     _default = BaseObject(
         ver=2,
-        metric=[],
+        metrics=[],
         properties=None,
     )
 
     def __init__(self, *args, **kwargs):
         super(MetricData, self).__init__(*args, **kwargs)
         self.ver = self.ver
-        self.metric = self.metric
+        self.metrics = self.metrics
 
+class DataPointType(object):
+    MEASUREMENT = 'measurement'
+    AGGREGATION = 'aggregation'
 
+class DataPoint(BaseObject):
+    _default = BaseObject(
+        name='',
+        kind=DataPointType.MEASUREMENT,
+        value=0.0,
+    )
+
+    def __init__(self, *args, **kwargs):
+        super(DataPoint, self).__init__(*args, **kwargs)
+        self.name = self.name
+        self.value = self.valie
 
 class RemoteDependency(BaseObject):
     _default = BaseObject(
