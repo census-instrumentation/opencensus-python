@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import threading
+
 import time
 
 from opencensus.ext.azure.common import Options
@@ -29,6 +30,7 @@ from opencensus.ext.azure.common import utils
 from opencensus.ext.azure.common.transport import TransportMixin
 from opencensus.stats import stats
 from opencensus.stats import metric_utils
+
 
 __all__ = ['MetricsExporter', 'new_metrics_exporter']
 
