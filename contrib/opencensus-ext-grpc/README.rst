@@ -28,14 +28,6 @@ Installation
 
     pip install opencensus-ext-grpc
 
-Usage
------
-
-.. code:: python
-
-    from opencensus.trace import config_integration
-
-    config_integration.trace_integrations(['grpc'])
 
 References
 ----------
