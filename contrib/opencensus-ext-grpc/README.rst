@@ -19,7 +19,7 @@ directory.
 
 More information about the gRPC interceptors please see the `proposal`_.
 
-.. _proposal: https://github.com/mehrdada/proposal/blob/python-interceptors/L13-Python-Interceptors.md
+.. _proposal: https://github.com/grpc/proposal/blob/master/L13-python-interceptors.md
 
 Installation
 ------------
