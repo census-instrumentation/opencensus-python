@@ -31,11 +31,7 @@ Installation
 Usage
 -----
 
-.. code:: python
-
-    from opencensus.trace import config_integration
-
-    config_integration.trace_integrations(['grpc'])
+Please refer to the `examples <https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-grpc/examples>`_.
 
 References
 ----------
