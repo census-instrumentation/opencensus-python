@@ -72,14 +72,11 @@ You can enrich the logs with trace IDs and span IDs by using the `logging integr
 Metrics
 ~~~~~~~
 
-The **OpenCensus Azure Monitor Metrics Exporter** allows you to export metrics to `Azure Monitor`_.
+The **Azure Monitor Metrics Exporter** allows you to export metrics to `Azure Monitor`_.
 
 * Create an Azure Monitor resource and get the instrumentation key, more information can be found `here <https://docs.microsoft.com/azure/azure-monitor/app/create-new-resource>`_.
 * Put the instrumentation key in ``APPINSIGHTS_INSTRUMENTATIONKEY`` environment variable.
 * You can also specify the instrumentation key explicitly in the code, which will take priority over a set environment variable.
-
-Using the Metrics exporter
-*****************************
 
     .. code:: python
 
@@ -105,11 +102,10 @@ Using the Metrics exporter
                                         CARROTS_MEASURE,
                                         aggregation_module.CountAggregation())
 
-
         def main():
             # Enable metrics
             # Set the interval in seconds in which you want to send metrics
-            exporter = metrics_exporter.new_metrics_exporter(export_interval=2)
+            exporter = metrics_exporter.new_metrics_exporter(export_interval=2.0)
             view_manager.register_exporter(exporter)
 
             view_manager.register_view(CARROTS_VIEW)
@@ -121,7 +117,6 @@ Using the Metrics exporter
             time.sleep(10)
 
             print("Done recording metrics")
-
 
         if __name__ == "__main__":
             main()
