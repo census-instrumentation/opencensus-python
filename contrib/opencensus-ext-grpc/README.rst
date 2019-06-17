@@ -32,9 +32,11 @@ Usage
 -----
 
 Please refer to the `examples <https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-grpc/examples>`_.
+For more information, read `gRPC Python Interceptors <https://github.com/grpc/proposal/blob/master/L13-python-interceptors.md>`_.
 
 References
 ----------
 
+* `Examples <https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-grpc/examples>`_
 * `gRPC <https://grpc.io/>`_
 * `OpenCensus Project <https://opencensus.io/>`_
