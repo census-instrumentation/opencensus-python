@@ -82,24 +82,17 @@ class MetricsExporter(TransportMixin):
         for point in metric.time_series[0].points:
             if point.value is not None:
                 value = None
-                count = None
-                std_dev = None
                 if is_distribution_type:
-                    value = point.value.sum
-                    count = point.value.count
-                    std_dev = point.value.sum_of_squared_deviation
-                    value = point.value.value
+                    continue
                 else:
                     value = point.value.value
 
                 data_point = DataPoint(ns=metric.descriptor.name,
                                     name=metric.descriptor.name,
-                                    kind=DataPointType.MEASUREMENT,
                                     value=value,
-                                    count=count,
+                                    count=None,
                                     min=None,
-                                    max=None,
-                                    stdDev=std_dev)
+                                    max=None)
                 data_points.append(data_point)
             return data_points
 
