@@ -40,8 +40,6 @@ class MetricsExporter(TransportMixin):
         self.options = options
         if not self.options.instrumentation_key:
             raise ValueError('The instrumentation_key is not provided.')
-        self._md_cache = {}
-        self._md_lock = threading.Lock()
 
     def export_metrics(self, metrics):
         if not metrics:
