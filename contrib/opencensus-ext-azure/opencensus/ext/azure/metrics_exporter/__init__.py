@@ -46,8 +46,8 @@ class MetricsExporter(TransportMixin):
         self._md_lock = threading.Lock()
 
     def export_metrics(self, metrics):
-        if metrics:
-            metrics = list(metrics)
+        if not metrics:
+            return
         envelopes = []
         for metric in metrics:
             # Does not support Histograms
@@ -97,10 +97,10 @@ class MetricsExporter(TransportMixin):
             return data_points
 
 
-def new_metrics_exporter(**options):
+def new_metrics_exporter(meter, **options):
     options = Options(**options)
     exporter = MetricsExporter(options=options)
-    transport.get_exporter_thread(stats.stats,
+    transport.get_exporter_thread(metric_producer.MetricProducer(meter),
                                   exporter,
                                   interval=options.export_interval)
     return exporter

@@ -14,9 +14,14 @@
 
 import threading
 
+from opencensus.metrics.export.meter import MetricType
+from opencensus.metrics.export import metric_utils
 
 class MetricProducer(object):
     """Produces a set of metrics for export."""
+
+    def __init__(self, meter):
+        self._meter = meter
 
     def get_metrics(self):
         """Get a set of metrics to be exported.
@@ -24,58 +29,9 @@ class MetricProducer(object):
         :rtype: set(:class: `opencensus.metrics.export.metric.Metric`)
         :return: A set of metrics to be exported.
         """
-        raise NotImplementedError  # pragma: NO COVER
-
-
-class MetricProducerManager(object):
-    """Container class for MetricProducers to be used by exporters.
-
-    :type metric_producers: iterable(class: 'MetricProducer')
-    :param metric_producers: Optional initial metric producers.
-    """
-
-    def __init__(self, metric_producers=None):
-        if metric_producers is None:
-            self.metric_producers = set()
+        # Get raw measurements
+        if MetricType.MEASURE in self._meter.builders and self._meter.builders[MetricType.MEASURE].has_measurement():
+            return [metric_utils.measure_to_metric(self._meter.builders[MetricType.MEASURE])]
         else:
-            self.metric_producers = set(metric_producers)
-        self.mp_lock = threading.Lock()
+            return []
 
-    def add(self, metric_producer):
-        """Add a metric producer.
-
-        :type metric_producer: :class: 'MetricProducer'
-        :param metric_producer: The metric producer to add.
-        """
-        if metric_producer is None:
-            raise ValueError
-        with self.mp_lock:
-            self.metric_producers.add(metric_producer)
-
-    def remove(self, metric_producer):
-        """Remove a metric producer.
-
-        :type metric_producer: :class: 'MetricProducer'
-        :param metric_producer: The metric producer to remove.
-        """
-        if metric_producer is None:
-            raise ValueError
-        try:
-            with self.mp_lock:
-                self.metric_producers.remove(metric_producer)
-        except KeyError:
-            pass
-
-    def get_all(self):
-        """Get the set of all metric producers.
-
-        Get a copy of `metric_producers`. Prefer this method to using the
-        attribute directly to avoid other threads adding/removing producers
-        while you're reading it.
-
-        :rtype: set(:class: `MetricProducer`)
-        :return: A set of all metric producers at the time of the call.
-        """
-        with self.mp_lock:
-            mps_copy = set(self.metric_producers)
-        return mps_copy

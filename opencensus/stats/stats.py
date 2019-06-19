@@ -19,7 +19,7 @@ from opencensus.stats.stats_recorder import StatsRecorder
 from opencensus.stats.view_manager import ViewManager
 
 
-class _Stats(MetricProducer):
+class _Stats(object):
     """Stats defines a View Manager and a Stats Recorder in order for the
     collection of Stats
     """

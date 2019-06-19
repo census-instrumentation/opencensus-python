@@ -85,14 +85,11 @@ def get_exporter_thread(metric_producer, exporter, interval=None):
     :return: A running thread responsible calling the exporter.
 
     """
-    weak_get = utils.get_weakref(metric_producer.get_metrics)
-    weak_export = utils.get_weakref(exporter.export_metrics)
-
     def export_all():
-        get = weak_get()
+        get = metric_producer.get_metrics
         if get is None:
             raise TransportError("Metric producer is not available")
-        export = weak_export()
+        export = exporter.export_metrics
         if export is None:
             raise TransportError("Metric exporter is not available")
         export(get())

@@ -15,39 +15,23 @@
 import time
 
 from opencensus.ext.azure import metrics_exporter
-from opencensus.stats import aggregation as aggregation_module
-from opencensus.stats import measure as measure_module
-from opencensus.stats import stats as stats_module
-from opencensus.stats import view as view_module
+from opencensus.metrics.export import meter
+from opencensus.metrics.export import measure
+from opencensus.metrics.export.metric_producer import MetricProducer
+
 from opencensus.tags import tag_map as tag_map_module
 
-stats = stats_module.stats
-view_manager = stats.view_manager
-stats_recorder = stats.stats_recorder
-
-CARROTS_MEASURE = measure_module.MeasureInt("test",
-                                            "test desc",
-                                            "test units")
-CARROTS_VIEW = view_module.View("test_view_name",
-                                "test_view_desc",
-                                [],
-                                CARROTS_MEASURE,
-                                aggregation_module.CountAggregation())
-
+meter_ = meter.Meter()
+meter_.measureBuilder("test_count3", measure.MeasureType.LONG, "test_desc", "test_unit")
+metrics_exporter.new_metrics_exporter(meter_, export_interval=2, instrumentation_key='70c241c9-206e-4811-82b4-2bc8a52170b9')
 
 def main():
-    # Enable metrics
-    # Set the interval in seconds in which you want to send metrics
-    exporter = metrics_exporter.new_metrics_exporter(export_interval=2.0)
-    view_manager.register_exporter(exporter)
 
-    view_manager.register_view(CARROTS_VIEW)
-    mmap = stats_recorder.new_measurement_map()
     tmap = tag_map_module.TagMap()
 
-    mmap.measure_int_put(CARROTS_MEASURE, 1000)
-    mmap.record(tmap)
-    time.sleep(10)
+    for i in range(10):
+        meter_.record(meter.MetricType.MEASURE, i)
+        time.sleep(2)
 
     print("Done recording metrics")
 
