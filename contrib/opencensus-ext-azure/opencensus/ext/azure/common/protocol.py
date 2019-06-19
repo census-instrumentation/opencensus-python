@@ -140,14 +140,9 @@ class MetricData(BaseObject):
         self.ver = self.ver
         self.metrics = self.metrics
 
-class DataPointType(object):
-    MEASUREMENT = 'Measurement'
-    AGGREGATION = 'Aggregation'
-
 class DataPoint(BaseObject):
     _default = BaseObject(
         name='',
-        kind=DataPointType.MEASUREMENT,
         value=0.0,
     )
 

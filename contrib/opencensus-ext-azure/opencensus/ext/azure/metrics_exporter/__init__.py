@@ -23,7 +23,6 @@ from opencensus.metrics.export.metric_descriptor import MetricDescriptorType
 from opencensus.metrics.export.value import ValueDistribution
 from opencensus.ext.azure.common.protocol import Data
 from opencensus.ext.azure.common.protocol import DataPoint
-from opencensus.ext.azure.common.protocol import DataPointType
 from opencensus.ext.azure.common.protocol import Envelope
 from opencensus.ext.azure.common.protocol import MetricData
 from opencensus.ext.azure.common import utils
@@ -46,9 +45,7 @@ class MetricsExporter(TransportMixin):
             return
         envelopes = []
         for metric in metrics:
-            # Does not support Histograms
-            if metric.descriptor.type != MetricDescriptorType.SUMMARY:
-                envelopes.append(self.metric_to_envelope(metric))
+            envelopes.append(self.metric_to_envelope(metric))
         self._transmit(envelopes)
 
     def metric_to_envelope(self, metric):
