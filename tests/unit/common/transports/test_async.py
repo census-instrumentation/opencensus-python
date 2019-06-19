@@ -199,7 +199,7 @@ class Test_Worker(unittest.TestCase):
         # trace2 should be left in the queue because worker is terminated.
         self.assertEqual(worker._queue.qsize(), 1)
 
-    @mock.patch('logging.exception')
+    @mock.patch('opencensus.common.transports.async_.logger.exception')
     def test__thread_main_alive_on_emit_failed(self, mock):
 
         class Exporter(object):

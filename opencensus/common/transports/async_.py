@@ -27,6 +27,8 @@ _DEFAULT_WAIT_PERIOD = 60.0  # Seconds
 _WORKER_THREAD_NAME = 'opencensus.common.Worker'
 _WORKER_TERMINATOR = object()
 
+logger = logging.getLogger(__name__)
+
 
 class _Worker(object):
     """A background thread that exports batches of data.
@@ -108,7 +110,7 @@ class _Worker(object):
                 try:
                     self.exporter.emit(data)
                 except Exception:
-                    logging.exception(
+                    logger.exception(
                         '%s failed to emit data.'
                         'Dropping %s objects from queue.',
                         self.exporter.__class__.__name__,
