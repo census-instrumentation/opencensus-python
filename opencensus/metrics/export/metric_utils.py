@@ -21,20 +21,33 @@ from opencensus.metrics.export import value
 from opencensus.metrics.export import metric_descriptor
 from opencensus.metrics.export.measure import MeasureType
 from opencensus.metrics.export import metric
+from opencensus.metrics.export import meter
 
-def measure_to_metric(measure):
-    measurement = measure.measurement
+
+def measurements_to_metric(measure, aggregation_function, measurements):
     p = None
     md_type = None
+    value_ = aggregation_function(measurements)
+    timestamp = measurements[0].timestamp
 
     if measure.measure_type == MeasureType.DOUBLE:
         md_type = metric_descriptor.MetricDescriptorType.GAUGE_DOUBLE
-        p = point.Point(value.ValueDouble(measurement.value), measurement.timestamp)
+        p = point.Point(value.ValueDouble(value_), timestamp)
     else:
         md_type = metric_descriptor.MetricDescriptorType.GAUGE_INT64
-        p = point.Point(value.ValueLong(measurement.value), measurement.timestamp)
+        p = point.Point(value.ValueLong(value_), timestamp)
         
     md = metric_descriptor.MetricDescriptor(measure.name, measure.description, measure.unit, md_type, {})
+    # TODO: label values
     ts = [time_series.TimeSeries({}, [p], None)]
 
     return metric.Metric(md, ts)
+
+def count_aggregation(measurements):
+    return len(measurements)
+
+def sum_aggregation(measurements):
+    sum = 0
+    for measurement in measurements:
+        sum += measurement.value
+    return sum

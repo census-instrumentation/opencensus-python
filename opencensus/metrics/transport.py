@@ -71,8 +71,8 @@ def get_exporter_thread(metric_producer, exporter, interval=None):
 
         exporter.export_metrics(metric_producer.get_metrics())
 
-    :type metric_producer:
-        :class:`opencensus.metrics.export.metric_producer.MetricProducer`
+    :type metrics_producer:
+        :class:`opencensus.metrics.export.metric_producer.MetricsProducer`
     :param exporter: The producer to use to get metrics to export.
 
     :type exporter: :class:`opencensus.stats.base_exporter.MetricsExporter`

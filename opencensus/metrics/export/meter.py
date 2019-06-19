@@ -13,9 +13,8 @@
 # limitations under the License.
 
 from opencensus.metrics.export import measure
+from opencensus.metrics.export import execution_context
 
-class MetricType(object):
-    MEASURE = 0
 
 class Meter(object):
     """ Meter is a simple, interface that allows users to record measurements (metrics).
@@ -30,21 +29,19 @@ class Meter(object):
     """  # noqa
 
     def __init__(self):
-        self._builders = {}
+        if execution_context.get_measurements_map() == {}:
+            execution_context.set_measurements_map(dict())
 
-    @property
-    def builders(self):
-        return self._builders
+        self.measurements_map = execution_context.get_measurements_map()
 
-    def measureBuilder(self, name, metric_type, description, unit):
+    def create_metric(self, name, metric_type, description, unit, label_keys, label_values):
+        # TODO
+        return
+
+    def create_measure(self, name, measure_type=measure.MeasureType.DOUBLE, description="", unit="", aggregation_type=measure.AggregationType.COUNT):
         if name is None:
             raise ValueError("Name cannot be null") 
-        if MetricType.MEASURE not in self._builders:
-            self._builders[MetricType.MEASURE] = measure.Builder(name, metric_type, description, unit).build()
-        return self._builders[MetricType.MEASURE]
+        return measure.Measure(name, measure_type, description, unit, aggregation_type)
 
-    def record(self, metric_type, value):
-        if metric_type in self._builders:
-            self._builders[metric_type].create_measurement(value)
-        
-
+    def record(self, measure, measurements):
+        self.measurements_map[measure] = measurements

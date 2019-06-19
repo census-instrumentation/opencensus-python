@@ -21,8 +21,8 @@ class Measure(object):
     :type name: str
     :param name: string representing the name of the measure
 
-    :type measure_type: MeasureType
-    :param measure_type: a string representing the measure_type of the measure
+    :type measure_type: measure.MeasureType
+    :param measure_type: an int representing the measure_type of the measure
 
     :type description: str
     :param description: a string representing the description of the measure
@@ -30,13 +30,16 @@ class Measure(object):
     :type unit: str
     :param unit: the units in which the measure values are measured
 
+    :type measure_type: measure.AggregationType
+    :param measure_type: an int representing the aggregation_type of the measure
+
     """
-    def __init__(self, name, measure_type, description="", unit="1"):
+    def __init__(self, name, measure_type, description, unit, aggregation_type):
         self._name = name
         self._measure_type = measure_type
         self._description = description
         self._unit = unit
-        self._measurement = None
+        self._aggregation_type = aggregation_type
 
     @property
     def name(self):
@@ -57,57 +60,30 @@ class Measure(object):
     def unit(self):
         """The unit of the current measure"""
         return self._unit
-    
-    @property
-    def measurement(self):
-        """The current measurement of the measure"""
-        return self._measurement
-
-    def create_measurement(self, value):
-        if self._measure_type == MeasureType.LONG:
-            if not isinstance(value, int):
-                raise ValueError("Value: " + value + " is not a long") 
-            self._measurement = measurement.MeasurementLong(value)
-        else:
-            if not isinstance(value, float):
-                raise ValueError("Value: " + value + " is not a double") 
-            self._measurement = measurement.MeasurementDouble(value)
-
-    def has_measurement(self):
-        return self._measurement is not None
-
-class Builder(object):
-    """ A measure Builder is used to construct instances of Measure """
-
-    def __init__(self, name, measure_type, description="", unit="1"):
-        self._name = name
-        self._measure_type = measure_type
-        self._description = description
-        self._unit = unit
 
     @property
-    def name(self):
-        """The current name of the builder"""
-        return self._name
+    def aggregation_type(self):
+        """The aggregation type of the current measure"""
+        return self._aggregation_type
 
-    @property
-    def measure_type(self):
-        """The current type of the builder"""
-        return self.measure_type
+    def create_double_measurement(self, value):
+        if self._measure_type != MeasureType.DOUBLE:
+            raise ValueError("Measure is of wrong type")
+        if not isinstance(value, float):
+            raise ValueError("Value: " + value + " is not a double") 
+        return measurement.MeasurementDouble(value)
 
-    @property
-    def description(self):
-        """The current description of the builder"""
-        return self._description
-
-    @property
-    def unit(self):
-        """The current unit of the builder"""
-        return self._unit
-
-    def build(self):
-        return Measure(self._name, self._measure_type, self._description, self._unit)
+    def create_long_measurement(self, value):
+        if self._measure_type != MeasureType.LONG:
+            raise ValueError("Measure is of wrong type")
+        if not isinstance(value, int):
+            raise ValueError("Value: " + value + " is not a long") 
+        return measurement.MeasurementLong(value)
 
 class MeasureType(object):
-    LONG = 1
-    DOUBLE = 2
+    LONG = 0
+    DOUBLE = 1
+
+class AggregationType(object):
+    COUNT = 0
+    SUM = 1

@@ -83,39 +83,27 @@ The **Azure Monitor Metrics Exporter** allows you to export metrics to `Azure Mo
         import time
 
         from opencensus.ext.azure import metrics_exporter
-        from opencensus.stats import aggregation as aggregation_module
-        from opencensus.stats import measure as measure_module
-        from opencensus.stats import stats as stats_module
-        from opencensus.stats import view as view_module
-        from opencensus.tags import tag_map as tag_map_module
+        from opencensus.metrics.export import meter
+        from opencensus.metrics.export import measure
+        from opencensus.metrics.export import metrics_producer
 
-        stats = stats_module.stats
-        view_manager = stats.view_manager
-        stats_recorder = stats.stats_recorder
-
-        CARROTS_MEASURE = measure_module.MeasureInt("carrots",
-                                                    "number of carrots",
-                                                    "carrots")
-        CARROTS_VIEW = view_module.View("carrots_view",
-                                        "number of carrots",
-                                        [],
-                                        CARROTS_MEASURE,
-                                        aggregation_module.CountAggregation())
+        mp = metrics_producer.metrics_producer
+        meter = mp.meter
+        _measure = meter.create_measure("test_count",
+                                        measure.MeasureType.LONG,
+                                        "test_desc",
+                                        "test_unit",
+                                        measure.AggregationType.COUNT)
 
         def main():
-            # Enable metrics
-            # Set the interval in seconds in which you want to send metrics
-            exporter = metrics_exporter.new_metrics_exporter(export_interval=2.0)
-            view_manager.register_exporter(exporter)
+            metrics_exporter.new_metrics_exporter(export_interval=2)
 
-            view_manager.register_view(CARROTS_VIEW)
-            mmap = stats_recorder.new_measurement_map()
-            tmap = tag_map_module.TagMap()
-
-            mmap.measure_int_put(CARROTS_MEASURE, 1000)
-            mmap.record(tmap)
-            time.sleep(10)
-
+            measurements = []
+            for i in range(10):
+                measurements.append(_measure.create_long_measurement(i))
+            
+            meter.record(_measure, measurements)
+            time.sleep(5)
             print("Done recording metrics")
 
         if __name__ == "__main__":

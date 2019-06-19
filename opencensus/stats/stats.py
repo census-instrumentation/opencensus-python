@@ -14,7 +14,6 @@
 
 from datetime import datetime
 
-from opencensus.metrics.export.metric_producer import MetricProducer
 from opencensus.stats.stats_recorder import StatsRecorder
 from opencensus.stats.view_manager import ViewManager
 

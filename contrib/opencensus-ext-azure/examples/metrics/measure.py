@@ -17,22 +17,25 @@ import time
 from opencensus.ext.azure import metrics_exporter
 from opencensus.metrics.export import meter
 from opencensus.metrics.export import measure
-from opencensus.metrics.export.metric_producer import MetricProducer
+from opencensus.metrics.export import metrics_producer
 
-from opencensus.tags import tag_map as tag_map_module
-
-meter_ = meter.Meter()
-meter_.measureBuilder("test_count3", measure.MeasureType.LONG, "test_desc", "test_unit")
-metrics_exporter.new_metrics_exporter(meter_, export_interval=2, instrumentation_key='70c241c9-206e-4811-82b4-2bc8a52170b9')
+mp = metrics_producer.metrics_producer
+meter = mp.meter
+_measure = meter.create_measure("test_count4",
+                                measure.MeasureType.LONG,
+                                "test_desc",
+                                "test_unit",
+                                measure.AggregationType.COUNT)
 
 def main():
+    metrics_exporter.new_metrics_exporter(export_interval=2)
 
-    tmap = tag_map_module.TagMap()
-
+    measurements = []
     for i in range(10):
-        meter_.record(meter.MetricType.MEASURE, i)
-        time.sleep(2)
-
+        measurements.append(_measure.create_long_measurement(i))
+    
+    meter.record(_measure, measurements)
+    time.sleep(5)
     print("Done recording metrics")
 
 
