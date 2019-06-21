@@ -25,13 +25,13 @@ stats = stats_module.stats
 view_manager = stats.view_manager
 stats_recorder = stats.stats_recorder
 
-CHIPS_EATEN_MEASURE = measure_module.MeasureFloat("chips_eaten",
-                                                  "number of chips eaten",
-                                                  "chips")
-CHIPS_EATEN_VIEW = view_module.View("chips_eaten_view",
-                                    "number of chips eaten",
-                                    [],
-                                    CHIPS_EATEN_MEASURE,
+REQUEST_MEASURE = measure_module.MeasureFloat("Requests",
+                                                "number of requests",
+                                                "requests")
+NUM_REQUESTS_VIEW = view_module.View("Number of Requests",
+                                    "View for number of requests made",
+                                    ["url"],
+                                    REQUEST_MEASURE,
                                     aggregation_module.SumAggregation())
 
 
@@ -41,13 +41,14 @@ def main():
     exporter = metrics_exporter.new_metrics_exporter(export_interval=5)
     view_manager.register_exporter(exporter)
 
-    view_manager.register_view(CHIPS_EATEN_VIEW)
+    view_manager.register_view(NUM_REQUESTS_VIEW)
     mmap = stats_recorder.new_measurement_map()
     tmap = tag_map_module.TagMap()
+    tmap.insert("url", "website.com")
 
     for i in range(100):
         print(i)
-        mmap.measure_int_put(CHIPS_EATEN_MEASURE, 1)
+        mmap.measure_int_put(REQUEST_MEASURE, i)
         mmap.record(tmap)
         time.sleep(1)
 
