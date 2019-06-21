@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import threading
 import time
 
 from opencensus.ext.azure.common import Options
@@ -35,8 +34,6 @@ class MetricsExporter(TransportMixin):
         self.options = options
         if not self.options.instrumentation_key:
             raise ValueError('The instrumentation_key is not provided.')
-        self._md_cache = {}
-        self._md_lock = threading.Lock()
 
     def export_metrics(self, metrics):
         if not metrics:
@@ -47,10 +44,12 @@ class MetricsExporter(TransportMixin):
             self._transmit(envelopes)
 
     def _metric_to_envelope(self, metric):
+        # The timestamp is when the metric was recorded
+        timestamp = metric.time_series[0].points[0].timestamp
         envelope = Envelope(
             iKey=self.options.instrumentation_key,
             tags=dict(utils.azure_monitor_context),
-            time=utils.timestamp_to_iso_str(time.time()),
+            time=timestamp.isoformat(),
         )
         envelope.name = 'Microsoft.ApplicationInsights.Metric'
         data = MetricData(
