@@ -13,15 +13,22 @@
 # limitations under the License.
 
 import threading
+import time
 
 from opencensus.ext.azure.common import Options
 from opencensus.metrics import transport
 from opencensus.stats import stats
+from opencensus.ext.azure.common import utils
+from opencensus.ext.azure.common.protocol import Data
+from opencensus.ext.azure.common.protocol import DataPoint
+from opencensus.ext.azure.common.protocol import Envelope
+from opencensus.ext.azure.common.protocol import MetricData
+from opencensus.ext.azure.common.transport import TransportMixin
 
 __all__ = ['MetricsExporter', 'new_metrics_exporter']
 
 
-class MetricsExporter(object):
+class MetricsExporter(TransportMixin):
     """Metrics exporter for Microsoft Azure Monitor."""
 
     def __init__(self, options):
@@ -32,11 +39,43 @@ class MetricsExporter(object):
         self._md_lock = threading.Lock()
 
     def export_metrics(self, metrics):
-        metrics = list(metrics)
+        if not metrics:
+            return
+        envelopes = []
         for metric in metrics:
-            # TODO: implement export to Azure Monitor functionality
-            print(repr(metric))
+            envelopes.append(self._metric_to_envelope(metric))
+            self._transmit(envelopes)
 
+    def _metric_to_envelope(self, metric):
+        envelope = Envelope(
+            iKey=self.options.instrumentation_key,
+            tags=dict(utils.azure_monitor_context),
+            time=utils.timestamp_to_iso_str(time.time()),
+        )
+        envelope.name = 'Microsoft.ApplicationInsights.Metric'
+        data = MetricData(
+            namespace=metric.descriptor.name,
+            metrics=self._metric_to_data_points(metric),
+        )
+        envelope.data = Data(baseData=data, baseType="MetricData")
+        return envelope
+
+    def _metric_to_data_points(self, metric):
+        """Convert an metric's OC time series to a list of Azure data points."""
+        data_points = []
+        for time_series in metric.time_series:
+            # Using stats, time_series should only have one point
+            # which contains the aggregated value
+            for point in time_series.points:
+                if point.value is not None:
+                    data_point = DataPoint(ns=metric.descriptor.name,
+                                        name=metric.descriptor.name,
+                                        value=point.value.value,
+                                        count=None,
+                                        min=None,
+                                        max=None)
+                    data_points.append(data_point)
+        return data_points
 
 def new_metrics_exporter(**options):
     options = Options(**options)
