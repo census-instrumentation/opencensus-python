@@ -146,6 +146,7 @@ class Message(BaseObject):
         self.ver = self.ver
         self.message = self.message
 
+
 class MetricData(BaseObject):
     _default = BaseObject(
         ver=2,

@@ -80,7 +80,6 @@ class MetricsExporter(TransportMixin):
                 data_points.append(data_point)
         return data_points
 
-
     def get_metric_properties(self, metric):
         properties = {}
         # We will use only the first time series' label values for properties
