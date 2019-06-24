@@ -60,7 +60,6 @@ class MetricsExporter(TransportMixin):
         )
         envelope.name = 'Microsoft.ApplicationInsights.Metric'
         data = MetricData(
-            namespace=metric.descriptor.name,
             metrics=self.metric_to_data_points(metric),
             properties=self.get_metric_properties(metric)
         )

@@ -79,7 +79,6 @@ class DataPoint(BaseObject):
 
     def __init__(self, *args, **kwargs):
         super(DataPoint, self).__init__(*args, **kwargs)
-        self.ns = self.ns
         self.name = self.name
         self.value = self.value
 
