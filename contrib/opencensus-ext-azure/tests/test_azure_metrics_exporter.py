@@ -41,7 +41,8 @@ class TestAzureMetricsExporter(unittest.TestCase):
         self.assertRaises(ValueError, lambda: metrics_exporter.MetricsExporter())
         Options._default.instrumentation_key = instrumentation_key
 
-    def test_export_metrics(self):
+    @mock.patch('requests.post', return_value=mock.Mock())
+    def test_export_metrics(self, requests_mock):
         lv = label_value.LabelValue('val')
         val = value.ValueLong(value=123)
         dt = datetime(2019, 3, 20, 21, 34, 0, 537954)
@@ -64,10 +65,10 @@ class TestAzureMetricsExporter(unittest.TestCase):
 
         options = Options(instrumentation_key='12345678-1234-5678-abcd-12345678abcd')
         exporter = metrics_exporter.MetricsExporter(options)
+        requests_mock.return_value.status_code = 200
         exporter.export_metrics([mm])
 
-        self.assertEqual(exporter.metric_to_envelope.call_count, 1)
-        sd_args = exporter.client.create_time_series.call_args[0][1]
-        self.assertEqual(len(sd_args), 1)
-        [sd_arg] = exporter.client.create_time_series.call_args[0][1]
-        self.assertEqual(sd_arg.points[0].value.int64_value, 123)
+        self.assertEqual(len(requests_mock.call_args_list), 1)
+        post_body = requests_mock.call_args_list[0][1]['data']
+        self.assertTrue('metrics' in post_body)
+        self.assertTrue('properties' in post_body)
