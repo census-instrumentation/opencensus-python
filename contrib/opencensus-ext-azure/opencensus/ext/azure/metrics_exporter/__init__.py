@@ -43,7 +43,8 @@ class MetricsExporter(TransportMixin):
         envelopes = []
         for metric in metrics:
             # No support for histogram aggregations
-            if metric.descriptor.type == MetricDescriptorType.CUMULATIVE_DISTRIBUTION:
+            type_ = metric.descriptor.type
+            if type_ == MetricDescriptorType.CUMULATIVE_DISTRIBUTION:
                 continue
             envelopes.append(self.metric_to_envelope(metric))
         if not envelopes:

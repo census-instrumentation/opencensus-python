@@ -23,6 +23,7 @@ from opencensus.metrics import label_key
 from opencensus.metrics import label_value
 from opencensus.metrics.export import metric
 from opencensus.metrics.export import metric_descriptor
+from opencensus.metrics.export.metric_descriptor import MetricDescriptorType
 from opencensus.metrics.export import value
 from opencensus.metrics.export import point
 from opencensus.metrics.export import time_series
@@ -55,10 +56,12 @@ class TestAzureMetricsExporter(unittest.TestCase):
     def setUp(self):
         self.options = Options(
             instrumentation_key='12345678-1234-5678-abcd-12345678abcd')
+
     def test_constructor_missing_key(self):
         instrumentation_key = Options._default.instrumentation_key
         Options._default.instrumentation_key = None
-        self.assertRaises(ValueError, lambda: metrics_exporter.MetricsExporter())
+        self.assertRaises(ValueError, 
+                          lambda: metrics_exporter.MetricsExporter())
         Options._default.instrumentation_key = instrumentation_key
 
     @mock.patch('requests.post', return_value=mock.Mock())
@@ -81,7 +84,7 @@ class TestAzureMetricsExporter(unittest.TestCase):
 
     def test_export_metrics_histogram(self):
         metric = create_metric()
-        metric.descriptor._type = metric_descriptor.MetricDescriptorType.CUMULATIVE_DISTRIBUTION
+        metric.descriptor._type = MetricDescriptorType.CUMULATIVE_DISTRIBUTION
         exporter = metrics_exporter.MetricsExporter(self.options)
 
         self.assertIsNone(exporter.export_metrics([metric]))
@@ -112,7 +115,8 @@ class TestAzureMetricsExporter(unittest.TestCase):
         data_point = data_points[0]
         self.assertEqual(data_point.ns, metric.descriptor.name)
         self.assertEqual(data_point.name, metric.descriptor.name)
-        self.assertEqual(data_point.value, metric.time_series[0].points[0].value.value)
+        self.assertEqual(data_point.value, 
+                         metric.time_series[0].points[0].value.value)
 
     def test_get_metric_properties(self):
         metric = create_metric()
@@ -135,6 +139,7 @@ class TestAzureMetricsExporter(unittest.TestCase):
                 '.transport.get_exporter_thread', return_value=mock.Mock())
     def test_new_metrics_exporter(self, exporter_mock):
         iKey = '12345678-1234-5678-abcd-12345678abcd'
-        exporter = metrics_exporter.new_metrics_exporter(instrumentation_key=iKey)
+        exporter = metrics_exporter.new_metrics_exporter(
+            instrumentation_key=iKey)
 
         self.assertEqual(exporter.options.instrumentation_key, iKey)
