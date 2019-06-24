@@ -65,6 +65,25 @@ class Data(BaseObject):
         self.baseType = self.baseType
 
 
+class DataPoint(BaseObject):
+    _default = BaseObject(
+        ns='',
+        name='',
+        kind=None,
+        value=0.0,
+        count=None,
+        min=None,
+        max=None,
+        stdDev=None,
+    )
+
+    def __init__(self, *args, **kwargs):
+        super(DataPoint, self).__init__(*args, **kwargs)
+        self.ns = self.ns
+        self.name = self.name
+        self.value = self.value
+
+
 class Envelope(BaseObject):
     _default = BaseObject(
         ver=1,
@@ -139,17 +158,6 @@ class MetricData(BaseObject):
         super(MetricData, self).__init__(*args, **kwargs)
         self.ver = self.ver
         self.metrics = self.metrics
-
-class DataPoint(BaseObject):
-    _default = BaseObject(
-        name='',
-        value=0.0,
-    )
-
-    def __init__(self, *args, **kwargs):
-        super(DataPoint, self).__init__(*args, **kwargs)
-        self.name = self.name
-        self.value = self.value
 
 
 class RemoteDependency(BaseObject):
