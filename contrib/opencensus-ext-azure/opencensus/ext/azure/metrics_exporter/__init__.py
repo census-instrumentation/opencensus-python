@@ -12,10 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import time
 
 from opencensus.ext.azure.common import Options
-from opencensus.metrics.export import value
 from opencensus.metrics.export.metric_descriptor import MetricDescriptorType
 from opencensus.metrics import transport
 from opencensus.stats import stats
@@ -48,6 +46,8 @@ class MetricsExporter(TransportMixin):
             if metric.descriptor.type == MetricDescriptorType.CUMULATIVE_DISTRIBUTION:
                 continue
             envelopes.append(self.metric_to_envelope(metric))
+        if not envelopes:
+            return
         self._transmit(envelopes)
 
     def metric_to_envelope(self, metric):
@@ -67,27 +67,26 @@ class MetricsExporter(TransportMixin):
         return envelope
 
     def metric_to_data_points(self, metric):
-        """Convert an metric's OC time series to a list of Azure data points."""
+        """Convert an metric's OC time series to list of Azure data points."""
         data_points = []
         # Each time series will be uniquely identified by it's label values
         for time_series in metric.time_series:
             # Using stats, time_series should only have one point
             # which contains the aggregated value
             for point in time_series.points:
-                if point.value is not None:
-                    data_point = DataPoint(ns=metric.descriptor.name,
-                                        name=metric.descriptor.name,
-                                        value=point.value.value)
-                    data_points.append(data_point)
+                data_point = DataPoint(ns=metric.descriptor.name,
+                                       name=metric.descriptor.name,
+                                       value=point.value.value)
+                data_points.append(data_point)
         return data_points
 
-    
+
     def get_metric_properties(self, metric):
         properties = {}
-        # We will use only the first time series' label values for the properties
+        # We will use only the first time series' label values for properties
         # Soon, only one time series will be present per metric
         for i in range(len(metric.descriptor.label_keys)):
-            # We construct a properties map from the label keys and label values
+            # We construct a properties map from the label keys and values
             # We assume the ordering is already correct
             if metric.time_series[0].label_values[i].value is None:
                 value = "None"
@@ -95,6 +94,7 @@ class MetricsExporter(TransportMixin):
                 value = metric.time_series[0].label_values[i].value
             properties[metric.descriptor.label_keys[i].key] = value
         return properties
+
 
 def new_metrics_exporter(**options):
     options = Options(**options)
