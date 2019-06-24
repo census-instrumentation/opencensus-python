@@ -32,7 +32,9 @@ __all__ = ['MetricsExporter', 'new_metrics_exporter']
 class MetricsExporter(TransportMixin):
     """Metrics exporter for Microsoft Azure Monitor."""
 
-    def __init__(self, options):
+    def __init__(self, options=None):
+        if options is None:
+            options = Options()
         self.options = options
         if not self.options.instrumentation_key:
             raise ValueError('The instrumentation_key is not provided.')
@@ -45,10 +47,10 @@ class MetricsExporter(TransportMixin):
             # No support for histogram aggregations
             if metric.descriptor.type == MetricDescriptorType.CUMULATIVE_DISTRIBUTION:
                 continue
-            envelopes.append(self._metric_to_envelope(metric))
+            envelopes.append(self.metric_to_envelope(metric))
             self._transmit(envelopes)
 
-    def _metric_to_envelope(self, metric):
+    def metric_to_envelope(self, metric):
         # The timestamp is when the metric was recorded
         timestamp = metric.time_series[0].points[0].timestamp
         envelope = Envelope(
@@ -59,13 +61,13 @@ class MetricsExporter(TransportMixin):
         envelope.name = 'Microsoft.ApplicationInsights.Metric'
         data = MetricData(
             namespace=metric.descriptor.name,
-            metrics=self._metric_to_data_points(metric),
-            properties=self._get_metric_properties(metric)
+            metrics=self.metric_to_data_points(metric),
+            properties=self.get_metric_properties(metric)
         )
         envelope.data = Data(baseData=data, baseType="MetricData")
         return envelope
 
-    def _metric_to_data_points(self, metric):
+    def metric_to_data_points(self, metric):
         """Convert an metric's OC time series to a list of Azure data points."""
         data_points = []
         # Each time series will be uniquely identified by it's label values
@@ -81,7 +83,7 @@ class MetricsExporter(TransportMixin):
         return data_points
 
     
-    def _get_metric_properties(self, metric):
+    def get_metric_properties(self, metric):
         properties = {}
         # We will use only the first time series' label values for the properties
         # Soon, only one time series will be present per metric
