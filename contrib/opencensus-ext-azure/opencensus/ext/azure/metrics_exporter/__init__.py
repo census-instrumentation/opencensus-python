@@ -48,7 +48,7 @@ class MetricsExporter(TransportMixin):
             if metric.descriptor.type == MetricDescriptorType.CUMULATIVE_DISTRIBUTION:
                 continue
             envelopes.append(self.metric_to_envelope(metric))
-            self._transmit(envelopes)
+        self._transmit(envelopes)
 
     def metric_to_envelope(self, metric):
         # The timestamp is when the metric was recorded

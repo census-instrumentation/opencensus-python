@@ -26,13 +26,13 @@ view_manager = stats.view_manager
 stats_recorder = stats.stats_recorder
 
 REQUEST_MEASURE = measure_module.MeasureFloat("Requests",
-                                                "number of requests",
-                                                "requests")
+                                              "number of requests",
+                                              "requests")
 NUM_REQUESTS_VIEW = view_module.View("Number of Requests",
-                                    "View for number of requests made",
-                                    ["url"],
-                                    REQUEST_MEASURE,
-                                    aggregation_module.SumAggregation())
+                                     "View for number of requests made",
+                                     ["url"],
+                                     REQUEST_MEASURE,
+                                     aggregation_module.SumAggregation())
 
 
 def main():
