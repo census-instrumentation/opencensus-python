@@ -17,6 +17,7 @@ import logging
 import six
 
 import django.conf
+from django.utils.deprecation import MiddlewareMixin
 
 from opencensus.common import configuration
 from opencensus.trace import attributes_helper
@@ -27,11 +28,6 @@ from opencensus.trace import span as span_module
 from opencensus.trace import tracer as tracer_module
 from opencensus.trace import utils
 from opencensus.trace.propagation import trace_context_http_header_format
-
-try:
-    from django.utils.deprecation import MiddlewareMixin
-except ImportError:  # pragma: NO COVER
-    MiddlewareMixin = object
 
 HTTP_METHOD = attributes_helper.COMMON_ATTRIBUTES['HTTP_METHOD']
 HTTP_URL = attributes_helper.COMMON_ATTRIBUTES['HTTP_URL']
@@ -90,12 +86,7 @@ def _set_django_attributes(span, request):
         return
 
     user_id = django_user.pk
-    try:
-        user_name = django_user.get_username()
-    except AttributeError:
-        # AnonymousUser in some older versions of Django doesn't implement
-        # get_username
-        return
+    user_name = django_user.get_username()
 
     # User id is the django autofield for User model as the primary key
     if user_id is not None:
