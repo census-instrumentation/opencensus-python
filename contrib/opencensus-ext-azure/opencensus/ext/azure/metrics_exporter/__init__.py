@@ -38,18 +38,16 @@ class MetricsExporter(TransportMixin):
             raise ValueError('The instrumentation_key is not provided.')
 
     def export_metrics(self, metrics):
-        if not metrics:
-            return
-        envelopes = []
-        for metric in metrics:
-            # No support for histogram aggregations
-            type_ = metric.descriptor.type
-            if type_ == MetricDescriptorType.CUMULATIVE_DISTRIBUTION:
-                continue
-            envelopes.append(self.metric_to_envelope(metric))
-        if not envelopes:
-            return
-        self._transmit(envelopes)
+        if metrics:
+            envelopes = []
+            for metric in metrics:
+                # No support for histogram aggregations
+                type_ = metric.descriptor.type
+                if type_ == MetricDescriptorType.CUMULATIVE_DISTRIBUTION:
+                    continue
+                envelopes.append(self.metric_to_envelope(metric))
+            if envelopes:
+                self._transmit(envelopes)
 
     def metric_to_envelope(self, metric):
         # The timestamp is when the metric was recorded

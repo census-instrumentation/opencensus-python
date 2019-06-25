@@ -109,7 +109,7 @@ Using the Metrics exporter
         def main():
             # Enable metrics
             # Set the interval in seconds in which you want to send metrics
-            exporter = metrics_exporter.new_metrics_exporter(export_interval=2.0)
+            exporter = metrics_exporter.new_metrics_exporter(export_interval=30.0)
             view_manager.register_exporter(exporter)
 
             view_manager.register_view(CARROTS_VIEW)
@@ -118,7 +118,7 @@ Using the Metrics exporter
 
             mmap.measure_int_put(CARROTS_MEASURE, 1000)
             mmap.record(tmap)
-            time.sleep(10)
+            time.sleep(60)
 
             print("Done recording metrics")
 

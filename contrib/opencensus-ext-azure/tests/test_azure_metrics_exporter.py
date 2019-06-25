@@ -60,7 +60,7 @@ class TestAzureMetricsExporter(unittest.TestCase):
     def test_constructor_missing_key(self):
         instrumentation_key = Options._default.instrumentation_key
         Options._default.instrumentation_key = None
-        self.assertRaises(ValueError, 
+        self.assertRaises(ValueError,
                           lambda: metrics_exporter.MetricsExporter())
         Options._default.instrumentation_key = instrumentation_key
 
@@ -115,7 +115,7 @@ class TestAzureMetricsExporter(unittest.TestCase):
         data_point = data_points[0]
         self.assertEqual(data_point.ns, metric.descriptor.name)
         self.assertEqual(data_point.name, metric.descriptor.name)
-        self.assertEqual(data_point.value, 
+        self.assertEqual(data_point.value,
                          metric.time_series[0].points[0].value.value)
 
     def test_get_metric_properties(self):
