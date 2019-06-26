@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
+import logging
 from opencensus.ext.azure.common import Options
 from opencensus.metrics.export.metric_descriptor import MetricDescriptorType
 from opencensus.metrics import transport
@@ -26,6 +26,7 @@ from opencensus.ext.azure.common.transport import TransportMixin
 
 __all__ = ['MetricsExporter', 'new_metrics_exporter']
 
+logger = logging.getLogger(__name__)
 
 class MetricsExporter(TransportMixin):
     """Metrics exporter for Microsoft Azure Monitor."""
@@ -36,6 +37,8 @@ class MetricsExporter(TransportMixin):
         self.options = options
         if not self.options.instrumentation_key:
             raise ValueError('The instrumentation_key is not provided.')
+        # TODO: Implement retry logic
+        self.storage = None
 
     def export_metrics(self, metrics):
         if metrics:
@@ -47,7 +50,10 @@ class MetricsExporter(TransportMixin):
                     continue
                 envelopes.append(self.metric_to_envelope(metric))
             if envelopes:
-                self._transmit(envelopes)
+                response = self._transmit(envelopes)
+                # Partial Content
+                if response == -206:
+                    logger.warning("Partial content response received.")
 
     def metric_to_envelope(self, metric):
         # The timestamp is when the metric was recorded
@@ -57,7 +63,7 @@ class MetricsExporter(TransportMixin):
             tags=dict(utils.azure_monitor_context),
             time=timestamp.isoformat(),
         )
-        envelope.name = 'Microsoft.ApplicationInsights.Metric'
+        envelope.name = "Microsoft.ApplicationInsights.Metric"
         data = MetricData(
             metrics=self.metric_to_data_points(metric),
             properties=self.get_metric_properties(metric)

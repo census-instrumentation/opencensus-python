@@ -102,7 +102,7 @@ class TransportMixin(object):
                                 error['message'],
                                 envelopes[error['index']],
                             )
-                    if resend_envelopes:
+                    if resend_envelopes and self.storage is not None:
                         self.storage.put(resend_envelopes)
                 except Exception as ex:
                     logger.error(
