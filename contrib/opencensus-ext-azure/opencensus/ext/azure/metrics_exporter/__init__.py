@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import logging
 from opencensus.ext.azure.common import Options
 from opencensus.metrics.export.metric_descriptor import MetricDescriptorType
 from opencensus.metrics import transport
@@ -29,7 +28,6 @@ __all__ = ['MetricsExporter', 'new_metrics_exporter']
 
 class MetricsExporter(TransportMixin):
     """Metrics exporter for Microsoft Azure Monitor."""
-
 
     def __init__(self, options=None):
         if options is None:
@@ -61,8 +59,8 @@ class MetricsExporter(TransportMixin):
                         # and label values of the time series
                         properties = self.create_properties(time_series, md)
                         envelope = self.create_envelope(
-                                   data_point, time_stamp, properties)   
-                        response = self._transmit(envelope)
+                                   data_point, time_stamp, properties)
+                        self._transmit(envelope)
 
     def create_data_points(self, time_series, metric_descriptor):
         """Convert an metric's OC time series to list of Azure data points."""
@@ -73,7 +71,7 @@ class MetricsExporter(TransportMixin):
                                    value=point.value.value)
             data_points.append(data_point)
         return data_points
-    
+
     def create_properties(self, time_series, metric_descriptor):
         properties = {}
         # We construct a properties map from the

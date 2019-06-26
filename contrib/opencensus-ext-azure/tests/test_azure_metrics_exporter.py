@@ -84,6 +84,13 @@ class TestAzureMetricsExporter(unittest.TestCase):
 
         self.assertIsNone(exporter.export_metrics([metric]))
 
+    @mock.patch('requests.post', return_value=mock.Mock())
+    def test_export_metrics_empty(self, requests_mock):
+        exporter = metrics_exporter.MetricsExporter(self.options)
+        exporter.export_metrics([])
+
+        self.assertEqual(len(requests_mock.call_args_list), 0)
+
     def test_create_data_points(self):
         metric = create_metric()
         exporter = metrics_exporter.MetricsExporter(self.options)
@@ -119,9 +126,10 @@ class TestAzureMetricsExporter(unittest.TestCase):
     def test_create_envelope(self):
         metric = create_metric()
         exporter = metrics_exporter.MetricsExporter(self.options)
+        value = metric.time_series[0].points[0].value.value
         data_point = DataPoint(ns=metric.descriptor.name,
                                name=metric.descriptor.name,
-                               value=metric.time_series[0].points[0].value.value)
+                               value=value)
         timestamp = datetime(2019, 3, 20, 21, 34, 0, 537954)
         properties = {'url': 'website.com'}
         envelope = exporter.create_envelope(data_point, timestamp, properties)
