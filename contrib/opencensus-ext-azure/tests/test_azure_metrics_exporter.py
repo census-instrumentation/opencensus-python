@@ -16,18 +16,18 @@ import mock
 import unittest
 from datetime import datetime
 
-from opencensus.ext.azure.common import Options
 from opencensus.common import utils
 from opencensus.ext.azure import metrics_exporter
+from opencensus.ext.azure.common import Options
+from opencensus.ext.azure.common.protocol import DataPoint
 from opencensus.metrics import label_key
 from opencensus.metrics import label_value
 from opencensus.metrics.export import metric
 from opencensus.metrics.export import metric_descriptor
-from opencensus.metrics.export.metric_descriptor import MetricDescriptorType
-from opencensus.metrics.export import value
 from opencensus.metrics.export import point
 from opencensus.metrics.export import time_series
-from opencensus.ext.azure.common.protocol import DataPoint
+from opencensus.metrics.export import value
+from opencensus.metrics.export.metric_descriptor import MetricDescriptorType
 
 
 def create_metric():

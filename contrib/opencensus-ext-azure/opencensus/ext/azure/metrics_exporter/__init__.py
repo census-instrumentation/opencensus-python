@@ -13,15 +13,15 @@
 # limitations under the License.
 
 from opencensus.ext.azure.common import Options
-from opencensus.metrics.export.metric_descriptor import MetricDescriptorType
-from opencensus.metrics import transport
-from opencensus.stats import stats
 from opencensus.ext.azure.common import utils
 from opencensus.ext.azure.common.protocol import Data
 from opencensus.ext.azure.common.protocol import DataPoint
 from opencensus.ext.azure.common.protocol import Envelope
 from opencensus.ext.azure.common.protocol import MetricData
 from opencensus.ext.azure.common.transport import TransportMixin
+from opencensus.metrics import transport
+from opencensus.metrics.export.metric_descriptor import MetricDescriptorType
+from opencensus.stats import stats
 
 __all__ = ['MetricsExporter', 'new_metrics_exporter']
 
