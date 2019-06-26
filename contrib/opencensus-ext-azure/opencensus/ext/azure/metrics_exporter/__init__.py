@@ -26,10 +26,10 @@ from opencensus.ext.azure.common.transport import TransportMixin
 
 __all__ = ['MetricsExporter', 'new_metrics_exporter']
 
-logger = logging.getLogger(__name__)
 
 class MetricsExporter(TransportMixin):
     """Metrics exporter for Microsoft Azure Monitor."""
+
 
     def __init__(self, options=None):
         if options is None:
@@ -47,35 +47,37 @@ class MetricsExporter(TransportMixin):
                 type_ = metric.descriptor.type
                 if type_ != MetricDescriptorType.CUMULATIVE_DISTRIBUTION:
                     md = metric.descriptor
-                    # Each time series will be uniquely identified by it's label values
+                    # Each time series will be uniquely
+                    # identified by it's label values
                     for time_series in metric.time_series:
-                        # Using stats, time_series should only have one point
-                        # which contains the aggregated value
-                        data_point = self.create_data_points(time_series, md)[0]
+                        # Using stats, time_series should
+                        # only have one point which contains
+                        # the aggregated value
+                        data_point = self.create_data_points(
+                                     time_series, md)[0]
                         # The timestamp is when the metric was recorded
                         time_stamp = time_series.points[0].timestamp
                         # Get the properties using label keys from metric
                         # and label values of the time series
                         properties = self.create_properties(time_series, md)
-                        envelope = self.create_envelope(data_point, time_stamp, properties)   
+                        envelope = self.create_envelope(
+                                   data_point, time_stamp, properties)   
                         response = self._transmit(envelope)
-                        # Partial Content
-                        if response == -206:
-                            logger.warning("Partial content response received.")
 
     def create_data_points(self, time_series, metric_descriptor):
         """Convert an metric's OC time series to list of Azure data points."""
         data_points = []
         for point in time_series.points:
             data_point = DataPoint(ns=metric_descriptor.name,
-                                name=metric_descriptor.name,
-                                value=point.value.value)
+                                   name=metric_descriptor.name,
+                                   value=point.value.value)
             data_points.append(data_point)
         return data_points
     
     def create_properties(self, time_series, metric_descriptor):
         properties = {}
-        # We construct a properties map from the label keys and values
+        # We construct a properties map from the
+        # label keys and values
         # We assume the ordering is already correct
         for i in range(len(metric_descriptor.label_keys)):
             if time_series.label_values[i].value is None:

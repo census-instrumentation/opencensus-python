@@ -77,12 +77,6 @@ class TestAzureMetricsExporter(unittest.TestCase):
         self.assertTrue('metrics' in post_body)
         self.assertTrue('properties' in post_body)
 
-    def test_export_metrics_empty(self):
-        metric = []
-        exporter = metrics_exporter.MetricsExporter(self.options)
-
-        self.assertIsNone(exporter.export_metrics(metric))
-
     def test_export_metrics_histogram(self):
         metric = create_metric()
         metric.descriptor._type = MetricDescriptorType.CUMULATIVE_DISTRIBUTION
