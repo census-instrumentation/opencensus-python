@@ -192,4 +192,3 @@ class LocalNoopStorage(object):
 
     def put(self, data, lease_period=0, silent=False):
         return
-        
