@@ -188,7 +188,7 @@ class LocalNoopStorage(object):
         self.write_timeout = write_timeout
 
     def gets(self):
-        return []
+        return [] # pragma: no cover
 
     def put(self, data, lease_period=0, silent=False):
-        return
+        return # pragma: no cover
