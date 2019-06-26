@@ -42,62 +42,64 @@ class MetricsExporter(TransportMixin):
 
     def export_metrics(self, metrics):
         if metrics:
-            envelopes = []
             for metric in metrics:
                 # No support for histogram aggregations
                 type_ = metric.descriptor.type
-                if type_ == MetricDescriptorType.CUMULATIVE_DISTRIBUTION:
-                    continue
-                envelopes.append(self.metric_to_envelope(metric))
-            if envelopes:
-                response = self._transmit(envelopes)
-                # Partial Content
-                if response == -206:
-                    logger.warning("Partial content response received.")
+                if type_ != MetricDescriptorType.CUMULATIVE_DISTRIBUTION:
+                    md = metric.descriptor
+                    # Each time series will be uniquely identified by it's label values
+                    for time_series in metric.time_series:
+                        # Using stats, time_series should only have one point
+                        # which contains the aggregated value
+                        data_point = self.create_data_points(time_series, md)[0]
+                        # The timestamp is when the metric was recorded
+                        time_stamp = time_series.points[0].timestamp
+                        # Get the properties using label keys from metric
+                        # and label values of the time series
+                        properties = self.create_properties(time_series, md)
+                        envelope = self.create_envelope(data_point, time_stamp, properties)   
+                        response = self._transmit(envelope)
+                        # Partial Content
+                        if response == -206:
+                            logger.warning("Partial content response received.")
 
-    def metric_to_envelope(self, metric):
-        # The timestamp is when the metric was recorded
-        timestamp = metric.time_series[0].points[0].timestamp
+    def create_data_points(self, time_series, metric_descriptor):
+        """Convert an metric's OC time series to list of Azure data points."""
+        data_points = []
+        for point in time_series.points:
+            data_point = DataPoint(ns=metric_descriptor.name,
+                                name=metric_descriptor.name,
+                                value=point.value.value)
+            data_points.append(data_point)
+        return data_points
+    
+    def create_properties(self, time_series, metric_descriptor):
+        properties = {}
+        # We construct a properties map from the label keys and values
+        # We assume the ordering is already correct
+        for i in range(len(metric_descriptor.label_keys)):
+            if time_series.label_values[i].value is None:
+                value = "None"
+            else:
+                value = time_series.label_values[i].value
+            properties[metric_descriptor.label_keys[i].key] = value
+        return properties
+
+    def create_envelope(self, data_point, time_stamp, properties):
         envelope = Envelope(
             iKey=self.options.instrumentation_key,
             tags=dict(utils.azure_monitor_context),
-            time=timestamp.isoformat(),
+            time=time_stamp.isoformat(),
         )
         envelope.name = "Microsoft.ApplicationInsights.Metric"
+        # The ingestion service for Azure Monitor only takes a single
+        # data point per request
         data = MetricData(
-            metrics=self.metric_to_data_points(metric),
-            properties=self.get_metric_properties(metric)
+            metrics=[data_point],
+            properties=properties
         )
         envelope.data = Data(baseData=data, baseType="MetricData")
         return envelope
-
-    def metric_to_data_points(self, metric):
-        """Convert an metric's OC time series to list of Azure data points."""
-        data_points = []
-        # Each time series will be uniquely identified by it's label values
-        for time_series in metric.time_series:
-            # Using stats, time_series should only have one point
-            # which contains the aggregated value
-            for point in time_series.points:
-                data_point = DataPoint(ns=metric.descriptor.name,
-                                       name=metric.descriptor.name,
-                                       value=point.value.value)
-                data_points.append(data_point)
-        return data_points
-
-    def get_metric_properties(self, metric):
-        properties = {}
-        # We will use only the first time series' label values for properties
-        # Soon, only one time series will be present per metric
-        for i in range(len(metric.descriptor.label_keys)):
-            # We construct a properties map from the label keys and values
-            # We assume the ordering is already correct
-            if metric.time_series[0].label_values[i].value is None:
-                value = "None"
-            else:
-                value = metric.time_series[0].label_values[i].value
-            properties[metric.descriptor.label_keys[i].key] = value
-        return properties
 
 
 def new_metrics_exporter(**options):
