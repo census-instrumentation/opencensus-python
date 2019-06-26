@@ -35,11 +35,13 @@ class MetricsExporter(TransportMixin):
         self.options = options
         if not self.options.instrumentation_key:
             raise ValueError('The instrumentation_key is not provided.')
+        self.max_batch_size = self.options.max_batch_size
         # TODO: Implement retry logic
         self.storage = None
 
     def export_metrics(self, metrics):
         if metrics:
+            envelopes = []
             for metric in metrics:
                 # No support for histogram aggregations
                 type_ = metric.descriptor.type
@@ -58,9 +60,16 @@ class MetricsExporter(TransportMixin):
                         # Get the properties using label keys from metric
                         # and label values of the time series
                         properties = self.create_properties(time_series, md)
-                        envelope = self.create_envelope(
-                                   data_point, time_stamp, properties)
-                        self._transmit(envelope)
+                        envelopes.append(self.create_envelope(data_point,
+                                                              time_stamp,
+                                                              properties))
+                        # Send data in batches of max_batch_size
+                        if len(envelopes) == self.max_batch_size:
+                            self._transmit(envelopes)
+                            envelopes.clear()
+            # if leftover data points in envelopes, send them all
+            if envelopes:
+                self._transmit(envelopes)
 
     def create_data_points(self, time_series, metric_descriptor):
         """Convert an metric's OC time series to list of Azure data points."""
@@ -92,8 +101,6 @@ class MetricsExporter(TransportMixin):
             time=time_stamp.isoformat(),
         )
         envelope.name = "Microsoft.ApplicationInsights.Metric"
-        # The ingestion service for Azure Monitor only takes a single
-        # data point per request
         data = MetricData(
             metrics=[data_point],
             properties=properties
