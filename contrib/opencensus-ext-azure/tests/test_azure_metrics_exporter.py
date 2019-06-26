@@ -54,10 +54,6 @@ def create_metric():
 
 
 class TestAzureMetricsExporter(unittest.TestCase):
-    def setUp(self):
-        self.options = Options(
-            instrumentation_key='12345678-1234-5678-abcd-12345678abcd')
-
     def test_constructor_missing_key(self):
         instrumentation_key = Options._default.instrumentation_key
         Options._default.instrumentation_key = None
@@ -68,7 +64,9 @@ class TestAzureMetricsExporter(unittest.TestCase):
     @mock.patch('requests.post', return_value=mock.Mock())
     def test_export_metrics(self, requests_mock):
         metric = create_metric()
-        exporter = metrics_exporter.MetricsExporter(self.options)
+        options = Options(
+            instrumentation_key='12345678-1234-5678-abcd-12345678abcd')
+        exporter = metrics_exporter.MetricsExporter(options)
         requests_mock.return_value.status_code = 200
         exporter.export_metrics([metric])
 
@@ -79,21 +77,42 @@ class TestAzureMetricsExporter(unittest.TestCase):
 
     def test_export_metrics_histogram(self):
         metric = create_metric()
+        options = Options(
+            instrumentation_key='12345678-1234-5678-abcd-12345678abcd')
         metric.descriptor._type = MetricDescriptorType.CUMULATIVE_DISTRIBUTION
-        exporter = metrics_exporter.MetricsExporter(self.options)
+        exporter = metrics_exporter.MetricsExporter(options)
 
         self.assertIsNone(exporter.export_metrics([metric]))
 
     @mock.patch('requests.post', return_value=mock.Mock())
     def test_export_metrics_empty(self, requests_mock):
-        exporter = metrics_exporter.MetricsExporter(self.options)
+        options = Options(
+            instrumentation_key='12345678-1234-5678-abcd-12345678abcd')
+        exporter = metrics_exporter.MetricsExporter(options)
         exporter.export_metrics([])
 
         self.assertEqual(len(requests_mock.call_args_list), 0)
 
+    @mock.patch('requests.post', return_value=mock.Mock())
+    def test_export_metrics_full_batch(self, requests_mock):
+        metric = create_metric()
+        options = Options(
+            instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
+            max_batch_size=1)
+        exporter = metrics_exporter.MetricsExporter(options)
+        requests_mock.return_value.status_code = 200
+        exporter.export_metrics([metric])
+
+        self.assertEqual(len(requests_mock.call_args_list), 1)
+        post_body = requests_mock.call_args_list[0][1]['data']
+        self.assertTrue('metrics' in post_body)
+        self.assertTrue('properties' in post_body)
+
     def test_create_data_points(self):
         metric = create_metric()
-        exporter = metrics_exporter.MetricsExporter(self.options)
+        options = Options(
+            instrumentation_key='12345678-1234-5678-abcd-12345678abcd')
+        exporter = metrics_exporter.MetricsExporter(options)
         data_points = exporter.create_data_points(metric.time_series[0],
                                                   metric.descriptor)
 
@@ -106,7 +125,9 @@ class TestAzureMetricsExporter(unittest.TestCase):
 
     def test_create_properties(self):
         metric = create_metric()
-        exporter = metrics_exporter.MetricsExporter(self.options)
+        options = Options(
+            instrumentation_key='12345678-1234-5678-abcd-12345678abcd')
+        exporter = metrics_exporter.MetricsExporter(options)
         properties = exporter.create_properties(metric.time_series[0],
                                                 metric.descriptor)
 
@@ -115,7 +136,9 @@ class TestAzureMetricsExporter(unittest.TestCase):
 
     def test_create_properties_none(self):
         metric = create_metric()
-        exporter = metrics_exporter.MetricsExporter(self.options)
+        options = Options(
+            instrumentation_key='12345678-1234-5678-abcd-12345678abcd')
+        exporter = metrics_exporter.MetricsExporter(options)
         metric.time_series[0].label_values[0]._value = None
         properties = exporter.create_properties(metric.time_series[0],
                                                 metric.descriptor)
@@ -125,7 +148,9 @@ class TestAzureMetricsExporter(unittest.TestCase):
 
     def test_create_envelope(self):
         metric = create_metric()
-        exporter = metrics_exporter.MetricsExporter(self.options)
+        options = Options(
+            instrumentation_key='12345678-1234-5678-abcd-12345678abcd')
+        exporter = metrics_exporter.MetricsExporter(options)
         value = metric.time_series[0].points[0].value.value
         data_point = DataPoint(ns=metric.descriptor.name,
                                name=metric.descriptor.name,
@@ -135,7 +160,7 @@ class TestAzureMetricsExporter(unittest.TestCase):
         envelope = exporter.create_envelope(data_point, timestamp, properties)
 
         self.assertTrue('iKey' in envelope)
-        self.assertEqual(envelope.iKey, self.options.instrumentation_key)
+        self.assertEqual(envelope.iKey, options.instrumentation_key)
         self.assertTrue('tags' in envelope)
         self.assertTrue('time' in envelope)
         self.assertEqual(envelope.time, timestamp.isoformat())

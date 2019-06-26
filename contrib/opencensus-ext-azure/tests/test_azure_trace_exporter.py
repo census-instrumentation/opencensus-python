@@ -19,6 +19,7 @@ import shutil
 import unittest
 
 from opencensus.ext.azure import trace_exporter
+from opencensus.ext.azure.common.transport import ResponseType
 
 TEST_FOLDER = os.path.abspath('.test.exporter')
 
@@ -73,7 +74,7 @@ class TestAzureExporter(unittest.TestCase):
             storage_path=os.path.join(TEST_FOLDER, self.id()),
         )
         with mock.patch('opencensus.ext.azure.trace_exporter.AzureExporter._transmit') as transmit:  # noqa: E501
-            transmit.return_value = 10
+            transmit.return_value = ResponseType.RETRY
             exporter.emit(['foo'])
         self.assertEqual(len(os.listdir(exporter.storage.path)), 1)
         self.assertIsNone(exporter.storage.get())
@@ -88,7 +89,7 @@ class TestAzureExporter(unittest.TestCase):
             storage_path=os.path.join(TEST_FOLDER, self.id()),
         )
         with mock.patch('opencensus.ext.azure.trace_exporter.AzureExporter._transmit') as transmit:  # noqa: E501
-            transmit.return_value = 0
+            transmit.return_value = ResponseType.SUCCESS
             exporter.emit([])
             exporter.emit(['foo'])
             self.assertEqual(len(os.listdir(exporter.storage.path)), 0)

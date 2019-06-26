@@ -27,6 +27,7 @@ from opencensus.ext.azure.common.protocol import Envelope
 from opencensus.ext.azure.common.protocol import ExceptionData
 from opencensus.ext.azure.common.protocol import Message
 from opencensus.ext.azure.common.storage import LocalFileStorage
+from opencensus.ext.azure.common.transport import ResponseType
 from opencensus.ext.azure.common.transport import TransportMixin
 
 logger = logging.getLogger(__name__)
@@ -134,7 +135,7 @@ class AzureLogHandler(TransportMixin, BaseLogHandler):
             if batch:
                 envelopes = [self.log_record_to_envelope(x) for x in batch]
                 result = self._transmit(envelopes)
-                if result > 0:
+                if result == ResponseType.RETRY:
                     self.storage.put(envelopes, result)
             if event:
                 if isinstance(event, QueueExitEvent):

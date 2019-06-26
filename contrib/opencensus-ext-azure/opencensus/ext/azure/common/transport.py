@@ -20,6 +20,11 @@ from opencensus.trace import execution_context
 
 logger = logging.getLogger(__name__)
 
+class ResponseType(object):
+    SUCCESS = 0
+    RETRY = 1
+    NON_RETRY = 2
+
 
 class TransportMixin(object):
     def _transmit_from_storage(self):
@@ -29,66 +34,17 @@ class TransportMixin(object):
             if blob.lease(self.options.timeout + 5):
                 envelopes = blob.get()  # TODO: handle error
                 result = self._transmit(envelopes)
-                if result > 0:
+                if result == ResponseType.RETRY:
                     blob.lease(result)
                 else:
                     blob.delete(silent=True)
 
-    def _transmit_without_retry(self, envelopes):
-        """
-        Transmit the data envelopes to the ingestion service.
-        Return 0 if all envelopes have been successfully ingested.
-        Return a negative value otherwise.
-        This function should never throw exception.
-        """
-        # TODO: prevent requests being tracked
-        blacklist_hostnames = execution_context.get_opencensus_attr(
-            'blacklist_hostnames',
-        )
-        execution_context.set_opencensus_attr(
-            'blacklist_hostnames',
-            ['dc.services.visualstudio.com'],
-        )
-        try:
-            response = requests.post(
-                url=self.options.endpoint,
-                data=json.dumps(envelopes),
-                headers={
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json; charset=utf-8',
-                },
-                timeout=self.options.timeout,
-            )
-        except Exception as ex:  # TODO: consider RequestException
-            logger.warning('Transient client side error %s.', ex)
-            # client side error
-            return -1
-        finally:
-            execution_context.set_opencensus_attr(
-                'blacklist_hostnames',
-                blacklist_hostnames,
-            )
-        text = 'N/A'
-        try:
-            text = response.text
-        except Exception as ex:
-            logger.warning('Error while reading response body %s.', ex)
-        if response.status_code == 200:
-            logger.info('Transmission succeeded: %s.', text)
-            return 0
-        logger.error(
-            'Transient server side error %s: %s.',
-            response.status_code,
-            text,
-        )
-        return -response.status_code
-
     def _transmit(self, envelopes):
         """
         Transmit the data envelopes to the ingestion service.
-        Return a negative value for partial success or non-retryable failure.
-        Return 0 if all envelopes have been successfully ingested.
-        Return the next retry time in seconds for retryable failure.
+        Returns a ResponsePayload with a type, status code and message.
+        Type is a ResponseType with either success,
+        retry or non-retryable failure
         This function should never throw exception.
         """
         # TODO: prevent requests being tracked
@@ -112,7 +68,7 @@ class TransportMixin(object):
         except Exception as ex:  # TODO: consider RequestException
             logger.warning('Transient client side error %s.', ex)
             # client side error (retryable)
-            return self.options.minimum_retry_interval
+            return ResponseType.RETRY
         finally:
             execution_context.set_opencensus_attr(
                 'blacklist_hostnames',
@@ -131,7 +87,7 @@ class TransportMixin(object):
                 pass
         if response.status_code == 200:
             logger.info('Transmission succeeded: %s.', text)
-            return 0
+            return ResponseType.SUCCESS
         if response.status_code == 206:  # Partial Content
             # TODO: store the unsent data
             if data:
@@ -160,7 +116,7 @@ class TransportMixin(object):
                         text,
                         ex,
                     )
-                return -response.status_code
+                return ResponseType.NON_RETRY
             # cannot parse response body, fallback to retry
         if response.status_code in (
                 206,  # Partial Content
@@ -174,12 +130,11 @@ class TransportMixin(object):
                 text,
             )
             # server side error (retryable)
-            return self.options.minimum_retry_interval
+            return ResponseType.RETRY
         logger.error(
             'Non-retryable server side error %s: %s.',
             response.status_code,
             text,
         )
         # server side error (non-retryable)
-        return -response.status_code
-
+        return ResponseType.NON_RETRY

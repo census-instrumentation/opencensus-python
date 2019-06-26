@@ -23,6 +23,7 @@ from opencensus.ext.azure.common.protocol import Envelope
 from opencensus.ext.azure.common.protocol import RemoteDependency
 from opencensus.ext.azure.common.protocol import Request
 from opencensus.ext.azure.common.storage import LocalFileStorage
+from opencensus.ext.azure.common.transport import ResponseType
 from opencensus.ext.azure.common.transport import TransportMixin
 from opencensus.trace.span import SpanKind
 
@@ -119,7 +120,7 @@ class AzureExporter(TransportMixin, BaseExporter):
             if batch:
                 envelopes = [self.span_data_to_envelope(sd) for sd in batch]
                 result = self._transmit(envelopes)
-                if result > 0:
+                if result == ResponseType.RETRY:
                     self.storage.put(envelopes, result)
             if event:
                 if isinstance(event, QueueExitEvent):

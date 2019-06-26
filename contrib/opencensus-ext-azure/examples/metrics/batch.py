@@ -47,7 +47,9 @@ SUM_VIEW = view_module.View("sum_view",
 def main():
     # Enable metrics
     # Set the interval in seconds in which you want to send metrics
-    exporter = metrics_exporter.new_metrics_exporter(export_interval=2.0, max_batch_size=1)
+    exporter = metrics_exporter.new_metrics_exporter(
+                                export_interval=2.0,
+                                max_batch_size=1)
     view_manager.register_exporter(exporter)
 
     view_manager.register_view(COUNT_VIEW)
