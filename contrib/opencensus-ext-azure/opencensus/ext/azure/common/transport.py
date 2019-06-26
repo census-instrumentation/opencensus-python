@@ -34,6 +34,55 @@ class TransportMixin(object):
                 else:
                     blob.delete(silent=True)
 
+    def _transmit_without_retry(self, envelopes):
+        """
+        Transmit the data envelopes to the ingestion service.
+        Return 0 if all envelopes have been successfully ingested.
+        Return a negative value otherwise.
+        This function should never throw exception.
+        """
+        # TODO: prevent requests being tracked
+        blacklist_hostnames = execution_context.get_opencensus_attr(
+            'blacklist_hostnames',
+        )
+        execution_context.set_opencensus_attr(
+            'blacklist_hostnames',
+            ['dc.services.visualstudio.com'],
+        )
+        try:
+            response = requests.post(
+                url=self.options.endpoint,
+                data=json.dumps(envelopes),
+                headers={
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json; charset=utf-8',
+                },
+                timeout=self.options.timeout,
+            )
+        except Exception as ex:  # TODO: consider RequestException
+            logger.warning('Transient client side error %s.', ex)
+            # client side error
+            return -1
+        finally:
+            execution_context.set_opencensus_attr(
+                'blacklist_hostnames',
+                blacklist_hostnames,
+            )
+        text = 'N/A'
+        try:
+            text = response.text
+        except Exception as ex:
+            logger.warning('Error while reading response body %s.', ex)
+        if response.status_code == 200:
+            logger.info('Transmission succeeded: %s.', text)
+            return 0
+        logger.error(
+            'Transient server side error %s: %s.',
+            response.status_code,
+            text,
+        )
+        return -response.status_code
+
     def _transmit(self, envelopes):
         """
         Transmit the data envelopes to the ingestion service.
@@ -102,7 +151,7 @@ class TransportMixin(object):
                                 error['message'],
                                 envelopes[error['index']],
                             )
-                    if resend_envelopes and self.storage is not None:
+                    if resend_envelopes:
                         self.storage.put(resend_envelopes)
                 except Exception as ex:
                     logger.error(
@@ -133,3 +182,4 @@ class TransportMixin(object):
         )
         # server side error (non-retryable)
         return -response.status_code
+

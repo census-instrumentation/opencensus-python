@@ -36,8 +36,6 @@ class MetricsExporter(TransportMixin):
         if not self.options.instrumentation_key:
             raise ValueError('The instrumentation_key is not provided.')
         self.max_batch_size = self.options.max_batch_size
-        # TODO: Implement retry logic
-        self.storage = None
 
     def export_metrics(self, metrics):
         if metrics:
@@ -65,11 +63,11 @@ class MetricsExporter(TransportMixin):
                                                               properties))
                         # Send data in batches of max_batch_size
                         if len(envelopes) == self.max_batch_size:
-                            self._transmit(envelopes)
+                            self._transmit_without_retry(envelopes)
                             envelopes.clear()
             # if leftover data points in envelopes, send them all
             if envelopes:
-                self._transmit(envelopes)
+                self._transmit_without_retry(envelopes)
 
     def create_data_points(self, time_series, metric_descriptor):
         """Convert an metric's OC time series to list of Azure data points."""
