@@ -27,6 +27,7 @@ from opencensus.metrics.export.metric_descriptor import MetricDescriptorType
 from opencensus.metrics.export import value
 from opencensus.metrics.export import point
 from opencensus.metrics.export import time_series
+from opencensus.ext.azure.common.protocol import DataPoint
 
 
 def create_metric():
@@ -89,27 +90,11 @@ class TestAzureMetricsExporter(unittest.TestCase):
 
         self.assertIsNone(exporter.export_metrics([metric]))
 
-    def test_metric_to_envelope(self):
+    def test_create_data_points(self):
         metric = create_metric()
         exporter = metrics_exporter.MetricsExporter(self.options)
-        envelope = exporter.metric_to_envelope(metric)
-
-        self.assertTrue('iKey' in envelope)
-        self.assertEqual(envelope.iKey, self.options.instrumentation_key)
-        self.assertTrue('tags' in envelope)
-        self.assertTrue('time' in envelope)
-        self.assertTrue('name' in envelope)
-        self.assertEqual(envelope.name, 'Microsoft.ApplicationInsights.Metric')
-        self.assertTrue('data' in envelope)
-        self.assertTrue('baseData' in envelope.data)
-        self.assertTrue('baseType' in envelope.data)
-        self.assertTrue('metrics' in envelope.data.baseData)
-        self.assertTrue('properties' in envelope.data.baseData)
-
-    def test_metric_to_data_points(self):
-        metric = create_metric()
-        exporter = metrics_exporter.MetricsExporter(self.options)
-        data_points = exporter.metric_to_data_points(metric)
+        data_points = exporter.create_data_points(metric.time_series[0],
+                                                  metric.descriptor)
 
         self.assertEqual(len(data_points), 1)
         data_point = data_points[0]
@@ -118,22 +103,48 @@ class TestAzureMetricsExporter(unittest.TestCase):
         self.assertEqual(data_point.value,
                          metric.time_series[0].points[0].value.value)
 
-    def test_get_metric_properties(self):
+    def test_create_properties(self):
         metric = create_metric()
         exporter = metrics_exporter.MetricsExporter(self.options)
-        properties = exporter.get_metric_properties(metric)
+        properties = exporter.create_properties(metric.time_series[0],
+                                                metric.descriptor)
 
         self.assertEqual(len(properties), 1)
         self.assertEqual(properties['key'], 'val')
 
-    def test_get_metric_properties_none(self):
+    def test_create_properties_none(self):
         metric = create_metric()
         exporter = metrics_exporter.MetricsExporter(self.options)
         metric.time_series[0].label_values[0]._value = None
-        properties = exporter.get_metric_properties(metric)
+        properties = exporter.create_properties(metric.time_series[0],
+                                                metric.descriptor)
 
         self.assertEqual(len(properties), 1)
         self.assertEqual(properties['key'], 'None')
+
+    def test_create_envelope(self):
+        metric = create_metric()
+        exporter = metrics_exporter.MetricsExporter(self.options)
+        data_point = DataPoint(ns=metric.descriptor.name,
+                               name=metric.descriptor.name,
+                               value=metric.time_series[0].points[0].value.value)
+        timestamp = datetime(2019, 3, 20, 21, 34, 0, 537954)
+        properties = {'url': 'website.com'}
+        envelope = exporter.create_envelope(data_point, timestamp, properties)
+
+        self.assertTrue('iKey' in envelope)
+        self.assertEqual(envelope.iKey, self.options.instrumentation_key)
+        self.assertTrue('tags' in envelope)
+        self.assertTrue('time' in envelope)
+        self.assertEqual(envelope.time, timestamp.isoformat())
+        self.assertTrue('name' in envelope)
+        self.assertEqual(envelope.name, 'Microsoft.ApplicationInsights.Metric')
+        self.assertTrue('data' in envelope)
+        self.assertTrue('baseData' in envelope.data)
+        self.assertTrue('baseType' in envelope.data)
+        self.assertTrue('metrics' in envelope.data.baseData)
+        self.assertTrue('properties' in envelope.data.baseData)
+        self.assertEqual(envelope.data.baseData.properties, properties)
 
     @mock.patch('opencensus.ext.azure.metrics_exporter' +
                 '.transport.get_exporter_thread', return_value=mock.Mock())
