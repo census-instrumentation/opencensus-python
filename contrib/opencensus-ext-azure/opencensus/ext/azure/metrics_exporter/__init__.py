@@ -18,7 +18,7 @@ from opencensus.ext.azure.common.protocol import Data
 from opencensus.ext.azure.common.protocol import DataPoint
 from opencensus.ext.azure.common.protocol import Envelope
 from opencensus.ext.azure.common.protocol import MetricData
-from opencensus.ext.azure.common.storage import LocalFileStorage
+from opencensus.ext.azure.common.storage import LocalNoopStorage
 from opencensus.ext.azure.common.transport import TransportMixin
 from opencensus.metrics import transport
 from opencensus.metrics.export.metric_descriptor import MetricDescriptorType
@@ -37,7 +37,7 @@ class MetricsExporter(TransportMixin):
         if not self.options.instrumentation_key:
             raise ValueError('The instrumentation_key is not provided.')
         self.max_batch_size = self.options.max_batch_size
-        self.storage = LocalFileStorage(
+        self.storage = LocalNoopStorage(
             path=self.options.storage_path,
             max_size=self.options.storage_max_size,
             maintenance_period=self.options.storage_maintenance_period,
@@ -71,7 +71,7 @@ class MetricsExporter(TransportMixin):
                         # Send data in batches of max_batch_size
                         if len(envelopes) == self.max_batch_size:
                             self._transmit(envelopes)
-                            envelopes.clear()
+                            del envelopes[:]
             # if leftover data points in envelopes, send them all
             if envelopes:
                 self._transmit(envelopes)

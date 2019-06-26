@@ -20,6 +20,7 @@ from opencensus.trace import execution_context
 
 logger = logging.getLogger(__name__)
 
+
 class ResponseType(object):
     SUCCESS = 0
     RETRY = 1

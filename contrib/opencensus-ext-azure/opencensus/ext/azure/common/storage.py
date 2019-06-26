@@ -170,3 +170,25 @@ class LocalFileStorage(object):
             ),
         ))
         return blob.put(data, lease_period=lease_period, silent=silent)
+
+
+class LocalNoopStorage(object):
+    def __init__(
+                self,
+                path,
+                max_size=100*1024*1024,  # 100MB
+                maintenance_period=60,  # 1 minute
+                retention_period=7*24*60*60,  # 7 days
+                write_timeout=60,  # 1 minute
+    ):
+        self.path = os.path.abspath(path)
+        self.max_size = max_size
+        self.maintenance_period = maintenance_period
+        self.retention_period = retention_period
+        self.write_timeout = write_timeout
+
+    def gets(self):
+        return []
+
+    def put(self, data, lease_period=0, silent=False):
+        return
