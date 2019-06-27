@@ -141,6 +141,7 @@ class MetricsExporter(object):
         except Exception as ex:
             # No retry policy, log output
             logger.warning('Transient client side error %s.', ex)
+            return
         finally:
             execution_context.set_opencensus_attr(
                 'blacklist_hostnames',
