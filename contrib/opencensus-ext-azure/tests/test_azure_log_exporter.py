@@ -19,7 +19,6 @@ import shutil
 import unittest
 
 from opencensus.ext.azure import log_exporter
-from opencensus.ext.azure.common.transport import ResponseType
 
 TEST_FOLDER = os.path.abspath('.test.logs')
 
@@ -115,7 +114,7 @@ class TestAzureLogHandler(unittest.TestCase):
         )
         with mock.patch('opencensus.ext.azure.log_exporter'
                         '.AzureLogHandler._transmit') as transmit:
-            transmit.return_value = ResponseType.RETRY
+            transmit.return_value = 10
             handler._export(['foo'])
         self.assertEqual(len(os.listdir(handler.storage.path)), 1)
         self.assertIsNone(handler.storage.get())

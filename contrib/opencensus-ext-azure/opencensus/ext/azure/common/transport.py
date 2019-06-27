@@ -21,12 +21,6 @@ from opencensus.trace import execution_context
 logger = logging.getLogger(__name__)
 
 
-class ResponseType(object):
-    SUCCESS = 0
-    RETRY = 1
-    NON_RETRY = 2
-
-
 class TransportMixin(object):
     def _transmit_from_storage(self):
         for blob in self.storage.gets():
@@ -35,7 +29,7 @@ class TransportMixin(object):
             if blob.lease(self.options.timeout + 5):
                 envelopes = blob.get()  # TODO: handle error
                 result = self._transmit(envelopes)
-                if result == ResponseType.RETRY:
+                if result > 0:
                     blob.lease(result)
                 else:
                     blob.delete(silent=True)
@@ -43,9 +37,9 @@ class TransportMixin(object):
     def _transmit(self, envelopes):
         """
         Transmit the data envelopes to the ingestion service.
-        Returns a ResponsePayload with a type, status code and message.
-        Type is a ResponseType with either success,
-        retry or non-retryable failure
+        Return a negative value for partial success or non-retryable failure.
+        Return 0 if all envelopes have been successfully ingested.
+        Return the next retry time in seconds for retryable failure.
         This function should never throw exception.
         """
         # TODO: prevent requests being tracked
@@ -69,7 +63,7 @@ class TransportMixin(object):
         except Exception as ex:  # TODO: consider RequestException
             logger.warning('Transient client side error %s.', ex)
             # client side error (retryable)
-            return ResponseType.RETRY
+            return self.options.minimum_retry_interval
         finally:
             execution_context.set_opencensus_attr(
                 'blacklist_hostnames',
@@ -88,7 +82,7 @@ class TransportMixin(object):
                 pass
         if response.status_code == 200:
             logger.info('Transmission succeeded: %s.', text)
-            return ResponseType.SUCCESS
+            return 0
         if response.status_code == 206:  # Partial Content
             # TODO: store the unsent data
             if data:
@@ -117,7 +111,7 @@ class TransportMixin(object):
                         text,
                         ex,
                     )
-                return ResponseType.NON_RETRY
+                return -response.status_code
             # cannot parse response body, fallback to retry
         if response.status_code in (
                 206,  # Partial Content
