@@ -68,7 +68,6 @@ class SumAggregation(BaseAggregation):
     def new_aggregation_data(self, measure):
         value_type = MetricDescriptorType.to_type_class(
             self.get_metric_type(measure))
-        # TODO: do we need to type cast `_initial_sum`?
         return aggregation_data.SumAggregationData(
             value_type=value_type, sum_data=self._initial_sum)
 
