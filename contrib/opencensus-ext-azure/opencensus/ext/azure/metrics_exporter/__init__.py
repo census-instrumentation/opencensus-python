@@ -184,7 +184,8 @@ class MetricsExporter(object):
                                 500,  # Internal Server Error
                                 503,  # Service Unavailable
                         ):
-                            retryable_envelopes.append(envelopes[error['index']])
+                            retryable_envelopes.append(
+                                envelopes[error['index']])
                         else:
                             logger.error(
                                 'Data drop %s: %s %s.',
@@ -196,11 +197,11 @@ class MetricsExporter(object):
                     # retried manually for visibility
                     if retryable_envelopes:
                         logger.warning(
-                            'Error while processing data. Data dropped.' +
-                            'Consider manually retrying for indices at: %s.',
-                            ', '.join(retryable_envelopes)
+                            'Error while processing data. Data dropped. ' +
+                            'Consider manually retrying for envelopes: %s.',
+                            retryable_envelopes
                         )
-                except Exception as ex:
+                except Exception:
                     logger.exception(
                         'Error while processing %s: %s.',
                         status_code,
