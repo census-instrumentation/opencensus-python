@@ -38,7 +38,7 @@ NUM_REQUESTS_VIEW = view_module.View("Number of Requests",
 def main():
     # Enable metrics
     # Set the interval in seconds in which you want to send metrics
-    exporter = metrics_exporter.new_metrics_exporter(export_interval=5)
+    exporter = metrics_exporter.new_metrics_exporter()
     view_manager.register_exporter(exporter)
 
     view_manager.register_view(NUM_REQUESTS_VIEW)
