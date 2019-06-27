@@ -19,7 +19,7 @@ from opencensus.metrics import label_value
 from opencensus.metrics.export import metric
 from opencensus.metrics.export import metric_descriptor
 from opencensus.metrics.export import time_series
-from opencensus.stats import measure as measure_module
+
 
 def is_gauge(md_type):
     """Whether a given MetricDescriptorType value is a gauge.

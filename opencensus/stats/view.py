@@ -17,7 +17,6 @@ import threading
 
 from opencensus.metrics import label_key
 from opencensus.metrics.export import metric_descriptor
-from opencensus.stats import metric_utils
 
 
 class View(object):

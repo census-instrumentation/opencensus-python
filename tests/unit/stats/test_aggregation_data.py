@@ -72,7 +72,8 @@ class TestSumAggregationData(unittest.TestCase):
             value_type=value_module.ValueDouble, sum_data=sum_data)
         converted_point = agg.to_point(timestamp)
         self.assertTrue(isinstance(converted_point, point.Point))
-        self.assertTrue(isinstance(converted_point.value, value_module.ValueDouble))
+        self.assertTrue(isinstance(converted_point.value,
+                                   value_module.ValueDouble))
         self.assertEqual(converted_point.value.value, sum_data)
         self.assertEqual(converted_point.timestamp, timestamp)
 
@@ -83,7 +84,8 @@ class TestSumAggregationData(unittest.TestCase):
             value_type=value_module.ValueLong, sum_data=sum_data)
         converted_point = agg.to_point(timestamp)
         self.assertTrue(isinstance(converted_point, point.Point))
-        self.assertTrue(isinstance(converted_point.value, value_module.ValueLong))
+        self.assertTrue(isinstance(converted_point.value,
+                                   value_module.ValueLong))
         self.assertEqual(converted_point.value.value, sum_data)
         self.assertEqual(converted_point.timestamp, timestamp)
 
@@ -130,7 +132,8 @@ class TestLastValueAggregationData(unittest.TestCase):
             value_type=value_module.ValueDouble, value=val)
         converted_point = agg.to_point(timestamp)
         self.assertTrue(isinstance(converted_point, point.Point))
-        self.assertTrue(isinstance(converted_point.value, value_module.ValueDouble))
+        self.assertTrue(isinstance(converted_point.value,
+                                   value_module.ValueDouble))
         self.assertEqual(converted_point.value.value, val)
         self.assertEqual(converted_point.timestamp, timestamp)
 
@@ -141,7 +144,8 @@ class TestLastValueAggregationData(unittest.TestCase):
             value_type=value_module.ValueLong, value=val)
         converted_point = agg.to_point(timestamp)
         self.assertTrue(isinstance(converted_point, point.Point))
-        self.assertTrue(isinstance(converted_point.value, value_module.ValueLong))
+        self.assertTrue(isinstance(converted_point.value,
+                                   value_module.ValueLong))
         self.assertEqual(converted_point.value.value, val)
         self.assertEqual(converted_point.timestamp, timestamp)
 

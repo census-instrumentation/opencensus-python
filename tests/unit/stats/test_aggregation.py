@@ -60,7 +60,7 @@ class TestSumAggregation(unittest.TestCase):
         measure = mock.Mock(spec=measure_module.BaseMeasure)
         sum_aggregation = aggregation_module.SumAggregation()
         with self.assertRaises(ValueError):
-            agg_data = sum_aggregation.new_aggregation_data(measure)
+            sum_aggregation.new_aggregation_data(measure)
 
 
 class TestCountAggregation(unittest.TestCase):
@@ -102,7 +102,7 @@ class TestLastValueAggregation(unittest.TestCase):
         measure = mock.Mock(spec=measure_module.BaseMeasure)
         last_value_aggregation = aggregation_module.LastValueAggregation()
         with self.assertRaises(ValueError):
-            agg_data = last_value_aggregation.new_aggregation_data(measure)
+            last_value_aggregation.new_aggregation_data(measure)
 
 
 class TestDistributionAggregation(unittest.TestCase):

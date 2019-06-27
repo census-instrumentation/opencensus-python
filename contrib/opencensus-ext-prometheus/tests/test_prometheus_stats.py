@@ -13,7 +13,6 @@
 # limitations under the License.
 
 from datetime import datetime
-import copy
 import mock
 import unittest
 
@@ -140,7 +139,8 @@ class TestCollectorPrometheus(unittest.TestCase):
         collector.register_view(view)
         desc = collector.registered_views[list(REGISTERED_VIEW)[0]]
         metric = collector.to_metric(
-            desc=desc, tag_values=[None], agg_data=agg.new_aggregation_data(VIDEO_SIZE_MEASURE))
+            desc=desc, tag_values=[None],
+            agg_data=agg.new_aggregation_data(VIDEO_SIZE_MEASURE))
 
         self.assertEqual(desc['name'], metric.name)
         self.assertEqual(desc['documentation'], metric.documentation)
@@ -158,7 +158,8 @@ class TestCollectorPrometheus(unittest.TestCase):
         collector.register_view(view)
         desc = collector.registered_views[list(REGISTERED_VIEW)[0]]
         metric = collector.to_metric(
-            desc=desc, tag_values=[None], agg_data=agg.new_aggregation_data(VIDEO_SIZE_MEASURE))
+            desc=desc, tag_values=[None],
+            agg_data=agg.new_aggregation_data(VIDEO_SIZE_MEASURE))
 
         self.assertEqual(desc['name'], metric.name)
         self.assertEqual(desc['documentation'], metric.documentation)
@@ -176,7 +177,8 @@ class TestCollectorPrometheus(unittest.TestCase):
         collector.register_view(view)
         desc = collector.registered_views[list(REGISTERED_VIEW)[0]]
         metric = collector.to_metric(
-            desc=desc, tag_values=[None], agg_data=agg.new_aggregation_data(VIDEO_SIZE_MEASURE))
+            desc=desc, tag_values=[None],
+            agg_data=agg.new_aggregation_data(VIDEO_SIZE_MEASURE))
 
         self.assertEqual(desc['name'], metric.name)
         self.assertEqual(desc['documentation'], metric.documentation)
@@ -189,7 +191,8 @@ class TestCollectorPrometheus(unittest.TestCase):
         collector = prometheus.Collector(options=options)
         collector.register_view(VIDEO_SIZE_VIEW)
         desc = collector.registered_views[list(REGISTERED_VIEW)[0]]
-        distribution = VIDEO_SIZE_DISTRIBUTION.new_aggregation_data(VIDEO_SIZE_MEASURE)
+        distribution = VIDEO_SIZE_DISTRIBUTION.new_aggregation_data(
+            VIDEO_SIZE_MEASURE)
         distribution.add_sample(280.0 * MiB, None, None)
         metric = collector.to_metric(
             desc=desc,
@@ -262,7 +265,8 @@ class TestCollectorPrometheus(unittest.TestCase):
         collector.register_view(view)
         desc = collector.registered_views['test3_new_view']
         metric = collector.to_metric(
-            desc=desc, tag_values=[None], agg_data=agg.new_aggregation_data(VIDEO_SIZE_MEASURE))
+            desc=desc, tag_values=[None],
+            agg_data=agg.new_aggregation_data(VIDEO_SIZE_MEASURE))
 
         self.assertEqual(1, len(metric.samples))
         sample = metric.samples[0]
