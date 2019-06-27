@@ -12,22 +12,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json
+import logging
+import requests
+
 from opencensus.ext.azure.common import Options
 from opencensus.ext.azure.common import utils
 from opencensus.ext.azure.common.protocol import Data
 from opencensus.ext.azure.common.protocol import DataPoint
 from opencensus.ext.azure.common.protocol import Envelope
 from opencensus.ext.azure.common.protocol import MetricData
-from opencensus.ext.azure.common.storage import LocalNoopStorage
-from opencensus.ext.azure.common.transport import TransportMixin
 from opencensus.metrics import transport
 from opencensus.metrics.export.metric_descriptor import MetricDescriptorType
 from opencensus.stats import stats
+from opencensus.trace import execution_context
 
 __all__ = ['MetricsExporter', 'new_metrics_exporter']
 
+logger = logging.getLogger(__name__)
 
-class MetricsExporter(TransportMixin):
+class MetricsExporter(object):
     """Metrics exporter for Microsoft Azure Monitor."""
 
     def __init__(self, options=None):
@@ -37,12 +41,6 @@ class MetricsExporter(TransportMixin):
         if not self.options.instrumentation_key:
             raise ValueError('The instrumentation_key is not provided.')
         self.max_batch_size = self.options.max_batch_size
-        self.storage = LocalNoopStorage(
-            path=self.options.storage_path,
-            max_size=self.options.storage_max_size,
-            maintenance_period=self.options.storage_maintenance_period,
-            retention_period=self.options.storage_retention_period,
-        )
 
     def export_metrics(self, metrics):
         if metrics:
@@ -70,11 +68,11 @@ class MetricsExporter(TransportMixin):
                                                               properties))
                         # Send data in batches of max_batch_size
                         if len(envelopes) == self.max_batch_size:
-                            self._transmit(envelopes)
+                            self._transmit_without_retry(envelopes)
                             del envelopes[:]
             # if leftover data points in envelopes, send them all
             if envelopes:
-                self._transmit(envelopes)
+                self._transmit_without_retry(envelopes)
 
     def create_data_points(self, time_series, metric_descriptor):
         """Convert an metric's OC time series to list of Azure data points."""
@@ -121,3 +119,121 @@ def new_metrics_exporter(**options):
                                   exporter,
                                   interval=options.export_interval)
     return exporter
+
+def _transmit_without_retry(self, envelopes):
+    """
+    Transmit the data envelopes to the ingestion service.
+    Does not perform retry logic. For partial success and
+    non-retryable failure, simply outputs result to logs.
+    This function should never throw exception.
+    """
+    blacklist_hostnames = execution_context.get_opencensus_attr(
+        'blacklist_hostnames',
+    )
+    execution_context.set_opencensus_attr(
+        'blacklist_hostnames',
+        ['dc.services.visualstudio.com'],
+    )
+    try:
+        response = requests.post(
+            url=self.options.endpoint,
+            data=json.dumps(envelopes),
+            headers={
+                'Accept': 'application/json',
+                'Content-Type': 'application/json; charset=utf-8',
+            },
+            timeout=self.options.timeout,
+        )
+    except Exception as ex:
+        # No retry policy, log output
+        logger.warning('Transient client side error %s.', ex)
+    finally:
+        execution_context.set_opencensus_attr(
+            'blacklist_hostnames',
+            blacklist_hostnames,
+        )
+
+    text = 'N/A'
+    data = None
+    # Handle the possible results from the response
+    if response is None:
+        logger.warning('Error: cannot read response.')
+        return
+    try:
+        status_code = response.status_code
+    except Exception as ex:
+        logger.warning('Error while reading respond status code %s.', ex)
+        return
+    try:
+        text = response.text
+    except Exception as ex:
+        logger.warning('Error while reading response body %s.', ex)
+        return
+    try:
+        data = json.loads(text)
+    except Exception:
+        logger.warning('Error while loading json from response body %s.', ex)
+        return
+    if status_code == 200:
+        logger.info('Transmission succeeded: %s.', text)
+        return
+    # Check for retryable partial content
+    if status_code == 206:
+        if data:
+            try:
+                resend_envelopes = []
+                for error in data['errors']:
+                    if error['statusCode'] in (
+                            429,  # Too Many Requests
+                            500,  # Internal Server Error
+                            503,  # Service Unavailable
+                    ):
+                        resend_envelopes.append(envelopes[error['index']])
+                    else:
+                        logger.error(
+                            'Data drop %s: %s %s.',
+                            error['statusCode'],
+                            error['message'],
+                            envelopes[error['index']],
+                        )
+                # show the envelopes that can be
+                # retried manually for visibility
+                if resend_envelopes:
+                    logger.warning(
+                        'Error while processing data. Data dropped.' +
+                        'Consider manually retrying for indices at: %s.',
+                        ', '.join(resend_envelopes)
+                    )
+            except Exception as ex:
+                logger.error(
+                    'Error while processing %s: %s %s.',
+                    status_code,
+                    text,
+                    ex,
+                )
+            return
+    # Check for non-tryable result
+    if status_code in (
+            206,  # Partial Content
+            429,  # Too Many Requests
+            500,  # Internal Server Error
+            503,  # Service Unavailable
+    ):
+        # server side error (retryable)
+        logger.warning(
+            'Transient server side error %s: %s. ' +
+            'Consider manually trying.',
+            status_code,
+            text,
+        )
+    else:
+        # server side error (non-retryable)
+        logger.error(
+            'Non-retryable server side error %s: %s.',
+            status_code,
+            text,
+        )
+
+                            
+
+    
