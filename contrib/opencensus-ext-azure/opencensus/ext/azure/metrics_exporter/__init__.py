@@ -110,7 +110,120 @@ class MetricsExporter(object):
         )
         envelope.data = Data(baseData=data, baseType="MetricData")
         return envelope
+        
+    def _transmit_without_retry(self, envelopes):
+        """
+        Transmit the data envelopes to the ingestion service.
+        Does not perform retry logic. For partial success and
+        non-retryable failure, simply outputs result to logs.
+        This function should never throw exception.
+        """
+        blacklist_hostnames = execution_context.get_opencensus_attr(
+            'blacklist_hostnames',
+        )
+        execution_context.set_opencensus_attr(
+            'blacklist_hostnames',
+            ['dc.services.visualstudio.com'],
+        )
+        try:
+            response = requests.post(
+                url=self.options.endpoint,
+                data=json.dumps(envelopes),
+                headers={
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json; charset=utf-8',
+                },
+                timeout=self.options.timeout,
+            )
+        except Exception as ex:
+            # No retry policy, log output
+            logger.warning('Transient client side error %s.', ex)
+        finally:
+            execution_context.set_opencensus_attr(
+                'blacklist_hostnames',
+                blacklist_hostnames,
+            )
 
+        text = 'N/A'
+        data = None
+        # Handle the possible results from the response
+        if response is None:
+            logger.warning('Error: cannot read response.')
+            return
+        try:
+            status_code = response.status_code
+        except Exception as ex:
+            logger.warning('Error while reading response status code %s.', ex)
+            return
+        try:
+            text = response.text
+        except Exception as ex:
+            logger.warning('Error while reading response body %s.', ex)
+            return
+        try:
+            data = json.loads(text)
+        except Exception:
+            logger.warning('Error while loading json from response body %s.', ex)
+            return
+        if status_code == 200:
+            logger.info('Transmission succeeded: %s.', text)
+            return
+        # Check for retryable partial content
+        if status_code == 206:
+            if data:
+                try:
+                    resend_envelopes = []
+                    for error in data['errors']:
+                        if error['statusCode'] in (
+                                429,  # Too Many Requests
+                                500,  # Internal Server Error
+                                503,  # Service Unavailable
+                        ):
+                            resend_envelopes.append(envelopes[error['index']])
+                        else:
+                            logger.error(
+                                'Data drop %s: %s %s.',
+                                error['statusCode'],
+                                error['message'],
+                                envelopes[error['index']],
+                            )
+                    # show the envelopes that can be
+                    # retried manually for visibility
+                    if resend_envelopes:
+                        logger.warning(
+                            'Error while processing data. Data dropped.' +
+                            'Consider manually retrying for indices at: %s.',
+                            ', '.join(resend_envelopes)
+                        )
+                except Exception as ex:
+                    logger.error(
+                        'Error while processing %s: %s %s.',
+                        status_code,
+                        text,
+                        ex,
+                    )
+                return
+        # Check for non-tryable result
+        if status_code in (
+                206,  # Partial Content
+                429,  # Too Many Requests
+                500,  # Internal Server Error
+                503,  # Service Unavailable
+        ):
+            # server side error (retryable)
+            logger.warning(
+                'Transient server side error %s: %s. ' +
+                'Consider manually trying.',
+                status_code,
+                text,
+            )
+        else:
+            # server side error (non-retryable)
+            logger.error(
+                'Non-retryable server side error %s: %s.',
+                status_code,
+                text,
+            )
 
 def new_metrics_exporter(**options):
     options = Options(**options)
@@ -119,120 +232,6 @@ def new_metrics_exporter(**options):
                                   exporter,
                                   interval=options.export_interval)
     return exporter
-
-def _transmit_without_retry(self, envelopes):
-    """
-    Transmit the data envelopes to the ingestion service.
-    Does not perform retry logic. For partial success and
-    non-retryable failure, simply outputs result to logs.
-    This function should never throw exception.
-    """
-    blacklist_hostnames = execution_context.get_opencensus_attr(
-        'blacklist_hostnames',
-    )
-    execution_context.set_opencensus_attr(
-        'blacklist_hostnames',
-        ['dc.services.visualstudio.com'],
-    )
-    try:
-        response = requests.post(
-            url=self.options.endpoint,
-            data=json.dumps(envelopes),
-            headers={
-                'Accept': 'application/json',
-                'Content-Type': 'application/json; charset=utf-8',
-            },
-            timeout=self.options.timeout,
-        )
-    except Exception as ex:
-        # No retry policy, log output
-        logger.warning('Transient client side error %s.', ex)
-    finally:
-        execution_context.set_opencensus_attr(
-            'blacklist_hostnames',
-            blacklist_hostnames,
-        )
-
-    text = 'N/A'
-    data = None
-    # Handle the possible results from the response
-    if response is None:
-        logger.warning('Error: cannot read response.')
-        return
-    try:
-        status_code = response.status_code
-    except Exception as ex:
-        logger.warning('Error while reading respond status code %s.', ex)
-        return
-    try:
-        text = response.text
-    except Exception as ex:
-        logger.warning('Error while reading response body %s.', ex)
-        return
-    try:
-        data = json.loads(text)
-    except Exception:
-        logger.warning('Error while loading json from response body %s.', ex)
-        return
-    if status_code == 200:
-        logger.info('Transmission succeeded: %s.', text)
-        return
-    # Check for retryable partial content
-    if status_code == 206:
-        if data:
-            try:
-                resend_envelopes = []
-                for error in data['errors']:
-                    if error['statusCode'] in (
-                            429,  # Too Many Requests
-                            500,  # Internal Server Error
-                            503,  # Service Unavailable
-                    ):
-                        resend_envelopes.append(envelopes[error['index']])
-                    else:
-                        logger.error(
-                            'Data drop %s: %s %s.',
-                            error['statusCode'],
-                            error['message'],
-                            envelopes[error['index']],
-                        )
-                # show the envelopes that can be
-                # retried manually for visibility
-                if resend_envelopes:
-                    logger.warning(
-                        'Error while processing data. Data dropped.' +
-                        'Consider manually retrying for indices at: %s.',
-                        ', '.join(resend_envelopes)
-                    )
-            except Exception as ex:
-                logger.error(
-                    'Error while processing %s: %s %s.',
-                    status_code,
-                    text,
-                    ex,
-                )
-            return
-    # Check for non-tryable result
-    if status_code in (
-            206,  # Partial Content
-            429,  # Too Many Requests
-            500,  # Internal Server Error
-            503,  # Service Unavailable
-    ):
-        # server side error (retryable)
-        logger.warning(
-            'Transient server side error %s: %s. ' +
-            'Consider manually trying.',
-            status_code,
-            text,
-        )
-    else:
-        # server side error (non-retryable)
-        logger.error(
-            'Non-retryable server side error %s: %s.',
-            status_code,
-            text,
-        )
 
                             
 
