@@ -31,6 +31,7 @@ __all__ = ['MetricsExporter', 'new_metrics_exporter']
 
 logger = logging.getLogger(__name__)
 
+
 class MetricsExporter(object):
     """Metrics exporter for Microsoft Azure Monitor."""
 
@@ -57,7 +58,7 @@ class MetricsExporter(object):
                         # only have one point which contains
                         # the aggregated value
                         data_point = self.create_data_points(
-                                     time_series, md)[0]
+                            time_series, md)[0]
                         # The timestamp is when the metric was recorded
                         time_stamp = time_series.points[0].timestamp
                         # Get the properties using label keys from metric
@@ -110,7 +111,7 @@ class MetricsExporter(object):
         )
         envelope.data = Data(baseData=data, baseType="MetricData")
         return envelope
-        
+
     def _transmit_without_retry(self, envelopes):
         """
         Transmit the data envelopes to the ingestion service.
@@ -232,7 +233,3 @@ def new_metrics_exporter(**options):
                                   exporter,
                                   interval=options.export_interval)
     return exporter
-
-                            
-
-    
