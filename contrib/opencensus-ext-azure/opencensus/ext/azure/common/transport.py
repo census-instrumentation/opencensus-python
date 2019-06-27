@@ -125,11 +125,11 @@ class TransportMixin(object):
                 text,
             )
             # server side error (retryable)
-            return ResponseType.RETRY
+            return self.options.minimum_retry_interval
         logger.error(
             'Non-retryable server side error %s: %s.',
             response.status_code,
             text,
         )
         # server side error (non-retryable)
-        return ResponseType.NON_RETRY
+        return -response.status_code
