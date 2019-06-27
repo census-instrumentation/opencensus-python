@@ -118,6 +118,10 @@ Using the Metrics exporter
 
             mmap.measure_int_put(CARROTS_MEASURE, 1000)
             mmap.record(tmap)
+            # Default export interval is every 15.0s
+            # Your application should run for at least this amount
+            # of time so the exporter will meet this interval
+            # Sleep can fulfill this
             time.sleep(60)
 
             print("Done recording metrics")

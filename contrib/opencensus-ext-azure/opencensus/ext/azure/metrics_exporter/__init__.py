@@ -16,6 +16,7 @@ import json
 import logging
 import requests
 
+from opencensus.common import utils as common_utils
 from opencensus.ext.azure.common import Options
 from opencensus.ext.azure.common import utils
 from opencensus.ext.azure.common.protocol import Data
@@ -41,6 +42,8 @@ class MetricsExporter(object):
         self.options = options
         if not self.options.instrumentation_key:
             raise ValueError('The instrumentation_key is not provided.')
+        if self.options.max_batch_size <= 0:
+            raise ValueError('Max batch size must be at least 1.')
         self.max_batch_size = self.options.max_batch_size
 
     def export_metrics(self, metrics):
@@ -67,13 +70,12 @@ class MetricsExporter(object):
                         envelopes.append(self.create_envelope(data_point,
                                                               time_stamp,
                                                               properties))
-                        # Send data in batches of max_batch_size
-                        if len(envelopes) == self.max_batch_size:
-                            self._transmit_without_retry(envelopes)
-                            del envelopes[:]
-            # If leftover data points in envelopes, send them all
+            # Send data in batches of max_batch_size
             if envelopes:
-                self._transmit_without_retry(envelopes)
+                batched_envelopes = list(common_utils.window(
+                    envelopes, self.max_batch_size))
+                for batch in batched_envelopes:
+                    self._transmit_without_retry(batch)
 
     def create_data_points(self, time_series, metric_descriptor):
         """Convert a metric's OC time series to list of Azure data points."""
@@ -114,7 +116,13 @@ class MetricsExporter(object):
         return envelope
 
     def _transmit_without_retry(self, envelopes):
-        # TODO: Implement a retry policy
+        # Contains logic from transport._transmit
+        # TODO: Remove this function from exporter and
+        # consolidate with transport._transmit to cover
+        # all exporter use cases.
+        # Uses cases pertain to properly handling failures
+        # and implementing a retry policy for this exporter
+        # TODO: implement retry policy
         """
         Transmit the data envelopes to the ingestion service.
         Does not perform retry logic. For partial success and
