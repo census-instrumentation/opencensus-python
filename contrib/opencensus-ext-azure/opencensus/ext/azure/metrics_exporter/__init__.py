@@ -71,14 +71,15 @@ class MetricsExporter(object):
                         if len(envelopes) == self.max_batch_size:
                             self._transmit_without_retry(envelopes)
                             del envelopes[:]
-            # if leftover data points in envelopes, send them all
+            # If leftover data points in envelopes, send them all
             if envelopes:
                 self._transmit_without_retry(envelopes)
 
     def create_data_points(self, time_series, metric_descriptor):
-        """Convert an metric's OC time series to list of Azure data points."""
+        """Convert a metric's OC time series to list of Azure data points."""
         data_points = []
         for point in time_series.points:
+            # TODO: Possibly encode namespace in name
             data_point = DataPoint(ns=metric_descriptor.name,
                                    name=metric_descriptor.name,
                                    value=point.value.value)
@@ -92,7 +93,7 @@ class MetricsExporter(object):
         # We assume the ordering is already correct
         for i in range(len(metric_descriptor.label_keys)):
             if time_series.label_values[i].value is None:
-                value = "None"
+                value = "null"
             else:
                 value = time_series.label_values[i].value
             properties[metric_descriptor.label_keys[i].key] = value
@@ -113,6 +114,7 @@ class MetricsExporter(object):
         return envelope
 
     def _transmit_without_retry(self, envelopes):
+        # TODO: Implement a retry policy
         """
         Transmit the data envelopes to the ingestion service.
         Does not perform retry logic. For partial success and
@@ -163,8 +165,9 @@ class MetricsExporter(object):
             return
         try:
             data = json.loads(text)
-        except Exception:
-            logger.warning('Error while loading json from response body %s.', ex)
+        except Exception as ex:
+            logger.warning('Error while loading ' +
+                           'json from response body %s.', ex)
             return
         if status_code == 200:
             logger.info('Transmission succeeded: %s.', text)
@@ -173,14 +176,14 @@ class MetricsExporter(object):
         if status_code == 206:
             if data:
                 try:
-                    resend_envelopes = []
+                    retryable_envelopes = []
                     for error in data['errors']:
                         if error['statusCode'] in (
                                 429,  # Too Many Requests
                                 500,  # Internal Server Error
                                 503,  # Service Unavailable
                         ):
-                            resend_envelopes.append(envelopes[error['index']])
+                            retryable_envelopes.append(envelopes[error['index']])
                         else:
                             logger.error(
                                 'Data drop %s: %s %s.',
@@ -190,18 +193,17 @@ class MetricsExporter(object):
                             )
                     # show the envelopes that can be
                     # retried manually for visibility
-                    if resend_envelopes:
+                    if retryable_envelopes:
                         logger.warning(
                             'Error while processing data. Data dropped.' +
                             'Consider manually retrying for indices at: %s.',
-                            ', '.join(resend_envelopes)
+                            ', '.join(retryable_envelopes)
                         )
                 except Exception as ex:
-                    logger.error(
-                        'Error while processing %s: %s %s.',
+                    logger.exception(
+                        'Error while processing %s: %s.',
                         status_code,
-                        text,
-                        ex,
+                        text
                     )
                 return
         # Check for non-tryable result
@@ -225,6 +227,7 @@ class MetricsExporter(object):
                 status_code,
                 text,
             )
+
 
 def new_metrics_exporter(**options):
     options = Options(**options)

@@ -109,7 +109,7 @@ Using the Metrics exporter
         def main():
             # Enable metrics
             # Set the interval in seconds in which you want to send metrics
-            exporter = metrics_exporter.new_metrics_exporter(export_interval=30.0)
+            exporter = metrics_exporter.new_metrics_exporter()
             view_manager.register_exporter(exporter)
 
             view_manager.register_view(CARROTS_VIEW)

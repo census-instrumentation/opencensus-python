@@ -29,7 +29,7 @@ REQUEST_MEASURE = measure_module.MeasureFloat("Requests",
                                               "number of requests",
                                               "requests")
 NUM_REQUESTS_VIEW = view_module.View("Number of Requests",
-                                     "View for number of requests made",
+                                     "number of requests",
                                      ["url"],
                                      REQUEST_MEASURE,
                                      aggregation_module.SumAggregation())
@@ -44,7 +44,7 @@ def main():
     view_manager.register_view(NUM_REQUESTS_VIEW)
     mmap = stats_recorder.new_measurement_map()
     tmap = tag_map_module.TagMap()
-    tmap.insert("url", "website.com")
+    tmap.insert("url", "http://example.com")
 
     for i in range(100):
         print(i)
