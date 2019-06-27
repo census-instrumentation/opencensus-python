@@ -14,7 +14,6 @@
 
 import copy
 import logging
-from functools import partial
 
 from opencensus.metrics.export import point
 from opencensus.metrics.export import value
@@ -87,6 +86,11 @@ class SumAggregationData(BaseAggregationData):
     def sum_data(self):
         """The current sum data"""
         return self._sum_data
+
+    @property
+    def value_type(self):
+        """The value type to use when creating the point"""
+        return self._value_type
 
     def to_point(self, timestamp):
         """Get a Point conversion of this aggregation.
@@ -365,6 +369,11 @@ class LastValueAggregationData(BaseAggregationData):
     def value(self):
         """The current value recorded"""
         return self._value
+
+    @property
+    def value_type(self):
+        """The value type to use when creating the point"""
+        return self._value_type
 
     def to_point(self, timestamp):
         """Get a Point conversion of this aggregation.

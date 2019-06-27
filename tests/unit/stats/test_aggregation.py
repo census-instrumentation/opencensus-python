@@ -17,15 +17,16 @@ import unittest
 
 from opencensus.stats import aggregation as aggregation_module
 from opencensus.stats import measure as measure_module
+from opencensus.metrics.export import value
 
 
 class TestBaseAggregation(unittest.TestCase):
-    def test_constructor_defaults(self):
+    def test_new_aggregation_data_defaults(self):
         base_aggregation = aggregation_module.BaseAggregation()
 
         self.assertEqual([], base_aggregation.buckets)
 
-    def test_constructor_explicit(self):
+    def test_new_aggregation_data_explicit(self):
 
         buckets = ["test"]
         base_aggregation = aggregation_module.BaseAggregation(buckets=buckets)
@@ -34,53 +35,88 @@ class TestBaseAggregation(unittest.TestCase):
 
 
 class TestSumAggregation(unittest.TestCase):
-    def test_constructor_defaults(self):
+    def test_new_aggregation_data_defaults(self):
         measure = mock.Mock(spec=measure_module.MeasureInt)
         sum_aggregation = aggregation_module.SumAggregation()
-        self.assertEqual(0, sum_aggregation.new_aggregation_data(measure).sum_data)
+        agg_data = sum_aggregation.new_aggregation_data(measure)
+        self.assertEqual(0, agg_data.sum_data)
+        self.assertEqual(value.ValueLong, agg_data.value_type)
 
-    def test_constructor_explicit(self):
+    def test_new_aggregation_data_explicit(self):
         measure = mock.Mock(spec=measure_module.MeasureInt)
         sum_aggregation = aggregation_module.SumAggregation(sum=1)
-        self.assertEqual(1, sum_aggregation.new_aggregation_data(measure).sum_data)
+        agg_data = sum_aggregation.new_aggregation_data(measure)
+        self.assertEqual(1, agg_data.sum_data)
+        self.assertEqual(value.ValueLong, agg_data.value_type)
+
+    def test_new_aggregation_data_float(self):
+        measure = mock.Mock(spec=measure_module.MeasureFloat)
+        sum_aggregation = aggregation_module.SumAggregation()
+        agg_data = sum_aggregation.new_aggregation_data(measure)
+        self.assertEqual(0, agg_data.sum_data)
+        self.assertEqual(value.ValueDouble, agg_data.value_type)
+
+    def test_new_aggregation_data_bad(self):
+        measure = mock.Mock(spec=measure_module.BaseMeasure)
+        sum_aggregation = aggregation_module.SumAggregation()
+        with self.assertRaises(ValueError):
+            agg_data = sum_aggregation.new_aggregation_data(measure)
 
 
 class TestCountAggregation(unittest.TestCase):
-    def test_constructor_defaults(self):
+    def test_new_aggregation_data_defaults(self):
         count_aggregation = aggregation_module.CountAggregation()
-        self.assertEqual(0, count_aggregation.new_aggregation_data().count_data)
+        agg_data = count_aggregation.new_aggregation_data()
+        self.assertEqual(0, agg_data.count_data)
 
-    def test_constructor_explicit(self):
+    def test_new_aggregation_data_explicit(self):
         count_aggregation = aggregation_module.CountAggregation(count=4)
-        self.assertEqual(4, count_aggregation.new_aggregation_data().count_data)
+        agg_data = count_aggregation.new_aggregation_data()
+        self.assertEqual(4, agg_data.count_data)
 
 
 class TestLastValueAggregation(unittest.TestCase):
-    def test_constructor_defaults(self):
+    def test_new_aggregation_data_defaults(self):
         measure = mock.Mock(spec=measure_module.MeasureInt)
         last_value_aggregation = aggregation_module.LastValueAggregation()
-        self.assertEqual(0, last_value_aggregation.new_aggregation_data(measure).value)
+        agg_data = last_value_aggregation.new_aggregation_data(measure)
+        self.assertEqual(0, agg_data.value)
+        self.assertEqual(value.ValueLong, agg_data.value_type)
 
-    def test_constructor_explicit(self):
+    def test_new_aggregation_data_explicit(self):
         measure = mock.Mock(spec=measure_module.MeasureInt)
         last_value_aggregation = aggregation_module.LastValueAggregation(
             value=6)
-        self.assertEqual(6, last_value_aggregation.new_aggregation_data(measure).value)
+        agg_data = last_value_aggregation.new_aggregation_data(measure)
+        self.assertEqual(6, agg_data.value)
+        self.assertEqual(value.ValueLong, agg_data.value_type)
+
+    def test_new_aggregation_data_float(self):
+        measure = mock.Mock(spec=measure_module.MeasureFloat)
+        last_value_aggregation = aggregation_module.LastValueAggregation()
+        agg_data = last_value_aggregation.new_aggregation_data(measure)
+        self.assertEqual(0, agg_data.value)
+        self.assertEqual(value.ValueDouble, agg_data.value_type)
+
+    def test_new_aggregation_data_bad(self):
+        measure = mock.Mock(spec=measure_module.BaseMeasure)
+        last_value_aggregation = aggregation_module.LastValueAggregation()
+        with self.assertRaises(ValueError):
+            agg_data = last_value_aggregation.new_aggregation_data(measure)
 
 
 class TestDistributionAggregation(unittest.TestCase):
-    def test_constructor_defaults(self):
+    def test_new_aggregation_data_defaults(self):
         distribution_aggregation = aggregation_module.DistributionAggregation()
+        agg_data = distribution_aggregation.new_aggregation_data()
+        self.assertEqual([], agg_data.bounds)
 
-        self.assertEqual([], distribution_aggregation.new_aggregation_data().bounds)
-
-    def test_constructor_explicit(self):
+    def test_new_aggregation_data_explicit(self):
         boundaries = [1, 2]
         distribution_aggregation = aggregation_module.DistributionAggregation(
             boundaries=boundaries)
-
-        self.assertEqual(boundaries,
-                         distribution_aggregation.new_aggregation_data().bounds)
+        agg_data = distribution_aggregation.new_aggregation_data()
+        self.assertEqual(boundaries, agg_data.bounds)
 
     def test_init_bad_boundaries(self):
         """Check that boundaries must be sorted and unique."""
