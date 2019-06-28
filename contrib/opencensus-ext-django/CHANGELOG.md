@@ -3,6 +3,7 @@
 ## Unreleased
 - Make ProbabilitySampler default
 - Remove support for Django < 1.11.
+- Allow installing with Django 2.0 and later.
 
 ## 0.3.0
 Released 2019-04-24
