@@ -209,13 +209,14 @@ class MetricsExporter(object):
                             'Consider manually retrying for envelopes: %s.',
                             retryable_envelopes
                         )
+                    return
                 except Exception:
                     logger.exception(
                         'Error while processing %s: %s.',
                         status_code,
                         text
                     )
-                return
+                    return
         # Check for non-tryable result
         if status_code in (
                 206,  # Partial Content
