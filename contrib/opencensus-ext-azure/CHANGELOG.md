@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## 0.2.2
+Released 2019-06-28
+- Added metrics exporter
+  ([#678](https://github.com/census-instrumentation/opencensus-python/pull/678),
+  [#693](https://github.com/census-instrumentation/opencensus-python/pull/693))
+
 ## 0.2.1
 Released 2019-06-13
 - Support span attributes
