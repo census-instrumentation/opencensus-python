@@ -25,29 +25,30 @@ stats = stats_module.stats
 view_manager = stats.view_manager
 stats_recorder = stats.stats_recorder
 
-CHIPS_EATEN_MEASURE = measure_module.MeasureFloat("chips_eaten",
-                                                  "number of chips eaten",
-                                                  "chips")
-CHIPS_EATEN_VIEW = view_module.View("chips_eaten_view",
-                                    "number of chips eaten",
-                                    [],
-                                    CHIPS_EATEN_MEASURE,
-                                    aggregation_module.SumAggregation())
+REQUEST_MEASURE = measure_module.MeasureFloat("Requests",
+                                              "number of requests",
+                                              "requests")
+NUM_REQUESTS_VIEW = view_module.View("Number of Requests",
+                                     "number of requests",
+                                     ["url"],
+                                     REQUEST_MEASURE,
+                                     aggregation_module.SumAggregation())
 
 
 def main():
     # Enable metrics
     # Set the interval in seconds in which you want to send metrics
-    exporter = metrics_exporter.new_metrics_exporter(export_interval=5)
+    exporter = metrics_exporter.new_metrics_exporter()
     view_manager.register_exporter(exporter)
 
-    view_manager.register_view(CHIPS_EATEN_VIEW)
+    view_manager.register_view(NUM_REQUESTS_VIEW)
     mmap = stats_recorder.new_measurement_map()
     tmap = tag_map_module.TagMap()
+    tmap.insert("url", "http://example.com")
 
     for i in range(100):
         print(i)
-        mmap.measure_int_put(CHIPS_EATEN_MEASURE, 1)
+        mmap.measure_int_put(REQUEST_MEASURE, i)
         mmap.record(tmap)
         time.sleep(1)
 
