@@ -70,8 +70,10 @@ class TestAzureMetricsExporter(unittest.TestCase):
         options = Options(
             instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
             max_batch_size=-1)
-        self.assertRaises(ValueError,
-                          lambda: metrics_exporter.MetricsExporter(options=options))
+        self.assertRaises(
+            ValueError,
+            lambda: metrics_exporter.MetricsExporter(options=options)
+            )
 
     @mock.patch('requests.post', return_value=mock.Mock())
     def test_export_metrics(self, requests_mock):
