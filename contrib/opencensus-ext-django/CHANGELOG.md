@@ -2,7 +2,6 @@
 
 ## Unreleased
 
-
 ## 0.3.2
 Released 2019-06-04
 
