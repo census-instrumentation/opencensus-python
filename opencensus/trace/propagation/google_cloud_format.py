@@ -108,7 +108,7 @@ class GoogleCloudFormatPropagator(object):
         span_id = span_context.span_id
         trace_options = span_context.trace_options.trace_options_byte
 
-        templ = '{0}/{1};o={2}' if span_id else '{0};o={2}'
+        templ = '{0}/{1};o={2}' if span_id is not None else '{0};o={2}'
 
         header = templ.format(
             trace_id,
