@@ -76,6 +76,81 @@ class TestGoogleCloudFormatPropagator(unittest.TestCase):
         self.assertEqual(span_context.span_id, expected_span_id)
         self.assertTrue(span_context.trace_options.enabled)
 
+    def test_header_match_no_span_id(self):
+        # Trace option is not enabled.
+        header = '6e0c63257de34c92bf9efcd03927272e;o=0'
+        expected_trace_id = '6e0c63257de34c92bf9efcd03927272e'
+        expected_span_id = None
+
+        propagator = google_cloud_format.GoogleCloudFormatPropagator()
+        span_context = propagator.from_header(header)
+
+        self.assertEqual(span_context.trace_id, expected_trace_id)
+        self.assertEqual(span_context.span_id, expected_span_id)
+        self.assertFalse(span_context.trace_options.enabled)
+
+        # Trace option is enabled.
+        header = '6e0c63257de34c92bf9efcd03927272e;o=1'
+        expected_trace_id = '6e0c63257de34c92bf9efcd03927272e'
+        expected_span_id = None
+
+        propagator = google_cloud_format.GoogleCloudFormatPropagator()
+        span_context = propagator.from_header(header)
+
+        self.assertEqual(span_context.trace_id, expected_trace_id)
+        self.assertEqual(span_context.span_id, expected_span_id)
+        self.assertTrue(span_context.trace_options.enabled)
+
+    def test_header_match_none_span_id(self):
+        # Trace option is not enabled.
+        header = '6e0c63257de34c92bf9efcd03927272e/None;o=0'
+        expected_trace_id = '6e0c63257de34c92bf9efcd03927272e'
+        expected_span_id = None
+
+        propagator = google_cloud_format.GoogleCloudFormatPropagator()
+        span_context = propagator.from_header(header)
+
+        self.assertEqual(span_context.trace_id, expected_trace_id)
+        self.assertEqual(span_context.span_id, expected_span_id)
+        self.assertFalse(span_context.trace_options.enabled)
+
+        # Trace option is enabled.
+        header = '6e0c63257de34c92bf9efcd03927272e/None;o=1'
+        expected_trace_id = '6e0c63257de34c92bf9efcd03927272e'
+        expected_span_id = None
+
+        propagator = google_cloud_format.GoogleCloudFormatPropagator()
+        span_context = propagator.from_header(header)
+
+        self.assertEqual(span_context.trace_id, expected_trace_id)
+        self.assertEqual(span_context.span_id, expected_span_id)
+        self.assertTrue(span_context.trace_options.enabled)
+
+    def test_header_match_empty_span_id(self):
+        # Trace option is not enabled.
+        header = '6e0c63257de34c92bf9efcd03927272e/;o=0'
+        expected_trace_id = '6e0c63257de34c92bf9efcd03927272e'
+        expected_span_id = None
+
+        propagator = google_cloud_format.GoogleCloudFormatPropagator()
+        span_context = propagator.from_header(header)
+
+        self.assertEqual(span_context.trace_id, expected_trace_id)
+        self.assertEqual(span_context.span_id, expected_span_id)
+        self.assertFalse(span_context.trace_options.enabled)
+
+        # Trace option is enabled.
+        header = '6e0c63257de34c92bf9efcd03927272e/;o=1'
+        expected_trace_id = '6e0c63257de34c92bf9efcd03927272e'
+        expected_span_id = None
+
+        propagator = google_cloud_format.GoogleCloudFormatPropagator()
+        span_context = propagator.from_header(header)
+
+        self.assertEqual(span_context.trace_id, expected_trace_id)
+        self.assertEqual(span_context.span_id, expected_span_id)
+        self.assertTrue(span_context.trace_options.enabled)
+
     def test_header_match_no_option(self):
         header = '6e0c63257de34c92bf9efcd03927272e/00f067aa0ba902b7'
         expected_trace_id = '6e0c63257de34c92bf9efcd03927272e'
@@ -129,6 +204,26 @@ class TestGoogleCloudFormatPropagator(unittest.TestCase):
         header = propagator.to_header(span_context)
         expected_header = '{}/{};o={}'.format(
             trace_id, span_id, 1)
+
+        self.assertEqual(header, expected_header)
+
+
+    def test_to_header_no_span_id(self):
+        from opencensus.trace import span_context
+        from opencensus.trace import trace_options
+
+        trace_id = '6e0c63257de34c92bf9efcd03927272e'
+        span_id = None
+        span_context = span_context.SpanContext(
+            trace_id=trace_id,
+            span_id=span_id,
+            trace_options=trace_options.TraceOptions('1'))
+
+        propagator = google_cloud_format.GoogleCloudFormatPropagator()
+
+        header = propagator.to_header(span_context)
+        expected_header = '{};o={}'.format(
+            trace_id, 1)
 
         self.assertEqual(header, expected_header)
 
