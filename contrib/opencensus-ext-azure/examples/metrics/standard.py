@@ -18,7 +18,12 @@ import time
 from opencensus.ext.azure import metrics_exporter
 
 def main():
-    exporter = metrics_exporter.new_metrics_exporter(export_interval=15.0, instrumentation_key='70c241c9-206e-4811-82b4-2bc8a52170b9')
+    # All you need is the next line
+    # You can disable standard metrics by passing in
+    # enable_standard_metrics=False into the
+    # constructor of new_metrics_exporter()
+    exporter = metrics_exporter.new_metrics_exporter()
+    
     for i in range(100):
         print(psutil.virtual_memory())
         time.sleep(5)
