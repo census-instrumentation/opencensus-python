@@ -207,7 +207,6 @@ class TestGoogleCloudFormatPropagator(unittest.TestCase):
 
         self.assertEqual(header, expected_header)
 
-
     def test_to_header_no_span_id(self):
         from opencensus.trace import span_context
         from opencensus.trace import trace_options
