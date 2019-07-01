@@ -63,9 +63,6 @@ class GoogleCloudFormatPropagator(object):
             if trace_options is None:
                 trace_options = 1
 
-            if span_id in ['None', '']:
-                span_id = None
-
             span_context = SpanContext(
                 trace_id=trace_id,
                 span_id=span_id,
