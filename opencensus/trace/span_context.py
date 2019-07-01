@@ -112,7 +112,7 @@ class SpanContext(object):
             return span_id
         else:
             logging.warning(
-                'Span_id %s does not the match the '
+                'Span_id %s does not match the '
                 'required format', span_id)
             self.from_header = False
             return None
@@ -143,7 +143,7 @@ class SpanContext(object):
             return trace_id
         else:
             logging.warning(
-                'Trace_id %s does not the match the required format,'
+                'Trace_id %s does not match the required format,'
                 'generating a new one instead.', trace_id)
             self.from_header = False
             return generate_trace_id()
