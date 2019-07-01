@@ -19,8 +19,8 @@ from opencensus.trace.span_context import SpanContext
 from opencensus.trace.trace_options import TraceOptions
 
 _TRACE_CONTEXT_HEADER_NAME = 'X-Cloud-Trace-Context'
-_TRACE_CONTEXT_HEADER_FORMAT = r'\
-    ([0-9a-f]{32})(\/([0-9a-f]{16}|(None|)))?(;o=(\d+))?'
+_TRACE_CONTEXT_HEADER_FORMAT = r'([0-9a-f]{32})'\
+    r'(\/([0-9a-f]{16}|(None|)))?(;o=(\d+))?'
 _TRACE_CONTEXT_HEADER_RE = re.compile(_TRACE_CONTEXT_HEADER_FORMAT)
 _TRACE_ID_DELIMETER = '/'
 _SPAN_ID_DELIMETER = ';'
