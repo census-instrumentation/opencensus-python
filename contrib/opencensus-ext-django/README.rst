@@ -26,15 +26,6 @@ the ``MIDDLEWARE`` section in the Django ``settings.py`` file.
         'opencensus.ext.django.middleware.OpencensusMiddleware',
     ]
 
-And add this line to the ``INSTALLED_APPS`` section:
-
-.. code:: python
-
-    INSTALLED_APPS = [
-        ...
-        'opencensus.ext.django',
-    ]
-
 Additional configuration can be provided, please read
 `Customization <https://github.com/census-instrumentation/opencensus-python#customization>`_
 for a complete reference.
