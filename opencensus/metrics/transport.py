@@ -100,3 +100,24 @@ def get_exporter_thread(metric_producer, exporter, interval=None):
     tt = MetricExporterTask(interval, export_all)
     tt.start()
     return tt
+
+def get_recorder_thread(record_metrics, interval=None):
+    """Get a running task that periodically records metrics.
+
+    Get a `PeriodicTask` that periodically calls:
+
+        record_metrics()
+
+    :type function:
+    :param record_metrics: The function called to record metrics.
+
+    :type interval: int or float
+    :param interval: Seconds between record calls.
+
+    :rtype: :class:`PeriodicTask`
+    :return: A running thread responsible for executing record_metrics().
+
+    """
+    tt = MetricExporterTask(interval, record_metrics)
+    tt.start()
+    return tt
