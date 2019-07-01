@@ -288,8 +288,10 @@ def new_metrics_exporter(**options):
     exporter = MetricsExporter(options=options_)
     if options_.enable_standard_metrics:
         exporter.enable_standard_metrics()
+        # Separate thread for recording of metrics
         transport.get_recorder_thread(exporter.record_standard_metrics,
                                       interval=options_.export_interval)
+    # Separate thread for exporting of metrics
     transport.get_exporter_thread(stats.stats,
                                   exporter,
                                   interval=options_.export_interval)
