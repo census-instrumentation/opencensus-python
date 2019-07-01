@@ -41,7 +41,7 @@ setup(
     install_requires=[
         'opencensus >= 0.7.dev0, < 1.0.0',
         'requests >= 2.19.0',
-        'psutil' >= '5.6.3',
+        'psutil >= 5.6.3',
     ],
     extras_require={},
     license='Apache-2.0',
