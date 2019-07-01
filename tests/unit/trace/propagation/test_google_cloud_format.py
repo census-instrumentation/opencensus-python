@@ -221,8 +221,8 @@ class TestGoogleCloudFormatPropagator(unittest.TestCase):
         propagator = google_cloud_format.GoogleCloudFormatPropagator()
 
         header = propagator.to_header(span_context)
-        expected_header = '{};o={}'.format(
-            trace_id, 1)
+        expected_header = '{}/{};o={}'.format(
+            trace_id, google_cloud_format.INVALID_SPAN_ID, 1)
 
         self.assertEqual(header, expected_header)
 

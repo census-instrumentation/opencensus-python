@@ -15,7 +15,7 @@
 import logging
 import re
 
-from opencensus.trace.span_context import SpanContext
+from opencensus.trace.span_context import SpanContext, INVALID_SPAN_ID
 from opencensus.trace.trace_options import TraceOptions
 
 _TRACE_CONTEXT_HEADER_NAME = 'X-Cloud-Trace-Context'
@@ -109,9 +109,10 @@ class GoogleCloudFormatPropagator(object):
         span_id = span_context.span_id
         trace_options = span_context.trace_options.trace_options_byte
 
-        templ = '{0}/{1};o={2}' if span_id is not None else '{0};o={2}'
+        if span_id is None:
+            span_id = INVALID_SPAN_ID
 
-        header = templ.format(
+        header = '{0}/{1};o={2}'.format(
             trace_id,
             span_id,
             int(trace_options))
