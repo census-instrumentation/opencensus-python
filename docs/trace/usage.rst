@@ -214,7 +214,7 @@ the ``MIDDLEWARE`` section in the Django ``settings.py`` file.
 
     MIDDLEWARE = [
         ...
-        'opencensus.trace.ext.django.middleware.OpencensusMiddleware',
+        'opencensus.ext.django.middleware.OpencensusMiddleware',
     ]
 
 You can configure the sampler, exporter, propagator using the ``OPENCENSUS_TRACE`` setting in
