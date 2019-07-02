@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Fix cloud format propagator null span ID handling
+  ([#701](https://github.com/census-instrumentation/opencensus-python/pull/701))
+
 ## 0.6.0
 Released 2019-05-31
 
