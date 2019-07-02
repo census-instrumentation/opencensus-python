@@ -260,24 +260,24 @@ class MetricsExporter(object):
         # if there are duplicate names
         self.standard_metrics_map = stats_recorder.new_measurement_map()
 
-        free_memory_measure = measure_module.MeasureInt("Free memory",
-            "Amount of free memory in bytes",
+        available_memory_measure = measure_module.MeasureInt("Available memory",
+            "Amount of available memory in bytes",
             "bytes")
-        self.standard_metrics_measure_map[StandardMetricType.FREE_MEMORY] = free_memory_measure
-        free_memory_view = view_module.View(StandardMetricType.FREE_MEMORY,
-            "Amount of free memory in bytes",
+        self.standard_metrics_measure_map[StandardMetricType.AVAILABLE_MEMORY] = available_memory_measure
+        available_memory_view = view_module.View(StandardMetricType.AVAILABLE_MEMORY,
+            "Amount of available memory in bytes",
             [],
-            free_memory_measure,
+            available_memory_measure,
             aggregation_module.LastValueAggregation())
-        view_manager.register_view(free_memory_view)
+        view_manager.register_view(available_memory_view)
 
     def record_standard_metrics(self):
         # Function called periodically to record standard metrics
         vmem = psutil.virtual_memory()
-        free_memory = vmem.free
-        free_measure = self.standard_metrics_measure_map[StandardMetricType.FREE_MEMORY]
-        if free_measure is not None:
-            self.standard_metrics_map.measure_int_put(free_measure, free_memory)
+        available_memory = vmem.available
+        available_measure = self.standard_metrics_measure_map[StandardMetricType.AVAILABLE_MEMORY]
+        if available_measure is not None:
+            self.standard_metrics_map.measure_int_put(available_measure, available_memory)
         self.standard_metrics_map.record()
 
 
@@ -293,4 +293,4 @@ def new_metrics_exporter(**options):
     return exporter
 
 class StandardMetricType(object):
-    FREE_MEMORY = "\\Memory\\Available Bytes"
+    AVAILABLE_MEMORY = "\\Memory\\Available Bytes"

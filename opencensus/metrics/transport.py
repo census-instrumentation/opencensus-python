@@ -127,6 +127,6 @@ def get_recorder_thread(record_metrics, interval=None):
     :return: A running thread responsible for executing record_metrics().
 
     """
-    tt = MetricExporterTask(interval, record_metrics)
+    tt = PeriodicMetricTask(interval, record_metrics)
     tt.start()
     return tt
