@@ -42,7 +42,6 @@ class SpanContext(object):
 
     :type span_id: str
     :param span_id: (Optional) Identifier for the span, unique within a trace.
-                    If not given, will generate one automatically.
 
     :type trace_options: :class: `~opencensus.trace.trace_options.TraceOptions`
     :param trace_options: (Optional) TraceOptions indicates 8 trace options.
