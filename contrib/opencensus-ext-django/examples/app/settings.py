@@ -40,7 +40,7 @@ MIDDLEWARE = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
-    'opencensus.trace.ext.django.middleware.OpencensusMiddleware',
+    'opencensus.ext.django.middleware.OpencensusMiddleware',
 )
 
 ROOT_URLCONF = 'app.urls'

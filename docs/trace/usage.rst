@@ -214,7 +214,7 @@ the ``MIDDLEWARE`` section in the Django ``settings.py`` file.
 
     MIDDLEWARE = [
         ...
-        'opencensus.trace.ext.django.middleware.OpencensusMiddleware',
+        'opencensus.ext.django.middleware.OpencensusMiddleware',
     ]
 
 And add this line to the ``INSTALLED_APPS`` section:
