@@ -28,7 +28,7 @@ class TransportError(Exception):
     pass
 
 
-class MetricExporterTask(PeriodicTask):
+class PeriodicMetricTask(PeriodicTask):
     """Thread that periodically calls a given function.
 
     :type interval: int or float
@@ -61,7 +61,7 @@ class MetricExporterTask(PeriodicTask):
             except Exception:
                 logger.exception("Error handling metric export")
 
-        super(MetricExporterTask, self).__init__(interval, func, args, kwargs)
+        super(PeriodicMetricTask, self).__init__(interval, func, args, kwargs)
 
 
 def get_exporter_thread(metric_producer, exporter, interval=None):
@@ -97,7 +97,7 @@ def get_exporter_thread(metric_producer, exporter, interval=None):
             raise TransportError("Metric exporter is not available")
         export(get())
 
-    tt = MetricExporterTask(interval, export_all)
+    tt = PeriodicMetricTask(interval, export_all)
     tt.start()
     return tt
 
@@ -118,6 +118,6 @@ def get_recorder_thread(record_metrics, interval=None):
     :return: A running thread responsible for executing record_metrics().
 
     """
-    tt = MetricExporterTask(interval, record_metrics)
+    tt = PeriodicMetricTask(interval, record_metrics)
     tt.start()
     return tt

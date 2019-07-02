@@ -32,24 +32,24 @@ else:
 INTERVAL = .1
 
 
-class TestMetricExporterTask(unittest.TestCase):
+class TestPeriodicMetricTask(unittest.TestCase):
 
     def test_default_constructor(self):
         mock_func = mock.Mock()
-        task = transport.MetricExporterTask(function=mock_func)
+        task = transport.PeriodicMetricTask(function=mock_func)
         self.assertEqual(task.func, mock_func)
         self.assertEqual(task.interval, transport.DEFAULT_INTERVAL)
 
     def test_periodic_task_not_started(self):
         mock_func = mock.Mock()
-        task = transport.MetricExporterTask(INTERVAL, mock_func)
+        task = transport.PeriodicMetricTask(INTERVAL, mock_func)
         time.sleep(INTERVAL + INTERVAL / 2.0)
         mock_func.assert_not_called()
         task.cancel()
 
     def test_periodic_task(self):
         mock_func = mock.Mock()
-        task = transport.MetricExporterTask(INTERVAL, mock_func)
+        task = transport.PeriodicMetricTask(INTERVAL, mock_func)
         task.start()
         mock_func.assert_not_called()
         time.sleep(INTERVAL + INTERVAL / 2.0)
@@ -61,7 +61,7 @@ class TestMetricExporterTask(unittest.TestCase):
 
     def test_periodic_task_cancel(self):
         mock_func = mock.Mock()
-        task = transport.MetricExporterTask(INTERVAL, mock_func)
+        task = transport.PeriodicMetricTask(INTERVAL, mock_func)
         task.start()
         time.sleep(INTERVAL + INTERVAL / 2.0)
         self.assertEqual(mock_func.call_count, 1)

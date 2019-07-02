@@ -152,7 +152,7 @@ The exporter also includes a set of standard metrics that are exported to Azure 
 
 Below is a list of standard metrics that are currently available:
 
-- Free memory (bytes)
+- Available memory (bytes)
 
 Trace
 ~~~~~
