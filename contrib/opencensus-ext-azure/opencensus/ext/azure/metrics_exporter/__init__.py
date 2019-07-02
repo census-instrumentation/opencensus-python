@@ -14,7 +14,6 @@
 
 import json
 import logging
-import psutil
 import requests
 
 from opencensus.common import utils as common_utils
@@ -24,12 +23,10 @@ from opencensus.ext.azure.common.protocol import Data
 from opencensus.ext.azure.common.protocol import DataPoint
 from opencensus.ext.azure.common.protocol import Envelope
 from opencensus.ext.azure.common.protocol import MetricData
+from opencensus.ext.azure.metrics_exporter.standard_metrics import StandardMetricsRecorder
 from opencensus.metrics import transport
 from opencensus.metrics.export.metric_descriptor import MetricDescriptorType
-from opencensus.stats import aggregation as aggregation_module
-from opencensus.stats import measure as measure_module
-from opencensus.stats import stats
-from opencensus.stats import view as view_module
+from opencensus.stats import stats as stats_module
 from opencensus.trace import execution_context
 
 __all__ = ['MetricsExporter', 'new_metrics_exporter']
@@ -245,57 +242,17 @@ class MetricsExporter(object):
                 text,
             )
 
-    def enable_standard_metrics(self):
-        # Sets up stats related objects to begin
-        # recording standard metrics
-        stats_ = stats.stats
-        view_manager = stats_.view_manager
-        stats_recorder = stats_.stats_recorder
-
-        # Standard metrics uses a separate instance of MeasurementMap
-        # from regular metrics but still shares the same underlying
-        # map data in the context. This way, the processing during
-        # record is handled through a separate data structure but
-        # the storage only uses one single data structure
-        # Uniqueness should be based off the name of the view and
-        # measure. A warning message in the logs will be shown
-        # if there are duplicate names
-        self.standard_metrics_map = stats_recorder.new_measurement_map()
-
-        available_memory_measure = measure_module.MeasureInt("Available memory",
-            "Amount of available memory in bytes",
-            "bytes")
-        self.standard_metrics_measure_map[StandardMetricType.AVAILABLE_MEMORY] = available_memory_measure
-        available_memory_view = view_module.View(StandardMetricType.AVAILABLE_MEMORY,
-            "Amount of available memory in bytes",
-            [],
-            available_memory_measure,
-            aggregation_module.LastValueAggregation())
-        view_manager.register_view(available_memory_view)
-
-    def record_standard_metrics(self):
-        # Function called periodically to record standard metrics
-        vmem = psutil.virtual_memory()
-        available_memory = vmem.available
-        available_measure = self.standard_metrics_measure_map[StandardMetricType.AVAILABLE_MEMORY]
-        if available_measure is not None:
-            self.standard_metrics_map.measure_int_put(available_measure, available_memory)
-        self.standard_metrics_map.record()
-
 
 def new_metrics_exporter(**options):
     options_ = Options(**options)
     exporter = MetricsExporter(options=options_)
     if options_.enable_standard_metrics:
-        exporter.enable_standard_metrics()
+        recorder = StandardMetricsRecorder()
         # Separate thread for recording of metrics
-        transport.get_recorder_thread(exporter.record_standard_metrics,
+        transport.get_recorder_thread(recorder.record_standard_metrics,
                                       interval=options_.export_interval)
     # Separate thread for exporting of metrics
-    transport.get_exporter_thread(stats.stats,
+    transport.get_exporter_thread(stats_module.stats,
                                   exporter,
                                   interval=options_.export_interval)
     return exporter
-
-class StandardMetricType(object):
-    AVAILABLE_MEMORY = "\\Memory\\Available Bytes"
