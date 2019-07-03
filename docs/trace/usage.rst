@@ -159,7 +159,7 @@ for a Flask application:
 
 .. code:: python
 
-    from opencensus.trace.ext.flask.flask_middleware import FlaskMiddleware
+    from opencensus.ext.flask.flask_middleware import FlaskMiddleware
 
     app = flask.Flask(__name__)
 
@@ -195,7 +195,7 @@ requests will be automatically traced.
 
 .. code:: python
 
-    from opencensus.trace.ext.flask.flask_middleware import FlaskMiddleware
+    from opencensus.ext.flask.flask_middleware import FlaskMiddleware
 
     app = flask.Flask(__name__)
 
@@ -265,7 +265,7 @@ traced.
     def main(global_config, **settings):
         config = Configurator(settings=settings)
 
-        config.add_tween('opencensus.trace.ext.pyramid'
+        config.add_tween('opencensus.ext.pyramid'
                          '.pyramid_middleware.OpenCensusTweenFactory')
 
 To configure the sampler, exporter, and propagator, pass the instances
