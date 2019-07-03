@@ -66,7 +66,10 @@ class TestOpencensusMiddleware(unittest.TestCase):
         middleware_obj = self.middleware_kls(mock.Mock())
 
         assert isinstance(middleware_obj.sampler, samplers.ProbabilitySampler)
-        assert isinstance(middleware_obj.exporter, print_exporter.PrintExporter)
+        assert isinstance(
+            middleware_obj.exporter,
+            print_exporter.PrintExporter
+        )
         assert isinstance(
             middleware_obj.propagator,
             trace_context_http_header_format.TraceContextPropagator,
@@ -89,7 +92,10 @@ class TestOpencensusMiddleware(unittest.TestCase):
             middleware_obj = self.middleware_kls(mock.Mock())
 
         assert isinstance(middleware_obj.sampler, samplers.AlwaysOnSampler)
-        assert isinstance(middleware_obj.exporter, print_exporter.PrintExporter)
+        assert isinstance(
+            middleware_obj.exporter,
+            print_exporter.PrintExporter
+        )
         assert isinstance(
             middleware_obj.propagator,
             trace_context_http_header_format.TraceContextPropagator,

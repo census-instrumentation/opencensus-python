@@ -116,7 +116,6 @@ class OpencensusMiddleware(object):
             except Exception:  # pragma: NO COVER
                 log.error('Failed to trace request', exc_info=True)
 
-
         response = self.get_response(request)
 
         if span:
