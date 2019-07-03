@@ -23,7 +23,7 @@ from opencensus.ext.azure.common.protocol import Data
 from opencensus.ext.azure.common.protocol import DataPoint
 from opencensus.ext.azure.common.protocol import Envelope
 from opencensus.ext.azure.common.protocol import MetricData
-from opencensus.ext.azure.metrics_exporter.standard_metrics import StandardMetricsRecorder
+from opencensus.ext.azure.metrics_exporter import standard_metrics
 from opencensus.metrics import transport
 from opencensus.metrics.export.metric_descriptor import MetricDescriptorType
 from opencensus.stats import stats as stats_module
@@ -247,7 +247,7 @@ def new_metrics_exporter(**options):
     options_ = Options(**options)
     exporter = MetricsExporter(options=options_)
     if options_.enable_standard_metrics:
-        recorder = StandardMetricsRecorder()
+        recorder = standard_metrics.StandardMetricsRecorder()
         # Separate thread for recording of metrics
         transport.get_recorder_thread(recorder.record_standard_metrics,
                                       interval=options_.export_interval)

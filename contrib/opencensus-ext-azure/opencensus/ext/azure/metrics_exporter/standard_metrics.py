@@ -19,17 +19,20 @@ from opencensus.stats import measure as measure_module
 from opencensus.stats import stats as stats_module
 from opencensus.stats import view as view_module
 
+
 # Definitions taken from psutil docs
 # https://psutil.readthedocs.io/en/latest/
 class StandardMetricsType(object):
-    # Memory that can be given instantly to processes without the system going into swap
+    # Memory that can be given instantly to
+    # processes without the system going into swap
     AVAILABLE_MEMORY = "\\Memory\\Available Bytes"
+
 
 class StandardMetricsRecorder():
 
     def __init__(self):
-        self.standard_metrics_map = {}
-        self.standard_metrics_measure_map = {}
+        self.measurement_map = None
+        self.measure_map = {}
         self.setup()
 
     def setup(self):
@@ -51,13 +54,13 @@ class StandardMetricsRecorder():
         # Uniqueness should be based off the name of the view and
         # measure. A warning message in the logs will be shown
         # if there are duplicate names
-        self.standard_metrics_map = stats_recorder.new_measurement_map()
+        self.measurement_map = stats_recorder.new_measurement_map()
 
         # TODO: Use MeasureInt once [#565] is fixed
         available_memory_measure = measure_module.MeasureFloat("Available memory",
             "Amount of available memory in bytes",
             "bytes")
-        self.standard_metrics_measure_map[StandardMetricsType.AVAILABLE_MEMORY] = available_memory_measure
+        self.measure_map[StandardMetricsType.AVAILABLE_MEMORY] = available_memory_measure
         available_memory_view = view_module.View(StandardMetricsType.AVAILABLE_MEMORY,
             "Amount of available memory in bytes",
             [],
@@ -71,8 +74,8 @@ class StandardMetricsRecorder():
         # Available memory
         vmem = psutil.virtual_memory()
         available_memory = vmem.available
-        available_memory_measure = self.standard_metrics_measure_map[StandardMetricsType.AVAILABLE_MEMORY]
+        available_memory_measure = self.measure_map[StandardMetricsType.AVAILABLE_MEMORY]
         if available_memory_measure is not None:
-            self.standard_metrics_map.measure_int_put(available_memory_measure, available_memory)
+            self.measurement_map.measure_int_put(available_memory_measure, available_memory)
             
-        self.standard_metrics_map.record()
+        self.measurement_map.record()
