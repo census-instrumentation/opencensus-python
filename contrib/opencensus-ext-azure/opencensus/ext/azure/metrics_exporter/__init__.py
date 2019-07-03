@@ -23,11 +23,7 @@ from opencensus.ext.azure.common.protocol import Data
 from opencensus.ext.azure.common.protocol import DataPoint
 from opencensus.ext.azure.common.protocol import Envelope
 from opencensus.ext.azure.common.protocol import MetricData
-<<<<<<< HEAD
 from opencensus.ext.azure.metrics_exporter import standard_metrics
-=======
-from opencensus.ext.azure.metrics_exporter.standard_metrics import StandardMetricsRecorder
->>>>>>> 3ae3ed1... Decouple recording metrics
 from opencensus.metrics import transport
 from opencensus.metrics.export.metric_descriptor import MetricDescriptorType
 from opencensus.stats import stats as stats_module

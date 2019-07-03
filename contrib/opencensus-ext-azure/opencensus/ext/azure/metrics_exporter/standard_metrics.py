@@ -20,9 +20,15 @@ from opencensus.metrics.export.standard_metrics import StandardMetricsProducer
 from opencensus.metrics.export.standard_metrics import BaseStandardMetric
 
 
+# Definitions taken from psutil docs
+# https://psutil.readthedocs.io/en/latest/
 class StandardMetricsType(object):
+    # Memory that can be given instantly to
+    # processes without the system going into swap
     AVAILABLE_MEMORY = "\\Memory\\Available Bytes"
 
+
+class StandardMetricsRecorder():
 
 # Definitions taken from psutil docs
 # https://psutil.readthedocs.io/en/latest/
