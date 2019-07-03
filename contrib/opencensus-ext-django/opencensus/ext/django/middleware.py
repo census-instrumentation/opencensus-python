@@ -136,7 +136,7 @@ class OpencensusMiddleware(object):
 
         return response
 
-    def set_django_attributes(self, span, request, response):  # pragma: NO COVER
+    def set_django_attributes(self, span, request, response):  # noqa
         """ The last method before the span finishes, allowing to set
             django-related attributes on the span. Override this in a
             subclass of the middleware to set custom attributes.

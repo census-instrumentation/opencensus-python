@@ -21,7 +21,6 @@ from django.test.utils import teardown_test_environment
 from opencensus.trace import execution_context
 from opencensus.trace import print_exporter
 from opencensus.trace import samplers
-from opencensus.trace import span as span_module
 from opencensus.trace import utils
 from opencensus.trace.blank_span import BlankSpan
 from opencensus.trace.propagation import trace_context_http_header_format
@@ -39,7 +38,7 @@ class TestOpencensusMiddleware(unittest.TestCase):
         if not django_settings.configured:
             django_settings.configure()
         setup_test_environment()
-        
+
         self.middleware_kls = middleware.OpencensusMiddleware
 
         class MockViewError(View):
@@ -55,7 +54,7 @@ class TestOpencensusMiddleware(unittest.TestCase):
 
             def post(self, *args, **kwargs):
                 return HttpResponse(status=200)
-        
+
         self.view_func_error = MockViewError.as_view()
         self.view_func_ok = MockViewOk.as_view()
 
@@ -64,20 +63,16 @@ class TestOpencensusMiddleware(unittest.TestCase):
         teardown_test_environment()
 
     def test_constructor_default(self):
-        from opencensus.ext.django import middleware
+        middleware_obj = self.middleware_kls(mock.Mock())
 
-        middleware = self.middleware_kls(mock.Mock())
-
-        assert isinstance(middleware.sampler, samplers.ProbabilitySampler)
-        assert isinstance(middleware.exporter, print_exporter.PrintExporter)
+        assert isinstance(middleware_obj.sampler, samplers.ProbabilitySampler)
+        assert isinstance(middleware_obj.exporter, print_exporter.PrintExporter)
         assert isinstance(
-            middleware.propagator,
+            middleware_obj.propagator,
             trace_context_http_header_format.TraceContextPropagator,
         )
 
     def test_configuration(self):
-        from opencensus.ext.django import middleware
-
         settings = type('Test', (object,), {})
         settings.OPENCENSUS = {
             'TRACE': {
@@ -91,18 +86,16 @@ class TestOpencensusMiddleware(unittest.TestCase):
             settings)
 
         with patch_settings:
-            middleware = self.middleware_kls(mock.Mock())
+            middleware_obj = self.middleware_kls(mock.Mock())
 
-        assert isinstance(middleware.sampler, samplers.AlwaysOnSampler)
-        assert isinstance(middleware.exporter, print_exporter.PrintExporter)
+        assert isinstance(middleware_obj.sampler, samplers.AlwaysOnSampler)
+        assert isinstance(middleware_obj.exporter, print_exporter.PrintExporter)
         assert isinstance(
-            middleware.propagator,
+            middleware_obj.propagator,
             trace_context_http_header_format.TraceContextPropagator,
         )
 
     def test_blacklist_path(self):
-        from opencensus.ext.django import middleware
-
         execution_context.clear()
 
         blacklist_paths = ['test_blacklist_path']
@@ -142,7 +135,7 @@ class TestCustomOpencensusMiddleware(TestOpencensusMiddleware):
         from opencensus.ext.django import middleware
 
         super(TestCustomOpencensusMiddleware, self).setUp()
- 
+
         class CustomOpencensusMiddleware(middleware.OpencensusMiddleware):
             def set_django_attributes(self, span, request, response):
                 # For the purpose of span inspection, set it on the instance
@@ -150,9 +143,8 @@ class TestCustomOpencensusMiddleware(TestOpencensusMiddleware):
                     span, request, response
                 )
                 self.span = span
-        
-        self.middleware_kls = CustomOpencensusMiddleware
 
+        self.middleware_kls = CustomOpencensusMiddleware
 
     def test_span_attributes_get_200(self):
         from django.urls.resolvers import ResolverMatch
