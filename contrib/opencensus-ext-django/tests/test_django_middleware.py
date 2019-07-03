@@ -164,7 +164,8 @@ class TestCustomOpencensusMiddleware(TestOpencensusMiddleware):
         django_request = RequestFactory().get('/', **{
             'traceparent': django_trace_id,
         })
-        django_request.resolver_match = ResolverMatch(self.view_func_ok, None, None)
+        django_request.resolver_match = ResolverMatch(
+            self.view_func_ok, None, None)
 
         # Force the test request to be sampled
         settings = type('Test', (object,), {})
@@ -213,7 +214,8 @@ class TestCustomOpencensusMiddleware(TestOpencensusMiddleware):
         django_request = RequestFactory().post('/', **{
             'traceparent': django_trace_id,
         })
-        django_request.resolver_match = ResolverMatch(self.view_func_error, None, None)
+        django_request.resolver_match = ResolverMatch(
+            self.view_func_error, None, None)
 
         # Force the test request to be sampled
         settings = type('Test', (object,), {})
@@ -269,7 +271,8 @@ class Test__set_django_attributes(unittest.TestCase):
 
         request.user = None
 
-        OpencensusMiddleware(mock.Mock()).set_django_attributes(span, request, response)
+        OpencensusMiddleware(mock.Mock()).set_django_attributes(
+            span, request, response)
 
         expected_attributes = {}
 
@@ -286,7 +289,8 @@ class Test__set_django_attributes(unittest.TestCase):
         django_user.pk = None
         django_user.get_username.return_value = None
 
-        OpencensusMiddleware(mock.Mock()).set_django_attributes(span, request, response)
+        OpencensusMiddleware(mock.Mock()).set_django_attributes(
+            span, request, response)
 
         expected_attributes = {}
 
@@ -305,7 +309,8 @@ class Test__set_django_attributes(unittest.TestCase):
         django_user.pk = test_id
         django_user.get_username.return_value = test_name
 
-        OpencensusMiddleware(mock.Mock()).set_django_attributes(span, request, response)
+        OpencensusMiddleware(mock.Mock()).set_django_attributes(
+            span, request, response)
 
         expected_attributes = {
             'django.user.id': '123',
