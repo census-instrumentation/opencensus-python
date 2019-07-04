@@ -46,8 +46,6 @@ class MetricsExporter(object):
         if self.options.max_batch_size <= 0:
             raise ValueError('Max batch size must be at least 1.')
         self.max_batch_size = self.options.max_batch_size
-        self.standard_metrics_map = {}
-        self.standard_metrics_measure_map = {}
 
     def export_metrics(self, metrics):
         if metrics:
