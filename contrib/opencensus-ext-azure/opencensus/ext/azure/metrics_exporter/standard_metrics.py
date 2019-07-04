@@ -19,6 +19,9 @@ from opencensus.stats import measure as measure_module
 from opencensus.stats import stats as stats_module
 from opencensus.stats import view as view_module
 
+from opencensus.metrics.export.gauge import DerivedLongGauge
+from opencensus.metrics.export.gauge import Registry
+
 
 # Definitions taken from psutil docs
 # https://psutil.readthedocs.io/en/latest/
@@ -33,7 +36,8 @@ class StandardMetricsRecorder():
     def __init__(self):
         self.measurement_map = None
         self.measure_map = {}
-        self.setup()
+        self.registry = Registry()
+        self.setup2()
 
     def setup(self):
         """ Populates and returns a MeasurementMap with standard metric
@@ -67,6 +71,20 @@ class StandardMetricsRecorder():
             available_memory_measure,
             aggregation_module.LastValueAggregation())
         view_manager.register_view(available_memory_view)
+
+    def setup2(self):
+        available_memory_gauge = DerivedLongGauge(StandardMetricsType.AVAILABLE_MEMORY,
+            'Amount of available memory in bytes',
+            'byte',
+            [])
+        available_memory_gauge.create_default_time_series(self.get_available_memory)
+        self.registry.add_gauge(available_memory_gauge)
+
+    def get_available_memory(self):
+        return psutil.virtual_memory().available
+
+    def get_metrics(self):
+        return self.registry.get_metrics()
 
     def record_standard_metrics(self):
         # Function called periodically to record standard metrics

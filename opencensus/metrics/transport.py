@@ -64,7 +64,7 @@ class PeriodicMetricTask(PeriodicTask):
         super(PeriodicMetricTask, self).__init__(interval, func, args, kwargs)
 
 
-def get_exporter_thread(metric_producer, exporter, interval=None):
+def get_exporter_thread(metric_producer, exporter, interval=None, standard_metric_producer=None):
     """Get a running task that periodically exports metrics.
 
     Get a `PeriodicTask` that periodically calls:
@@ -88,6 +88,9 @@ def get_exporter_thread(metric_producer, exporter, interval=None):
     weak_get = utils.get_weakref(metric_producer.get_metrics)
     weak_export = utils.get_weakref(exporter.export_metrics)
 
+    if standard_metric_producer:
+        weak_get2 = utils.get_weakref(standard_metric_producer.get_metrics)
+
     def export_all():
         get = weak_get()
         if get is None:
@@ -95,7 +98,15 @@ def get_exporter_thread(metric_producer, exporter, interval=None):
         export = weak_export()
         if export is None:
             raise TransportError("Metric exporter is not available")
-        export(get())
+        
+        if weak_get2:
+            get2 = weak_get2()
+            if get2 is None:
+                raise TransportError("Standard metric producer is not available")
+        else:
+            get2 = []
+            
+        export(get() + get2())
 
     tt = PeriodicMetricTask(interval, export_all)
     tt.start()

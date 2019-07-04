@@ -246,13 +246,23 @@ class MetricsExporter(object):
 def new_metrics_exporter(**options):
     options_ = Options(**options)
     exporter = MetricsExporter(options=options_)
+    # if options_.enable_standard_metrics:
+    #     recorder = standard_metrics.StandardMetricsRecorder()
+    #     # Separate thread for recording of metrics
+    #     transport.get_recorder_thread(recorder.record_standard_metrics,
+    #                                   interval=options_.export_interval)
+    # # Separate thread for exporting of metrics
+    # transport.get_exporter_thread(stats_module.stats,
+    #                               exporter,
+    #                               interval=options_.export_interval)
     if options_.enable_standard_metrics:
         recorder = standard_metrics.StandardMetricsRecorder()
-        # Separate thread for recording of metrics
-        transport.get_recorder_thread(recorder.record_standard_metrics,
-                                      interval=options_.export_interval)
-    # Separate thread for exporting of metrics
-    transport.get_exporter_thread(stats_module.stats,
+        transport.get_exporter_thread(stats_module.stats,
+                                  exporter,
+                                  interval=options_.export_interval,
+                                  recorder)
+    else:
+        transport.get_exporter_thread(stats_module.stats,
                                   exporter,
                                   interval=options_.export_interval)
     return exporter
