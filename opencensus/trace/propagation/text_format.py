@@ -49,7 +49,7 @@ class TextFormatPropagator(object):
             if key == _SPAN_ID_KEY:
                 span_id = carrier[key]
             if key == _TRACE_OPTIONS_KEY:
-                trace_options = bool(carrier[key])
+                trace_options = carrier[key]
 
         if trace_options is None:
             trace_options = DEFAULT_TRACE_OPTIONS
