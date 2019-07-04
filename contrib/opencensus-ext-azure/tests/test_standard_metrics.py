@@ -27,24 +27,7 @@ class TestStandardMetrics(unittest.TestCase):
         stats_module.stats = stats_module._Stats()
 
     def test_constructor_and_setup(self):
-        standard_metrics = StandardMetricsRecorder()
-        measurement_map = standard_metrics.measurement_map
-        measure_map = standard_metrics.measure_map
+        return
 
-        self.assertIsNotNone(measurement_map)
-        self.assertEqual(len(measurement_map._measurement_map), 0)
-        self.assertEqual(len(measure_map), 1)
-        self.assertIsNotNone(measure_map[StandardMetricsType.AVAILABLE_MEMORY])
-
-    def test_record_standard_metrics(self):
-        with mock.patch('psutil.virtual_memory') as psutil_mock:
-            type(psutil_mock.return_value).available = mock.PropertyMock(
-                return_value=1.0)
-            standard_metrics = StandardMetricsRecorder()
-            standard_metrics.record_standard_metrics()
-
-            self.assertIsNotNone(standard_metrics.measure_map[StandardMetricsType.AVAILABLE_MEMORY])
-            self.assertEqual(len(standard_metrics.measurement_map._measurement_map), 1)
-            self.assertEqual(standard_metrics.measurement_map._measurement_map[standard_metrics.measure_map[StandardMetricsType.AVAILABLE_MEMORY]], 1.0)
 
 

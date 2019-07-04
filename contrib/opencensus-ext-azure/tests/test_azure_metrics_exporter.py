@@ -451,33 +451,23 @@ class TestAzureMetricsExporter(unittest.TestCase):
         self.assertEqual(envelope.data.baseData.properties, properties)
 
     @mock.patch('opencensus.ext.azure.metrics_exporter' +
-                '.transport.get_recorder_thread', return_value=mock.Mock())
-    @mock.patch('opencensus.ext.azure.metrics_exporter' +
                 '.transport.get_exporter_thread', return_value=mock.Mock())
-    @mock.patch('opencensus.ext.azure.metrics_exporter' +
-                '.standard_metrics.StandardMetricsRecorder')
-    def test_new_metrics_exporter(self, metrics_mock, exporter_mock, recorder_mock):
+    def test_new_metrics_exporter(self, exporter_mock):
         iKey = '12345678-1234-5678-abcd-12345678abcd'
         exporter = metrics_exporter.new_metrics_exporter(
             instrumentation_key=iKey)
 
         self.assertEqual(exporter.options.instrumentation_key, iKey)
-        self.assertEqual(len(recorder_mock.call_args_list), 1)
         self.assertEqual(len(exporter_mock.call_args_list), 1)
-        self.assertEqual(recorder_mock.call_count, 1)
+        self.assertEqual(len(exporter_mock.call_args[0][0]), 2)
 
     @mock.patch('opencensus.ext.azure.metrics_exporter' +
-                '.transport.get_recorder_thread', return_value=mock.Mock())
-    @mock.patch('opencensus.ext.azure.metrics_exporter' +
                 '.transport.get_exporter_thread', return_value=mock.Mock())
-    @mock.patch('opencensus.ext.azure.metrics_exporter' +
-                '.standard_metrics.StandardMetricsRecorder')
-    def test_new_metrics_exporter_no_standard_metrics(self, metrics_mock, exporter_mock, recorder_mock):
+    def test_new_metrics_exporter_no_standard_metrics(self, exporter_mock):
         iKey = '12345678-1234-5678-abcd-12345678abcd'
         exporter = metrics_exporter.new_metrics_exporter(
             instrumentation_key=iKey, enable_standard_metrics=False)
 
         self.assertEqual(exporter.options.instrumentation_key, iKey)
         self.assertEqual(len(exporter_mock.call_args_list), 1)
-        self.assertEqual(len(recorder_mock.call_args_list), 0)
-        self.assertEqual(len(metrics_mock.call_args_list), 0)
+        self.assertEqual(len(exporter_mock.call_args[0][0]), 1)

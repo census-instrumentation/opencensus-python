@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import itertools
 import logging
 
 from opencensus.common import utils
@@ -64,16 +65,20 @@ class PeriodicMetricTask(PeriodicTask):
         super(PeriodicMetricTask, self).__init__(interval, func, args, kwargs)
 
 
-def get_exporter_thread(metric_producer, exporter, interval=None, standard_metric_producer=None):
+def get_exporter_thread(metric_producers, exporter, interval=None):
     """Get a running task that periodically exports metrics.
 
     Get a `PeriodicTask` that periodically calls:
 
-        exporter.export_metrics(metric_producer.get_metrics())
+        exporter.export_metrics(all_metrics)
 
-    :type metric_producer:
+        where all_metrics is the concatenation of all metrics produced by
+        the metric producers in metric_producers, each calling
+        metric_producer.get_metrics()
+
+    :type metric_producers: list
+    :param metric_producers: The list of metric producers to use to get metrics
         :class:`opencensus.metrics.export.metric_producer.MetricProducer`
-    :param exporter: The producer to use to get metrics to export.
 
     :type exporter: :class:`opencensus.stats.base_exporter.MetricsExporter`
     :param exporter: The exporter to use to export metrics.
@@ -85,50 +90,23 @@ def get_exporter_thread(metric_producer, exporter, interval=None, standard_metri
     :return: A running thread responsible calling the exporter.
 
     """
-    weak_get = utils.get_weakref(metric_producer.get_metrics)
+    weak_gets = [utils.get_weakref(producer.get_metrics) for producer in metric_producers]
     weak_export = utils.get_weakref(exporter.export_metrics)
 
-    if standard_metric_producer:
-        weak_get2 = utils.get_weakref(standard_metric_producer.get_metrics)
-
     def export_all():
-        get = weak_get()
-        if get is None:
-            raise TransportError("Metric producer is not available")
+        all_gets = []
+        for weak_get in weak_gets:
+            get = weak_get()
+            if get is None:
+                raise TransportError("Metric producer is not available")
+            all_gets.append(get())
         export = weak_export()
         if export is None:
             raise TransportError("Metric exporter is not available")
         
-        if weak_get2:
-            get2 = weak_get2()
-            if get2 is None:
-                raise TransportError("Standard metric producer is not available")
-        else:
-            get2 = []
-            
-        export(get() + get2())
+        export(itertools.chain(*all_gets))
 
     tt = PeriodicMetricTask(interval, export_all)
     tt.start()
     return tt
 
-def get_recorder_thread(record_metrics, interval=None):
-    """Get a running task that periodically records metrics.
-
-    Get a `PeriodicTask` that periodically calls:
-
-        record_metrics()
-
-    :type function:
-    :param record_metrics: The function called to record metrics.
-
-    :type interval: int or float
-    :param interval: Seconds between record calls.
-
-    :rtype: :class:`PeriodicTask`
-    :return: A running thread responsible for executing record_metrics().
-
-    """
-    tt = PeriodicMetricTask(interval, record_metrics)
-    tt.start()
-    return tt

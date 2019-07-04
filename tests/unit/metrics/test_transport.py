@@ -80,7 +80,7 @@ class TestGetExporterThreadPeriodic(unittest.TestCase):
         metrics = mock.Mock()
         producer.get_metrics.return_value = metrics
         try:
-            task = transport.get_exporter_thread(producer, exporter)
+            task = transport.get_exporter_thread([producer], exporter)
             producer.get_metrics.assert_not_called()
             exporter.export_metrics.assert_not_called()
             time.sleep(INTERVAL + INTERVAL / 2.0)
@@ -96,7 +96,7 @@ class TestGetExporterThreadPeriodic(unittest.TestCase):
 
         producer.get_metrics.side_effect = ValueError()
 
-        task = transport.get_exporter_thread(producer, exporter)
+        task = transport.get_exporter_thread([producer], exporter)
         time.sleep(INTERVAL + INTERVAL / 2.0)
         mock_logger.exception.assert_called()
         self.assertFalse(task.finished.is_set())
@@ -104,7 +104,7 @@ class TestGetExporterThreadPeriodic(unittest.TestCase):
     def test_producer_deleted(self, mock_logger):
         producer = mock.Mock()
         exporter = mock.Mock()
-        task = transport.get_exporter_thread(producer, exporter)
+        task = transport.get_exporter_thread([producer], exporter)
         del producer
         gc.collect()
         time.sleep(INTERVAL + INTERVAL / 2.0)
@@ -114,26 +114,9 @@ class TestGetExporterThreadPeriodic(unittest.TestCase):
     def test_exporter_deleted(self, mock_logger):
         producer = mock.Mock()
         exporter = mock.Mock()
-        task = transport.get_exporter_thread(producer, exporter)
+        task = transport.get_exporter_thread([producer], exporter)
         del exporter
         gc.collect()
         time.sleep(INTERVAL + INTERVAL / 2.0)
         mock_logger.exception.assert_called()
         self.assertTrue(task.finished.is_set())
-
-@mock.patch('opencensus.metrics.transport.DEFAULT_INTERVAL', INTERVAL)
-@mock.patch('opencensus.metrics.transport.logger')
-class TestGetRecorderThreadPeriodic(unittest.TestCase):
-
-    def test_threaded_record(self, mock_logger):
-        record_function = mock.Mock()
-        try:
-            task = transport.get_recorder_thread(record_function)
-            record_function.assert_not_called()
-            record_function.assert_not_called()
-            time.sleep(INTERVAL + INTERVAL / 2.0)
-            record_function.assert_called_once_with()
-        finally:
-            task.cancel()
-            task.join()
-
