@@ -93,9 +93,6 @@ def get_exporter_thread(metric_producers, exporter, interval=None):
     weak_gets = [utils.get_weakref(producer.get_metrics) for producer in metric_producers]
     weak_export = utils.get_weakref(exporter.export_metrics)
 
-    if standard_metric_producer:
-        weak_get2 = utils.get_weakref(standard_metric_producer.get_metrics)
-
     def export_all():
         all_gets = []
         for weak_get in weak_gets:
@@ -113,23 +110,3 @@ def get_exporter_thread(metric_producers, exporter, interval=None):
     tt.start()
     return tt
 
-def get_recorder_thread(record_metrics, interval=None):
-    """Get a running task that periodically records metrics.
-
-    Get a `PeriodicTask` that periodically calls:
-
-        record_metrics()
-
-    :type function:
-    :param record_metrics: The function called to record metrics.
-
-    :type interval: int or float
-    :param interval: Seconds between record calls.
-
-    :rtype: :class:`PeriodicTask`
-    :return: A running thread responsible for executing record_metrics().
-
-    """
-    tt = PeriodicMetricTask(interval, record_metrics)
-    tt.start()
-    return tt

@@ -451,12 +451,8 @@ class TestAzureMetricsExporter(unittest.TestCase):
         self.assertEqual(envelope.data.baseData.properties, properties)
 
     @mock.patch('opencensus.ext.azure.metrics_exporter' +
-                '.transport.get_recorder_thread', return_value=mock.Mock())
-    @mock.patch('opencensus.ext.azure.metrics_exporter' +
                 '.transport.get_exporter_thread', return_value=mock.Mock())
-    @mock.patch('opencensus.ext.azure.metrics_exporter' +
-                '.standard_metrics.StandardMetricsRecorder')
-    def test_new_metrics_exporter(self, metrics_mock, exporter_mock, recorder_mock):
+    def test_new_metrics_exporter(self, exporter_mock):
         iKey = '12345678-1234-5678-abcd-12345678abcd'
         exporter = metrics_exporter.new_metrics_exporter(
             instrumentation_key=iKey)

@@ -21,6 +21,7 @@ from opencensus.metrics.export.standard_metrics import BaseStandardMetric
 
 from opencensus.metrics.export.gauge import DerivedLongGauge
 from opencensus.metrics.export.gauge import Registry
+from opencensus.metrics.export.metric_producer import MetricProducer
 
 
 # Definitions taken from psutil docs
@@ -31,7 +32,7 @@ class StandardMetricsType(object):
     AVAILABLE_MEMORY = "\\Memory\\Available Bytes"
 
 
-class StandardMetricsRecorder():
+class StandardMetricsProducer(MetricProducer):
 
 # Definitions taken from psutil docs
 # https://psutil.readthedocs.io/en/latest/

@@ -120,20 +120,3 @@ class TestGetExporterThreadPeriodic(unittest.TestCase):
         time.sleep(INTERVAL + INTERVAL / 2.0)
         mock_logger.exception.assert_called()
         self.assertTrue(task.finished.is_set())
-
-@mock.patch('opencensus.metrics.transport.DEFAULT_INTERVAL', INTERVAL)
-@mock.patch('opencensus.metrics.transport.logger')
-class TestGetRecorderThreadPeriodic(unittest.TestCase):
-
-    def test_threaded_record(self, mock_logger):
-        record_function = mock.Mock()
-        try:
-            task = transport.get_recorder_thread(record_function)
-            record_function.assert_not_called()
-            record_function.assert_not_called()
-            time.sleep(INTERVAL + INTERVAL / 2.0)
-            record_function.assert_called_once_with()
-        finally:
-            task.cancel()
-            task.join()
-
