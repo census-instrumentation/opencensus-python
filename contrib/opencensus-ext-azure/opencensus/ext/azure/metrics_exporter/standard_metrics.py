@@ -19,6 +19,9 @@ from opencensus.metrics.export.gauge import Registry
 from opencensus.metrics.export.standard_metrics import StandardMetricsProducer
 from opencensus.metrics.export.standard_metrics import BaseStandardMetric
 
+from opencensus.metrics.export.gauge import DerivedLongGauge
+from opencensus.metrics.export.gauge import Registry
+
 
 # Definitions taken from psutil docs
 # https://psutil.readthedocs.io/en/latest/
