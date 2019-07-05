@@ -19,20 +19,10 @@ from opencensus.metrics.export.gauge import Registry
 from opencensus.metrics.export.standard_metrics import StandardMetricsProducer
 from opencensus.metrics.export.standard_metrics import BaseStandardMetric
 
-from opencensus.metrics.export.gauge import DerivedLongGauge
-from opencensus.metrics.export.gauge import Registry
-from opencensus.metrics.export.metric_producer import MetricProducer
 
-
-# Definitions taken from psutil docs
-# https://psutil.readthedocs.io/en/latest/
 class StandardMetricsType(object):
-    # Memory that can be given instantly to
-    # processes without the system going into swap
     AVAILABLE_MEMORY = "\\Memory\\Available Bytes"
 
-
-class StandardMetricsProducer(MetricProducer):
 
 # Definitions taken from psutil docs
 # https://psutil.readthedocs.io/en/latest/

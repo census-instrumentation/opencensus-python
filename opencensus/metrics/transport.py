@@ -109,4 +109,3 @@ def get_exporter_thread(metric_producers, exporter, interval=None):
     tt = PeriodicMetricTask(interval, export_all)
     tt.start()
     return tt
-
