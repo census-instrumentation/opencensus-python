@@ -16,36 +16,50 @@ import psutil
 
 from opencensus.metrics.export.gauge import DerivedLongGauge
 from opencensus.metrics.export.gauge import Registry
-from opencensus.metrics.export.metric_producer import MetricProducer
+from opencensus.metrics.export.standard_metrics import StandardMetricsProducer
+from opencensus.metrics.export.standard_metrics import BaseStandardMetric
+
+
+class StandardMetricsType(object):
+    AVAILABLE_MEMORY = "\\Memory\\Available Bytes"
 
 
 # Definitions taken from psutil docs
 # https://psutil.readthedocs.io/en/latest/
-class StandardMetricsType(object):
-    # Memory that can be given instantly to
-    # processes without the system going into swap
-    AVAILABLE_MEMORY = "\\Memory\\Available Bytes"
-
-
-class StandardMetricsProducer(MetricProducer):
-
+class AvailableMemoryStandardMetric(BaseStandardMetric):
+    """ Metric for Available Memory
+        Avaliable memoru is defined as memory that can be given 
+        instantly to processes without the system going into swap
+    """
     def __init__(self):
-        self.registry = Registry()
-        self.setup()
-
-    def setup(self):
+        super(AvailableMemoryStandardMetric, self).__init__()
+        
+    def register(self, registry):
         available_memory_gauge = DerivedLongGauge(StandardMetricsType.AVAILABLE_MEMORY,
             'Amount of available memory in bytes',
             'byte',
             [])
         available_memory_gauge.create_default_time_series(self.get_available_memory)
-        self.registry.add_gauge(available_memory_gauge)
+        registry.add_gauge(available_memory_gauge)
 
     def get_available_memory(self):
         return psutil.virtual_memory().available
 
-    def get_metrics(self):
-        for metric in self.registry.get_metrics():
-            yield metric
 
-producer = StandardMetricsProducer()
+class AzureStandardMetricsProducer(StandardMetricsProducer):
+    """Implementation of the producer of standard metrics
+
+    :type standard_metrics: list
+    :param standard_metrics: the list of standard metrics
+        :class:`BaseStandardMetric`
+    """
+    def __init__(self):
+        super(AzureStandardMetricsProducer, self).__init__()
+        self.metrics = []
+        self.init_metrics()
+
+    def init_metrics(self):
+        self.metrics.append(AvailableMemoryStandardMetric())
+        self.register_metrics(self.metrics)
+
+producer = AzureStandardMetricsProducer()
