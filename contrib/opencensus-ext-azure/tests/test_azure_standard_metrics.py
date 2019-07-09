@@ -27,7 +27,8 @@ class TestStandardMetrics(unittest.TestCase):
             standard_metrics.StandardMetricsType,
             lambda a: not(inspect.isroutine(a)))
         types = [a for a in attributes
-            if not(a[0].startswith('__') and a[0].endswith('__'))]
+                 if not(a[0].startswith('__') and
+                 a[0].endswith('__'))]
         self.assertEquals(len(producer.metrics), len(types))
 
     def test_available_memory_register(self):

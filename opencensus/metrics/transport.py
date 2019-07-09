@@ -91,7 +91,7 @@ def get_exporter_thread(metric_producers, exporter, interval=None):
 
     """
     weak_gets = [utils.get_weakref(producer.get_metrics)
-        for producer in metric_producers]
+                 for producer in metric_producers]
     weak_export = utils.get_weakref(exporter.export_metrics)
 
     def export_all():
