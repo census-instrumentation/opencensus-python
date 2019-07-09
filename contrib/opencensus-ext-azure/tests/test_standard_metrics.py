@@ -12,22 +12,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import inspect
 import mock
 import unittest
 
-from opencensus.ext.azure.metrics_exporter.standard_metrics import StandardMetricsRecorder
-from opencensus.ext.azure.metrics_exporter.standard_metrics import StandardMetricsType
-from opencensus.stats import execution_context
-from opencensus.stats import stats as stats_module
+from opencensus.ext.azure.metrics_exporter import standard_metrics
+from opencensus.metrics.export.gauge import Registry
 
 
 class TestStandardMetrics(unittest.TestCase):
-    def setUp(self):
-        execution_context.set_measure_to_view_map({})
-        stats_module.stats = stats_module._Stats()
+    def test_producer_ctor(self):
+        producer = standard_metrics.AzureStandardMetricsProducer()
 
-    def test_constructor_and_setup(self):
-        return
+        attributes = inspect.getmembers(standard_metrics.StandardMetricsType, lambda a:not(inspect.isroutine(a)))
+        types = [a for a in attributes if not(a[0].startswith('__') and a[0].endswith('__'))]
+        self.assertEquals(len(producer.metrics), len(types))
 
+    def test_available_memory_register(self):
+    	registry = Registry()
+    	metric = standard_metrics.AvailableMemoryStandardMetric()
+    	metric.register(registry)
+    	available_memory_type = standard_metrics.StandardMetricsType.AVAILABLE_MEMORY
 
+    	self.assertEqual(len(registry.gauges), 1)
+    	self.assertIsNotNone(registry.gauges[available_memory_type])
 

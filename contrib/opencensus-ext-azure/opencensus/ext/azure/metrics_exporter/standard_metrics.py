@@ -16,8 +16,8 @@ import psutil
 
 from opencensus.metrics.export.gauge import DerivedLongGauge
 from opencensus.metrics.export.gauge import Registry
-from opencensus.metrics.export.standard_metrics import StandardMetricsProducer
 from opencensus.metrics.export.standard_metrics import BaseStandardMetric
+from opencensus.metrics.export.standard_metrics import StandardMetricsProducer
 
 
 class StandardMetricsType(object):
@@ -28,7 +28,7 @@ class StandardMetricsType(object):
 # https://psutil.readthedocs.io/en/latest/
 class AvailableMemoryStandardMetric(BaseStandardMetric):
     """ Metric for Available Memory
-        Avaliable memoru is defined as memory that can be given 
+        Avaliable memory is defined as memory that can be given 
         instantly to processes without the system going into swap
     """
     def __init__(self):

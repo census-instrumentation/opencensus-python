@@ -70,9 +70,9 @@ def get_exporter_thread(metric_producers, exporter, interval=None):
 
     Get a `PeriodicTask` that periodically calls:
 
-        exporter.export_metrics(all_metrics)
+        export(itertools.chain(*all_gets))
 
-        where all_metrics is the concatenation of all metrics produced by
+        where all_gets is the concatenation of all metrics produced by
         the metric producers in metric_producers, each calling
         metric_producer.get_metrics()
 
