@@ -43,7 +43,7 @@ class AvailableMemoryStandardMetric(BaseStandardMetric):
         registry.add_gauge(available_memory_gauge)
 
     def get_available_memory(self):
-        return psutil.virtual_memory().available
+        return psutil.virtual_memory().available  # pragma: NO COVER
 
 
 class AzureStandardMetricsProducer(StandardMetricsProducer):
