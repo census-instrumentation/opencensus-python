@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import gc
+import itertools
 import sys
 import time
 
@@ -74,11 +75,13 @@ class TestPeriodicMetricTask(unittest.TestCase):
 @mock.patch('opencensus.metrics.transport.logger')
 class TestGetExporterThreadPeriodic(unittest.TestCase):
 
-    def test_threaded_export(self, mock_logger):
+    @mock.patch('opencensus.metrics.transport.itertools.chain')
+    def test_threaded_export(self, iter_mock, mock_logger):
         producer = mock.Mock()
         exporter = mock.Mock()
         metrics = mock.Mock()
         producer.get_metrics.return_value = metrics
+        iter_mock.return_value = producer.get_metrics.return_value
         try:
             task = transport.get_exporter_thread([producer], exporter)
             producer.get_metrics.assert_not_called()
@@ -121,23 +124,25 @@ class TestGetExporterThreadPeriodic(unittest.TestCase):
         mock_logger.exception.assert_called()
         self.assertTrue(task.finished.is_set())
 
-    # def test_multiple_producers(self):
-    #     producer1 = mock.Mock()
-    #     producer2 = mock.Mock()
-    #     producers = [producer1, producer2]
-    #     exporter = mock.Mock()
-    #     metrics = mock.Mock()
-    #     producer1.get_metrics.return_value = metrics
-    #     producer2.get_metrics.return_value = metrics
-    #     try:
-    #         task = transport.get_exporter_thread(producers, exporter)
-    #         producer1.get_metrics.assert_not_called()
-    #         producer2.get_metrics.assert_not_called()
-    #         exporter.export_metrics.assert_not_called()
-    #         time.sleep(INTERVAL + INTERVAL / 2.0)
-    #         producer1.get_metrics.assert_called_once_with()
-    #         producer2.get_metrics.assert_called_once_with()
-    #         exporter.export_metrics.assert_called_once_with(metrics)
-    #     finally:
-    #         task.cancel()
-    #         task.join()
+    @mock.patch('opencensus.metrics.transport.itertools.chain')
+    def test_multiple_producers(self, iter_mock, mock_logger):
+        producer1 = mock.Mock()
+        producer2 = mock.Mock()
+        producers = [producer1, producer2]
+        exporter = mock.Mock()
+        metrics = mock.Mock()
+        producer1.get_metrics.return_value = metrics
+        producer2.get_metrics.return_value = metrics
+        iter_mock.return_value = metrics
+        try:
+            task = transport.get_exporter_thread(producers, exporter)
+            producer1.get_metrics.assert_not_called()
+            producer2.get_metrics.assert_not_called()
+            exporter.export_metrics.assert_not_called()
+            time.sleep(INTERVAL + INTERVAL / 2.0)
+            producer1.get_metrics.assert_called_once_with()
+            producer2.get_metrics.assert_called_once_with()
+            exporter.export_metrics.assert_called_once_with(metrics)
+        finally:
+            task.cancel()
+            task.join()
