@@ -90,7 +90,7 @@ def get_exporter_thread(metric_producers, exporter, interval=None):
     :return: A running thread responsible calling the exporter.
 
     """
-    weak_gets = [utils.get_weakref(producer.get_metrics) \
+    weak_gets = [utils.get_weakref(producer.get_metrics)
         for producer in metric_producers]
     weak_export = utils.get_weakref(exporter.export_metrics)
 

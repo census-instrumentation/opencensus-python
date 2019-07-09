@@ -43,4 +43,3 @@ class TestStandardMetrics(unittest.TestCase):
             metrics.append(metric)
 
         self.assertEqual(len(metrics), 1)
-

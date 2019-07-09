@@ -26,7 +26,7 @@ class TestStandardMetrics(unittest.TestCase):
         attributes = inspect.getmembers(
             standard_metrics.StandardMetricsType,
             lambda a: not(inspect.isroutine(a)))
-        types = [a for a in attributes \
+        types = [a for a in attributes
             if not(a[0].startswith('__') and a[0].endswith('__'))]
         self.assertEquals(len(producer.metrics), len(types))
 
