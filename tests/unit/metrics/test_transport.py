@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import gc
-import itertools
 import sys
 import time
 

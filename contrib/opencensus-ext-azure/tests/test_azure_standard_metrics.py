@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import inspect
-import mock
 import unittest
 
 from opencensus.ext.azure.metrics_exporter import standard_metrics
@@ -24,16 +23,19 @@ class TestStandardMetrics(unittest.TestCase):
     def test_producer_ctor(self):
         producer = standard_metrics.AzureStandardMetricsProducer()
 
-        attributes = inspect.getmembers(standard_metrics.StandardMetricsType, lambda a:not(inspect.isroutine(a)))
-        types = [a for a in attributes if not(a[0].startswith('__') and a[0].endswith('__'))]
+        attributes = inspect.getmembers(
+            standard_metrics.StandardMetricsType,
+            lambda a: not(inspect.isroutine(a)))
+        types = [a for a in attributes \
+            if not(a[0].startswith('__') and a[0].endswith('__'))]
         self.assertEquals(len(producer.metrics), len(types))
 
     def test_available_memory_register(self):
-    	registry = Registry()
-    	metric = standard_metrics.AvailableMemoryStandardMetric()
-    	metric.register(registry)
-    	available_memory_type = standard_metrics.StandardMetricsType.AVAILABLE_MEMORY
+        registry = Registry()
+        metric = standard_metrics.AvailableMemoryStandardMetric()
+        metric.register(registry)
+        available_memory_type = standard_metrics\
+            .StandardMetricsType.AVAILABLE_MEMORY
 
-    	self.assertEqual(len(registry.gauges), 1)
-    	self.assertIsNotNone(registry.gauges[available_memory_type])
-
+        self.assertEqual(len(registry.gauges), 1)
+        self.assertIsNotNone(registry.gauges[available_memory_type])

@@ -15,7 +15,6 @@
 import psutil
 
 from opencensus.metrics.export.gauge import DerivedLongGauge
-from opencensus.metrics.export.gauge import Registry
 from opencensus.metrics.export.standard_metrics import BaseStandardMetric
 from opencensus.metrics.export.standard_metrics import StandardMetricsProducer
 
@@ -28,18 +27,20 @@ class StandardMetricsType(object):
 # https://psutil.readthedocs.io/en/latest/
 class AvailableMemoryStandardMetric(BaseStandardMetric):
     """ Metric for Available Memory
-        Avaliable memory is defined as memory that can be given 
+        Avaliable memory is defined as memory that can be given
         instantly to processes without the system going into swap
     """
     def __init__(self):
         super(AvailableMemoryStandardMetric, self).__init__()
-        
+
     def register(self, registry):
-        available_memory_gauge = DerivedLongGauge(StandardMetricsType.AVAILABLE_MEMORY,
+        available_memory_gauge = DerivedLongGauge(
+            StandardMetricsType.AVAILABLE_MEMORY,
             'Amount of available memory in bytes',
             'byte',
             [])
-        available_memory_gauge.create_default_time_series(self.get_available_memory)
+        available_memory_gauge.create_default_time_series(
+            self.get_available_memory)
         registry.add_gauge(available_memory_gauge)
 
     def get_available_memory(self):
@@ -61,5 +62,6 @@ class AzureStandardMetricsProducer(StandardMetricsProducer):
     def init_metrics(self):
         self.metrics.append(AvailableMemoryStandardMetric())
         self.register_metrics(self.metrics)
+
 
 producer = AzureStandardMetricsProducer()

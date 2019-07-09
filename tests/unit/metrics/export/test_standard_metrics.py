@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import inspect
 import mock
 import unittest
 
 from opencensus.metrics.export import standard_metrics
 from opencensus.metrics.export.gauge import DerivedLongGauge
+
 
 class TestStandardMetrics(unittest.TestCase):
     def test_producer_register(self):
@@ -31,11 +31,10 @@ class TestStandardMetrics(unittest.TestCase):
 
     def test_producer_get_metrics(self):
         test_gauge = DerivedLongGauge('test gauge',
-            'test',
-            'test',
-            [])
-        func = lambda x:(1)
-        test_gauge.create_default_time_series(func)
+                                      'test',
+                                      'test',
+                                      [])
+        test_gauge.create_default_time_series(lambda x: (1))
         producer = standard_metrics.StandardMetricsProducer()
         producer.gauges[test_gauge.descriptor.name] = test_gauge
         metrics = []
@@ -44,3 +43,4 @@ class TestStandardMetrics(unittest.TestCase):
             metrics.append(metric)
 
         self.assertEqual(len(metrics), 1)
+

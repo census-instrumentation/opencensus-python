@@ -90,7 +90,8 @@ def get_exporter_thread(metric_producers, exporter, interval=None):
     :return: A running thread responsible calling the exporter.
 
     """
-    weak_gets = [utils.get_weakref(producer.get_metrics) for producer in metric_producers]
+    weak_gets = [utils.get_weakref(producer.get_metrics) \
+        for producer in metric_producers]
     weak_export = utils.get_weakref(exporter.export_metrics)
 
     def export_all():
@@ -103,7 +104,7 @@ def get_exporter_thread(metric_producers, exporter, interval=None):
         export = weak_export()
         if export is None:
             raise TransportError("Metric exporter is not available")
-        
+
         export(itertools.chain(*all_gets))
 
     tt = PeriodicMetricTask(interval, export_all)

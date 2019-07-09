@@ -12,11 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import psutil
-
-from opencensus.metrics.export.gauge import DerivedLongGauge
 from opencensus.metrics.export.gauge import Registry
-from opencensus.metrics.export.metric_producer import MetricProducer
 
 
 class StandardMetricsProducer(Registry):
@@ -38,6 +34,7 @@ class StandardMetricsProducer(Registry):
     def get_metrics(self):
         for metric in super(StandardMetricsProducer, self).get_metrics():
             yield metric
+
 
 class BaseStandardMetric(object):
 
