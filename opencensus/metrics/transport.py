@@ -72,13 +72,12 @@ def get_exporter_thread(metric_producers, exporter, interval=None):
 
         export(itertools.chain(*all_gets))
 
-        where all_gets is the concatenation of all metrics produced by
-        the metric producers in metric_producers, each calling
-        metric_producer.get_metrics()
+    where all_gets is the concatenation of all metrics produced by the metric
+    producers in metric_producers, each calling metric_producer.get_metrics()
 
-    :type metric_producers: list :param metric_producers: The list of metric
-    producers to use to get metrics
-    :class:`opencensus.metrics.export.metric_producer.MetricProducer`
+    :type metric_producers:
+    list(:class:`opencensus.metrics.export.metric_producer.MetricProducer`)
+    :param metric_producers: The list of metric producers to use to get metrics
 
     :type exporter: :class:`opencensus.stats.base_exporter.MetricsExporter`
     :param exporter: The exporter to use to export metrics.

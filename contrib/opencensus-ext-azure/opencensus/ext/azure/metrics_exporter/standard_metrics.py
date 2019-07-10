@@ -15,46 +15,40 @@
 import psutil
 
 from opencensus.metrics.export.gauge import DerivedLongGauge
-from opencensus.metrics.export.standard_metrics import BaseStandardMetric
-from opencensus.metrics.export.standard_metrics import StandardMetricsProducer
+from opencensus.metrics.export.gauge import Registry
+from opencensus.metrics.export.metric_producer import MetricProducer
 
 
-class StandardMetricsType(object):
-    AVAILABLE_MEMORY = "\\Memory\\Available Bytes"
+# Namespaces used in Azure Monitor
+AVAILABLE_MEMORY = "\\Memory\\Available Bytes"
 
+def get_available_memory():
+    return psutil.virtual_memory().available
 
 # Definitions taken from psutil docs
 # https://psutil.readthedocs.io/en/latest/
-class AvailableMemoryStandardMetric(BaseStandardMetric):
-    # Avaliable memory is defined as memory that can be given instantly to
-    # processes without the system going into swap
+# Available memory is defined as memory that can be given instantly to
+# processes without the system going into swap
+def get_available_memory_metric():
+    gauge = DerivedLongGauge(
+        AVAILABLE_MEMORY,
+        'Amount of available memory in bytes',
+        'byte',
+        [])
+    gauge.create_default_time_series(get_available_memory)
+    return gauge
+
+
+class AzureStandardMetricsProducer(MetricProducer):
+    """Implementation of the producer of standard metrics.
+
+    Includes Azure specific standard metrics.
+    """
     def __init__(self):
-        super(AvailableMemoryStandardMetric, self).__init__()
+        self.registry = Registry()
+        self.registry.add_gauge(get_available_memory_metric())
 
-    def register(self, registry):
-        available_memory_gauge = DerivedLongGauge(
-            StandardMetricsType.AVAILABLE_MEMORY,
-            'Amount of available memory in bytes',
-            'byte',
-            [])
-        available_memory_gauge.create_default_time_series(
-            self.get_available_memory)
-        registry.add_gauge(available_memory_gauge)
-
-    def get_available_memory(self):
-        return psutil.virtual_memory().available  # pragma: NO COVER
-
-
-class AzureStandardMetricsProducer(StandardMetricsProducer):
-    # Implementation of the producer of standard metrics
-    def __init__(self):
-        super(AzureStandardMetricsProducer, self).__init__()
-        self.metrics = []
-        self.init_metrics()
-
-    def init_metrics(self):
-        self.metrics.append(AvailableMemoryStandardMetric())
-        self.register_metrics(self.metrics)
-
+    def get_metrics(self):
+        return self.registry.get_metrics()
 
 producer = AzureStandardMetricsProducer()

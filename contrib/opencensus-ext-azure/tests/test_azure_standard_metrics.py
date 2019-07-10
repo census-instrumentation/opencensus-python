@@ -12,31 +12,37 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import inspect
+import collections
+import mock
 import unittest
 
 from opencensus.ext.azure.metrics_exporter import standard_metrics
-from opencensus.metrics.export.gauge import Registry
 
 
 class TestStandardMetrics(unittest.TestCase):
-    def test_producer_ctor(self):
+    @mock.patch('opencensus.ext.azure.metrics_exporter'
+        '.standard_metrics.get_available_memory_metric')
+    def test_producer_ctor(self, avail_mock):
         producer = standard_metrics.AzureStandardMetricsProducer()
 
-        attributes = inspect.getmembers(
-            standard_metrics.StandardMetricsType,
-            lambda a: not(inspect.isroutine(a)))
-        types = [a for a in attributes
-                 if not(a[0].startswith('__') and
-                        a[0].endswith('__'))]
-        self.assertEquals(len(producer.metrics), len(types))
+        self.assertEqual(len(avail_mock.call_args_list), 1)
 
-    def test_available_memory_register(self):
-        registry = Registry()
-        metric = standard_metrics.AvailableMemoryStandardMetric()
-        metric.register(registry)
-        available_memory_type = standard_metrics\
-            .StandardMetricsType.AVAILABLE_MEMORY
+    def test_producer_get_metrics(self):
+        producer = standard_metrics.AzureStandardMetricsProducer()
+        metrics = producer.get_metrics()
 
-        self.assertEqual(len(registry.gauges), 1)
-        self.assertIsNotNone(registry.gauges[available_memory_type])
+        self.assertEqual(len(metrics), 1)
+
+    def test_get_available_memory_metric(self):
+    	gauge = standard_metrics.get_available_memory_metric()
+
+    	self.assertEqual(gauge.descriptor.name, '\\Memory\\Available Bytes')
+
+    @mock.patch('psutil.virtual_memory')
+    def test_get_available_memory(self, psutil_mock):
+        memory = collections.namedtuple('memory', 'available')
+        vmem = memory(available=100)
+        psutil_mock.return_value = vmem
+        mem = standard_metrics.get_available_memory()
+
+        self.assertEqual(mem, 100)

@@ -22,7 +22,7 @@ def main():
     # All you need is the next line. You can disable standard metrics by
     # passing in enable_standard_metrics=False into the constructor of
     # new_metrics_exporter()
-    metrics_exporter.new_metrics_exporter()
+    _exporter = metrics_exporter.new_metrics_exporter()
 
     for i in range(100):
         print(psutil.virtual_memory())

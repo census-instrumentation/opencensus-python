@@ -1,9 +1,6 @@
 # Changelog
 
 ## Unreleased
-- Refactored PeriodicMetricTask
-- Allow multiple metric producers for exporter thread
-  ([#708](https://github.com/census-instrumentation/opencensus-python/pull/708))
 
 ## 0.6.0
 Released 2019-05-31

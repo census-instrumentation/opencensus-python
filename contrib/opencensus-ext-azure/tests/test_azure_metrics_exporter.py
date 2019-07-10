@@ -450,8 +450,8 @@ class TestAzureMetricsExporter(unittest.TestCase):
         self.assertTrue('properties' in envelope.data.baseData)
         self.assertEqual(envelope.data.baseData.properties, properties)
 
-    @mock.patch('opencensus.ext.azure.metrics_exporter' +
-                '.transport.get_exporter_thread', return_value=mock.Mock())
+    @mock.patch('opencensus.ext.azure.metrics_exporter'
+                '.transport.get_exporter_thread')
     def test_new_metrics_exporter(self, exporter_mock):
         iKey = '12345678-1234-5678-abcd-12345678abcd'
         exporter = metrics_exporter.new_metrics_exporter(
@@ -461,8 +461,8 @@ class TestAzureMetricsExporter(unittest.TestCase):
         self.assertEqual(len(exporter_mock.call_args_list), 1)
         self.assertEqual(len(exporter_mock.call_args[0][0]), 2)
 
-    @mock.patch('opencensus.ext.azure.metrics_exporter' +
-                '.transport.get_exporter_thread', return_value=mock.Mock())
+    @mock.patch('opencensus.ext.azure.metrics_exporter'
+                '.transport.get_exporter_thread')
     def test_new_metrics_exporter_no_standard_metrics(self, exporter_mock):
         iKey = '12345678-1234-5678-abcd-12345678abcd'
         exporter = metrics_exporter.new_metrics_exporter(
