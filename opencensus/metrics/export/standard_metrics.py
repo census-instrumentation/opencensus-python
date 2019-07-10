@@ -16,17 +16,12 @@ from opencensus.metrics.export.gauge import Registry
 
 
 class StandardMetricsProducer(Registry):
-    """Implementation of the producer of standard metrics
-        using gauges
-    """
+    # Implementation of the producer of standard metrics using gauges.
     def __init__(self):
         super(StandardMetricsProducer, self).__init__()
 
-    """
-    :type metrics: list
-    :param metrics: the list of standard metrics
-        :class:`BaseStandardMetric`
-    """
+    # Accepts a list of metrics as a parameter Each element in metrics inherits
+    # from `BaseStandardMetric`
     def register_metrics(self, metrics):
         for metric in metrics:
             metric.register(self)
@@ -39,8 +34,6 @@ class StandardMetricsProducer(Registry):
 class BaseStandardMetric(object):
 
     def register(self, registry):
-        """Register this standard metric to the given registry
-            Classes will override this method based on the type
-            of standard metric
-        """
+        # Register this standard metric to the given registry. Classes will
+        # override this method based on the type of standard metric.
         raise NotImplementedError  # pragma: NO COVER

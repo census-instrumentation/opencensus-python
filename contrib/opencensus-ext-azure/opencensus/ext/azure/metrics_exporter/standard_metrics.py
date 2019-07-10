@@ -26,10 +26,8 @@ class StandardMetricsType(object):
 # Definitions taken from psutil docs
 # https://psutil.readthedocs.io/en/latest/
 class AvailableMemoryStandardMetric(BaseStandardMetric):
-    """ Metric for Available Memory
-        Avaliable memory is defined as memory that can be given
-        instantly to processes without the system going into swap
-    """
+    # Avaliable memory is defined as memory that can be given instantly to
+    # processes without the system going into swap
     def __init__(self):
         super(AvailableMemoryStandardMetric, self).__init__()
 
@@ -48,12 +46,7 @@ class AvailableMemoryStandardMetric(BaseStandardMetric):
 
 
 class AzureStandardMetricsProducer(StandardMetricsProducer):
-    """Implementation of the producer of standard metrics
-
-    :type standard_metrics: list
-    :param standard_metrics: the list of standard metrics
-        :class:`BaseStandardMetric`
-    """
+    # Implementation of the producer of standard metrics
     def __init__(self):
         super(AzureStandardMetricsProducer, self).__init__()
         self.metrics = []

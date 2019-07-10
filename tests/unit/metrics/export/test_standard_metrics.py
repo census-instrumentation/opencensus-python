@@ -34,7 +34,7 @@ class TestStandardMetrics(unittest.TestCase):
                                       'test',
                                       'test',
                                       [])
-        test_gauge.create_default_time_series(lambda x: (1))
+        test_gauge.create_default_time_series(lambda x: 1)
         producer = standard_metrics.StandardMetricsProducer()
         producer.gauges[test_gauge.descriptor.name] = test_gauge
         metrics = []

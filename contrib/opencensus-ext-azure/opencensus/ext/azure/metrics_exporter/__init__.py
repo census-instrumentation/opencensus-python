@@ -55,18 +55,17 @@ class MetricsExporter(object):
                 type_ = metric.descriptor.type
                 if type_ != MetricDescriptorType.CUMULATIVE_DISTRIBUTION:
                     md = metric.descriptor
-                    # Each time series will be uniquely
-                    # identified by it's label values
+                    # Each time series will be uniquely identified by it's
+                    # label values
                     for time_series in metric.time_series:
-                        # Using stats, time_series should
-                        # only have one point which contains
-                        # the aggregated value
+                        # Using stats, time_series should only have one point
+                        # which contains the aggregated value
                         data_point = self.create_data_points(
                             time_series, md)[0]
                         # The timestamp is when the metric was recorded
                         time_stamp = time_series.points[0].timestamp
-                        # Get the properties using label keys from metric
-                        # and label values of the time series
+                        # Get the properties using label keys from metric and
+                        # label values of the time series
                         properties = self.create_properties(time_series, md)
                         envelopes.append(self.create_envelope(data_point,
                                                               time_stamp,
@@ -91,9 +90,8 @@ class MetricsExporter(object):
 
     def create_properties(self, time_series, metric_descriptor):
         properties = {}
-        # We construct a properties map from the
-        # label keys and values
-        # We assume the ordering is already correct
+        # We construct a properties map from the label keys and values. We
+        # assume the ordering is already correct
         for i in range(len(metric_descriptor.label_keys)):
             if time_series.label_values[i].value is None:
                 value = "null"
@@ -117,13 +115,11 @@ class MetricsExporter(object):
         return envelope
 
     def _transmit_without_retry(self, envelopes):
-        # Contains logic from transport._transmit
-        # TODO: Remove this function from exporter and
-        # consolidate with transport._transmit to cover
-        # all exporter use cases.
-        # Uses cases pertain to properly handling failures
-        # and implementing a retry policy for this exporter
-        # TODO: implement retry policy
+        # Contains logic from transport._transmit TODO: Remove this function
+        # from exporter and consolidate with transport._transmit to cover all
+        # exporter use cases. Uses cases pertain to properly handling failures
+        # and implementing a retry policy for this exporter TODO: implement
+        # retry policy
         """
         Transmit the data envelopes to the ingestion service.
         Does not perform retry logic. For partial success and
@@ -202,8 +198,8 @@ class MetricsExporter(object):
                                 error['message'],
                                 envelopes[error['index']],
                             )
-                    # show the envelopes that can be
-                    # retried manually for visibility
+                    # show the envelopes that can be retried manually for
+                    # visibility
                     if retryable_envelopes:
                         logger.warning(
                             'Error while processing data. Data dropped. ' +

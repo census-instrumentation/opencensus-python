@@ -76,18 +76,17 @@ def get_exporter_thread(metric_producers, exporter, interval=None):
         the metric producers in metric_producers, each calling
         metric_producer.get_metrics()
 
-    :type metric_producers: list
-    :param metric_producers: The list of metric producers to use to get metrics
-        :class:`opencensus.metrics.export.metric_producer.MetricProducer`
+    :type metric_producers: list :param metric_producers: The list of metric
+    producers to use to get metrics
+    :class:`opencensus.metrics.export.metric_producer.MetricProducer`
 
     :type exporter: :class:`opencensus.stats.base_exporter.MetricsExporter`
     :param exporter: The exporter to use to export metrics.
 
-    :type interval: int or float
-    :param interval: Seconds between export calls.
+    :type interval: int or float :param interval: Seconds between export calls.
 
-    :rtype: :class:`PeriodicTask`
-    :return: A running thread responsible calling the exporter.
+    :rtype: :class:`PeriodicTask` :return: A running thread responsible calling
+    the exporter.
 
     """
     weak_gets = [utils.get_weakref(producer.get_metrics)
