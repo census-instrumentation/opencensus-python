@@ -22,8 +22,10 @@ from opencensus.metrics.export.metric_producer import MetricProducer
 # Namespaces used in Azure Monitor
 AVAILABLE_MEMORY = "\\Memory\\Available Bytes"
 
+
 def get_available_memory():
     return psutil.virtual_memory().available
+
 
 # Definitions taken from psutil docs
 # https://psutil.readthedocs.io/en/latest/
@@ -50,5 +52,6 @@ class AzureStandardMetricsProducer(MetricProducer):
 
     def get_metrics(self):
         return self.registry.get_metrics()
+
 
 producer = AzureStandardMetricsProducer()

@@ -21,9 +21,9 @@ from opencensus.ext.azure.metrics_exporter import standard_metrics
 
 class TestStandardMetrics(unittest.TestCase):
     @mock.patch('opencensus.ext.azure.metrics_exporter'
-        '.standard_metrics.get_available_memory_metric')
+                '.standard_metrics.get_available_memory_metric')
     def test_producer_ctor(self, avail_mock):
-        producer = standard_metrics.AzureStandardMetricsProducer()
+        standard_metrics.AzureStandardMetricsProducer()
 
         self.assertEqual(len(avail_mock.call_args_list), 1)
 
@@ -34,9 +34,9 @@ class TestStandardMetrics(unittest.TestCase):
         self.assertEqual(len(metrics), 1)
 
     def test_get_available_memory_metric(self):
-    	gauge = standard_metrics.get_available_memory_metric()
+        gauge = standard_metrics.get_available_memory_metric()
 
-    	self.assertEqual(gauge.descriptor.name, '\\Memory\\Available Bytes')
+        self.assertEqual(gauge.descriptor.name, '\\Memory\\Available Bytes')
 
     @mock.patch('psutil.virtual_memory')
     def test_get_available_memory(self, psutil_mock):
