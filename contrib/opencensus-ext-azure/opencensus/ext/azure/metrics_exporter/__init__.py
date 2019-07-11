@@ -115,11 +115,12 @@ class MetricsExporter(object):
         return envelope
 
     def _transmit_without_retry(self, envelopes):
-        # Contains logic from transport._transmit TODO: Remove this function
-        # from exporter and consolidate with transport._transmit to cover all
-        # exporter use cases. Uses cases pertain to properly handling failures
-        # and implementing a retry policy for this exporter TODO: implement
-        # retry policy
+        # Contains logic from transport._transmit
+        # TODO: Remove this function from exporter and consolidate with
+        # transport._transmit to cover all exporter use cases. Uses cases
+        # pertain to properly handling failures and implementing a retry
+        # policy for this exporter.
+        # TODO: implement retry policy
         """
         Transmit the data envelopes to the ingestion service.
         Does not perform retry logic. For partial success and

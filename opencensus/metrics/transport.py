@@ -82,10 +82,11 @@ def get_exporter_thread(metric_producers, exporter, interval=None):
     :type exporter: :class:`opencensus.stats.base_exporter.MetricsExporter`
     :param exporter: The exporter to use to export metrics.
 
-    :type interval: int or float :param interval: Seconds between export calls.
+    :type interval: int or float
+    :param interval: Seconds between export calls.
 
-    :rtype: :class:`PeriodicTask` :return: A running thread responsible calling
-    the exporter.
+    :rtype: :class:`PeriodicTask`
+    :return: A running thread responsible calling the exporter.
 
     """
     weak_gets = [utils.get_weakref(producer.get_metrics)

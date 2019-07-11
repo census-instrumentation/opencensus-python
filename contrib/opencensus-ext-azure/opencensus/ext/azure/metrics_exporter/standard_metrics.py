@@ -27,11 +27,15 @@ def get_available_memory():
     return psutil.virtual_memory().available
 
 
-# Definitions taken from psutil docs
-# https://psutil.readthedocs.io/en/latest/
-# Available memory is defined as memory that can be given instantly to
-# processes without the system going into swap
 def get_available_memory_metric():
+    """ Returns a derived gauge for available memory
+
+    Available memory is defined as memory that can be given instantly to
+    processes without the system going into swap
+
+    :rtype: :class:`opencensus.metrics.export.gauge.DerivedLongGauge`
+    :return: The gauge representing the available memory metric
+    """
     gauge = DerivedLongGauge(
         AVAILABLE_MEMORY,
         'Amount of available memory in bytes',
@@ -44,7 +48,8 @@ def get_available_memory_metric():
 class AzureStandardMetricsProducer(MetricProducer):
     """Implementation of the producer of standard metrics.
 
-    Includes Azure specific standard metrics.
+    Includes Azure specific standard metrics, implemented
+    using gauges.
     """
     def __init__(self):
         self.registry = Registry()
