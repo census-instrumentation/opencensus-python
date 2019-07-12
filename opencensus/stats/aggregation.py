@@ -112,10 +112,10 @@ class DistributionAggregation(BaseAggregation):
             0, 0, 0, None, self._boundaries)
 
     @staticmethod
+    def get_metric_type(measure):
         """Get the MetricDescriptorType for the metric produced by this
         aggregation and measure.
         """
-    def get_metric_type(measure):
         return MetricDescriptorType.CUMULATIVE_DISTRIBUTION
 
 
