@@ -31,7 +31,6 @@ class SumAggregation(object):
 
     """
     def __init__(self, sum=None):
-        super(SumAggregation, self).__init__()
         self._initial_sum = sum or 0
 
     def new_aggregation_data(self, measure):
@@ -63,7 +62,6 @@ class CountAggregation(object):
 
     """
     def __init__(self, count=0):
-        super(CountAggregation, self).__init__()
         self._initial_count = count
 
     def new_aggregation_data(self, measure=None):
@@ -103,7 +101,6 @@ class DistributionAggregation(object):
                                ii)
             boundaries = boundaries[ii:]
 
-        super(DistributionAggregation, self).__init__(buckets=boundaries)
         self._boundaries = boundaries
 
     def new_aggregation_data(self, measure=None):
@@ -128,7 +125,6 @@ class LastValueAggregation(object):
 
     """
     def __init__(self, value=0):
-        super(LastValueAggregation, self).__init__()
         self._initial_value = value
 
     def new_aggregation_data(self, measure):

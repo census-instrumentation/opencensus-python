@@ -20,20 +20,6 @@ from opencensus.stats import measure as measure_module
 from opencensus.metrics.export import value
 
 
-class TestBaseAggregation(unittest.TestCase):
-    def test_new_aggregation_data_defaults(self):
-        base_aggregation = aggregation_module.BaseAggregation()
-
-        self.assertEqual([], base_aggregation.buckets)
-
-    def test_new_aggregation_data_explicit(self):
-
-        buckets = ["test"]
-        base_aggregation = aggregation_module.BaseAggregation(buckets=buckets)
-
-        self.assertEqual(["test"], base_aggregation.buckets)
-
-
 class TestSumAggregation(unittest.TestCase):
     def test_new_aggregation_data_defaults(self):
         measure = mock.Mock(spec=measure_module.MeasureInt)
