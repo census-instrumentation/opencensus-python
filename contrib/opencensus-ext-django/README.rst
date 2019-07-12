@@ -17,22 +17,13 @@ Usage
 -----
 
 For tracing Django requests, you will need to add the following line to
-the ``MIDDLEWARE_CLASSES`` section in the Django ``settings.py`` file.
+the ``MIDDLEWARE`` section in the Django ``settings.py`` file.
 
 .. code:: python
 
-    MIDDLEWARE_CLASSES = [
+    MIDDLEWARE = [
         ...
         'opencensus.ext.django.middleware.OpencensusMiddleware',
-    ]
-
-And add this line to the ``INSTALLED_APPS`` section:
-
-.. code:: python
-
-    INSTALLED_APPS = [
-        ...
-        'opencensus.ext.django',
     ]
 
 Additional configuration can be provided, please read
