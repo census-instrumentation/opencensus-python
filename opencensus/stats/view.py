@@ -79,7 +79,7 @@ class View(object):
 
     def new_aggregation_data(self):
         """Get a new AggregationData for this view.
-        
+
         :rtype: :class: `opencensus.status.aggregation_data.AggregationData`
         :return: A new AggregationData.
         """
