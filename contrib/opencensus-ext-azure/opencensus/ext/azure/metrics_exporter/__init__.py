@@ -55,7 +55,7 @@ class MetricsExporter(object):
                 type_ = metric.descriptor.type
                 if type_ != MetricDescriptorType.CUMULATIVE_DISTRIBUTION:
                     md = metric.descriptor
-                    # Each time series will be uniquely identified by it's
+                    # Each time series will be uniquely identified by its
                     # label values
                     for time_series in metric.time_series:
                         # Using stats, time_series should only have one point

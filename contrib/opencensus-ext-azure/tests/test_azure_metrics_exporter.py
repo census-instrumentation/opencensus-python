@@ -21,6 +21,7 @@ from opencensus.ext.azure import metrics_exporter
 from opencensus.ext.azure.common import Options
 from opencensus.ext.azure.common.protocol import DataPoint
 from opencensus.ext.azure.common.protocol import Envelope
+from opencensus.ext.azure.metrics_exporter import standard_metrics
 from opencensus.metrics import label_key
 from opencensus.metrics import label_value
 from opencensus.metrics.export import metric
@@ -460,6 +461,11 @@ class TestAzureMetricsExporter(unittest.TestCase):
         self.assertEqual(exporter.options.instrumentation_key, iKey)
         self.assertEqual(len(exporter_mock.call_args_list), 1)
         self.assertEqual(len(exporter_mock.call_args[0][0]), 2)
+        self.assertFalse(isinstance(exporter_mock.call_args[0][0][0],
+            standard_metrics.AzureStandardMetricsProducer))
+        self.assertTrue(isinstance(exporter_mock.call_args[0][0][1],
+            standard_metrics.AzureStandardMetricsProducer))
+
 
     @mock.patch('opencensus.ext.azure.metrics_exporter'
                 '.transport.get_exporter_thread')
@@ -471,3 +477,5 @@ class TestAzureMetricsExporter(unittest.TestCase):
         self.assertEqual(exporter.options.instrumentation_key, iKey)
         self.assertEqual(len(exporter_mock.call_args_list), 1)
         self.assertEqual(len(exporter_mock.call_args[0][0]), 1)
+        self.assertFalse(isinstance(exporter_mock.call_args[0][0][0],
+            standard_metrics.AzureStandardMetricsProducer))
