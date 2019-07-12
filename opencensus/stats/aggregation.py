@@ -22,7 +22,7 @@ from opencensus.metrics.export.metric_descriptor import MetricDescriptorType
 logger = logging.getLogger(__name__)
 
 
-class SumAggregation(BaseAggregation):
+class SumAggregation(object):
     """Sum Aggregation describes that data collected and aggregated with this
     method will be summed
 
@@ -54,7 +54,7 @@ class SumAggregation(BaseAggregation):
             raise ValueError
 
 
-class CountAggregation(BaseAggregation):
+class CountAggregation(object):
     """Describes that the data collected and aggregated with this method will
     be turned into a count value
 
@@ -78,7 +78,7 @@ class CountAggregation(BaseAggregation):
         return MetricDescriptorType.CUMULATIVE_INT64
 
 
-class DistributionAggregation(BaseAggregation):
+class DistributionAggregation(object):
     """Distribution Aggregation indicates that the desired aggregation is a
     histogram distribution
 
@@ -119,7 +119,7 @@ class DistributionAggregation(BaseAggregation):
         return MetricDescriptorType.CUMULATIVE_DISTRIBUTION
 
 
-class LastValueAggregation(BaseAggregation):
+class LastValueAggregation(object):
     """Describes that the data collected with this method will
     overwrite the last recorded value
 
