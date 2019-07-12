@@ -461,11 +461,11 @@ class TestAzureMetricsExporter(unittest.TestCase):
         self.assertEqual(exporter.options.instrumentation_key, iKey)
         self.assertEqual(len(exporter_mock.call_args_list), 1)
         self.assertEqual(len(exporter_mock.call_args[0][0]), 2)
+        producer_class = standard_metrics.AzureStandardMetricsProducer
         self.assertFalse(isinstance(exporter_mock.call_args[0][0][0],
-            standard_metrics.AzureStandardMetricsProducer))
+                                    producer_class))
         self.assertTrue(isinstance(exporter_mock.call_args[0][0][1],
-            standard_metrics.AzureStandardMetricsProducer))
-
+                                    producer_class))
 
     @mock.patch('opencensus.ext.azure.metrics_exporter'
                 '.transport.get_exporter_thread')
@@ -477,5 +477,6 @@ class TestAzureMetricsExporter(unittest.TestCase):
         self.assertEqual(exporter.options.instrumentation_key, iKey)
         self.assertEqual(len(exporter_mock.call_args_list), 1)
         self.assertEqual(len(exporter_mock.call_args[0][0]), 1)
+        producer_class = standard_metrics.AzureStandardMetricsProducer
         self.assertFalse(isinstance(exporter_mock.call_args[0][0][0],
-            standard_metrics.AzureStandardMetricsProducer))
+                                    producer_class))
