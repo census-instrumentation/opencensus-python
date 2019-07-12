@@ -59,8 +59,8 @@ class SumAggregationData(BaseAggregationData):
         :class:`opencensus.metrics.export.value.ValueDouble` or
         :class:`opencensus.metrics.export.value.ValueLong`
     :param value_type: the type of value to be used when creating a point
-    :type sum_data: meh
-    :param sum_data: represents the aggregated sum
+    :type sum_data: int or float
+    :param sum_data: represents the initial aggregated sum
 
     """
 
@@ -109,7 +109,7 @@ class CountAggregationData(BaseAggregationData):
     """Count Aggregation Data is the count value of aggregated data
 
     :type count_data: long
-    :param count_data: represents the aggregated count
+    :param count_data: represents the initial aggregated count
 
     """
 
@@ -343,7 +343,7 @@ class LastValueAggregationData(BaseAggregationData):
         :class:`opencensus.metrics.export.value.ValueLong`
     :param value_type: the type of value to be used when creating a point
     :type value: long
-    :param value: represents the current value
+    :param value: represents the initial value
 
     """
 

@@ -78,6 +78,11 @@ class View(object):
         return self._aggregation
 
     def new_aggregation_data(self):
+        """Get a new AggregationData for this view.
+        
+        :rtype: :class: `opencensus.status.aggregation_data.AggregationData`
+        :return: A new AggregationData.
+        """
         return self._aggregation.new_aggregation_data(self.measure)
 
     def get_metric_descriptor(self):
