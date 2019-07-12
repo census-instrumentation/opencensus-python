@@ -135,7 +135,7 @@ def lint_setup_py(session):
         'python', 'setup.py', 'check', '--restructuredtext', '--strict')
 
 
-@nox.session(python='2.7')
+@nox.session(python='3.6')
 def cover(session):
     """Run the final coverage report.
     This outputs the coverage report aggregating coverage from the unit
