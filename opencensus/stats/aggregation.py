@@ -47,10 +47,9 @@ class SumAggregation(object):
         """
         if isinstance(measure, measure_module.MeasureInt):
             return MetricDescriptorType.CUMULATIVE_INT64
-        elif isinstance(measure, measure_module.MeasureFloat):
+        if isinstance(measure, measure_module.MeasureFloat):
             return MetricDescriptorType.CUMULATIVE_DOUBLE
-        else:
-            raise ValueError
+        raise ValueError
 
 
 class CountAggregation(object):
@@ -141,7 +140,6 @@ class LastValueAggregation(object):
         """
         if isinstance(measure, measure_module.MeasureInt):
             return MetricDescriptorType.GAUGE_INT64
-        elif isinstance(measure, measure_module.MeasureFloat):
+        if isinstance(measure, measure_module.MeasureFloat):
             return MetricDescriptorType.GAUGE_DOUBLE
-        else:
-            raise ValueError
+        raise ValueError
