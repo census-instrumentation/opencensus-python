@@ -14,6 +14,7 @@
 
 import collections
 import mock
+import psutil
 import unittest
 
 from opencensus.ext.azure.metrics_exporter import standard_metrics
@@ -51,7 +52,7 @@ class TestStandardMetrics(unittest.TestCase):
         gauge = standard_metrics.get_process_private_bytes_metric()
 
         self.assertEqual(gauge.descriptor.name,
-            '\\Process(??APP_WIN32_PROC??)\\Private Bytes')
+                         '\\Process(??APP_WIN32_PROC??)\\Private Bytes')
 
     def test_get_process_private_bytes(self):
         with mock.patch('psutil.Process') as process_mock:
@@ -63,3 +64,21 @@ class TestStandardMetrics(unittest.TestCase):
             mem = standard_metrics.get_process_private_bytes()
 
             self.assertEqual(mem, 100)
+
+    @mock.patch('opencensus.ext.azure.metrics_exporter'
+                    '.standard_metrics.logger')
+    def test_get_process_private_bytes_no_process(self, logger_mock):
+        with mock.patch('psutil.Process') as process_mock:
+            process_mock.side_effect = psutil.NoSuchProcess(mock.Mock())
+            standard_metrics.get_process_private_bytes()
+
+            logger_mock.error.assert_called()
+
+    @mock.patch('opencensus.ext.azure.metrics_exporter'
+                    '.standard_metrics.logger')
+    def test_get_process_private_bytes_access_denied(self, logger_mock):
+        with mock.patch('psutil.Process') as process_mock:
+            process_mock.side_effect = psutil.AccessDenied()
+            standard_metrics.get_process_private_bytes()
+
+            logger_mock.error.assert_called()
