@@ -12,15 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
+import os
 import psutil
 
 from opencensus.metrics.export.gauge import DerivedLongGauge
 from opencensus.metrics.export.gauge import Registry
 from opencensus.metrics.export.metric_producer import MetricProducer
 
+logger = logging.getLogger(__name__)
+
 
 # Namespaces used in Azure Monitor
 AVAILABLE_MEMORY = "\\Memory\\Available Bytes"
+PRIVATE_BYTES = "\\Process(??APP_WIN32_PROC??)\\Private Bytes"
 
 
 def get_available_memory():
@@ -31,7 +36,7 @@ def get_available_memory_metric():
     """ Returns a derived gauge for available memory
 
     Available memory is defined as memory that can be given instantly to
-    processes without the system going into swap
+    processes without the system going into swap.
 
     :rtype: :class:`opencensus.metrics.export.gauge.DerivedLongGauge`
     :return: The gauge representing the available memory metric
@@ -44,6 +49,31 @@ def get_available_memory_metric():
     gauge.create_default_time_series(get_available_memory)
     return gauge
 
+def get_process_private_bytes():
+    try:
+        process = psutil.Process(os.getpid())
+        return process.memory_info().rss
+    except psutil.NoSuchProcess as ex:
+        logger.error('Error: Process does not exist %s.', ex)
+    except psutil.AccessDenied as ex:
+        logger.error('Error: Cannot access process information %s.', ex)
+
+def get_process_private_bytes_metric():
+    """ Returns a derived gauge for private bytes for the current process
+
+    Private bytes for the current process is measured by the Resident Set
+    Size, which is the non-swapped physical memory a process has used.
+
+    :rtype: :class:`opencensus.metrics.export.gauge.DerivedLongGauge`
+    :return: The gauge representing the private bytes metric
+    """
+    gauge = DerivedLongGauge(
+        PRIVATE_BYTES,
+        'Amount of memory process has used in bytes',
+        'byte',
+        [])
+    gauge.create_default_time_series(get_process_private_bytes)
+    return gauge
 
 class AzureStandardMetricsProducer(MetricProducer):
     """Implementation of the producer of standard metrics.
@@ -54,6 +84,7 @@ class AzureStandardMetricsProducer(MetricProducer):
     def __init__(self):
         self.registry = Registry()
         self.registry.add_gauge(get_available_memory_metric())
+        self.registry.add_gauge(get_process_private_bytes_metric())
 
     def get_metrics(self):
         return self.registry.get_metrics()

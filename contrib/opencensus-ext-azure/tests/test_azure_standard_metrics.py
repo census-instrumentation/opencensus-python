@@ -31,7 +31,7 @@ class TestStandardMetrics(unittest.TestCase):
         producer = standard_metrics.AzureStandardMetricsProducer()
         metrics = producer.get_metrics()
 
-        self.assertEqual(len(metrics), 1)
+        self.assertEqual(len(metrics), 2)
 
     def test_get_available_memory_metric(self):
         gauge = standard_metrics.get_available_memory_metric()
@@ -46,3 +46,20 @@ class TestStandardMetrics(unittest.TestCase):
         mem = standard_metrics.get_available_memory()
 
         self.assertEqual(mem, 100)
+
+    def test_get_process_private_bytes_metric(self):
+        gauge = standard_metrics.get_process_private_bytes_metric()
+
+        self.assertEqual(gauge.descriptor.name,
+            '\\Process(??APP_WIN32_PROC??)\\Private Bytes')
+
+    def test_get_process_private_bytes(self):
+        with mock.patch('psutil.Process') as process_mock:
+            memory = collections.namedtuple('memory', 'rss')
+            pmem = memory(rss=100)
+            process = mock.Mock()
+            process.memory_info.return_value = pmem
+            process_mock.return_value = process
+            mem = standard_metrics.get_process_private_bytes()
+
+            self.assertEqual(mem, 100)
