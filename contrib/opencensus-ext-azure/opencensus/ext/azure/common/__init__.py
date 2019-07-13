@@ -20,6 +20,7 @@ from opencensus.ext.azure.common.protocol import BaseObject
 
 class Options(BaseObject):
     _default = BaseObject(
+        enable_standard_metrics=True,
         endpoint='https://dc.services.visualstudio.com/v2/track',
         export_interval=15.0,
         grace_period=5.0,
