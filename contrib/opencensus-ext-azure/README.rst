@@ -125,6 +125,34 @@ The **Azure Monitor Metrics Exporter** allows you to export metrics to `Azure Mo
     if __name__ == "__main__":
         main()
 
+The exporter also includes a set of standard metrics that are exported to Azure Monitor by default.
+
+.. code:: python
+
+    import psutil
+    import time
+
+    from opencensus.ext.azure import metrics_exporter
+
+    def main():
+        # All you need is the next line. You can disable standard metrics by
+        # passing in enable_standard_metrics=False into the constructor of
+        # new_metrics_exporter() 
+        _exporter = metrics_exporter.new_metrics_exporter()
+        
+        for i in range(100):
+            print(psutil.virtual_memory())
+            time.sleep(5)
+
+        print("Done recording metrics")
+
+    if __name__ == "__main__":
+        main()
+
+Below is a list of standard metrics that are currently available:
+
+- Available memory (bytes)
+
 Trace
 ~~~~~
 

@@ -535,8 +535,8 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         self.assertEqual(sd_arg.points[0].value.int64_value, 123)
 
 
-class MockMetricExporterTask(object):
-    """Testing mock of metrics.transport.MetricExporterTask.
+class MockPeriodicMetricTask(object):
+    """Testing mock of metrics.transport.PeriodicMetricTask.
 
     Simulate calling export asynchronously from another thread synchronously
     from this one.
@@ -560,7 +560,7 @@ class MockMetricExporterTask(object):
 class MockGetExporterThread(object):
     """Intercept calls to get_exporter_thread.
 
-    To get a reference to the running MetricExporterTask created by
+    To get a reference to the running PeriodicMetricTask created by
     get_exporter_thread.
     """
     def __init__(self):
@@ -594,8 +594,8 @@ class TestAsyncStatsExport(unittest.TestCase):
 
     def setUp(self):
         patcher = mock.patch(
-            'opencensus.metrics.transport.MetricExporterTask',
-            MockMetricExporterTask)
+            'opencensus.metrics.transport.PeriodicMetricTask',
+            MockPeriodicMetricTask)
         patcher.start()
         self.addCleanup(patcher.stop)
 
