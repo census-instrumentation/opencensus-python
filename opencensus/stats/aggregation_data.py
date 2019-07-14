@@ -23,36 +23,7 @@ from opencensus.stats import bucket_boundaries
 logger = logging.getLogger(__name__)
 
 
-class BaseAggregationData(object):
-    """Aggregation Data represents an aggregated value from a collection
-
-    :type aggregation_data: aggregated value
-    :param aggregation_data: represents the aggregated value from a collection
-
-    """
-
-    def __init__(self, aggregation_data):
-        self._aggregation_data = aggregation_data
-
-    @property
-    def aggregation_data(self):
-        """The current aggregation data"""
-        return self._aggregation_data
-
-    def to_point(self, timestamp):
-        """Get a Point conversion of this aggregation.
-
-        :type timestamp: :class: `datetime.datetime`
-        :param timestamp: The time to report the point as having been recorded.
-
-        :rtype: :class: `opencensus.metrics.export.point.Point`
-        :return: a Point with with this aggregation's value and appropriate
-        value type.
-        """
-        raise NotImplementedError  # pragma: NO COVER
-
-
-class SumAggregationData(BaseAggregationData):
+class SumAggregationData(object):
     """Sum Aggregation Data is the aggregated data for the Sum aggregation
 
     :type value_type: class that is either
@@ -65,7 +36,6 @@ class SumAggregationData(BaseAggregationData):
     """
 
     def __init__(self, value_type, sum_data):
-        super(SumAggregationData, self).__init__(sum_data)
         self._value_type = value_type
         self._sum_data = sum_data
 
@@ -105,7 +75,7 @@ class SumAggregationData(BaseAggregationData):
         return point.Point(self._value_type(self.sum_data), timestamp)
 
 
-class CountAggregationData(BaseAggregationData):
+class CountAggregationData(object):
     """Count Aggregation Data is the count value of aggregated data
 
     :type count_data: long
@@ -114,7 +84,6 @@ class CountAggregationData(BaseAggregationData):
     """
 
     def __init__(self, count_data):
-        super(CountAggregationData, self).__init__(count_data)
         self._count_data = count_data
 
     def __repr__(self):
@@ -147,7 +116,7 @@ class CountAggregationData(BaseAggregationData):
         return point.Point(value.ValueLong(self.count_data), timestamp)
 
 
-class DistributionAggregationData(BaseAggregationData):
+class DistributionAggregationData(object):
     """Distribution Aggregation Data refers to the distribution stats of
     aggregated data
 
@@ -183,7 +152,6 @@ class DistributionAggregationData(BaseAggregationData):
         if exemplars is not None and len(exemplars) != len(bounds) + 1:
             raise ValueError
 
-        super(DistributionAggregationData, self).__init__(mean_data)
         self._mean_data = mean_data
         self._count_data = count_data
         self._sum_of_sqd_deviations = sum_of_sqd_deviations
@@ -334,7 +302,7 @@ class DistributionAggregationData(BaseAggregationData):
         )
 
 
-class LastValueAggregationData(BaseAggregationData):
+class LastValueAggregationData(object):
     """
     LastValue Aggregation Data is the value of aggregated data
 
@@ -348,7 +316,6 @@ class LastValueAggregationData(BaseAggregationData):
     """
 
     def __init__(self, value_type, value):
-        super(LastValueAggregationData, self).__init__(value)
         self._value_type = value_type
         self._value = value
 

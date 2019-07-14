@@ -23,15 +23,6 @@ from opencensus.metrics.export import value as value_module
 from opencensus.stats import aggregation_data as aggregation_data_module
 
 
-class TestBaseAggregationData(unittest.TestCase):
-    def test_constructor(self):
-        aggregation_data = 0
-        base_aggregation_data = aggregation_data_module.BaseAggregationData(
-            aggregation_data=aggregation_data)
-
-        self.assertEqual(0, base_aggregation_data.aggregation_data)
-
-
 class TestSumAggregationData(unittest.TestCase):
     def test_constructor_float(self):
         sum_data = 1.0

@@ -1376,7 +1376,7 @@ class TestCreateTimeseries(unittest.TestCase):
         v_data.start_time = TEST_TIME_STR
         v_data.end_time = TEST_TIME_STR
 
-        base_data = aggregation_data_module.BaseAggregationData(10)
+        base_data = None
         v_data.tag_value_aggregation_data_map = {
             (None,): base_data,
         }
