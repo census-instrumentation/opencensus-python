@@ -68,24 +68,6 @@ class TestStandardMetrics(unittest.TestCase):
 
     @mock.patch('opencensus.ext.azure.metrics_exporter'
                 '.standard_metrics.logger')
-    def test_get_process_private_bytes_no_process(self, logger_mock):
-        with mock.patch('psutil.Process') as process_mock:
-            process_mock.side_effect = psutil.NoSuchProcess(mock.Mock())
-            standard_metrics.get_process_private_bytes()
-
-            logger_mock.exception.assert_called()
-
-    @mock.patch('opencensus.ext.azure.metrics_exporter'
-                '.standard_metrics.logger')
-    def test_get_process_private_bytes_access_denied(self, logger_mock):
-        with mock.patch('psutil.Process') as process_mock:
-            process_mock.side_effect = psutil.AccessDenied()
-            standard_metrics.get_process_private_bytes()
-
-            logger_mock.exception.assert_called()
-
-    @mock.patch('opencensus.ext.azure.metrics_exporter'
-            '.standard_metrics.logger')
     def test_get_process_private_bytes_exception(self, logger_mock):
         with mock.patch('psutil.Process') as process_mock:
             process_mock.side_effect = Exception()
