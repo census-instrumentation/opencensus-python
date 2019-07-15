@@ -1,6 +1,9 @@
 # Changelog
 
 ## Unreleased
+
+## 0.3.1
+Released 2019-06-30
 - Added metrics exporter
   ([#678](https://github.com/census-instrumentation/opencensus-python/pull/678))
 
