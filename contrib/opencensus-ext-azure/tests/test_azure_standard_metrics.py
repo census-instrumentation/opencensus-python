@@ -14,7 +14,6 @@
 
 import collections
 import mock
-import psutil
 import unittest
 
 from opencensus.ext.azure.metrics_exporter import standard_metrics
