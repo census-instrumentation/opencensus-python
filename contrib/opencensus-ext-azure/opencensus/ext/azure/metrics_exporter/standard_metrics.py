@@ -53,10 +53,12 @@ def get_process_private_bytes():
     try:
         process = psutil.Process()
         return process.memory_info().rss
-    except psutil.NoSuchProcess as ex:
-        logger.error('Error: Process does not exist %s.', ex)
-    except psutil.AccessDenied as ex:
-        logger.error('Error: Cannot access process information %s.', ex)
+    except psutil.NoSuchProcess:
+        logger.exception('Error: Process does not exist.')
+    except psutil.AccessDenied:
+        logger.exception('Error: Cannot access process information.')
+    except Exception:
+        logger.exception('Error handling get process private bytes.')
 
 
 def get_process_private_bytes_metric():

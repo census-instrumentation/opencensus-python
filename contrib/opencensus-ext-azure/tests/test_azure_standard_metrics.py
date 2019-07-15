@@ -51,6 +51,7 @@ class TestStandardMetrics(unittest.TestCase):
     def test_get_process_private_bytes_metric(self):
         gauge = standard_metrics.get_process_private_bytes_metric()
 
+        # TODO: Refactor names to be platform generic
         self.assertEqual(gauge.descriptor.name,
                          '\\Process(??APP_WIN32_PROC??)\\Private Bytes')
 
@@ -72,7 +73,7 @@ class TestStandardMetrics(unittest.TestCase):
             process_mock.side_effect = psutil.NoSuchProcess(mock.Mock())
             standard_metrics.get_process_private_bytes()
 
-            logger_mock.error.assert_called()
+            logger_mock.exception.assert_called()
 
     @mock.patch('opencensus.ext.azure.metrics_exporter'
                 '.standard_metrics.logger')
@@ -81,4 +82,13 @@ class TestStandardMetrics(unittest.TestCase):
             process_mock.side_effect = psutil.AccessDenied()
             standard_metrics.get_process_private_bytes()
 
-            logger_mock.error.assert_called()
+            logger_mock.exception.assert_called()
+
+    @mock.patch('opencensus.ext.azure.metrics_exporter'
+            '.standard_metrics.logger')
+    def test_get_process_private_bytes_exception(self, logger_mock):
+        with mock.patch('psutil.Process') as process_mock:
+            process_mock.side_effect = Exception()
+            standard_metrics.get_process_private_bytes()
+
+            logger_mock.exception.assert_called()
