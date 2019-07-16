@@ -54,8 +54,7 @@ def get_available_memory_metric():
 
 def get_process_private_bytes():
     try:
-        process = psutil.Process()
-        return process.memory_info().rss
+        return PROCESS.memory_info().rss
     except Exception:
         logger.exception('Error handling get process private bytes.')
 
@@ -118,7 +117,7 @@ def get_process_cpu_usage():
 
 
 def get_process_cpu_usage_metric():
-    """ Returns a derived gauge for the CPU usage for the current process as a percentage.
+    """ Returns a derived gauge for the CPU usage for the current process.
 
     :rtype: :class:`opencensus.metrics.export.gauge.DerivedDoubleGauge`
     :return: The gauge representing the process cpu usage metric
@@ -131,8 +130,8 @@ def get_process_cpu_usage_metric():
     gauge.create_default_time_series(get_process_cpu_usage)
     # From the psutil docs: the first time this method is called with interval
     # = None it will return a meaningless 0.0 value which you are supposed to
-    # ignore. Call cpu_percent() once so that the subsequent calls from the
-    # gauge will be meaningful.
+    # ignore. Call cpu_percent() with process once so that the subsequent calls
+    # from the gauge will be meaningful.
     PROCESS.cpu_percent()
     return gauge
 
