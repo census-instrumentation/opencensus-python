@@ -73,7 +73,6 @@ class TestStandardMetrics(unittest.TestCase):
             standard_metrics.get_process_private_bytes()
 
             logger_mock.exception.assert_called()
-            logger_mock.error.assert_called()
 
     def test_get_processor_time_metric(self):
         gauge = standard_metrics.get_processor_time_metric()

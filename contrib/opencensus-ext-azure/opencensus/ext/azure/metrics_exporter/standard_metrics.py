@@ -87,7 +87,8 @@ def get_processor_time_metric():
 
     Processor time is defined as a float representing the current system
     wide CPU utilization minus idle CPU time as a percentage. Idle CPU
-    time is defined as the time spent doing nothing.
+    time is defined as the time spent doing nothing. Return values range
+    from 0.0 to 100.0 inclusive.
 
     :rtype: :class:`opencensus.metrics.export.gauge.DerivedDoubleGauge`
     :return: The gauge representing the processor time metric
