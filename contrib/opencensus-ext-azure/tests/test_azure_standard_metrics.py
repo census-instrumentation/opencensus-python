@@ -31,7 +31,7 @@ class TestStandardMetrics(unittest.TestCase):
         producer = standard_metrics.AzureStandardMetricsProducer()
         metrics = producer.get_metrics()
 
-        self.assertEqual(len(metrics), 1)
+        self.assertEqual(len(metrics), 2)
 
     def test_get_available_memory_metric(self):
         gauge = standard_metrics.get_available_memory_metric()
@@ -46,3 +46,30 @@ class TestStandardMetrics(unittest.TestCase):
         mem = standard_metrics.get_available_memory()
 
         self.assertEqual(mem, 100)
+
+    def test_get_process_private_bytes_metric(self):
+        gauge = standard_metrics.get_process_private_bytes_metric()
+
+        # TODO: Refactor names to be platform generic
+        self.assertEqual(gauge.descriptor.name,
+                         '\\Process(??APP_WIN32_PROC??)\\Private Bytes')
+
+    def test_get_process_private_bytes(self):
+        with mock.patch('psutil.Process') as process_mock:
+            memory = collections.namedtuple('memory', 'rss')
+            pmem = memory(rss=100)
+            process = mock.Mock()
+            process.memory_info.return_value = pmem
+            process_mock.return_value = process
+            mem = standard_metrics.get_process_private_bytes()
+
+            self.assertEqual(mem, 100)
+
+    @mock.patch('opencensus.ext.azure.metrics_exporter'
+                '.standard_metrics.logger')
+    def test_get_process_private_bytes_exception(self, logger_mock):
+        with mock.patch('psutil.Process') as process_mock:
+            process_mock.side_effect = Exception()
+            standard_metrics.get_process_private_bytes()
+
+            logger_mock.exception.assert_called()
