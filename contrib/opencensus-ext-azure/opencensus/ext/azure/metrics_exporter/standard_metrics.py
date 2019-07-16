@@ -125,7 +125,7 @@ def get_process_cpu_usage_metric():
         [])
     gauge.create_default_time_series(get_process_cpu_usage)
     # From the psutil docs: the first time this method is called with interval
-    # =None it will return a meaningless 0.0 value which you are supposed to
+    # = None it will return a meaningless 0.0 value which you are supposed to
     # ignore. Call cpu_percent() once so that the subsequent calls from the
     # gauge will be meaningful.
     PROCESS.cpu_percent()
@@ -139,15 +139,11 @@ class AzureStandardMetricsProducer(MetricProducer):
     using gauges.
     """
     def __init__(self):
-        self.registry = self.init_registry()
-
-    def init_registry(self):
-        registry = Registry()
-        registry.add_gauge(get_available_memory_metric())
-        registry.add_gauge(get_process_private_bytes_metric())
-        registry.add_gauge(get_processor_time_metric())
-        registry.add_gauge(get_process_cpu_usage_metric())
-        return registry
+        self.registry = Registry()
+        self.registry.add_gauge(get_available_memory_metric())
+        self.registry.add_gauge(get_process_private_bytes_metric())
+        self.registry.add_gauge(get_processor_time_metric())
+        self.registry.add_gauge(get_process_cpu_usage_metric())
 
     def get_metrics(self):
         return self.registry.get_metrics()
