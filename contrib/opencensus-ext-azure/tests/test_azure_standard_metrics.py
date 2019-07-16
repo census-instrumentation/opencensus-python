@@ -78,7 +78,7 @@ class TestStandardMetrics(unittest.TestCase):
         gauge = standard_metrics.get_processor_time_metric()
 
         self.assertEqual(gauge.descriptor.name,
-            '\\Processor(_Total)\\% Processor Time')
+                         '\\Processor(_Total)\\% Processor Time')
 
     def test_get_processor_time(self):
         with mock.patch('psutil.cpu_times_percent') as processor_mock:
