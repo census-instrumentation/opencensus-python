@@ -61,7 +61,7 @@ class GoogleCloudFormatPropagator(object):
 
             if trace_options is None:
                 trace_options = 1
-            
+
             if span_id:
                 span_id = '{:016x}'.format(int(span_id))
 
