@@ -25,7 +25,6 @@ _INVALID_TRACE_ID = '0' * 32
 INVALID_SPAN_ID = '0' * 16
 
 TRACE_ID_PATTERN = re.compile('[0-9a-f]{32}?')
-SPAN_ID_PATTERN = re.compile('[0-9a-f]{16}?')
 
 # Default options, don't force sampling
 DEFAULT_OPTIONS = '0'
@@ -86,8 +85,8 @@ class SpanContext(object):
         )
 
     def _check_span_id(self, span_id):
-        """Check the format of the span_id to ensure it is 16-character hex
-        value representing a 64-bit number. If span_id is invalid, logs a
+        """Check the format of the span_id to ensure it is a
+        value representing a 64-bit integer. If span_id is invalid, logs a
         warning message and returns None
 
         :type span_id: str
@@ -106,16 +105,14 @@ class SpanContext(object):
             self.from_header = False
             return None
 
-        match = SPAN_ID_PATTERN.match(span_id)
-
-        if match:
+        if is_64bit_int(span_id):
             return span_id
-        else:
-            logging.warning(
-                'Span_id %s does not the match the '
-                'required format', span_id)
-            self.from_header = False
-            return None
+
+        logging.warning(
+            'Span_id %s does not the match the '
+            'required format', span_id)
+        self.from_header = False
+        return None
 
     def _check_trace_id(self, trace_id):
         """Check the format of the trace_id to ensure it is 32-character hex
@@ -150,13 +147,13 @@ class SpanContext(object):
 
 
 def generate_span_id():
-    """Return the random generated span ID for a span. Must be a 16 character
-    hexadecimal encoded string
+    """Return the random generated span ID for a span. Must be a 64 bit
+    integer as string
 
     :rtype: str
-    :returns: 16 digit randomly generated hex trace id.
+    :returns: digit randomly generated trace id.
     """
-    return '{:016x}'.format(random.getrandbits(64))
+    return str(random.getrandbits(64))
 
 
 def generate_trace_id():
@@ -166,3 +163,14 @@ def generate_trace_id():
     :returns: 32 digit randomly generated hex trace id.
     """
     return '{:032x}'.format(random.getrandbits(128))
+
+
+def is_64bit_int(span_id):
+    """Return if the given string represents a 64-bit integer
+
+    :rtype: bool
+    """
+    try:
+        return int(span_id, 10)>>64 == 0
+    except (TypeError, ValueError):
+        return False
