@@ -31,7 +31,7 @@ class TestStandardMetrics(unittest.TestCase):
         producer = standard_metrics.AzureStandardMetricsProducer()
         metrics = producer.get_metrics()
 
-        self.assertEqual(len(metrics), 2)
+        self.assertEqual(len(metrics), 3)
 
     def test_get_available_memory_metric(self):
         gauge = standard_metrics.get_available_memory_metric()
@@ -73,3 +73,19 @@ class TestStandardMetrics(unittest.TestCase):
             standard_metrics.get_process_private_bytes()
 
             logger_mock.exception.assert_called()
+            logger_mock.error.assert_called()
+
+    def test_get_processor_time_metric(self):
+        gauge = standard_metrics.get_processor_time_metric()
+
+        self.assertEqual(gauge.descriptor.name,
+            '\\Processor(_Total)\\% Processor Time')
+
+    def test_get_processor_time(self):
+        with mock.patch('psutil.cpu_times_percent') as processor_mock:
+            cpu = collections.namedtuple('cpu', 'idle')
+            cpu_times = cpu(idle=94.5)
+            processor_mock.return_value = cpu_times
+            processor_time = standard_metrics.get_processor_time()
+
+            self.assertEqual(processor_time, 5.5)
