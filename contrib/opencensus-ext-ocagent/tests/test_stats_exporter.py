@@ -342,7 +342,7 @@ class TestExportRpcInterface(unittest.TestCase):
                                               self._port,
                                               interval=0.1)
 
-        self.assertEqual(mock_transport.call_args[0][0], stats_module.stats)
+        self.assertEqual(mock_transport.call_args[0][0][0], stats_module.stats)
         self.assertEqual(mock_transport.call_args[0][1], exporter)
         self.assertEqual(mock_transport.call_args[0][2], 0.1)
 
