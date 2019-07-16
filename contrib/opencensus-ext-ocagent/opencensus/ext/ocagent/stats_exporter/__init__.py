@@ -257,5 +257,5 @@ def new_stats_exporter(service_name,
     exporter = StatsExporter(
         ExportRpcHandler(_create_stub(endpoint), service_name, hostname))
 
-    transport.get_exporter_thread(stats.stats, exporter, interval)
+    transport.get_exporter_thread([stats.stats], exporter, interval)
     return exporter

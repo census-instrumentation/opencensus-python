@@ -40,6 +40,7 @@ setup(
     long_description=open('README.rst').read(),
     install_requires=[
         'opencensus >= 0.7.dev0, < 1.0.0',
+        'psutil >= 5.6.3',
         'requests >= 2.19.0',
     ],
     extras_require={},
