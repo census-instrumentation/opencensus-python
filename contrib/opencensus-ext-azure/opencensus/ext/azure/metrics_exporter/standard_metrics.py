@@ -120,6 +120,8 @@ def get_process_cpu_usage():
 def get_process_cpu_usage_metric():
     """ Returns a derived gauge for the CPU usage for the current process.
 
+    Return values range from 0.0 to 100.0 inclusive.
+
     :rtype: :class:`opencensus.metrics.export.gauge.DerivedDoubleGauge`
     :return: The gauge representing the process cpu usage metric
     """
