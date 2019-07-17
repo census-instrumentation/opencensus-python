@@ -16,7 +16,6 @@ Installation
 Usage
 -----
 
-
 Log
 ~~~
 
