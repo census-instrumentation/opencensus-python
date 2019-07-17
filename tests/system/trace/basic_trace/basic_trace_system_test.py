@@ -33,7 +33,7 @@ class TestBasicTrace(unittest.TestCase):
         span_id = '6e0c63257de34c92'
         trace_option = 1
 
-        trace_header = '{}/{};o={}'.format(trace_id, span_id, trace_option)
+        trace_header = '{}/{};o={}'.format(trace_id, int(span_id, 16), trace_option)
 
         sampler = samplers.AlwaysOnSampler()
         exporter = file_exporter.FileExporter()
