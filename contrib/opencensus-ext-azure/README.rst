@@ -136,7 +136,6 @@ This example shows how to send a span "hello" to Azure Monitor.
 * Put the instrumentation key in ``APPINSIGHTS_INSTRUMENTATIONKEY`` environment variable.
 * You can also specify the instrumentation key explicitly in the code, which will take priority over a set environment variable.
 
-
 .. code:: python
 
     from opencensus.ext.azure.trace_exporter import AzureExporter
