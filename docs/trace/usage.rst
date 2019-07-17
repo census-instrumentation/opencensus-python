@@ -217,15 +217,6 @@ the ``MIDDLEWARE`` section in the Django ``settings.py`` file.
         'opencensus.ext.django.middleware.OpencensusMiddleware',
     ]
 
-And add this line to the ``INSTALLED_APPS`` section:
-
-.. code:: python
-
-    INSTALLED_APPS = [
-        ...
-        'opencensus.trace.ext.django',
-    ]
-
 You can configure the sampler, exporter, propagator using the ``OPENCENSUS_TRACE`` setting in
 ``settings.py``:
 
