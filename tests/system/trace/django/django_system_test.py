@@ -43,7 +43,7 @@ def generate_header():
     span_id = uuid.uuid4().hex[:16]
     trace_option = 1
 
-    header = '{}/{};o={}'.format(trace_id, span_id, trace_option)
+    header = '{}/{};o={}'.format(trace_id, int(span_id, 16), trace_option)
 
     return trace_id, span_id, header
 
@@ -74,7 +74,7 @@ class TestDjangoTrace(unittest.TestCase):
 
         self.headers_trace = {
             'x-cloud-trace-context':
-            '{}/{};o={}'.format(self.trace_id, self.span_id, 1)
+            '{}/{};o={}'.format(self.trace_id, int(self.span_id, 16), 1)
         }
 
         # Wait the application to start
