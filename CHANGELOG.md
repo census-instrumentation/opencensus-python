@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Fix cloud format propagator to use decimal span_id encoding instead of hex
+  ([#719](https://github.com/census-instrumentation/opencensus-python/pull/719))
+
+
 ## 0.6.0
 Released 2019-05-31
 
