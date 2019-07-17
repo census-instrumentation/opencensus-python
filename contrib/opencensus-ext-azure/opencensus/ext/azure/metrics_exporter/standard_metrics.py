@@ -77,36 +77,6 @@ def get_process_private_bytes_metric():
     return gauge
 
 
-def get_processor_time():
-    cpu_times_percent = psutil.cpu_times_percent()
-    return 100 - cpu_times_percent.idle
-
-
-def get_processor_time_metric():
-    """ Returns a derived gauge for the processor time.
-
-    Processor time is defined as a float representing the current system
-    wide CPU utilization minus idle CPU time as a percentage. Idle CPU
-    time is defined as the time spent doing nothing. Return values range
-    from 0.0 to 100.0 inclusive.
-
-    :rtype: :class:`opencensus.metrics.export.gauge.DerivedDoubleGauge`
-    :return: The gauge representing the processor time metric
-    """
-    gauge = DerivedDoubleGauge(
-        PROCESSOR_TIME,
-        'Processor time as a percentage',
-        'percentage',
-        [])
-    gauge.create_default_time_series(get_processor_time)
-    # From the psutil docs: the first time this method is called with interval
-    # = None it will return a meaningless 0.0 value which you are supposed to
-    # ignore. Call cpu_percent() once so that the subsequent calls from the
-    # gauge will be meaningful.
-    psutil.cpu_times_percent()
-    return gauge
-
-
 def get_process_cpu_usage():
     try:
         # In the case of a process running on multiple threads on different CPU
@@ -139,6 +109,36 @@ def get_process_cpu_usage_metric():
     return gauge
 
 
+def get_processor_time():
+    cpu_times_percent = psutil.cpu_times_percent()
+    return 100 - cpu_times_percent.idle
+
+
+def get_processor_time_metric():
+    """ Returns a derived gauge for the processor time.
+
+    Processor time is defined as a float representing the current system
+    wide CPU utilization minus idle CPU time as a percentage. Idle CPU
+    time is defined as the time spent doing nothing. Return values range
+    from 0.0 to 100.0 inclusive.
+
+    :rtype: :class:`opencensus.metrics.export.gauge.DerivedDoubleGauge`
+    :return: The gauge representing the processor time metric
+    """
+    gauge = DerivedDoubleGauge(
+        PROCESSOR_TIME,
+        'Processor time as a percentage',
+        'percentage',
+        [])
+    gauge.create_default_time_series(get_processor_time)
+    # From the psutil docs: the first time this method is called with interval
+    # = None it will return a meaningless 0.0 value which you are supposed to
+    # ignore. Call cpu_percent() once so that the subsequent calls from the
+    # gauge will be meaningful.
+    psutil.cpu_times_percent()
+    return gauge
+
+
 class AzureStandardMetricsProducer(MetricProducer):
     """Implementation of the producer of standard metrics.
 
@@ -149,8 +149,8 @@ class AzureStandardMetricsProducer(MetricProducer):
         self.registry = Registry()
         self.registry.add_gauge(get_available_memory_metric())
         self.registry.add_gauge(get_process_private_bytes_metric())
-        self.registry.add_gauge(get_processor_time_metric())
         self.registry.add_gauge(get_process_cpu_usage_metric())
+        self.registry.add_gauge(get_processor_time_metric())
 
     def get_metrics(self):
         return self.registry.get_metrics()
