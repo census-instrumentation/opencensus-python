@@ -14,106 +14,68 @@
 
 import logging
 
-from opencensus.stats import bucket_boundaries
 from opencensus.stats import aggregation_data
+from opencensus.stats import measure as measure_module
+from opencensus.metrics.export.metric_descriptor import MetricDescriptorType
 
 
 logger = logging.getLogger(__name__)
 
 
-class Type(object):
-    """ The type of aggregation function used on a View.
-
-    Attributes:
-      NONE (int): The aggregation type of the view is 'unknown'.
-      SUM (int): The aggregation type of the view is 'sum'.
-      COUNT (int): The aggregation type of the view is 'count'.
-      DISTRIBUTION (int): The aggregation type of the view is 'distribution'.
-      LASTVALUE (int): The aggregation type of the view is 'lastvalue'.
-    """
-    NONE = 0
-    SUM = 1
-    COUNT = 2
-    DISTRIBUTION = 3
-    LASTVALUE = 4
-
-
-class BaseAggregation(object):
-    """Aggregation describes how the data collected is aggregated by type of
-    aggregation and buckets
-
-    :type buckets: list(:class: '~opencensus.stats.bucket_boundaries.
-                                BucketBoundaries')
-    :param buckets: list of endpoints if the aggregation represents a
-                    distribution
-
-    :type aggregation_type: :class:`~opencensus.stats.aggregation.Type`
-    :param aggregation_type: represents the type of this aggregation
-
-    """
-    def __init__(self, buckets=None, aggregation_type=Type.NONE):
-        self._aggregation_type = aggregation_type
-        self._buckets = buckets or []
-
-    @property
-    def aggregation_type(self):
-        """The aggregation type of the current aggregation"""
-        return self._aggregation_type
-
-    @property
-    def buckets(self):
-        """The buckets of the current aggregation"""
-        return self._buckets
-
-
-class SumAggregation(BaseAggregation):
-    """Sum Aggregation escribes that data collected and aggregated with this
+class SumAggregation(object):
+    """Sum Aggregation describes that data collected and aggregated with this
     method will be summed
 
     :type sum: int or float
-    :param sum: the sum of the data collected and aggregated
-
-
-    :type aggregation_type: :class:`~opencensus.stats.aggregation.Type`
-    :param aggregation_type: represents the type of this aggregation
+    :param sum: the initial sum to be used in the aggregation
 
     """
-    def __init__(self, sum=None, aggregation_type=Type.SUM):
-        super(SumAggregation, self).__init__(aggregation_type=aggregation_type)
-        self._sum = aggregation_data.SumAggregationDataFloat(
-            sum_data=float(sum or 0))
-        self.aggregation_data = self._sum
+    def __init__(self, sum=None):
+        self._initial_sum = sum or 0
 
-    @property
-    def sum(self):
-        """The sum of the current aggregation"""
-        return self._sum
+    def new_aggregation_data(self, measure):
+        """Get a new AggregationData for this aggregation."""
+        value_type = MetricDescriptorType.to_type_class(
+            self.get_metric_type(measure))
+        return aggregation_data.SumAggregationData(
+            value_type=value_type, sum_data=self._initial_sum)
+
+    @staticmethod
+    def get_metric_type(measure):
+        """Get the MetricDescriptorType for the metric produced by this
+        aggregation and measure.
+        """
+        if isinstance(measure, measure_module.MeasureInt):
+            return MetricDescriptorType.CUMULATIVE_INT64
+        if isinstance(measure, measure_module.MeasureFloat):
+            return MetricDescriptorType.CUMULATIVE_DOUBLE
+        raise ValueError
 
 
-class CountAggregation(BaseAggregation):
+class CountAggregation(object):
     """Describes that the data collected and aggregated with this method will
     be turned into a count value
 
     :type count: int
-    :param count: represents the count of this aggregation
-
-    :type aggregation_type: :class:`~opencensus.stats.aggregation.Type`
-    :param aggregation_type: represents the type of this aggregation
+    :param count: the initial count to be used in the aggregation
 
     """
-    def __init__(self, count=0, aggregation_type=Type.COUNT):
-        super(CountAggregation, self).__init__(
-            aggregation_type=aggregation_type)
-        self._count = aggregation_data.CountAggregationData(count)
-        self.aggregation_data = self._count
+    def __init__(self, count=0):
+        self._initial_count = count
 
-    @property
-    def count(self):
-        """The count of the current aggregation"""
-        return self._count
+    def new_aggregation_data(self, measure=None):
+        """Get a new AggregationData for this aggregation."""
+        return aggregation_data.CountAggregationData(self._initial_count)
+
+    @staticmethod
+    def get_metric_type(measure):
+        """Get the MetricDescriptorType for the metric produced by this
+        aggregation and measure.
+        """
+        return MetricDescriptorType.CUMULATIVE_INT64
 
 
-class DistributionAggregation(BaseAggregation):
+class DistributionAggregation(object):
     """Distribution Aggregation indicates that the desired aggregation is a
     histogram distribution
 
@@ -121,18 +83,9 @@ class DistributionAggregation(BaseAggregation):
                             BucketBoundaries')
     :param boundaries: the bucket endpoints
 
-    :type distribution: histogram
-    :param distribution: histogram of the values of the population
-
-    :type aggregation_type: :class:`~opencensus.stats.aggregation.Type`
-    :param aggregation_type: represents the type of this aggregation
-
     """
 
-    def __init__(self,
-                 boundaries=None,
-                 distribution=None,
-                 aggregation_type=Type.DISTRIBUTION):
+    def __init__(self, boundaries=None):
         if boundaries:
             if not all(boundaries[ii] < boundaries[ii + 1]
                        for ii in range(len(boundaries) - 1)):
@@ -147,44 +100,46 @@ class DistributionAggregation(BaseAggregation):
                                ii)
             boundaries = boundaries[ii:]
 
-        super(DistributionAggregation, self).__init__(
-            buckets=boundaries, aggregation_type=aggregation_type)
-        self._boundaries = bucket_boundaries.BucketBoundaries(boundaries)
-        self._distribution = distribution or {}
-        self.aggregation_data = aggregation_data.DistributionAggregationData(
-            0, 0, 0, None, boundaries)
+        self._boundaries = boundaries
 
-    @property
-    def boundaries(self):
-        """The boundaries of the current aggregation"""
-        return self._boundaries
+    def new_aggregation_data(self, measure=None):
+        """Get a new AggregationData for this aggregation."""
+        return aggregation_data.DistributionAggregationData(
+            0, 0, 0, None, self._boundaries)
 
-    @property
-    def distribution(self):
-        """The distribution of the current aggregation"""
-        return self._distribution
+    @staticmethod
+    def get_metric_type(measure):
+        """Get the MetricDescriptorType for the metric produced by this
+        aggregation and measure.
+        """
+        return MetricDescriptorType.CUMULATIVE_DISTRIBUTION
 
 
-class LastValueAggregation(BaseAggregation):
+class LastValueAggregation(object):
     """Describes that the data collected with this method will
     overwrite the last recorded value
 
     :type value: long
-    :param value: represents the value of this aggregation
-
-    :type aggregation_type: :class:`~opencensus.stats.aggregation.Type`
-    :param aggregation_type: represents the type of this aggregation
+    :param count: the initial value to be used in the aggregation
 
     """
-    def __init__(self, value=0, aggregation_type=Type.LASTVALUE):
-        super(LastValueAggregation, self).__init__(
-            aggregation_type=aggregation_type)
-        self.aggregation_data = aggregation_data.LastValueAggregationData(
-                                                                value=value)
-        self._value = value
+    def __init__(self, value=0):
+        self._initial_value = value
 
-    @property
-    def value(self):
-        """The current recorded value
+    def new_aggregation_data(self, measure):
+        """Get a new AggregationData for this aggregation."""
+        value_type = MetricDescriptorType.to_type_class(
+            self.get_metric_type(measure))
+        return aggregation_data.LastValueAggregationData(
+            value=self._initial_value, value_type=value_type)
+
+    @staticmethod
+    def get_metric_type(measure):
+        """Get the MetricDescriptorType for the metric produced by this
+        aggregation and measure.
         """
-        return self._value
+        if isinstance(measure, measure_module.MeasureInt):
+            return MetricDescriptorType.GAUGE_INT64
+        if isinstance(measure, measure_module.MeasureFloat):
+            return MetricDescriptorType.GAUGE_DOUBLE
+        raise ValueError

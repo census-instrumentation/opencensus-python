@@ -118,9 +118,8 @@ class TestViewData(unittest.TestCase):
 
     def test_record_with_attachment(self):
         boundaries = [1, 2, 3]
-        distribution = {1: "test"}
         distribution_aggregation = aggregation_module.DistributionAggregation(
-            boundaries=boundaries, distribution=distribution)
+            boundaries=boundaries)
         name = "testName"
         description = "testMeasure"
         unit = "testUnit"
@@ -168,9 +167,8 @@ class TestViewData(unittest.TestCase):
 
     def test_record_with_attachment_no_histogram(self):
         boundaries = None
-        distribution = {1: "test"}
         distribution_aggregation = aggregation_module.DistributionAggregation(
-            boundaries=boundaries, distribution=distribution)
+            boundaries=boundaries)
         name = "testName"
         description = "testMeasure"
         unit = "testUnit"
@@ -215,7 +213,7 @@ class TestViewData(unittest.TestCase):
             view_data.tag_value_aggregation_data_map[tuple_vals].exemplars)
 
     def test_record_with_multi_keys(self):
-        measure = mock.Mock()
+        measure = mock.Mock(spec=measure_module.MeasureInt)
         sum_aggregation = aggregation_module.SumAggregation()
         view = view_module.View("test_view", "description", ['key1', 'key2'],
                                 measure, sum_aggregation)
@@ -271,7 +269,7 @@ class TestViewData(unittest.TestCase):
         self.assertEqual(2, sum_data_2.sum_data)
 
     def test_record_with_missing_key_in_context(self):
-        measure = mock.Mock()
+        measure = mock.Mock(spec=measure_module.MeasureInt)
         sum_aggregation = aggregation_module.SumAggregation()
         view = view_module.View("test_view", "description", ['key1', 'key2'],
                                 measure, sum_aggregation)
@@ -297,7 +295,7 @@ class TestViewData(unittest.TestCase):
         self.assertEqual(4, sum_data.sum_data)
 
     def test_record_with_none_context(self):
-        measure = mock.Mock()
+        measure = mock.Mock(spec=measure_module.MeasureInt)
         sum_aggregation = aggregation_module.SumAggregation()
         view = view_module.View("test_view", "description", ['key1', 'key2'],
                                 measure, sum_aggregation)

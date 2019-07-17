@@ -23,45 +23,20 @@ from opencensus.stats import bucket_boundaries
 logger = logging.getLogger(__name__)
 
 
-class BaseAggregationData(object):
-    """Aggregation Data represents an aggregated value from a collection
-
-    :type aggregation_data: aggregated value
-    :param aggregation_data: represents the aggregated value from a collection
-
-    """
-
-    def __init__(self, aggregation_data):
-        self._aggregation_data = aggregation_data
-
-    @property
-    def aggregation_data(self):
-        """The current aggregation data"""
-        return self._aggregation_data
-
-    def to_point(self, timestamp):
-        """Get a Point conversion of this aggregation.
-
-        :type timestamp: :class: `datetime.datetime`
-        :param timestamp: The time to report the point as having been recorded.
-
-        :rtype: :class: `opencensus.metrics.export.point.Point`
-        :return: a Point with with this aggregation's value and appropriate
-        value type.
-        """
-        raise NotImplementedError  # pragma: NO COVER
-
-
-class SumAggregationDataFloat(BaseAggregationData):
+class SumAggregationData(object):
     """Sum Aggregation Data is the aggregated data for the Sum aggregation
 
-    :type sum_data: float
-    :param sum_data: represents the aggregated sum
+    :type value_type: class that is either
+        :class:`opencensus.metrics.export.value.ValueDouble` or
+        :class:`opencensus.metrics.export.value.ValueLong`
+    :param value_type: the type of value to be used when creating a point
+    :type sum_data: int or float
+    :param sum_data: represents the initial aggregated sum
 
     """
 
-    def __init__(self, sum_data):
-        super(SumAggregationDataFloat, self).__init__(sum_data)
+    def __init__(self, value_type, sum_data):
+        self._value_type = value_type
         self._sum_data = sum_data
 
     def __repr__(self):
@@ -82,6 +57,11 @@ class SumAggregationDataFloat(BaseAggregationData):
         """The current sum data"""
         return self._sum_data
 
+    @property
+    def value_type(self):
+        """The value type to use when creating the point"""
+        return self._value_type
+
     def to_point(self, timestamp):
         """Get a Point conversion of this aggregation.
 
@@ -89,22 +69,21 @@ class SumAggregationDataFloat(BaseAggregationData):
         :param timestamp: The time to report the point as having been recorded.
 
         :rtype: :class: `opencensus.metrics.export.point.Point`
-        :return: a :class: `opencensus.metrics.export.value.ValueDouble`-valued
-        Point with value equal to `sum_data`.
+        :return: a Point with value equal to `sum_data` and of type
+            `_value_type`.
         """
-        return point.Point(value.ValueDouble(self.sum_data), timestamp)
+        return point.Point(self._value_type(self.sum_data), timestamp)
 
 
-class CountAggregationData(BaseAggregationData):
+class CountAggregationData(object):
     """Count Aggregation Data is the count value of aggregated data
 
     :type count_data: long
-    :param count_data: represents the aggregated count
+    :param count_data: represents the initial aggregated count
 
     """
 
     def __init__(self, count_data):
-        super(CountAggregationData, self).__init__(count_data)
         self._count_data = count_data
 
     def __repr__(self):
@@ -137,7 +116,7 @@ class CountAggregationData(BaseAggregationData):
         return point.Point(value.ValueLong(self.count_data), timestamp)
 
 
-class DistributionAggregationData(BaseAggregationData):
+class DistributionAggregationData(object):
     """Distribution Aggregation Data refers to the distribution stats of
     aggregated data
 
@@ -173,7 +152,6 @@ class DistributionAggregationData(BaseAggregationData):
         if exemplars is not None and len(exemplars) != len(bounds) + 1:
             raise ValueError
 
-        super(DistributionAggregationData, self).__init__(mean_data)
         self._mean_data = mean_data
         self._count_data = count_data
         self._sum_of_sqd_deviations = sum_of_sqd_deviations
@@ -324,17 +302,21 @@ class DistributionAggregationData(BaseAggregationData):
         )
 
 
-class LastValueAggregationData(BaseAggregationData):
+class LastValueAggregationData(object):
     """
     LastValue Aggregation Data is the value of aggregated data
 
+    :type value_type: class that is either
+        :class:`opencensus.metrics.export.value.ValueDouble` or
+        :class:`opencensus.metrics.export.value.ValueLong`
+    :param value_type: the type of value to be used when creating a point
     :type value: long
-    :param value: represents the current value
+    :param value: represents the initial value
 
     """
 
-    def __init__(self, value):
-        super(LastValueAggregationData, self).__init__(value)
+    def __init__(self, value_type, value):
+        self._value_type = value_type
         self._value = value
 
     def __repr__(self):
@@ -355,6 +337,11 @@ class LastValueAggregationData(BaseAggregationData):
         """The current value recorded"""
         return self._value
 
+    @property
+    def value_type(self):
+        """The value type to use when creating the point"""
+        return self._value_type
+
     def to_point(self, timestamp):
         """Get a Point conversion of this aggregation.
 
@@ -362,10 +349,9 @@ class LastValueAggregationData(BaseAggregationData):
         :param timestamp: The time to report the point as having been recorded.
 
         :rtype: :class: `opencensus.metrics.export.point.Point`
-        :return: a :class: `opencensus.metrics.export.value.ValueDouble`-valued
-        Point.
+        :return: a Point with value of type `_value_type`.
         """
-        return point.Point(value.ValueDouble(self.value), timestamp)
+        return point.Point(self._value_type(self.value), timestamp)
 
 
 class Exemplar(object):

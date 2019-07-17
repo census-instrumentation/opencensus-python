@@ -59,6 +59,8 @@ class TestStats(unittest.TestCase):
         mm._measurement_map = {mock_measure: 1.0}
 
         mock_view.aggregation = aggregation.DistributionAggregation()
+        mock_view.new_aggregation_data.return_value = \
+            mock_view.aggregation.new_aggregation_data()
 
         tm = tag_map.TagMap()
         tm.insert('k1', 'v1')
