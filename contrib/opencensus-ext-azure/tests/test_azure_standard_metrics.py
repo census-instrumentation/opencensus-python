@@ -56,7 +56,7 @@ class TestStandardMetrics(unittest.TestCase):
 
     def test_get_process_private_bytes(self):
         with mock.patch('opencensus.ext.azure.metrics_exporter' +
-                '.standard_metrics.PROCESS') as process_mock:
+                        '.standard_metrics.PROCESS') as process_mock:
             memory = collections.namedtuple('memory', 'rss')
             pmem = memory(rss=100)
             process_mock.memory_info.return_value = pmem
@@ -68,7 +68,7 @@ class TestStandardMetrics(unittest.TestCase):
                 '.standard_metrics.logger')
     def test_get_process_private_bytes_exception(self, logger_mock):
         with mock.patch('opencensus.ext.azure.metrics_exporter' +
-                '.standard_metrics.PROCESS.memory_info') as process_mock:
+                        '.standard_metrics.PROCESS.memory_info') as process_mock:
             process_mock.side_effect = Exception()
             standard_metrics.get_process_private_bytes()
 
@@ -93,11 +93,11 @@ class TestStandardMetrics(unittest.TestCase):
         gauge = standard_metrics.get_process_cpu_usage_metric()
 
         self.assertEqual(gauge.descriptor.name,
-            '\\Process(??APP_WIN32_PROC??)\\% Processor Time')
+                        '\\Process(??APP_WIN32_PROC??)\\% Processor Time')
 
     def test_get_process_cpu_usage(self):
         with mock.patch('opencensus.ext.azure.metrics_exporter' +
-                '.standard_metrics.PROCESS') as process_mock:
+                        '.standard_metrics.PROCESS') as process_mock:
             process_mock.cpu_percent.return_value = 75.5
             cpu_usage = standard_metrics.get_process_cpu_usage()
 
@@ -105,7 +105,7 @@ class TestStandardMetrics(unittest.TestCase):
 
     def test_get_process_cpu_usage_cap(self):
         with mock.patch('opencensus.ext.azure.metrics_exporter' +
-                '.standard_metrics.PROCESS') as process_mock:
+                        '.standard_metrics.PROCESS') as process_mock:
             process_mock.cpu_percent.return_value = 105.5
             cpu_usage = standard_metrics.get_process_cpu_usage()
 
