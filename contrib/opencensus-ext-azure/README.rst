@@ -153,6 +153,7 @@ Below is a list of standard metrics that are currently available:
 
 - Available memory (bytes)
 - CPU Processor Time (percentage)
+- Process CPU Usage (percentage)
 - Process private bytes (bytes)
 
 Trace
