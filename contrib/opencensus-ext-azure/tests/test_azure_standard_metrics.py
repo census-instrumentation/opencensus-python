@@ -68,8 +68,8 @@ class TestStandardMetrics(unittest.TestCase):
                 '.standard_metrics.logger')
     def test_get_process_private_bytes_exception(self, logger_mock):
         with mock.patch('opencensus.ext.azure.metrics_exporter' +
-                        '.standard_metrics.PROCESS.memory_info') as process_mock:
-            process_mock.side_effect = Exception()
+                        '.standard_metrics.PROCESS') as process_mock:
+            process_mock.memory_info.side_effect = Exception()
             standard_metrics.get_process_private_bytes()
 
             logger_mock.exception.assert_called()
@@ -93,7 +93,7 @@ class TestStandardMetrics(unittest.TestCase):
         gauge = standard_metrics.get_process_cpu_usage_metric()
 
         self.assertEqual(gauge.descriptor.name,
-                        '\\Process(??APP_WIN32_PROC??)\\% Processor Time')
+                         '\\Process(??APP_WIN32_PROC??)\\% Processor Time')
 
     def test_get_process_cpu_usage(self):
         with mock.patch('opencensus.ext.azure.metrics_exporter' +
