@@ -19,57 +19,6 @@ from opencensus.metrics import label_value
 from opencensus.metrics.export import metric
 from opencensus.metrics.export import metric_descriptor
 from opencensus.metrics.export import time_series
-from opencensus.stats import aggregation as aggregation_module
-from opencensus.stats import measure as measure_module
-
-# To check that an aggregation's reported type matches its class
-AGGREGATION_TYPE_MAP = {
-    aggregation_module.Type.SUM:
-    aggregation_module.SumAggregation,
-    aggregation_module.Type.COUNT:
-    aggregation_module.CountAggregation,
-    aggregation_module.Type.DISTRIBUTION:
-    aggregation_module.DistributionAggregation,
-    aggregation_module.Type.LASTVALUE:
-    aggregation_module.LastValueAggregation,
-}
-
-
-def get_metric_type(measure, aggregation):
-    """Get the corresponding metric type for the given stats type.
-
-    :type measure: (:class: '~opencensus.stats.measure.BaseMeasure')
-    :param measure: the measure for which to find a metric type
-
-    :type aggregation: (:class:
-    '~opencensus.stats.aggregation.BaseAggregation')
-    :param aggregation: the aggregation for which to find a metric type
-    """
-    if aggregation.aggregation_type == aggregation_module.Type.NONE:
-        raise ValueError("aggregation type must not be NONE")
-    assert isinstance(aggregation,
-                      AGGREGATION_TYPE_MAP[aggregation.aggregation_type])
-
-    if aggregation.aggregation_type == aggregation_module.Type.SUM:
-        if isinstance(measure, measure_module.MeasureInt):
-            return metric_descriptor.MetricDescriptorType.CUMULATIVE_INT64
-        elif isinstance(measure, measure_module.MeasureFloat):
-            return metric_descriptor.MetricDescriptorType.CUMULATIVE_DOUBLE
-        else:
-            raise ValueError
-    elif aggregation.aggregation_type == aggregation_module.Type.COUNT:
-        return metric_descriptor.MetricDescriptorType.CUMULATIVE_INT64
-    elif aggregation.aggregation_type == aggregation_module.Type.DISTRIBUTION:
-        return metric_descriptor.MetricDescriptorType.CUMULATIVE_DISTRIBUTION
-    elif aggregation.aggregation_type == aggregation_module.Type.LASTVALUE:
-        if isinstance(measure, measure_module.MeasureInt):
-            return metric_descriptor.MetricDescriptorType.GAUGE_INT64
-        elif isinstance(measure, measure_module.MeasureFloat):
-            return metric_descriptor.MetricDescriptorType.GAUGE_DOUBLE
-        else:
-            raise ValueError
-    else:
-        raise AssertionError  # pragma: NO COVER
 
 
 def is_gauge(md_type):

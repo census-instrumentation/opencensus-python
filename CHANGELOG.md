@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Fix exporting int-valued stats with sum and lastvalue aggregations
+  ([#696](https://github.com/census-instrumentation/opencensus-python/pull/696))
 - Fix cloud format propagator to use decimal span_id encoding instead of hex
   ([#719](https://github.com/census-instrumentation/opencensus-python/pull/719))
 

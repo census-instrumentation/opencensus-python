@@ -1275,8 +1275,7 @@ class TestCreateTimeseries(unittest.TestCase):
 
     def test_create_timeseries_from_distribution(self):
         """Check for explicit 0-bound bucket for SD export."""
-        agg = aggregation_module.DistributionAggregation(
-            aggregation_type=aggregation_module.Type.DISTRIBUTION)
+        agg = aggregation_module.DistributionAggregation()
 
         view = view_module.View(
             name="example.org/test_view",
@@ -1328,8 +1327,7 @@ class TestCreateTimeseries(unittest.TestCase):
         create_time_series_list should return a time series for each set of
         values in the tag value aggregation map.
         """
-        agg = aggregation_module.CountAggregation(
-            aggregation_type=aggregation_module.Type.COUNT)
+        agg = aggregation_module.CountAggregation()
 
         view = view_module.View(
             name="example.org/test_view",
@@ -1375,12 +1373,10 @@ class TestCreateTimeseries(unittest.TestCase):
         v_data = mock.Mock(spec=view_data_module.ViewData)
         v_data.view.name = "example.org/base_view"
         v_data.view.columns = [tag_key_module.TagKey('base_key')]
-        v_data.view.aggregation.aggregation_type = \
-            aggregation_module.Type.NONE
         v_data.start_time = TEST_TIME_STR
         v_data.end_time = TEST_TIME_STR
 
-        base_data = aggregation_data_module.BaseAggregationData(10)
+        base_data = None
         v_data.tag_value_aggregation_data_map = {
             (None,): base_data,
         }

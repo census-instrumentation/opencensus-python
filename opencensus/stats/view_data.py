@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import copy
-
 from opencensus.common import utils
 
 
@@ -92,7 +90,7 @@ class ViewData(object):
                                          columns=self.view.columns)
         tuple_vals = tuple(tag_values)
         if tuple_vals not in self.tag_value_aggregation_data_map:
-            self.tag_value_aggregation_data_map[tuple_vals] = copy.deepcopy(
-                self.view.aggregation.aggregation_data)
+            self.tag_value_aggregation_data_map[tuple_vals] = \
+                self.view.new_aggregation_data()
         self.tag_value_aggregation_data_map.get(tuple_vals).\
             add_sample(value, timestamp, attachments)

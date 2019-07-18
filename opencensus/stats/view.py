@@ -17,7 +17,6 @@ import threading
 
 from opencensus.metrics import label_key
 from opencensus.metrics.export import metric_descriptor
-from opencensus.stats import metric_utils
 
 
 class View(object):
@@ -78,6 +77,14 @@ class View(object):
         """the aggregation of the current view"""
         return self._aggregation
 
+    def new_aggregation_data(self):
+        """Get a new AggregationData for this view.
+
+        :rtype: :class: `opencensus.status.aggregation_data.AggregationData`
+        :return: A new AggregationData.
+        """
+        return self._aggregation.new_aggregation_data(self.measure)
+
     def get_metric_descriptor(self):
         """Get a MetricDescriptor for this view.
 
@@ -93,8 +100,7 @@ class View(object):
                     self.name,
                     self.description,
                     self.measure.unit,
-                    metric_utils.get_metric_type(self.measure,
-                                                 self.aggregation),
+                    self.aggregation.get_metric_type(self.measure),
                     # TODO: add label key description
                     [label_key.LabelKey(tk, "") for tk in self.columns])
         return self._metric_descriptor
