@@ -33,6 +33,11 @@ class TestStandardMetrics(unittest.TestCase):
 
         self.assertEqual(len(metrics), 4)
 
+    def test_register_metrics(self):
+        registry = standard_metrics.register_metrics()
+
+        self.assertEqual(len(registry.get_metrics()), 4)
+
     def test_get_available_memory_metric(self):
         metric = standard_metrics.AvailableMemoryMetric()
         gauge = metric()
