@@ -80,9 +80,10 @@ def get_process_private_bytes_metric():
 def get_process_cpu_usage():
     try:
         # In the case of a process running on multiple threads on different CPU
-        # cores, the returned value of cpu_percent() can be > 100.0. The actual
-        # value that is return from this function should be capped at 100.
-        return min(PROCESS.cpu_percent(), 100.0)
+        # cores, the returned value of cpu_percent() can be > 100.0. We
+        # normalize the cpu process using the number of logical CPUs
+        cpu_count = psutil.cpu_count(logical=True)
+        return PROCESS.cpu_percent() / cpu_count
     except Exception:
         logger.exception('Error handling get process cpu usage.')
 
