@@ -151,10 +151,11 @@ The exporter also includes a set of standard metrics that are exported to Azure 
 
 Below is a list of standard metrics that are currently available:
 
-- Available memory (bytes)
-- Process private bytes (bytes)
+- Available Memory (bytes)
+- Process Private Bytes (bytes)
 - CPU Processor Time (percentage)
 - Process CPU Usage (percentage)
+- Requests per Second (using urllib3)
 
 Trace
 ~~~~~
