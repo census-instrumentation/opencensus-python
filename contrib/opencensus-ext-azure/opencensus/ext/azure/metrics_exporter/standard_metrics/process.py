@@ -54,8 +54,8 @@ class ProcessCPUMetric(object):
     @staticmethod
     def get_value():
         try:
-            # In the case of a process running on multiple threads on different CPU
-            # cores, the returned value of cpu_percent() can be > 100.0. We
+            # In the case of a process running on multiple threads on different
+            # CPU cores, the returned value of cpu_percent() can be > 100.0. We
             # normalize the cpu process using the number of logical CPUs
             cpu_count = psutil.cpu_count(logical=True)
             return PROCESS.cpu_percent() / cpu_count
@@ -80,4 +80,3 @@ class ProcessCPUMetric(object):
         # from the gauge will be meaningful.
         PROCESS.cpu_percent()
         return gauge
-

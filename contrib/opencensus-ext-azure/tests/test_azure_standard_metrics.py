@@ -102,7 +102,7 @@ class TestStandardMetrics(unittest.TestCase):
         gauge = metric()
 
         self.assertEqual(gauge.descriptor.name,
-            '\\Process(??APP_WIN32_PROC??)\\% Processor Time')
+                         '\\Process(??APP_WIN32_PROC??)\\% Processor Time')
 
     @mock.patch('opencensus.ext.azure.metrics_exporter'
                 '.standard_metrics.process.psutil')
