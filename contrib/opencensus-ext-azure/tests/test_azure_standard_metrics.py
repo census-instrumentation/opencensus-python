@@ -104,23 +104,23 @@ class TestStandardMetrics(unittest.TestCase):
         self.assertEqual(gauge.descriptor.name,
             '\\Process(??APP_WIN32_PROC??)\\% Processor Time')
 
-    def test_get_process_cpu_usage(self):
+    @mock.patch('opencensus.ext.azure.metrics_exporter'
+                '.standard_metrics.process.psutil')
+    def test_get_process_cpu_usage(self, psutil_mock):
         with mock.patch('opencensus.ext.azure.metrics_exporter'
                         '.standard_metrics.process.PROCESS') as process_mock:
-            ORIGNAL_CPU_COUNT = standard_metrics.ProcessCPUMetric.CPU_COUNT
-            process_mock.cpu_percent.return_value = 44.4
-            standard_metrics.ProcessCPUMetric.CPU_COUNT = 2
-            cpu_usage = standard_metrics.ProcessCPUMetric.get_value()
+                process_mock.cpu_percent.return_value = 44.4
+                psutil_mock.cpu_count.return_value = 2
+                cpu_usage = standard_metrics.ProcessCPUMetric.get_value()
 
-            self.assertEqual(cpu_usage, 22.2)
-            standard_metrics.ProcessCPUMetric.CPU_COUNT = ORIGNAL_CPU_COUNT
+                self.assertEqual(cpu_usage, 22.2)
 
     @mock.patch('opencensus.ext.azure.metrics_exporter'
                 '.standard_metrics.process.logger')
     def test_get_process_cpu_usage_exception(self, logger_mock):
-        ORIGNAL_CPU_COUNT = standard_metrics.ProcessCPUMetric.CPU_COUNT
-        standard_metrics.ProcessCPUMetric.CPU_COUNT = None
-        standard_metrics.ProcessCPUMetric.get_value()
+        with mock.patch('opencensus.ext.azure.metrics_exporter'
+                        '.standard_metrics.process.psutil') as psutil_mock:
+            psutil_mock.cpu_count.return_value = None
+            standard_metrics.ProcessCPUMetric.get_value()
 
-        logger_mock.exception.assert_called()
-        standard_metrics.ProcessCPUMetric.CPU_COUNT = ORIGNAL_CPU_COUNT
+            logger_mock.exception.assert_called()

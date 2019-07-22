@@ -51,14 +51,14 @@ class ProcessMemoryMetric(object):
 
 class ProcessCPUMetric(object):
     NAME = "\\Process(??APP_WIN32_PROC??)\\% Processor Time"
-    CPU_COUNT = psutil.cpu_count(logical=True)
     @staticmethod
     def get_value():
         try:
             # In the case of a process running on multiple threads on different CPU
             # cores, the returned value of cpu_percent() can be > 100.0. We
             # normalize the cpu process using the number of logical CPUs
-            return PROCESS.cpu_percent() / ProcessCPUMetric.CPU_COUNT
+            cpu_count = psutil.cpu_count(logical=True)
+            return PROCESS.cpu_percent() / cpu_count
         except Exception:
             logger.exception('Error handling get process cpu usage.')
 

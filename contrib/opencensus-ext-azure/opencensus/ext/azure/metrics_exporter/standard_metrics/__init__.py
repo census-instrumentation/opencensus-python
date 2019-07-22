@@ -14,8 +14,8 @@
 
 from opencensus.metrics.export.gauge import Registry
 from opencensus.metrics.export.metric_producer import MetricProducer
-from opencensus.ext.azure.metrics_exporter.standard_metrics.available_memory import AvailableMemoryMetric
-from opencensus.ext.azure.metrics_exporter.standard_metrics.cpu_usage import ProcessorTimeMetric
+from opencensus.ext.azure.metrics_exporter.standard_metrics.cpu import ProcessorTimeMetric
+from opencensus.ext.azure.metrics_exporter.standard_metrics.memory import AvailableMemoryMetric
 from opencensus.ext.azure.metrics_exporter.standard_metrics.process import ProcessCPUMetric
 from opencensus.ext.azure.metrics_exporter.standard_metrics.process import ProcessMemoryMetric
 
