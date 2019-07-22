@@ -109,11 +109,11 @@ class TestStandardMetrics(unittest.TestCase):
     def test_get_process_cpu_usage(self, psutil_mock):
         with mock.patch('opencensus.ext.azure.metrics_exporter'
                         '.standard_metrics.process.PROCESS') as process_mock:
-                process_mock.cpu_percent.return_value = 44.4
-                psutil_mock.cpu_count.return_value = 2
-                cpu_usage = standard_metrics.ProcessCPUMetric.get_value()
+            process_mock.cpu_percent.return_value = 44.4
+            psutil_mock.cpu_count.return_value = 2
+            cpu_usage = standard_metrics.ProcessCPUMetric.get_value()
 
-                self.assertEqual(cpu_usage, 22.2)
+            self.assertEqual(cpu_usage, 22.2)
 
     @mock.patch('opencensus.ext.azure.metrics_exporter'
                 '.standard_metrics.process.logger')
