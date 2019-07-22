@@ -74,9 +74,9 @@ class ProcessCPUMetric(object):
             'percentage',
             [])
         gauge.create_default_time_series(ProcessCPUMetric.get_value)
-        # From the psutil docs: the first time this method is called with interval
-        # = None it will return a meaningless 0.0 value which you are supposed to
-        # ignore. Call cpu_percent() with process once so that the subsequent calls
-        # from the gauge will be meaningful.
+        # From the psutil docs: the first time this method is called with
+        # interval = None it will return a meaningless 0.0 value which you are
+        # supposed to ignore. Call cpu_percent() with process once so that the
+        # subsequent calls from the gauge will be meaningful.
         PROCESS.cpu_percent()
         return gauge
