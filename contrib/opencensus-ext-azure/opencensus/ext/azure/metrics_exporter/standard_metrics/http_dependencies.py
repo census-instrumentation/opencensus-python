@@ -49,7 +49,7 @@ class DependencyRateMetric(object):
         current_count = dependency_map.get('count', 0)
 
         try:
-            # Last time is None the very first time this function is called
+            # last_time is None the very first time this function is called
             if last_time is not None:
                 elapsed_seconds = current_time - last_time
                 interval_count = current_count - last_count
@@ -61,7 +61,7 @@ class DependencyRateMetric(object):
             return result
         except ZeroDivisionError:
             logger.exception('Error handling get outgoing request rate. '
-                                'Call made too close to previous call.')
+                             'Call made too close to previous call.')
 
 
     def __call__(self):
