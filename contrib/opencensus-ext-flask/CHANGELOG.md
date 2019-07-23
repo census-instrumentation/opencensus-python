@@ -1,5 +1,16 @@
 # Changelog
 
+## in development
+
+- Don't use full URL with query parameters for the span name and span HTTP_URL
+  span attribute.
+
+  Query params can contain sensitive values which shouldn't be logged. Now just
+  the url without the query parameters is used.
+
+  Before: ``http://example.com/path/bar?foo=bar&bar=baz``, now:
+  ``http://example.com/path/bar``.
+
 ## Unreleased
 - Make ProbabilitySampler default
 

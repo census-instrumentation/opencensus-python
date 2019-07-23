@@ -266,7 +266,6 @@ class TestFlaskMiddleware(unittest.TestCase):
                 'http.url': u'http://localhost/path/value',
                 'http.method': 'GET',
             }
-            print(span.name)
 
             self.assertEqual(span.name,
                              '[GET]http://localhost/path/value')
