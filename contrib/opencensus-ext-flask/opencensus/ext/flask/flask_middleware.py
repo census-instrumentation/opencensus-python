@@ -71,13 +71,14 @@ class FlaskMiddleware(object):
                        :class:`.TextFormatPropagator`.
     """
 
-    def __init__(self, app=None, blacklist_paths=None, sampler=None,
+    def __init__(self, app=None, blacklist_paths=None, tracer=None, sampler=None,
                  exporter=None, propagator=None):
         self.app = app
         self.blacklist_paths = blacklist_paths
         self.sampler = sampler
         self.exporter = exporter
         self.propagator = propagator
+        self.tracer = tracer
 
         if self.app is not None:
             self.init_app(app)
@@ -131,11 +132,14 @@ class FlaskMiddleware(object):
         try:
             span_context = self.propagator.from_headers(flask.request.headers)
 
-            tracer = tracer_module.Tracer(
-                span_context=span_context,
-                sampler=self.sampler,
-                exporter=self.exporter,
-                propagator=self.propagator)
+            if not self.tracer:
+                tracer = tracer_module.Tracer(
+                    span_context=span_context,
+                    sampler=self.sampler,
+                    exporter=self.exporter,
+                    propagator=self.propagator)
+            else:
+                tracer = self.tracer
 
             span = tracer.start_span()
             span.span_kind = span_module.SpanKind.SERVER
