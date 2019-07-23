@@ -42,6 +42,7 @@ setup(
         'opencensus >= 0.7.dev0, < 1.0.0',
         'psutil >= 5.6.3',
         'requests >= 2.19.0',
+        'urllib3 >= 1.25.3',
     ],
     extras_require={},
     license='Apache-2.0',
