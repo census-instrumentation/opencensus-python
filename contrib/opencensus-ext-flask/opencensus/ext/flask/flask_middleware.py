@@ -142,11 +142,11 @@ class FlaskMiddleware(object):
             # Set the span name as the name of the current module name
             span.name = '[{}]{}'.format(
                 flask.request.method,
-                flask.request.url)
+                flask.request.base_url)
             tracer.add_attribute_to_current_span(
                 HTTP_METHOD, flask.request.method)
             tracer.add_attribute_to_current_span(
-                HTTP_URL, str(flask.request.url))
+                HTTP_URL, str(flask.request.base_url))
             execution_context.set_opencensus_attr(
                 'blacklist_hostnames',
                 self.blacklist_hostnames)
