@@ -263,7 +263,11 @@ class TestFlaskMiddleware(unittest.TestCase):
             span = tracer.current_span()
 
             expected_attributes = {
-                'http.url': u'http://localhost/path/value',
+                # NOTE: Query params need to be include as per spec
+                # https://github.com/census-instrumentation/opencensus-specs
+                # TODO: Open feedback PR to spec and suggestion making query
+                # params optional since they can contain sensitive data
+                'http.url': u'http://localhost/path/value?foo=bar&bar=baz',
                 'http.method': 'GET',
             }
 

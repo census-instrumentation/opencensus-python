@@ -146,7 +146,7 @@ class FlaskMiddleware(object):
             tracer.add_attribute_to_current_span(
                 HTTP_METHOD, flask.request.method)
             tracer.add_attribute_to_current_span(
-                HTTP_URL, str(flask.request.base_url))
+                HTTP_URL, str(flask.request.url))
             execution_context.set_opencensus_attr(
                 'blacklist_hostnames',
                 self.blacklist_hostnames)
