@@ -246,6 +246,33 @@ class TestFlaskMiddleware(unittest.TestCase):
             self.assertEqual(span.attributes, expected_attributes)
             assert isinstance(span.parent_span, base.NullContextManager)
 
+    def test_query_params_are_not_included_as_part_of_span_name(self):
+        # query params can contain sensitive data so they are not included as
+        # part of span name
+        app = self.create_app()
+        flask_middleware.FlaskMiddleware(app=app,
+                                         sampler=samplers.AlwaysOnSampler())
+        context = app.test_request_context(
+            path='/path/value?foo=bar&bar=baz')
+
+        with context:
+            app.preprocess_request()
+            tracer = execution_context.get_opencensus_tracer()
+            self.assertIsNotNone(tracer)
+
+            span = tracer.current_span()
+
+            expected_attributes = {
+                'http.url': u'http://localhost/path/value',
+                'http.method': 'GET',
+            }
+            print(span.name)
+
+            self.assertEqual(span.name,
+                             '[GET]http://localhost/path/value')
+            self.assertEqual(span.attributes, expected_attributes)
+            assert isinstance(span.parent_span, base.NullContextManager)
+
     def test__after_request_not_sampled(self):
         flask_trace_header = 'traceparent'
         trace_id = '2dd43a1d6b2549c6bc2a1a54c2fc0b05'
