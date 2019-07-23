@@ -13,27 +13,29 @@
 # limitations under the License.
 
 import logging
+import requests
 import time
-import urllib3
 
 from opencensus.metrics.export.gauge import DerivedDoubleGauge
 
 dependency_map = dict()
 logger = logging.getLogger(__name__)
+ORIGINAL_REQUEST = requests.Session.request
 
 
-def dependency_patch(func):
-    def wrapper(*args, **kwargs):
-        result = func(*args, **kwargs)
+def dependency_patch(*args, **kwargs):
+    # Disable collection if flag is set
+    disable = kwargs.pop('disableCollection', None)
+    result = ORIGINAL_REQUEST(*args, **kwargs)
+    if disable is None or not disable:
         count = dependency_map.get('count', 0)
         dependency_map['count'] = count + 1
-        return result
-    return wrapper
+    return result
+
 
 def setup():
-    # urllib3 and requests library utilize urlopen to make all http
-    # requests. We patch the behaviour to track dependency information
-    urllib3.connectionpool.HTTPConnectionPool.urlopen = dependency_patch(urllib3.connectionpool.HTTPConnectionPool.urlopen)
+    # Patch the requests library functions to track dependency information
+    requests.Session.request = dependency_patch
 
 
 class DependencyRateMetric(object):
@@ -69,7 +71,7 @@ class DependencyRateMetric(object):
         """ Returns a derived gauge for outgoing requests per second
 
         Calculated by obtaining by getting the number of outgoing requests made
-        using the urllib3 library within an elapsed time and dividing that
+        using the requests library within an elapsed time and dividing that
         value over the elapsed time.
 
         :rtype: :class:`opencensus.metrics.export.gauge.DerivedLongGauge`

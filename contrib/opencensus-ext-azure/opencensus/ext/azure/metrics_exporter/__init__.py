@@ -135,6 +135,8 @@ class MetricsExporter(object):
             ['dc.services.visualstudio.com'],
         )
         try:
+            # Ensure this request is not captured by standard metrics
+            # Set disableCollection to True
             response = requests.post(
                 url=self.options.endpoint,
                 data=json.dumps(envelopes),
@@ -143,6 +145,7 @@ class MetricsExporter(object):
                     'Content-Type': 'application/json; charset=utf-8',
                 },
                 timeout=self.options.timeout,
+                disableCollection=True,
             )
         except Exception as ex:
             # No retry policy, log output

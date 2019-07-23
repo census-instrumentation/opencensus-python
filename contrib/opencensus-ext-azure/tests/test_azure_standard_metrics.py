@@ -14,18 +14,19 @@
 
 import collections
 import mock
+import requests
 import unittest
-import urllib3
 
 from opencensus.ext.azure.metrics_exporter import standard_metrics
 
-ORIGNAL_FUNCTION = urllib3.connectionpool.HTTPConnectionPool.urlopen
+ORIGINAL_FUNCTION = requests.Session.request
 
 
 class TestStandardMetrics(unittest.TestCase):
     def setUp(self):
-        standard_metrics.http_dependencies.dependency_map.clear()
-        urllib3.connectionpool.HTTPConnectionPool.urlopen = ORIGNAL_FUNCTION
+        standard_metrics.dependency.dependency_map.clear()
+        requests.Session.request = ORIGINAL_FUNCTION
+        standard_metrics.dependency.ORIGINAL_REQUEST = ORIGINAL_FUNCTION
 
     @mock.patch('opencensus.ext.azure.metrics_exporter'
                 '.standard_metrics.register_metrics')
@@ -38,20 +39,12 @@ class TestStandardMetrics(unittest.TestCase):
         producer = standard_metrics.AzureStandardMetricsProducer()
         metrics = producer.get_metrics()
 
-<<<<<<< HEAD
-        self.assertEqual(len(metrics), 4)
-=======
         self.assertEqual(len(metrics), 5)
->>>>>>> 7a69096516cadf7536d5b4e4137e4910846f89eb
 
     def test_register_metrics(self):
         registry = standard_metrics.register_metrics()
 
-<<<<<<< HEAD
-        self.assertEqual(len(registry.get_metrics()), 4)
-=======
         self.assertEqual(len(registry.get_metrics()), 5)
->>>>>>> 7a69096516cadf7536d5b4e4137e4910846f89eb
 
     def test_get_available_memory_metric(self):
         metric = standard_metrics.AvailableMemoryMetric()
@@ -78,11 +71,7 @@ class TestStandardMetrics(unittest.TestCase):
 
     def test_get_process_private_bytes(self):
         with mock.patch('opencensus.ext.azure.metrics_exporter' +
-<<<<<<< HEAD
                         '.standard_metrics.process.PROCESS') as process_mock:
-=======
-                '.standard_metrics.process.PROCESS') as process_mock:
->>>>>>> 7a69096516cadf7536d5b4e4137e4910846f89eb
             memory = collections.namedtuple('memory', 'rss')
             pmem = memory(rss=100)
             process_mock.memory_info.return_value = pmem
@@ -144,11 +133,37 @@ class TestStandardMetrics(unittest.TestCase):
 
             logger_mock.exception.assert_called()
 
-    def test_dependency_patch(self):
-        standard_metrics.http_dependencies.setup()
+    def test_setup(self):
+        standard_metrics.dependency.setup()
 
-        self.assertNotEqual(urllib3.connectionpool.HTTPConnectionPool \
-                       .urlopen, ORIGNAL_FUNCTION)
+        self.assertEqual(requests.Session.request,
+                         standard_metrics.dependency.dependency_patch)
+
+    def test_dependency_patch(self):
+        map = standard_metrics.dependency.dependency_map
+        standard_metrics.dependency.ORIGINAL_REQUEST = lambda:None
+        result = standard_metrics.dependency.dependency_patch()
+
+        self.assertEqual(map['count'], 1)
+        self.assertIsNone(result)
+
+    def test_dependency_patch_disable_collection_true(self):
+        map = standard_metrics.dependency.dependency_map
+        standard_metrics.dependency.ORIGINAL_REQUEST = lambda:None
+        result = standard_metrics.dependency \
+                    .dependency_patch(disableCollection=True)
+
+        self.assertIsNone(map.get('count'))
+        self.assertIsNone(result)
+
+    def test_dependency_patch_disable_collection_false(self):
+        map = standard_metrics.dependency.dependency_map
+        standard_metrics.dependency.ORIGINAL_REQUEST = lambda:None
+        result = standard_metrics.dependency \
+                    .dependency_patch(disableCollection=False)
+
+        self.assertEqual(map['count'], 1)
+        self.assertIsNone(result)
 
     def test_get_dependency_rate_metric(self):
         metric = standard_metrics.DependencyRateMetric()
@@ -163,22 +178,22 @@ class TestStandardMetrics(unittest.TestCase):
         self.assertEqual(rate, 0)
 
     @mock.patch('opencensus.ext.azure.metrics_exporter'
-                '.standard_metrics.http_dependencies.time')
+                '.standard_metrics.dependency.time')
     def test_get_dependency_rate(self, time_mock):
         time_mock.time.return_value = 100
-        standard_metrics.http_dependencies.dependency_map['last_time'] = 98
-        standard_metrics.http_dependencies.dependency_map['count'] = 4
+        standard_metrics.dependency.dependency_map['last_time'] = 98
+        standard_metrics.dependency.dependency_map['count'] = 4
         rate = standard_metrics.DependencyRateMetric.get_value()
 
         self.assertEqual(rate, 2)
 
     @mock.patch('opencensus.ext.azure.metrics_exporter'
-                '.standard_metrics.http_dependencies.logger')
+                '.standard_metrics.dependency.logger')
     @mock.patch('opencensus.ext.azure.metrics_exporter'
-                '.standard_metrics.http_dependencies.time')
+                '.standard_metrics.dependency.time')
     def test_get_dependency_rate_error(self, time_mock, logger_mock):
         time_mock.time.return_value = 100
-        standard_metrics.http_dependencies.dependency_map['last_time'] = 100
+        standard_metrics.dependency.dependency_map['last_time'] = 100
         standard_metrics.DependencyRateMetric.get_value()
 
         logger_mock.exception.assert_called()

@@ -16,6 +16,8 @@ from opencensus.metrics.export.gauge import Registry
 from opencensus.metrics.export.metric_producer import MetricProducer
 from opencensus.ext.azure.metrics_exporter.standard_metrics.cpu \
     import ProcessorTimeMetric
+from opencensus.ext.azure.metrics_exporter.standard_metrics.dependency \
+    import DependencyRateMetric
 from opencensus.ext.azure.metrics_exporter.standard_metrics.memory \
     import AvailableMemoryMetric
 from opencensus.ext.azure.metrics_exporter.standard_metrics.process \
@@ -24,8 +26,9 @@ from opencensus.ext.azure.metrics_exporter.standard_metrics.process \
     import ProcessMemoryMetric
 
 # List of standard metrics to track
-STANDARD_METRICS = [AvailableMemoryMetric, ProcessCPUMetric,
-                    ProcessMemoryMetric, ProcessorTimeMetric]
+STANDARD_METRICS = [AvailableMemoryMetric, DependencyRateMetric,
+                    ProcessCPUMetric, ProcessMemoryMetric,
+                    ProcessorTimeMetric]
 
 
 def register_metrics():
