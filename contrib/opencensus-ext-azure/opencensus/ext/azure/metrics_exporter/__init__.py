@@ -215,7 +215,7 @@ class MetricsExporter(object):
                         text
                     )
                     return
-        # Check for non-tryable result
+        # Check for non-retryable result
         if status_code in (
                 206,  # Partial Content
                 429,  # Too Many Requests
