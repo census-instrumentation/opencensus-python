@@ -191,13 +191,12 @@ class TestStandardMetrics(unittest.TestCase):
         self.assertEqual(rate, 2)
 
     @mock.patch('opencensus.ext.azure.metrics_exporter'
-                '.standard_metrics.dependency.logger')
-    @mock.patch('opencensus.ext.azure.metrics_exporter'
                 '.standard_metrics.dependency.time')
-    def test_get_dependency_rate_error(self, time_mock, logger_mock):
+    def test_get_dependency_rate_error(self, time_mock):
         time_mock.time.return_value = 100
+        standard_metrics.dependency.dependency_map['last_result'] = 5
         standard_metrics.dependency.dependency_map['last_time'] = 100
-        standard_metrics.DependencyRateMetric.get_value()
+        result = standard_metrics.DependencyRateMetric.get_value()
 
-        logger_mock.exception.assert_called()
+        self.assertEqual(result, 5)
 

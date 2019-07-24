@@ -12,14 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import logging
 import requests
 import time
 
 from opencensus.metrics.export.gauge import DerivedDoubleGauge
 
 dependency_map = dict()
-logger = logging.getLogger(__name__)
 ORIGINAL_REQUEST = requests.Session.request
 
 
@@ -54,11 +52,12 @@ class DependencyRateMetric(object):
 
     @staticmethod
     def get_value():
-        current_time = time.time()
-        last_time = dependency_map.get('last_time')
-        last_count = dependency_map.get('last_count', 0)
         current_count = dependency_map.get('count', 0)
-
+        current_time = time.time()
+        last_count = dependency_map.get('last_count', 0)
+        last_time = dependency_map.get('last_time')
+        last_result = dependency_map.get('last_result', 0)
+        
         try:
             # last_time is None the very first time this function is called
             if last_time is not None:
@@ -69,10 +68,12 @@ class DependencyRateMetric(object):
                 result = 0
             dependency_map['last_time'] = current_time
             dependency_map['last_count'] = current_count
+            dependency_map['last_result'] = result
             return result
         except ZeroDivisionError:
-            logger.exception('Error handling get outgoing request rate. '
-                             'Call made too close to previous call.')
+            # If elapsed_seconds is 0, exporter call made too close to previous
+            # Return the previous result if this is the case
+            return last_result
 
 
     def __call__(self):

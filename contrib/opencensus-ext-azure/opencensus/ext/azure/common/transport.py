@@ -51,7 +51,10 @@ class TransportMixin(object):
             ['dc.services.visualstudio.com'],
         )
         try:
-            response = requests.post(
+            session = requests.Session()
+            # Ensure this request is not captured by standard metrics
+            session.disable_collection = True
+            response = session.post(
                 url=self.options.endpoint,
                 data=json.dumps(envelopes),
                 headers={
