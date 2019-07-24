@@ -50,6 +50,17 @@ class FlaskMiddleware(object):
     :type blacklist_paths: list
     :param blacklist_paths: Paths that do not trace.
 
+    :type tracer: :class:`~opencensus.trace.tracer.Tracer`
+    :param tracer: Trace instance to use for each request. If not provided,
+                   new instance will be instantiated for each request.
+
+                   This comes handy in scenarios where you want to use the
+                   same singleton Tracer instance for your code and all
+                   the extensions.
+
+                   NOTE: This argument is mutually exclusive with
+                   sampler, exporter and propagator argument.
+
     :type sampler: :class:`~opencensus.trace.samplers.base.Sampler`
     :param sampler: A sampler. It should extend from the base
                     :class:`.Sampler` type and implement
@@ -71,14 +82,19 @@ class FlaskMiddleware(object):
                        :class:`.TextFormatPropagator`.
     """
 
-    def __init__(self, app=None, blacklist_paths=None, tracer=None, sampler=None,
-                 exporter=None, propagator=None):
+    def __init__(self, app=None, blacklist_paths=None, tracer=None,
+                 sampler=None, exporter=None, propagator=None):
+        if tracer and (sampler or exporter or propagator):
+            msg = ('tracer and sampler / exporter / propagator arguments '
+                   'are mutually exclusive')
+            raise ValueError(msg)
+
         self.app = app
         self.blacklist_paths = blacklist_paths
+        self.tracer = tracer
         self.sampler = sampler
         self.exporter = exporter
         self.propagator = propagator
-        self.tracer = tracer
 
         if self.app is not None:
             self.init_app(app)
