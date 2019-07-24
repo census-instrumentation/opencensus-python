@@ -45,7 +45,7 @@ class TestAzureExporter(unittest.TestCase):
         self.assertRaises(ValueError, lambda: trace_exporter.AzureExporter())
         Options._default.instrumentation_key = instrumentation_key
 
-    @mock.patch('requests.post', return_value=mock.Mock())
+    @mock.patch('requests.Session.post', return_value=mock.Mock())
     def test_emit_empty(self, request_mock):
         exporter = trace_exporter.AzureExporter(
             instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
@@ -415,7 +415,7 @@ class TestAzureExporter(unittest.TestCase):
         self.assertEqual(len(os.listdir(exporter.storage.path)), 1)
         exporter._stop()
 
-    @mock.patch('requests.post', return_value=mock.Mock())
+    @mock.patch('requests.Session.post', return_value=mock.Mock())
     def test_transmission_lease_failure(self, requests_mock):
         requests_mock.return_value = MockResponse(200, 'unknown')
         exporter = trace_exporter.AzureExporter(
@@ -435,7 +435,7 @@ class TestAzureExporter(unittest.TestCase):
             storage_path=os.path.join(TEST_FOLDER, self.id()),
         )
         exporter.storage.put([1, 2, 3])
-        with mock.patch('requests.post') as post:
+        with mock.patch('requests.Session.post') as post:
             post.return_value = MockResponse(200, None)
             del post.return_value.text
             exporter._transmit_from_storage()
@@ -450,7 +450,7 @@ class TestAzureExporter(unittest.TestCase):
         )
         exporter.storage.put([1, 2, 3])
         exporter.storage.put([1, 2, 3])
-        with mock.patch('requests.post') as post:
+        with mock.patch('requests.Session.post') as post:
             post.return_value = MockResponse(200, 'unknown')
             exporter._transmit_from_storage()
         self.assertIsNone(exporter.storage.get())
@@ -463,7 +463,7 @@ class TestAzureExporter(unittest.TestCase):
             storage_path=os.path.join(TEST_FOLDER, self.id()),
         )
         exporter.storage.put([1, 2, 3])
-        with mock.patch('requests.post') as post:
+        with mock.patch('requests.Session.post') as post:
             post.return_value = MockResponse(206, 'unknown')
             exporter._transmit_from_storage()
         self.assertIsNone(exporter.storage.get())
@@ -476,7 +476,7 @@ class TestAzureExporter(unittest.TestCase):
             storage_path=os.path.join(TEST_FOLDER, self.id()),
         )
         exporter.storage.put([1, 2, 3, 4, 5])
-        with mock.patch('requests.post') as post:
+        with mock.patch('requests.Session.post') as post:
             post.return_value = MockResponse(206, json.dumps({
                 'itemsReceived': 5,
                 'itemsAccepted': 3,
@@ -504,7 +504,7 @@ class TestAzureExporter(unittest.TestCase):
             storage_path=os.path.join(TEST_FOLDER, self.id()),
         )
         exporter.storage.put([1, 2, 3])
-        with mock.patch('requests.post') as post:
+        with mock.patch('requests.Session.post') as post:
             post.return_value = MockResponse(206, json.dumps({
                 'itemsReceived': 3,
                 'itemsAccepted': 2,
@@ -526,7 +526,7 @@ class TestAzureExporter(unittest.TestCase):
             storage_path=os.path.join(TEST_FOLDER, self.id()),
         )
         exporter.storage.put([1, 2, 3, 4, 5])
-        with mock.patch('requests.post') as post:
+        with mock.patch('requests.Session.post') as post:
             post.return_value = MockResponse(206, json.dumps({
                 'itemsReceived': 5,
                 'itemsAccepted': 3,
@@ -548,7 +548,7 @@ class TestAzureExporter(unittest.TestCase):
             storage_path=os.path.join(TEST_FOLDER, self.id()),
         )
         exporter.storage.put([1, 2, 3])
-        with mock.patch('requests.post') as post:
+        with mock.patch('requests.Session.post') as post:
             post.return_value = MockResponse(400, '{}')
             exporter._transmit_from_storage()
         self.assertEqual(len(os.listdir(exporter.storage.path)), 0)
@@ -560,7 +560,7 @@ class TestAzureExporter(unittest.TestCase):
             storage_path=os.path.join(TEST_FOLDER, self.id()),
         )
         exporter.storage.put([1, 2, 3])
-        with mock.patch('requests.post') as post:
+        with mock.patch('requests.Session.post') as post:
             post.return_value = MockResponse(500, '{}')
             exporter._transmit_from_storage()
         self.assertIsNone(exporter.storage.get())
