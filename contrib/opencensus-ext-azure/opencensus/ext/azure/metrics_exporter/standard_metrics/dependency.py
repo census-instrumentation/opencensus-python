@@ -24,10 +24,18 @@ ORIGINAL_REQUEST = requests.Session.request
 
 
 def dependency_patch(*args, **kwargs):
-    # Disable collection if flag is set
-    disable = kwargs.pop('disableCollection', None)
     result = ORIGINAL_REQUEST(*args, **kwargs)
-    if disable is None or not disable:
+    disable_collection = False
+    # disable_collection property will be set to True for exporters' request
+    if args:
+        session = args[0]
+        try:
+            disable_collection = session.disable_collection
+        except AttributeError:
+            # If not set, do not disable collection
+            pass
+           
+    if not disable_collection:
         count = dependency_map.get('count', 0)
         dependency_map['count'] = count + 1
     return result

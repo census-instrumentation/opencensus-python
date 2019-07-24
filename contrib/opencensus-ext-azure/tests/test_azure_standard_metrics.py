@@ -141,26 +141,29 @@ class TestStandardMetrics(unittest.TestCase):
 
     def test_dependency_patch(self):
         map = standard_metrics.dependency.dependency_map
-        standard_metrics.dependency.ORIGINAL_REQUEST = lambda:None
-        result = standard_metrics.dependency.dependency_patch()
+        standard_metrics.dependency.ORIGINAL_REQUEST = lambda x:None
+        session = requests.Session()
+        result = standard_metrics.dependency.dependency_patch(session)
 
         self.assertEqual(map['count'], 1)
         self.assertIsNone(result)
 
     def test_dependency_patch_disable_collection_true(self):
         map = standard_metrics.dependency.dependency_map
-        standard_metrics.dependency.ORIGINAL_REQUEST = lambda:None
-        result = standard_metrics.dependency \
-                    .dependency_patch(disableCollection=True)
+        standard_metrics.dependency.ORIGINAL_REQUEST = lambda x: None
+        session = mock.Mock()
+        session.disable_collection = True
+        result = standard_metrics.dependency.dependency_patch(session)
 
         self.assertIsNone(map.get('count'))
         self.assertIsNone(result)
 
     def test_dependency_patch_disable_collection_false(self):
         map = standard_metrics.dependency.dependency_map
-        standard_metrics.dependency.ORIGINAL_REQUEST = lambda:None
-        result = standard_metrics.dependency \
-                    .dependency_patch(disableCollection=False)
+        standard_metrics.dependency.ORIGINAL_REQUEST = lambda x: None
+        session = mock.Mock()
+        session.disable_collection = False
+        result = standard_metrics.dependency.dependency_patch(session)
 
         self.assertEqual(map['count'], 1)
         self.assertIsNone(result)
