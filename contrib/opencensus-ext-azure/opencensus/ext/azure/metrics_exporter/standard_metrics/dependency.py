@@ -32,7 +32,6 @@ def dependency_patch(*args, **kwargs):
         except AttributeError:
             # If not set, do not disable collection
             pass
-           
     if not disable_collection:
         count = dependency_map.get('count', 0)
         dependency_map['count'] = count + 1
@@ -46,7 +45,8 @@ def setup():
 
 class DependencyRateMetric(object):
     # Dependency call metrics can be found under custom metrics
-    NAME = "\\ApplicationInsights\\Dependency Calls\/Sec"
+    NAME = "\\ApplicationInsights\\Dependency Calls/Sec"
+
     def __init__(self):
         setup()
 
@@ -57,7 +57,7 @@ class DependencyRateMetric(object):
         last_count = dependency_map.get('last_count', 0)
         last_time = dependency_map.get('last_time')
         last_result = dependency_map.get('last_result', 0)
-        
+
         try:
             # last_time is None the very first time this function is called
             if last_time is not None:
@@ -74,7 +74,6 @@ class DependencyRateMetric(object):
             # If elapsed_seconds is 0, exporter call made too close to previous
             # Return the previous result if this is the case
             return last_result
-
 
     def __call__(self):
         """ Returns a derived gauge for outgoing requests per second

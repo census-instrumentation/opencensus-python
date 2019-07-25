@@ -133,17 +133,26 @@ class TestStandardMetrics(unittest.TestCase):
 
             logger_mock.exception.assert_called()
 
-    def test_setup(self):
+    @mock.patch('opencensus.ext.azure.metrics_exporter'
+                '.standard_metrics.dependency.dependency_patch')
+    def test_setup(self, dependency_mock):
         standard_metrics.dependency.setup()
-
-        self.assertEqual(requests.Session.request,
-                         standard_metrics.dependency.dependency_patch)
-
+        requests.Session.request()
+        self.assertEqual(len(dependency_mock.call_args_list), 1)
+                         
     def test_dependency_patch(self):
         map = standard_metrics.dependency.dependency_map
-        standard_metrics.dependency.ORIGINAL_REQUEST = lambda x:None
+        standard_metrics.dependency.ORIGINAL_REQUEST = lambda x: None
         session = requests.Session()
         result = standard_metrics.dependency.dependency_patch(session)
+
+        self.assertEqual(map['count'], 1)
+        self.assertIsNone(result)
+
+    def test_dependency_patch_no_args(self):
+        map = standard_metrics.dependency.dependency_map
+        standard_metrics.dependency.ORIGINAL_REQUEST = lambda: None
+        result = standard_metrics.dependency.dependency_patch()
 
         self.assertEqual(map['count'], 1)
         self.assertIsNone(result)
@@ -173,7 +182,7 @@ class TestStandardMetrics(unittest.TestCase):
         gauge = metric()
 
         self.assertEqual(gauge.descriptor.name,
-            '\\ApplicationInsights\\Dependency Calls\/Sec')
+                         '\\ApplicationInsights\\Dependency Calls/Sec')
 
     def test_get_dependency_rate_first_time(self):
         rate = standard_metrics.DependencyRateMetric.get_value()
@@ -199,4 +208,3 @@ class TestStandardMetrics(unittest.TestCase):
         result = standard_metrics.DependencyRateMetric.get_value()
 
         self.assertEqual(result, 5)
-
