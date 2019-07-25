@@ -16,9 +16,13 @@ import atexit
 import threading
 import time
 
+from opencensus.common.runtime_context import RuntimeContext
 from opencensus.common.schedule import Queue
 from opencensus.common.schedule import QueueEvent
 from opencensus.ext.azure.common import Options
+
+if 'is_exporter_thread' not in RuntimeContext.snapshot().keys():
+    RuntimeContext.register_slot('is_exporter_thread', False)
 
 
 class BaseExporter(object):
@@ -64,6 +68,8 @@ class Worker(threading.Thread):
         super(Worker, self).__init__()
 
     def run(self):  # pragma: NO COVER
+        # Indicate that this thread is an exporter thread. Used for auto-collection.
+        RuntimeContext.is_exporter_thread = True
         src = self.src
         dst = self.dst
         while True:

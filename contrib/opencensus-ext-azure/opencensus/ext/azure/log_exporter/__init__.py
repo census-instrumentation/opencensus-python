@@ -17,6 +17,7 @@ import threading
 import time
 import traceback
 
+from opencensus.common.runtime_context import RuntimeContext
 from opencensus.common.schedule import Queue
 from opencensus.common.schedule import QueueExitEvent
 from opencensus.common.schedule import QueueEvent
@@ -30,6 +31,8 @@ from opencensus.ext.azure.common.storage import LocalFileStorage
 from opencensus.ext.azure.common.transport import TransportMixin
 
 logger = logging.getLogger(__name__)
+if 'is_exporter_thread' not in RuntimeContext.snapshot().keys():
+    RuntimeContext.register_slot('is_exporter_thread', False)
 
 __all__ = ['AzureLogHandler']
 
@@ -76,6 +79,8 @@ class Worker(threading.Thread):
         )
 
     def run(self):
+        # Indicate that this thread is an exporter thread. Used for auto-collection.
+        RuntimeContext.is_exporter_thread = True
         src = self._src
         dst = self._dst
         while True:

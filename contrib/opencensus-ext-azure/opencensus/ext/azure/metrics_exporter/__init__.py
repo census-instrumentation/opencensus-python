@@ -135,10 +135,7 @@ class MetricsExporter(object):
             ['dc.services.visualstudio.com'],
         )
         try:
-            session = requests.Session()
-            # Ensure this request is not captured by standard metrics
-            session.disable_collection = True
-            response = session.post(
+            response = requests.post(
                 url=self.options.endpoint,
                 data=json.dumps(envelopes),
                 headers={

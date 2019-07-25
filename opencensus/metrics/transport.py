@@ -16,10 +16,13 @@ import itertools
 import logging
 
 from opencensus.common import utils
+from opencensus.common.runtime_context import RuntimeContext
 from opencensus.common.schedule import PeriodicTask
 
 
 logger = logging.getLogger(__name__)
+if 'is_exporter_thread' not in RuntimeContext.snapshot().keys():
+    RuntimeContext.register_slot('is_exporter_thread', False)
 
 DEFAULT_INTERVAL = 60
 GRACE_PERIOD = 5
@@ -64,6 +67,10 @@ class PeriodicMetricTask(PeriodicTask):
 
         super(PeriodicMetricTask, self).__init__(interval, func, args, kwargs)
 
+    def run(self):
+        # Indicate that this thread is an exporter thread. Used for auto-collection.
+        RuntimeContext.is_exporter_thread = True
+        super(PeriodicMetricTask, self).run()
 
 def get_exporter_thread(metric_producers, exporter, interval=None):
     """Get a running task that periodically exports metrics.
