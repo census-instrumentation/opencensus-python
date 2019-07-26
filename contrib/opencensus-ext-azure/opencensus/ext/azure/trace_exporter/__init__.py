@@ -117,7 +117,7 @@ class AzureExporter(TransportMixin, BaseExporter):
                 data.type = 'INPROC'
         # TODO: links, tracestate, tags
         for key in sd.attributes:
-            # This removes redundant data from AppInsights
+            # This removes redundant data from ApplicationInsights
             if 'http.' in key:
                 continue
             data.properties[key] = sd.attributes[key]
