@@ -33,14 +33,6 @@ def dependency_patch(*args, **kwargs):
     except AttributeError:
         # If not set, do not disable collection
         pass
-    # disable_collection property will be set to True for exporters' request
-    # if args:
-    #     session = args[0]
-    #     try:
-    #         disable_collection = session.disable_collection
-    #     except AttributeError:
-    #         # If not set, do not disable collection
-    #         pass
     if not disable_collection:
         count = dependency_map.get('count', 0)
         dependency_map['count'] = count + 1

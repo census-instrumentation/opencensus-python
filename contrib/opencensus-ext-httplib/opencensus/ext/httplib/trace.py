@@ -15,6 +15,7 @@
 import logging
 import sys
 
+from opencensus.common.runtime_context import RuntimeContext
 from opencensus.trace import attributes_helper
 from opencensus.trace import execution_context
 from opencensus.trace import span as span_module
@@ -61,6 +62,15 @@ def wrap_httplib_request(request_func):
     """
 
     def call(self, method, url, body, headers, *args, **kwargs):
+        try:
+            # Check if request was sent from an exporter. If so, do not wrap.
+            disable_from_exporter = RuntimeContext.is_exporter_thread
+            if disable_from_exporter:
+                return request_func(self, method, url, body,
+                                headers, *args, **kwargs)
+        except AttributeError:
+            # If not set, continue with wrapping
+            pass
         _tracer = execution_context.get_opencensus_tracer()
         blacklist_hostnames = execution_context.get_opencensus_attr(
             'blacklist_hostnames')
@@ -100,6 +110,14 @@ def wrap_httplib_response(response_func):
     """
 
     def call(self, *args, **kwargs):
+        try:
+            # Check if request was sent from an exporter. If so, do not wrap.
+            disable_from_exporter = RuntimeContext.is_exporter_thread
+            if disable_from_exporter:
+                return response_func(self, *args, **kwargs)
+        except AttributeError:
+            # If not set, continue with wrapping
+            pass
         _tracer = execution_context.get_opencensus_tracer()
         current_span_id = execution_context.get_opencensus_attr(
             'httplib/current_span_id')
