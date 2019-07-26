@@ -19,6 +19,7 @@ import threading
 from six.moves import queue
 from six.moves import range
 
+from opencensus.common.runtime_context import RuntimeContext
 from opencensus.common.transports import base
 
 _DEFAULT_GRACE_PERIOD = 5.0  # Seconds
@@ -28,6 +29,8 @@ _WORKER_THREAD_NAME = 'opencensus.common.Worker'
 _WORKER_TERMINATOR = object()
 
 logger = logging.getLogger(__name__)
+if 'is_exporter_thread' not in RuntimeContext.snapshot().keys():
+    RuntimeContext.register_slot('is_exporter_thread', False)
 
 
 class _Worker(object):
@@ -141,6 +144,9 @@ class _Worker(object):
             self._thread = threading.Thread(
                 target=self._thread_main, name=_WORKER_THREAD_NAME)
             self._thread.daemon = True
+            # Indicate that this thread is an exporter thread. Used for
+            # auto-collection.
+            RuntimeContext.is_exporter_thread = True
             self._thread.start()
             atexit.register(self._export_pending_data)
 
