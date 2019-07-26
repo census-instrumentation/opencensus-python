@@ -79,6 +79,7 @@ class AzureExporter(TransportMixin, BaseExporter):
             if 'http.url' in sd.attributes:
                 data.name = data.name + ' ' + sd.attributes['http.url']
                 data.url = sd.attributes['http.url']
+                envelope.tags['ai.operation.name'] = data.name
             if 'http.status_code' in sd.attributes:
                 data.responseCode = str(sd.attributes['http.status_code'])
         else:
