@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+## 0.3.2
+Released 2019-07-26
+
+- Removed support for Django < 1.11
+  ([#694](https://github.com/census-instrumentation/opencensus-python/pull/694))
+- Allow installing with Django 2.0 and later
+  ([#697](https://github.com/census-instrumentation/opencensus-python/pull/697))
+
 ## 0.3.1
 Released 2019-06-04
 
