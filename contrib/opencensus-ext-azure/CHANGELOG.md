@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- Supported server performance breakdown by operation name
 
 ## 0.3.1
 - Added metrics exporter
