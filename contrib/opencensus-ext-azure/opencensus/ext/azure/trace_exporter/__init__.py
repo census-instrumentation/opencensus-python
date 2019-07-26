@@ -118,7 +118,7 @@ class AzureExporter(TransportMixin, BaseExporter):
         # TODO: links, tracestate, tags
         for key in sd.attributes:
             # This removes redundant data from ApplicationInsights
-            if 'http.' in key:
+            if key.startswith('http.'):
                 continue
             data.properties[key] = sd.attributes[key]
         return envelope
