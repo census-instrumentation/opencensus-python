@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- Updated span attributes to include some missing attributes listed [here](https://github.com/census-instrumentation/opencensus-specs/blob/master/trace/HTTP.md#attributes)
 
 ## 0.3.2
 Released 2019-07-26
