@@ -23,6 +23,8 @@ COMMON_ATTRIBUTES = {
     'HTTP_CLIENT_REGION': 'http.client_region',
     'HTTP_HOST': 'http.host',
     'HTTP_METHOD': 'http.method',
+    'HTTP_PATH': 'http.path',
+    'HTTP_ROUTE': 'http.route',
     'HTTP_REDIRECTED_URL': 'http.redirected_url',
     'HTTP_REQUEST_SIZE': 'http.request_size',
     'HTTP_RESPONSE_SIZE': 'http.response_size',

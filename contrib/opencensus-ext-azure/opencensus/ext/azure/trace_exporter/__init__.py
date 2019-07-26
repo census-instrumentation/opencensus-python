@@ -69,18 +69,24 @@ class AzureExporter(TransportMixin, BaseExporter):
                     sd.start_time,
                     sd.end_time,
                 ),
-                responseCode='0',  # TODO
-                success=True,  # TODO
+                responseCode='0',
+                success=False,
                 properties={},
             )
             envelope.data = Data(baseData=data, baseType='RequestData')
             if 'http.method' in sd.attributes:
                 data.name = sd.attributes['http.method']
+            if 'http.route' in sd.attributes:
+                data.name = data.name + ' ' + sd.attributes['http.route']
+                envelope.tags['ai.operation.name'] = data.name
             if 'http.url' in sd.attributes:
-                data.name = data.name + ' ' + sd.attributes['http.url']
                 data.url = sd.attributes['http.url']
             if 'http.status_code' in sd.attributes:
-                data.responseCode = str(sd.attributes['http.status_code'])
+                status_code = sd.attributes['http.status_code']
+                data.responseCode = str(status_code)
+                data.success = (
+                    status_code >= 200 and status_code <= 399
+                )
         else:
             envelope.name = \
                 'Microsoft.ApplicationInsights.RemoteDependency'
@@ -111,6 +117,9 @@ class AzureExporter(TransportMixin, BaseExporter):
                 data.type = 'INPROC'
         # TODO: links, tracestate, tags
         for key in sd.attributes:
+            # This removes redundant data from ApplicationInsights
+            if key.startswith('http.'):
+                continue
             data.properties[key] = sd.attributes[key]
         return envelope
 
