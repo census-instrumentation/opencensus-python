@@ -15,8 +15,8 @@
 import requests
 import time
 
-from opencensus.common.runtime_context import RuntimeContext
 from opencensus.metrics.export.gauge import DerivedDoubleGauge
+from opencensus.trace import execution_context
 
 dependency_map = dict()
 ORIGINAL_REQUEST = requests.Session.request
@@ -27,8 +27,7 @@ def dependency_patch(*args, **kwargs):
     disable_collection = False
     try:
         # Check if request was sent from an exporter. If so, do not collect.
-        disable_from_exporter = RuntimeContext.is_exporter_thread
-        if disable_from_exporter:
+        if execution_context.is_exporter_thread():
             disable_collection = True
     except AttributeError:
         # If not set, do not disable collection
