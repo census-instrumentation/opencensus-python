@@ -85,7 +85,7 @@ class AzureExporter(TransportMixin, BaseExporter):
                 status_code = sd.attributes['http.status_code']
                 data.responseCode = str(status_code)
                 data.success = (
-                    status_code >= 200 and status_code <= 299
+                    status_code >= 200 and status_code <= 399
                 )
         else:
             envelope.name = \
