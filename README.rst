@@ -80,13 +80,13 @@ You can collect traces using the ``Tracer`` `context manager`_:
     tracer = Tracer(sampler=AlwaysOnSampler())
 
     # Example for creating nested spans
-    with tracer.span(name='span1') as span1:
+    with tracer.span(name='span1'):
         do_something_to_trace()
-        with span1.span(name='span1_child1') as span1_child1:
+        with tracer.span(name='span1_child1'):
             do_something_to_trace()
-        with span1.span(name='span1_child2') as span1_child2:
+        with tracer.span(name='span1_child2'):
             do_something_to_trace()
-    with tracer.span(name='span2') as span2:
+    with tracer.span(name='span2'):
         do_something_to_trace()
 
 OpenCensus will collect everything within the ``with`` statement as a single span.
