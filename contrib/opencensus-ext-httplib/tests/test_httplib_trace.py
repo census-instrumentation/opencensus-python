@@ -297,6 +297,7 @@ class Test_httplib_trace(unittest.TestCase):
 
         self.assertEqual(expected_attributes, mock_tracer.span.attributes)
 
+
 class MockTracer(object):
     def __init__(self, span=None):
         self.span = span

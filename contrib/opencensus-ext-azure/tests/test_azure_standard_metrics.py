@@ -133,7 +133,7 @@ class TestStandardMetrics(unittest.TestCase):
             standard_metrics.ProcessCPUMetric.get_value()
 
             logger_mock.exception.assert_called()
-                         
+
     def test_dependency_patch(self):
         map = standard_metrics.dependency.dependency_map
         standard_metrics.dependency.ORIGINAL_REQUEST = lambda x: None

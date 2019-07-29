@@ -65,7 +65,7 @@ class Worker(threading.Thread):
         super(Worker, self).__init__()
 
     def run(self):  # pragma: NO COVER
-        # Indicate that this thread is an exporter thread. Used for auto-collection.
+        # Indicate that this thread is an exporter thread.
         execution_context.set_is_exporter_thread(True)
         src = self.src
         dst = self.dst

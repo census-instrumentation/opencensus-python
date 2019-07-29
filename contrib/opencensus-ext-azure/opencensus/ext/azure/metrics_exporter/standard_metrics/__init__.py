@@ -30,7 +30,7 @@ STANDARD_METRICS = [AvailableMemoryMetric,
                     DependencyRateMetric,
                     ProcessCPUMetric,
                     ProcessMemoryMetric,
-                    ProcessorTimeMetric,]
+                    ProcessorTimeMetric]
 
 
 def register_metrics():
