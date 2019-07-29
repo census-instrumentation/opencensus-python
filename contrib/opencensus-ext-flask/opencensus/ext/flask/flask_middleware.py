@@ -31,7 +31,10 @@ from opencensus.trace import tracer as tracer_module
 from opencensus.trace import utils
 from opencensus.trace.propagation import trace_context_http_header_format
 
+HTTP_HOST = attributes_helper.COMMON_ATTRIBUTES['HTTP_HOST']
 HTTP_METHOD = attributes_helper.COMMON_ATTRIBUTES['HTTP_METHOD']
+HTTP_PATH = attributes_helper.COMMON_ATTRIBUTES['HTTP_PATH']
+HTTP_ROUTE = attributes_helper.COMMON_ATTRIBUTES['HTTP_ROUTE']
 HTTP_URL = attributes_helper.COMMON_ATTRIBUTES['HTTP_URL']
 HTTP_STATUS_CODE = attributes_helper.COMMON_ATTRIBUTES['HTTP_STATUS_CODE']
 
@@ -144,12 +147,24 @@ class FlaskMiddleware(object):
                 flask.request.method,
                 flask.request.url)
             tracer.add_attribute_to_current_span(
-                HTTP_METHOD, flask.request.method)
+                HTTP_HOST, flask.request.host
+            )
             tracer.add_attribute_to_current_span(
-                HTTP_URL, str(flask.request.url))
+                HTTP_METHOD, flask.request.method
+            )
+            tracer.add_attribute_to_current_span(
+                HTTP_PATH, flask.request.path
+            )
+            tracer.add_attribute_to_current_span(
+                HTTP_ROUTE, flask.request.path
+            )
+            tracer.add_attribute_to_current_span(
+                HTTP_URL, str(flask.request.url)
+            )
             execution_context.set_opencensus_attr(
                 'blacklist_hostnames',
-                self.blacklist_hostnames)
+                self.blacklist_hostnames
+            )
         except Exception:  # pragma: NO COVER
             log.error('Failed to trace request', exc_info=True)
 
@@ -166,7 +181,8 @@ class FlaskMiddleware(object):
             tracer = execution_context.get_opencensus_tracer()
             tracer.add_attribute_to_current_span(
                 HTTP_STATUS_CODE,
-                str(response.status_code))
+                str(response.status_code)
+            )
         except Exception:  # pragma: NO COVER
             log.error('Failed to trace request', exc_info=True)
         finally:

@@ -141,7 +141,7 @@ class TestFlaskMiddleware(unittest.TestCase):
         flask_middleware.FlaskMiddleware(app=app,
                                          sampler=samplers.AlwaysOnSampler())
         context = app.test_request_context(
-            path='/',
+            path='/wiki/Rabbit',
             headers={flask_trace_header: flask_trace_id})
 
         with context:
@@ -152,8 +152,11 @@ class TestFlaskMiddleware(unittest.TestCase):
             span = tracer.current_span()
 
             expected_attributes = {
-                'http.url': u'http://localhost/',
-                'http.method': 'GET',
+                'http.host': u'localhost',
+                'http.method': u'GET',
+                'http.path': u'/wiki/Rabbit',
+                'http.route': u'/wiki/Rabbit',
+                'http.url': u'http://localhost/wiki/Rabbit',
             }
 
             self.assertEqual(span.span_kind, span_module.SpanKind.SERVER)
@@ -203,7 +206,7 @@ class TestFlaskMiddleware(unittest.TestCase):
         flask_middleware.FlaskMiddleware(app=app,
                                          sampler=samplers.AlwaysOnSampler())
         context = app.test_request_context(
-            path='/',
+            path='/wiki/Rabbit',
             headers={flask_trace_header: flask_trace_id})
 
         with context:
@@ -214,8 +217,11 @@ class TestFlaskMiddleware(unittest.TestCase):
             span = tracer.current_span()
 
             expected_attributes = {
-                'http.url': u'http://localhost/',
-                'http.method': 'GET',
+                'http.host': u'localhost',
+                'http.method': u'GET',
+                'http.path': u'/wiki/Rabbit',
+                'http.route': u'/wiki/Rabbit',
+                'http.url': u'http://localhost/wiki/Rabbit',
             }
 
             self.assertEqual(span.attributes, expected_attributes)
@@ -229,7 +235,7 @@ class TestFlaskMiddleware(unittest.TestCase):
         flask_middleware.FlaskMiddleware(app=app,
                                          sampler=samplers.AlwaysOnSampler())
         context = app.test_request_context(
-            path='/')
+            path='/wiki/Rabbit')
 
         with context:
             app.preprocess_request()
@@ -239,8 +245,11 @@ class TestFlaskMiddleware(unittest.TestCase):
             span = tracer.current_span()
 
             expected_attributes = {
-                'http.url': u'http://localhost/',
-                'http.method': 'GET',
+                'http.host': u'localhost',
+                'http.method': u'GET',
+                'http.path': u'/wiki/Rabbit',
+                'http.route': u'/wiki/Rabbit',
+                'http.url': u'http://localhost/wiki/Rabbit',
             }
 
             self.assertEqual(span.attributes, expected_attributes)

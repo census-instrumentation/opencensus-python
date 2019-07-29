@@ -29,7 +29,10 @@ from opencensus.trace import tracer as tracer_module
 from opencensus.trace import utils
 from opencensus.trace.propagation import trace_context_http_header_format
 
+HTTP_HOST = attributes_helper.COMMON_ATTRIBUTES['HTTP_HOST']
 HTTP_METHOD = attributes_helper.COMMON_ATTRIBUTES['HTTP_METHOD']
+HTTP_PATH = attributes_helper.COMMON_ATTRIBUTES['HTTP_PATH']
+HTTP_ROUTE = attributes_helper.COMMON_ATTRIBUTES['HTTP_ROUTE']
 HTTP_URL = attributes_helper.COMMON_ATTRIBUTES['HTTP_URL']
 HTTP_STATUS_CODE = attributes_helper.COMMON_ATTRIBUTES['HTTP_STATUS_CODE']
 
@@ -158,11 +161,20 @@ class OpencensusMiddleware(MiddlewareMixin):
             span = tracer.start_span()
             span.span_kind = span_module.SpanKind.SERVER
             tracer.add_attribute_to_current_span(
+                attribute_key=HTTP_HOST,
+                attribute_value=request.get_host())
+            tracer.add_attribute_to_current_span(
                 attribute_key=HTTP_METHOD,
                 attribute_value=request.method)
             tracer.add_attribute_to_current_span(
-                attribute_key=HTTP_URL,
+                attribute_key=HTTP_PATH,
                 attribute_value=str(request.path))
+            tracer.add_attribute_to_current_span(
+                attribute_key=HTTP_ROUTE,
+                attribute_value=str(request.path))
+            tracer.add_attribute_to_current_span(
+                attribute_key=HTTP_URL,
+                attribute_value=str(request.build_absolute_uri()))
 
             # Add the span to thread local
             # in some cases (exceptions, timeouts) currentspan in
