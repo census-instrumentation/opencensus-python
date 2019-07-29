@@ -133,13 +133,6 @@ class TestStandardMetrics(unittest.TestCase):
             standard_metrics.ProcessCPUMetric.get_value()
 
             logger_mock.exception.assert_called()
-
-    @mock.patch('opencensus.ext.azure.metrics_exporter'
-                '.standard_metrics.dependency.dependency_patch')
-    def test_setup(self, dependency_mock):
-        standard_metrics.dependency.setup()
-        requests.Session.request()
-        self.assertEqual(len(dependency_mock.call_args_list), 1)
                          
     def test_dependency_patch(self):
         map = standard_metrics.dependency.dependency_map
