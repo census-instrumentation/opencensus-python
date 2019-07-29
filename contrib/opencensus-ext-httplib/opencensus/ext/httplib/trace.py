@@ -62,9 +62,9 @@ def wrap_httplib_request(request_func):
 
     def call(self, method, url, body, headers, *args, **kwargs):
         # Check if request was sent from an exporter. If so, do not wrap.
-        # if execution_context.is_exporter_thread():
-        #     return request_func(self, method, url, body,
-        #                     headers, *args, **kwargs)
+        if execution_context.is_exporter_thread():
+            return request_func(self, method, url, body,
+                            headers, *args, **kwargs)
         _tracer = execution_context.get_opencensus_tracer()
         blacklist_hostnames = execution_context.get_opencensus_attr(
             'blacklist_hostnames')
@@ -105,8 +105,8 @@ def wrap_httplib_response(response_func):
 
     def call(self, *args, **kwargs):
         # Check if request was sent from an exporter. If so, do not wrap.
-        # if execution_context.is_exporter_thread():
-        #     return response_func(self, *args, **kwargs)
+        if execution_context.is_exporter_thread():
+            return response_func(self, *args, **kwargs)
         _tracer = execution_context.get_opencensus_tracer()
         current_span_id = execution_context.get_opencensus_attr(
             'httplib/current_span_id')
