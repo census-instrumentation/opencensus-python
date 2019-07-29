@@ -155,8 +155,11 @@ class TestPyramidMiddleware(unittest.TestCase):
         span = tracer.current_span()
 
         expected_attributes = {
-            'http.url': u'/',
+            'http.host': u'http://example.com',
             'http.method': 'GET',
+            'http.path': u'/',
+            'http.route': u'/',
+            'http.url': u'http://example.com',
         }
 
         self.assertEqual(span.span_kind, span_module.SpanKind.SERVER)
@@ -233,8 +236,11 @@ class TestPyramidMiddleware(unittest.TestCase):
         span = tracer.current_span()
 
         expected_attributes = {
-            'http.url': u'/',
+            'http.host': u'http://example.com',
             'http.method': 'GET',
+            'http.path': u'/',
+            'http.route': u'/',
+            'http.url': u'http://example.com',
             'http.status_code': '200',
         }
 

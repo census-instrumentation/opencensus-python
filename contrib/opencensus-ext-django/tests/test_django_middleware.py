@@ -85,7 +85,7 @@ class TestOpencensusMiddleware(unittest.TestCase):
         span_id = '6e0c63257de34c92'
         django_trace_id = '00-{}-{}-00'.format(trace_id, span_id)
 
-        django_request = RequestFactory().get('/', **{
+        django_request = RequestFactory().get('/wiki/Rabbit', **{
             'HTTP_TRACEPARENT': django_trace_id})
 
         # Force the test request to be sampled
@@ -110,8 +110,11 @@ class TestOpencensusMiddleware(unittest.TestCase):
         span = tracer.current_span()
 
         expected_attributes = {
-            'http.url': u'/',
+            'http.host': u'testserver',
             'http.method': 'GET',
+            'http.path': u'/wiki/Rabbit',
+            'http.route': u'/wiki/Rabbit',
+            'http.url': u'http://testserver/wiki/Rabbit',
         }
         self.assertEqual(span.span_kind, span_module.SpanKind.SERVER)
         self.assertEqual(span.attributes, expected_attributes)
@@ -185,7 +188,7 @@ class TestOpencensusMiddleware(unittest.TestCase):
         span_id = '6e0c63257de34c92'
         django_trace_id = '00-{}-{}-00'.format(trace_id, span_id)
 
-        django_request = RequestFactory().get('/', **{
+        django_request = RequestFactory().get('/wiki/Rabbit', **{
             'traceparent': django_trace_id,
         })
 
@@ -214,8 +217,11 @@ class TestOpencensusMiddleware(unittest.TestCase):
         django_response.status_code = 200
 
         expected_attributes = {
-            'http.url': u'/',
+            'http.host': u'testserver',
             'http.method': 'GET',
+            'http.path': u'/wiki/Rabbit',
+            'http.route': u'/wiki/Rabbit',
+            'http.url': u'http://testserver/wiki/Rabbit',
             'http.status_code': '200',
             'django.user.id': '123',
             'django.user.name': 'test_name'
@@ -237,7 +243,7 @@ class TestOpencensusMiddleware(unittest.TestCase):
         span_id = '6e0c63257de34c92'
         django_trace_id = '00-{}-{}-00'.format(trace_id, span_id)
 
-        django_request = RequestFactory().get('/', **{
+        django_request = RequestFactory().get('/wiki/Rabbit', **{
             'traceparent': django_trace_id,
         })
 
@@ -266,8 +272,11 @@ class TestOpencensusMiddleware(unittest.TestCase):
         django_response.status_code = 500
 
         expected_attributes = {
-            'http.url': u'/',
+            'http.host': u'testserver',
             'http.method': 'GET',
+            'http.path': u'/wiki/Rabbit',
+            'http.route': u'/wiki/Rabbit',
+            'http.url': u'http://testserver/wiki/Rabbit',
             'http.status_code': '500',
             'django.user.id': '123',
             'django.user.name': 'test_name'
