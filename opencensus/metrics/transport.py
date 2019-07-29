@@ -66,9 +66,10 @@ class PeriodicMetricTask(PeriodicTask):
         super(PeriodicMetricTask, self).__init__(interval, func, args, kwargs)
 
     def run(self):
-        # Indicate that this thread is an exporter thread. Used for auto-collection.
+        # Indicate that this thread is an exporter thread.
         execution_context.set_is_exporter_thread(True)
         super(PeriodicMetricTask, self).run()
+
 
 def get_exporter_thread(metric_producers, exporter, interval=None):
     """Get a running task that periodically exports metrics.

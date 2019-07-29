@@ -20,11 +20,14 @@ _current_span_slot = RuntimeContext.register_slot('current_span', None)
 _exporter_slot = RuntimeContext.register_slot('is_exporter_thread', False)
 _tracer_slot = RuntimeContext.register_slot('tracer', noop_tracer.NoopTracer())
 
+
 def is_exporter_thread():
     return RuntimeContext.is_exporter_thread
 
+
 def set_is_exporter_thread(is_exporter_thread):
     RuntimeContext.is_exporter_thread = is_exporter_thread
+
 
 def get_opencensus_tracer():
     """Get the opencensus tracer from runtime context."""

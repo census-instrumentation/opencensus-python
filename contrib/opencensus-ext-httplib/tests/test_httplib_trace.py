@@ -75,6 +75,10 @@ class Test_httplib_trace(unittest.TestCase):
             'opencensus.ext.requests.trace.execution_context.'
             'get_opencensus_tracer',
             return_value=mock_tracer)
+        patch_thread = mock.patch(
+            'opencensus.ext.requests.trace.execution_context.'
+            'is_exporter_thread',
+            return_value=False)
 
         wrapped = trace.wrap_httplib_request(mock_request_func)
 
@@ -84,7 +88,7 @@ class Test_httplib_trace(unittest.TestCase):
         body = None
         headers = {}
 
-        with patch:
+        with patch, patch_thread:
             wrapped(mock_self, method, url, body, headers)
 
         expected_attributes = {'http.url': url, 'http.method': method}
@@ -114,6 +118,10 @@ class Test_httplib_trace(unittest.TestCase):
             'opencensus.ext.requests.trace.execution_context.'
             'get_opencensus_attr',
             return_value=None)
+        patch_thread = mock.patch(
+            'opencensus.ext.requests.trace.execution_context.'
+            'is_exporter_thread',
+            return_value=False)
 
         wrapped = trace.wrap_httplib_request(mock_request_func)
 
@@ -123,7 +131,7 @@ class Test_httplib_trace(unittest.TestCase):
         body = None
         headers = {}
 
-        with patch_tracer, patch_attr:
+        with patch_tracer, patch_attr, patch_thread:
             wrapped(mock_self, method, url, body, headers)
 
         mock_request_func.assert_called_with(mock_self, method, url, body, {
@@ -146,6 +154,10 @@ class Test_httplib_trace(unittest.TestCase):
             'opencensus.ext.requests.trace.execution_context.'
             'get_opencensus_attr',
             return_value=['localhost:8080'])
+        patch_thread = mock.patch(
+            'opencensus.ext.requests.trace.execution_context.'
+            'is_exporter_thread',
+            return_value=False)
 
         wrapped = trace.wrap_httplib_request(mock_request_func)
 
@@ -157,7 +169,30 @@ class Test_httplib_trace(unittest.TestCase):
         body = None
         headers = {}
 
-        with patch_tracer, patch_attr:
+        with patch_tracer, patch_attr, patch_thread:
+            wrapped(mock_self, method, url, body, headers)
+
+        mock_request_func.assert_called_with(mock_self, method, url, body, {})
+
+    def test_wrap_httplib_request_exporter_thread(self):
+        mock_request_func = mock.Mock()
+        mock_request_func.__name__ = 'request'
+        patch_thread = mock.patch(
+            'opencensus.ext.requests.trace.execution_context.'
+            'is_exporter_thread',
+            return_value=True)
+
+        mock_self = mock.Mock()
+        mock_self.host = 'localhost'
+        mock_self.port = '8080'
+        method = 'GET'
+        url = 'http://{}:{}'.format(mock_self.host, mock_self.port)
+        body = None
+        headers = {}
+
+        wrapped = trace.wrap_httplib_request(mock_request_func)
+
+        with patch_thread:
             wrapped(mock_self, method, url, body, headers)
 
         mock_request_func.assert_called_with(mock_self, method, url, body, {})
@@ -181,10 +216,14 @@ class Test_httplib_trace(unittest.TestCase):
             'opencensus.ext.httplib.trace.'
             'execution_context.get_opencensus_attr',
             return_value=span_id)
+        patch_thread = mock.patch(
+            'opencensus.ext.requests.trace.execution_context.'
+            'is_exporter_thread',
+            return_value=False)
 
         wrapped = trace.wrap_httplib_response(mock_response_func)
 
-        with patch_tracer, patch_attr:
+        with patch_tracer, patch_attr, patch_thread:
             wrapped(mock.Mock())
 
         expected_attributes = {'http.status_code': '200'}
@@ -210,13 +249,50 @@ class Test_httplib_trace(unittest.TestCase):
             'opencensus.ext.httplib.trace.'
             'execution_context.get_opencensus_attr',
             return_value='1111')
+        patch_thread = mock.patch(
+            'opencensus.ext.requests.trace.execution_context.'
+            'is_exporter_thread',
+            return_value=False)
 
         wrapped = trace.wrap_httplib_response(mock_response_func)
 
-        with patch_tracer, patch_attr:
+        with patch_tracer, patch_attr, patch_thread:
             wrapped(mock.Mock())
 
         # Attribute should be empty as there is no matching span
+        expected_attributes = {}
+
+        self.assertEqual(expected_attributes, mock_tracer.span.attributes)
+
+    def test_wrap_httplib_response_exporter_thread(self):
+        mock_span = mock.Mock()
+        span_id = '1234'
+        mock_span.span_id = span_id
+        mock_span.attributes = {}
+        mock_tracer = MockTracer(mock_span)
+        mock_response_func = mock.Mock()
+        mock_result = mock.Mock()
+        mock_result.status = '200'
+        mock_response_func.return_value = mock_result
+
+        patch_tracer = mock.patch(
+            'opencensus.ext.requests.trace.execution_context.'
+            'get_opencensus_tracer',
+            return_value=mock_tracer)
+        patch_attr = mock.patch(
+            'opencensus.ext.httplib.trace.'
+            'execution_context.get_opencensus_attr',
+            return_value='1111')
+        patch_thread = mock.patch(
+            'opencensus.ext.requests.trace.execution_context.'
+            'is_exporter_thread',
+            return_value=True)
+
+        wrapped = trace.wrap_httplib_response(mock_response_func)
+
+        with patch_tracer, patch_attr, patch_thread:
+            wrapped(mock.Mock())
+
         expected_attributes = {}
 
         self.assertEqual(expected_attributes, mock_tracer.span.attributes)
