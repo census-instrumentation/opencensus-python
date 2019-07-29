@@ -76,7 +76,7 @@ class TestAzureMetricsExporter(unittest.TestCase):
             lambda: metrics_exporter.MetricsExporter(options=options)
             )
 
-    @mock.patch('requests.Session.post', return_value=mock.Mock())
+    @mock.patch('requests.post', return_value=mock.Mock())
     def test_export_metrics(self, requests_mock):
         metric = create_metric()
         options = Options(
@@ -102,7 +102,7 @@ class TestAzureMetricsExporter(unittest.TestCase):
 
         self.assertIsNone(exporter.export_metrics([metric]))
 
-    @mock.patch('requests.Session.post', return_value=mock.Mock())
+    @mock.patch('requests.post', return_value=mock.Mock())
     def test_export_metrics_empty(self, requests_mock):
         options = Options(
             instrumentation_key='12345678-1234-5678-abcd-12345678abcd')
@@ -111,7 +111,7 @@ class TestAzureMetricsExporter(unittest.TestCase):
 
         self.assertEqual(len(requests_mock.call_args_list), 0)
 
-    @mock.patch('requests.Session.post', return_value=mock.Mock())
+    @mock.patch('requests.post', return_value=mock.Mock())
     def test_export_metrics_full_batch(self, requests_mock):
         metric = create_metric()
         options = Options(
@@ -139,7 +139,7 @@ class TestAzureMetricsExporter(unittest.TestCase):
 
         self.assertEqual(len(logger_mock.call_args_list), 1)
 
-    @mock.patch('requests.Session.post', return_value=None)
+    @mock.patch('requests.post', return_value=None)
     @mock.patch('opencensus.ext.azure.metrics_exporter' +
                 '.logger.warning', return_value=mock.Mock())
     def test_transmit_no_response(self, requests_mock, logger_mock):
@@ -155,7 +155,7 @@ class TestAzureMetricsExporter(unittest.TestCase):
     @mock.patch('opencensus.ext.azure.metrics_exporter' +
                 '.logger.warning', return_value=mock.Mock())
     def test_transmit_no_status_code(self, logger_mock):
-        with mock.patch('requests.Session.post') as requests_mock:
+        with mock.patch('requests.post') as requests_mock:
             type(requests_mock.return_value).status_code = mock.PropertyMock(
                 side_effect=Exception())
             envelope = create_envelope()
@@ -170,7 +170,7 @@ class TestAzureMetricsExporter(unittest.TestCase):
     @mock.patch('opencensus.ext.azure.metrics_exporter' +
                 '.logger.warning', return_value=mock.Mock())
     def test_transmit_no_response_body(self, logger_mock):
-        with mock.patch('requests.Session.post') as requests_mock:
+        with mock.patch('requests.post') as requests_mock:
             type(requests_mock.return_value).text = mock.PropertyMock(
                 side_effect=Exception())
             envelope = create_envelope()
@@ -185,7 +185,7 @@ class TestAzureMetricsExporter(unittest.TestCase):
     @mock.patch('opencensus.ext.azure.metrics_exporter' +
                 '.logger.warning', return_value=mock.Mock())
     def test_transmit_invalid_response_body(self, logger_mock):
-        with mock.patch('requests.Session.post') as requests_mock:
+        with mock.patch('requests.post') as requests_mock:
             type(requests_mock.return_value).text = mock.PropertyMock(
                 return_value='invalid')
             envelope = create_envelope()
@@ -200,7 +200,7 @@ class TestAzureMetricsExporter(unittest.TestCase):
     @mock.patch('opencensus.ext.azure.metrics_exporter' +
                 '.logger.info', return_value=mock.Mock())
     def test_transmit_success(self, logger_mock):
-        with mock.patch('requests.Session.post') as requests_mock:
+        with mock.patch('requests.post') as requests_mock:
             text = '{"itemsReceived":1,'\
                    '"itemsAccepted":1,'\
                    '"errors":[]}'
@@ -222,7 +222,7 @@ class TestAzureMetricsExporter(unittest.TestCase):
     @mock.patch('opencensus.ext.azure.metrics_exporter' +
                 '.json.loads', return_value=None)
     def test_transmit_none_data_retryable(self, logger_mock, json_mock):
-        with mock.patch('requests.Session.post') as requests_mock:
+        with mock.patch('requests.post') as requests_mock:
             text = '{"itemsReceived":1,'\
                    '"itemsAccepted":1,'\
                    '"errors":[{"statusCode":500, "index":0}]}'
@@ -244,7 +244,7 @@ class TestAzureMetricsExporter(unittest.TestCase):
     @mock.patch('opencensus.ext.azure.metrics_exporter' +
                 '.json.loads', return_value=None)
     def test_transmit_none_data_non_retryable(self, logger_mock, json_mock):
-        with mock.patch('requests.Session.post') as requests_mock:
+        with mock.patch('requests.post') as requests_mock:
             text = '{"itemsReceived":1,'\
                    '"itemsAccepted":1,'\
                    '"errors":[{"statusCode":500, "index":0}]}'
@@ -264,7 +264,7 @@ class TestAzureMetricsExporter(unittest.TestCase):
     @mock.patch('opencensus.ext.azure.metrics_exporter' +
                 '.logger.exception', return_value=mock.Mock())
     def test_transmit_partial_exception(self, logger_mock):
-        with mock.patch('requests.Session.post') as requests_mock:
+        with mock.patch('requests.post') as requests_mock:
             text = '{"itemsReceived":1,'\
                    '"itemsAccepted":1}'
             type(requests_mock.return_value).text = mock.PropertyMock(
@@ -283,7 +283,7 @@ class TestAzureMetricsExporter(unittest.TestCase):
     @mock.patch('opencensus.ext.azure.metrics_exporter' +
                 '.logger.warning', return_value=mock.Mock())
     def test_transmit_partial_retryable(self, logger_mock):
-        with mock.patch('requests.Session.post') as requests_mock:
+        with mock.patch('requests.post') as requests_mock:
             text = '{"itemsReceived":1,'\
                    '"itemsAccepted":1,'\
                    '"errors":[{"statusCode":429, "index":0}]}'
@@ -303,7 +303,7 @@ class TestAzureMetricsExporter(unittest.TestCase):
     @mock.patch('opencensus.ext.azure.metrics_exporter' +
                 '.logger.error', return_value=mock.Mock())
     def test_transmit_partial_non_retryable(self, logger_mock):
-        with mock.patch('requests.Session.post') as requests_mock:
+        with mock.patch('requests.post') as requests_mock:
             text = '{"itemsReceived":1,'\
                    '"itemsAccepted":1,'\
                    '"errors":[{"statusCode":402,'\
@@ -326,7 +326,7 @@ class TestAzureMetricsExporter(unittest.TestCase):
     @mock.patch('opencensus.ext.azure.metrics_exporter' +
                 '.logger.warning', return_value=mock.Mock())
     def test_transmit_partial_mix_retryable(self, logger_mock, logger2_mock):
-        with mock.patch('requests.Session.post') as requests_mock:
+        with mock.patch('requests.post') as requests_mock:
             text = '{"itemsReceived":1,'\
                    '"itemsAccepted":0,'\
                    '"errors":[{"statusCode":402,'\
@@ -349,7 +349,7 @@ class TestAzureMetricsExporter(unittest.TestCase):
     @mock.patch('opencensus.ext.azure.metrics_exporter' +
                 '.logger.warning', return_value=mock.Mock())
     def test_transmit_server_retryable(self, logger_mock):
-        with mock.patch('requests.Session.post') as requests_mock:
+        with mock.patch('requests.post') as requests_mock:
             text = '{"itemsReceived":1,'\
                    '"itemsAccepted":1,'\
                    '"errors":[{"statusCode":500, "index":0}]}'
@@ -369,7 +369,7 @@ class TestAzureMetricsExporter(unittest.TestCase):
     @mock.patch('opencensus.ext.azure.metrics_exporter' +
                 '.logger.error', return_value=mock.Mock())
     def test_transmit_server_non_retryable(self, logger_mock):
-        with mock.patch('requests.Session.post') as requests_mock:
+        with mock.patch('requests.post') as requests_mock:
             text = '{"itemsReceived":1,'\
                    '"itemsAccepted":1,'\
                    '"errors":[{"statusCode":402, "index":0}]}'

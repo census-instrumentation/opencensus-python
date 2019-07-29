@@ -24,15 +24,8 @@ ORIGINAL_REQUEST = requests.Session.request
 
 def dependency_patch(*args, **kwargs):
     result = ORIGINAL_REQUEST(*args, **kwargs)
-    disable_collection = False
-    try:
-        # Check if request was sent from an exporter. If so, do not collect.
-        if execution_context.is_exporter_thread():
-            disable_collection = True
-    except AttributeError:
-        # If not set, do not disable collection
-        pass
-    if not disable_collection:
+    # Only collect request metric if sent from non-exporter thread
+    if not execution_context.is_exporter_thread():
         count = dependency_map.get('count', 0)
         dependency_map['count'] = count + 1
     return result

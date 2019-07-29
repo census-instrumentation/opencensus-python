@@ -18,6 +18,7 @@ import requests
 import unittest
 
 from opencensus.ext.azure.metrics_exporter import standard_metrics
+from opencensus.trace import execution_context
 
 ORIGINAL_FUNCTION = requests.Session.request
 
@@ -144,37 +145,20 @@ class TestStandardMetrics(unittest.TestCase):
         map = standard_metrics.dependency.dependency_map
         standard_metrics.dependency.ORIGINAL_REQUEST = lambda x: None
         session = requests.Session()
+        execution_context.set_is_exporter_thread(False)
         result = standard_metrics.dependency.dependency_patch(session)
 
         self.assertEqual(map['count'], 1)
         self.assertIsNone(result)
 
-    def test_dependency_patch_no_args(self):
-        map = standard_metrics.dependency.dependency_map
-        standard_metrics.dependency.ORIGINAL_REQUEST = lambda: None
-        result = standard_metrics.dependency.dependency_patch()
-
-        self.assertEqual(map['count'], 1)
-        self.assertIsNone(result)
-
-    def test_dependency_patch_disable_collection_true(self):
+    def test_dependency_patch_exporter_thread(self):
         map = standard_metrics.dependency.dependency_map
         standard_metrics.dependency.ORIGINAL_REQUEST = lambda x: None
         session = mock.Mock()
-        session.disable_collection = True
+        execution_context.set_is_exporter_thread(True)
         result = standard_metrics.dependency.dependency_patch(session)
 
         self.assertIsNone(map.get('count'))
-        self.assertIsNone(result)
-
-    def test_dependency_patch_disable_collection_false(self):
-        map = standard_metrics.dependency.dependency_map
-        standard_metrics.dependency.ORIGINAL_REQUEST = lambda x: None
-        session = mock.Mock()
-        session.disable_collection = False
-        result = standard_metrics.dependency.dependency_patch(session)
-
-        self.assertEqual(map['count'], 1)
         self.assertIsNone(result)
 
     def test_get_dependency_rate_metric(self):

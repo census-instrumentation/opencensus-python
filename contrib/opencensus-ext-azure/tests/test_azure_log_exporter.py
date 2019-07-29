@@ -77,7 +77,7 @@ class TestAzureLogHandler(unittest.TestCase):
         self.assertRaises(ValueError, lambda: log_exporter.AzureLogHandler())
         Options._default.instrumentation_key = instrumentation_key
 
-    @mock.patch('requests.Session.post', return_value=mock.Mock())
+    @mock.patch('requests.post', return_value=mock.Mock())
     def test_exception(self, requests_mock):
         logger = logging.getLogger(self.id())
         handler = log_exporter.AzureLogHandler(
@@ -94,7 +94,7 @@ class TestAzureLogHandler(unittest.TestCase):
         post_body = requests_mock.call_args_list[0][1]['data']
         self.assertTrue('ZeroDivisionError' in post_body)
 
-    @mock.patch('requests.Session.post', return_value=mock.Mock())
+    @mock.patch('requests.post', return_value=mock.Mock())
     def test_export_empty(self, request_mock):
         handler = log_exporter.AzureLogHandler(
             instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
