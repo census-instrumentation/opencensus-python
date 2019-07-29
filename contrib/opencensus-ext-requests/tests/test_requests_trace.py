@@ -88,11 +88,16 @@ class Test_requests_trace(unittest.TestCase):
             'get_opencensus_tracer',
             return_value=mock_tracer)
 
+        patch_thread = mock.patch(
+            'opencensus.ext.requests.trace.execution_context.'
+            'is_exporter_thread',
+            return_value=False)
+
         wrapped = trace.wrap_requests(mock_func)
 
         url = 'http://localhost:8080'
 
-        with patch:
+        with patch, patch_thread:
             wrapped(url)
 
         expected_attributes = {'http.url': url, 'http.status_code': '200'}
@@ -121,12 +126,16 @@ class Test_requests_trace(unittest.TestCase):
             'opencensus.ext.requests.trace.execution_context.'
             'get_opencensus_attr',
             return_value=['localhost:8080'])
+        patch_thread = mock.patch(
+            'opencensus.ext.requests.trace.execution_context.'
+            'is_exporter_thread',
+            return_value=False)
 
         wrapped = trace.wrap_requests(mock_func)
 
         url = 'http://localhost'
 
-        with patch_tracer, patch_attr:
+        with patch_tracer, patch_attr, patch_thread:
             wrapped(url)
 
         expected_name = '[requests]get'
@@ -150,12 +159,47 @@ class Test_requests_trace(unittest.TestCase):
             'opencensus.ext.requests.trace.execution_context.'
             'get_opencensus_attr',
             return_value=['localhost:8080'])
+        patch_thread = mock.patch(
+            'opencensus.ext.requests.trace.execution_context.'
+            'is_exporter_thread',
+            return_value=False)
 
         wrapped = trace.wrap_requests(mock_func)
 
         url = 'http://localhost:8080'
 
-        with patch_tracer, patch_attr:
+        with patch_tracer, patch_attr, patch_thread:
+            wrapped(url)
+
+        self.assertEqual(None, mock_tracer.current_span)
+
+    def test_wrap_requests_exporter_thread(self):
+        mock_return = mock.Mock()
+        mock_return.status_code = 200
+        return_value = mock_return
+        mock_func = mock.Mock()
+        mock_func.__name__ = 'get'
+        mock_func.return_value = return_value
+        mock_tracer = MockTracer()
+
+        patch_tracer = mock.patch(
+            'opencensus.ext.requests.trace.execution_context.'
+            'get_opencensus_tracer',
+            return_value=mock_tracer)
+        patch_attr = mock.patch(
+            'opencensus.ext.requests.trace.execution_context.'
+            'get_opencensus_attr',
+            return_value=['localhost:8080'])
+        patch_thread = mock.patch(
+            'opencensus.ext.requests.trace.execution_context.'
+            'is_exporter_thread',
+            return_value=True)
+
+        wrapped = trace.wrap_requests(mock_func)
+
+        url = 'http://localhost:8080'
+
+        with patch_tracer, patch_attr, patch_thread:
             wrapped(url)
 
         self.assertEqual(None, mock_tracer.current_span)
@@ -171,12 +215,16 @@ class Test_requests_trace(unittest.TestCase):
             'opencensus.ext.requests.trace.execution_context.'
             'get_opencensus_tracer',
             return_value=mock_tracer)
+        patch_thread = mock.patch(
+            'opencensus.ext.requests.trace.execution_context.'
+            'is_exporter_thread',
+            return_value=False)
 
         url = 'http://localhost:8080'
         request_method = 'POST'
         kwargs = {}
 
-        with patch:
+        with patch, patch_thread:
             trace.wrap_session_request(wrapped, 'Session.request',
                                        (request_method, url), kwargs)
 
@@ -208,11 +256,15 @@ class Test_requests_trace(unittest.TestCase):
             'opencensus.ext.requests.trace.execution_context.'
             'get_opencensus_attr',
             return_value=None)
+        patch_thread = mock.patch(
+            'opencensus.ext.requests.trace.execution_context.'
+            'is_exporter_thread',
+            return_value=False)
 
         url = 'http://localhost'
         request_method = 'POST'
 
-        with patch_tracer, patch_attr:
+        with patch_tracer, patch_attr, patch_thread:
             trace.wrap_session_request(wrapped, 'Session.request',
                                        (request_method, url), {})
 
@@ -235,11 +287,44 @@ class Test_requests_trace(unittest.TestCase):
             'opencensus.ext.requests.trace.execution_context.'
             'get_opencensus_attr',
             return_value=['localhost:8080'])
+        patch_thread = mock.patch(
+            'opencensus.ext.requests.trace.execution_context.'
+            'is_exporter_thread',
+            return_value=False)
 
         url = 'http://localhost:8080'
         request_method = 'POST'
 
-        with patch_tracer, patch_attr:
+        with patch_tracer, patch_attr, patch_thread:
+            trace.wrap_session_request(wrapped, 'Session.request',
+                                       (request_method, url), {})
+        self.assertEqual(None, mock_tracer.current_span)
+
+    def test_wrap_session_request_exporter_thread(self):
+        def wrapped(*args, **kwargs):
+            result = mock.Mock()
+            result.status_code = 200
+            return result
+
+        mock_tracer = MockTracer()
+
+        patch_tracer = mock.patch(
+            'opencensus.ext.requests.trace.execution_context.'
+            'get_opencensus_tracer',
+            return_value=mock_tracer)
+        patch_attr = mock.patch(
+            'opencensus.ext.requests.trace.execution_context.'
+            'get_opencensus_attr',
+            return_value=['localhost:8080'])
+        patch_thread = mock.patch(
+            'opencensus.ext.requests.trace.execution_context.'
+            'is_exporter_thread',
+            return_value=True)
+
+        url = 'http://localhost:8080'
+        request_method = 'POST'
+
+        with patch_tracer, patch_attr, patch_thread:
             trace.wrap_session_request(wrapped, 'Session.request',
                                        (request_method, url), {})
         self.assertEqual(None, mock_tracer.current_span)
@@ -254,12 +339,16 @@ class Test_requests_trace(unittest.TestCase):
             'opencensus.ext.requests.trace.execution_context.'
             'get_opencensus_tracer',
             return_value=mock_tracer)
+        patch_thread = mock.patch(
+            'opencensus.ext.requests.trace.execution_context.'
+            'is_exporter_thread',
+            return_value=False)
 
         url = 'http://localhost:8080'
         request_method = 'POST'
         kwargs = {}
 
-        with patch:
+        with patch, patch_thread:
             trace.wrap_session_request(wrapped, 'Session.request',
                                        (request_method, url), kwargs)
 
@@ -275,12 +364,16 @@ class Test_requests_trace(unittest.TestCase):
             'opencensus.ext.requests.trace.execution_context.'
             'get_opencensus_tracer',
             return_value=mock_tracer)
+        patch_thread = mock.patch(
+            'opencensus.ext.requests.trace.execution_context.'
+            'is_exporter_thread',
+            return_value=False)
 
         url = 'http://localhost:8080'
         request_method = 'POST'
         kwargs = {'headers': {'key': 'value'}}
 
-        with patch:
+        with patch, patch_thread:
             trace.wrap_session_request(wrapped, 'Session.request',
                                        (request_method, url), kwargs)
 
@@ -298,11 +391,16 @@ class Test_requests_trace(unittest.TestCase):
             'get_opencensus_tracer',
             return_value=mock_tracer)
 
+        patch_thread = mock.patch(
+            'opencensus.ext.requests.trace.execution_context.'
+            'is_exporter_thread',
+            return_value=False)
+
         url = 'http://localhost:8080'
         request_method = 'POST'
         kwargs = {'headers': {'x-trace': 'original-value'}}
 
-        with patch:
+        with patch, patch_thread:
             trace.wrap_session_request(wrapped, 'Session.request',
                                        (request_method, url), kwargs)
 
