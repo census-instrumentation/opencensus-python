@@ -78,7 +78,7 @@ class Worker(threading.Thread):
 
     def run(self):
         # Indicate that this thread is an exporter thread.
-        execution_context.set_is_exporter_thread(True)
+        execution_context.set_is_exporter(True)
         src = self._src
         dst = self._dst
         while True:

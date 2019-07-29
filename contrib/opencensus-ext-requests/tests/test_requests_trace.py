@@ -90,7 +90,7 @@ class Test_requests_trace(unittest.TestCase):
 
         patch_thread = mock.patch(
             'opencensus.ext.requests.trace.execution_context.'
-            'is_exporter_thread',
+            'is_exporter',
             return_value=False)
 
         wrapped = trace.wrap_requests(mock_func)
@@ -128,7 +128,7 @@ class Test_requests_trace(unittest.TestCase):
             return_value=['localhost:8080'])
         patch_thread = mock.patch(
             'opencensus.ext.requests.trace.execution_context.'
-            'is_exporter_thread',
+            'is_exporter',
             return_value=False)
 
         wrapped = trace.wrap_requests(mock_func)
@@ -161,7 +161,7 @@ class Test_requests_trace(unittest.TestCase):
             return_value=['localhost:8080'])
         patch_thread = mock.patch(
             'opencensus.ext.requests.trace.execution_context.'
-            'is_exporter_thread',
+            'is_exporter',
             return_value=False)
 
         wrapped = trace.wrap_requests(mock_func)
@@ -192,7 +192,7 @@ class Test_requests_trace(unittest.TestCase):
             return_value=['localhost:8080'])
         patch_thread = mock.patch(
             'opencensus.ext.requests.trace.execution_context.'
-            'is_exporter_thread',
+            'is_exporter',
             return_value=True)
 
         wrapped = trace.wrap_requests(mock_func)
@@ -217,7 +217,7 @@ class Test_requests_trace(unittest.TestCase):
             return_value=mock_tracer)
         patch_thread = mock.patch(
             'opencensus.ext.requests.trace.execution_context.'
-            'is_exporter_thread',
+            'is_exporter',
             return_value=False)
 
         url = 'http://localhost:8080'
@@ -258,7 +258,7 @@ class Test_requests_trace(unittest.TestCase):
             return_value=None)
         patch_thread = mock.patch(
             'opencensus.ext.requests.trace.execution_context.'
-            'is_exporter_thread',
+            'is_exporter',
             return_value=False)
 
         url = 'http://localhost'
@@ -289,7 +289,7 @@ class Test_requests_trace(unittest.TestCase):
             return_value=['localhost:8080'])
         patch_thread = mock.patch(
             'opencensus.ext.requests.trace.execution_context.'
-            'is_exporter_thread',
+            'is_exporter',
             return_value=False)
 
         url = 'http://localhost:8080'
@@ -318,7 +318,7 @@ class Test_requests_trace(unittest.TestCase):
             return_value=['localhost:8080'])
         patch_thread = mock.patch(
             'opencensus.ext.requests.trace.execution_context.'
-            'is_exporter_thread',
+            'is_exporter',
             return_value=True)
 
         url = 'http://localhost:8080'
@@ -341,7 +341,7 @@ class Test_requests_trace(unittest.TestCase):
             return_value=mock_tracer)
         patch_thread = mock.patch(
             'opencensus.ext.requests.trace.execution_context.'
-            'is_exporter_thread',
+            'is_exporter',
             return_value=False)
 
         url = 'http://localhost:8080'
@@ -366,7 +366,7 @@ class Test_requests_trace(unittest.TestCase):
             return_value=mock_tracer)
         patch_thread = mock.patch(
             'opencensus.ext.requests.trace.execution_context.'
-            'is_exporter_thread',
+            'is_exporter',
             return_value=False)
 
         url = 'http://localhost:8080'
@@ -393,7 +393,7 @@ class Test_requests_trace(unittest.TestCase):
 
         patch_thread = mock.patch(
             'opencensus.ext.requests.trace.execution_context.'
-            'is_exporter_thread',
+            'is_exporter',
             return_value=False)
 
         url = 'http://localhost:8080'

@@ -67,7 +67,7 @@ class PeriodicMetricTask(PeriodicTask):
 
     def run(self):
         # Indicate that this thread is an exporter thread.
-        execution_context.set_is_exporter_thread(True)
+        execution_context.set_is_exporter(True)
         super(PeriodicMetricTask, self).run()
 
 

@@ -62,7 +62,7 @@ def wrap_requests(requests_func):
     """Wrap the requests function to trace it."""
     def call(url, *args, **kwargs):
         # Check if request was sent from an exporter. If so, do not wrap.
-        if execution_context.is_exporter_thread():
+        if execution_context.is_exporter():
             return requests_func(url, *args, **kwargs)
         blacklist_hostnames = execution_context.get_opencensus_attr(
             'blacklist_hostnames')
@@ -97,7 +97,7 @@ def wrap_requests(requests_func):
 def wrap_session_request(wrapped, instance, args, kwargs):
     """Wrap the session function to trace it."""
     # Check if request was sent from an exporter. If so, do not wrap.
-    if execution_context.is_exporter_thread():
+    if execution_context.is_exporter():
         return wrapped(*args, **kwargs)
 
     method = kwargs.get('method') or args[0]

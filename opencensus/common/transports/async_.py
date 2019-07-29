@@ -144,7 +144,7 @@ class _Worker(object):
             self._thread.daemon = True
             # Indicate that this thread is an exporter thread. Used for
             # auto-collection.
-            execution_context.set_is_exporter_thread(True)
+            execution_context.set_is_exporter(True)
             self._thread.start()
             atexit.register(self._export_pending_data)
 

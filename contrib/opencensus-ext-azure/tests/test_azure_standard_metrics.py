@@ -138,7 +138,7 @@ class TestStandardMetrics(unittest.TestCase):
         map = standard_metrics.dependency.dependency_map
         standard_metrics.dependency.ORIGINAL_REQUEST = lambda x: None
         session = requests.Session()
-        execution_context.set_is_exporter_thread(False)
+        execution_context.set_is_exporter(False)
         result = standard_metrics.dependency.dependency_patch(session)
 
         self.assertEqual(map['count'], 1)
@@ -148,7 +148,7 @@ class TestStandardMetrics(unittest.TestCase):
         map = standard_metrics.dependency.dependency_map
         standard_metrics.dependency.ORIGINAL_REQUEST = lambda x: None
         session = mock.Mock()
-        execution_context.set_is_exporter_thread(True)
+        execution_context.set_is_exporter(True)
         result = standard_metrics.dependency.dependency_patch(session)
 
         self.assertIsNone(map.get('count'))

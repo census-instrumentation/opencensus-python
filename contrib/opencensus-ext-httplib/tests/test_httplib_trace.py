@@ -77,7 +77,7 @@ class Test_httplib_trace(unittest.TestCase):
             return_value=mock_tracer)
         patch_thread = mock.patch(
             'opencensus.ext.requests.trace.execution_context.'
-            'is_exporter_thread',
+            'is_exporter',
             return_value=False)
 
         wrapped = trace.wrap_httplib_request(mock_request_func)
@@ -120,7 +120,7 @@ class Test_httplib_trace(unittest.TestCase):
             return_value=None)
         patch_thread = mock.patch(
             'opencensus.ext.requests.trace.execution_context.'
-            'is_exporter_thread',
+            'is_exporter',
             return_value=False)
 
         wrapped = trace.wrap_httplib_request(mock_request_func)
@@ -156,7 +156,7 @@ class Test_httplib_trace(unittest.TestCase):
             return_value=['localhost:8080'])
         patch_thread = mock.patch(
             'opencensus.ext.requests.trace.execution_context.'
-            'is_exporter_thread',
+            'is_exporter',
             return_value=False)
 
         wrapped = trace.wrap_httplib_request(mock_request_func)
@@ -179,7 +179,7 @@ class Test_httplib_trace(unittest.TestCase):
         mock_request_func.__name__ = 'request'
         patch_thread = mock.patch(
             'opencensus.ext.requests.trace.execution_context.'
-            'is_exporter_thread',
+            'is_exporter',
             return_value=True)
 
         mock_self = mock.Mock()
@@ -218,7 +218,7 @@ class Test_httplib_trace(unittest.TestCase):
             return_value=span_id)
         patch_thread = mock.patch(
             'opencensus.ext.requests.trace.execution_context.'
-            'is_exporter_thread',
+            'is_exporter',
             return_value=False)
 
         wrapped = trace.wrap_httplib_response(mock_response_func)
@@ -251,7 +251,7 @@ class Test_httplib_trace(unittest.TestCase):
             return_value='1111')
         patch_thread = mock.patch(
             'opencensus.ext.requests.trace.execution_context.'
-            'is_exporter_thread',
+            'is_exporter',
             return_value=False)
 
         wrapped = trace.wrap_httplib_response(mock_response_func)
@@ -285,7 +285,7 @@ class Test_httplib_trace(unittest.TestCase):
             return_value='1111')
         patch_thread = mock.patch(
             'opencensus.ext.requests.trace.execution_context.'
-            'is_exporter_thread',
+            'is_exporter',
             return_value=True)
 
         wrapped = trace.wrap_httplib_response(mock_response_func)

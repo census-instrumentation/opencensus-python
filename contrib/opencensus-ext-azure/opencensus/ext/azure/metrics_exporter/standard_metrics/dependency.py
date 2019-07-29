@@ -25,7 +25,7 @@ ORIGINAL_REQUEST = requests.Session.request
 def dependency_patch(*args, **kwargs):
     result = ORIGINAL_REQUEST(*args, **kwargs)
     # Only collect request metric if sent from non-exporter thread
-    if not execution_context.is_exporter_thread():
+    if not execution_context.is_exporter():
         count = dependency_map.get('count', 0)
         dependency_map['count'] = count + 1
     return result
