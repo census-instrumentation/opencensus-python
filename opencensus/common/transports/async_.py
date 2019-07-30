@@ -20,6 +20,7 @@ from six.moves import queue
 from six.moves import range
 
 from opencensus.common.transports import base
+from opencensus.trace import execution_context
 
 _DEFAULT_GRACE_PERIOD = 5.0  # Seconds
 _DEFAULT_MAX_BATCH_SIZE = 600
@@ -141,6 +142,9 @@ class _Worker(object):
             self._thread = threading.Thread(
                 target=self._thread_main, name=_WORKER_THREAD_NAME)
             self._thread.daemon = True
+            # Indicate that this thread is an exporter thread. Used for
+            # auto-collection.
+            execution_context.set_is_exporter(True)
             self._thread.start()
             atexit.register(self._export_pending_data)
 

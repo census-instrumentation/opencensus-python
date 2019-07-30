@@ -17,6 +17,7 @@ import logging
 
 from opencensus.common import utils
 from opencensus.common.schedule import PeriodicTask
+from opencensus.trace import execution_context
 
 
 logger = logging.getLogger(__name__)
@@ -63,6 +64,11 @@ class PeriodicMetricTask(PeriodicTask):
                 logger.exception("Error handling metric export")
 
         super(PeriodicMetricTask, self).__init__(interval, func, args, kwargs)
+
+    def run(self):
+        # Indicate that this thread is an exporter thread.
+        execution_context.set_is_exporter(True)
+        super(PeriodicMetricTask, self).run()
 
 
 def get_exporter_thread(metric_producers, exporter, interval=None):

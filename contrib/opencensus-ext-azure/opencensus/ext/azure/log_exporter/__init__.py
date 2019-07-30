@@ -28,6 +28,7 @@ from opencensus.ext.azure.common.protocol import ExceptionData
 from opencensus.ext.azure.common.protocol import Message
 from opencensus.ext.azure.common.storage import LocalFileStorage
 from opencensus.ext.azure.common.transport import TransportMixin
+from opencensus.trace import execution_context
 
 logger = logging.getLogger(__name__)
 
@@ -76,6 +77,8 @@ class Worker(threading.Thread):
         )
 
     def run(self):
+        # Indicate that this thread is an exporter thread.
+        execution_context.set_is_exporter(True)
         src = self._src
         dst = self._dst
         while True:
