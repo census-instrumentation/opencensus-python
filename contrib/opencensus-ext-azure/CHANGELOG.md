@@ -1,8 +1,14 @@
 # Changelog
 
 ## Unreleased
+- Added standard metrics
+  ([#708](https://github.com/census-instrumentation/opencensus-python/pull/708),
+   [#718](https://github.com/census-instrumentation/opencensus-python/pull/718),
+   [#720](https://github.com/census-instrumentation/opencensus-python/pull/720),
+   [#722](https://github.com/census-instrumentation/opencensus-python/pull/722),
+   [#724](https://github.com/census-instrumentation/opencensus-python/pull/724))
 - Supported server performance breakdown by operation name
-([#735](https://github.com/census-instrumentation/opencensus-python/pull/735))
+  ([#735](https://github.com/census-instrumentation/opencensus-python/pull/735))
 
 ## 0.3.1
 - Added metrics exporter
