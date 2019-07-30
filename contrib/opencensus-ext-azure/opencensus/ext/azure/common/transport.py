@@ -16,8 +16,6 @@ import json
 import logging
 import requests
 
-from opencensus.trace import execution_context
-
 logger = logging.getLogger(__name__)
 
 
@@ -42,14 +40,6 @@ class TransportMixin(object):
         Return the next retry time in seconds for retryable failure.
         This function should never throw exception.
         """
-        # TODO: prevent requests being tracked
-        blacklist_hostnames = execution_context.get_opencensus_attr(
-            'blacklist_hostnames',
-        )
-        execution_context.set_opencensus_attr(
-            'blacklist_hostnames',
-            ['dc.services.visualstudio.com'],
-        )
         try:
             response = requests.post(
                 url=self.options.endpoint,
@@ -64,11 +54,7 @@ class TransportMixin(object):
             logger.warning('Transient client side error %s.', ex)
             # client side error (retryable)
             return self.options.minimum_retry_interval
-        finally:
-            execution_context.set_opencensus_attr(
-                'blacklist_hostnames',
-                blacklist_hostnames,
-            )
+
         text = 'N/A'
         data = None
         try:

@@ -17,7 +17,16 @@ from opencensus.trace.tracers import noop_tracer
 
 _attrs_slot = RuntimeContext.register_slot('attrs', lambda: {})
 _current_span_slot = RuntimeContext.register_slot('current_span', None)
+_exporter_slot = RuntimeContext.register_slot('is_exporter', False)
 _tracer_slot = RuntimeContext.register_slot('tracer', noop_tracer.NoopTracer())
+
+
+def is_exporter():
+    return RuntimeContext.is_exporter
+
+
+def set_is_exporter(is_exporter):
+    RuntimeContext.is_exporter = is_exporter
 
 
 def get_opencensus_tracer():

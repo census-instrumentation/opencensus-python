@@ -19,6 +19,7 @@ import time
 from opencensus.common.schedule import Queue
 from opencensus.common.schedule import QueueEvent
 from opencensus.ext.azure.common import Options
+from opencensus.trace import execution_context
 
 
 class BaseExporter(object):
@@ -64,6 +65,8 @@ class Worker(threading.Thread):
         super(Worker, self).__init__()
 
     def run(self):  # pragma: NO COVER
+        # Indicate that this thread is an exporter thread.
+        execution_context.set_is_exporter(True)
         src = self.src
         dst = self.dst
         while True:
