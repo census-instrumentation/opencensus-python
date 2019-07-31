@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+## 0.7.0
+Released 2019-07-31
+
+- Version bump
+
 ## 0.1.0
 Released 2019-05-31
 
