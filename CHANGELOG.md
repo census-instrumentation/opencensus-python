@@ -6,7 +6,7 @@
   ([#696](https://github.com/census-instrumentation/opencensus-python/pull/696))
 - Fix cloud format propagator to use decimal span_id encoding instead of hex
   ([#719](https://github.com/census-instrumentation/opencensus-python/pull/719))
-- Added `set_status` to `span` and `set_status_to_current_span` to `tracer`
+- Added `set_status` to `span`
   ([#738](https://github.com/census-instrumentation/opencensus-python/pull/738))
 
 
