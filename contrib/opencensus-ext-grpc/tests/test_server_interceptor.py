@@ -147,8 +147,10 @@ class TestOpenCensusServerInterceptor(unittest.TestCase):
 
             # check that the status obj is attached to the current span
             self.assertIsNotNone(current_span.status)
-            self.assertEqual(current_span.status.code, code_pb2.UNKNOWN)
-            self.assertEqual(current_span.status.message, 'Test')
+            self.assertEqual(
+                current_span.status.canonical_code, code_pb2.UNKNOWN
+            )
+            self.assertEqual(current_span.status.description, 'Test')
 
     @mock.patch(
         'opencensus.trace.execution_context.get_opencensus_tracer')

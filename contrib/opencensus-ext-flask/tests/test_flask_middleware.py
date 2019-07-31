@@ -316,8 +316,10 @@ class TestFlaskMiddleware(unittest.TestCase):
         exported_spandata = mock_exporter.export.call_args[0][0][0]
         self.assertIsInstance(exported_spandata, span_data.SpanData)
         self.assertIsInstance(exported_spandata.status, status.Status)
-        self.assertEqual(exported_spandata.status.code, code_pb2.UNKNOWN)
-        self.assertEqual(exported_spandata.status.message, 'error')
+        self.assertEqual(
+            exported_spandata.status.canonical_code, code_pb2.UNKNOWN
+        )
+        self.assertEqual(exported_spandata.status.description, 'error')
 
     def test_teardown_include_exception_and_traceback(self):
         mock_exporter = mock.MagicMock()
@@ -331,8 +333,10 @@ class TestFlaskMiddleware(unittest.TestCase):
         exported_spandata = mock_exporter.export.call_args[0][0][0]
         self.assertIsInstance(exported_spandata, span_data.SpanData)
         self.assertIsInstance(exported_spandata.status, status.Status)
-        self.assertEqual(exported_spandata.status.code, code_pb2.UNKNOWN)
-        self.assertEqual(exported_spandata.status.message, 'error')
+        self.assertEqual(
+            exported_spandata.status.canonical_code, code_pb2.UNKNOWN
+        )
+        self.assertEqual(exported_spandata.status.description, 'error')
         self.assertIsInstance(
             exported_spandata.stack_trace, stack_trace.StackTrace
         )

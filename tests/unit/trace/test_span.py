@@ -45,6 +45,7 @@ class TestSpan(unittest.TestCase):
     def test_constructor_defaults(self):
         span_id = 'test_span_id'
         span_name = 'test_span_name'
+        status = Status.as_ok()
 
         patch = mock.patch(
             'opencensus.trace.span.generate_span_id', return_value=span_id)
@@ -56,6 +57,7 @@ class TestSpan(unittest.TestCase):
         self.assertEqual(span.span_id, span_id)
         self.assertIsNone(span.parent_span)
         self.assertEqual(span.attributes, {})
+        self.assertDictEqual(span.status.__dict__, status.__dict__)
         self.assertIsNone(span.start_time)
         self.assertIsNone(span.end_time)
         self.assertEqual(span.children, [])
@@ -195,8 +197,8 @@ class TestSpan(unittest.TestCase):
         status = Status(code=code, message=message, details=details)
         span.set_status(status)
 
-        self.assertEqual(span.status.code, code)
-        self.assertEqual(span.status.message, message)
+        self.assertEqual(span.status.canonical_code, code)
+        self.assertEqual(span.status.description, message)
         self.assertEqual(span.status.details, details)
 
     def test_start(self):
@@ -296,8 +298,8 @@ class TestSpan(unittest.TestCase):
         self.assertIsNotNone(stack_frame['load_module']['build_id']['value'])
 
         self.assertIsNotNone(root_span.status)
-        self.assertEqual(root_span.status.message, exception_message)
-        self.assertEqual(root_span.status.code, code_pb2.UNKNOWN)
+        self.assertEqual(root_span.status.description, exception_message)
+        self.assertEqual(root_span.status.canonical_code, code_pb2.UNKNOWN)
 
 
 class Test_format_span_json(unittest.TestCase):

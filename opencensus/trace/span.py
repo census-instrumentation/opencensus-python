@@ -264,9 +264,13 @@ class Span(base_span.BaseSpan):
         else:
             self.links = BoundedList.from_seq(MAX_NUM_LINKS, links)
 
+        if status is None:
+            self.status = status_module.Status.as_ok()
+        else:
+            self.status = status
+
         self.span_id = span_id
         self.stack_trace = stack_trace
-        self.status = status
         self.same_process_as_parent_span = same_process_as_parent_span
         self._child_spans = []
         self.context_tracer = context_tracer

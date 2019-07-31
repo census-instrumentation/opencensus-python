@@ -132,7 +132,11 @@ class MockSpan(object):
         self.status = None
 
     def set_status(self, status):
-        self.status = status.__dict__
+        self.status = {
+            'code': status.canonical_code,
+            'message': status.description,
+            'details': status.details,
+        }
 
 
 class MockTracer(object):
