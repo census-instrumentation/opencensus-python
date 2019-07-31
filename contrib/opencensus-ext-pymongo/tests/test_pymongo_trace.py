@@ -78,7 +78,7 @@ class Test_pymongo_trace(unittest.TestCase):
             'opencensus.trace.execution_context.get_opencensus_tracer',
             return_value=mock_tracer)
 
-        expected_attrs = {
+        expected_status = {
             'code': 0,
             'message': '',
             'details': None
@@ -87,7 +87,7 @@ class Test_pymongo_trace(unittest.TestCase):
         with patch:
             trace.MongoCommandListener().succeeded(event=MockEvent(None))
 
-        self.assertEqual(mock_tracer.current_span.status, expected_attrs)
+        self.assertEqual(mock_tracer.current_span.status, expected_status)
         mock_tracer.end_span.assert_called_with()
 
     def test_failed(self):
@@ -98,7 +98,7 @@ class Test_pymongo_trace(unittest.TestCase):
             'opencensus.trace.execution_context.get_opencensus_tracer',
             return_value=mock_tracer)
 
-        expected_attrs = {
+        expected_status = {
             'code': 2,
             'message': 'MongoDB error',
             'details': 'failure'
@@ -107,7 +107,7 @@ class Test_pymongo_trace(unittest.TestCase):
         with patch:
             trace.MongoCommandListener().failed(event=MockEvent(None))
 
-        self.assertEqual(mock_tracer.current_span.status, expected_attrs)
+        self.assertEqual(mock_tracer.current_span.status, expected_status)
         mock_tracer.end_span.assert_called_with()
 
 
