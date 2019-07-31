@@ -146,31 +146,6 @@ class ContextTracer(base.Tracer):
         current_span = self.current_span()
         current_span.add_attribute(attribute_key, attribute_value)
 
-    def set_status_to_current_span(self, code, message='', details=None):
-        """Sets span status.
-
-        :type code: int
-        :param code: An enum value of :class: `~google.rpc.Code`.
-
-        :type message: str
-        :param message: Description of the status.
-
-        :type details: list
-        :param details: A list of messages that carry the error details.
-                        There is a common set of message types for APIs to use.
-                        e.g. [
-                                {
-                                    "@type": string,
-                                    field1: ...,
-                                    ...
-                                },
-                            ]
-                        See: https://cloud.google.com/trace/docs/reference/v2/
-                            rest/v2/Status#FIELDS.details
-        """
-        current_span = self.current_span()
-        current_span.set_status(code, message, details)
-
     def get_span_datas(self, span):
         """Extracts a list of SpanData tuples from a span
 

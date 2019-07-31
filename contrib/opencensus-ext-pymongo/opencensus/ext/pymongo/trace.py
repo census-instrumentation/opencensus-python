@@ -83,5 +83,6 @@ class MongoCommandListener(monitoring.CommandListener):
         self._stop(code_pb2.UNKNOWN, 'MongoDB error', event.failure)
 
     def _stop(self, code, message='', details=None):
-        self.tracer.set_status_to_current_span(code, message, details)
+        span = self.tracer.current_span()
+        span.set_status(code, message, details)
         self.tracer.end_span()

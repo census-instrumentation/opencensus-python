@@ -245,24 +245,3 @@ class TestContextTracer(unittest.TestCase):
 
         span1.add_attribute.assert_called_once_with(attribute_key,
                                                     attribute_value)
-
-    def test_set_status_to_current_span(self):
-        from google.rpc import code_pb2
-        from opencensus.trace.span import Span
-        from opencensus.trace import execution_context
-
-        tracer = context_tracer.ContextTracer()
-        span1 = mock.Mock(spec=Span)
-
-        span1.attributes = {}
-        execution_context.set_current_span(span1)
-
-        code = code_pb2.OK
-        message = 'Ok message'
-        details = {'object': 'ok'}
-
-        tracer.set_status_to_current_span(
-            code, message, details)
-
-        span1.set_status.assert_called_once_with(
-            code, message, details)
