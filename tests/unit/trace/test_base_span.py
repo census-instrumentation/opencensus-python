@@ -77,7 +77,7 @@ class TestBaseSpan(unittest.TestCase):
         span = BaseSpan()
 
         with self.assertRaises(NotImplementedError):
-            span.set_status(0)
+            span.set_status(None)
 
     def test_iter_abstract(self):
         span = BaseSpan()

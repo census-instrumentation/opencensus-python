@@ -184,10 +184,16 @@ class TestSpan(unittest.TestCase):
     def test_set_status(self):
         span_name = 'test_span_name'
         span = self._make_one(span_name)
+        status = mock.Mock()
+
+        with self.assertRaises(TypeError):
+            span.set_status(status)
+
         code = 1
         message = 'ok'
         details = {'object': 'ok'}
-        span.set_status(code, message, details)
+        status = Status(code=code, message=message, details=details)
+        span.set_status(status)
 
         self.assertEqual(span.status.code, code)
         self.assertEqual(span.status.message, message)

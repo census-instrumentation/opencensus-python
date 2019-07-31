@@ -20,6 +20,7 @@ from google.rpc import code_pb2
 
 from opencensus.trace import execution_context
 from opencensus.trace import span as span_module
+from opencensus.trace import status as status_module
 
 
 log = logging.getLogger(__name__)
@@ -84,5 +85,8 @@ class MongoCommandListener(monitoring.CommandListener):
 
     def _stop(self, code, message='', details=None):
         span = self.tracer.current_span()
-        span.set_status(code, message, details)
+        status = status_module.Status(
+            code=code, message=message, details=details
+        )
+        span.set_status(status)
         self.tracer.end_span()

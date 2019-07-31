@@ -346,29 +346,17 @@ class Span(base_span.BaseSpan):
             raise TypeError("Type Error: received {}, but requires Link.".
                             format(type(link).__name__))
 
-    def set_status(self, code, message='', details=None):
+    def set_status(self, status):
         """Sets span status.
 
-        :type code: int
-        :param code: An enum value of :class: `~google.rpc.Code`.
-
-        :type message: str
-        :param message: Description of the status.
-
-        :type details: list
-        :param details: A list of messages that carry the error details.
-                        There is a common set of message types for APIs to use.
-                        e.g. [
-                                {
-                                    "@type": string,
-                                    field1: ...,
-                                    ...
-                                },
-                            ]
-                        See: https://cloud.google.com/trace/docs/reference/v2/
-                            rest/v2/Status#FIELDS.details
+        :type code: :class: `~opencensus.trace.status.Status`
+        :param code: A Status object.
         """
-        self.status = status_module.Status(code, message, details)
+        if isinstance(status, status_module.Status):
+            self.status = status
+        else:
+            raise TypeError("Type Error: received {}, but requires Status.".
+                            format(type(status).__name__))
 
     def start(self):
         """Set the start time for a span."""

@@ -129,12 +129,10 @@ class MockEvent(object):
 
 class MockSpan(object):
     def __init__(self):
-        self.status = {}
+        self.status = None
 
-    def set_status(self, code, message, details):
-        self.status['code'] = code
-        self.status['message'] = message
-        self.status['details'] = details
+    def set_status(self, status):
+        self.status = status.__dict__
 
 
 class MockTracer(object):
