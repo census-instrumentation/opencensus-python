@@ -24,14 +24,14 @@ from opencensus.trace import span as span_module
 
 log = logging.getLogger(__name__)
 
-MODULE_NAME = "pymongo"
+MODULE_NAME = 'pymongo'
 
-COMMAND_ATTRIBUTES = ["filter", "sort", "skip", "limit", "pipeline"]
+COMMAND_ATTRIBUTES = ['filter', 'sort', 'skip', 'limit', 'pipeline']
 
 
 def trace_integration(tracer=None):
     """Integrate with pymongo to trace it using event listener."""
-    log.info("Integrated module: {}".format(MODULE_NAME))
+    log.info('Integrated module: {}'.format(MODULE_NAME))
     monitoring.register(MongoCommandListener(tracer=tracer))
 
 
@@ -45,7 +45,7 @@ class MongoCommandListener(monitoring.CommandListener):
 
     def started(self, event):
         span = self.tracer.start_span(
-            name="{}.{}.{}.{}".format(
+            name='{}.{}.{}.{}'.format(
                 MODULE_NAME,
                 event.database_name,
                 event.command.get(event.command_name),
