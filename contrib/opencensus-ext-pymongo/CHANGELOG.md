@@ -1,6 +1,8 @@
 # Changelog
 
 ## Unreleased
+- Changed attributes names to match [specs](https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/data-semantic-conventions.md)
+([#738](https://github.com/census-instrumentation/opencensus-python/pull/738))
 
 ## 0.1.3
 Released 2019-05-31
