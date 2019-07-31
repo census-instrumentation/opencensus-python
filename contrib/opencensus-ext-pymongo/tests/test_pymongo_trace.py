@@ -49,6 +49,10 @@ class Test_pymongo_trace(unittest.TestCase):
         }
 
         expected_attrs = {
+            'component': 'mongodb',
+            'db.type': 'mongodb',
+            'db.instance': 'database_name',
+            'db.statement': 'find',
             'filter': 'filter',
             'sort': 'sort',
             'limit': 'limit',
@@ -74,12 +78,16 @@ class Test_pymongo_trace(unittest.TestCase):
             'opencensus.trace.execution_context.get_opencensus_tracer',
             return_value=mock_tracer)
 
-        expected_attrs = {'status': 'succeeded'}
+        expected_attrs = {
+            'code': 0,
+            'message': '',
+            'details': None
+        }
 
         with patch:
             trace.MongoCommandListener().succeeded(event=MockEvent(None))
 
-        self.assertEqual(mock_tracer.current_span.attributes, expected_attrs)
+        self.assertEqual(mock_tracer.current_span.status, expected_attrs)
         mock_tracer.end_span.assert_called_with()
 
     def test_failed(self):
@@ -90,12 +98,16 @@ class Test_pymongo_trace(unittest.TestCase):
             'opencensus.trace.execution_context.get_opencensus_tracer',
             return_value=mock_tracer)
 
-        expected_attrs = {'status': 'failed'}
+        expected_attrs = {
+            'code': 2,
+            'message': 'MongoDB error',
+            'details': 'failure'
+        }
 
         with patch:
             trace.MongoCommandListener().failed(event=MockEvent(None))
 
-        self.assertEqual(mock_tracer.current_span.attributes, expected_attrs)
+        self.assertEqual(mock_tracer.current_span.status, expected_attrs)
         mock_tracer.end_span.assert_called_with()
 
 
@@ -124,8 +136,14 @@ class MockTracer(object):
         span = mock.Mock()
         span.name = name
         span.attributes = {}
+        span.status = {}
         self.current_span = span
         return span
 
     def add_attribute_to_current_span(self, key, value):
         self.current_span.attributes[key] = value
+
+    def set_status_to_current_span(self, code, message, details):
+        self.current_span.status['code'] = code
+        self.current_span.status['message'] = message
+        self.current_span.status['details'] = details

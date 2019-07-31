@@ -16,25 +16,26 @@ import logging
 
 from pymongo import monitoring
 
+from google.rpc import code_pb2
+
 from opencensus.trace import execution_context
 from opencensus.trace import span as span_module
 
 
 log = logging.getLogger(__name__)
 
-MODULE_NAME = 'pymongo'
+MODULE_NAME = "pymongo"
 
-COMMAND_ATTRIBUTES = ['filter', 'sort', 'skip', 'limit', 'pipeline']
+COMMAND_ATTRIBUTES = ["filter", "sort", "skip", "limit", "pipeline"]
 
 
 def trace_integration(tracer=None):
     """Integrate with pymongo to trace it using event listener."""
-    log.info('Integrated module: {}'.format(MODULE_NAME))
+    log.info("Integrated module: {}".format(MODULE_NAME))
     monitoring.register(MongoCommandListener(tracer=tracer))
 
 
 class MongoCommandListener(monitoring.CommandListener):
-
     def __init__(self, tracer=None):
         self._tracer = tracer
 
@@ -44,11 +45,23 @@ class MongoCommandListener(monitoring.CommandListener):
 
     def started(self, event):
         span = self.tracer.start_span(
-            name='{}.{}.{}.{}'.format(MODULE_NAME,
-                                      event.database_name,
-                                      event.command.get(event.command_name),
-                                      event.command_name))
+            name="{}.{}.{}.{}".format(
+                MODULE_NAME,
+                event.database_name,
+                event.command.get(event.command_name),
+                event.command_name,
+            )
+        )
         span.span_kind = span_module.SpanKind.CLIENT
+
+        self.tracer.add_attribute_to_current_span('component', 'mongodb')
+        self.tracer.add_attribute_to_current_span('db.type', 'mongodb')
+        self.tracer.add_attribute_to_current_span(
+            'db.instance', event.database_name
+        )
+        self.tracer.add_attribute_to_current_span(
+            'db.statement', event.command.get(event.command_name)
+        )
 
         for attr in COMMAND_ATTRIBUTES:
             _attr = event.command.get(attr)
@@ -56,18 +69,19 @@ class MongoCommandListener(monitoring.CommandListener):
                 self.tracer.add_attribute_to_current_span(attr, str(_attr))
 
         self.tracer.add_attribute_to_current_span(
-            'request_id', event.request_id)
+            'request_id', event.request_id
+        )
 
         self.tracer.add_attribute_to_current_span(
-            'connection_id', str(event.connection_id))
+            'connection_id', str(event.connection_id)
+        )
 
     def succeeded(self, event):
-        self._stop('succeeded')
+        self._stop(code_pb2.OK)
 
     def failed(self, event):
-        self._stop('failed')
+        self._stop(code_pb2.UNKNOWN, 'MongoDB error', event.failure)
 
-    def _stop(self, status):
-        self.tracer.add_attribute_to_current_span('status', status)
-
+    def _stop(self, code, message='', details=None):
+        self.tracer.set_status_to_current_span(code, message, details)
         self.tracer.end_span()
