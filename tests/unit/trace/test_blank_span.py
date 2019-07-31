@@ -59,6 +59,8 @@ class TestBlankSpan(unittest.TestCase):
         link = Link(span_id='1234', trace_id='4567')
         span.add_link(link)
 
+        span.set_status(0)
+
         message_event = mock.Mock()
         message_event = MessageEvent(datetime.datetime.utcnow(), mock.Mock())
         span.add_message_event(message_event)

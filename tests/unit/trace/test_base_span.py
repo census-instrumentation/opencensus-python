@@ -73,6 +73,12 @@ class TestBaseSpan(unittest.TestCase):
         with self.assertRaises(NotImplementedError):
             span.add_link(None)
 
+    def test_set_status_abstract(self):
+        span = BaseSpan()
+
+        with self.assertRaises(NotImplementedError):
+            span.set_status(0)
+
     def test_iter_abstract(self):
         span = BaseSpan()
 

@@ -181,6 +181,18 @@ class TestSpan(unittest.TestCase):
 
         self.assertEqual(len(span.links), 1)
 
+    def test_set_status(self):
+        span_name = 'test_span_name'
+        span = self._make_one(span_name)
+        code = 1
+        message = 'ok'
+        details = {'object': 'ok'}
+        span.set_status(code, message, details)
+
+        self.assertEqual(span.status.code, code)
+        self.assertEqual(span.status.message, message)
+        self.assertEqual(span.status.details, details)
+
     def test_start(self):
         span_name = 'root_span'
         span = self._make_one(span_name)

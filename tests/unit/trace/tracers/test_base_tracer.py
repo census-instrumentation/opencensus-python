@@ -57,6 +57,13 @@ class TestBaseTracer(unittest.TestCase):
             tracer.add_attribute_to_current_span(attribute_key,
                                                  attribute_value)
 
+    def test_set_status_to_current_span(self):
+        tracer = base.Tracer()
+        code = 1
+
+        with self.assertRaises(NotImplementedError):
+            tracer.set_status_to_current_span(code)
+
     def test_list_collected_spans_abstract(self):
         tracer = base.Tracer()
 

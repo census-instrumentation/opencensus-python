@@ -136,6 +136,30 @@ class BlankSpan(base_span.BaseSpan):
         """
         pass
 
+    def set_status(self, code, message='', details=None):
+        """No-op implementation of this method.
+
+        :type code: int
+        :param code: An enum value of :class: `~google.rpc.Code`.
+
+        :type message: str
+        :param message: Description of the status.
+
+        :type details: list
+        :param details: A list of messages that carry the error details.
+                        There is a common set of message types for APIs to use.
+                        e.g. [
+                                {
+                                    "@type": string,
+                                    field1: ...,
+                                    ...
+                                },
+                            ]
+                        See: https://cloud.google.com/trace/docs/reference/v2/
+                            rest/v2/Status#FIELDS.details
+        """
+        pass
+
     def start(self):
         """No-op implementation of this method."""
         pass

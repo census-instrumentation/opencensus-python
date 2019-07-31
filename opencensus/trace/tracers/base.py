@@ -58,6 +58,9 @@ class Tracer(object):
     def add_attribute_to_current_span(self, attribute_key, attribute_value):
         raise NotImplementedError
 
+    def set_status_to_current_span(self, code, message='', details=None):
+        raise NotImplementedError
+
     def list_collected_spans(self):
         """List collected spans."""
         raise NotImplementedError
