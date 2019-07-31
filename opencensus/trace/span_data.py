@@ -14,8 +14,6 @@
 
 import collections
 
-from opencensus.common import utils
-from opencensus.trace import attributes
 
 _SpanData = collections.namedtuple(
     '_SpanData',
@@ -102,63 +100,42 @@ class SpanData(_SpanData):
     """
     __slots__ = ()
 
+    def to_primitive(self):
+        data = {}
+        if self.name:
+            data['name'] = self.name
+        if self.span_id:
+            data['span_id'] = self.span_id
+        if self.parent_span_id:
+            data['parent_span_id'] = self.parent_span_id
+        if self.attributes:
+            data['attributes'] = self.attributes
+        if self.start_time is not None:
+            data['start_time'] = self.start_time
+        if self.end_time is not None:
+            data['end_time'] = self.end_time
+        if self.child_span_count is not None:
+            data['child_span_count'] = self.child_span_count
+        if self.stack_trace:
+            data['stack_trace'] = self.stack_trace.format_stack_trace_json()
+        if self.annotations:
+            data['annotations'] = [
+                aa.format_annotation_json() for aa in self.annotations]
+        if self.message_events:
+            data['message_events'] = [
+                me.format_message_event_json() for me in self.message_events]
+        if self.links:
+            data['links'] = [
+                ll.format_link_json() for ll in self.links]
+        if self.status:
+            data['status'] = self.status.format_status_json()
+        if self.same_process_as_parent_span is not None:
+            data['same_process_as_parent_span'] =\
+                self.same_process_as_parent_span
+        if self.span_kind is not None:
+            data['span_kind'] = self.span_kind
 
-def _format_legacy_span_json(span_data):
-    """
-    :param SpanData span_data: SpanData object to convert
-    :rtype: dict
-    :return: Dictionary representing the Span
-    """
-    span_json = {
-        'displayName': utils.get_truncatable_str(span_data.name),
-        'spanId': span_data.span_id,
-        'startTime': span_data.start_time,
-        'endTime': span_data.end_time,
-        'childSpanCount': span_data.child_span_count,
-        'kind': span_data.span_kind
-    }
-
-    if span_data.parent_span_id is not None:
-        span_json['parentSpanId'] = span_data.parent_span_id
-
-    if span_data.attributes:
-        span_json['attributes'] = attributes.Attributes(
-            span_data.attributes).format_attributes_json()
-
-    if span_data.stack_trace is not None:
-        span_json['stackTrace'] = \
-            span_data.stack_trace.format_stack_trace_json()
-
-    formatted_time_events = []
-    if span_data.annotations:
-        formatted_time_events.extend(
-            {'time': aa.timestamp,
-             'annotation': aa.format_annotation_json()}
-            for aa in span_data.annotations)
-    if span_data.message_events:
-        formatted_time_events.extend(
-            {'time': aa.timestamp,
-             'message_event': aa.format_message_event_json()}
-            for aa in span_data.message_events)
-    if formatted_time_events:
-        span_json['timeEvents'] = {
-            'timeEvent': formatted_time_events
-        }
-
-    if span_data.links:
-        span_json['links'] = {
-            'link': [
-                link.format_link_json() for link in span_data.links]
-        }
-
-    if span_data.status is not None:
-        span_json['status'] = span_data.status.format_status_json()
-
-    if span_data.same_process_as_parent_span is not None:
-        span_json['sameProcessAsParentSpan'] = \
-            span_data.same_process_as_parent_span
-
-    return span_json
+        return data
 
 
 def format_legacy_trace_json(span_datas):
@@ -180,5 +157,5 @@ def format_legacy_trace_json(span_datas):
     assert trace_id is not None
     return {
         'traceId': trace_id,
-        'spans': [_format_legacy_span_json(sd) for sd in span_datas],
+        'spans': [sd.to_primitive() for sd in span_datas],
     }

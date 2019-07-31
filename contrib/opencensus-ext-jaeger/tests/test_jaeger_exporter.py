@@ -409,39 +409,37 @@ class TestJaegerExporter(unittest.TestCase):
             )
         ]
 
-        spans_json = [span.format_span_json() for span in spans]
-        expected_spans_json = [
-            span.format_span_json() for span in expected_spans
-        ]
-        span = spans_json[0]
-        expected_span = expected_spans_json[0]
+        for span, expected_span in zip(spans, expected_spans):
+            if expected_span.logs:
+                log = span.logs[0]
+                expected_log = expected_span.logs[0]
+                self.assertEqual(log.timestamp, expected_log.timestamp)
+                # Log fields are ordered in jaeger, but created from unordered
+                # span annotation attributes. Ignore the order here.
+                log_fields = {tag.key: tag for tag in log.fields}
+                expected_log_fields = {
+                    tag.key: tag for tag in expected_log.fields}
+                self.assertDictEqual(log_fields, expected_log_fields)
 
-        try:
-            listsEqual = self.assertCountEqual
-        except AttributeError:
-            listsEqual = self.assertItemsEqual
+            if expected_span.tags:
+                tags = {tag.key: tag for tag in span.tags}
+                expected_tags = {
+                    tag.key: tag for tag in expected_span.tags}
+                self.assertDictEqual(tags, expected_tags)
+                self.assertListEqual(span.references, expected_span.references)
 
-        log = span.get('logs')[0]
-        expected_log = expected_span.get('logs')[0]
-        self.assertEqual(log.get('timestamp'), expected_log.get('timestamp'))
-        listsEqual(log.get('fields'), expected_log.get('fields'))
-        listsEqual(span.get('tags'), expected_span.get('tags'))
-        listsEqual(span.get('references'), expected_span.get('references'))
-        self.assertEqual(
-            span.get('traceIdHigh'), expected_span.get('traceIdHigh'))
-        self.assertEqual(
-            span.get('traceIdLow'), expected_span.get('traceIdLow'))
-        self.assertEqual(span.get('spanId'), expected_span.get('spanId'))
-        self.assertEqual(
-            span.get('parentSpanId'), expected_span.get('parentSpanId'))
-        self.assertEqual(
-            span.get('operationName'), expected_span.get('operationName'))
-        self.assertEqual(span.get('startTime'), expected_span.get('startTime'))
-        self.assertEqual(span.get('duration'), expected_span.get('duration'))
-        self.assertEqual(span.get('flags'), expected_span.get('flags'))
-        self.assertEqual(spans_json[1], expected_spans_json[1])
-
-        self.assertEqual(spans_json[2], expected_spans_json[2])
+            self.assertEqual(
+                span.traceIdHigh, expected_span.traceIdHigh)
+            self.assertEqual(
+                span.traceIdLow, expected_span.traceIdLow)
+            self.assertEqual(span.spanId, expected_span.spanId)
+            self.assertEqual(
+                span.parentSpanId, expected_span.parentSpanId)
+            self.assertEqual(
+                span.operationName, expected_span.operationName)
+            self.assertEqual(span.startTime, expected_span.startTime)
+            self.assertEqual(span.duration, expected_span.duration)
+            self.assertEqual(span.flags, expected_span.flags)
 
     def test_convert_hex_str_to_int(self):
         invalid_id = '990c63257de34c92'

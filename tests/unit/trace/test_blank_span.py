@@ -18,7 +18,6 @@ import unittest
 
 from opencensus.common import utils
 from opencensus.trace.link import Link
-from opencensus.trace.span import format_span_json
 from opencensus.trace.time_event import MessageEvent
 
 
@@ -65,19 +64,6 @@ class TestBlankSpan(unittest.TestCase):
 
         span_iter_list = list(iter(span))
         self.assertEqual(span_iter_list, [span])
-
-        expected_span_json = {
-            'spanId': 'test_span_id',
-            'startTime': None,
-            'endTime': None,
-            'displayName': {
-                'truncated_byte_count': 0,
-                'value': 'test_span_name'
-            },
-            'childSpanCount': 0,
-        }
-        span_json = format_span_json(span)
-        self.assertEqual(span_json, expected_span_json)
 
         span.start()
         span.finish()
