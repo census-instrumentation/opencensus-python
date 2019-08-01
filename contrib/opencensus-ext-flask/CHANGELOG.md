@@ -1,6 +1,10 @@
 # Changelog
 
 ## Unreleased
+
+## 0.7.0
+Released 2019-07-31
+
 - Make ProbabilitySampler default
 - Updated span attributes to include some missing attributes listed [here](https://github.com/census-instrumentation/opencensus-specs/blob/master/trace/HTTP.md#attributes)
 ([#735](https://github.com/census-instrumentation/opencensus-python/pull/735))
