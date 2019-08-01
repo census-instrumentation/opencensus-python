@@ -40,8 +40,8 @@ setup(
     long_description=open('README.rst').read(),
     install_requires=[
         'opencensus >= 0.7.0, < 1.0.0',
-        'opencensus-ext-grpc >= 0.7.0, < 1.0.0',
-        'opencensus-ext-requests >= 0.7.0, < 1.0.0',
+        'opencensus-ext-grpc >= 0.3.0, < 1.0.0',
+        'opencensus-ext-requests >= 0.1.2, < 1.0.0',
     ],
     extras_require={},
     license='Apache-2.0',
