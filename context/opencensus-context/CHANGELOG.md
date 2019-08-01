@@ -2,9 +2,6 @@
 
 ## Unreleased
 
-## 0.7.0
-Released 2019-07-31
-
 ## 0.1.1
 Released 2019-05-31
 
