@@ -1,6 +1,10 @@
 # Changelog
 
 ## Unreleased
+
+## 0.7.0
+Released 2019-07-31
+
 - Added standard metrics
   ([#708](https://github.com/census-instrumentation/opencensus-python/pull/708),
    [#718](https://github.com/census-instrumentation/opencensus-python/pull/718),
@@ -11,6 +15,7 @@
   ([#735](https://github.com/census-instrumentation/opencensus-python/pull/735))
 
 ## 0.3.1
+Released 2019-05-31
 - Added metrics exporter
   ([#678](https://github.com/census-instrumentation/opencensus-python/pull/678))
 
