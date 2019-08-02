@@ -41,7 +41,5 @@ done
 
 # Upload the distributions.
 for p in dist/* ; do
-  twine upload --verbose $p
+  twine upload --skip-existing $p
 done
-
-exit 0
