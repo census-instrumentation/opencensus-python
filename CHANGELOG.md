@@ -1,6 +1,8 @@
 # Changelog
 
 ## Unreleased
+- Added `set_status` to `span`
+  ([#738](https://github.com/census-instrumentation/opencensus-python/pull/738))
 
 ## 0.7.0
 Released 2019-07-31

@@ -49,6 +49,10 @@ class Test_pymongo_trace(unittest.TestCase):
         }
 
         expected_attrs = {
+            'component': 'mongodb',
+            'db.type': 'mongodb',
+            'db.instance': 'database_name',
+            'db.statement': 'find',
             'filter': 'filter',
             'sort': 'sort',
             'limit': 'limit',
@@ -63,8 +67,8 @@ class Test_pymongo_trace(unittest.TestCase):
             trace.MongoCommandListener().started(
                 event=MockEvent(command_attrs))
 
-        self.assertEqual(mock_tracer.current_span.attributes, expected_attrs)
-        self.assertEqual(mock_tracer.current_span.name, expected_name)
+        self.assertEqual(mock_tracer.span.attributes, expected_attrs)
+        self.assertEqual(mock_tracer.span.name, expected_name)
 
     def test_succeed(self):
         mock_tracer = MockTracer()
@@ -74,12 +78,16 @@ class Test_pymongo_trace(unittest.TestCase):
             'opencensus.trace.execution_context.get_opencensus_tracer',
             return_value=mock_tracer)
 
-        expected_attrs = {'status': 'succeeded'}
+        expected_status = {
+            'code': 0,
+            'message': '',
+            'details': None
+        }
 
         with patch:
             trace.MongoCommandListener().succeeded(event=MockEvent(None))
 
-        self.assertEqual(mock_tracer.current_span.attributes, expected_attrs)
+        self.assertEqual(mock_tracer.span.status, expected_status)
         mock_tracer.end_span.assert_called_with()
 
     def test_failed(self):
@@ -90,12 +98,16 @@ class Test_pymongo_trace(unittest.TestCase):
             'opencensus.trace.execution_context.get_opencensus_tracer',
             return_value=mock_tracer)
 
-        expected_attrs = {'status': 'failed'}
+        expected_status = {
+            'code': 2,
+            'message': 'MongoDB error',
+            'details': 'failure'
+        }
 
         with patch:
             trace.MongoCommandListener().failed(event=MockEvent(None))
 
-        self.assertEqual(mock_tracer.current_span.attributes, expected_attrs)
+        self.assertEqual(mock_tracer.span.status, expected_status)
         mock_tracer.end_span.assert_called_with()
 
 
@@ -115,17 +127,31 @@ class MockEvent(object):
         return item
 
 
+class MockSpan(object):
+    def __init__(self):
+        self.status = None
+
+    def set_status(self, status):
+        self.status = {
+            'code': status.canonical_code,
+            'message': status.description,
+            'details': status.details,
+        }
+
+
 class MockTracer(object):
     def __init__(self):
-        self.current_span = None
+        self.span = MockSpan()
         self.end_span = mock.Mock()
 
     def start_span(self, name=None):
-        span = mock.Mock()
-        span.name = name
-        span.attributes = {}
-        self.current_span = span
-        return span
+        self.span.name = name
+        self.span.attributes = {}
+        self.span.status = {}
+        return self.span
 
     def add_attribute_to_current_span(self, key, value):
-        self.current_span.attributes[key] = value
+        self.span.attributes[key] = value
+
+    def current_span(self):
+        return self.span

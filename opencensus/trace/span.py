@@ -264,9 +264,13 @@ class Span(base_span.BaseSpan):
         else:
             self.links = BoundedList.from_seq(MAX_NUM_LINKS, links)
 
+        if status is None:
+            self.status = status_module.Status.as_ok()
+        else:
+            self.status = status
+
         self.span_id = span_id
         self.stack_trace = stack_trace
-        self.status = status
         self.same_process_as_parent_span = same_process_as_parent_span
         self._child_spans = []
         self.context_tracer = context_tracer
@@ -345,6 +349,18 @@ class Span(base_span.BaseSpan):
         else:
             raise TypeError("Type Error: received {}, but requires Link.".
                             format(type(link).__name__))
+
+    def set_status(self, status):
+        """Sets span status.
+
+        :type code: :class: `~opencensus.trace.status.Status`
+        :param code: A Status object.
+        """
+        if isinstance(status, status_module.Status):
+            self.status = status
+        else:
+            raise TypeError("Type Error: received {}, but requires Status.".
+                            format(type(status).__name__))
 
     def start(self):
         """Set the start time for a span."""
