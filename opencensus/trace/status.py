@@ -40,30 +40,30 @@ class Status(object):
                          rest/v2/Status#FIELDS.details
     """
     def __init__(self, code, message=None, details=None):
-        self._code = code
-        self._message = message
+        self.code = code
+        self.message = message
         self.details = details
 
     @property
     def canonical_code(self):
-        return self._code
+        return self.code
 
     @property
     def description(self):
-        return self._message
+        return self.message
 
     @property
     def is_ok(self):
-        return self._code == code_pb2.OK
+        return self.canonical_code == code_pb2.OK
 
     def format_status_json(self):
         """Convert a Status object to json format."""
         status_json = {}
 
-        status_json['code'] = self._code
+        status_json['code'] = self.canonical_code
 
-        if self._message is not None:
-            status_json['message'] = self._message
+        if self.description is not None:
+            status_json['message'] = self.description
 
         if self.details is not None:
             status_json['details'] = self.details
