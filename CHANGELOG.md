@@ -2,13 +2,15 @@
 
 ## Unreleased
 
+## 0.7.0
+Released 2019-07-31
+
 - Fix exporting int-valued stats with sum and lastvalue aggregations
   ([#696](https://github.com/census-instrumentation/opencensus-python/pull/696))
 - Fix cloud format propagator to use decimal span_id encoding instead of hex
   ([#719](https://github.com/census-instrumentation/opencensus-python/pull/719))
 - Added `set_status` to `span`
   ([#738](https://github.com/census-instrumentation/opencensus-python/pull/738))
-
 
 ## 0.6.0
 Released 2019-05-31
