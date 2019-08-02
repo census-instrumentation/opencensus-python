@@ -43,8 +43,9 @@ def translate_to_trace_proto(span_data):
             span_data.start_time),
         end_time=ocagent_utils.proto_ts_from_datetime_str(span_data.end_time),
         status=trace_pb2.Status(
-            code=span_data.status.code,
-            message=span_data.status.message)
+            code=span_data.status.canonical_code,
+            message=span_data.status.description,
+        )
         if span_data.status is not None else None,
         same_process_as_parent_span=BoolValue(
             value=span_data.same_process_as_parent_span)

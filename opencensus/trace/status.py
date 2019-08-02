@@ -39,17 +39,31 @@ class Status(object):
                     See: https://cloud.google.com/trace/docs/reference/v2/
                          rest/v2/Status#FIELDS.details
     """
-    def __init__(self, code, message, details=None):
+    def __init__(self, code, message=None, details=None):
         self.code = code
         self.message = message
         self.details = details
+
+    @property
+    def canonical_code(self):
+        return self.code
+
+    @property
+    def description(self):
+        return self.message
+
+    @property
+    def is_ok(self):
+        return self.canonical_code == code_pb2.OK
 
     def format_status_json(self):
         """Convert a Status object to json format."""
         status_json = {}
 
-        status_json['code'] = self.code
-        status_json['message'] = self.message
+        status_json['code'] = self.canonical_code
+
+        if self.description is not None:
+            status_json['message'] = self.description
 
         if self.details is not None:
             status_json['details'] = self.details
@@ -61,4 +75,10 @@ class Status(object):
         return cls(
             code=code_pb2.UNKNOWN,
             message=str(exc)
+        )
+
+    @classmethod
+    def as_ok(cls):
+        return cls(
+            code=code_pb2.OK,
         )

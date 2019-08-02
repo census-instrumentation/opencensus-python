@@ -18,6 +18,7 @@ import unittest
 
 from opencensus.common import utils
 from opencensus.trace.link import Link
+from opencensus.trace.status import Status
 from opencensus.trace.span import format_span_json
 from opencensus.trace.time_event import MessageEvent
 
@@ -58,6 +59,9 @@ class TestBlankSpan(unittest.TestCase):
 
         link = Link(span_id='1234', trace_id='4567')
         span.add_link(link)
+
+        status = Status(0, 'Ok', {'details': 'ok'})
+        span.set_status(status)
 
         message_event = mock.Mock()
         message_event = MessageEvent(datetime.datetime.utcnow(), mock.Mock())
