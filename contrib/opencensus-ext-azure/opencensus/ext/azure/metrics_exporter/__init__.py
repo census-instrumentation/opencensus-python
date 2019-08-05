@@ -27,7 +27,6 @@ from opencensus.ext.azure.metrics_exporter import standard_metrics
 from opencensus.metrics import transport
 from opencensus.metrics.export.metric_descriptor import MetricDescriptorType
 from opencensus.stats import stats as stats_module
-from opencensus.trace import execution_context
 
 __all__ = ['MetricsExporter', 'new_metrics_exporter']
 
@@ -127,13 +126,6 @@ class MetricsExporter(object):
         non-retryable failure, simply outputs result to logs.
         This function should never throw exception.
         """
-        blacklist_hostnames = execution_context.get_opencensus_attr(
-            'blacklist_hostnames',
-        )
-        execution_context.set_opencensus_attr(
-            'blacklist_hostnames',
-            ['dc.services.visualstudio.com'],
-        )
         try:
             response = requests.post(
                 url=self.options.endpoint,
@@ -148,11 +140,6 @@ class MetricsExporter(object):
             # No retry policy, log output
             logger.warning('Transient client side error %s.', ex)
             return
-        finally:
-            execution_context.set_opencensus_attr(
-                'blacklist_hostnames',
-                blacklist_hostnames,
-            )
 
         text = 'N/A'
         data = None
@@ -215,7 +202,7 @@ class MetricsExporter(object):
                         text
                     )
                     return
-        # Check for non-tryable result
+        # Check for non-retryable result
         if status_code in (
                 206,  # Partial Content
                 429,  # Too Many Requests

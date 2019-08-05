@@ -25,9 +25,20 @@ class TestStatus(unittest.TestCase):
         message = 'test message'
         status = status_module.Status(code=code, message=message)
 
-        self.assertEqual(status.code, code)
-        self.assertEqual(status.message, message)
+        self.assertEqual(status.canonical_code, code)
+        self.assertEqual(status.description, message)
         self.assertIsNone(status.details)
+
+    def test_format_status_json_without_message(self):
+        code = 100
+        status = status_module.Status(code=code)
+        status_json = status.format_status_json()
+
+        expected_status_json = {
+            'code': code
+        }
+
+        self.assertEqual(expected_status_json, status_json)
 
     def test_format_status_json_with_details(self):
         code = 100
@@ -64,9 +75,23 @@ class TestStatus(unittest.TestCase):
 
         self.assertEqual(expected_status_json, status_json)
 
+    def test_is_ok(self):
+        status = status_module.Status.as_ok()
+        self.assertTrue(status.is_ok)
+
+        status = status_module.Status(code=code_pb2.UNKNOWN)
+        self.assertFalse(status.is_ok)
+
     def test_create_from_exception(self):
         message = 'test message'
         exc = ValueError(message)
         status = status_module.Status.from_exception(exc)
-        self.assertEqual(status.message, message)
-        self.assertEqual(status.code, code_pb2.UNKNOWN)
+        self.assertEqual(status.description, message)
+        self.assertEqual(status.canonical_code, code_pb2.UNKNOWN)
+        self.assertIsNone(status.details)
+
+    def test_create_as_ok(self):
+        status = status_module.Status.as_ok()
+        self.assertEqual(status.canonical_code, code_pb2.OK)
+        self.assertIsNone(status.description)
+        self.assertIsNone(status.details)

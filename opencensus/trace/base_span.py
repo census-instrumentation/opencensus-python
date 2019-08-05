@@ -80,6 +80,14 @@ class BaseSpan(object):
         """
         raise NotImplementedError
 
+    def set_status(self, status):
+        """Sets span status.
+
+        :type code: :class: `~opencensus.trace.status.Status`
+        :param code: A Status object.
+        """
+        raise NotImplementedError
+
     def start(self):
         """Set the start time for a span."""
         raise NotImplementedError
