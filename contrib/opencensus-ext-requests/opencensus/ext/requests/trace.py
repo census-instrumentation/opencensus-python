@@ -23,6 +23,7 @@ except ImportError:
 from opencensus.trace import attributes_helper
 from opencensus.trace import execution_context
 from opencensus.trace import span as span_module
+from opencensus.trace import status as status_module
 from opencensus.trace import utils
 
 log = logging.getLogger(__name__)
@@ -33,8 +34,12 @@ REQUESTS_WRAP_METHODS = ['get', 'post', 'put', 'delete', 'head', 'options']
 SESSION_WRAP_METHODS = 'request'
 SESSION_CLASS_NAME = 'Session'
 
-HTTP_URL = attributes_helper.COMMON_ATTRIBUTES['HTTP_URL']
+HTTP_HOST = attributes_helper.COMMON_ATTRIBUTES['HTTP_HOST']
+HTTP_METHOD = attributes_helper.COMMON_ATTRIBUTES['HTTP_METHOD']
+HTTP_PATH = attributes_helper.COMMON_ATTRIBUTES['HTTP_PATH']
+HTTP_ROUTE = attributes_helper.COMMON_ATTRIBUTES['HTTP_ROUTE']
 HTTP_STATUS_CODE = attributes_helper.COMMON_ATTRIBUTES['HTTP_STATUS_CODE']
+HTTP_URL = attributes_helper.COMMON_ATTRIBUTES['HTTP_URL']
 
 
 def trace_integration(tracer=None):
@@ -74,22 +79,53 @@ def wrap_requests(requests_func):
         if utils.disable_tracing_hostname(dest_url, blacklist_hostnames):
             return requests_func(url, *args, **kwargs)
 
+        path = parsed_url.path if parsed_url.path else '/'
+
         _tracer = execution_context.get_opencensus_tracer()
         _span = _tracer.start_span()
-        _span.name = '[requests]{}'.format(requests_func.__name__)
+        _span.name = '{}'.format(path)
         _span.span_kind = span_module.SpanKind.CLIENT
+
+        # Add the requests host to attributes
+        _tracer.add_attribute_to_current_span(
+            HTTP_HOST, dest_url)
+
+        # Add the requests method to attributes
+        _tracer.add_attribute_to_current_span(
+            HTTP_METHOD, requests_func.__name__.upper())
+
+        # Add the requests path to attributes
+        _tracer.add_attribute_to_current_span(
+            HTTP_PATH, path)
 
         # Add the requests url to attributes
         _tracer.add_attribute_to_current_span(HTTP_URL, url)
 
-        result = requests_func(url, *args, **kwargs)
-
-        # Add the status code to attributes
-        _tracer.add_attribute_to_current_span(
-            HTTP_STATUS_CODE, str(result.status_code))
-
-        _tracer.end_span()
-        return result
+        try:
+            result = requests_func(url, *args, **kwargs)
+        except requests.Timeout:
+            _span.set_status(
+                status_module.Status(1, message='request timed out')
+            )
+        except requests.URLRequired:
+            _span.set_status(
+                status_module.Status(3, message='invalid URL')
+            )
+        except Exception as e:
+            _span.set_status(
+                status_module.Status(2, message=str(e))
+            )
+        else:
+            # Add the status code to attributes
+            _tracer.add_attribute_to_current_span(
+                HTTP_STATUS_CODE, str(result.status_code)
+            )
+            _span.set_status(
+                utils.status_from_http_code(result.status_code)
+            )
+            return result
+        finally:
+            _tracer.end_span()
 
     return call
 
@@ -113,10 +149,12 @@ def wrap_session_request(wrapped, instance, args, kwargs):
     if utils.disable_tracing_hostname(dest_url, blacklist_hostnames):
         return wrapped(*args, **kwargs)
 
+    path = parsed_url.path if parsed_url.path else '/'
+
     _tracer = execution_context.get_opencensus_tracer()
     _span = _tracer.start_span()
 
-    _span.name = '[requests]{}'.format(method)
+    _span.name = '{}'.format(path)
     _span.span_kind = span_module.SpanKind.CLIENT
 
     try:
@@ -127,14 +165,42 @@ def wrap_session_request(wrapped, instance, args, kwargs):
     except Exception:  # pragma: NO COVER
         pass
 
+    # Add the requests host to attributes
+    _tracer.add_attribute_to_current_span(
+        HTTP_HOST, dest_url)
+
+    # Add the requests method to attributes
+    _tracer.add_attribute_to_current_span(
+        HTTP_METHOD, method.upper())
+
+    # Add the requests path to attributes
+    _tracer.add_attribute_to_current_span(
+        HTTP_PATH, path)
+
     # Add the requests url to attributes
     _tracer.add_attribute_to_current_span(HTTP_URL, url)
 
-    result = wrapped(*args, **kwargs)
-
-    # Add the status code to attributes
-    _tracer.add_attribute_to_current_span(
-        HTTP_STATUS_CODE, str(result.status_code))
-
-    _tracer.end_span()
-    return result
+    try:
+        result = wrapped(*args, **kwargs)
+    except requests.Timeout:
+        _span.set_status(
+            status_module.Status(1, message='request timed out')
+        )
+    except requests.URLRequired:
+        _span.set_status(
+            status_module.Status(3, message='invalid URL')
+        )
+    except Exception as e:
+        _span.set_status(
+            status_module.Status(2, message=str(e))
+        )
+    else:
+        # Add the status code to attributes
+        _tracer.add_attribute_to_current_span(
+            HTTP_STATUS_CODE, str(result.status_code))
+        _span.set_status(
+            utils.status_from_http_code(result.status_code)
+        )
+        return result
+    finally:
+        _tracer.end_span()
