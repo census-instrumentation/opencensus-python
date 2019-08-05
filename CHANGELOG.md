@@ -4,6 +4,7 @@
 - Added `set_status` to `span`
   ([#738](https://github.com/census-instrumentation/opencensus-python/pull/738))
 - Added `http code` to `grpc code` status code mapping on `utils`
+  ([#746](https://github.com/census-instrumentation/opencensus-python/pull/746))
 
 ## 0.7.0
 Released 2019-07-31
