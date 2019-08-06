@@ -241,7 +241,7 @@ class TestPyramidMiddleware(unittest.TestCase):
             'http.path': u'/',
             'http.route': u'/',
             'http.url': u'http://example.com',
-            'http.status_code': '200',
+            'http.status_code': 200,
         }
 
         self.assertEqual(span.parent_span.span_id, span_id)

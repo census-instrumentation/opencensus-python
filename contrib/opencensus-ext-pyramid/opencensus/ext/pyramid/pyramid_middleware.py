@@ -121,7 +121,7 @@ class OpenCensusTweenFactory(object):
             tracer = execution_context.get_opencensus_tracer()
             tracer.add_attribute_to_current_span(
                 HTTP_STATUS_CODE,
-                str(response.status_code))
+                response.status_code)
 
             tracer.end_span()
             tracer.finish()

@@ -28,7 +28,7 @@ def hello(request):
 @view_config(route_name='trace_requests')
 def trace_requests(request):
     response = requests.get('http://www.google.com')
-    return Response(str(response.status_code))
+    return Response(response.status_code)
 
 
 def main(global_config, **settings):
