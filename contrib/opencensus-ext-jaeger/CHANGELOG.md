@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+## 0.7.1
+Released 2019-08-05
+
+- Update for core library changes
+
 ## 0.2.2
 Released 2019-05-31
 

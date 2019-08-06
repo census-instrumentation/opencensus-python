@@ -1,8 +1,14 @@
 # Changelog
 
 ## Unreleased
-- Changed attributes names to make it compatible with [OpenTelemetry](https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/data-semantic-conventions.md), maintaining OpenCensus specs fidelity
-([#738](https://github.com/census-instrumentation/opencensus-python/pull/738))
+
+## 0.7.1
+Released 2019-08-05
+
+- Changed attributes names to make it compatible with
+  [OpenTelemetry](https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/data-semantic-conventions.md),
+  maintaining OpenCensus specs fidelity
+  ([#738](https://github.com/census-instrumentation/opencensus-python/pull/738))
 
 ## 0.1.3
 Released 2019-05-31
