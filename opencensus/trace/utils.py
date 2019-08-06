@@ -14,7 +14,9 @@
 
 import re
 
+from google.rpc import code_pb2
 from opencensus.trace import execution_context
+from opencensus.trace.status import Status
 
 # By default the blacklist urls are not tracing, currently just include the
 # health check url. The paths are literal string matched instead of regular
@@ -93,3 +95,33 @@ def disable_tracing_hostname(url, blacklist_hostnames=None):
             blacklist_hostnames = []
 
     return url in blacklist_hostnames
+
+
+def status_from_http_code(http_code):
+    """Returns equivalent status from http status code
+    based on OpenCensus specs.
+
+    :type http_code: int
+    :param http_code: HTTP request status code.
+
+    :rtype: int
+    :returns: A instance of :class: `~opencensus.trace.status.Status`.
+    """
+    if http_code <= 199:
+        return Status(code_pb2.UNKNOWN)
+
+    if http_code <= 399:
+        return Status(code_pb2.OK)
+
+    grpc_code = {
+        400: code_pb2.INVALID_ARGUMENT,
+        401: code_pb2.UNAUTHENTICATED,
+        403: code_pb2.PERMISSION_DENIED,
+        404: code_pb2.NOT_FOUND,
+        429: code_pb2.RESOURCE_EXHAUSTED,
+        501: code_pb2.UNIMPLEMENTED,
+        503: code_pb2.UNAVAILABLE,
+        504: code_pb2.DEADLINE_EXCEEDED,
+    }.get(http_code, code_pb2.UNKNOWN)
+
+    return Status(grpc_code)
