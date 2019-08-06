@@ -181,7 +181,7 @@ class FlaskMiddleware(object):
             tracer = execution_context.get_opencensus_tracer()
             tracer.add_attribute_to_current_span(
                 HTTP_STATUS_CODE,
-                str(response.status_code)
+                response.status_code
             )
         except Exception:  # pragma: NO COVER
             log.error('Failed to trace request', exc_info=True)
