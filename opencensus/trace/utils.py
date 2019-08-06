@@ -107,28 +107,21 @@ def status_from_http_code(http_code):
     :rtype: int
     :returns: A instance of :class: `~opencensus.trace.status.Status`.
     """
-    grpc_code = None
     if http_code <= 199:
-        grpc_code = code_pb2.UNKNOWN
-    elif http_code >= 200 and http_code <= 399:
-        grpc_code = code_pb2.OK
-    elif http_code == 400:
-        grpc_code = code_pb2.INVALID_ARGUMENT
-    elif http_code == 504:
-        grpc_code = code_pb2.DEADLINE_EXCEEDED
-    elif http_code == 404:
-        grpc_code = code_pb2.NOT_FOUND
-    elif http_code == 403:
-        grpc_code = code_pb2.PERMISSION_DENIED
-    elif http_code == 401:
-        grpc_code = code_pb2.UNAUTHENTICATED
-    elif http_code == 429:
-        grpc_code = code_pb2.RESOURCE_EXHAUSTED
-    elif http_code == 501:
-        grpc_code = code_pb2.UNIMPLEMENTED
-    elif http_code == 503:
-        grpc_code = code_pb2.UNAVAILABLE
-    else:
-        grpc_code = code_pb2.UNKNOWN
+        return Status(code_pb2.UNKNOWN)
+
+    if http_code <= 399:
+        return Status(code_pb2.OK)
+
+    grpc_code = {
+        400: code_pb2.INVALID_ARGUMENT,
+        401: code_pb2.UNAUTHENTICATED,
+        403: code_pb2.PERMISSION_DENIED,
+        404: code_pb2.NOT_FOUND,
+        429: code_pb2.RESOURCE_EXHAUSTED,
+        501: code_pb2.UNIMPLEMENTED,
+        503: code_pb2.UNAVAILABLE,
+        504: code_pb2.DEADLINE_EXCEEDED,
+    }.get(http_code, code_pb2.UNKNOWN)
 
     return Status(grpc_code)
