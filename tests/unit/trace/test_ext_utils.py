@@ -16,6 +16,7 @@ import unittest
 
 import mock
 
+from google.rpc import code_pb2
 from opencensus.trace import utils
 
 
@@ -73,3 +74,67 @@ class TestUtils(unittest.TestCase):
         url = '127.0.0.1:80'
         disable_tracing = utils.disable_tracing_hostname(url, blacklist_paths)
         self.assertFalse(disable_tracing)
+
+    def test_grpc_code_from_http_code(self):
+        test_cases = [
+            {
+                'http_code': 0,
+                'grpc_code': code_pb2.UNKNOWN,
+            },
+            {
+                'http_code': 200,
+                'grpc_code': code_pb2.OK,
+            },
+            {
+                'http_code': 399,
+                'grpc_code': code_pb2.OK,
+            },
+            {
+                'http_code': 400,
+                'grpc_code': code_pb2.INVALID_ARGUMENT,
+            },
+            {
+                'http_code': 504,
+                'grpc_code': code_pb2.DEADLINE_EXCEEDED,
+            },
+            {
+                'http_code': 404,
+                'grpc_code': code_pb2.NOT_FOUND,
+            },
+            {
+                'http_code': 403,
+                'grpc_code': code_pb2.PERMISSION_DENIED,
+            },
+            {
+                'http_code': 401,
+                'grpc_code': code_pb2.UNAUTHENTICATED,
+            },
+            {
+                'http_code': 429,
+                'grpc_code': code_pb2.RESOURCE_EXHAUSTED,
+            },
+            {
+                'http_code': 501,
+                'grpc_code': code_pb2.UNIMPLEMENTED,
+            },
+            {
+                'http_code': 503,
+                'grpc_code': code_pb2.UNAVAILABLE,
+            },
+            {
+                'http_code': 600,
+                'grpc_code': code_pb2.UNKNOWN,
+            },
+        ]
+
+        for test_case in test_cases:
+            status = utils.status_from_http_code(test_case['http_code'])
+            self.assertEqual(
+                status.canonical_code,
+                test_case['grpc_code'],
+                'HTTP: {} / GRPC: expected = {}, actual = {}'.format(
+                    test_case['http_code'],
+                    test_case['grpc_code'],
+                    status.canonical_code,
+                )
+            )
