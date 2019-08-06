@@ -184,12 +184,12 @@ class JaegerExporter(base_exporter.Exporter):
                 tags.append(jaeger.Tag(
                     key='status.code',
                     vType=jaeger.TagType.LONG,
-                    vLong=status.code))
+                    vLong=status.canonical_code))
 
                 tags.append(jaeger.Tag(
                     key='status.message',
                     vType=jaeger.TagType.STRING,
-                    vStr=status.message))
+                    vStr=status.description))
 
             refs = _extract_refs_from_span(span)
             logs = _extract_logs_from_span(span)

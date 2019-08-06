@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+## 0.7.1
+Released 2019-08-05
+
+- Added `set_status` to `span`
+  ([#738](https://github.com/census-instrumentation/opencensus-python/pull/738))
+- Update released stackdriver exporter version
+
 ## 0.7.0
 Released 2019-07-31
 

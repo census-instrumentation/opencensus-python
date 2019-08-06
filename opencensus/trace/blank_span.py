@@ -136,6 +136,14 @@ class BlankSpan(base_span.BaseSpan):
         """
         pass
 
+    def set_status(self, status):
+        """No-op implementation of this method.
+
+        :type code: :class: `~opencensus.trace.status.Status`
+        :param code: A Status object.
+        """
+        pass
+
     def start(self):
         """No-op implementation of this method."""
         pass
