@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- Updated `django`, `flask`, `httplib` and `pyramid` modules.
 
 ## 0.7.1
 Released 2019-08-05
