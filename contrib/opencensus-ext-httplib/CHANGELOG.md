@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+## 0.7.1
+Released 2019-08-06
+
+  - Support exporter changes in `opencensus>=0.7.0`
+
 ## 0.1.3
 Released 2019-05-31
 
