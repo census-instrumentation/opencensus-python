@@ -15,7 +15,6 @@
 from google.rpc import code_pb2
 from opencensus.trace.status import Status
 
-DNS_RESOLUTION_FAILED = Status(code_pb2.UNKNOWN)
 CANCELLED = Status(code_pb2.CANCELLED)
 INVALID_URL = Status(code_pb2.INVALID_ARGUMENT, message='invalid URL')
 TIMEOUT = Status(code_pb2.DEADLINE_EXCEEDED, message='request timed out')
