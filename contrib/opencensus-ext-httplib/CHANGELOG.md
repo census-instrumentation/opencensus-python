@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- Updated `http.status_code` attribute to be an int.
 
 ## 0.7.1
 Released 2019-08-06
