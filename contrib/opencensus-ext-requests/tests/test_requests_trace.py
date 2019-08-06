@@ -106,7 +106,7 @@ class Test_requests_trace(unittest.TestCase):
             'http.host': 'localhost:8080',
             'http.method': 'GET',
             'http.path': '/test',
-            'http.status_code': '200',
+            'http.status_code': 200,
             'http.url': url,
         }
         expected_name = '/test'
@@ -251,7 +251,7 @@ class Test_requests_trace(unittest.TestCase):
             'http.url': url,
         }
         expected_name = '/test'
-        expected_status = status_module.Status(1, 'request timed out')
+        expected_status = status_module.Status(4, 'request timed out')
 
         self.assertEqual(span_module.SpanKind.CLIENT,
                          mock_tracer.current_span.span_kind)
@@ -383,7 +383,7 @@ class Test_requests_trace(unittest.TestCase):
             'http.host': 'localhost:8080',
             'http.method': 'POST',
             'http.path': '/test',
-            'http.status_code': '200',
+            'http.status_code': 200,
             'http.url': url,
         }
         expected_name = '/test'
@@ -600,7 +600,7 @@ class Test_requests_trace(unittest.TestCase):
             'http.url': url,
         }
         expected_name = '/test'
-        expected_status = status_module.Status(1, 'request timed out')
+        expected_status = status_module.Status(4, 'request timed out')
 
         self.assertEqual(span_module.SpanKind.CLIENT,
                          mock_tracer.current_span.span_kind)

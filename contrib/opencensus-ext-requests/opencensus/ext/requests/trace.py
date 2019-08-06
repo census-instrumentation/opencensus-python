@@ -21,9 +21,9 @@ except ImportError:
     from urlparse import urlparse
 
 from opencensus.trace import attributes_helper
+from opencensus.trace import exceptions_status
 from opencensus.trace import execution_context
 from opencensus.trace import span as span_module
-from opencensus.trace import status as status_module
 from opencensus.trace import utils
 
 log = logging.getLogger(__name__)
@@ -104,21 +104,15 @@ def wrap_requests(requests_func):
         try:
             result = requests_func(url, *args, **kwargs)
         except requests.Timeout:
-            _span.set_status(
-                status_module.Status(1, message='request timed out')
-            )
+            _span.set_status(exceptions_status.TIMEOUT)
         except requests.URLRequired:
-            _span.set_status(
-                status_module.Status(3, message='invalid URL')
-            )
+            _span.set_status(exceptions_status.INVALID_URL)
         except Exception as e:
-            _span.set_status(
-                status_module.Status(2, message=str(e))
-            )
+            _span.set_status(exceptions_status.unknown(e))
         else:
             # Add the status code to attributes
             _tracer.add_attribute_to_current_span(
-                HTTP_STATUS_CODE, str(result.status_code)
+                HTTP_STATUS_CODE, result.status_code
             )
             _span.set_status(
                 utils.status_from_http_code(result.status_code)
@@ -183,21 +177,16 @@ def wrap_session_request(wrapped, instance, args, kwargs):
     try:
         result = wrapped(*args, **kwargs)
     except requests.Timeout:
-        _span.set_status(
-            status_module.Status(1, message='request timed out')
-        )
+        _span.set_status(exceptions_status.TIMEOUT)
     except requests.URLRequired:
-        _span.set_status(
-            status_module.Status(3, message='invalid URL')
-        )
+        _span.set_status(exceptions_status.INVALID_URL)
     except Exception as e:
-        _span.set_status(
-            status_module.Status(2, message=str(e))
-        )
+        _span.set_status(exceptions_status.unknown(e))
     else:
         # Add the status code to attributes
         _tracer.add_attribute_to_current_span(
-            HTTP_STATUS_CODE, str(result.status_code))
+            HTTP_STATUS_CODE, result.status_code
+        )
         _span.set_status(
             utils.status_from_http_code(result.status_code)
         )
