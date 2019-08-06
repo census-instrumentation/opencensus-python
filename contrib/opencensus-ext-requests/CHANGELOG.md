@@ -6,6 +6,11 @@
 - Fixed span name
   ([#746](https://github.com/census-instrumentation/opencensus-python/pull/746))
 
+## 0.7.1
+Released 2019-08-06
+
+  - Support exporter changes in `opencensus>=0.7.0`
+
 ## 0.1.2
 Released 2019-04-24
 
