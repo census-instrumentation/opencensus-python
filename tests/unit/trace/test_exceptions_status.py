@@ -19,12 +19,6 @@ from opencensus.trace import exceptions_status
 
 
 class TestUtils(unittest.TestCase):
-    def test_dns_resolution_failed(self):
-        self.assertEqual(
-            exceptions_status.DNS_RESOLUTION_FAILED.canonical_code,
-            code_pb2.UNKNOWN
-        )
-
     def test_cancelled(self):
         self.assertEqual(
             exceptions_status.CANCELLED.canonical_code,
