@@ -32,6 +32,17 @@ class TestOpencensusMiddleware(unittest.TestCase):
     def setUp(self):
         from django.conf import settings as django_settings
         from django.test.utils import setup_test_environment
+        from opencensus.ext.django import middleware
+        from django.http import HttpResponse
+        from django.views import View
+
+        self.middleware_kls = middleware.OpencensusMiddleware
+
+        class MockViewOk(View):
+            def get(self, *args, **kwargs):
+                return HttpResponse(status=200)
+
+        self.view_func_ok = MockViewOk.as_view()
 
         if not django_settings.configured:
             django_settings.configure()
@@ -42,20 +53,19 @@ class TestOpencensusMiddleware(unittest.TestCase):
         teardown_test_environment()
 
     def test_constructor_default(self):
-        from opencensus.ext.django import middleware
+        middleware_obj = self.middleware_kls()
 
-        middleware = middleware.OpencensusMiddleware()
-
-        assert isinstance(middleware.sampler, samplers.ProbabilitySampler)
-        assert isinstance(middleware.exporter, print_exporter.PrintExporter)
+        assert isinstance(middleware_obj.sampler, samplers.ProbabilitySampler)
         assert isinstance(
-            middleware.propagator,
+            middleware_obj.exporter,
+            print_exporter.PrintExporter,
+        )
+        assert isinstance(
+            middleware_obj.propagator,
             trace_context_http_header_format.TraceContextPropagator,
         )
 
     def test_configuration(self):
-        from opencensus.ext.django import middleware
-
         settings = type('Test', (object,), {})
         settings.OPENCENSUS = {
             'TRACE': {
@@ -69,17 +79,18 @@ class TestOpencensusMiddleware(unittest.TestCase):
             settings)
 
         with patch_settings:
-            middleware = middleware.OpencensusMiddleware()
+            middleware_obj = self.middleware_kls()
 
-        assert isinstance(middleware.sampler, samplers.AlwaysOnSampler)
-        assert isinstance(middleware.exporter, print_exporter.PrintExporter)
+        assert isinstance(middleware_obj.sampler, samplers.AlwaysOnSampler)
+        assert isinstance(middleware_obj.exporter, print_exporter.PrintExporter)
         assert isinstance(
-            middleware.propagator,
+            middleware_obj.propagator,
             trace_context_http_header_format.TraceContextPropagator,
         )
 
     def test_process_request(self):
         from opencensus.ext.django import middleware
+        from django.urls.resolvers import ResolverMatch
 
         trace_id = '2dd43a1d6b2549c6bc2a1a54c2fc0b05'
         span_id = '6e0c63257de34c92'
@@ -87,6 +98,8 @@ class TestOpencensusMiddleware(unittest.TestCase):
 
         django_request = RequestFactory().get('/wiki/Rabbit', **{
             'HTTP_TRACEPARENT': django_trace_id})
+        django_request.resolver_match = ResolverMatch(
+            self.view_func_ok, None, None)
 
         # Force the test request to be sampled
         settings = type('Test', (object,), {})
@@ -100,7 +113,7 @@ class TestOpencensusMiddleware(unittest.TestCase):
             settings)
 
         with patch_settings:
-            middleware_obj = middleware.OpencensusMiddleware()
+            middleware_obj = self.middleware_kls()
 
         # test process_request
         middleware_obj.process_request(django_request)
@@ -123,11 +136,44 @@ class TestOpencensusMiddleware(unittest.TestCase):
         span_context = tracer.span_context
         self.assertEqual(span_context.trace_id, trace_id)
 
-        # test process_view
-        view_func = mock.Mock()
-        middleware_obj.process_view(django_request, view_func)
+    def test_process_view(self):
+        from opencensus.ext.django import middleware
+        from django.urls.resolvers import ResolverMatch
 
-        self.assertEqual(span.name, 'mock.mock.Mock')
+        trace_id = '2dd43a1d6b2549c6bc2a1a54c2fc0b05'
+        span_id = '6e0c63257de34c92'
+        django_trace_id = '00-{}-{}-00'.format(trace_id, span_id)
+
+        django_request = RequestFactory().get('/wiki/Rabbit', **{
+            'HTTP_TRACEPARENT': django_trace_id})
+        django_request.resolver_match = ResolverMatch(
+            self.view_func_ok, None, None)
+
+        # Force the test request to be sampled
+        settings = type('Test', (object,), {})
+        settings.OPENCENSUS = {
+            'TRACE': {
+                'SAMPLER': 'opencensus.trace.samplers.AlwaysOnSampler()',  # noqa
+            }
+        }
+        patch_settings = mock.patch(
+            'django.conf.settings',
+            settings)
+
+        with patch_settings:
+            middleware_obj = self.middleware_kls()
+
+        # test process_request
+        middleware_obj.process_request(django_request)
+
+        tracer = middleware._get_current_tracer()
+
+        span = tracer.current_span()
+
+        # test process_view
+        middleware_obj.process_view(django_request)
+
+        self.assertEqual(span.name, 'test_django_middleware.MockViewOk')
 
     def test_blacklist_path(self):
         from opencensus.ext.django import middleware
@@ -148,7 +194,7 @@ class TestOpencensusMiddleware(unittest.TestCase):
             settings)
 
         with patch_settings:
-            middleware_obj = middleware.OpencensusMiddleware()
+            middleware_obj = self.middleware_kls()
 
         django_request = RequestFactory().get('/test_blacklist_path')
         disabled = utils.disable_tracing_url(django_request.path,
@@ -163,8 +209,7 @@ class TestOpencensusMiddleware(unittest.TestCase):
         span = tracer.current_span()
 
         # process view
-        view_func = mock.Mock()
-        middleware_obj.process_view(django_request, view_func)
+        middleware_obj.process_view(django_request)
 
         tracer = middleware._get_current_tracer()
         span = tracer.current_span()
@@ -204,7 +249,7 @@ class TestOpencensusMiddleware(unittest.TestCase):
             settings)
 
         with patch_settings:
-            middleware_obj = middleware.OpencensusMiddleware()
+            middleware_obj = self.middleware_kls()
 
         middleware_obj.process_request(django_request)
         tracer = middleware._get_current_tracer()
@@ -259,7 +304,7 @@ class TestOpencensusMiddleware(unittest.TestCase):
             settings)
 
         with patch_settings:
-            middleware_obj = middleware.OpencensusMiddleware()
+            middleware_obj = self.middleware_kls()
 
         middleware_obj.process_request(django_request)
         tracer = middleware._get_current_tracer()
@@ -292,6 +337,60 @@ class TestOpencensusMiddleware(unittest.TestCase):
         middleware_obj.process_response(django_request, django_response)
 
         self.assertEqual(span.attributes, expected_attributes)
+
+
+class TestCustomisedOpencensusMiddleware(TestOpencensusMiddleware):
+
+    def setUp(self):
+        super(TestCustomisedOpencensusMiddleware, self).setUp()
+
+        from opencensus.ext.django import middleware
+
+        class CustomisedOpencensusMiddleware(middleware.OpencensusMiddleware):
+            ''' Customize the span naming convention; prefix it with the service name. '''  # noqa
+            def get_span_name(self, request):
+                return "MyService." + super(CustomisedOpencensusMiddleware, self).get_span_name(request)  # noqa
+
+        self.middleware_kls = CustomisedOpencensusMiddleware
+
+    def test_process_view(self):
+        from opencensus.ext.django import middleware
+        from django.urls.resolvers import ResolverMatch
+
+        trace_id = '2dd43a1d6b2549c6bc2a1a54c2fc0b05'
+        span_id = '6e0c63257de34c92'
+        django_trace_id = '00-{}-{}-00'.format(trace_id, span_id)
+
+        django_request = RequestFactory().get('/wiki/Rabbit', **{
+            'HTTP_TRACEPARENT': django_trace_id})
+        django_request.resolver_match = ResolverMatch(
+            self.view_func_ok, None, None)
+
+        # Force the test request to be sampled
+        settings = type('Test', (object,), {})
+        settings.OPENCENSUS = {
+            'TRACE': {
+                'SAMPLER': 'opencensus.trace.samplers.AlwaysOnSampler()',  # noqa
+            }
+        }
+        patch_settings = mock.patch(
+            'django.conf.settings',
+            settings)
+
+        with patch_settings:
+            middleware_obj = self.middleware_kls()
+
+        # test process_request
+        middleware_obj.process_request(django_request)
+
+        tracer = middleware._get_current_tracer()
+
+        span = tracer.current_span()
+
+        # test process_view
+        middleware_obj.process_view(django_request)
+
+        self.assertEqual(span.name, 'MyService.test_django_middleware.MockViewOk')
 
 
 class Test__set_django_attributes(unittest.TestCase):

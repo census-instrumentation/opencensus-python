@@ -188,7 +188,10 @@ class OpencensusMiddleware(MiddlewareMixin):
         except Exception:  # pragma: NO COVER
             log.error('Failed to trace request', exc_info=True)
 
-    def process_view(self, request, view_func, *args, **kwargs):
+    def get_span_name(self, request):
+        return utils.get_func_name(request.resolver_match.func)
+
+    def process_view(self, request, *args, **kwargs):
         """Process view is executed before the view function, here we get the
         function name add set it as the span name.
         """
@@ -202,7 +205,7 @@ class OpencensusMiddleware(MiddlewareMixin):
             # function name of the request.
             tracer = _get_current_tracer()
             span = tracer.current_span()
-            span.name = utils.get_func_name(view_func)
+            span.name = self.get_span_name(request)
         except Exception:  # pragma: NO COVER
             log.error('Failed to trace request', exc_info=True)
 
