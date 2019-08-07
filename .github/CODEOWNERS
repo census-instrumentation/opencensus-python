@@ -5,5 +5,3 @@
 *       @census-instrumentation/global-owners @c24t @reyang @songy23 @victoraugustolls
 
 /contrib/opencensus-ext-azure/ @lzchen
-
-/contrib/opencensus-ext-django/ @timgraham
