@@ -82,7 +82,10 @@ class TestOpencensusMiddleware(unittest.TestCase):
             middleware_obj = self.middleware_kls()
 
         assert isinstance(middleware_obj.sampler, samplers.AlwaysOnSampler)
-        assert isinstance(middleware_obj.exporter, print_exporter.PrintExporter)
+        assert isinstance(
+            middleware_obj.exporter,
+            print_exporter.PrintExporter,
+        )
         assert isinstance(
             middleware_obj.propagator,
             trace_context_http_header_format.TraceContextPropagator,
@@ -390,7 +393,8 @@ class TestCustomisedOpencensusMiddleware(TestOpencensusMiddleware):
         # test process_view
         middleware_obj.process_view(django_request)
 
-        self.assertEqual(span.name, 'MyService.test_django_middleware.MockViewOk')
+        self.assertEqual(
+            span.name, 'MyService.test_django_middleware.MockViewOk')
 
 
 class Test__set_django_attributes(unittest.TestCase):
