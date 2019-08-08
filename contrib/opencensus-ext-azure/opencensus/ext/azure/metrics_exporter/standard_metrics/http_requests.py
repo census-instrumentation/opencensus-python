@@ -12,7 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from http.server import HTTPServer
+import sys
+if sys.version_info < (3,):
+    from BaseHTTPServer import HTTPServer
+else:
+    from http.server import HTTPServer
 import time
 
 from opencensus.metrics.export.gauge import DerivedDoubleGauge
