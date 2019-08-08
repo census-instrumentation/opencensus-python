@@ -24,13 +24,16 @@ from opencensus.ext.azure.metrics_exporter.standard_metrics.process \
     import ProcessCPUMetric
 from opencensus.ext.azure.metrics_exporter.standard_metrics.process \
     import ProcessMemoryMetric
+from opencensus.ext.azure.metrics_exporter.standard_metrics.requests \
+    import RequestsRateMetric
 
 # List of standard metrics to track
 STANDARD_METRICS = [AvailableMemoryMetric,
                     DependencyRateMetric,
                     ProcessCPUMetric,
                     ProcessMemoryMetric,
-                    ProcessorTimeMetric]
+                    ProcessorTimeMetric,
+                    RequestsRateMetric]
 
 
 def register_metrics():
