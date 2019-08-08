@@ -60,7 +60,7 @@ def setup():
 
 
 class RequestsRateMetric(object):
-    NAME = "\\ApplicationInsights\\Requests\/Sec"
+    NAME = "\\ASP.NET Applications(??APP_W3SVC_PROC??)\\Requests/Sec"
 
     def __init__(self):
         setup()
