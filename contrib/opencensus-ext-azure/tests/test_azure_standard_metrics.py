@@ -218,8 +218,8 @@ class TestStandardMetrics(unittest.TestCase):
             handler.do_POST.return_value = None
             handler.do_PUT.return_value = None
             result = standard_metrics. \
-                    http_requests. \
-                    server_patch(None, None, handler)
+                http_requests. \
+                server_patch(None, None, handler)
             handler.do_DELETE()
             handler.do_GET()
             handler.do_HEAD()
@@ -231,17 +231,17 @@ class TestStandardMetrics(unittest.TestCase):
             self.assertEqual(len(request_mock.call_args_list), 6)
 
     def test_server_patch_no_args(self):
-        map = standard_metrics.http_requests.requests_map
-        func = lambda x, y: None
-        standard_metrics.http_requests.ORIGINAL_CONSTRUCTOR = func
+        standard_metrics \
+            .http_requests \
+            .ORIGINAL_CONSTRUCTOR = lambda x, y: None
         r = standard_metrics.http_requests.server_patch(None, None)
 
         self.assertEqual(r, None)
 
     def test_server_patch_no_handler(self):
-        map = standard_metrics.http_requests.requests_map
-        func = lambda x, y, z: None
-        standard_metrics.http_requests.ORIGINAL_CONSTRUCTOR = func
+        standard_metrics \
+            .http_requests \
+            .ORIGINAL_CONSTRUCTOR = lambda x, y, z: None
         r = standard_metrics.http_requests.server_patch(None, None, None)
 
         self.assertEqual(r, None)
@@ -250,8 +250,8 @@ class TestStandardMetrics(unittest.TestCase):
         metric = standard_metrics.RequestsRateMetric()
         gauge = metric()
 
-        self.assertEqual(gauge.descriptor.name,
-                         '\\ASP.NET Applications(??APP_W3SVC_PROC??)\\Requests/Sec')
+        name = '\\ASP.NET Applications(??APP_W3SVC_PROC??)\\Requests/Sec'
+        self.assertEqual(gauge.descriptor.name, name)
 
     def test_get_request_rate_first_time(self):
         rate = standard_metrics.RequestsRateMetric.get_value()
