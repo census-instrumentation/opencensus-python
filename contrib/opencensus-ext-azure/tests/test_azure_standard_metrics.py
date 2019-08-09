@@ -33,6 +33,7 @@ ORIGINAL_CONS= HTTPServer.__init__
 class TestStandardMetrics(unittest.TestCase):
     def setUp(self):
         standard_metrics.http_dependency.dependency_map.clear()
+        standard_metrics.http_requests.requests_map.clear()
         requests.Session.request = ORIGINAL_FUNCTION
         standard_metrics.http_dependency.ORIGINAL_REQUEST = ORIGINAL_FUNCTION
         standard_metrics.http_requests.ORIGINAL_CONSTRUCTOR = ORIGINAL_CONS
@@ -228,34 +229,50 @@ class TestStandardMetrics(unittest.TestCase):
             self.assertEqual(r, None)
             self.assertEqual(len(request_mock.call_args_list), 6)
 
+    def test_server_patch_no_args(self):
+        map = standard_metrics.http_requests.requests_map
+        func = lambda x, y: None
+        standard_metrics.http_requests.ORIGINAL_CONSTRUCTOR = func
+        r = standard_metrics.http_requests.server_patch(None, None)
+
+        self.assertEqual(r, None)
+
+    def test_server_patch_no_handler(self):
+        map = standard_metrics.http_requests.requests_map
+        func = lambda x, y, z: None
+        standard_metrics.http_requests.ORIGINAL_CONSTRUCTOR = func
+        r = standard_metrics.http_requests.server_patch(None, None, None)
+
+        self.assertEqual(r, None)
+
     def test_get_request_rate_metric(self):
-        metric = standard_metrics.DependencyRateMetric()
+        metric = standard_metrics.RequestsRateMetric()
         gauge = metric()
 
         self.assertEqual(gauge.descriptor.name,
-                            '\\ApplicationInsights\\Dependency Calls/Sec')
+                            '\\ASP.NET Applications(??APP_W3SVC_PROC??)\\Requests/Sec')
 
-    # def test_get_dependency_rate_first_time(self):
-    #     rate = standard_metrics.DependencyRateMetric.get_value()
+    def test_get_request_rate_first_time(self):
+        rate = standard_metrics.RequestsRateMetric.get_value()
 
-    #     self.assertEqual(rate, 0)
+        self.assertEqual(rate, 0)
 
-    # @mock.patch('opencensus.ext.azure.metrics_exporter'
-    #             '.standard_metrics.http_dependency.time')
-    # def test_get_dependency_rate(self, time_mock):
-    #     time_mock.time.return_value = 100
-    #     standard_metrics.http_dependency.dependency_map['last_time'] = 98
-    #     standard_metrics.http_dependency.dependency_map['count'] = 4
-    #     rate = standard_metrics.DependencyRateMetric.get_value()
+    @mock.patch('opencensus.ext.azure.metrics_exporter'
+                '.standard_metrics.http_requests.time')
+    def test_get_request_rate(self, time_mock):
+        time_mock.time.return_value = 100
+        standard_metrics.http_requests.requests_map['last_time'] = 98
+        standard_metrics.http_requests.requests_map['count'] = 4
+        rate = standard_metrics.RequestsRateMetric.get_value()
 
-    #     self.assertEqual(rate, 2)
+        self.assertEqual(rate, 2)
 
-    # @mock.patch('opencensus.ext.azure.metrics_exporter'
-    #             '.standard_metrics.http_dependency.time')
-    # def test_get_dependency_rate_error(self, time_mock):
-    #     time_mock.time.return_value = 100
-    #     standard_metrics.http_dependency.dependency_map['last_result'] = 5
-    #     standard_metrics.http_dependency.dependency_map['last_time'] = 100
-    #     result = standard_metrics.DependencyRateMetric.get_value()
+    @mock.patch('opencensus.ext.azure.metrics_exporter'
+                '.standard_metrics.http_requests.time')
+    def test_get_request_rate_error(self, time_mock):
+        time_mock.time.return_value = 100
+        standard_metrics.http_requests.requests_map['last_result'] = 5
+        standard_metrics.http_requests.requests_map['last_time'] = 100
+        result = standard_metrics.RequestsRateMetric.get_value()
 
-    #     self.assertEqual(result, 5)
+        self.assertEqual(result, 5)
