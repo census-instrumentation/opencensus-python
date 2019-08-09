@@ -18,16 +18,15 @@ import requests
 import sys
 import unittest
 
+from opencensus.ext.azure.metrics_exporter import standard_metrics
+from opencensus.trace import execution_context
 if sys.version_info < (3,):
     from BaseHTTPServer import HTTPServer
 else:
     from http.server import HTTPServer
 
-from opencensus.ext.azure.metrics_exporter import standard_metrics
-from opencensus.trace import execution_context
-
 ORIGINAL_FUNCTION = requests.Session.request
-ORIGINAL_CONS= HTTPServer.__init__
+ORIGINAL_CONS = HTTPServer.__init__
 
 
 class TestStandardMetrics(unittest.TestCase):
@@ -205,9 +204,9 @@ class TestStandardMetrics(unittest.TestCase):
         self.assertEqual(len(func.call_args_list), 1)
 
     def test_server_patch(self):
-        map = standard_metrics.http_requests.requests_map
-        func = lambda x, y, z: None
-        standard_metrics.http_requests.ORIGINAL_CONSTRUCTOR = func
+        standard_metrics. \
+            http_requests. \
+            ORIGINAL_CONSTRUCTOR = lambda x, y, z: None
         with mock.patch('opencensus.ext.azure.metrics_exporter'
                         '.standard_metrics.http_requests'
                         '.request_patch') as request_mock:
@@ -218,7 +217,9 @@ class TestStandardMetrics(unittest.TestCase):
             handler.do_OPTIONS.return_value = None
             handler.do_POST.return_value = None
             handler.do_PUT.return_value = None
-            r = standard_metrics.http_requests.server_patch(None, None, handler)
+            result = standard_metrics. \
+                    http_requests. \
+                    server_patch(None, None, handler)
             handler.do_DELETE()
             handler.do_GET()
             handler.do_HEAD()
@@ -226,7 +227,7 @@ class TestStandardMetrics(unittest.TestCase):
             handler.do_POST()
             handler.do_PUT()
 
-            self.assertEqual(r, None)
+            self.assertEqual(result, None)
             self.assertEqual(len(request_mock.call_args_list), 6)
 
     def test_server_patch_no_args(self):
@@ -250,7 +251,7 @@ class TestStandardMetrics(unittest.TestCase):
         gauge = metric()
 
         self.assertEqual(gauge.descriptor.name,
-                            '\\ASP.NET Applications(??APP_W3SVC_PROC??)\\Requests/Sec')
+                         '\\ASP.NET Applications(??APP_W3SVC_PROC??)\\Requests/Sec')
 
     def test_get_request_rate_first_time(self):
         rate = standard_metrics.RequestsRateMetric.get_value()

@@ -13,13 +13,13 @@
 # limitations under the License.
 
 import sys
+import time
+
+from opencensus.metrics.export.gauge import DerivedDoubleGauge
 if sys.version_info < (3,):
     from BaseHTTPServer import HTTPServer
 else:
     from http.server import HTTPServer
-import time
-
-from opencensus.metrics.export.gauge import DerivedDoubleGauge
 
 requests_map = dict()
 ORIGINAL_CONSTRUCTOR = HTTPServer.__init__
