@@ -34,7 +34,7 @@ def request_patch(func):
 
 
 def server_patch(*args, **kwargs):
-    if len(args) >= 2:
+    if len(args) >= 3:
         handler = args[2]
         if handler:
             # Patch the handler methods if they exist
