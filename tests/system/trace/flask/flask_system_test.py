@@ -101,8 +101,8 @@ class TestFlaskTrace(unittest.TestCase):
             self.assertEqual(len(spans), 1)
 
             for span in spans:
-                labels = span.get('labels')
-                self.assertEqual(labels.get('/http/status_code'), 200)
+                attributes = span.get('attributes')
+                self.assertEqual(attributes.get('/http/status_code'), 200)
 
         test_with_retry(self)
 
@@ -125,15 +125,15 @@ class TestFlaskTrace(unittest.TestCase):
             request_succeeded = False
 
             for span in spans:
-                labels = span.get('labels')
-                if '/http/status_code' in labels.keys():
-                    self.assertEqual(labels.get('/http/status_code'), 200)
+                attributes = span.get('attributes')
+                if '/http/status_code' in attributes.keys():
+                    self.assertEqual(attributes.get('/http/status_code'), 200)
                     request_succeeded = True
 
                 if span.get('name') == '[mysql.query]SELECT 2*3':
                     self.assertEqual(
-                        labels.get('mysql.cursor.method.name'), 'execute')
-                    self.assertEqual(labels.get('mysql.query'), 'SELECT 2*3')
+                        attributes.get('mysql.cursor.method.name'), 'execute')
+                    self.assertEqual(attributes.get('mysql.query'), 'SELECT 2*3')
 
             self.assertTrue(request_succeeded)
 
@@ -160,16 +160,16 @@ class TestFlaskTrace(unittest.TestCase):
             request_succeeded = False
 
             for span in spans:
-                labels = span.get('labels')
-                if '/http/status_code' in labels.keys():
-                    self.assertEqual(labels.get('/http/status_code'), 200)
+                attributes = span.get('attributes')
+                if '/http/status_code' in attributes.keys():
+                    self.assertEqual(attributes.get('/http/status_code'), 200)
                     request_succeeded = True
 
                 if span.get('name') == '[postgresql.query]SELECT 2*3':
                     self.assertEqual(
-                        labels.get('postgresql.cursor.method.name'), 'execute')
+                        attributes.get('postgresql.cursor.method.name'), 'execute')
                     self.assertEqual(
-                        labels.get('postgresql.query'), 'SELECT 2*3')
+                        attributes.get('postgresql.query'), 'SELECT 2*3')
 
             self.assertTrue(request_succeeded)
 
@@ -193,9 +193,9 @@ class TestFlaskTrace(unittest.TestCase):
             request_succeeded = False
 
             for span in spans:
-                labels = span.get('labels')
-                if '/http/status_code' in labels.keys():
-                    self.assertEqual(labels.get('/http/status_code'), 200)
+                attributes = span.get('attributes')
+                if '/http/status_code' in attributes.keys():
+                    self.assertEqual(attributes.get('/http/status_code'), 200)
                     request_succeeded = True
 
             self.assertTrue(request_succeeded)
@@ -221,9 +221,9 @@ class TestFlaskTrace(unittest.TestCase):
             request_succeeded = False
 
             for span in spans:
-                labels = span.get('labels')
-                if '/http/status_code' in labels.keys():
-                    self.assertEqual(labels.get('/http/status_code'), 200)
+                attributes = span.get('attributes')
+                if '/http/status_code' in attributes.keys():
+                    self.assertEqual(attributes.get('/http/status_code'), 200)
                     request_succeeded = True
 
             self.assertTrue(request_succeeded)
