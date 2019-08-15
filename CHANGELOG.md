@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## 0.7.2
+Released 2019-08-16
+
+- Fix GCP resource loading for certain environments
+  ([#761](https://github.com/census-instrumentation/opencensus-python/pull/761))
+
 ## 0.7.1
 Released 2019-08-05
 
