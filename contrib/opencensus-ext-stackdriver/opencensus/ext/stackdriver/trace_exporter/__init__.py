@@ -69,9 +69,17 @@ def set_attributes(trace):
         if span.get('attributes') is None:
             span['attributes'] = {}
 
-        if 'http.status_code' in span['attributes']:
-            span['attributes']['http.status_code'] =\
-                str(span['attributes']['http.status_code'])
+        if 'attributeMap' in span['attributes']:
+            if 'http.status_code' in span['attributes']['attributeMap']:
+                value = (span['attributes']['attributeMap']
+                         ['http.status_code']['int_value']['value'])
+                span['attributes']['attributeMap']['http.status_code'] = \
+                    {
+                        'string_value': {
+                            'truncated_byte_count': 0,
+                            'value': str(value)
+                        }
+                    }
 
         if is_gae_environment():
             set_gae_attributes(span)
