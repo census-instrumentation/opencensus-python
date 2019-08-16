@@ -12,19 +12,80 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
 import os
 import sys
 
 from opencensus.ext.azure.common.protocol import BaseObject
 
+logger = logging.getLogger(__name__)
+
+ENV_INSTRUMENTATION_KEY = 'APPINSIGHTS_INSTRUMENTATIONKEY'
+ENV_CONNECTION_STRING = 'APPLICATIONINSIGHTS_CONNECTION_STRING'
+INSTRUMENTATION_KEY = 'InstrumentationKey'
+INGESTION_ENDPOINT = 'IngestionEndpoint'
+
+
+def process_options(options):
+    env_ikey = os.getenv(ENV_INSTRUMENTATION_KEY)
+    env_cs = os.getenv(ENV_CONNECTION_STRING)
+    code_ikey = options.instrumentation_key
+    code_endpoint = options.endpoint
+    options.instrumentation_key = None
+    options.endpoint = None
+    
+    if options.connection_string is not None:
+        # Hardcoded connection string
+        cs = parse_connection_string(options.connection_string)
+        ikey = cs.get(INSTRUMENTATION_KEY)
+        if ikey is not None:
+            options.instrumentation_key = ikey
+        else:
+            logger.warning('Missing \'InstrumentationKey\' in connection string')
+        endpoint = cs.get(INGESTION_ENDPOINT)
+        if endpoint is not None:
+            options.endpoint = endpoint + '/v2/track'
+    if options.instrumentation_key is None and code_ikey is not None:
+        # Hardcoded instrumentation key
+        options.instrumentation_key = code_ikey
+    if options.instrumentation_key is None and env_cs is not None:
+        # Environment variable connection string
+        ikey = parse_connection_string(env_cs).get(INSTRUMENTATION_KEY)
+        if ikey is not None:
+            options.instrumentation_key = ikey
+            return
+        else:
+            logger.warning('Missing \'InstrumentationKey\' in environment connection string')
+        endpoint = cs.get(INGESTION_ENDPOINT)
+        if endpoint is not None and options.endpoint is None:
+            options.endpoint = endpoint + '/v2/track'
+    # Environment variable instrumentation key
+    if options.instrumentation_key is None:
+        options.instrumentation_key = env_ikey
+    if options.endpoint is None:
+        options.endpoint = code_endpoint
+        
+
+def parse_connection_string(connection_string):
+    try:
+        pairs = connection_string.split(';')
+        return dict(s.split('=') for s in pairs)
+    except Exception:
+        raise ValueError("Invalid connection string: " + connection_string)
+
 
 class Options(BaseObject):
+    def __init__(self, *args, **kwargs):
+        super(Options, self).__init__(*args, **kwargs)
+        process_options(self)
+
     _default = BaseObject(
-        enable_standard_metrics=True,
+        connection_string=None,
+        enable_standard_metrics=False,
         endpoint='https://dc.services.visualstudio.com/v2/track',
         export_interval=15.0,
         grace_period=5.0,
-        instrumentation_key=os.getenv('APPINSIGHTS_INSTRUMENTATIONKEY', None),
+        instrumentation_key=None,
         max_batch_size=100,
         minimum_retry_interval=60,  # minimum retry interval in seconds
         proxy=None,
