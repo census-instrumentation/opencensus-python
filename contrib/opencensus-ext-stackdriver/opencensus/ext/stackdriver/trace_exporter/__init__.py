@@ -69,7 +69,10 @@ def set_attributes(trace):
         if span.get('attributes') is None:
             span['attributes'] = {}
 
-        if 'attributeMap' in span['attributes']:
+        if 'http.status_code' in span['attributes']:
+            value = span['attributes']['http.status_code']
+            span['attributes']['http.status_code'] = str(value)
+        elif 'attributeMap' in span['attributes']:
             if 'http.status_code' in span['attributes']['attributeMap']:
                 value = (span['attributes']['attributeMap']
                          ['http.status_code']['int_value']['value'])
