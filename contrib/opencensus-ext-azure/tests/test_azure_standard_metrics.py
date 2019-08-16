@@ -230,6 +230,27 @@ class TestStandardMetrics(unittest.TestCase):
             self.assertEqual(result, None)
             self.assertEqual(len(request_mock.call_args_list), 6)
 
+    def test_server_patch_no_methods(self):
+        standard_metrics. \
+            http_requests. \
+            ORIGINAL_CONSTRUCTOR = lambda x, y, z: None
+        with mock.patch('opencensus.ext.azure.metrics_exporter'
+                        '.standard_metrics.http_requests'
+                        '.request_patch') as request_mock:
+            handler = mock.Mock()
+            result = standard_metrics. \
+                http_requests. \
+                server_patch(None, None, handler)
+            handler.do_DELETE()
+            handler.do_GET()
+            handler.do_HEAD()
+            handler.do_OPTIONS()
+            handler.do_POST()
+            handler.do_PUT()
+
+            self.assertEqual(result, None)
+            self.assertEqual(len(request_mock.call_args_list), 0)
+
     def test_server_patch_no_args(self):
         standard_metrics \
             .http_requests \
