@@ -281,7 +281,6 @@ class TestStackdriverExporter(unittest.TestCase):
         self.assertIsNone(exporter.map_attributes(None))
 
     def test_translate_common_attributes_to_stackdriver(self):
-        self.maxDiff = None
         project_id = 'PROJECT'
         client = mock.Mock()
         client.project = project_id
@@ -328,8 +327,9 @@ class TestStackdriverExporter(unittest.TestCase):
                     }
                 },
                 'http.status_code': {
-                    'int_value': {
-                        'value': 200
+                    'string_value': {
+                        'truncated_byte_count': 0,
+                        'value': '200'
                     }
                 },
                 'http.url': {
@@ -449,7 +449,8 @@ class TestStackdriverExporter(unittest.TestCase):
                     }
                 },
                 '/http/status_code': {
-                    'int_value': {
+                    'string_value': {
+                        'truncated_byte_count': 0,
                         'value': '200'
                     }
                 },
