@@ -15,6 +15,8 @@
 from collections import defaultdict
 import os
 
+import logging
+
 from google.cloud.trace.client import Client
 
 from opencensus.common.monitored_resource import aws_identity_doc_utils
@@ -69,20 +71,24 @@ def set_attributes(trace):
         if span.get('attributes') is None:
             span['attributes'] = {}
 
+        log = logging.Logger(__name__)
+        log.info(span['attributes'])
+
         if 'http.status_code' in span['attributes']:
             value = span['attributes']['http.status_code']
             span['attributes']['http.status_code'] = str(value)
         elif 'attributeMap' in span['attributes']:
             if 'http.status_code' in span['attributes']['attributeMap']:
                 if 'int_value' not in (span['attributes']['attributeMap']
-                                   ['http.status_code']):
+                                       ['http.status_code']):
                     value = (span['attributes']['attributeMap']
-                            ['http.status_code'])
+                             ['http.status_code'])
                     span['attributes']['attributeMap']['http.status_code'] = \
                         str(value)
-                else:
+                elif 'int_value' in (span['attributes']['attributeMap']
+                                     ['http.status_code']):
                     value = (span['attributes']['attributeMap']
-                            ['http.status_code']['int_value']['value'])
+                             ['http.status_code']['int_value']['value'])
                     span['attributes']['attributeMap']['http.status_code'] = \
                         {
                             'string_value': {
