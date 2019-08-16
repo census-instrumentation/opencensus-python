@@ -14,7 +14,7 @@
 
 from opencensus.common.http_handler import get_request
 
-_GCP_METADATA_URI = 'http://metadata/computeMetadata/v1/'
+_GCP_METADATA_URI = 'http://metadata.google.internal/computeMetadata/v1/'
 _GCP_METADATA_URI_HEADER = {'Metadata-Flavor': 'Google'}
 
 # ID of the GCP project associated with this resource, such as "my-project"
