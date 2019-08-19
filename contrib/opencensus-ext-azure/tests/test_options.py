@@ -87,8 +87,8 @@ class TestOptions(unittest.TestCase):
         options.connection_string = None
         common.process_options(options)
 
-        self.assertEqual(options.endpoint, \
-            'https://dc.services.visualstudio.com/v2/track')
+        self.assertEqual(options.endpoint,
+                         'https://dc.services.visualstudio.com/v2/track')
 
     def test_parse_connection_string_none(self):
         cs = None
@@ -98,18 +98,18 @@ class TestOptions(unittest.TestCase):
 
     def test_parse_connection_string_invalid(self):
         cs = 'asd'
-        self.assertRaises(ValueError, \
-            lambda: common.parse_connection_string(cs))
+        self.assertRaises(ValueError,
+                          lambda: common.parse_connection_string(cs))
 
     def test_parse_connection_string_missing_auth(self):
         cs = 'asd=asd'
-        self.assertRaises(ValueError, \
-            lambda: common.parse_connection_string(cs))
+        self.assertRaises(ValueError,
+                          lambda: common.parse_connection_string(cs))
 
     def test_parse_connection_string_invalid_auth(self):
         cs = 'Authorization=asd'
-        self.assertRaises(ValueError, \
-            lambda: common.parse_connection_string(cs))
+        self.assertRaises(ValueError,
+                          lambda: common.parse_connection_string(cs))
 
     def test_parse_connection_string_explicit_endpoint(self):
         cs = 'Authorization=ikey;IngestionEndpoint=123;' \
@@ -122,8 +122,8 @@ class TestOptions(unittest.TestCase):
         cs = 'Authorization=ikey;Location=us'
         result = common.parse_connection_string(cs)
 
-        self.assertEqual(result['IngestionEndpoint'], \
-            'https://dc.services.visualstudio.com')
+        self.assertEqual(result['IngestionEndpoint'],
+                         'https://dc.services.visualstudio.com')
 
     def test_parse_connection_string_no_location(self):
         cs = 'Authorization=ikey;EndpointSuffix=suffix'

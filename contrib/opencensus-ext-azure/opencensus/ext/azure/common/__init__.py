@@ -34,12 +34,12 @@ def process_options(options):
     env_ikey = os.getenv(ENV_INSTRUMENTATION_KEY)
 
     options.instrumentation_key = code_cs.get(INSTRUMENTATION_KEY) \
-                                    or code_ikey \
-                                    or env_cs.get(INSTRUMENTATION_KEY) \
-                                    or env_ikey
+        or code_ikey \
+        or env_cs.get(INSTRUMENTATION_KEY) \
+        or env_ikey
     endpoint = code_cs.get(INGESTION_ENDPOINT) \
-                or env_cs.get(INGESTION_ENDPOINT) \
-                or DEFAULT_BREEZE_ENDPOINT
+        or env_cs.get(INGESTION_ENDPOINT) \
+        or DEFAULT_BREEZE_ENDPOINT
     options.endpoint = endpoint + '/v2/track'
 
 
@@ -54,8 +54,8 @@ def parse_connection_string(connection_string):
     # Validate authorization
     auth = result.get(AUTHORIZATION)
     if auth is None:
-        raise ValueError('Missing \'Authorization\' in connection string:' \
-            + connection_string)
+        raise ValueError('Missing \'Authorization\' in connection string:'
+                         + connection_string)
     if auth.lower() != 'ikey':
         raise ValueError('Invalid authorization mechanism: ' + auth)
     # Construct the ingestion endpoint if not passed in explicitly
