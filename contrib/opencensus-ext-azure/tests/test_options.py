@@ -26,7 +26,8 @@ class TestOptions(unittest.TestCase):
         options = common.Options()
         options.connection_string = 'Authorization=ikey;InstrumentationKey=123'
         options.instrumentation_key = '456'
-        os.environ['APPLICATIONINSIGHTS_CONNECTION_STRING'] = 'Authorization=ikey;InstrumentationKey=789'
+        os.environ['APPLICATIONINSIGHTS_CONNECTION_STRING'] = \
+            'Authorization=ikey;InstrumentationKey=789'
         os.environ['APPINSIGHTS_INSTRUMENTATIONKEY'] = '101112'
         common.process_options(options)
 
@@ -36,7 +37,8 @@ class TestOptions(unittest.TestCase):
         options = common.Options()
         options.connection_string = None
         options.instrumentation_key = '456'
-        os.environ['APPLICATIONINSIGHTS_CONNECTION_STRING'] = 'Authorization=ikey;InstrumentationKey=789'
+        os.environ['APPLICATIONINSIGHTS_CONNECTION_STRING'] = \
+            'Authorization=ikey;InstrumentationKey=789'
         os.environ['APPINSIGHTS_INSTRUMENTATIONKEY'] = '101112'
         common.process_options(options)
 
@@ -46,7 +48,8 @@ class TestOptions(unittest.TestCase):
         options = common.Options()
         options.connection_string = None
         options.instrumentation_key = None
-        os.environ['APPLICATIONINSIGHTS_CONNECTION_STRING'] = 'Authorization=ikey;InstrumentationKey=789'
+        os.environ['APPLICATIONINSIGHTS_CONNECTION_STRING'] = \
+            'Authorization=ikey;InstrumentationKey=789'
         os.environ['APPINSIGHTS_INSTRUMENTATIONKEY'] = '101112'
         common.process_options(options)
 
@@ -63,29 +66,29 @@ class TestOptions(unittest.TestCase):
 
     def test_process_options_endpoint_code_cs(self):
         options = common.Options()
-        suffix = '/v2/track'
         options.connection_string = 'Authorization=ikey;IngestionEndpoint=123'
-        os.environ['APPLICATIONINSIGHTS_CONNECTION_STRING'] = 'Authorization=ikey;IngestionEndpoint=456'
+        os.environ['APPLICATIONINSIGHTS_CONNECTION_STRING'] = \
+            'Authorization=ikey;IngestionEndpoint=456'
         common.process_options(options)
 
         self.assertEqual(options.endpoint, '123/v2/track')
 
     def test_process_options_endpoint_env_cs(self):
         options = common.Options()
-        suffix = '/v2/track'
         options.connection_string = None
-        os.environ['APPLICATIONINSIGHTS_CONNECTION_STRING'] = 'Authorization=ikey;IngestionEndpoint=456'
+        os.environ['APPLICATIONINSIGHTS_CONNECTION_STRING'] = \
+            'Authorization=ikey;IngestionEndpoint=456'
         common.process_options(options)
 
         self.assertEqual(options.endpoint, '456/v2/track')
 
     def test_process_options_endpoint_default(self):
         options = common.Options()
-        suffix = '/v2/track'
         options.connection_string = None
         common.process_options(options)
 
-        self.assertEqual(options.endpoint, 'https://dc.services.visualstudio.com/v2/track')
+        self.assertEqual(options.endpoint, \
+            'https://dc.services.visualstudio.com/v2/track')
 
     def test_parse_connection_string_none(self):
         cs = None
@@ -95,18 +98,22 @@ class TestOptions(unittest.TestCase):
 
     def test_parse_connection_string_invalid(self):
         cs = 'asd'
-        self.assertRaises(ValueError, lambda: common.parse_connection_string(cs))
+        self.assertRaises(ValueError, \
+            lambda: common.parse_connection_string(cs))
 
     def test_parse_connection_string_missing_auth(self):
         cs = 'asd=asd'
-        self.assertRaises(ValueError, lambda: common.parse_connection_string(cs))
+        self.assertRaises(ValueError, \
+            lambda: common.parse_connection_string(cs))
 
     def test_parse_connection_string_invalid_auth(self):
         cs = 'Authorization=asd'
-        self.assertRaises(ValueError, lambda: common.parse_connection_string(cs))
+        self.assertRaises(ValueError, \
+            lambda: common.parse_connection_string(cs))
 
     def test_parse_connection_string_explicit_endpoint(self):
-        cs = 'Authorization=ikey;IngestionEndpoint=123;Location=us;EndpointSuffix=suffix'
+        cs = 'Authorization=ikey;IngestionEndpoint=123;' \
+            'Location=us;EndpointSuffix=suffix'
         result = common.parse_connection_string(cs)
 
         self.assertEqual(result['IngestionEndpoint'], '123')
@@ -115,7 +122,8 @@ class TestOptions(unittest.TestCase):
         cs = 'Authorization=ikey;Location=us'
         result = common.parse_connection_string(cs)
 
-        self.assertEqual(result['IngestionEndpoint'], 'https://dc.services.visualstudio.com')
+        self.assertEqual(result['IngestionEndpoint'], \
+            'https://dc.services.visualstudio.com')
 
     def test_parse_connection_string_no_location(self):
         cs = 'Authorization=ikey;EndpointSuffix=suffix'
