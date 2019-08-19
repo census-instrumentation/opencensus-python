@@ -30,6 +30,10 @@ from opencensus.trace import base_exporter
 from opencensus.trace import span_data
 from opencensus.trace.attributes import Attributes
 
+logging.basicConfig()
+log = logging.Logger(__name__)
+
+
 # Agent
 AGENT = 'opencensus-python [{}]'.format(__version__)
 
@@ -71,11 +75,7 @@ def set_attributes(trace):
         if span.get('attributes') is None:
             span['attributes'] = {}
 
-        log = logging.Logger(__name__)
-        log.info(span['attributes'])
-        handler = logging.StreamHandler()
-        handler.setLevel(logging.DEBUG)
-        log.addHandler(handler)
+        log.warning(span['attributes'])
 
         if 'http.status_code' in span['attributes']:
             value = span['attributes']['http.status_code']
