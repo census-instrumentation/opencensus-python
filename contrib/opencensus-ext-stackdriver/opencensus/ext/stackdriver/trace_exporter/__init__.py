@@ -73,6 +73,9 @@ def set_attributes(trace):
 
         log = logging.Logger(__name__)
         log.info(span['attributes'])
+        handler = logging.StreamHandler()
+        handler.setLevel(logging.DEBUG)
+        log.addHandler(handler)
 
         if 'http.status_code' in span['attributes']:
             value = span['attributes']['http.status_code']
