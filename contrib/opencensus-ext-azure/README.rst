@@ -25,7 +25,9 @@ This example shows how to send a warning level log to Azure Monitor.
 
 * Create an Azure Monitor resource and get the instrumentation key, more information can be found `here <https://docs.microsoft.com/azure/azure-monitor/app/create-new-resource>`_.
 * Put the instrumentation key in ``APPINSIGHTS_INSTRUMENTATIONKEY`` environment variable.
-* You can also specify the instrumentation key explicitly in the code, which will take priority over a set environment variable.
+* You can also utilize a connection string with an instrumentation key. Place the connetion string in ``APPLICATIONINSIGHTS_CONNECTION_STRING`` environment variable, which will take priority over the instrumentation key environment variable.
+* You can also specify the instrumentation key explicitly in the code, which will take priority over the previous methods.
+* Finally, you can specify a connection string explicitly in the code, which will take priority over all methods.
 
 .. code:: python
 
@@ -42,7 +44,9 @@ You can enrich the logs with trace IDs and span IDs by using the `logging integr
 * Create an Azure Monitor resource and get the instrumentation key, more information can be found `here <https://docs.microsoft.com/azure/azure-monitor/app/create-new-resource>`_.
 * Install the `logging integration package <../opencensus-ext-logging>`_ using ``pip install opencensus-ext-logging``.
 * Put the instrumentation key in ``APPINSIGHTS_INSTRUMENTATIONKEY`` environment variable.
-* You can also specify the instrumentation key explicitly in the code, which will take priority over a set environment variable.
+* You can also utilize a connection string with an instrumentation key. Place the connetion string in ``APPLICATIONINSIGHTS_CONNECTION_STRING`` environment variable, which will take priority over the instrumentation key environment variable.
+* You can also specify the instrumentation key explicitly in the code, which will take priority over the previous methods.
+* Finally, you can specify a connection string explicitly in the code, which will take priority over all methods.
 
 .. code:: python
 
@@ -76,7 +80,9 @@ The **Azure Monitor Metrics Exporter** allows you to export metrics to `Azure Mo
 
 * Create an Azure Monitor resource and get the instrumentation key, more information can be found `here <https://docs.microsoft.com/azure/azure-monitor/app/create-new-resource>`_.
 * Put the instrumentation key in ``APPINSIGHTS_INSTRUMENTATIONKEY`` environment variable.
-* You can also specify the instrumentation key explicitly in the code, which will take priority over a set environment variable.
+* You can also utilize a connection string with an instrumentation key. Place the connetion string in ``APPLICATIONINSIGHTS_CONNECTION_STRING`` environment variable, which will take priority over the instrumentation key environment variable.
+* You can also specify the instrumentation key explicitly in the code, which will take priority over the previous methods.
+* Finally, you can specify a connection string explicitly in the code, which will take priority over all methods.
 
 .. code:: python
 
@@ -167,7 +173,9 @@ This example shows how to send a span "hello" to Azure Monitor.
 
 * Create an Azure Monitor resource and get the instrumentation key, more information can be found `here <https://docs.microsoft.com/azure/azure-monitor/app/create-new-resource>`_.
 * Put the instrumentation key in ``APPINSIGHTS_INSTRUMENTATIONKEY`` environment variable.
-* You can also specify the instrumentation key explicitly in the code, which will take priority over a set environment variable.
+* You can also utilize a connection string with an instrumentation key. Place the connetion string in ``APPLICATIONINSIGHTS_CONNECTION_STRING`` environment variable, which will take priority over the instrumentation key environment variable.
+* You can also specify the instrumentation key explicitly in the code, which will take priority over the previous methods.
+* Finally, you can specify a connection string explicitly in the code, which will take priority over all methods.
 
 .. code:: python
 
@@ -185,7 +193,9 @@ You can also specify the instrumentation key explicitly in the code.
 * Create an Azure Monitor resource and get the instrumentation key, more information can be found `here <https://docs.microsoft.com/azure/azure-monitor/app/create-new-resource>`_.
 * Install the `requests integration package <../opencensus-ext-requests>`_ using ``pip install opencensus-ext-requests``.
 * Put the instrumentation key in ``APPINSIGHTS_INSTRUMENTATIONKEY`` environment variable.
-* You can also specify the instrumentation key explicitly in the code, which will take priority over a set environment variable.
+* You can also utilize a connection string with an instrumentation key. Place the connetion string in ``APPLICATIONINSIGHTS_CONNECTION_STRING`` environment variable, which will take priority over the instrumentation key environment variable.
+* You can also specify the instrumentation key explicitly in the code, which will take priority over the previous methods.
+* Finally, you can specify a connection string explicitly in the code, which will take priority over all methods.
 
 .. code:: python
 

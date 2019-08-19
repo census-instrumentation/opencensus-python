@@ -33,7 +33,7 @@ def process_options(options):
     env_cs = parse_connection_string(os.getenv(ENV_CONNECTION_STRING))
     env_ikey = os.getenv(ENV_INSTRUMENTATION_KEY)
 
-    options.instrumentation_key = code_cs.get(INSTRUMENTATION_KEY) or code_ikey or env_ikey
+    options.instrumentation_key = code_cs.get(INSTRUMENTATION_KEY) or code_ikey or env_cs.get(INSTRUMENTATION_KEY) or env_ikey
     endpoint = code_cs.get(INGESTION_ENDPOINT) or env_cs.get(INGESTION_ENDPOINT) or DEFAULT_BREEZE_ENDPOINT
     options.endpoint = endpoint + '/v2/track'
 
