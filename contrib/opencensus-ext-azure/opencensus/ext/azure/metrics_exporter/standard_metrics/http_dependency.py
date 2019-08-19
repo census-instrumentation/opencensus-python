@@ -76,7 +76,7 @@ class DependencyRateMetric(object):
         value over the elapsed time.
 
         :rtype: :class:`opencensus.metrics.export.gauge.DerivedLongGauge`
-        :return: The gauge representing the available memory metric
+        :return: The gauge representing the outgoing requests metric
         """
         gauge = DerivedDoubleGauge(
             DependencyRateMetric.NAME,
