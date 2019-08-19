@@ -153,6 +153,7 @@ Below is a list of standard metrics that are currently available:
 
 - Available Memory (bytes)
 - CPU Processor Time (percentage)
+- Incoming Request Rate (per second)
 - Outgoing Request Rate (per second)
 - Process CPU Usage (percentage)
 - Process Private Bytes (bytes)
