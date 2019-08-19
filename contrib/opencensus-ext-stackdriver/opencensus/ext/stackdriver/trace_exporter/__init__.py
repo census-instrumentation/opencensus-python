@@ -87,15 +87,27 @@ def set_attributes(trace):
                         str(value)
                 elif 'int_value' in (span['attributes']['attributeMap']
                                      ['http.status_code']):
-                    value = (span['attributes']['attributeMap']
-                             ['http.status_code']['int_value']['value'])
-                    span['attributes']['attributeMap']['http.status_code'] = \
-                        {
-                            'string_value': {
-                                'truncated_byte_count': 0,
-                                'value': str(value)
+                    if 'value' in (span['attributes']['attributeMap']
+                                   ['http.status_code']['int_value']):
+                        value = (span['attributes']['attributeMap']
+                                     ['http.status_code']['int_value']
+                                     ['value'])
+                        (span['attributes']['attributeMap']
+                             ['http.status_code']) = \
+                            {
+                                'string_value': {
+                                    'truncated_byte_count': 0,
+                                    'value': str(value)
+                                }
                             }
-                        }
+                    else:
+                        value = (span['attributes']['attributeMap']
+                                     ['http.status_code']['int_value'])
+                        (span['attributes']['attributeMap']
+                         ['http.status_code']) = \
+                            {
+                                'string_value': str(value)
+                            }
 
         if is_gae_environment():
             set_gae_attributes(span)
