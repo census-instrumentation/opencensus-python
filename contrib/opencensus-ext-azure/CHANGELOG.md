@@ -1,6 +1,8 @@
 # Changelog
 
 ## Unreleased
+- Implement connection strings
+  ([#767](https://github.com/census-instrumentation/opencensus-python/pull/767))
 - Standard metrics incoming requests per second
   ([#758](https://github.com/census-instrumentation/opencensus-python/pull/758))
 
