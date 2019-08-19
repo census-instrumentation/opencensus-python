@@ -101,10 +101,10 @@ class TestOptions(unittest.TestCase):
         self.assertRaises(ValueError,
                           lambda: common.parse_connection_string(cs))
 
-    def test_parse_connection_string_missing_auth(self):
-        cs = 'asd=asd'
-        self.assertRaises(ValueError,
-                          lambda: common.parse_connection_string(cs))
+    def test_parse_connection_string_default_auth(self):
+        cs = 'InstrumentationKey=123'
+        result = common.parse_connection_string(cs)
+        self.assertEqual(result['InstrumentationKey'], '123')
 
     def test_parse_connection_string_invalid_auth(self):
         cs = 'Authorization=asd'

@@ -38,6 +38,9 @@ CARROTS_VIEW = view_module.View("carrots_view",
 def main():
     # Enable metrics
     # Set the interval in seconds in which you want to send metrics
+    # TODO: you need to specify the instrumentation key in a connection string
+    # and place it in the APPLICATIONINSIGHTS_CONNECTION_STRING
+    # environment variable.
     exporter = metrics_exporter.new_metrics_exporter()
     view_manager.register_exporter(exporter)
 

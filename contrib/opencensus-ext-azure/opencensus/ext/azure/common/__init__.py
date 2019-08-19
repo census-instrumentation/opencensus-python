@@ -50,14 +50,11 @@ def parse_connection_string(connection_string):
         pairs = connection_string.split(';')
         result = dict(s.split('=') for s in pairs)
     except Exception:
-        raise ValueError('Invalid connection string: ' + connection_string)
+        raise ValueError('Invalid connection string')
     # Validate authorization
     auth = result.get(AUTHORIZATION)
-    if auth is None:
-        raise ValueError('Missing \'Authorization\' in connection string:'
-                         + connection_string)
-    if auth.lower() != 'ikey':
-        raise ValueError('Invalid authorization mechanism: ' + auth)
+    if auth is not None and auth.lower() != 'ikey':
+        raise ValueError('Invalid authorization mechanism')
     # Construct the ingestion endpoint if not passed in explicitly
     if result.get(INGESTION_ENDPOINT) is None:
         endpoint_suffix = ''
