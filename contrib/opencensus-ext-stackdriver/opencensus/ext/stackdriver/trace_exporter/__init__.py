@@ -90,8 +90,19 @@ def set_attributes(trace):
                         str(value)
                 elif 'int_value' in (span['attributes']['attributeMap']
                                      ['http.status_code']):
-                    if 'value' in (span['attributes']['attributeMap']
-                                   ['http.status_code']['int_value']):
+                    if isinstance(
+                        span['attributes']['attributeMap']
+                            ['http.status_code']['int_value'],
+                            int
+                    ):
+                        value = (span['attributes']['attributeMap']
+                                     ['http.status_code']['int_value'])
+                        (span['attributes']['attributeMap']
+                             ['http.status_code']['string_value']) = \
+                            str(value)
+
+                    elif 'value' not in (span['attributes']['attributeMap']
+                                         ['http.status_code']['int_value']):
                         value = (span['attributes']['attributeMap']
                                      ['http.status_code']['int_value']
                                      ['value'])
