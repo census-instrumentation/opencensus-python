@@ -448,7 +448,8 @@ class TestStackdriverExporter(unittest.TestCase):
                     }
                 },
                 '/http/status_code': {
-                    'int_value': {
+                    'string_value': {
+                        'truncated_byte_count': 0,
                         'value': '200'
                     }
                 },
@@ -552,7 +553,8 @@ class TestStackdriverExporter(unittest.TestCase):
             'outer key': 'some value',
             'attributeMap': {
                 '/http/status_code': {
-                    'int_value': {
+                    'string_value': {
+                        'truncated_byte_count': 0,
                         'value': '200'
                     }
                 }
