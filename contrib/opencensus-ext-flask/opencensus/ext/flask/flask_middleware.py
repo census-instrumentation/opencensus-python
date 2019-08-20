@@ -181,7 +181,7 @@ class FlaskMiddleware(object):
             )
             tracer.add_attribute_to_current_span(
                 HTTP_STATUS_CODE,
-                str(response.status_code)
+                response.status_code
             )
         except Exception:  # pragma: NO COVER
             log.error('Failed to trace request', exc_info=True)

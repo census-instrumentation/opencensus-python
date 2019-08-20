@@ -170,6 +170,11 @@ class TestStackdriverExporter(unittest.TestCase):
                         'truncated_byte_count': 0,
                         'value': 'host'
                     }
+                },
+                'http.status_code': {
+                    'int_value': {
+                        'value': 200
+                    }
                 }
             }
         }
@@ -239,6 +244,12 @@ class TestStackdriverExporter(unittest.TestCase):
                         'string_value': {
                             'truncated_byte_count': 0,
                             'value': 'host'
+                        }
+                    },
+                    '/http/status_code': {
+                        'string_value': {
+                            'truncated_byte_count': 0,
+                            'value': '200'
                         }
                     }
                 }
