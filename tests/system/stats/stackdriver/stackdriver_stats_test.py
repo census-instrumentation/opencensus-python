@@ -66,15 +66,26 @@ class TestBasicStats(unittest.TestCase):
         patcher.start()
         self.addCleanup(patcher.stop)
 
-    def test_stats_record_sync(self):
-        # We are using sufix in order to prevent cached objects
-        sufix = str(os.getgid())
+    def tearDown(self):
+        suffix = str(os.getgid())
 
-        tag_key = "SampleKeySyncTest%s" % sufix
-        measure_name = "SampleMeasureNameSyncTest%s" % sufix
-        measure_description = "SampleDescriptionSyncTest%s" % sufix
-        view_name = "SampleViewNameSyncTest%s" % sufix
-        view_description = "SampleViewDescriptionSyncTest%s" % sufix
+        cli = monitoring_v3.MetricServiceClient()
+        for md in cli.list_metric_descriptors('projects/{}'.format(PROJECT)):
+            if "OpenCensus" in md.name and suffix in md.name:
+                try:
+                    cli.delete_metric_descriptor(md.name)
+                except Exception:
+                    pass
+
+    def test_stats_record_sync(self):
+        # We are using suffix in order to prevent cached objects
+        suffix = str(os.getgid())
+
+        tag_key = "SampleKeySyncTest%s" % suffix
+        measure_name = "SampleMeasureNameSyncTest%s" % suffix
+        measure_description = "SampleDescriptionSyncTest%s" % suffix
+        view_name = "SampleViewNameSyncTest%s" % suffix
+        view_description = "SampleViewDescriptionSyncTest%s" % suffix
 
         FRONTEND_KEY = tag_key_module.TagKey(tag_key)
         VIDEO_SIZE_MEASURE = measure_module.MeasureInt(
@@ -119,14 +130,14 @@ class TestBasicStats(unittest.TestCase):
         self.check_sd_md(exporter, view_description)
 
     def test_stats_record_async(self):
-        # We are using sufix in order to prevent cached objects
-        sufix = str(os.getpid())
+        # We are using suffix in order to prevent cached objects
+        suffix = str(os.getpid())
 
-        tag_key = "SampleKeyAsyncTest%s" % sufix
-        measure_name = "SampleMeasureNameAsyncTest%s" % sufix
-        measure_description = "SampleDescriptionAsyncTest%s" % sufix
-        view_name = "SampleViewNameAsyncTest%s" % sufix
-        view_description = "SampleViewDescriptionAsyncTest%s" % sufix
+        tag_key = "SampleKeyAsyncTest%s" % suffix
+        measure_name = "SampleMeasureNameAsyncTest%s" % suffix
+        measure_description = "SampleDescriptionAsyncTest%s" % suffix
+        view_name = "SampleViewNameAsyncTest%s" % suffix
+        view_description = "SampleViewDescriptionAsyncTest%s" % suffix
 
         FRONTEND_KEY_ASYNC = tag_key_module.TagKey(tag_key)
         VIDEO_SIZE_MEASURE_ASYNC = measure_module.MeasureInt(
