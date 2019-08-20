@@ -55,6 +55,29 @@ def _install_test_dependencies(session):
     session.install('unittest2')
 
 
+@nox.session(python=['2.7', '3.6'])
+def system(session):
+    """Run the system test suite."""
+
+    # Sanity check: Only run system tests if the environment variable is set.
+    if not os.environ.get('GOOGLE_APPLICATION_CREDENTIALS', ''):
+        session.skip('Credentials must be set via environment variable.')
+
+    # Install test dependencies.
+    _install_test_dependencies(session)
+
+    # Install dev packages into the virtualenv's dist-packages.
+    _install_dev_packages(session)
+
+    # Run py.test against the system tests.
+    session.run(
+        'py.test',
+        '-s',
+        'tests/system/',
+        *session.posargs
+    )
+
+
 @nox.session(python=['2.7', '3.4', '3.5', '3.6'])
 def unit(session):
     """Run the unit test suite."""
@@ -79,29 +102,6 @@ def unit(session):
         'tests/unit/',
         'context/',
         'contrib/',
-        *session.posargs
-    )
-
-
-@nox.session(python=['2.7', '3.6'])
-def system(session):
-    """Run the system test suite."""
-
-    # Sanity check: Only run system tests if the environment variable is set.
-    if not os.environ.get('GOOGLE_APPLICATION_CREDENTIALS', ''):
-        session.skip('Credentials must be set via environment variable.')
-
-    # Install test dependencies.
-    _install_test_dependencies(session)
-
-    # Install dev packages into the virtualenv's dist-packages.
-    _install_dev_packages(session)
-
-    # Run py.test against the system tests.
-    session.run(
-        'py.test',
-        '-s',
-        'tests/system/',
         *session.posargs
     )
 
