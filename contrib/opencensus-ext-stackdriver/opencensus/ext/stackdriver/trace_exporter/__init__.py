@@ -15,8 +15,6 @@
 from collections import defaultdict
 import os
 
-import logging
-
 from google.cloud.trace.client import Client
 
 from opencensus.common.monitored_resource import aws_identity_doc_utils
@@ -29,11 +27,6 @@ from opencensus.trace import attributes_helper
 from opencensus.trace import base_exporter
 from opencensus.trace import span_data
 from opencensus.trace.attributes import Attributes
-
-logger = logging.Logger(__name__)
-sh = logging.StreamHandler()
-logger.setLevel(logging.DEBUG)
-logger.addHandler(sh)
 
 
 # Agent
@@ -76,56 +69,6 @@ def set_attributes(trace):
     for span in spans:
         if span.get('attributes') is None:
             span['attributes'] = {}
-
-        logger.warning(span['attributes'])
-
-        if 'http.status_code' in span['attributes']:
-            value = span['attributes']['http.status_code']
-            span['attributes']['http.status_code'] = str(value)
-        elif 'attributeMap' in span['attributes']:
-            if 'http.status_code' in span['attributes']['attributeMap']:
-                if 'int_value' not in (span['attributes']['attributeMap']
-                                       ['http.status_code']):
-                    value = (span['attributes']['attributeMap']
-                             ['http.status_code'])
-                    span['attributes']['attributeMap']['http.status_code'] = \
-                        str(value)
-                elif 'int_value' in (span['attributes']['attributeMap']
-                                     ['http.status_code']):
-                    if isinstance(
-                        span['attributes']['attributeMap']
-                            ['http.status_code']['int_value'],
-                            int
-                    ):
-                        value = (span['attributes']['attributeMap']
-                                     ['http.status_code']['int_value'])
-                        (span['attributes']['attributeMap']
-                             ['http.status_code']) = \
-                            {
-                                'string_value': str(value)
-                            }
-
-                    elif 'value' not in (span['attributes']['attributeMap']
-                                         ['http.status_code']['int_value']):
-                        value = (span['attributes']['attributeMap']
-                                     ['http.status_code']['int_value']
-                                     ['value'])
-                        (span['attributes']['attributeMap']
-                             ['http.status_code']) = \
-                            {
-                                'string_value': {
-                                    'truncated_byte_count': 0,
-                                    'value': str(value)
-                                }
-                            }
-                    else:
-                        value = (span['attributes']['attributeMap']
-                                     ['http.status_code']['int_value'])
-                        (span['attributes']['attributeMap']
-                         ['http.status_code']) = \
-                            {
-                                'string_value': str(value)
-                            }
 
         if is_gae_environment():
             set_gae_attributes(span)
@@ -332,6 +275,16 @@ class StackdriverExporter(base_exporter.Exporter):
                 if (attribute_key in ATTRIBUTE_MAPPING):
                     new_key = ATTRIBUTE_MAPPING.get(attribute_key)
                     value[new_key] = value.pop(attribute_key)
+                    if new_key == '/http/status_code':
+                        # workaround: Stackdriver expects status to be str
+                        hack = value[new_key]
+                        hack = hack['int_value']
+                        if not isinstance(hack, int):
+                            hack = hack['value']
+                        value[new_key] = {'string_value': {
+                            'truncated_byte_count': 0,
+                            'value': str(hack),
+                        }}
 
         return attribute_map
 
