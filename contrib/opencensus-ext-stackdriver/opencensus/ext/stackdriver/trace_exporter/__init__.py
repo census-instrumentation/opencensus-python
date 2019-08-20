@@ -276,7 +276,10 @@ class StackdriverExporter(base_exporter.Exporter):
                     value[new_key] = value.pop(attribute_key)
                     if new_key == '/http/status_code':
                         # workaround: Stackdriver expect status to be str
-                        value[new_key] = str(value[new_key])
+                        value[new_key] = {'string_value': {
+                            'truncated_byte_count': 0,
+                            'value': str(value[new_key]['int_value']['value']),
+                        }}
 
         return attribute_map
 
