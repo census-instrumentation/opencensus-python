@@ -281,8 +281,7 @@ class StackdriverExporter(base_exporter.Exporter):
                         hack = hack['int_value']
                         if not isinstance(hack, int):
                             hack = hack['value']
-                        value[new_key] = {'string_value': {
-                            'truncated_byte_count': 0,
+                        value[new_key] = {'int_value': {
                             'value': str(hack),
                         }}
 
