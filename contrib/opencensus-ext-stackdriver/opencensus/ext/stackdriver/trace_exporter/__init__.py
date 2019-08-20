@@ -30,8 +30,10 @@ from opencensus.trace import base_exporter
 from opencensus.trace import span_data
 from opencensus.trace.attributes import Attributes
 
-logging.basicConfig()
-log = logging.Logger(__name__)
+logger = logging.Logger(__name__)
+sh = logging.StreamHandler()
+logger.setLevel(logging.DEBUG)
+logger.addHandler(sh)
 
 
 # Agent
@@ -75,7 +77,7 @@ def set_attributes(trace):
         if span.get('attributes') is None:
             span['attributes'] = {}
 
-        log.warning(span['attributes'])
+        logger.warning(span['attributes'])
 
         if 'http.status_code' in span['attributes']:
             value = span['attributes']['http.status_code']
@@ -98,8 +100,10 @@ def set_attributes(trace):
                         value = (span['attributes']['attributeMap']
                                      ['http.status_code']['int_value'])
                         (span['attributes']['attributeMap']
-                             ['http.status_code']['string_value']) = \
-                            str(value)
+                             ['http.status_code']) = \
+                            {
+                                'string_value': str(value)
+                            }
 
                     elif 'value' not in (span['attributes']['attributeMap']
                                          ['http.status_code']['int_value']):
