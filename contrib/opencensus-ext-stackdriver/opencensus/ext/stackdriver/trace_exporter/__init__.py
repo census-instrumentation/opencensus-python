@@ -274,6 +274,9 @@ class StackdriverExporter(base_exporter.Exporter):
                 if (attribute_key in ATTRIBUTE_MAPPING):
                     new_key = ATTRIBUTE_MAPPING.get(attribute_key)
                     value[new_key] = value.pop(attribute_key)
+                    if new_key == '/http/status_code':
+                        # workaround: Stackdriver expect status to be str
+                        value[new_key] = str(value[new_key])
 
         return attribute_map
 
