@@ -448,8 +448,9 @@ class TestStackdriverExporter(unittest.TestCase):
                     }
                 },
                 '/http/status_code': {
-                    'int_value': {
-                        'value': 200
+                    'string_value': {
+                        'truncated_byte_count': 0,
+                        'value': '200'
                     }
                 },
                 '/http/url': {
