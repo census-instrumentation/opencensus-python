@@ -305,7 +305,7 @@ class TestFlaskMiddleware(unittest.TestCase):
                 'http.path': u'/wiki/Rabbit',
                 'http.url': u'http://localhost/wiki/Rabbit',
                 'http.route': u'/wiki/<entry>',
-                'http.status_code': u'200'
+                'http.status_code': 200
             }
 
             self.assertEqual(span.attributes, expected_attributes)
