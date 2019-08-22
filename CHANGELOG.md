@@ -6,6 +6,7 @@
 - Added `http code` to `grpc code` status code mapping on `utils`
   ([#746](https://github.com/census-instrumentation/opencensus-python/pull/746))
 - Updated `requests` module
+  ([#771](https://github.com/census-instrumentation/opencensus-python/pull/771))
 
 ## 0.7.2
 Released 2019-08-16
