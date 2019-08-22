@@ -6,6 +6,7 @@
 - Fixed span name
   ([#746](https://github.com/census-instrumentation/opencensus-python/pull/746))
 - Fixed exception handling
+  ([#771](https://github.com/census-instrumentation/opencensus-python/pull/771))
 
 ## 0.7.1
 Released 2019-08-06
