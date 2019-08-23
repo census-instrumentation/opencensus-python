@@ -201,7 +201,7 @@ class TestStandardMetrics(unittest.TestCase):
         new_func()
 
         self.assertEqual(map['count'], 1)
-        self.assertEqual(map['duration'], 0)
+        self.assertIsNotNone(map['duration'])
         self.assertEqual(len(func.call_args_list), 1)
 
     def test_server_patch(self):
@@ -325,7 +325,7 @@ class TestStandardMetrics(unittest.TestCase):
         self.assertEqual(result, 20)
         self.assertEqual(map['duration'], 0)
 
-    def test_get_request_rate_error(self):
+    def test_get_request_execution_error(self):
         map = standard_metrics.http_requests.requests_map
         map['duration'] = 0.1
         map['count'] = 10

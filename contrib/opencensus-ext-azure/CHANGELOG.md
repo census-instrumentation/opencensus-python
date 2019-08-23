@@ -4,7 +4,7 @@
 - Standard metrics incoming requests per second
   ([#758](https://github.com/census-instrumentation/opencensus-python/pull/758))
 - Standard metrics incoming requests average execution rate
-  ([#758](https://github.com/census-instrumentation/opencensus-python/pull/758))
+  ([#773](https://github.com/census-instrumentation/opencensus-python/pull/773))
 
 ## 0.7.0
 Released 2019-07-31
