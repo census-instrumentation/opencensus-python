@@ -48,12 +48,12 @@ class TestStandardMetrics(unittest.TestCase):
         producer = standard_metrics.AzureStandardMetricsProducer()
         metrics = producer.get_metrics()
 
-        self.assertEqual(len(metrics), 6)
+        self.assertEqual(len(metrics), 7)
 
     def test_register_metrics(self):
         registry = standard_metrics.register_metrics()
 
-        self.assertEqual(len(registry.get_metrics()), 6)
+        self.assertEqual(len(registry.get_metrics()), 7)
 
     def test_get_available_memory_metric(self):
         metric = standard_metrics.AvailableMemoryMetric()
@@ -201,6 +201,7 @@ class TestStandardMetrics(unittest.TestCase):
         new_func()
 
         self.assertEqual(map['count'], 1)
+        self.assertEqual(map['duration'], 0)
         self.assertEqual(len(func.call_args_list), 1)
 
     def test_server_patch(self):
@@ -267,6 +268,13 @@ class TestStandardMetrics(unittest.TestCase):
 
         self.assertEqual(r, None)
 
+    def test_get_interval_requests_count(self):
+        map = standard_metrics.http_requests.requests_map
+        map['count'] = 10
+        map['last_count'] = 5
+        count = standard_metrics.http_requests.get_interval_requests_count()
+        self.assertEqual(count, 5)
+
     def test_get_request_rate_metric(self):
         metric = standard_metrics.RequestsRateMetric()
         gauge = metric()
@@ -283,7 +291,7 @@ class TestStandardMetrics(unittest.TestCase):
                 '.standard_metrics.http_requests.time')
     def test_get_request_rate(self, time_mock):
         time_mock.time.return_value = 100
-        standard_metrics.http_requests.requests_map['last_time'] = 98
+        standard_metrics.http_requests.requests_map['last_rate_time'] = 98
         standard_metrics.http_requests.requests_map['count'] = 4
         rate = standard_metrics.RequestsRateMetric.get_value()
 
@@ -293,8 +301,36 @@ class TestStandardMetrics(unittest.TestCase):
                 '.standard_metrics.http_requests.time')
     def test_get_request_rate_error(self, time_mock):
         time_mock.time.return_value = 100
-        standard_metrics.http_requests.requests_map['last_result'] = 5
-        standard_metrics.http_requests.requests_map['last_time'] = 100
+        standard_metrics.http_requests.requests_map['last_rate'] = 5
+        standard_metrics.http_requests.requests_map['last_rate_time'] = 100
         result = standard_metrics.RequestsRateMetric.get_value()
 
         self.assertEqual(result, 5)
+
+    def test_get_request_execution_metric(self):
+        metric = standard_metrics.RequestsAvgExecutionMetric()
+        gauge = metric()
+
+        name = '\\ASP.NET Applications(??APP_W3SVC_PROC??)' \
+               '\\Request Execution Time'
+        self.assertEqual(gauge.descriptor.name, name)
+
+    def test_get_request_execution(self):
+        map = standard_metrics.http_requests.requests_map
+        map['duration'] = 0.1
+        map['count'] = 10
+        map['last_count'] = 5
+        result = standard_metrics.RequestsAvgExecutionMetric.get_value()
+
+        self.assertEqual(result, 20)
+        self.assertEqual(map['duration'], 0)
+
+    def test_get_request_rate_error(self):
+        map = standard_metrics.http_requests.requests_map
+        map['duration'] = 0.1
+        map['count'] = 10
+        map['last_count'] = 10
+        result = standard_metrics.RequestsAvgExecutionMetric.get_value()
+
+        self.assertEqual(result, 0)
+
