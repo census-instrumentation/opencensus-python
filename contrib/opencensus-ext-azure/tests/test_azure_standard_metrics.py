@@ -333,4 +333,3 @@ class TestStandardMetrics(unittest.TestCase):
         result = standard_metrics.RequestsAvgExecutionMetric.get_value()
 
         self.assertEqual(result, 0)
-
