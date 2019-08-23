@@ -72,6 +72,7 @@ def get_interval_requests_count():
     last_count = requests_map.get('last_count', 0)
     return current_count - last_count
 
+
 class RequestsAvgExecutionMetric(object):
     NAME = "\\ASP.NET Applications(??APP_W3SVC_PROC??)\\Request Execution Time"
 
