@@ -28,6 +28,7 @@ from opencensus.trace import base_exporter
 from opencensus.trace import span_data
 from opencensus.trace.attributes import Attributes
 
+
 # Agent
 AGENT = 'opencensus-python [{}]'.format(__version__)
 
@@ -274,6 +275,16 @@ class StackdriverExporter(base_exporter.Exporter):
                 if (attribute_key in ATTRIBUTE_MAPPING):
                     new_key = ATTRIBUTE_MAPPING.get(attribute_key)
                     value[new_key] = value.pop(attribute_key)
+                    if new_key == '/http/status_code':
+                        # workaround: Stackdriver expects status to be str
+                        hack = value[new_key]
+                        hack = hack['int_value']
+                        if not isinstance(hack, int):
+                            hack = hack['value']
+                        value[new_key] = {'string_value': {
+                            'truncated_byte_count': 0,
+                            'value': str(hack),
+                        }}
 
         return attribute_map
 

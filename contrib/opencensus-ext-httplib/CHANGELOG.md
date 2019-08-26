@@ -2,10 +2,16 @@
 
 ## Unreleased
 
+## 0.7.2
+Released 2019-08-06
+
+- Updated `http.status_code` attribute to be an int.
+  ([#755](https://github.com/census-instrumentation/opencensus-python/pull/755))
+
 ## 0.7.1
 Released 2019-08-06
 
-  - Support exporter changes in `opencensus>=0.7.0`
+- Support exporter changes in `opencensus>=0.7.0`
 
 ## 0.1.3
 Released 2019-05-31

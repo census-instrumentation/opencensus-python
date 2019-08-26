@@ -134,7 +134,9 @@ class TestDjangoTrace(unittest.TestCase):
                 if span.get('name') == '[mysql.query]SELECT 2*3':
                     self.assertEqual(
                         labels.get('mysql.cursor.method.name'), 'execute')
-                    self.assertEqual(labels.get('mysql.query'), 'SELECT 2*3')
+                    self.assertEqual(
+                        labels.get('mysql.query'), 'SELECT 2*3'
+                    )
 
             self.assertTrue(request_succeeded)
 
@@ -168,7 +170,9 @@ class TestDjangoTrace(unittest.TestCase):
 
                 if span.get('name') == '[postgresql.query]SELECT 2*3':
                     self.assertEqual(
-                        labels.get('postgresql.cursor.method.name'), 'execute')
+                        labels.get(
+                            'postgresql.cursor.method.name'), 'execute'
+                        )
                     self.assertEqual(
                         labels.get('postgresql.query'), 'SELECT 2*3')
 

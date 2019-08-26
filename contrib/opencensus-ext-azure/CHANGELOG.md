@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## 0.7.1
+Released 2019-08-26
+
+- Standard metrics incoming requests per second
+  ([#758](https://github.com/census-instrumentation/opencensus-python/pull/758))
+
 ## 0.7.0
 Released 2019-07-31
 

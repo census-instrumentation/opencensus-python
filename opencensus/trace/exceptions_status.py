@@ -1,4 +1,4 @@
-# Copyright 2019, OpenCensus Authors
+# Copyright 2017, OpenCensus Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,4 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__version__ = '0.7.1'
+from google.rpc import code_pb2
+from opencensus.trace.status import Status
+
+CANCELLED = Status(code_pb2.CANCELLED)
+INVALID_URL = Status(code_pb2.INVALID_ARGUMENT, message='invalid URL')
+TIMEOUT = Status(code_pb2.DEADLINE_EXCEEDED, message='request timed out')
+
+
+def unknown(exception):
+    return Status.from_exception(exception)

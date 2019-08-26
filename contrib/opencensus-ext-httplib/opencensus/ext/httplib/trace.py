@@ -121,7 +121,7 @@ def wrap_httplib_response(response_func):
 
         # Add the status code to attributes
         _tracer.add_attribute_to_current_span(
-            HTTP_STATUS_CODE, str(result.status))
+            HTTP_STATUS_CODE, result.status)
 
         _tracer.end_span()
         return result

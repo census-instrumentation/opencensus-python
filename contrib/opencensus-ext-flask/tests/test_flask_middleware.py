@@ -51,6 +51,10 @@ class TestFlaskMiddleware(unittest.TestCase):
         def index():
             return 'test flask trace'  # pragma: NO COVER
 
+        @app.route('/wiki/<entry>')
+        def wiki(entry):
+            return 'test flask trace'  # pragma: NO COVER
+
         @app.route('/_ah/health')
         def health_check():
             return 'test health check'  # pragma: NO COVER
@@ -155,7 +159,6 @@ class TestFlaskMiddleware(unittest.TestCase):
                 'http.host': u'localhost',
                 'http.method': u'GET',
                 'http.path': u'/wiki/Rabbit',
-                'http.route': u'/wiki/Rabbit',
                 'http.url': u'http://localhost/wiki/Rabbit',
             }
 
@@ -220,7 +223,6 @@ class TestFlaskMiddleware(unittest.TestCase):
                 'http.host': u'localhost',
                 'http.method': u'GET',
                 'http.path': u'/wiki/Rabbit',
-                'http.route': u'/wiki/Rabbit',
                 'http.url': u'http://localhost/wiki/Rabbit',
             }
 
@@ -248,7 +250,6 @@ class TestFlaskMiddleware(unittest.TestCase):
                 'http.host': u'localhost',
                 'http.method': u'GET',
                 'http.path': u'/wiki/Rabbit',
-                'http.route': u'/wiki/Rabbit',
                 'http.url': u'http://localhost/wiki/Rabbit',
             }
 
@@ -278,13 +279,37 @@ class TestFlaskMiddleware(unittest.TestCase):
         flask_trace_id = '00-{}-{}-00'.format(trace_id, span_id)
 
         app = self.create_app()
-        flask_middleware.FlaskMiddleware(app=app)
+        flask_middleware.FlaskMiddleware(
+            app=app,
+            sampler=samplers.AlwaysOnSampler()
+        )
 
-        response = app.test_client().get(
-            '/',
-            headers={flask_trace_header: flask_trace_id})
+        context = app.test_request_context(
+            path='/wiki/Rabbit',
+            headers={flask_trace_header: flask_trace_id}
+        )
 
-        self.assertEqual(response.status_code, 200)
+        with context:
+            app.preprocess_request()
+            tracer = execution_context.get_opencensus_tracer()
+            self.assertIsNotNone(tracer)
+
+            span = tracer.current_span()
+
+            rv = app.dispatch_request()
+            app.finalize_request(rv)
+
+            expected_attributes = {
+                'http.host': u'localhost',
+                'http.method': u'GET',
+                'http.path': u'/wiki/Rabbit',
+                'http.url': u'http://localhost/wiki/Rabbit',
+                'http.route': u'/wiki/<entry>',
+                'http.status_code': 200
+            }
+
+            self.assertEqual(span.attributes, expected_attributes)
+            assert isinstance(span.parent_span, base.NullContextManager)
 
     def test__after_request_blacklist(self):
         flask_trace_header = 'traceparent'
