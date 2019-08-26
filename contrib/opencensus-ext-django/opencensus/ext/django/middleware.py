@@ -215,7 +215,7 @@ class OpencensusMiddleware(MiddlewareMixin):
             span = _get_django_span()
             span.add_attribute(
                 attribute_key=HTTP_STATUS_CODE,
-                attribute_value=str(response.status_code))
+                attribute_value=response.status_code)
 
             _set_django_attributes(span, request)
 

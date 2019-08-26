@@ -448,8 +448,9 @@ class TestStackdriverExporter(unittest.TestCase):
                     }
                 },
                 '/http/status_code': {
-                    'int_value': {
-                        'value': 200
+                    'string_value': {
+                        'truncated_byte_count': 0,
+                        'value': '200'
                     }
                 },
                 '/http/url': {
@@ -524,6 +525,37 @@ class TestStackdriverExporter(unittest.TestCase):
                     'string_value': {
                         'truncated_byte_count': 0,
                         'value': 'post'
+                    }
+                }
+            }
+        }
+
+        exporter.map_attributes(attributes)
+        self.assertEqual(attributes, expected_attributes)
+
+    def test_translate_common_attributes_status_code(self):
+        project_id = 'PROJECT'
+        client = mock.Mock()
+        client.project = project_id
+        exporter = trace_exporter.StackdriverExporter(
+            client=client, project_id=project_id)
+
+        attributes = {
+            'outer key': 'some value',
+            'attributeMap': {
+                'http.status_code': {
+                    'int_value': 200
+                }
+            }
+        }
+
+        expected_attributes = {
+            'outer key': 'some value',
+            'attributeMap': {
+                '/http/status_code': {
+                    'string_value': {
+                        'truncated_byte_count': 0,
+                        'value': '200'
                     }
                 }
             }

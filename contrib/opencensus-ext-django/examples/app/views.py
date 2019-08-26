@@ -59,7 +59,7 @@ def greetings(request):
 
 def trace_requests(request):
     response = requests.get('http://www.google.com')
-    return HttpResponse(str(response.status_code))
+    return HttpResponse(response.status_code)
 
 
 def mysql_trace(request):
