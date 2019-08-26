@@ -101,10 +101,8 @@ class RequestsAvgExecutionMetric(object):
     def __call__(self):
         """ Returns a derived gauge for incoming requests execution rate
 
-        Calculated by obtaining by getting the time it takes to make an
-        incoming request made to an HTTPServer within an elapsed time and
-        dividing that value over the amount of incoming requests made over
-        the same elapsed time.
+        Calculated by getting the time it takes to make an incoming request
+        and dividing over the amount of incoming requests over an elapsed time.
 
         :rtype: :class:`opencensus.metrics.export.gauge.DerivedLongGauge`
         :return: The gauge representing the incoming requests metric
