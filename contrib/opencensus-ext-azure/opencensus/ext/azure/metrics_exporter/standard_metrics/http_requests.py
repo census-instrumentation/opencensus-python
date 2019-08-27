@@ -22,7 +22,7 @@ if sys.version_info < (3,):
 else:
     from http.server import HTTPServer
 
-requests_lock = threading.Lock()
+_requests_lock = threading.Lock()
 requests_map = dict()
 ORIGINAL_CONSTRUCTOR = HTTPServer.__init__
 
@@ -33,17 +33,21 @@ def request_patch(func):
         func(self)
         end_time = time.time()
 
-        # Update requests state information
-        # We don't want multiple threads updating this at once
-        with requests_lock:
-            # Update Count
-            count = requests_map.get('count', 0)
-            requests_map['count'] = count + 1
-            # Update duration
-            duration = requests_map.get('duration', 0)
-            requests_map['duration'] = duration + (end_time - start_time)
+        update_request_state(start_time, end_time)
 
     return wrapper
+
+
+def update_request_state(start_time, end_time):
+    # Update requests state information
+    # We don't want multiple threads updating this at once
+    with _requests_lock:
+        # Update Count
+        count = requests_map.get('count', 0)
+        requests_map['count'] = count + 1
+        # Update duration
+        duration = requests_map.get('duration', 0)
+        requests_map['duration'] = duration + (end_time - start_time)
 
 
 def server_patch(*args, **kwargs):
