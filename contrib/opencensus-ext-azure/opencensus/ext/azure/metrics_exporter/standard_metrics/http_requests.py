@@ -75,9 +75,9 @@ def setup():
 def get_average_execution_time():
     last_average_duration = requests_map.get('last_average_duration', 0)
     interval_duration = requests_map.get('duration', 0) \
-                        - requests_map.get('last_duration', 0)
+        - requests_map.get('last_duration', 0)
     interval_count = requests_map.get('count', 0) \
-                         - requests_map.get('last_count', 0)
+        - requests_map.get('last_count', 0)
     try:
         result = interval_duration / interval_count
         requests_map['last_average_duration'] = result
@@ -100,7 +100,7 @@ def get_requests_rate():
         if last_time is not None:
             interval_time = current_time - requests_map.get('last_time', 0)
             interval_count = requests_map.get('count', 0) \
-                                - requests_map.get('last_count', 0)
+                - requests_map.get('last_count', 0)
             result = interval_count / interval_time
         else:
             result = 0
