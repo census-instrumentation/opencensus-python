@@ -268,46 +268,39 @@ class TestStandardMetrics(unittest.TestCase):
 
         self.assertEqual(r, None)
 
-    def test_get_interval_requests_count(self):
-        map = standard_metrics.http_requests.requests_map
-        map['count'] = 10
-        map['last_count'] = 5
-        count = standard_metrics.http_requests.get_interval_requests_count()
-        self.assertEqual(count, 5)
-
-    def test_get_request_rate_metric(self):
+    def test_get_requests_rate_metric(self):
         metric = standard_metrics.RequestsRateMetric()
         gauge = metric()
 
         name = '\\ASP.NET Applications(??APP_W3SVC_PROC??)\\Requests/Sec'
         self.assertEqual(gauge.descriptor.name, name)
 
-    def test_get_request_rate_first_time(self):
-        rate = standard_metrics.RequestsRateMetric.get_value()
+    def test_get_requests_rate_first_time(self):
+        rate = standard_metrics.http_requests.get_requests_rate()
 
         self.assertEqual(rate, 0)
 
     @mock.patch('opencensus.ext.azure.metrics_exporter'
                 '.standard_metrics.http_requests.time')
-    def test_get_request_rate(self, time_mock):
+    def test_get_requests_rate(self, time_mock):
         time_mock.time.return_value = 100
-        standard_metrics.http_requests.requests_map['last_rate_time'] = 98
+        standard_metrics.http_requests.requests_map['last_time'] = 98
         standard_metrics.http_requests.requests_map['count'] = 4
-        rate = standard_metrics.RequestsRateMetric.get_value()
+        rate = standard_metrics.http_requests.get_requests_rate()
 
         self.assertEqual(rate, 2)
 
     @mock.patch('opencensus.ext.azure.metrics_exporter'
                 '.standard_metrics.http_requests.time')
-    def test_get_request_rate_error(self, time_mock):
+    def test_get_requests_rate_error(self, time_mock):
         time_mock.time.return_value = 100
         standard_metrics.http_requests.requests_map['last_rate'] = 5
-        standard_metrics.http_requests.requests_map['last_rate_time'] = 100
-        result = standard_metrics.RequestsRateMetric.get_value()
+        standard_metrics.http_requests.requests_map['last_time'] = 100
+        result = standard_metrics.http_requests.get_requests_rate()
 
         self.assertEqual(result, 5)
 
-    def test_get_request_execution_metric(self):
+    def test_get_requests_execution_metric(self):
         metric = standard_metrics.RequestsAvgExecutionMetric()
         gauge = metric()
 
@@ -315,21 +308,20 @@ class TestStandardMetrics(unittest.TestCase):
                '\\Request Execution Time'
         self.assertEqual(gauge.descriptor.name, name)
 
-    def test_get_request_execution(self):
+    def test_get_requests_execution(self):
         map = standard_metrics.http_requests.requests_map
         map['duration'] = 0.1
         map['count'] = 10
         map['last_count'] = 5
-        result = standard_metrics.RequestsAvgExecutionMetric.get_value()
+        result = standard_metrics.http_requests.get_average_execution_time()
 
         self.assertEqual(result, 20)
-        self.assertEqual(map['duration'], 0)
 
-    def test_get_request_execution_error(self):
+    def test_get_requests_execution_error(self):
         map = standard_metrics.http_requests.requests_map
         map['duration'] = 0.1
         map['count'] = 10
         map['last_count'] = 10
-        result = standard_metrics.RequestsAvgExecutionMetric.get_value()
+        result = standard_metrics.http_requests.get_average_execution_time()
 
         self.assertEqual(result, 0)

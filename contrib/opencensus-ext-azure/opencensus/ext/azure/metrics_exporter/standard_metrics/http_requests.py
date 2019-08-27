@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import sys
+import threading
 import time
 
 from opencensus.metrics.export.gauge import DerivedDoubleGauge
@@ -21,6 +22,7 @@ if sys.version_info < (3,):
 else:
     from http.server import HTTPServer
 
+requests_lock = threading.Lock()
 requests_map = dict()
 ORIGINAL_CONSTRUCTOR = HTTPServer.__init__
 
@@ -31,13 +33,16 @@ def request_patch(func):
         func(self)
         end_time = time.time()
 
-        # Update count
-        count = requests_map.get('count', 0)
-        requests_map['count'] = count + 1
+        # Update requests state information
+        # We don't want multiple threads updating this at once
+        with requests_lock:
+            # Update Count
+            count = requests_map.get('count', 0)
+            requests_map['count'] = count + 1
+            # Update duration
+            duration = requests_map.get('duration', 0)
+            requests_map['duration'] = duration + (end_time - start_time)
 
-        # Update duration
-        duration = requests_map.get('duration', 0)
-        requests_map['duration'] = duration + (end_time - start_time)
     return wrapper
 
 
@@ -67,10 +72,46 @@ def setup():
     HTTPServer.__init__ = server_patch
 
 
-def get_interval_requests_count():
-    current_count = requests_map.get('count', 0)
-    last_count = requests_map.get('last_count', 0)
-    return current_count - last_count
+def get_average_execution_time():
+    last_average_duration = requests_map.get('last_average_duration', 0)
+    interval_duration = requests_map.get('duration', 0) \
+                        - requests_map.get('last_duration', 0)
+    interval_count = requests_map.get('count', 0) \
+                         - requests_map.get('last_count', 0)
+    try:
+        result = interval_duration / interval_count
+        requests_map['last_average_duration'] = result
+        requests_map['last_duration'] = requests_map.get('duration', 0)
+        # Convert to milliseconds
+        return result * 1000.0
+    except ZeroDivisionError:
+        # If interval_count is 0, exporter call made too close to previous
+        # Return the previous result if this is the case
+        return last_average_duration * 1000.0
+
+
+def get_requests_rate():
+    current_time = time.time()
+    last_rate = requests_map.get('last_rate', 0)
+    last_time = requests_map.get('last_time')
+
+    try:
+        # last_rate_time is None the first time this function is called
+        if last_time is not None:
+            interval_time = current_time - requests_map.get('last_time', 0)
+            interval_count = requests_map.get('count', 0) \
+                                - requests_map.get('last_count', 0)
+            result = interval_count / interval_time
+        else:
+            result = 0
+        requests_map['last_time'] = current_time
+        requests_map['last_count'] = requests_map.get('count', 0)
+        requests_map['last_rate'] = result
+        return result
+    except ZeroDivisionError:
+        # If elapsed_seconds is 0, exporter call made too close to previous
+        # Return the previous result if this is the case
+        return last_rate
 
 
 class RequestsAvgExecutionMetric(object):
@@ -81,22 +122,7 @@ class RequestsAvgExecutionMetric(object):
 
     @staticmethod
     def get_value():
-        duration = requests_map.get('duration', 0)
-        last_average_duration = requests_map.get('last_average_duration', 0)
-
-        try:
-            interval_count = get_interval_requests_count()
-            request_duration = duration / interval_count
-
-            requests_map['last_average_duration'] = request_duration
-            # Reset duration
-            requests_map['duration'] = 0
-            # Convert to milliseconds
-            return request_duration * 1000.0
-        except ZeroDivisionError:
-            # If interval_count is 0, exporter call made too close to previous
-            # Return the previous result if this is the case
-            return last_average_duration * 1000.0
+        return get_average_execution_time()
 
     def __call__(self):
         """ Returns a derived gauge for incoming requests execution rate
@@ -124,27 +150,7 @@ class RequestsRateMetric(object):
 
     @staticmethod
     def get_value():
-        current_time = time.time()
-        last_rate_time = requests_map.get('last_rate_time')
-        last_rate = requests_map.get('last_rate', 0)
-
-        try:
-            # last_rate_time is None the first time this function is called
-            if last_rate_time is not None:
-                elapsed_seconds = current_time - last_rate_time
-                interval_count = get_interval_requests_count()
-                request_rate = interval_count / elapsed_seconds
-            else:
-                request_rate = 0
-            requests_map['last_rate_time'] = current_time
-            requests_map['last_count'] = requests_map.get('count', 0)
-            requests_map['last_rate'] = request_rate
-
-            return request_rate
-        except ZeroDivisionError:
-            # If elapsed_seconds is 0, exporter call made too close to previous
-            # Return the previous result if this is the case
-            return last_rate
+        return get_requests_rate()
 
     def __call__(self):
         """ Returns a derived gauge for incoming requests per second
