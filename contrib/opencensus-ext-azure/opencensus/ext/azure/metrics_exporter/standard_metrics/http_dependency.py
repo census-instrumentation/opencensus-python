@@ -13,12 +13,14 @@
 # limitations under the License.
 
 import requests
+import threading
 import time
 
 from opencensus.metrics.export.gauge import DerivedDoubleGauge
 from opencensus.trace import execution_context
 
 dependency_map = dict()
+_dependency_lock = threading.Lock()
 ORIGINAL_REQUEST = requests.Session.request
 
 
@@ -26,8 +28,10 @@ def dependency_patch(*args, **kwargs):
     result = ORIGINAL_REQUEST(*args, **kwargs)
     # Only collect request metric if sent from non-exporter thread
     if not execution_context.is_exporter():
-        count = dependency_map.get('count', 0)
-        dependency_map['count'] = count + 1
+        # We don't want multiple threads updating this at once
+        with _dependency_lock:
+            count = dependency_map.get('count', 0)
+            dependency_map['count'] = count + 1
     return result
 
 
