@@ -13,11 +13,14 @@
 # limitations under the License.
 
 """Django middleware helper to capture and trace a request."""
+import django
 import logging
 import six
 
 import django.conf
+from django.db import connection
 from django.utils.deprecation import MiddlewareMixin
+from google.rpc import code_pb2
 
 from opencensus.common import configuration
 from opencensus.trace import attributes_helper
@@ -25,6 +28,7 @@ from opencensus.trace import execution_context
 from opencensus.trace import print_exporter
 from opencensus.trace import samplers
 from opencensus.trace import span as span_module
+from opencensus.trace import status as status_module
 from opencensus.trace import tracer as tracer_module
 from opencensus.trace import utils
 from opencensus.trace.propagation import trace_context_http_header_format
@@ -99,6 +103,37 @@ def _set_django_attributes(span, request):
         span.add_attribute('django.user.name', str(user_name))
 
 
+def _trace_db_call(execute, sql, params, many, context):
+    tracer = _get_current_tracer()
+    if not tracer:
+        return execute(sql, params, many, context)
+
+    vendor = context['connection'].vendor
+    alias = context['connection'].alias
+
+    span = tracer.start_span()
+    span.name = '{}.query'.format(vendor)
+    span.span_kind = span_module.SpanKind.CLIENT
+
+    tracer.add_attribute_to_current_span('component', vendor)
+    tracer.add_attribute_to_current_span('db.instance', alias)
+    tracer.add_attribute_to_current_span('db.statement', sql)
+    tracer.add_attribute_to_current_span('db.type', 'sql')
+
+    try:
+        result = execute(sql, params, many, context)
+    except Exception:  # pragma: NO COVER
+        status = status_module.Status(
+            code=code_pb2.UNKNOWN, message='DB error'
+        )
+        span.set_status(status)
+        raise
+    else:
+        return result
+    finally:
+        tracer.end_span()
+
+
 class OpencensusMiddleware(MiddlewareMixin):
     """Saves the request in thread local"""
 
@@ -125,6 +160,9 @@ class OpencensusMiddleware(MiddlewareMixin):
         self.blacklist_paths = settings.get(BLACKLIST_PATHS, None)
 
         self.blacklist_hostnames = settings.get(BLACKLIST_HOSTNAMES, None)
+
+        if django.VERSION >= (2,):  # pragma: NO COVER
+            connection.execute_wrappers.append(_trace_db_call)
 
     def process_request(self, request):
         """Called on each request, before Django decides which view to execute.
