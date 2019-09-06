@@ -39,3 +39,12 @@ class Options(BaseObject):
         storage_retention_period=7*24*60*60,
         timeout=10.0,  # networking timeout in seconds
     )
+
+
+def validate_instrumentation_key(instrumentation_key):
+    if not instrumentation_key:
+        raise ValueError("Instrumentation key cannot be none or empty.")
+    if len(instrumentation_key) > 26:
+        raise ValueError("Instrumentation key exceeds character limit.")
+    
+

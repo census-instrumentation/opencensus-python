@@ -17,7 +17,7 @@ import logging
 import requests
 
 from opencensus.common import utils as common_utils
-from opencensus.ext.azure.common import Options
+from opencensus.ext.azure import common
 from opencensus.ext.azure.common import utils
 from opencensus.ext.azure.common.protocol import Data
 from opencensus.ext.azure.common.protocol import DataPoint
@@ -38,10 +38,9 @@ class MetricsExporter(object):
 
     def __init__(self, options=None):
         if options is None:
-            options = Options()
+            options = common.Options()
         self.options = options
-        if not self.options.instrumentation_key:
-            raise ValueError('The instrumentation_key is not provided.')
+        common.validate_instrumentation_key(self.options.instrumentation_key)
         if self.options.max_batch_size <= 0:
             raise ValueError('Max batch size must be at least 1.')
         self.max_batch_size = self.options.max_batch_size
