@@ -58,5 +58,3 @@ def validate_key(instrumentation_key):
     match = pattern.match(instrumentation_key)
     if len(instrumentation_key) != 36 or not match:
         raise ValueError("Invalid instrumentation key.")
-    
-

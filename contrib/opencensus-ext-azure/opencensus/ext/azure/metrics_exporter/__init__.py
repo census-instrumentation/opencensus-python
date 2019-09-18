@@ -225,7 +225,7 @@ class MetricsExporter(object):
 
 
 def new_metrics_exporter(**options):
-    options_ = Options(**options)
+    options_ = common.Options(**options)
     exporter = MetricsExporter(options=options_)
     producers = [stats_module.stats]
     if options_.enable_standard_metrics:
