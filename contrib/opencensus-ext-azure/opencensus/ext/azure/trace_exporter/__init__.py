@@ -39,7 +39,7 @@ class AzureExporter(TransportMixin, BaseExporter):
 
     def __init__(self, **options):
         self.options = common.Options(**options)
-        common.validate_instrumentation_key(self.options.instrumentation_key)
+        common.validate_key(self.options.instrumentation_key)
         self.storage = LocalFileStorage(
             path=self.options.storage_path,
             max_size=self.options.storage_max_size,

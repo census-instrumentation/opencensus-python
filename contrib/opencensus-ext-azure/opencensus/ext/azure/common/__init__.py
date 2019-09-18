@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import os
+import re
 import sys
 
 from opencensus.ext.azure.common.protocol import BaseObject
@@ -41,10 +42,21 @@ class Options(BaseObject):
     )
 
 
-def validate_instrumentation_key(instrumentation_key):
+def validate_key(instrumentation_key):
     if not instrumentation_key:
         raise ValueError("Instrumentation key cannot be none or empty.")
-    if len(instrumentation_key) > 26:
-        raise ValueError("Instrumentation key exceeds character limit.")
+    # Validate UUID format
+    # Specs taken from https://tools.ietf.org/html/rfc4122
+    pattern = re.compile('[0-9a-f]{8}-' \
+                         '[0-9a-f]{4}-' \
+                         '[1-5][0-9a-f]{3}-' \
+                         '[89ab][0-9a-f]{3}-' \
+                         '[0-9a-f]{12}')
+    # re.fullmatch not available for python2
+    # We use re.match, we matches from the beginning, and then do a length
+    # check to ignore everything afterward.
+    match = pattern.match(instrumentation_key)
+    if len(instrumentation_key) != 36 or not match:
+        raise ValueError("Invalid instrumentation key.")
     
 

@@ -24,6 +24,7 @@ The **Azure Monitor Log Handler** allows you to export Python logs to `Azure Mon
 This example shows how to send a warning level log to Azure Monitor.
 
 * Create an Azure Monitor resource and get the instrumentation key, more information can be found `here <https://docs.microsoft.com/azure/azure-monitor/app/create-new-resource>`_.
+* The instrumentation key must follow the standard UUID format as defined `here <https://tools.ietf.org/html/rfc4122>` _.
 * Put the instrumentation key in ``APPINSIGHTS_INSTRUMENTATIONKEY`` environment variable.
 * You can also specify the instrumentation key explicitly in the code, which will take priority over a set environment variable.
 
@@ -40,6 +41,7 @@ This example shows how to send a warning level log to Azure Monitor.
 You can enrich the logs with trace IDs and span IDs by using the `logging integration <../opencensus-ext-logging>`_.
 
 * Create an Azure Monitor resource and get the instrumentation key, more information can be found `here <https://docs.microsoft.com/azure/azure-monitor/app/create-new-resource>`_.
+* The instrumentation key must follow the standard UUID format as defined `here <https://tools.ietf.org/html/rfc4122>` _.
 * Install the `logging integration package <../opencensus-ext-logging>`_ using ``pip install opencensus-ext-logging``.
 * Put the instrumentation key in ``APPINSIGHTS_INSTRUMENTATIONKEY`` environment variable.
 * You can also specify the instrumentation key explicitly in the code, which will take priority over a set environment variable.
@@ -75,6 +77,7 @@ Metrics
 The **Azure Monitor Metrics Exporter** allows you to export metrics to `Azure Monitor`_.
 
 * Create an Azure Monitor resource and get the instrumentation key, more information can be found `here <https://docs.microsoft.com/azure/azure-monitor/app/create-new-resource>`_.
+* The instrumentation key must follow the standard UUID format as defined `here <https://tools.ietf.org/html/rfc4122>` _.
 * Put the instrumentation key in ``APPINSIGHTS_INSTRUMENTATIONKEY`` environment variable.
 * You can also specify the instrumentation key explicitly in the code, which will take priority over a set environment variable.
 
@@ -167,6 +170,7 @@ The **Azure Monitor Trace Exporter** allows you to export `OpenCensus`_ traces t
 This example shows how to send a span "hello" to Azure Monitor.
 
 * Create an Azure Monitor resource and get the instrumentation key, more information can be found `here <https://docs.microsoft.com/azure/azure-monitor/app/create-new-resource>`_.
+* The instrumentation key must follow the standard UUID format as defined `here <https://tools.ietf.org/html/rfc4122>` _.
 * Put the instrumentation key in ``APPINSIGHTS_INSTRUMENTATIONKEY`` environment variable.
 * You can also specify the instrumentation key explicitly in the code, which will take priority over a set environment variable.
 
