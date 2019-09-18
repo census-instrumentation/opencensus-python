@@ -25,6 +25,8 @@ from opencensus.ext.azure.metrics_exporter.standard_metrics.process \
 from opencensus.ext.azure.metrics_exporter.standard_metrics.process \
     import ProcessMemoryMetric
 from opencensus.ext.azure.metrics_exporter.standard_metrics.http_requests \
+    import RequestsAvgExecutionMetric
+from opencensus.ext.azure.metrics_exporter.standard_metrics.http_requests \
     import RequestsRateMetric
 
 # List of standard metrics to track
@@ -33,6 +35,7 @@ STANDARD_METRICS = [AvailableMemoryMetric,
                     ProcessCPUMetric,
                     ProcessMemoryMetric,
                     ProcessorTimeMetric,
+                    RequestsAvgExecutionMetric,
                     RequestsRateMetric]
 
 

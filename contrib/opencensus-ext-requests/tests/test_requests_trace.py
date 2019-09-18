@@ -242,7 +242,8 @@ class Test_requests_trace(unittest.TestCase):
         url = 'http://localhost:8080/test'
 
         with patch, patch_thread:
-            wrapped(url)
+            with self.assertRaises(requests.Timeout):
+                wrapped(url)
 
         expected_attributes = {
             'http.host': 'localhost:8080',
@@ -288,7 +289,8 @@ class Test_requests_trace(unittest.TestCase):
         url = 'http://localhost:8080/test'
 
         with patch, patch_thread:
-            wrapped(url)
+            with self.assertRaises(requests.URLRequired):
+                wrapped(url)
 
         expected_attributes = {
             'http.host': 'localhost:8080',
@@ -308,6 +310,7 @@ class Test_requests_trace(unittest.TestCase):
             expected_status.__dict__,
             mock_tracer.current_span.status.__dict__
         )
+        self.assertRaises(requests.URLRequired, mock_func)
 
     def test_wrap_requests_exception(self):
         mock_return = mock.Mock()
@@ -334,7 +337,8 @@ class Test_requests_trace(unittest.TestCase):
         url = 'http://localhost:8080/test'
 
         with patch, patch_thread:
-            wrapped(url)
+            with self.assertRaises(requests.TooManyRedirects):
+                wrapped(url)
 
         expected_attributes = {
             'http.host': 'localhost:8080',
@@ -354,6 +358,7 @@ class Test_requests_trace(unittest.TestCase):
             expected_status.__dict__,
             mock_tracer.current_span.status.__dict__
         )
+        self.assertRaises(requests.TooManyRedirects, mock_func)
 
     def test_wrap_session_request(self):
         wrapped = mock.Mock(return_value=mock.Mock(status_code=200))
@@ -376,8 +381,10 @@ class Test_requests_trace(unittest.TestCase):
         kwargs = {}
 
         with patch, patch_thread:
-            trace.wrap_session_request(wrapped, 'Session.request',
-                                       (request_method, url), kwargs)
+            trace.wrap_session_request(
+                wrapped, 'Session.request',
+                (request_method, url), kwargs
+            )
 
         expected_attributes = {
             'http.host': 'localhost:8080',
@@ -427,8 +434,10 @@ class Test_requests_trace(unittest.TestCase):
         request_method = 'POST'
 
         with patch_tracer, patch_attr, patch_thread:
-            trace.wrap_session_request(wrapped, 'Session.request',
-                                       (request_method, url), {})
+            trace.wrap_session_request(
+                wrapped, 'Session.request',
+                (request_method, url), {}
+            )
 
         expected_name = '/'
         self.assertEqual(expected_name, mock_tracer.current_span.name)
@@ -458,8 +467,11 @@ class Test_requests_trace(unittest.TestCase):
         request_method = 'POST'
 
         with patch_tracer, patch_attr, patch_thread:
-            trace.wrap_session_request(wrapped, 'Session.request',
-                                       (request_method, url), {})
+            trace.wrap_session_request(
+                wrapped, 'Session.request',
+                (request_method, url), {}
+            )
+
         self.assertEqual(None, mock_tracer.current_span)
 
     def test_wrap_session_request_exporter_thread(self):
@@ -487,8 +499,11 @@ class Test_requests_trace(unittest.TestCase):
         request_method = 'POST'
 
         with patch_tracer, patch_attr, patch_thread:
-            trace.wrap_session_request(wrapped, 'Session.request',
-                                       (request_method, url), {})
+            trace.wrap_session_request(
+                wrapped, 'Session.request',
+                (request_method, url), {}
+            )
+
         self.assertEqual(None, mock_tracer.current_span)
 
     def test_header_is_passed_in(self):
@@ -511,8 +526,10 @@ class Test_requests_trace(unittest.TestCase):
         kwargs = {}
 
         with patch, patch_thread:
-            trace.wrap_session_request(wrapped, 'Session.request',
-                                       (request_method, url), kwargs)
+            trace.wrap_session_request(
+                wrapped, 'Session.request',
+                (request_method, url), kwargs
+            )
 
         self.assertEqual(kwargs['headers']['x-trace'], 'some-value')
 
@@ -536,8 +553,10 @@ class Test_requests_trace(unittest.TestCase):
         kwargs = {'headers': {'key': 'value'}}
 
         with patch, patch_thread:
-            trace.wrap_session_request(wrapped, 'Session.request',
-                                       (request_method, url), kwargs)
+            trace.wrap_session_request(
+                wrapped, 'Session.request',
+                (request_method, url), kwargs
+            )
 
         self.assertEqual(kwargs['headers']['key'], 'value')
         self.assertEqual(kwargs['headers']['x-trace'], 'some-value')
@@ -563,8 +582,10 @@ class Test_requests_trace(unittest.TestCase):
         kwargs = {'headers': {'x-trace': 'original-value'}}
 
         with patch, patch_thread:
-            trace.wrap_session_request(wrapped, 'Session.request',
-                                       (request_method, url), kwargs)
+            trace.wrap_session_request(
+                wrapped, 'Session.request',
+                (request_method, url), kwargs
+            )
 
         self.assertEqual(kwargs['headers']['x-trace'], 'some-value')
 
@@ -590,8 +611,11 @@ class Test_requests_trace(unittest.TestCase):
         kwargs = {}
 
         with patch, patch_thread:
-            trace.wrap_session_request(wrapped, 'Session.request',
-                                       (request_method, url), kwargs)
+            with self.assertRaises(requests.Timeout):
+                trace.wrap_session_request(
+                    wrapped, 'Session.request',
+                    (request_method, url), kwargs
+                )
 
         expected_attributes = {
             'http.host': 'localhost:8080',
@@ -635,8 +659,11 @@ class Test_requests_trace(unittest.TestCase):
         kwargs = {}
 
         with patch, patch_thread:
-            trace.wrap_session_request(wrapped, 'Session.request',
-                                       (request_method, url), kwargs)
+            with self.assertRaises(requests.URLRequired):
+                trace.wrap_session_request(
+                    wrapped, 'Session.request',
+                    (request_method, url), kwargs
+                )
 
         expected_attributes = {
             'http.host': 'localhost:8080',
@@ -680,8 +707,11 @@ class Test_requests_trace(unittest.TestCase):
         kwargs = {}
 
         with patch, patch_thread:
-            trace.wrap_session_request(wrapped, 'Session.request',
-                                       (request_method, url), kwargs)
+            with self.assertRaises(requests.TooManyRedirects):
+                trace.wrap_session_request(
+                    wrapped, 'Session.request',
+                    (request_method, url), kwargs
+                )
 
         expected_attributes = {
             'http.host': 'localhost:8080',

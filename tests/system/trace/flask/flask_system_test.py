@@ -162,7 +162,9 @@ class TestFlaskTrace(unittest.TestCase):
             for span in spans:
                 labels = span.get('labels')
                 if '/http/status_code' in labels.keys():
-                    self.assertEqual(labels.get('/http/status_code'), '200')
+                    self.assertEqual(
+                        labels.get('/http/status_code'), '200'
+                    )
                     request_succeeded = True
 
                 if span.get('name') == '[postgresql.query]SELECT 2*3':

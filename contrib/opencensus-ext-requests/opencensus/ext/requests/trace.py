@@ -105,10 +105,13 @@ def wrap_requests(requests_func):
             result = requests_func(url, *args, **kwargs)
         except requests.Timeout:
             _span.set_status(exceptions_status.TIMEOUT)
+            raise
         except requests.URLRequired:
             _span.set_status(exceptions_status.INVALID_URL)
+            raise
         except Exception as e:
             _span.set_status(exceptions_status.unknown(e))
+            raise
         else:
             # Add the status code to attributes
             _tracer.add_attribute_to_current_span(
@@ -178,10 +181,13 @@ def wrap_session_request(wrapped, instance, args, kwargs):
         result = wrapped(*args, **kwargs)
     except requests.Timeout:
         _span.set_status(exceptions_status.TIMEOUT)
+        raise
     except requests.URLRequired:
         _span.set_status(exceptions_status.INVALID_URL)
+        raise
     except Exception as e:
         _span.set_status(exceptions_status.unknown(e))
+        raise
     else:
         # Add the status code to attributes
         _tracer.add_attribute_to_current_span(

@@ -222,7 +222,7 @@ class TestOpencensusMiddleware(unittest.TestCase):
             'http.path': u'/wiki/Rabbit',
             'http.route': u'/wiki/Rabbit',
             'http.url': u'http://testserver/wiki/Rabbit',
-            'http.status_code': '200',
+            'http.status_code': 200,
             'django.user.id': '123',
             'django.user.name': 'test_name'
         }
@@ -277,7 +277,7 @@ class TestOpencensusMiddleware(unittest.TestCase):
             'http.path': u'/wiki/Rabbit',
             'http.route': u'/wiki/Rabbit',
             'http.url': u'http://testserver/wiki/Rabbit',
-            'http.status_code': '500',
+            'http.status_code': 500,
             'django.user.id': '123',
             'django.user.name': 'test_name'
         }
