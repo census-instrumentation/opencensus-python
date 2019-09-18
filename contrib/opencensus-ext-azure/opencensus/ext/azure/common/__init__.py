@@ -47,10 +47,10 @@ def validate_key(instrumentation_key):
         raise ValueError("Instrumentation key cannot be none or empty.")
     # Validate UUID format
     # Specs taken from https://tools.ietf.org/html/rfc4122
-    pattern = re.compile('[0-9a-f]{8}-' \
-                         '[0-9a-f]{4}-' \
-                         '[1-5][0-9a-f]{3}-' \
-                         '[89ab][0-9a-f]{3}-' \
+    pattern = re.compile('[0-9a-f]{8}-'
+                         '[0-9a-f]{4}-'
+                         '[1-5][0-9a-f]{3}-'
+                         '[89ab][0-9a-f]{3}-'
                          '[0-9a-f]{12}')
     # re.fullmatch not available for python2
     # We use re.match, we matches from the beginning, and then do a length
