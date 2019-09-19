@@ -73,8 +73,8 @@ def parse_connection_string(connection_string):
             endpoint = 'https://' + location_prefix + 'dc.' + endpoint_suffix
             result[INGESTION_ENDPOINT] = endpoint
         else:
-            # Use default endpoint if cannot construct
-            result[INGESTION_ENDPOINT] = 'https://dc.services.visualstudio.com'
+            # Default to None if cannot construct
+            result[INGESTION_ENDPOINT] = None
     return result
 
 
