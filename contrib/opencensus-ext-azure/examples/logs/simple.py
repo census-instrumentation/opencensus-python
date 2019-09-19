@@ -20,9 +20,5 @@ logger = logging.getLogger(__name__)
 # TODO: you need to specify the instrumentation key in a connection string
 # and place it in the APPLICATIONINSIGHTS_CONNECTION_STRING
 # environment variable.
-#70c241c9-206e-4811-82b4-2bc8a52170b9
-handler = AzureLogHandler(connection_string='Authorization=IKEY')
-logger.addHandler(handler)
-print(handler.options.instrumentation_key)
-print(handler.options.endpoint)
+logger.addHandler(AzureLogHandler())
 logger.warning('Hello, World!')
