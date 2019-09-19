@@ -123,7 +123,7 @@ class TestOptions(unittest.TestCase):
         result = common.parse_connection_string(cs)
 
         self.assertEqual(result['IngestionEndpoint'],
-                         'https://dc.services.visualstudio.com')
+                         None)
 
     def test_parse_connection_string_no_location(self):
         cs = 'Authorization=ikey;EndpointSuffix=suffix'
