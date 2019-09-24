@@ -104,7 +104,7 @@ class TestOptions(unittest.TestCase):
     def test_parse_connection_string_default_auth(self):
         cs = 'InstrumentationKey=123'
         result = common.parse_connection_string(cs)
-        self.assertEqual(result['InstrumentationKey'], '123')
+        self.assertEqual(result['instrumentationkey'], '123')
 
     def test_parse_connection_string_invalid_auth(self):
         cs = 'Authorization=asd'
@@ -116,23 +116,23 @@ class TestOptions(unittest.TestCase):
             'Location=us;EndpointSuffix=suffix'
         result = common.parse_connection_string(cs)
 
-        self.assertEqual(result['IngestionEndpoint'], '123')
+        self.assertEqual(result['ingestionendpoint'], '123')
 
     def test_parse_connection_string_default(self):
         cs = 'Authorization=ikey;Location=us'
         result = common.parse_connection_string(cs)
 
-        self.assertEqual(result['IngestionEndpoint'],
+        self.assertEqual(result['ingestionendpoint'],
                          None)
 
     def test_parse_connection_string_no_location(self):
         cs = 'Authorization=ikey;EndpointSuffix=suffix'
         result = common.parse_connection_string(cs)
 
-        self.assertEqual(result['IngestionEndpoint'], 'https://dc.suffix')
+        self.assertEqual(result['ingestionendpoint'], 'https://dc.suffix')
 
     def test_parse_connection_string_location(self):
         cs = 'Authorization=ikey;EndpointSuffix=suffix;Location=us'
         result = common.parse_connection_string(cs)
 
-        self.assertEqual(result['IngestionEndpoint'], 'https://us.dc.suffix')
+        self.assertEqual(result['ingestionendpoint'], 'https://us.dc.suffix')
