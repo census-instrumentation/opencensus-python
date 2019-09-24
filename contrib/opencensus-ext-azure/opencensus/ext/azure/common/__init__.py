@@ -17,8 +17,8 @@ import sys
 
 from opencensus.ext.azure.common.protocol import BaseObject
 
-INGESTION_ENDPOINT = 'IngestionEndpoint'
-INSTRUMENTATION_KEY = 'InstrumentationKey'
+INGESTION_ENDPOINT = 'ingestionendpoint'
+INSTRUMENTATION_KEY = 'instrumentationkey'
 
 
 def process_options(options):
@@ -53,21 +53,23 @@ def parse_connection_string(connection_string):
     try:
         pairs = connection_string.split(';')
         result = dict(s.split('=') for s in pairs)
+        # Convert keys to lower-case due to case type-insensitive checking
+        result = {key.lower(): value for key, value in result.items()}
     except Exception:
         raise ValueError('Invalid connection string')
     # Validate authorization
-    auth = result.get('Authorization')
+    auth = result.get('authorization')
     if auth is not None and auth.lower() != 'ikey':
         raise ValueError('Invalid authorization mechanism')
     # Construct the ingestion endpoint if not passed in explicitly
     if result.get(INGESTION_ENDPOINT) is None:
         endpoint_suffix = ''
         location_prefix = ''
-        suffix = result.get('EndpointSuffix')
+        suffix = result.get('endpointsuffix')
         if suffix is not None:
             endpoint_suffix = suffix
             # Get regional information if provided
-            prefix = result.get('Location')
+            prefix = result.get('location')
             if prefix is not None:
                 location_prefix = prefix + '.'
             endpoint = 'https://' + location_prefix + 'dc.' + endpoint_suffix
