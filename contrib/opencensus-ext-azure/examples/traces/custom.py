@@ -21,7 +21,8 @@ app.config['OPENCENSUS'] = {
     'TRACE': {
         'SAMPLER': 'opencensus.trace.samplers.ProbabilitySampler(rate=1.0)',
         'EXPORTER': '''opencensus.ext.azure.trace_exporter.AzureExporter(
-            instrumentation_key='00000000-0000-0000-0000-000000000000',
+            connection_string=
+            'InstrumentationKey=00000000-0000-0000-0000-000000000000',
         )''',
     },
 }

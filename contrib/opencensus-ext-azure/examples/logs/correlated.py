@@ -24,8 +24,9 @@ config_integration.trace_integrations(['logging'])
 
 logger = logging.getLogger(__name__)
 
-# TODO: you need to specify the instrumentation key in the
-# APPINSIGHTS_INSTRUMENTATIONKEY environment variable.
+# TODO: you need to specify the instrumentation key in a connection string
+# and place it in the APPLICATIONINSIGHTS_CONNECTION_STRING
+# environment variable.
 handler = AzureLogHandler()
 logger.addHandler(handler)
 
