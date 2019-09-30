@@ -20,8 +20,9 @@ from opencensus.trace.samplers import ProbabilitySampler
 from opencensus.trace.tracer import Tracer
 
 config_integration.trace_integrations(['requests'])
-# TODO: you need to specify the instrumentation key in the
-# APPINSIGHTS_INSTRUMENTATIONKEY environment variable.
+# TODO: you need to specify the instrumentation key in a connection string
+# and place it in the APPLICATIONINSIGHTS_CONNECTION_STRING
+# environment variable.
 tracer = Tracer(exporter=AzureExporter(), sampler=ProbabilitySampler(1.0))
 with tracer.span(name='parent'):
     with tracer.span(name='child'):
