@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## 0.7.3
+Released 2019-09-30
+
+- Check that url_rule is not None before dereferencing property
+  ([#781](https://github.com/census-instrumentation/opencensus-python/pull/781))
+
 ## 0.7.2
 Released 2019-08-26
 

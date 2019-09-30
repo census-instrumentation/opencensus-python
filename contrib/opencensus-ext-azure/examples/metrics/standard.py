@@ -19,6 +19,9 @@ from opencensus.ext.azure import metrics_exporter
 
 
 def main():
+    # TODO: you need to specify the instrumentation key in a connection string
+    # and place it in the APPLICATIONINSIGHTS_CONNECTION_STRING
+    # environment variable.
     # All you need is the next line. You can disable standard metrics by
     # passing in enable_standard_metrics=False into the constructor of
     # new_metrics_exporter()

@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+## 1.0.0
+Released 2019-09-30
+
+- Standard Metrics - Incoming Requests Execution Time
+  ([#773](https://github.com/census-instrumentation/opencensus-python/pull/773))
+- Implement connection strings
+  ([#767](https://github.com/census-instrumentation/opencensus-python/pull/767))
+
 ## 0.7.1
 Released 2019-08-26
 
