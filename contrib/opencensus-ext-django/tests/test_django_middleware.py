@@ -12,18 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import unittest
-from collections import namedtuple
-
-import django
 import mock
-import pytest
+import unittest
+
+from django.test import RequestFactory
 from django.test.utils import teardown_test_environment
 
 from opencensus.trace import execution_context
+from opencensus.trace import print_exporter
+from opencensus.trace import samplers
+from opencensus.trace import span as span_module
+from opencensus.trace import utils
+from opencensus.trace.blank_span import BlankSpan
+from opencensus.trace.propagation import trace_context_http_header_format
 
 
-class TestOpencensusDatabaseMiddleware(unittest.TestCase):
+class TestOpencensusMiddleware(unittest.TestCase):
+
     def setUp(self):
         from django.conf import settings as django_settings
         from django.test.utils import setup_test_environment
@@ -36,54 +41,315 @@ class TestOpencensusDatabaseMiddleware(unittest.TestCase):
         execution_context.clear()
         teardown_test_environment()
 
-    def test_process_request(self):
-        if django.VERSION < (2, 0):
-            pytest.skip("Wrong version of Django")
-
+    def test_constructor_default(self):
         from opencensus.ext.django import middleware
 
-        sql = "SELECT * FROM users"
+        middleware = middleware.OpencensusMiddleware()
 
-        MockConnection = namedtuple('Connection', ('vendor', 'alias'))
-        connection = MockConnection('mysql', 'default')
+        assert isinstance(middleware.sampler, samplers.ProbabilitySampler)
+        assert isinstance(middleware.exporter, print_exporter.PrintExporter)
+        assert isinstance(
+            middleware.propagator,
+            trace_context_http_header_format.TraceContextPropagator,
+        )
 
-        mock_execute = mock.Mock()
-        mock_execute.return_value = "Mock result"
+    def test_configuration(self):
+        from opencensus.ext.django import middleware
 
-        middleware.OpencensusMiddleware()
+        settings = type('Test', (object,), {})
+        settings.OPENCENSUS = {
+            'TRACE': {
+                'SAMPLER': 'opencensus.trace.samplers.AlwaysOnSampler()',  # noqa
+                'EXPORTER': 'opencensus.trace.print_exporter.PrintExporter()',  # noqa
+                'PROPAGATOR': 'opencensus.trace.propagation.trace_context_http_header_format.TraceContextPropagator()',  # noqa
+            }
+        }
+        patch_settings = mock.patch(
+            'django.conf.settings',
+            settings)
 
-        patch_no_tracer = mock.patch(
-            'opencensus.ext.django.middleware._get_current_tracer',
-            return_value=None)
-        with patch_no_tracer:
-            result = middleware._trace_db_call(
-                mock_execute, sql, params=[], many=False,
-                context={'connection': connection})
-        self.assertEqual(result, "Mock result")
+        with patch_settings:
+            middleware = middleware.OpencensusMiddleware()
 
-        mock_tracer = mock.Mock()
-        mock_tracer.return_value = mock_tracer
-        patch = mock.patch(
-            'opencensus.ext.django.middleware._get_current_tracer',
-            return_value=mock_tracer)
-        with patch:
-            result = middleware._trace_db_call(
-                mock_execute, sql, params=[], many=False,
-                context={'connection': connection})
+        assert isinstance(middleware.sampler, samplers.AlwaysOnSampler)
+        assert isinstance(middleware.exporter, print_exporter.PrintExporter)
+        assert isinstance(
+            middleware.propagator,
+            trace_context_http_header_format.TraceContextPropagator,
+        )
 
-        (mock_sql, mock_params, mock_many,
-            mock_context) = mock_execute.call_args[0]
+    def test_process_request(self):
+        from opencensus.ext.django import middleware
 
-        self.assertEqual(mock_sql, sql)
-        self.assertEqual(mock_params, [])
-        self.assertEqual(mock_many, False)
-        self.assertEqual(mock_context, {'connection': connection})
-        self.assertEqual(result, "Mock result")
+        trace_id = '2dd43a1d6b2549c6bc2a1a54c2fc0b05'
+        span_id = '6e0c63257de34c92'
+        django_trace_id = '00-{}-{}-00'.format(trace_id, span_id)
 
-        result = middleware._trace_db_call(
-            mock_execute, sql, params=[], many=True,
-            context={'connection': connection})
+        django_request = RequestFactory().get('/wiki/Rabbit', **{
+            'HTTP_TRACEPARENT': django_trace_id})
 
-        (mock_sql, mock_params, mock_many,
-            mock_context) = mock_execute.call_args[0]
-        self.assertEqual(mock_many, True)
+        # Force the test request to be sampled
+        settings = type('Test', (object,), {})
+        settings.OPENCENSUS = {
+            'TRACE': {
+                'SAMPLER': 'opencensus.trace.samplers.AlwaysOnSampler()',  # noqa
+            }
+        }
+        patch_settings = mock.patch(
+            'django.conf.settings',
+            settings)
+
+        with patch_settings:
+            middleware_obj = middleware.OpencensusMiddleware()
+
+        # test process_request
+        middleware_obj.process_request(django_request)
+
+        tracer = middleware._get_current_tracer()
+
+        span = tracer.current_span()
+
+        expected_attributes = {
+            'http.host': u'testserver',
+            'http.method': 'GET',
+            'http.path': u'/wiki/Rabbit',
+            'http.route': u'/wiki/Rabbit',
+            'http.url': u'http://testserver/wiki/Rabbit',
+        }
+        self.assertEqual(span.span_kind, span_module.SpanKind.SERVER)
+        self.assertEqual(span.attributes, expected_attributes)
+        self.assertEqual(span.parent_span.span_id, span_id)
+
+        span_context = tracer.span_context
+        self.assertEqual(span_context.trace_id, trace_id)
+
+        # test process_view
+        view_func = mock.Mock()
+        middleware_obj.process_view(django_request, view_func)
+
+        self.assertEqual(span.name, 'mock.mock.Mock')
+
+    def test_blacklist_path(self):
+        from opencensus.ext.django import middleware
+
+        execution_context.clear()
+
+        blacklist_paths = ['test_blacklist_path']
+        settings = type('Test', (object,), {})
+        settings.OPENCENSUS = {
+            'TRACE': {
+                'SAMPLER': 'opencensus.trace.samplers.AlwaysOnSampler()',  # noqa
+                'BLACKLIST_PATHS': blacklist_paths,
+                'EXPORTER': mock.Mock(),
+            }
+        }
+        patch_settings = mock.patch(
+            'django.conf.settings',
+            settings)
+
+        with patch_settings:
+            middleware_obj = middleware.OpencensusMiddleware()
+
+        django_request = RequestFactory().get('/test_blacklist_path')
+        disabled = utils.disable_tracing_url(django_request.path,
+                                             blacklist_paths)
+        self.assertTrue(disabled)
+        self.assertEqual(middleware_obj.blacklist_paths, blacklist_paths)
+
+        # test process_request
+        middleware_obj.process_request(django_request)
+
+        tracer = middleware._get_current_tracer()
+        span = tracer.current_span()
+
+        # process view
+        view_func = mock.Mock()
+        middleware_obj.process_view(django_request, view_func)
+
+        tracer = middleware._get_current_tracer()
+        span = tracer.current_span()
+
+        assert isinstance(span, BlankSpan)
+
+        # process response
+        django_response = mock.Mock()
+        django_response.status_code = 200
+
+        middleware_obj.process_response(django_request, django_response)
+
+        tracer = middleware._get_current_tracer()
+        span = tracer.current_span()
+        assert isinstance(span, BlankSpan)
+
+    def test_process_response(self):
+        from opencensus.ext.django import middleware
+
+        trace_id = '2dd43a1d6b2549c6bc2a1a54c2fc0b05'
+        span_id = '6e0c63257de34c92'
+        django_trace_id = '00-{}-{}-00'.format(trace_id, span_id)
+
+        django_request = RequestFactory().get('/wiki/Rabbit', **{
+            'traceparent': django_trace_id,
+        })
+
+        # Force the test request to be sampled
+        settings = type('Test', (object,), {})
+        settings.OPENCENSUS = {
+            'TRACE': {
+                'SAMPLER': 'opencensus.trace.samplers.AlwaysOnSampler()',  # noqa
+            }
+        }
+        patch_settings = mock.patch(
+            'django.conf.settings',
+            settings)
+
+        with patch_settings:
+            middleware_obj = middleware.OpencensusMiddleware()
+
+        middleware_obj.process_request(django_request)
+        tracer = middleware._get_current_tracer()
+        span = tracer.current_span()
+
+        exporter_mock = mock.Mock()
+        tracer.exporter = exporter_mock
+
+        django_response = mock.Mock()
+        django_response.status_code = 200
+
+        expected_attributes = {
+            'http.host': u'testserver',
+            'http.method': 'GET',
+            'http.path': u'/wiki/Rabbit',
+            'http.route': u'/wiki/Rabbit',
+            'http.url': u'http://testserver/wiki/Rabbit',
+            'http.status_code': 200,
+            'django.user.id': '123',
+            'django.user.name': 'test_name'
+        }
+
+        mock_user = mock.Mock()
+        mock_user.pk = 123
+        mock_user.get_username.return_value = 'test_name'
+        django_request.user = mock_user
+
+        middleware_obj.process_response(django_request, django_response)
+
+        self.assertEqual(span.attributes, expected_attributes)
+
+    def test_process_response_unfinished_child_span(self):
+        from opencensus.ext.django import middleware
+
+        trace_id = '2dd43a1d6b2549c6bc2a1a54c2fc0b05'
+        span_id = '6e0c63257de34c92'
+        django_trace_id = '00-{}-{}-00'.format(trace_id, span_id)
+
+        django_request = RequestFactory().get('/wiki/Rabbit', **{
+            'traceparent': django_trace_id,
+        })
+
+        # Force the test request to be sampled
+        settings = type('Test', (object,), {})
+        settings.OPENCENSUS = {
+            'TRACE': {
+                'SAMPLER': 'opencensus.trace.samplers.AlwaysOnSampler()',  # noqa
+            }
+        }
+        patch_settings = mock.patch(
+            'django.conf.settings',
+            settings)
+
+        with patch_settings:
+            middleware_obj = middleware.OpencensusMiddleware()
+
+        middleware_obj.process_request(django_request)
+        tracer = middleware._get_current_tracer()
+        span = tracer.current_span()
+
+        exporter_mock = mock.Mock()
+        tracer.exporter = exporter_mock
+
+        django_response = mock.Mock()
+        django_response.status_code = 500
+
+        expected_attributes = {
+            'http.host': u'testserver',
+            'http.method': 'GET',
+            'http.path': u'/wiki/Rabbit',
+            'http.route': u'/wiki/Rabbit',
+            'http.url': u'http://testserver/wiki/Rabbit',
+            'http.status_code': 500,
+            'django.user.id': '123',
+            'django.user.name': 'test_name'
+        }
+
+        mock_user = mock.Mock()
+        mock_user.pk = 123
+        mock_user.get_username.return_value = 'test_name'
+        django_request.user = mock_user
+
+        tracer.start_span()
+        self.assertNotEqual(span, tracer.current_span())
+        middleware_obj.process_response(django_request, django_response)
+
+        self.assertEqual(span.attributes, expected_attributes)
+
+
+class Test__set_django_attributes(unittest.TestCase):
+    class Span(object):
+        def __init__(self):
+            self.attributes = {}
+
+        def add_attribute(self, key, value):
+            self.attributes[key] = value
+
+    def test__set_django_attributes_no_user(self):
+        from opencensus.ext.django.middleware import \
+            _set_django_attributes
+        span = self.Span()
+        request = mock.Mock()
+
+        request.user = None
+
+        _set_django_attributes(span, request)
+
+        expected_attributes = {}
+
+        self.assertEqual(span.attributes, expected_attributes)
+
+    def test__set_django_attributes_no_user_info(self):
+        from opencensus.ext.django.middleware import \
+            _set_django_attributes
+        span = self.Span()
+        request = mock.Mock()
+        django_user = mock.Mock()
+
+        request.user = django_user
+        django_user.pk = None
+        django_user.get_username.return_value = None
+
+        _set_django_attributes(span, request)
+
+        expected_attributes = {}
+
+        self.assertEqual(span.attributes, expected_attributes)
+
+    def test__set_django_attributes_with_user_info(self):
+        from opencensus.ext.django.middleware import \
+            _set_django_attributes
+        span = self.Span()
+        request = mock.Mock()
+        django_user = mock.Mock()
+
+        request.user = django_user
+        test_id = 123
+        test_name = 'test_name'
+        django_user.pk = test_id
+        django_user.get_username.return_value = test_name
+
+        _set_django_attributes(span, request)
+
+        expected_attributes = {
+            'django.user.id': '123',
+            'django.user.name': test_name}
+
+        self.assertEqual(span.attributes, expected_attributes)
