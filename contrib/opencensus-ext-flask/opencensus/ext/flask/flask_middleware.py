@@ -176,9 +176,11 @@ class FlaskMiddleware(object):
 
         try:
             tracer = execution_context.get_opencensus_tracer()
-            tracer.add_attribute_to_current_span(
-                HTTP_ROUTE, flask.request.url_rule.rule
-            )
+            url_rule = flask.request.url_rule
+            if url_rule is not None:
+                tracer.add_attribute_to_current_span(
+                    HTTP_ROUTE, url_rule.rule
+                )
             tracer.add_attribute_to_current_span(
                 HTTP_STATUS_CODE,
                 response.status_code
