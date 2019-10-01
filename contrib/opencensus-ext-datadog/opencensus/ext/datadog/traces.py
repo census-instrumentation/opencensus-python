@@ -18,6 +18,7 @@ from datetime import datetime
 import bitarray
 
 from opencensus.common.transports import sync
+from opencensus.common.utils import ISO_DATETIME_REGEX
 from opencensus.ext.datadog.transport import DDTransport
 from opencensus.trace import base_exporter
 from opencensus.trace import span_data
@@ -159,14 +160,16 @@ class DatadogTraceExporter(base_exporter.Exporter):
                 'resource': span.get("displayName").get("value"),
             }
 
-            start_time = datetime.strptime(span.get('startTime'), TIME_FMT)
+            start_time = datetime.strptime(span.get('startTime'),
+                                           ISO_DATETIME_REGEX)
 
             # The start time of the request in nanoseconds from the unix epoch.
             epoch = datetime.utcfromtimestamp(0)
             dd_span["start"] = int((start_time - epoch).total_seconds() *
                                    1000.0 * 1000.0 * 1000.0)
 
-            end_time = datetime.strptime(span.get('endTime'), TIME_FMT)
+            end_time = datetime.strptime(span.get('endTime'),
+                                         ISO_DATETIME_REGEX)
             duration_td = end_time - start_time
 
             # The duration of the request in nanoseconds.
@@ -186,8 +189,7 @@ class DatadogTraceExporter(base_exporter.Exporter):
             # opencensus.trace.span.SpanKind
             dd_span['type'] = to_dd_type(span.get("kind"))
             dd_span["error"] = 0
-            if int(code.get("status") / 100) == 4 or int(
-                    code.get("status") / 100) == 5:
+            if 4 <= code.get("status") // 100 <= 5:
                 dd_span["error"] = 1
                 meta["error.type"] = code.get("message")
 
@@ -298,77 +300,74 @@ def convert_id(str_id):
     return id_int
 
 
-# 2019-09-19T14:05:15.808570Z
-TIME_FMT = "%Y-%m-%dT%H:%M:%S.%fZ"
-
 # https://opencensus.io/tracing/span/status/
 STATUS_CODES = {
     0: {
         "message": "OK",
-        "status": int(200)
+        "status": 200
     },
     1: {
         "message": "CANCELLED",
-        "status": int(499)
+        "status": 499
     },
     2: {
         "message": "UNKNOWN",
-        "status": int(500)
+        "status": 500
     },
     3: {
         "message": "INVALID_ARGUMENT",
-        "status": int(400)
+        "status": 400
     },
     4: {
         "message": "DEADLINE_EXCEEDED",
-        "status": int(504)
+        "status": 504
     },
     5: {
         "message": "NOT_FOUND",
-        "status": int(404)
+        "status": 404
     },
     6: {
         "message": "ALREADY_EXISTS",
-        "status": int(409)
+        "status": 409
     },
     7: {
         "message": "PERMISSION_DENIED",
-        "status": int(403)
+        "status": 403
     },
     8: {
         "message": "RESOURCE_EXHAUSTED",
-        "status": int(429)
+        "status": 429
     },
     9: {
         "message": "FAILED_PRECONDITION",
-        "status": int(400)
+        "status": 400
     },
     10: {
         "message": "ABORTED",
-        "status": int(409)
+        "status": 409
     },
     11: {
         "message": "OUT_OF_RANGE",
-        "status": int(400)
+        "status": 400
     },
     12: {
         "message": "UNIMPLEMENTED",
-        "status": int(502)
+        "status": 502
     },
     13: {
         "message": "INTERNAL",
-        "status": int(500)
+        "status": 500
     },
     14: {
         "message": "UNAVAILABLE",
-        "status": int(503)
+        "status": 503
     },
     15: {
         "message": "DATA_LOSS",
-        "status": int(501)
+        "status": 501
     },
     16: {
         "message": "UNAUTHENTICATED",
-        "status": int(401)
+        "status": 401
     },
 }
