@@ -22,9 +22,9 @@ setup(
     author='OpenCensus Authors',
     author_email='census-developers@googlegroups.com',
     classifiers=[
-        'Intended Audience :: Developers',
-        'Development Status :: 3 - Alpha',
-        'Intended Audience :: Developers',
+        'Intended Audience :: End Users/Desktop',
+        'Development Status :: 5 - Production/Stable',
+        'Intended Audience :: End Users/Desktop',
         'License :: OSI Approved :: Apache Software License',
         'Programming Language :: Python',
         'Programming Language :: Python :: 2',
