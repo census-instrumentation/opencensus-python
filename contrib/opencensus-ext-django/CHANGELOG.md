@@ -1,6 +1,16 @@
 # Changelog
 
 ## Unreleased
+
+## 0.7.2
+Released 2019-09-30
+
+- Use Django 2.0 DB instrumentation
+([#775](https://github.com/census-instrumentation/opencensus-python/pull/775))
+
+## 0.7.1
+Released 2019-08-26
+
 - Updated `http.status_code` attribute to be an int.
   ([#755](https://github.com/census-instrumentation/opencensus-python/pull/755))
 
