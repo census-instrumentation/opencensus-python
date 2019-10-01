@@ -1,4 +1,5 @@
 import unittest
+
 import mock
 
 from opencensus.ext.datadog.transport import DDTransport

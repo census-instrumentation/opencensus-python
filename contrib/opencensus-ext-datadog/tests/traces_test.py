@@ -1,12 +1,14 @@
 import unittest
+
 import mock
-from opencensus.trace import span_data as span_data_module
-from opencensus.trace import span_context
+
 from opencensus.ext.datadog.traces import (convert_id, to_dd_type,
                                            value_from_atts_elem,
                                            atts_to_metadata,
                                            new_trace_exporter,
-                                           DatadogTaceExporter, Options)
+                                           DatadogTraceExporter, Options)
+from opencensus.trace import span_data as span_data_module
+from opencensus.trace import span_context
 
 
 class TestTraces(unittest.TestCase):
@@ -89,14 +91,14 @@ class TestTraces(unittest.TestCase):
 
     def test_export(self):
         mock_dd_transport = mock.Mock()
-        exporter = DatadogTaceExporter(options=Options(),
-                                       transport=MockTransport)
+        exporter = DatadogTraceExporter(options=Options(),
+                                        transport=MockTransport)
         exporter._dd_transport = mock_dd_transport
         exporter.export({})
         self.assertTrue(exporter.transport.export_called)
 
     @mock.patch('opencensus.ext.datadog.traces.'
-                'DatadogTaceExporter.translate_to_datadog',
+                'DatadogTraceExporter.translate_to_datadog',
                 return_value=None)
     def test_emit(self, mr_mock):
 
@@ -122,8 +124,9 @@ class TestTraces(unittest.TestCase):
         ]
 
         mock_dd_transport = mock.Mock()
-        exporter = DatadogTaceExporter(options=Options(service="dd-unit-test"),
-                                       transport=MockTransport)
+        exporter = DatadogTraceExporter(
+            options=Options(service="dd-unit-test"),
+            transport=MockTransport)
         exporter._dd_transport = mock_dd_transport
 
         exporter.emit(span_datas)
@@ -219,7 +222,7 @@ class TestTraces(unittest.TestCase):
             mock_dd_transport = mock.Mock()
             opts = Options(service="dd-unit-test")
             tran = MockTransport
-            exporter = DatadogTaceExporter(options=opts, transport=tran)
+            exporter = DatadogTraceExporter(options=opts, transport=tran)
             exporter._dd_transport = mock_dd_transport
             trace = {
                 'spans': [{

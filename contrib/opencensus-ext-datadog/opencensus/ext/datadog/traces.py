@@ -11,14 +11,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from collections import defaultdict
 import codecs
+from collections import defaultdict
 from datetime import datetime
+
 import bitarray
+
 from opencensus.common.transports import sync
+from opencensus.ext.datadog.transport import DDTransport
 from opencensus.trace import base_exporter
 from opencensus.trace import span_data
-from opencensus.ext.datadog.transport import DDTransport
 
 
 class Options(object):
@@ -70,7 +72,7 @@ class Options(object):
         return self._global_tags
 
 
-class DatadogTaceExporter(base_exporter.Exporter):
+class DatadogTraceExporter(base_exporter.Exporter):
     """ A exporter that send traces and trace spans to Datadog.
 
     :type options: :class:`~opencensus.ext.datadog.Options`
@@ -123,7 +125,7 @@ class DatadogTaceExporter(base_exporter.Exporter):
             trace_span_map[sd.context.trace_id] += [sd]
 
         dd_spans = []
-        # Write spans to Stackdriver
+        # Write spans to Datadog
         for _, sds in trace_span_map.items():
             # convert to the legacy trace json for easier refactoring
             trace = span_data.format_legacy_trace_json(sds)
@@ -269,7 +271,7 @@ def new_trace_exporter(option):
     if option.service == "":
         raise ValueError("Service can not be empty string.")
 
-    exporter = DatadogTaceExporter(options=option)
+    exporter = DatadogTraceExporter(options=option)
     return exporter
 
 
