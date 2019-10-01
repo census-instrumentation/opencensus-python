@@ -40,10 +40,14 @@ setup(
     install_requires=[
         'bitarray >= 1.0.1, < 2.0.0',
         'opencensus >= 0.8.dev0, < 1.0.0',
+        'requests >= 2.19.0',
     ],
     extras_require={},
     license='Apache-2.0',
-    packages=find_packages(exclude=('examples', 'tests',)),
+    packages=find_packages(exclude=(
+        'examples',
+        'tests',
+    )),
     namespace_packages=[],
     url='https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-datadog',  # noqa: E501
     zip_safe=False,
