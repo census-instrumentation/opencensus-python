@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## 0.7.5
+Released 2019-10-01
+
+- Updated `flask` module
+  ([#781](https://github.com/census-instrumentation/opencensus-python/pull/781))
+
 ## 0.7.4
 Released 2019-09-30
 
