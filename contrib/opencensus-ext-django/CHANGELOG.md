@@ -4,6 +4,7 @@
 
 ## 0.7.2
 Released 2019-09-30
+
 - Use Django 2.0 DB instrumentation
 ([#775](https://github.com/census-instrumentation/opencensus-python/pull/775))
 

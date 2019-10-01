@@ -6,8 +6,8 @@
 Released 2019-09-30
 
 - Updated `azure` module
-  ([#773](https://github.com/census-instrumentation/opencensus-python/pull/773))
-  ([#767](https://github.com/census-instrumentation/opencensus-python/pull/767))
+  ([#773](https://github.com/census-instrumentation/opencensus-python/pull/773),
+   [#767](https://github.com/census-instrumentation/opencensus-python/pull/767))
 
 - Updated `django` module
   ([#775](https://github.com/census-instrumentation/opencensus-python/pull/775))
