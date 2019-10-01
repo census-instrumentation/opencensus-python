@@ -20,6 +20,7 @@ Released 2019-08-26
 - Updated `django`, `flask`, `httplib`, `requests` and `pyramid` modules
   ([#755](https://github.com/census-instrumentation/opencensus-python/pull/755))
 - Updated `requests` module
+  ([#771](https://github.com/census-instrumentation/opencensus-python/pull/771))
 
 ## 0.7.2
 Released 2019-08-16
