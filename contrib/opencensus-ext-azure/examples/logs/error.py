@@ -17,8 +17,9 @@ import logging
 from opencensus.ext.azure.log_exporter import AzureLogHandler
 
 logger = logging.getLogger(__name__)
-# TODO: you need to specify the instrumentation key in the
-# APPINSIGHTS_INSTRUMENTATIONKEY environment variable.
+# TODO: you need to specify the instrumentation key in a connection string
+# and place it in the APPLICATIONINSIGHTS_CONNECTION_STRING
+# environment variable.
 logger.addHandler(AzureLogHandler())
 
 

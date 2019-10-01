@@ -19,7 +19,8 @@ from opencensus.trace.tracer import Tracer
 tracer = Tracer(
     exporter=AzureExporter(
         # TODO: replace the all-zero GUID with your instrumentation key.
-        instrumentation_key='00000000-0000-0000-0000-000000000000',
+        connection_string='InstrumentationKey= \
+        00000000-0000-0000-0000-000000000000',
     ),
     sampler=ProbabilitySampler(rate=1.0),
 )
