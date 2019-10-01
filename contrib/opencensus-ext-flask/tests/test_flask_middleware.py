@@ -19,7 +19,6 @@ import unittest
 
 from google.rpc import code_pb2
 import flask
-from werkzeug.exceptions import NotFound
 import mock
 
 from opencensus.ext.flask import flask_middleware
@@ -307,48 +306,6 @@ class TestFlaskMiddleware(unittest.TestCase):
                 'http.url': u'http://localhost/wiki/Rabbit',
                 'http.route': u'/wiki/<entry>',
                 'http.status_code': 200
-            }
-
-            self.assertEqual(span.attributes, expected_attributes)
-            assert isinstance(span.parent_span, base.NullContextManager)
-
-    def test__after_request_invalid_url(self):
-        flask_trace_header = 'traceparent'
-        trace_id = '2dd43a1d6b2549c6bc2a1a54c2fc0b05'
-        span_id = '6e0c63257de34c92'
-        flask_trace_id = '00-{}-{}-00'.format(trace_id, span_id)
-
-        app = self.create_app()
-        flask_middleware.FlaskMiddleware(
-            app=app,
-            sampler=samplers.AlwaysOnSampler()
-        )
-
-        context = app.test_request_context(
-            path='/this-url-does-not-exist',
-            headers={flask_trace_header: flask_trace_id}
-        )
-
-        with context:
-            app.preprocess_request()
-            tracer = execution_context.get_opencensus_tracer()
-            self.assertIsNotNone(tracer)
-
-            span = tracer.current_span()
-
-            try:
-                rv = app.dispatch_request()
-            except NotFound as e:
-                rv = app.handle_user_exception(e)
-            app.finalize_request(rv)
-
-            # http.route should not be set
-            expected_attributes = {
-                'http.host': u'localhost',
-                'http.method': u'GET',
-                'http.path': u'/this-url-does-not-exist',
-                'http.url': u'http://localhost/this-url-does-not-exist',
-                'http.status_code': 404
             }
 
             self.assertEqual(span.attributes, expected_attributes)
