@@ -362,6 +362,20 @@ class Span(base_span.BaseSpan):
             raise TypeError("Type Error: received {}, but requires Status.".
                             format(type(status).__name__))
 
+    def set_status_fields(self, code, message=None, details=None):
+        """Set span status.
+ 
+        :type code: int
+        :param code: An enum value of :class: `~google.rpc.Code`.
+        
+        :type message: str
+        :param message: A developer-facing error message, should be in English.
+
+        :type details: list
+        :param details: A list of messages that carry the error details.
+        """
+        self.set_status(status_module.Status(code, message, details))
+
     def start(self):
         """Set the start time for a span."""
         self.start_time = utils.to_iso_str()

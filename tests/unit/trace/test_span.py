@@ -201,6 +201,31 @@ class TestSpan(unittest.TestCase):
         self.assertEqual(span.status.description, message)
         self.assertEqual(span.status.details, details)
 
+    def test_set_status_fields(self):
+        span_name = 'test_span_name'
+        span = self._make_one(span_name)
+        
+        code = 1
+        message = 'ok'
+        details = {'object': 'ok'}
+        span.set_status_fields(code, message, details)
+
+        self.assertEqual(span.status.canonical_code, code)
+        self.assertEqual(span.status.description, message)
+        self.assertEqual(span.status.details, details)
+
+    def test_set_status_fields_without_details(self):
+        span_name = 'test_span_name'
+        span = self._make_one(span_name)
+        
+        code = 1
+        message = 'ok'
+        span.set_status_fields(code, message)
+
+        self.assertEqual(span.status.canonical_code, code)
+        self.assertEqual(span.status.description, message)
+        self.assertEqual(span.status.details, None)
+
     def test_start(self):
         span_name = 'root_span'
         span = self._make_one(span_name)
