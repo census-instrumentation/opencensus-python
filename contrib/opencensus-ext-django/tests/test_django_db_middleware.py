@@ -17,9 +17,9 @@ from collections import namedtuple
 
 import django
 import mock
-import pytest
 from django.test.utils import teardown_test_environment
 
+import pytest
 from opencensus.trace import execution_context
 
 

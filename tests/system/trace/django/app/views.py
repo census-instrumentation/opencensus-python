@@ -17,9 +17,9 @@ import os
 import mysql.connector
 import psycopg2
 import sqlalchemy
-
 from django.http import HttpResponse
 from django.shortcuts import render
+
 from opencensus.trace import config_integration
 
 from .forms import HelloForm

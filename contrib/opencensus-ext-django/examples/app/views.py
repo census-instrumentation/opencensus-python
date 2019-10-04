@@ -18,7 +18,6 @@ import mysql.connector
 import psycopg2
 import requests
 import sqlalchemy
-
 from django.http import HttpResponse
 from django.shortcuts import render
 
