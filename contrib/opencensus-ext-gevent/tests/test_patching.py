@@ -14,9 +14,9 @@
 
 import unittest
 
+import gevent.monkey
 import mock
 
-import gevent.monkey
 import opencensus.common.runtime_context as runtime_context
 
 
