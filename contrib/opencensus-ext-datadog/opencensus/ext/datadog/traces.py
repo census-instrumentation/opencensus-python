@@ -16,6 +16,7 @@ from collections import defaultdict
 from datetime import datetime
 
 import bitarray
+
 from opencensus.common.transports import sync
 from opencensus.common.utils import ISO_DATETIME_REGEX
 from opencensus.ext.datadog.transport import DDTransport

@@ -14,9 +14,9 @@
 
 import unittest
 
+import grpc
 import mock
 
-import grpc
 from opencensus.ext.google_cloud_clientlibs import trace
 
 

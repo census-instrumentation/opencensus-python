@@ -17,10 +17,10 @@
 
 import unittest
 
+import flask
 import mock
 from google.rpc import code_pb2
 
-import flask
 from opencensus.ext.flask import flask_middleware
 from opencensus.trace import execution_context, print_exporter, samplers
 from opencensus.trace import span as span_module

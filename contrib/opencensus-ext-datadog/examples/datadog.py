@@ -1,4 +1,5 @@
 from flask import Flask
+
 from opencensus.ext.flask.flask_middleware import FlaskMiddleware
 from opencensus.trace.samplers import AlwaysOnSampler
 from traces import DatadogTraceExporter, Options

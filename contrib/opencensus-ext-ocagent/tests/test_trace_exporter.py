@@ -17,9 +17,9 @@ import os
 import socket
 import unittest
 
+import grpc
 import mock
 
-import grpc
 from opencensus.common.version import __version__
 from opencensus.ext.ocagent.trace_exporter import TraceExporter
 from opencensus.proto.trace.v1 import trace_config_pb2

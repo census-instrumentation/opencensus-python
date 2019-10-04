@@ -14,10 +14,10 @@
 
 import logging
 
+import grpc
 from google.api_core import grpc_helpers
 from google.cloud import _helpers
 
-import grpc
 from opencensus.ext.grpc.client_interceptor import OpenCensusClientInterceptor
 from opencensus.ext.requests.trace import trace_integration as trace_requests
 

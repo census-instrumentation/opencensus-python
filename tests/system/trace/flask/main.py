@@ -14,11 +14,11 @@
 
 import os
 
+import flask
 import mysql.connector
 import psycopg2
 import sqlalchemy
 
-import flask
 from opencensus.common.transports import async_
 from opencensus.ext.flask.flask_middleware import FlaskMiddleware
 from opencensus.ext.stackdriver import trace_exporter as stackdriver_exporter

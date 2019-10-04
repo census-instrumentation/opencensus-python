@@ -17,9 +17,9 @@ import six
 import logging
 import sys
 
+import flask
 from google.rpc import code_pb2
 
-import flask
 from opencensus.common import configuration
 from opencensus.trace import (
     attributes_helper,
