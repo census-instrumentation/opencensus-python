@@ -15,11 +15,11 @@
 import unittest
 from collections import namedtuple
 
-import mock
-
 import django
+import mock
 import pytest
 from django.test.utils import teardown_test_environment
+
 from opencensus.trace import execution_context
 
 

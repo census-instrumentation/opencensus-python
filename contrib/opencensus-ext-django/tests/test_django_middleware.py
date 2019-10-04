@@ -15,9 +15,9 @@
 import unittest
 
 import mock
-
 from django.test import RequestFactory
 from django.test.utils import teardown_test_environment
+
 from opencensus.trace import execution_context, print_exporter, samplers
 from opencensus.trace import span as span_module
 from opencensus.trace import utils

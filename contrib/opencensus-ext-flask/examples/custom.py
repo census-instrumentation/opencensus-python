@@ -14,15 +14,15 @@
 
 import os
 
+import mysql.connector
 import psycopg2
+import requests
 import sqlalchemy
 
 import flask
 import grpc
 import hello_world_pb2
 import hello_world_pb2_grpc
-import mysql.connector
-import requests
 from opencensus.ext.flask.flask_middleware import FlaskMiddleware
 from opencensus.ext.grpc import client_interceptor
 from opencensus.ext.stackdriver import trace_exporter as stackdriver_exporter

@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import requests
+
 from opencensus.ext.azure.trace_exporter import AzureExporter
 from opencensus.trace import config_integration
 from opencensus.trace.samplers import ProbabilitySampler

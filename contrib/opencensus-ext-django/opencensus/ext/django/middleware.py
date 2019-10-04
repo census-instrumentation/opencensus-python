@@ -17,12 +17,12 @@ import six
 
 import logging
 
-from google.rpc import code_pb2
-
 import django
 import django.conf
 from django.db import connection
 from django.utils.deprecation import MiddlewareMixin
+from google.rpc import code_pb2
+
 from opencensus.common import configuration
 from opencensus.trace import (
     attributes_helper,

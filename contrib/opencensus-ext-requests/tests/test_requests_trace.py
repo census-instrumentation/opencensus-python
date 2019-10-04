@@ -15,8 +15,8 @@
 import unittest
 
 import mock
-
 import requests
+
 from opencensus.ext.requests import trace
 from opencensus.trace import execution_context
 from opencensus.trace import span as span_module

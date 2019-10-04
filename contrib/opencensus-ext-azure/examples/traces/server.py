@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import requests
+
 from flask import Flask
 from opencensus.ext.azure.trace_exporter import AzureExporter
 from opencensus.ext.flask.flask_middleware import FlaskMiddleware

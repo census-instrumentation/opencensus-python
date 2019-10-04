@@ -27,19 +27,19 @@ Including another URLconf
     1. Add an import:  from blog import urls as blog_urls
     2. Add a URL to urlpatterns:  url(r'^blog/', include(blog_urls))
 """
-import app.views
+from contrib.opencensus-ext-django.examples.app import views
 from django.conf.urls import url
 from django.contrib import admin
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-    url(r'^$', app.views.home),
-    url(r'^greetings$', app.views.greetings),
-    url(r'^_ah/health$', app.views.health_check),
-    url(r'^request$', app.views.get_request_header),
-    url(r'^mysql$', app.views.mysql_trace),
-    url(r'^postgresql$', app.views.postgresql_trace),
-    url(r'^trace_requests', app.views.trace_requests),
-    url(r'^sqlalchemy_mysql$', app.views.sqlalchemy_mysql_trace),
-    url(r'^sqlalchemy_postgresql$', app.views.sqlalchemy_postgresql_trace),
+    url(r'^$', views.home),
+    url(r'^greetings$', views.greetings),
+    url(r'^_ah/health$', views.health_check),
+    url(r'^request$', views.get_request_header),
+    url(r'^mysql$', views.mysql_trace),
+    url(r'^postgresql$', views.postgresql_trace),
+    url(r'^trace_requests', views.trace_requests),
+    url(r'^sqlalchemy_mysql$', views.sqlalchemy_mysql_trace),
+    url(r'^sqlalchemy_postgresql$', views.sqlalchemy_postgresql_trace),
 ]

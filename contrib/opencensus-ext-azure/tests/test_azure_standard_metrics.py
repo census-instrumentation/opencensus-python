@@ -17,8 +17,8 @@ import sys
 import unittest
 
 import mock
-
 import requests
+
 from opencensus.ext.azure.metrics_exporter import standard_metrics
 from opencensus.trace import execution_context
 

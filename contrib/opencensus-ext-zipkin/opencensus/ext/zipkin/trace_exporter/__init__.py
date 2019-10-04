@@ -18,6 +18,7 @@ import json
 import logging
 
 import requests
+
 from opencensus.common.transports import sync
 from opencensus.common.utils import check_str_length, timestamp_to_microseconds
 from opencensus.trace import base_exporter

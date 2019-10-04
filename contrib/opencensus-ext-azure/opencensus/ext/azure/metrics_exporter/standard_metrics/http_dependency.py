@@ -16,6 +16,7 @@ import threading
 import time
 
 import requests
+
 from opencensus.metrics.export.gauge import DerivedDoubleGauge
 from opencensus.trace import execution_context
 

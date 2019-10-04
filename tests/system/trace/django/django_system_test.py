@@ -19,6 +19,7 @@ import unittest
 import uuid
 
 import requests
+
 from retrying import retry
 
 PROJECT = os.environ.get('GCLOUD_PROJECT_PYTHON')

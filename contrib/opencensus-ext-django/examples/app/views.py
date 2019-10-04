@@ -14,13 +14,14 @@
 
 import os
 
+import mysql.connector
 import psycopg2
+import requests
 import sqlalchemy
 
-import mysql.connector
-import requests
 from django.http import HttpResponse
 from django.shortcuts import render
+
 from opencensus.trace import config_integration
 
 from .forms import HelloForm
