@@ -15,6 +15,7 @@
 import logging
 
 import psutil
+
 from opencensus.metrics.export.gauge import (
     DerivedDoubleGauge,
     DerivedLongGauge,

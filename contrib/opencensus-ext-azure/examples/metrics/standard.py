@@ -15,6 +15,7 @@
 import time
 
 import psutil
+
 from opencensus.ext.azure import metrics_exporter
 
 

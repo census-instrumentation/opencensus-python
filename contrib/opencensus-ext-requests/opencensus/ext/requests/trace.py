@@ -15,8 +15,8 @@
 import logging
 
 import requests
-
 import wrapt
+
 from opencensus.trace import (
     attributes_helper,
     exceptions_status,

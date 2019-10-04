@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import psutil
+
 from opencensus.metrics.export.gauge import DerivedLongGauge
 
 
