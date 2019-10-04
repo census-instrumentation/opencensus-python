@@ -13,7 +13,9 @@
 # limitations under the License.
 
 import unittest
+
 import mock
+
 from opencensus.trace.base_span import BaseSpan
 
 

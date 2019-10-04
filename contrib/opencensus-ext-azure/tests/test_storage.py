@@ -12,15 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import mock
 import os
 import shutil
 import unittest
 
-from opencensus.ext.azure.common.storage import _now
-from opencensus.ext.azure.common.storage import _seconds
-from opencensus.ext.azure.common.storage import LocalFileBlob
-from opencensus.ext.azure.common.storage import LocalFileStorage
+import mock
+
+from opencensus.ext.azure.common.storage import (
+    LocalFileBlob,
+    LocalFileStorage,
+    _now,
+    _seconds,
+)
 
 TEST_FOLDER = os.path.abspath('.test')
 

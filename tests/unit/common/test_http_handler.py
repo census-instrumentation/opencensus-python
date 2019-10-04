@@ -12,10 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import unittest
-import socket
-import mock
 import json
+import socket
+import unittest
+
+import mock
 
 from opencensus.common.http_handler import get_request
 

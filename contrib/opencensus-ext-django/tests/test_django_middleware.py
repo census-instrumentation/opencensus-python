@@ -12,15 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import mock
 import unittest
+
+import mock
 
 from django.test import RequestFactory
 from django.test.utils import teardown_test_environment
-
-from opencensus.trace import execution_context
-from opencensus.trace import print_exporter
-from opencensus.trace import samplers
+from opencensus.trace import execution_context, print_exporter, samplers
 from opencensus.trace import span as span_module
 from opencensus.trace import utils
 from opencensus.trace.blank_span import BlankSpan

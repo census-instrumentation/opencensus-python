@@ -2,8 +2,7 @@ from datetime import datetime
 
 from grpc.framework.foundation import future
 from grpc.framework.interfaces.face import face
-from opencensus.trace import execution_context
-from opencensus.trace import time_event
+from opencensus.trace import execution_context, time_event
 
 
 def add_message_event(proto_message, span, message_event_type, message_id=1):

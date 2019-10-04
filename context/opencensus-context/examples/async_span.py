@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import asyncio
+
 from opencensus.common.runtime_context import RuntimeContext
 
 RuntimeContext.register_slot('current_span', None)

@@ -14,11 +14,10 @@
 
 import logging
 import threading
-from multiprocessing import pool
 from concurrent import futures
+from multiprocessing import pool
 
-from opencensus.trace import execution_context
-from opencensus.trace import tracer
+from opencensus.trace import execution_context, tracer
 from opencensus.trace.propagation import binary_format
 
 log = logging.getLogger(__name__)

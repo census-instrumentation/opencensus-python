@@ -17,25 +17,20 @@
 
 import unittest
 
-from google.rpc import code_pb2
-import flask
-from werkzeug.exceptions import NotFound
 import mock
+from google.rpc import code_pb2
 
+import flask
 from opencensus.ext.flask import flask_middleware
-from opencensus.trace import execution_context
-from opencensus.trace import print_exporter
-from opencensus.trace import samplers
+from opencensus.trace import execution_context, print_exporter, samplers
 from opencensus.trace import span as span_module
-from opencensus.trace import span_data
-from opencensus.trace import stack_trace
-from opencensus.trace import status
+from opencensus.trace import span_data, stack_trace, status
 from opencensus.trace.blank_span import BlankSpan
 from opencensus.trace.propagation import trace_context_http_header_format
 from opencensus.trace.span_context import SpanContext
 from opencensus.trace.trace_options import TraceOptions
-from opencensus.trace.tracers import base
-from opencensus.trace.tracers import noop_tracer
+from opencensus.trace.tracers import base, noop_tracer
+from werkzeug.exceptions import NotFound
 
 
 class FlaskTestException(Exception):

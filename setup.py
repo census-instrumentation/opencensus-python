@@ -13,8 +13,7 @@
 # limitations under the License.
 """A setup module for OpenCensus Instrumentation Library"""
 
-from setuptools import find_packages
-from setuptools import setup
+from setuptools import find_packages, setup
 
 exec(open('opencensus/common/version/__init__.py').read())
 

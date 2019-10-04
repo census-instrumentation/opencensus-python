@@ -17,8 +17,7 @@
 import unittest
 
 from opencensus.metrics import label_key
-from opencensus.metrics.export import metric_descriptor
-from opencensus.metrics.export import value
+from opencensus.metrics.export import metric_descriptor, value
 
 NAME = 'metric'
 DESCRIPTION = 'Metric description'

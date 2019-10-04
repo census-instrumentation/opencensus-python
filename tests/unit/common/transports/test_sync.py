@@ -13,7 +13,9 @@
 # limitations under the License.
 
 import unittest
+
 import mock
+
 from opencensus.common.transports import sync
 
 

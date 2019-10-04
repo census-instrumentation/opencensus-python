@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import requests
 import threading
 import time
 
+import requests
 from opencensus.metrics.export.gauge import DerivedDoubleGauge
 from opencensus.trace import execution_context
 

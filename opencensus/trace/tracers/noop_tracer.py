@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from opencensus.trace.tracers import base
 from opencensus.trace import blank_span as trace_span
-from opencensus.trace.span_context import SpanContext
 from opencensus.trace import trace_options
+from opencensus.trace.span_context import SpanContext
+from opencensus.trace.tracers import base
 
 
 class NoopTracer(base.Tracer):

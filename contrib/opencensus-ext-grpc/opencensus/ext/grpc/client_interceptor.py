@@ -12,16 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import six
+
 import collections
 import logging
 
 import grpc
-import six
-
 from opencensus.ext import grpc as oc_grpc
 from opencensus.ext.grpc import utils as grpc_utils
-from opencensus.trace import attributes_helper
-from opencensus.trace import execution_context
+from opencensus.trace import attributes_helper, execution_context
 from opencensus.trace import span as span_module
 from opencensus.trace import time_event
 from opencensus.trace.propagation import binary_format

@@ -12,19 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from prometheus_client import start_http_server
-from prometheus_client.core import CollectorRegistry
-from prometheus_client.core import CounterMetricFamily
-from prometheus_client.core import GaugeMetricFamily
-from prometheus_client.core import HistogramMetricFamily
-from prometheus_client.core import REGISTRY
-from prometheus_client.core import UnknownMetricFamily
+import re
 
 from opencensus.common.transports import sync
 from opencensus.stats import aggregation_data as aggregation_data_module
 from opencensus.stats import base_exporter
-
-import re
+from prometheus_client import start_http_server
+from prometheus_client.core import (
+    REGISTRY,
+    CollectorRegistry,
+    CounterMetricFamily,
+    GaugeMetricFamily,
+    HistogramMetricFamily,
+    UnknownMetricFamily,
+)
 
 
 class Options(object):

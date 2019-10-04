@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from datetime import datetime
 import unittest
+from datetime import datetime
 
 from opencensus.common import utils as common_utils
 from opencensus.ext.ocagent import utils

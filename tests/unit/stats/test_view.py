@@ -13,12 +13,11 @@
 # limitations under the License.
 
 import unittest
+
 import mock
 
 from opencensus.metrics.export import metric_descriptor
-from opencensus.stats import aggregation
-from opencensus.stats import measure
-from opencensus.stats import view
+from opencensus.stats import aggregation, measure
 from opencensus.stats import view as view_module
 
 

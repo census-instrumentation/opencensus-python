@@ -17,7 +17,6 @@ import logging
 from opencensus.common import utils
 from opencensus.tags import TagContext
 
-
 logger = logging.getLogger(__name__)
 
 

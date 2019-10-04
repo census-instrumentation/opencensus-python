@@ -17,8 +17,8 @@ import random
 import sys
 import time
 
-from google.cloud import monitoring_v3
 import mock
+from google.cloud import monitoring_v3
 
 from opencensus.ext.stackdriver import stats_exporter as stackdriver
 from opencensus.metrics import transport

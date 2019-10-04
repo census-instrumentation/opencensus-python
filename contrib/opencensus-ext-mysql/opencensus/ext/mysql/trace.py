@@ -14,8 +14,8 @@
 
 import inspect
 import logging
-import mysql.connector
 
+import mysql.connector
 from opencensus.ext.dbapi import trace
 
 MODULE_NAME = 'mysql'

@@ -12,30 +12,34 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from concurrent import futures
-from datetime import datetime
-import grpc
-import mock
 import os
 import socket
 import threading
 import time
 import unittest
+from concurrent import futures
+from datetime import datetime
 
+import mock
 from google.protobuf import timestamp_pb2
-from opencensus.common import resource
-from opencensus.common import utils
+
+import grpc
+from opencensus.common import resource, utils
 from opencensus.common.version import __version__ as opencensus_version
 from opencensus.ext.ocagent import stats_exporter as ocagent
 from opencensus.metrics import label_value
-from opencensus.metrics.export import metric
-from opencensus.metrics.export import metric_descriptor
-from opencensus.metrics.export import point
-from opencensus.metrics.export import time_series
-from opencensus.metrics.export import value
+from opencensus.metrics.export import (
+    metric,
+    metric_descriptor,
+    point,
+    time_series,
+    value,
+)
 from opencensus.proto.agent.common.v1 import common_pb2
-from opencensus.proto.agent.metrics.v1 import metrics_service_pb2
-from opencensus.proto.agent.metrics.v1 import metrics_service_pb2_grpc
+from opencensus.proto.agent.metrics.v1 import (
+    metrics_service_pb2,
+    metrics_service_pb2_grpc,
+)
 from opencensus.proto.metrics.v1 import metrics_pb2
 from opencensus.proto.resource.v1 import resource_pb2
 from opencensus.stats import aggregation as aggregation_module

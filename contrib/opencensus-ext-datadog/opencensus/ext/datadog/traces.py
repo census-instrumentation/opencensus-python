@@ -16,12 +16,10 @@ from collections import defaultdict
 from datetime import datetime
 
 import bitarray
-
 from opencensus.common.transports import sync
 from opencensus.common.utils import ISO_DATETIME_REGEX
 from opencensus.ext.datadog.transport import DDTransport
-from opencensus.trace import base_exporter
-from opencensus.trace import span_data
+from opencensus.trace import base_exporter, span_data
 
 
 class Options(object):

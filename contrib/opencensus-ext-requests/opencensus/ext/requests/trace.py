@@ -13,18 +13,22 @@
 # limitations under the License.
 
 import logging
+
 import requests
 import wrapt
+from opencensus.trace import (
+    attributes_helper,
+    exceptions_status,
+    execution_context,
+)
+from opencensus.trace import span as span_module
+from opencensus.trace import utils
+
 try:
     from urllib.parse import urlparse
 except ImportError:
     from urlparse import urlparse
 
-from opencensus.trace import attributes_helper
-from opencensus.trace import exceptions_status
-from opencensus.trace import execution_context
-from opencensus.trace import span as span_module
-from opencensus.trace import utils
 
 log = logging.getLogger(__name__)
 

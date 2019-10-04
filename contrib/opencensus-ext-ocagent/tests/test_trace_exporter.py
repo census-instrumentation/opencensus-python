@@ -13,18 +13,18 @@
 # limitations under the License.
 
 import codecs
-import grpc
-import mock
 import os
 import socket
 import unittest
 
+import mock
+
+import grpc
 from opencensus.common.version import __version__
 from opencensus.ext.ocagent.trace_exporter import TraceExporter
 from opencensus.proto.trace.v1 import trace_config_pb2
 from opencensus.trace import span_context as span_context_module
 from opencensus.trace import span_data as span_data_module
-
 
 SERVICE_NAME = 'my-service'
 
