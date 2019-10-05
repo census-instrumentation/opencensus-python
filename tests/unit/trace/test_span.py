@@ -204,7 +204,7 @@ class TestSpan(unittest.TestCase):
     def test_set_status_fields(self):
         span_name = 'test_span_name'
         span = self._make_one(span_name)
-        
+
         code = 1
         message = 'ok'
         details = {'object': 'ok'}
@@ -217,7 +217,7 @@ class TestSpan(unittest.TestCase):
     def test_set_status_fields_without_details(self):
         span_name = 'test_span_name'
         span = self._make_one(span_name)
-        
+
         code = 1
         message = 'ok'
         span.set_status_fields(code, message)

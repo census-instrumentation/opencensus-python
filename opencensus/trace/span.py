@@ -364,10 +364,10 @@ class Span(base_span.BaseSpan):
 
     def set_status_fields(self, code, message=None, details=None):
         """Set span status.
- 
+
         :type code: int
         :param code: An enum value of :class: `~google.rpc.Code`.
-        
+
         :type message: str
         :param message: A developer-facing error message, should be in English.
 
