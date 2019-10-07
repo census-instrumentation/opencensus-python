@@ -71,7 +71,7 @@ You can enrich the logs with trace IDs and span IDs by using the `logging integr
     logger.warning('Before the span')
     with tracer.span(name='test'):
         logger.warning('In the span')
-    logger.warning('After the span')s
+    logger.warning('After the span')
 
 Metrics
 ~~~~~~~
