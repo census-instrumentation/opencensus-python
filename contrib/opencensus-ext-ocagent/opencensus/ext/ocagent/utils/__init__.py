@@ -3,6 +3,7 @@ import os
 import socket
 
 from google.protobuf.timestamp_pb2 import Timestamp
+
 from opencensus.common.version import __version__ as opencensus_version
 from opencensus.proto.agent.common.v1 import common_pb2
 

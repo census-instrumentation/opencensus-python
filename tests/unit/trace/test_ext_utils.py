@@ -15,8 +15,8 @@
 import unittest
 
 import mock
-
 from google.rpc import code_pb2
+
 from opencensus.trace import utils
 
 

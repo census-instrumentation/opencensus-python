@@ -15,10 +15,8 @@
 import copy
 import logging
 
-from opencensus.metrics.export import point
-from opencensus.metrics.export import value
+from opencensus.metrics.export import point, value
 from opencensus.stats import bucket_boundaries
-
 
 logger = logging.getLogger(__name__)
 

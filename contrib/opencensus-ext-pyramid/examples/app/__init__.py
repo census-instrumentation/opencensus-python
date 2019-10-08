@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import requests
-
 from pyramid.config import Configurator
 from pyramid.response import Response
 from pyramid.tweens import MAIN

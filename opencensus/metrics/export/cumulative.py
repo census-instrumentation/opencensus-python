@@ -14,8 +14,7 @@
 
 import six
 
-from opencensus.metrics.export import metric_descriptor
-from opencensus.metrics.export import gauge
+from opencensus.metrics.export import gauge, metric_descriptor
 
 
 class CumulativePointLong(gauge.GaugePointLong):

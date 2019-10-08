@@ -19,9 +19,7 @@ except ImportError:
 
 import unittest
 
-from opencensus.metrics.export import metric
-from opencensus.metrics.export import metric_descriptor
-from opencensus.metrics.export import time_series
+from opencensus.metrics.export import metric, metric_descriptor, time_series
 
 
 class TestMetric(unittest.TestCase):

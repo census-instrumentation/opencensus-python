@@ -14,9 +14,7 @@
 
 import unittest
 
-from opencensus.common.schedule import PeriodicTask
-from opencensus.common.schedule import Queue
-from opencensus.common.schedule import QueueEvent
+from opencensus.common.schedule import PeriodicTask, Queue, QueueEvent
 
 TIMEOUT = .1
 

@@ -14,10 +14,11 @@
 
 """SpanContext encapsulates the current context within the request's trace."""
 
-import logging
-import re
 import six
+
+import logging
 import random
+import re
 
 from opencensus.trace import trace_options as trace_options_module
 

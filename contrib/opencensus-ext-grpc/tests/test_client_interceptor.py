@@ -13,14 +13,14 @@
 # limitations under the License.
 
 import collections
-import mock
 import threading
 import unittest
 
+import grpc
+import mock
 from google.api_core import bidi
 from google.protobuf import proto_builder
 from grpc.framework.foundation import logging_pool
-import grpc
 
 from opencensus.ext.grpc import client_interceptor
 from opencensus.trace import execution_context

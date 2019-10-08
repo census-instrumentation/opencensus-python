@@ -12,15 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import six
+
+import threading
 from collections import OrderedDict
 from datetime import datetime
-import six
-import threading
 
 from opencensus.common import utils
-from opencensus.metrics.export import metric
-from opencensus.metrics.export import metric_descriptor
-from opencensus.metrics.export import metric_producer
+from opencensus.metrics.export import (
+    metric,
+    metric_descriptor,
+    metric_producer,
+)
 from opencensus.metrics.export import point as point_module
 from opencensus.metrics.export import time_series
 from opencensus.metrics.export import value as value_module

@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from opencensus.stats.measurement_map import MeasurementMap
-from opencensus.stats.measure_to_view_map import MeasureToViewMap
 from opencensus.stats import execution_context
+from opencensus.stats.measure_to_view_map import MeasureToViewMap
+from opencensus.stats.measurement_map import MeasurementMap
 
 
 class StatsRecorder(object):

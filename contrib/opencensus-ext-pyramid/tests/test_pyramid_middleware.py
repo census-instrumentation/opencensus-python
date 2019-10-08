@@ -25,9 +25,7 @@ from pyramid.testing import DummyRequest
 from opencensus.common.transports import sync
 from opencensus.ext.pyramid import pyramid_middleware
 from opencensus.ext.zipkin import trace_exporter as zipkin_exporter
-from opencensus.trace import execution_context
-from opencensus.trace import print_exporter
-from opencensus.trace import samplers
+from opencensus.trace import execution_context, print_exporter, samplers
 from opencensus.trace import span as span_module
 from opencensus.trace.blank_span import BlankSpan
 from opencensus.trace.propagation import trace_context_http_header_format

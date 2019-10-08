@@ -15,11 +15,10 @@
 import logging
 import threading
 
-from opencensus.trace import execution_context
-from opencensus.trace.span_context import SpanContext
-from opencensus.trace import print_exporter
+from opencensus.trace import execution_context, print_exporter
 from opencensus.trace import span as trace_span
 from opencensus.trace import span_data as span_data_module
+from opencensus.trace.span_context import SpanContext
 from opencensus.trace.tracers import base
 
 

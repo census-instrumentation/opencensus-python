@@ -15,8 +15,8 @@
 from opencensus.common.runtime_context import RuntimeContext
 from opencensus.tags.tag import Tag
 from opencensus.tags.tag_key import TagKey
-from opencensus.tags.tag_value import TagValue
 from opencensus.tags.tag_map import TagMap
+from opencensus.tags.tag_value import TagValue
 
 __all__ = ['Tag', 'TagContext', 'TagKey', 'TagValue', 'TagMap']
 

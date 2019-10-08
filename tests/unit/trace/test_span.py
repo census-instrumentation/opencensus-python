@@ -12,21 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from collections import OrderedDict
 import datetime
 import unittest
+from collections import OrderedDict
 
 import mock
-
 from google.rpc import code_pb2
 
 from opencensus.common import utils
-from opencensus.trace.span import BoundedDict
-from opencensus.trace.span import BoundedList
+from opencensus.trace.span import BoundedDict, BoundedList
 from opencensus.trace.stack_trace import StackTrace
 from opencensus.trace.status import Status
-from opencensus.trace.time_event import Annotation
-from opencensus.trace.time_event import MessageEvent
+from opencensus.trace.time_event import Annotation, MessageEvent
 
 
 class TestSpan(unittest.TestCase):

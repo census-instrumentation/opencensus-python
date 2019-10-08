@@ -12,12 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
 from collections import namedtuple
 from copy import copy
-import logging
 
 from opencensus.trace import execution_context
-
 
 _meta_logger = logging.getLogger(__name__)
 

@@ -12,23 +12,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import mock
 import unittest
 from datetime import datetime
+
+import mock
 
 from opencensus.common import utils
 from opencensus.ext.azure import metrics_exporter
 from opencensus.ext.azure.common import Options
-from opencensus.ext.azure.common.protocol import DataPoint
-from opencensus.ext.azure.common.protocol import Envelope
+from opencensus.ext.azure.common.protocol import DataPoint, Envelope
 from opencensus.ext.azure.metrics_exporter import standard_metrics
-from opencensus.metrics import label_key
-from opencensus.metrics import label_value
-from opencensus.metrics.export import metric
-from opencensus.metrics.export import metric_descriptor
-from opencensus.metrics.export import point
-from opencensus.metrics.export import time_series
-from opencensus.metrics.export import value
+from opencensus.metrics import label_key, label_value
+from opencensus.metrics.export import (
+    metric,
+    metric_descriptor,
+    point,
+    time_series,
+    value,
+)
 from opencensus.metrics.export.metric_descriptor import MetricDescriptorType
 
 

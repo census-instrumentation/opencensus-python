@@ -14,8 +14,9 @@
 
 from __future__ import absolute_import
 
-import nox
 import os
+
+import nox
 
 
 def _install_dev_packages(session):

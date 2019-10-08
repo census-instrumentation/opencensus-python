@@ -18,15 +18,15 @@ import os
 import platform
 import sys
 
+from opencensus.common.utils import timestamp_to_microseconds, to_iso_str
+from opencensus.common.version import __version__ as opencensus_version
+from opencensus.ext.azure.common.version import __version__ as ext_version
+
 try:
     from urllib.parse import urlparse
 except ImportError:
     from urlparse import urlparse
 
-from opencensus.common.version import __version__ as opencensus_version
-from opencensus.common.utils import timestamp_to_microseconds
-from opencensus.common.utils import to_iso_str
-from opencensus.ext.azure.common.version import __version__ as ext_version
 
 azure_monitor_context = {
     'ai.cloud.role': os.path.basename(sys.argv[0]) or 'Python Application',

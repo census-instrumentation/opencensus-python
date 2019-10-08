@@ -13,10 +13,11 @@
 # limitations under the License.
 
 from opencensus.common import resource
-from opencensus.common.monitored_resource import aws_identity_doc_utils
-from opencensus.common.monitored_resource import gcp_metadata_config
-from opencensus.common.monitored_resource import k8s_utils
-
+from opencensus.common.monitored_resource import (
+    aws_identity_doc_utils,
+    gcp_metadata_config,
+    k8s_utils,
+)
 
 # Supported environments (resource types)
 _GCE_INSTANCE = "gce_instance"
