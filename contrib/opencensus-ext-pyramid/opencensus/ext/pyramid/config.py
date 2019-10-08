@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from opencensus.trace import print_exporter
-from opencensus.trace import samplers
+from opencensus.trace import print_exporter, samplers
 from opencensus.trace.propagation import trace_context_http_header_format
 
 DEFAULT_PYRAMID_TRACER_CONFIG = {

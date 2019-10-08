@@ -13,10 +13,12 @@
 # limitations under the License.
 
 import unittest
+
 import mock
+
+from opencensus.stats import execution_context
 from opencensus.stats import stats_recorder as stats_recorder_module
 from opencensus.stats.measurement_map import MeasurementMap
-from opencensus.stats import execution_context
 
 
 class TestStatsRecorder(unittest.TestCase):

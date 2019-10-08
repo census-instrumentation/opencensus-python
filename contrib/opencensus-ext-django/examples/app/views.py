@@ -12,19 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from django.http import HttpResponse
-from django.shortcuts import render
-
-from .forms import HelloForm
-
-from opencensus.trace import config_integration
+import os
 
 import mysql.connector
 import psycopg2
-import sqlalchemy
-
-import os
 import requests
+import sqlalchemy
+from django.http import HttpResponse
+from django.shortcuts import render
+
+from opencensus.trace import config_integration
+
+from .forms import HelloForm
 
 DB_HOST = 'localhost'
 

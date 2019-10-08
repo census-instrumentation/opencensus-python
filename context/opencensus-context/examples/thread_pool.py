@@ -12,9 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from multiprocessing.dummy import Pool as ThreadPool
-import time
 import threading
+import time
+from multiprocessing.dummy import Pool as ThreadPool
+
 from opencensus.common.runtime_context import RuntimeContext
 
 RuntimeContext.register_slot('operation_id', '<empty>')

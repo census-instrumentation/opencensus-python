@@ -18,12 +18,10 @@ from google.rpc import code_pb2
 
 from opencensus.ext import grpc as oc_grpc
 from opencensus.ext.grpc import utils as grpc_utils
-from opencensus.trace import attributes_helper
-from opencensus.trace import execution_context
+from opencensus.trace import attributes_helper, execution_context
 from opencensus.trace import span as span_module
 from opencensus.trace import stack_trace as stack_trace
-from opencensus.trace import status
-from opencensus.trace import time_event
+from opencensus.trace import status, time_event
 from opencensus.trace import tracer as tracer_module
 from opencensus.trace.propagation import binary_format
 

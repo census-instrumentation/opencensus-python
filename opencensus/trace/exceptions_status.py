@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from google.rpc import code_pb2
+
 from opencensus.trace.status import Status
 
 CANCELLED = Status(code_pb2.CANCELLED)

@@ -15,13 +15,14 @@
 import logging
 
 from opencensus.common.schedule import QueueExitEvent
-from opencensus.ext.azure.common import Options
-from opencensus.ext.azure.common import utils
+from opencensus.ext.azure.common import Options, utils
 from opencensus.ext.azure.common.exporter import BaseExporter
-from opencensus.ext.azure.common.protocol import Data
-from opencensus.ext.azure.common.protocol import Envelope
-from opencensus.ext.azure.common.protocol import RemoteDependency
-from opencensus.ext.azure.common.protocol import Request
+from opencensus.ext.azure.common.protocol import (
+    Data,
+    Envelope,
+    RemoteDependency,
+    Request,
+)
 from opencensus.ext.azure.common.storage import LocalFileStorage
 from opencensus.ext.azure.common.transport import TransportMixin
 from opencensus.trace.span import SpanKind

@@ -13,12 +13,11 @@
 # limitations under the License.
 
 import unittest
+
 import mock
 
 from opencensus.metrics.export import metric_descriptor
-from opencensus.stats import aggregation
-from opencensus.stats import measure
-from opencensus.stats import view
+from opencensus.stats import aggregation, measure
 from opencensus.stats import view as view_module
 
 
@@ -48,8 +47,8 @@ class TestView(unittest.TestCase):
         mock_agg = mock.Mock(spec=aggregation.SumAggregation)
         mock_agg.get_metric_type.return_value = \
             metric_descriptor.MetricDescriptorType.CUMULATIVE_DOUBLE
-        test_view = view.View("name", "description", ["tk1", "tk2"],
-                              mock_measure, mock_agg)
+        test_view = view_module.View("name", "description", ["tk1", "tk2"],
+                                     mock_measure, mock_agg)
 
         self.assertIsNone(test_view._metric_descriptor)
         md = test_view.get_metric_descriptor()

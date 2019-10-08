@@ -12,15 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from datetime import datetime
-import mock
 import unittest
+from datetime import datetime
+
+import mock
 
 from opencensus.common import utils
 from opencensus.stats import aggregation as aggregation_module
 from opencensus.stats import measure as measure_module
-from opencensus.stats import view_data as view_data_module
 from opencensus.stats import view as view_module
+from opencensus.stats import view_data as view_data_module
 
 
 class TestViewData(unittest.TestCase):

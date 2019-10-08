@@ -13,9 +13,10 @@
 # limitations under the License.
 
 import unittest
+from datetime import datetime
 
 import mock
-from datetime import datetime
+
 from opencensus.ext.zipkin import trace_exporter
 from opencensus.trace import span_context
 from opencensus.trace import span_data as span_data_module

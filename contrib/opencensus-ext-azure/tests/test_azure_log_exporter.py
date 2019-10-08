@@ -13,10 +13,11 @@
 # limitations under the License.
 
 import logging
-import mock
 import os
 import shutil
 import unittest
+
+import mock
 
 from opencensus.ext.azure import log_exporter
 

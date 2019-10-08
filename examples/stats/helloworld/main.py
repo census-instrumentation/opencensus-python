@@ -16,6 +16,7 @@
 
 import random
 import time
+from pprint import pprint
 
 from opencensus.stats import aggregation as aggregation_module
 from opencensus.stats import measure as measure_module
@@ -24,7 +25,6 @@ from opencensus.stats import view as view_module
 from opencensus.tags import tag_key as tag_key_module
 from opencensus.tags import tag_map as tag_map_module
 from opencensus.tags import tag_value as tag_value_module
-from pprint import pprint
 
 MiB = 1 << 20
 FRONTEND_KEY = tag_key_module.TagKey("my.org/keys/frontend")

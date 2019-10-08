@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import unittest
+
 from opencensus.tags import Tag
 
 

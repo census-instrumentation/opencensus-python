@@ -15,6 +15,7 @@
 import unittest
 
 from google.rpc import code_pb2
+
 from opencensus.trace import exceptions_status
 
 

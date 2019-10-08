@@ -14,9 +14,7 @@
 
 import time
 
-from opencensus.trace import execution_context
-from opencensus.trace import print_exporter
-from opencensus.trace import samplers
+from opencensus.trace import execution_context, print_exporter, samplers
 from opencensus.trace.tracer import Tracer
 
 

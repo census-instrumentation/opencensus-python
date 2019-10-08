@@ -16,11 +16,12 @@ import unittest
 
 import mock
 import requests
-from opencensus.trace.tracers import noop_tracer
 
 from opencensus.ext.requests import trace
-from opencensus.trace import span as span_module, execution_context
+from opencensus.trace import execution_context
+from opencensus.trace import span as span_module
 from opencensus.trace import status as status_module
+from opencensus.trace.tracers import noop_tracer
 
 
 class Test_requests_trace(unittest.TestCase):

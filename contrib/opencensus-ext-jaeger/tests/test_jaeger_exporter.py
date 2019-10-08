@@ -18,8 +18,14 @@ import mock
 
 from opencensus.ext.jaeger import trace_exporter
 from opencensus.ext.jaeger.trace_exporter.gen.jaeger import jaeger
-from opencensus.trace import (attributes, link, span_context, span_data,
-                              status, time_event)
+from opencensus.trace import (
+    attributes,
+    link,
+    span_context,
+    span_data,
+    status,
+    time_event,
+)
 
 
 class TestJaegerExporter(unittest.TestCase):
