@@ -18,12 +18,10 @@ import mock
 
 from opencensus.stats import measure_to_view_map as measure_to_view_map_module
 from opencensus.stats.aggregation import CountAggregation
-from opencensus.stats.measure import BaseMeasure
-from opencensus.stats.measure import MeasureInt
+from opencensus.stats.measure import BaseMeasure, MeasureInt
 from opencensus.stats.view import View
 from opencensus.stats.view_data import ViewData
 from opencensus.tags import tag_key as tag_key_module
-
 
 METHOD_KEY = tag_key_module.TagKey("method")
 REQUEST_COUNT_MEASURE = MeasureInt(

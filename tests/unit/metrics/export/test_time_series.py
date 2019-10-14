@@ -17,9 +17,7 @@
 import unittest
 
 from opencensus.metrics import label_value
-from opencensus.metrics.export import point
-from opencensus.metrics.export import time_series
-from opencensus.metrics.export import value
+from opencensus.metrics.export import point, time_series, value
 
 START_TIMESTAMP = '2018-10-09T22:33:44.012345Z'
 LABEL_VALUE1 = label_value.LabelValue('value one')

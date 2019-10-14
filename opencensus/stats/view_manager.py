@@ -13,8 +13,8 @@
 # limitations under the License.
 
 from opencensus.common import utils
-from opencensus.stats.measure_to_view_map import MeasureToViewMap
 from opencensus.stats import execution_context
+from opencensus.stats.measure_to_view_map import MeasureToViewMap
 
 
 class ViewManager(object):

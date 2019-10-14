@@ -13,13 +13,14 @@
 # limitations under the License.
 
 import datetime
-import mock
 import unittest
+
+import mock
 
 from opencensus.common import utils
 from opencensus.trace.link import Link
-from opencensus.trace.status import Status
 from opencensus.trace.span import format_span_json
+from opencensus.trace.status import Status
 from opencensus.trace.time_event import MessageEvent
 
 

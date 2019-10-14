@@ -14,9 +14,7 @@
 
 import logging
 
-from sqlalchemy import engine
-from sqlalchemy import event
-
+from sqlalchemy import engine, event
 
 from opencensus.trace import execution_context
 from opencensus.trace import span as span_module

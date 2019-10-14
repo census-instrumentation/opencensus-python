@@ -17,6 +17,7 @@ import threading
 import time
 
 from opencensus.metrics.export.gauge import DerivedDoubleGauge
+
 if sys.version_info < (3,):
     from BaseHTTPServer import HTTPServer
 else:

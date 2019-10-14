@@ -16,12 +16,9 @@ import datetime
 import unittest
 
 from opencensus.common import utils
-from opencensus.trace import link
-from opencensus.trace import span_context
+from opencensus.trace import link, span_context
 from opencensus.trace import span_data as span_data_module
-from opencensus.trace import stack_trace
-from opencensus.trace import status
-from opencensus.trace import time_event
+from opencensus.trace import stack_trace, status, time_event
 
 
 class TestSpanData(unittest.TestCase):

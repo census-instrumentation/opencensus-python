@@ -14,13 +14,16 @@
 """Export opencensus spans to ocagent"""
 
 from threading import Lock
+
 import grpc
 
 from opencensus.common.transports import sync
 from opencensus.ext.ocagent import utils as ocagent_utils
 from opencensus.ext.ocagent.trace_exporter import utils
-from opencensus.proto.agent.trace.v1 import trace_service_pb2
-from opencensus.proto.agent.trace.v1 import trace_service_pb2_grpc
+from opencensus.proto.agent.trace.v1 import (
+    trace_service_pb2,
+    trace_service_pb2_grpc,
+)
 from opencensus.trace import base_exporter
 
 # Default agent endpoint

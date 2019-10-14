@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from datetime import datetime
-import mock
 import unittest
+from datetime import datetime
 
+import mock
 from prometheus_client.core import Sample
 
 from opencensus.ext.prometheus import stats_exporter as prometheus

@@ -16,9 +16,7 @@ Utilities to convert stats data models to metrics data models.
 """
 
 from opencensus.metrics import label_value
-from opencensus.metrics.export import metric
-from opencensus.metrics.export import metric_descriptor
-from opencensus.metrics.export import time_series
+from opencensus.metrics.export import metric, metric_descriptor, time_series
 
 
 def is_gauge(md_type):

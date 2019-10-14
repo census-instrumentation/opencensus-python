@@ -17,8 +17,7 @@
 import logging
 
 from opencensus.common.transports import sync
-from opencensus.trace import base_exporter
-from opencensus.trace import span_data
+from opencensus.trace import base_exporter, span_data
 
 
 class LoggingExporter(base_exporter.Exporter):

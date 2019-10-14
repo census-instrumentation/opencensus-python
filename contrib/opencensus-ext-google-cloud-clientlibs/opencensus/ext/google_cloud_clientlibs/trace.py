@@ -15,15 +15,11 @@
 import logging
 
 import grpc
-
-from google.cloud import _helpers
 from google.api_core import grpc_helpers
+from google.cloud import _helpers
 
-from opencensus.ext.grpc.client_interceptor import (
-    OpenCensusClientInterceptor)
-
-from opencensus.ext.requests.trace import (
-    trace_integration as trace_requests)
+from opencensus.ext.grpc.client_interceptor import OpenCensusClientInterceptor
+from opencensus.ext.requests.trace import trace_integration as trace_requests
 
 log = logging.getLogger(__name__)
 

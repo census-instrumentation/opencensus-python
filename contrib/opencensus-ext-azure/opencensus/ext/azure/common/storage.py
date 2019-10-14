@@ -1,7 +1,7 @@
 import datetime
 import json
-import random
 import os
+import random
 
 from opencensus.common.schedule import PeriodicTask
 

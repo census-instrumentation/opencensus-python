@@ -12,13 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import mock
 import unittest
 
+import mock
+
 from opencensus.stats import measurement_map as measurement_map_module
-from opencensus.tags import Tag
-from opencensus.tags import TagContext
-from opencensus.tags import TagMap
+from opencensus.tags import Tag, TagContext, TagMap
 
 logger_patch = mock.patch('opencensus.stats.measurement_map.logger')
 

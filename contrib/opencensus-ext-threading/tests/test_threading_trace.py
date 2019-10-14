@@ -12,11 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import unittest
 import threading
-import mock
-from multiprocessing.pool import Pool
+import unittest
 from concurrent.futures import ThreadPoolExecutor
+from multiprocessing.pool import Pool
+
+import mock
 
 from opencensus.ext.threading import trace
 from opencensus.trace import execution_context, tracer
