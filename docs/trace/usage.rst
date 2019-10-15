@@ -376,7 +376,7 @@ Tests
     source .tox/py34/bin/activate
 
     # Run the unit test
-    pip install nox-automation
+    pip install nox
 
     # See what's available in the nox suite
     nox -l
