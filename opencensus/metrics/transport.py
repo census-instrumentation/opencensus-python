@@ -19,7 +19,6 @@ from opencensus.common import utils
 from opencensus.common.schedule import PeriodicTask
 from opencensus.trace import execution_context
 
-
 logger = logging.getLogger(__name__)
 
 DEFAULT_INTERVAL = 60

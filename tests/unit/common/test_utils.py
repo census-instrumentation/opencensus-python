@@ -26,9 +26,10 @@ except ImportError:
     from opencensus.common.backports import WeakMethod
 
 import gc
-import mock
 import unittest
 import weakref
+
+import mock
 
 from opencensus.common import utils
 

@@ -13,11 +13,10 @@
 # limitations under the License.
 
 
-from copy import copy
 import logging
 import os
 import re
-
+from copy import copy
 
 logger = logging.getLogger(__name__)
 

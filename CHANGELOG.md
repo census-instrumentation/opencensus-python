@@ -1,10 +1,30 @@
 # Changelog
 
 ## Unreleased
-- Updated `django`, `flask`, `httplib`, `requests` and `pyramid` modules
-  ([#755](https://github.com/census-instrumentation/opencensus-python/pull/755))
+
+## 0.7.5
+Released 2019-10-01
+
+- Updated `flask` module
+  ([#781](https://github.com/census-instrumentation/opencensus-python/pull/781))
+
+## 0.7.4
+Released 2019-09-30
+
+- Updated `azure` module
+  ([#773](https://github.com/census-instrumentation/opencensus-python/pull/773),
+   [#767](https://github.com/census-instrumentation/opencensus-python/pull/767))
+
+- Updated `django` module
+  ([#775](https://github.com/census-instrumentation/opencensus-python/pull/775))
+
+## 0.7.3
+Released 2019-08-26
+
 - Added `http code` to `grpc code` status code mapping on `utils`
   ([#746](https://github.com/census-instrumentation/opencensus-python/pull/746))
+- Updated `django`, `flask`, `httplib`, `requests` and `pyramid` modules
+  ([#755](https://github.com/census-instrumentation/opencensus-python/pull/755))
 - Updated `requests` module
   ([#771](https://github.com/census-instrumentation/opencensus-python/pull/771))
 

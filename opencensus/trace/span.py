@@ -19,11 +19,10 @@ except ImportError:
     from collections import MutableMapping
     from collections import Sequence
 
-from collections import OrderedDict
-from collections import deque
+import threading
+from collections import OrderedDict, deque
 from datetime import datetime
 from itertools import chain
-import threading
 
 from opencensus.common import utils
 from opencensus.trace import attributes as attributes_module
@@ -34,7 +33,6 @@ from opencensus.trace import status as status_module
 from opencensus.trace import time_event
 from opencensus.trace.span_context import generate_span_id
 from opencensus.trace.tracers import base
-
 
 # https://github.com/census-instrumentation/opencensus-specs/blob/master/trace/TraceConfig.md  # noqa
 MAX_NUM_ATTRIBUTES = 32

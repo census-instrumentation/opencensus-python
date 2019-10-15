@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from setuptools import find_packages
-from setuptools import setup
+from setuptools import find_packages, setup
+
 from opencensus.ext.azure.common.version import __version__
 
 setup(
@@ -22,9 +22,9 @@ setup(
     author='OpenCensus Authors',
     author_email='census-developers@googlegroups.com',
     classifiers=[
-        'Intended Audience :: Developers',
-        'Development Status :: 3 - Alpha',
-        'Intended Audience :: Developers',
+        'Intended Audience :: End Users/Desktop',
+        'Development Status :: 5 - Production/Stable',
+        'Intended Audience :: End Users/Desktop',
         'License :: OSI Approved :: Apache Software License',
         'Programming Language :: Python',
         'Programming Language :: Python :: 2',

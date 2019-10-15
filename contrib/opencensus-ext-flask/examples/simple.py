@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from flask import Flask
+
 from opencensus.ext.flask.flask_middleware import FlaskMiddleware
 
 app = Flask(__name__)

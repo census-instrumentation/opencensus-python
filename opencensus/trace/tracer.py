@@ -12,13 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from opencensus.trace import execution_context
-from opencensus.trace import print_exporter
-from opencensus.trace import samplers
+from opencensus.trace import execution_context, print_exporter, samplers
 from opencensus.trace.propagation import trace_context_http_header_format
 from opencensus.trace.span_context import SpanContext
-from opencensus.trace.tracers import context_tracer
-from opencensus.trace.tracers import noop_tracer
+from opencensus.trace.tracers import context_tracer, noop_tracer
 
 
 class Tracer(object):

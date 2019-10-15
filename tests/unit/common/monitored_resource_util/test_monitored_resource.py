@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from contextlib import contextmanager
 import os
 import sys
+from contextlib import contextmanager
 
 import mock
 

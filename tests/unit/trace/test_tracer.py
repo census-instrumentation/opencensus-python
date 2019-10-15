@@ -16,8 +16,7 @@ import unittest
 
 import mock
 
-from opencensus.trace import samplers
-from opencensus.trace import span_data
+from opencensus.trace import samplers, span_data
 from opencensus.trace import tracer as tracer_module
 
 

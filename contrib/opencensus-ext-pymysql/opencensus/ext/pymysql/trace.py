@@ -14,6 +14,7 @@
 
 import inspect
 import logging
+
 import pymysql
 
 from opencensus.ext.dbapi import trace

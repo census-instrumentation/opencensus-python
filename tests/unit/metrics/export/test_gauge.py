@@ -17,8 +17,7 @@ import unittest
 
 from mock import Mock
 
-from opencensus.metrics.export import gauge
-from opencensus.metrics.export import metric_descriptor
+from opencensus.metrics.export import gauge, metric_descriptor
 from opencensus.metrics.export import value as value_module
 
 

@@ -12,24 +12,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from datetime import datetime
-import mock
 import unittest
+from datetime import datetime
 
-from google.cloud import monitoring_v3
 import google.auth
+import mock
+from google.cloud import monitoring_v3
 
 from opencensus.common import utils
 from opencensus.common.version import __version__
 from opencensus.ext.stackdriver import stats_exporter as stackdriver
-from opencensus.metrics import label_key
-from opencensus.metrics import label_value
+from opencensus.metrics import label_key, label_value
 from opencensus.metrics import transport as transport_module
-from opencensus.metrics.export import metric
-from opencensus.metrics.export import metric_descriptor
-from opencensus.metrics.export import point
-from opencensus.metrics.export import time_series
-from opencensus.metrics.export import value
+from opencensus.metrics.export import (
+    metric,
+    metric_descriptor,
+    point,
+    time_series,
+    value,
+)
 from opencensus.stats import aggregation as aggregation_module
 from opencensus.stats import aggregation_data as aggregation_data_module
 from opencensus.stats import execution_context

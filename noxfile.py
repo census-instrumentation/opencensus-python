@@ -14,8 +14,9 @@
 
 from __future__ import absolute_import
 
-import nox
 import os
+
+import nox
 
 
 def _install_dev_packages(session):
@@ -24,6 +25,7 @@ def _install_dev_packages(session):
     session.install('-e', '.')
 
     session.install('-e', 'contrib/opencensus-ext-azure')
+    session.install('-e', 'contrib/opencensus-ext-datadog')
     session.install('-e', 'contrib/opencensus-ext-dbapi')
     session.install('-e', 'contrib/opencensus-ext-django')
     session.install('-e', 'contrib/opencensus-ext-flask')

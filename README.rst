@@ -226,12 +226,14 @@ Trace Exporter
 --------------
 
 -  `Azure`_
+-  `Datadog`_
 -  `Jaeger`_
 -  `OCAgent`_
 -  `Stackdriver`_
 -  `Zipkin`_
 
 .. _Azure: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-azure
+.. _Datadog: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-datadog
 .. _Django: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-django
 .. _Flask: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-flask
 .. _gevent: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-gevent

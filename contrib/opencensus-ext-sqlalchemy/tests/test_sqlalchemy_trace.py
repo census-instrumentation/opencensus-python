@@ -16,8 +16,8 @@ import unittest
 
 import mock
 
-from opencensus.trace import span as span_module
 from opencensus.ext.sqlalchemy import trace
+from opencensus.trace import span as span_module
 
 
 class Test_sqlalchemy_trace(unittest.TestCase):

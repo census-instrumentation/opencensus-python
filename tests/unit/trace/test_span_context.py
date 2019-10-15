@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import unittest
+
 from opencensus.trace import span_context as span_context_module
 from opencensus.trace.trace_options import TraceOptions
 from opencensus.trace.tracestate import Tracestate

@@ -19,10 +19,8 @@ except ImportError:
 
 import unittest
 
-from opencensus.metrics.export import metric_descriptor
-from opencensus.metrics.export import value
-from opencensus.stats import aggregation
-from opencensus.stats import measure
+from opencensus.metrics.export import metric_descriptor, value
+from opencensus.stats import aggregation, measure
 from opencensus.stats import stats as stats_module
 from opencensus.stats import view
 from opencensus.tags import tag_map

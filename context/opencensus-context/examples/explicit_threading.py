@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from threading import Thread
+
 from opencensus.common.runtime_context import RuntimeContext
 
 RuntimeContext.register_slot('operation_id', '<empty>')

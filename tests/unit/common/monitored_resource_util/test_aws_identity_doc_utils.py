@@ -13,8 +13,9 @@
 # limitations under the License.
 
 import json
-import mock
 import unittest
+
+import mock
 
 from opencensus.common.monitored_resource import aws_identity_doc_utils
 

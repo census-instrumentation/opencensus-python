@@ -15,6 +15,7 @@
 # limitations under the License.
 
 import unittest
+
 from opencensus.metrics import label_value as label_value_module
 
 

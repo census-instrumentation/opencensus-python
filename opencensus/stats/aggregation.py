@@ -14,10 +14,9 @@
 
 import logging
 
+from opencensus.metrics.export.metric_descriptor import MetricDescriptorType
 from opencensus.stats import aggregation_data
 from opencensus.stats import measure as measure_module
-from opencensus.metrics.export.metric_descriptor import MetricDescriptorType
-
 
 logger = logging.getLogger(__name__)
 
