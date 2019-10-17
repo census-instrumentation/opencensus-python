@@ -15,8 +15,7 @@
 import logging
 
 from opencensus.common.schedule import QueueExitEvent
-from opencensus.ext.azure.common import Options
-from opencensus.ext.azure.common import utils
+from opencensus.ext.azure.common import Options, utils
 from opencensus.ext.azure.common.exporter import BaseExporter
 from opencensus.ext.azure.common.protocol import (
     Data,

@@ -18,8 +18,7 @@ import time
 import traceback
 
 from opencensus.common.schedule import Queue, QueueEvent, QueueExitEvent
-from opencensus.ext.azure.common import Options
-from opencensus.ext.azure.common import utils
+from opencensus.ext.azure.common import Options, utils
 from opencensus.ext.azure.common.protocol import (
     Data,
     Envelope,

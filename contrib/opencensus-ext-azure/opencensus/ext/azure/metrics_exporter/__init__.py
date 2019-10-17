@@ -18,8 +18,7 @@ import logging
 import requests
 
 from opencensus.common import utils as common_utils
-from opencensus.ext.azure.common import Options
-from opencensus.ext.azure.common import utils
+from opencensus.ext.azure.common import Options, utils
 from opencensus.ext.azure.common.protocol import (
     Data,
     DataPoint,
