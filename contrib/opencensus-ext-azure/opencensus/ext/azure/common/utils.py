@@ -16,6 +16,7 @@ import datetime
 import locale
 import os
 import platform
+import re
 import sys
 
 from opencensus.common.utils import timestamp_to_microseconds, to_iso_str
@@ -65,3 +66,21 @@ def timestamp_to_iso_str(timestamp):
 
 def url_to_dependency_name(url):
     return urlparse(url).netloc
+
+# Validate UUID format
+# Specs taken from https://tools.ietf.org/html/rfc4122
+pattern = re.compile('[0-9a-f]{8}-'
+                     '[0-9a-f]{4}-'
+                     '[1-5][0-9a-f]{3}-'
+                     '[89ab][0-9a-f]{3}-'
+                     '[0-9a-f]{12}')
+
+def validate_key(instrumentation_key):
+    if not instrumentation_key:
+        raise ValueError("Instrumentation key cannot be none or empty.")
+    # re.fullmatch not available for python2
+    # We use re.match, we matches from the beginning, and then do a length
+    # check to ignore everything afterward.
+    match = pattern.match(instrumentation_key)
+    if len(instrumentation_key) != 36 or not match:
+        raise ValueError("Invalid instrumentation key.")

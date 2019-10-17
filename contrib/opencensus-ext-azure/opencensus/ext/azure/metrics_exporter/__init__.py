@@ -18,7 +18,7 @@ import logging
 import requests
 
 from opencensus.common import utils as common_utils
-from opencensus.ext.azure import common
+from opencensus.ext.azure.common import Options
 from opencensus.ext.azure.common import utils
 from opencensus.ext.azure.common.protocol import (
     Data,
@@ -41,9 +41,9 @@ class MetricsExporter(object):
 
     def __init__(self, options=None):
         if options is None:
-            options = common.Options()
+            options = Options()
         self.options = options
-        common.validate_key(self.options.instrumentation_key)
+        utils.validate_key(self.options.instrumentation_key)
         if self.options.max_batch_size <= 0:
             raise ValueError('Max batch size must be at least 1.')
         self.max_batch_size = self.options.max_batch_size

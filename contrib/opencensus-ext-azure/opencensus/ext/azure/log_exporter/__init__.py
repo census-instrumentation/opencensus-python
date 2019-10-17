@@ -18,7 +18,7 @@ import time
 import traceback
 
 from opencensus.common.schedule import Queue, QueueEvent, QueueExitEvent
-from opencensus.ext.azure import common
+from opencensus.ext.azure.common import Options
 from opencensus.ext.azure.common import utils
 from opencensus.ext.azure.common.protocol import (
     Data,
@@ -115,8 +115,8 @@ class AzureLogHandler(TransportMixin, BaseLogHandler):
     """
 
     def __init__(self, **options):
-        self.options = common.Options(**options)
-        common.validate_key(self.options.instrumentation_key)
+        self.options = Options(**options)
+        utils.validate_key(self.options.instrumentation_key)
         self.export_interval = self.options.export_interval
         self.max_batch_size = self.options.max_batch_size
         self.storage = LocalFileStorage(

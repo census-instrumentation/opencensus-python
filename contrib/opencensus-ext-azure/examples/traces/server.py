@@ -33,13 +33,8 @@ middleware = FlaskMiddleware(
 
 @app.route('/')
 def hello():
-    requests.get('https://www.wikipedia.org/wiki/Rabbit')
     return 'Hello, World!'
 
 
 if __name__ == '__main__':
-    import logging
-    logger = logging.getLogger('werkzeug')
-    logger.setLevel(logging.ERROR)
-    config_integration.trace_integrations(['requests'])
     app.run(host='localhost', port=8080, threaded=True)
