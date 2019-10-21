@@ -67,6 +67,7 @@ def timestamp_to_iso_str(timestamp):
 def url_to_dependency_name(url):
     return urlparse(url).netloc
 
+
 # Validate UUID format
 # Specs taken from https://tools.ietf.org/html/rfc4122
 pattern = re.compile('[0-9a-f]{8}-'
@@ -74,6 +75,7 @@ pattern = re.compile('[0-9a-f]{8}-'
                      '[1-5][0-9a-f]{3}-'
                      '[89ab][0-9a-f]{3}-'
                      '[0-9a-f]{12}')
+
 
 def validate_key(instrumentation_key):
     if not instrumentation_key:
