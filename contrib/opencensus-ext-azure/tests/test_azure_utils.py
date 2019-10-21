@@ -56,8 +56,16 @@ class TestUtils(unittest.TestCase):
         key = ''
         self.assertRaises(ValueError, lambda: utils.validate_key(key))
 
+    def test_invalid_key_prefix(self):
+        key = 'test1234abcd-5678-4efa-8abc-1234567890ab'
+        self.assertRaises(ValueError, lambda: utils.validate_key(key))
+
+    def test_invalid_key_suffix(self):
+        key = '1234abcd-5678-4efa-8abc-1234567890abtest'
+        self.assertRaises(ValueError, lambda: utils.validate_key(key))
+
     def test_invalid_key_length(self):
-        key = '1234abcd-5678-4efa-8abc-1234567890abz'
+        key = '1234abcd-5678-4efa-8abc-12234567890ab'
         self.assertRaises(ValueError, lambda: utils.validate_key(key))
 
     def test_invalid_key_dashes(self):
