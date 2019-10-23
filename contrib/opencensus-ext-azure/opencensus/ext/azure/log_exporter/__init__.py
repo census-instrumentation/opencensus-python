@@ -115,7 +115,7 @@ class AzureLogHandler(TransportMixin, BaseLogHandler):
 
     def __init__(self, **options):
         self.options = Options(**options)
-        utils.validate_key(self.options.instrumentation_key)
+        utils.validate_instrumentation_key(self.options.instrumentation_key)
         self.export_interval = self.options.export_interval
         self.max_batch_size = self.options.max_batch_size
         self.storage = LocalFileStorage(

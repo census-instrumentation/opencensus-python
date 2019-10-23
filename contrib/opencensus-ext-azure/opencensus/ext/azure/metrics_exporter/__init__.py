@@ -42,7 +42,7 @@ class MetricsExporter(object):
         if options is None:
             options = Options()
         self.options = options
-        utils.validate_key(self.options.instrumentation_key)
+        utils.validate_instrumentation_key(self.options.instrumentation_key)
         if self.options.max_batch_size <= 0:
             raise ValueError('Max batch size must be at least 1.')
         self.max_batch_size = self.options.max_batch_size
