@@ -43,3 +43,97 @@ class TestUtils(unittest.TestCase):
                 'https://www.wikipedia.org/wiki/Rabbit'
             ),
             'www.wikipedia.org')
+
+    def test_validate_instrumentation_key(self):
+        key = '1234abcd-5678-4efa-8abc-1234567890ab'
+        self.assertIsNone(utils.validate_instrumentation_key(key))
+
+    def test_invalid_key_none(self):
+        key = None
+        self.assertRaises(ValueError,
+                          lambda: utils.validate_instrumentation_key(key))
+
+    def test_invalid_key_empty(self):
+        key = ''
+        self.assertRaises(ValueError,
+                          lambda: utils.validate_instrumentation_key(key))
+
+    def test_invalid_key_prefix(self):
+        key = 'test1234abcd-5678-4efa-8abc-1234567890ab'
+        self.assertRaises(ValueError,
+                          lambda: utils.validate_instrumentation_key(key))
+
+    def test_invalid_key_suffix(self):
+        key = '1234abcd-5678-4efa-8abc-1234567890abtest'
+        self.assertRaises(ValueError,
+                          lambda: utils.validate_instrumentation_key(key))
+
+    def test_invalid_key_length(self):
+        key = '1234abcd-5678-4efa-8abc-12234567890ab'
+        self.assertRaises(ValueError,
+                          lambda: utils.validate_instrumentation_key(key))
+
+    def test_invalid_key_dashes(self):
+        key = '1234abcda5678-4efa-8abc-1234567890ab'
+        self.assertRaises(ValueError,
+                          lambda: utils.validate_instrumentation_key(key))
+
+    def test_invalid_key_section1_length(self):
+        key = '1234abcda-678-4efa-8abc-1234567890ab'
+        self.assertRaises(ValueError,
+                          lambda: utils.validate_instrumentation_key(key))
+
+    def test_invalid_key_section2_length(self):
+        key = '1234abcd-678-a4efa-8abc-1234567890ab'
+        self.assertRaises(ValueError,
+                          lambda: utils.validate_instrumentation_key(key))
+
+    def test_invalid_key_section3_length(self):
+        key = '1234abcd-6789-4ef-8cabc-1234567890ab'
+        self.assertRaises(ValueError,
+                          lambda: utils.validate_instrumentation_key(key))
+
+    def test_invalid_key_section4_length(self):
+        key = '1234abcd-678-4efa-8bc-11234567890ab'
+        self.assertRaises(ValueError,
+                          lambda: utils.validate_instrumentation_key(key))
+
+    def test_invalid_key_section5_length(self):
+        key = '234abcd-678-4efa-8abc-11234567890ab'
+        self.assertRaises(ValueError,
+                          lambda: utils.validate_instrumentation_key(key))
+
+    def test_invalid_key_section1_hex(self):
+        key = 'x234abcd-5678-4efa-8abc-1234567890ab'
+        self.assertRaises(ValueError,
+                          lambda: utils.validate_instrumentation_key(key))
+
+    def test_invalid_key_section2_hex(self):
+        key = '1234abcd-x678-4efa-8abc-1234567890ab'
+        self.assertRaises(ValueError,
+                          lambda: utils.validate_instrumentation_key(key))
+
+    def test_invalid_key_section3_hex(self):
+        key = '1234abcd-5678-4xfa-8abc-1234567890ab'
+        self.assertRaises(ValueError,
+                          lambda: utils.validate_instrumentation_key(key))
+
+    def test_invalid_key_section4_hex(self):
+        key = '1234abcd-5678-4xfa-8abc-1234567890ab'
+        self.assertRaises(ValueError,
+                          lambda: utils.validate_instrumentation_key(key))
+
+    def test_invalid_key_section5_hex(self):
+        key = '1234abcd-5678-4xfa-8abc-1234567890ab'
+        self.assertRaises(ValueError,
+                          lambda: utils.validate_instrumentation_key(key))
+
+    def test_invalid_key_version(self):
+        key = '1234abcd-5678-6efa-8abc-1234567890ab'
+        self.assertRaises(ValueError,
+                          lambda: utils.validate_instrumentation_key(key))
+
+    def test_invalid_key_variant(self):
+        key = '1234abcd-5678-4efa-2abc-1234567890ab'
+        self.assertRaises(ValueError,
+                          lambda: utils.validate_instrumentation_key(key))
