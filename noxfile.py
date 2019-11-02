@@ -47,6 +47,7 @@ def _install_dev_packages(session):
     session.install('-e', 'contrib/opencensus-ext-threading')
     session.install('-e', 'contrib/opencensus-ext-zipkin')
     session.install('-e', 'contrib/opencensus-ext-google-cloud-clientlibs')
+    session.install('-e', 'contrib/opencensus-ext-celery')
 
 
 def _install_test_dependencies(session):
