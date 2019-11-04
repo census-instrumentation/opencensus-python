@@ -13,26 +13,39 @@
 # limitations under the License.
 
 import unittest
+
 import mock
 
+from opencensus.ext.celery.trace import (
+    CELERY_METADATA_THREAD_LOCAL_KEY,
+    SPAN_THREAD_LOCAL_KEY,
+    TRACING_HEADER_NAME,
+    CeleryMetaWrapper,
+    after_task_publish_handler,
+    before_task_publish_handler,
+    task_failure_handler,
+    task_prerun_handler,
+    task_success_handler,
+    trace_integration,
+    tracing_settings,
+)
 from opencensus.trace import execution_context, print_exporter, samplers
-from opencensus.trace.propagation import trace_context_http_header_format
-
 from opencensus.trace import tracer as tracer_module
-from opencensus.ext.celery.trace import (TRACING_HEADER_NAME, SPAN_THREAD_LOCAL_KEY,
-                                         trace_integration, tracing_settings,
-                                         CeleryMetaWrapper, before_task_publish_handler,
-                                         after_task_publish_handler, task_prerun_handler,
-                                         task_success_handler, task_failure_handler)
+from opencensus.trace.propagation import trace_context_http_header_format
 
 
 class TestCeleryIntegration(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.propagator = trace_context_http_header_format.TraceContextPropagator()
+        execution_context.clear()
+        cls.propagator = \
+            trace_context_http_header_format.TraceContextPropagator()
         cls.exporter = print_exporter.PrintExporter()
         cls.sampler = samplers.ProbabilitySampler()
+
+    def tearDown(self):
+        execution_context.clear()
 
     def test_configuration(self):
         tracer = tracer_module.Tracer(
@@ -46,7 +59,8 @@ class TestCeleryIntegration(unittest.TestCase):
         assert tracing_settings.get('exporter') == self.exporter
 
     def test_before_task_publish_handler(self):
-        tracer, span_context, trace_metadata, trace_id, span_id = self.prepare_test()
+        (tracer, span_context, trace_metadata, trace_id,
+         span_id) = self.prepare_test()
 
         assert self.propagator.to_headers(span_context) == trace_metadata
 
@@ -60,8 +74,19 @@ class TestCeleryIntegration(unittest.TestCase):
         assert span_context.trace_id == trace_id
         assert span_context.span_id != span_id
 
+    @mock.patch('opencensus.ext.celery.trace.log')
+    def test_before_task_publish_handler_error(self, mock_logger):
+        execution_context.set_opencensus_tracer(None)
+        headers = {}
+
+        with mock_logger:
+            before_task_publish_handler(headers)
+
+        mock_logger.error.assert_called_once()
+
     def test_after_task_publish_handler(self):
-        tracer, span_context, trace_metadata, trace_id, span_id = self.prepare_test()
+        (tracer, span_context, trace_metadata, trace_id,
+         span_id) = self.prepare_test()
 
         tracer.start_span()
 
@@ -71,8 +96,18 @@ class TestCeleryIntegration(unittest.TestCase):
 
         assert tracer.current_span() is None
 
+    @mock.patch('opencensus.ext.celery.trace.log')
+    def test_after_task_publish_handler_error(self, mock_logger):
+        execution_context.set_opencensus_tracer(None)
+
+        with mock_logger:
+            after_task_publish_handler()
+
+        mock_logger.error.assert_called_once()
+
     def test_task_prerun_handler(self):
-        tracer, span_context, trace_metadata, trace_id, span_id = self.prepare_test()
+        (tracer, span_context, trace_metadata, trace_id,
+         span_id) = self.prepare_test()
 
         task = Task()
         task.request = Request()
@@ -89,8 +124,24 @@ class TestCeleryIntegration(unittest.TestCase):
         assert span is not None
         assert span.name == 'celery.consume.sender_name'
 
+    @mock.patch('opencensus.ext.celery.trace.log')
+    def test_task_prerun_handler_error(self, mock_logger):
+        task = Task()
+        task.request = Request()
+
+        setattr(task.request, TRACING_HEADER_NAME, self.get_metadata())
+
+        sender = Sender()
+        sender.name = 'sender_name'
+
+        with mock_logger:
+            task_prerun_handler(task=task, sender=sender)
+
+        mock_logger.error.assert_called_once()
+
     def test_task_success_handler(self):
-        tracer, span_context, trace_metadata, trace_id, span_id = self.prepare_test()
+        (tracer, span_context, trace_metadata, trace_id,
+         span_id) = self.prepare_test()
 
         span = tracer.start_span()
         execution_context.set_opencensus_attr(
@@ -103,9 +154,22 @@ class TestCeleryIntegration(unittest.TestCase):
         assert span is not None
         assert span.attributes['result'] == 'success'
 
-    @mock.patch('opencensus.metrics.transport.logger')
+    @mock.patch('opencensus.ext.celery.trace.log')
+    def test_task_success_handler_error(self, mock_logger):
+        self.prepare_test()
+
+        execution_context.set_opencensus_attr(
+            SPAN_THREAD_LOCAL_KEY, None)
+
+        with mock_logger:
+            task_success_handler()
+
+        mock_logger.error.assert_called_once()
+
+    @mock.patch('opencensus.ext.celery.trace.log')
     def test_task_failure_handler(self, mock_logger): # noqa mock_logger
-        tracer, span_context, trace_metadata, trace_id, span_id = self.prepare_test()
+        (tracer, span_context, trace_metadata, trace_id,
+         span_id) = self.prepare_test()
 
         span = tracer.start_span()
         execution_context.set_opencensus_attr(
@@ -117,6 +181,29 @@ class TestCeleryIntegration(unittest.TestCase):
 
         assert span is not None
         assert span.attributes['stacktrace'] == 'traceback'
+
+    @mock.patch('opencensus.ext.celery.trace.log')
+    def test_task_failure_handler_error(self, mock_logger):
+        execution_context.set_opencensus_attr(
+            SPAN_THREAD_LOCAL_KEY, None)
+
+        with mock_logger:
+            task_failure_handler(traceback='traceback')
+
+        mock_logger.error.assert_called_once()
+
+    def test_get_celery_meta(self):
+        trace_metadata, trace_id, span_id = self.get_metadata()
+
+        execution_context.set_opencensus_attr(
+            CELERY_METADATA_THREAD_LOCAL_KEY,
+            trace_metadata)
+
+        span_context = self.propagator.from_headers(
+            CeleryMetaWrapper(None))
+
+        assert span_context.trace_id == trace_id
+        assert span_context.span_id == span_id
 
     def prepare_test(self):
 

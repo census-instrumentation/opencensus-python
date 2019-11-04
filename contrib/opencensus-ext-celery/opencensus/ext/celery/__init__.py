@@ -1,3 +1,1 @@
-from opencensus.ext.celery import trace
-
-__all__ = ['trace']
+__path__ = __import__('pkgutil').extend_path(__path__, __name__)

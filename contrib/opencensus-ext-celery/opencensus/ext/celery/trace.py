@@ -1,13 +1,16 @@
 import logging
 
-from celery.signals import before_task_publish, after_task_publish, task_prerun, task_failure, task_success
+from celery.signals import (
+    after_task_publish,
+    before_task_publish,
+    task_failure,
+    task_prerun,
+    task_success,
+)
 
+from opencensus.trace import attributes_helper, execution_context
 from opencensus.trace import span as span_module
 from opencensus.trace import tracer as tracer_module
-from opencensus.trace import (
-    attributes_helper,
-    execution_context,
-)
 
 log = logging.getLogger(__name__)
 
@@ -48,7 +51,9 @@ class CeleryMetaWrapper(object):
 
 def get_celery_meta():
     """Get Celery metadata from thread local."""
-    return execution_context.get_opencensus_attr(CELERY_METADATA_THREAD_LOCAL_KEY)
+    return execution_context.get_opencensus_attr(
+        CELERY_METADATA_THREAD_LOCAL_KEY
+    )
 
 
 def get_celery_span():
@@ -64,7 +69,8 @@ def before_task_publish_handler(headers=None, **kwargs):
         span.name = 'celery.publish.{}'.format(kwargs.get('sender'))
         span.span_kind = span_module.SpanKind.CLIENT
 
-        tracing_metadata = tracing_settings.get('propagator').to_headers(tracer.span_context)
+        tracing_metadata = \
+            tracing_settings.get('propagator').to_headers(tracer.span_context)
         headers[TRACING_HEADER_NAME] = tracing_metadata
     except Exception:  # noqa
         log.error('Failed to trace task', exc_info=True)
