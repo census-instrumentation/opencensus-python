@@ -47,6 +47,14 @@ class TestCeleryIntegration(unittest.TestCase):
     def tearDown(self):
         execution_context.clear()
 
+    @mock.patch('opencensus.ext.celery.trace.log')
+    def test_configuration_empty(self, mock_logger):
+
+        with mock_logger:
+            trace_integration(None)
+
+        mock_logger.info.assert_called_once()
+
     def test_configuration(self):
         tracer = tracer_module.Tracer(
             sampler=self.sampler,
@@ -138,6 +146,20 @@ class TestCeleryIntegration(unittest.TestCase):
             task_prerun_handler(task=task, sender=sender)
 
         mock_logger.error.assert_called_once()
+
+    def test_task_prerun_handler_empty(self):
+        task = Task()
+        task.request = Request()
+
+        setattr(task.request, TRACING_HEADER_NAME, None)
+
+        sender = Sender()
+        sender.name = 'sender_name'
+
+        task_prerun_handler(task=task, sender=sender)
+
+        assert execution_context.get_opencensus_attr(
+            CELERY_METADATA_THREAD_LOCAL_KEY) is None
 
     def test_task_success_handler(self):
         (tracer, span_context, trace_metadata, trace_id,
