@@ -164,8 +164,11 @@ class OpencensusMiddleware(MiddlewareMixin):
 
         self.blacklist_hostnames = settings.get(BLACKLIST_HOSTNAMES, None)
 
+    def __call__(self, request):
         if django.VERSION >= (2,):  # pragma: NO COVER
-            connection.execute_wrappers.append(_trace_db_call)
+            with connection.execute_wrapper(_trace_db_call):
+                return super(OpencensusMiddleware, self).__call__(request)
+        return super(OpencensusMiddleware, self).__call__(request)
 
     def process_request(self, request):
         """Called on each request, before Django decides which view to execute.
