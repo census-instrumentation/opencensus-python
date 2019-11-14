@@ -5,6 +5,11 @@ import random
 
 from opencensus.common.schedule import PeriodicTask
 
+try:
+  from pathlib import Path
+except ImportError:
+  from pathlib2 import Path  # python 2 backport
+
 
 def _fmt(timestamp):
     return timestamp.strftime('%Y-%m-%dT%H%M%S.%f')
@@ -108,8 +113,8 @@ class LocalFileStorage(object):
 
     def _maintenance_routine(self, silent=False):
         try:
-            if not os.path.exists(self.path):
-                os.makedirs(self.path)
+            if not os.path.isdir(self.path):
+                Path(self.path).mkdir(exist_ok=True)
         except Exception:
             if not silent:
                 raise
