@@ -108,8 +108,8 @@ class LocalFileStorage(object):
 
     def _maintenance_routine(self, silent=False):
         try:
-            if not os.path.isdir(self.path):
-                os.makedirs(self.path, exist_ok=True)
+            if not os.path.exists(self.path):
+                os.makedirs(self.path)
         except Exception:
             if not silent:
                 raise
