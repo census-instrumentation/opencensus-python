@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## 1.0.1
+Released 2019-11-18
+
+- Validate instrumentation key in Azure Exporters
+  ([#789](https://github.com/census-instrumentation/opencensus-python/pull/789))
+
 ## 1.0.0
 Released 2019-09-30
 

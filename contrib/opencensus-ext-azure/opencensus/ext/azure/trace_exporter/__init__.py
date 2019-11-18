@@ -15,13 +15,14 @@
 import logging
 
 from opencensus.common.schedule import QueueExitEvent
-from opencensus.ext.azure.common import Options
-from opencensus.ext.azure.common import utils
+from opencensus.ext.azure.common import Options, utils
 from opencensus.ext.azure.common.exporter import BaseExporter
-from opencensus.ext.azure.common.protocol import Data
-from opencensus.ext.azure.common.protocol import Envelope
-from opencensus.ext.azure.common.protocol import RemoteDependency
-from opencensus.ext.azure.common.protocol import Request
+from opencensus.ext.azure.common.protocol import (
+    Data,
+    Envelope,
+    RemoteDependency,
+    Request,
+)
 from opencensus.ext.azure.common.storage import LocalFileStorage
 from opencensus.ext.azure.common.transport import TransportMixin
 from opencensus.trace.span import SpanKind
@@ -39,8 +40,7 @@ class AzureExporter(TransportMixin, BaseExporter):
 
     def __init__(self, **options):
         self.options = Options(**options)
-        if not self.options.instrumentation_key:
-            raise ValueError('The instrumentation_key is not provided.')
+        utils.validate_instrumentation_key(self.options.instrumentation_key)
         self.storage = LocalFileStorage(
             path=self.options.storage_path,
             max_size=self.options.storage_max_size,

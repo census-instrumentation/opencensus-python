@@ -17,15 +17,14 @@ import threading
 import time
 import traceback
 
-from opencensus.common.schedule import Queue
-from opencensus.common.schedule import QueueExitEvent
-from opencensus.common.schedule import QueueEvent
-from opencensus.ext.azure.common import Options
-from opencensus.ext.azure.common import utils
-from opencensus.ext.azure.common.protocol import Data
-from opencensus.ext.azure.common.protocol import Envelope
-from opencensus.ext.azure.common.protocol import ExceptionData
-from opencensus.ext.azure.common.protocol import Message
+from opencensus.common.schedule import Queue, QueueEvent, QueueExitEvent
+from opencensus.ext.azure.common import Options, utils
+from opencensus.ext.azure.common.protocol import (
+    Data,
+    Envelope,
+    ExceptionData,
+    Message,
+)
 from opencensus.ext.azure.common.storage import LocalFileStorage
 from opencensus.ext.azure.common.transport import TransportMixin
 from opencensus.trace import execution_context
@@ -116,8 +115,7 @@ class AzureLogHandler(TransportMixin, BaseLogHandler):
 
     def __init__(self, **options):
         self.options = Options(**options)
-        if not self.options.instrumentation_key:
-            raise ValueError('The instrumentation_key is not provided.')
+        utils.validate_instrumentation_key(self.options.instrumentation_key)
         self.export_interval = self.options.export_interval
         self.max_batch_size = self.options.max_batch_size
         self.storage = LocalFileStorage(
