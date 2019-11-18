@@ -1,9 +1,9 @@
 from flask import Flask
 
+from opencensus.ext.datadog.traces import DatadogTraceExporter, Options
 from opencensus.ext.flask.flask_middleware import FlaskMiddleware
 from opencensus.trace.samplers import AlwaysOnSampler
-from traces import DatadogTraceExporter
-from traces import Options
+from traces import DatadogTraceExporter, Options
 
 app = Flask(__name__)
 middleware = FlaskMiddleware(app,
