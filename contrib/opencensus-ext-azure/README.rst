@@ -37,11 +37,11 @@ This example shows how to send a warning level log to Azure Monitor.
     logger.addHandler(AzureLogHandler(connection_string='InstrumentationKey=<your-instrumentation_key-here>'))
     logger.warning('Hello, World!')
 
-* Alternatively, you can specify your `connection string` in an environment variable ``APPLICATIONINSIGHTS_CONNECTION_STRING``.
 
 You can enrich the logs with trace IDs and span IDs by using the `logging integration <../opencensus-ext-logging>`_.
 
 * Create an Azure Monitor resource and get the instrumentation key, more information can be found `here <https://docs.microsoft.com/azure/azure-monitor/app/create-new-resource>`_.
+* Install the `logging integration package <../opencensus-ext-logging>`_ using ``pip install opencensus-ext-logging``.
 * Place your instrumentation key in a `connection string` and directly into your code.
 * Alternatively, you can specify your `connection string` in an environment variable ``APPLICATIONINSIGHTS_CONNECTION_STRING``.
 
@@ -71,7 +71,7 @@ You can enrich the logs with trace IDs and span IDs by using the `logging integr
     logger.warning('Before the span')
     with tracer.span(name='test'):
         logger.warning('In the span')
-    logger.warning('After the span')s
+    logger.warning('After the span')
 
 Metrics
 ~~~~~~~
