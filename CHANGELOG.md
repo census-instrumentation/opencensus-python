@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+## 0.7.6
+Released 2019-11-19
+
+- Initial release for `datadog` module
+  ([#793](https://github.com/census-instrumentation/opencensus-python/pull/793))
+- Updated `azure` module
+  ([#789](https://github.com/census-instrumentation/opencensus-python/pull/789))
+
 ## 0.7.5
 Released 2019-10-01
 
