@@ -24,6 +24,7 @@ from opencensus.ext.azure.common.protocol import (
     Envelope,
     ExceptionData,
     Message,
+    MetricData,
 )
 from opencensus.ext.azure.common.storage import LocalFileStorage
 from opencensus.ext.azure.common.transport import TransportMixin
@@ -147,7 +148,34 @@ class AzureLogHandler(TransportMixin, BaseLogHandler):
             if event:
                 event.set()
 
+    def track_metric(self, name, value):
+        self._queue.put((name, value), block=False)
+
     def log_record_to_envelope(self, record):
+        if isinstance(record, tuple):
+            envelope = Envelope(
+                iKey=self.options.instrumentation_key,
+                tags=dict(utils.azure_monitor_context),
+                time=utils.to_iso_str(),
+            )
+            envelope.name = 'Microsoft.ApplicationInsights.Metric'
+            name = record[0]
+            value = record[1]
+            data = MetricData(
+                metrics=[
+                    {'kind': None,
+                     'name': name,
+                     'ns': name,
+                     'max': value,
+                     'count': 1,
+                     'value': value,
+                     'min': value,
+                     'stdDev': value}],
+                properties={}
+            )
+            envelope.data = Data(baseData=data, baseType='MetricData')
+            return envelope
+        
         envelope = Envelope(
             iKey=self.options.instrumentation_key,
             tags=dict(utils.azure_monitor_context),
