@@ -3,7 +3,7 @@
 ## Unreleased
 
 ## 0.7.6
-Released 2019-11-19
+Released 2019-11-20
 
 - Initial release for `datadog` module
   ([#793](https://github.com/census-instrumentation/opencensus-python/pull/793))
