@@ -1,241 +1,276 @@
-OpenCensus Azure Monitor Exporters
-============================================================================
+OpenCensus - A stats collection and distributed tracing framework
+=================================================================
 
+|gitter|
+|circleci|
 |pypi|
+|compat_check_pypi|
+|compat_check_github|
 
-.. |pypi| image:: https://badge.fury.io/py/opencensus-ext-azure.svg
-   :target: https://pypi.org/project/opencensus-ext-azure/
+.. |circleci| image:: https://circleci.com/gh/census-instrumentation/opencensus-python.svg?style=shield
+   :target: https://circleci.com/gh/census-instrumentation/opencensus-python
+.. |gitter| image:: https://badges.gitter.im/census-instrumentation/lobby.svg
+   :target: https://gitter.im/census-instrumentation/lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
+.. |pypi| image:: https://badge.fury.io/py/opencensus.svg
+   :target: https://pypi.org/project/opencensus/
+.. |compat_check_pypi| image:: https://python-compatibility-tools.appspot.com/one_badge_image?package=opencensus
+   :target: https://python-compatibility-tools.appspot.com/one_badge_target?package=opencensus
+.. |compat_check_github| image:: https://python-compatibility-tools.appspot.com/one_badge_image?package=git%2Bgit%3A//github.com/census-instrumentation/opencensus-python.git
+   :target: https://python-compatibility-tools.appspot.com/one_badge_target?package=git%2Bgit%3A//github.com/census-instrumentation/opencensus-python.git
 
-Installation
-------------
+`OpenCensus`_ for Python. OpenCensus provides a framework to measure a
+server's resource usage and collect performance stats. This repository
+contains Python related utilities and supporting software needed by
+OpenCensus.
 
-::
+.. _OpenCensus: https://github.com/census-instrumentation
 
-    pip install opencensus-ext-azure
+-  `API Documentation`_
+
+.. _API Documentation: https://opencensus.io/api/python/trace/usage.html
+
+--------
+ Tracing
+--------
+
+Installation & basic usage
+--------------------------
+
+1. Install the opencensus package using `pip`_ or `pipenv`_:
+
+    ::
+
+        pip install opencensus
+        pipenv install opencensus
+
+2. Initialize a tracer for your application:
+
+    .. code:: python
+
+        from opencensus.trace.tracer import Tracer
+        from opencensus.trace.samplers import AlwaysOnSampler
+
+        tracer = Tracer(sampler=AlwaysOnSampler())
+
+    .. _pip: https://pip.pypa.io
+    .. _pipenv: https://docs.pipenv.org/
+
+3. Initialize a view_manager and a stats_recorder for your application:
+
+    .. code:: python
+
+        from opencensus.stats import stats as stats_module
+
+        stats = stats_module.stats
+        view_manager = stats.view_manager
+        stats_recorder = stats.stats_recorder
+
 
 Usage
 -----
 
-Log
-~~~
-
-The **Azure Monitor Log Handler** allows you to export Python logs to `Azure Monitor`_.
-
-This example shows how to send a warning level log to Azure Monitor.
-
-* Create an Azure Monitor resource and get the instrumentation key, more information can be found `here <https://docs.microsoft.com/azure/azure-monitor/app/create-new-resource>`_.
-* Place your instrumentation key in a `connection string` and directly into your code.
-* Alternatively, you can specify your `connection string` in an environment variable ``APPLICATIONINSIGHTS_CONNECTION_STRING``.
+You can collect traces using the ``Tracer`` `context manager`_:
 
 .. code:: python
 
-    import logging
-
-    from opencensus.ext.azure.log_exporter import AzureLogHandler
-
-    logger = logging.getLogger(__name__)
-    logger.addHandler(AzureLogHandler(connection_string='InstrumentationKey=<your-instrumentation_key-here>'))
-    logger.warning('Hello, World!')
-
-
-You can enrich the logs with trace IDs and span IDs by using the `logging integration <../opencensus-ext-logging>`_.
-
-* Create an Azure Monitor resource and get the instrumentation key, more information can be found `here <https://docs.microsoft.com/azure/azure-monitor/app/create-new-resource>`_.
-* Install the `logging integration package <../opencensus-ext-logging>`_ using ``pip install opencensus-ext-logging``.
-* Place your instrumentation key in a `connection string` and directly into your code.
-* Alternatively, you can specify your `connection string` in an environment variable ``APPLICATIONINSIGHTS_CONNECTION_STRING``.
-
-.. code:: python
-
-    import logging
-
-    from opencensus.ext.azure.log_exporter import AzureLogHandler
-    from opencensus.ext.azure.trace_exporter import AzureExporter
-    from opencensus.trace import config_integration
-    from opencensus.trace.samplers import ProbabilitySampler
     from opencensus.trace.tracer import Tracer
+    from opencensus.trace.samplers import AlwaysOnSampler
 
-    config_integration.trace_integrations(['logging'])
+    # Initialize a tracer, by default using the `PrintExporter`
+    tracer = Tracer(sampler=AlwaysOnSampler())
 
-    logger = logging.getLogger(__name__)
+    # Example for creating nested spans
+    with tracer.span(name='span1'):
+        do_something_to_trace()
+        with tracer.span(name='span1_child1'):
+            do_something_to_trace()
+        with tracer.span(name='span1_child2'):
+            do_something_to_trace()
+    with tracer.span(name='span2'):
+        do_something_to_trace()
 
-    handler = AzureLogHandler(connection_string='InstrumentationKey=<your-instrumentation_key-here>')
-    handler.setFormatter(logging.Formatter('%(traceId)s %(spanId)s %(message)s'))
-    logger.addHandler(handler)
+OpenCensus will collect everything within the ``with`` statement as a single span.
 
-    tracer = Tracer(
-        exporter=AzureExporter(connection_string='InstrumentationKey=<your-instrumentation_key-here>'),
-        sampler=ProbabilitySampler(1.0)
-    )
-
-    logger.warning('Before the span')
-    with tracer.span(name='test'):
-        logger.warning('In the span')
-    logger.warning('After the span')
-
-You can also add custom properties to your log messages in the form of key-values.
+Alternatively, you can explicitly start and end a span:
 
 .. code:: python
 
-    import logging
-
-    from opencensus.ext.azure.log_exporter import AzureLogHandler
-
-    logger = logging.getLogger(__name__)
-    logger.addHandler(AzureLogHandler(connection_string='InstrumentationKey=<your-instrumentation_key-here>'))
-    logger.warning('action', {'key-1': 'value-1', 'key-2': 'value2'})
-
-Metrics
-~~~~~~~
-
-The **Azure Monitor Metrics Exporter** allows you to export metrics to `Azure Monitor`_.
-
-* Create an Azure Monitor resource and get the instrumentation key, more information can be found `here <https://docs.microsoft.com/azure/azure-monitor/app/create-new-resource>`_.
-* Place your instrumentation key in a `connection string` and directly into your code.
-* Alternatively, you can specify your `connection string` in an environment variable ``APPLICATIONINSIGHTS_CONNECTION_STRING``.
-
-.. code:: python
-
-    import time
-
-    from opencensus.ext.azure import metrics_exporter
-    from opencensus.stats import aggregation as aggregation_module
-    from opencensus.stats import measure as measure_module
-    from opencensus.stats import stats as stats_module
-    from opencensus.stats import view as view_module
-    from opencensus.tags import tag_map as tag_map_module
-
-    stats = stats_module.stats
-    view_manager = stats.view_manager
-    stats_recorder = stats.stats_recorder
-
-    CARROTS_MEASURE = measure_module.MeasureInt("carrots",
-                                                "number of carrots",
-                                                "carrots")
-    CARROTS_VIEW = view_module.View("carrots_view",
-                                    "number of carrots",
-                                    [],
-                                    CARROTS_MEASURE,
-                                    aggregation_module.CountAggregation())
-
-    def main():
-        # Enable metrics
-        # Set the interval in seconds in which you want to send metrics
-        exporter = metrics_exporter.new_metrics_exporter(connection_string='InstrumentationKey=<your-instrumentation-key-here>')
-        view_manager.register_exporter(exporter)
-
-        view_manager.register_view(CARROTS_VIEW)
-        mmap = stats_recorder.new_measurement_map()
-        tmap = tag_map_module.TagMap()
-
-        mmap.measure_int_put(CARROTS_MEASURE, 1000)
-        mmap.record(tmap)
-        # Default export interval is every 15.0s
-        # Your application should run for at least this amount
-        # of time so the exporter will meet this interval
-        # Sleep can fulfill this
-        time.sleep(60)
-
-        print("Done recording metrics")
-
-    if __name__ == "__main__":
-        main()
-
-The exporter also includes a set of standard metrics that are exported to Azure Monitor by default.
-
-.. code:: python
-
-    import psutil
-    import time
-
-    from opencensus.ext.azure import metrics_exporter
-
-    def main():
-        # All you need is the next line. You can disable standard metrics by
-        # passing in enable_standard_metrics=False into the constructor of
-        # new_metrics_exporter() 
-        _exporter = metrics_exporter.new_metrics_exporter(connection_string='InstrumentationKey=<your-instrumentation-key-here>')
-        
-        for i in range(100):
-            print(psutil.virtual_memory())
-            time.sleep(5)
-
-        print("Done recording metrics")
-
-    if __name__ == "__main__":
-        main()
-
-Below is a list of standard metrics that are currently available:
-
-- Available Memory (bytes)
-- CPU Processor Time (percentage)
-- Incoming Request Rate (per second)
-- Incoming Request Average Execution Time (milliseconds)
-- Outgoing Request Rate (per second)
-- Process CPU Usage (percentage)
-- Process Private Bytes (bytes)
-
-Trace
-~~~~~
-
-The **Azure Monitor Trace Exporter** allows you to export `OpenCensus`_ traces to `Azure Monitor`_.
-
-This example shows how to send a span "hello" to Azure Monitor.
-
-* Create an Azure Monitor resource and get the instrumentation key, more information can be found `here <https://docs.microsoft.com/azure/azure-monitor/app/create-new-resource>`_.
-* Place your instrumentation key in a `connection string` and directly into your code.
-* Alternatively, you can specify your `connection string` in an environment variable ``APPLICATIONINSIGHTS_CONNECTION_STRING``.
-
- .. code:: python
-
-    from opencensus.ext.azure.trace_exporter import AzureExporter
-    from opencensus.trace.samplers import ProbabilitySampler
     from opencensus.trace.tracer import Tracer
+    from opencensus.trace.samplers import AlwaysOnSampler
 
-    tracer = Tracer(
-        exporter=AzureExporter(connection_string='InstrumentationKey=<your-instrumentation-key-here>'),
-        sampler=ProbabilitySampler(1.0)
-    )
+    # Initialize a tracer, by default using the `PrintExporter`
+    tracer = Tracer(sampler=AlwaysOnSampler())
 
-    with tracer.span(name='hello'):
-        print('Hello, World!')
+    tracer.start_span(name='span1')
+    do_something_to_trace()
+    tracer.end_span()
 
-OpenCensus also supports several [integrations](https://github.com/census-instrumentation/opencensus-python#integration) which allows OpenCensus to integrate with third party libraries.
 
-This example shows how to integrate with the [requests](https://2.python-requests.org/en/master/) library.
+.. _context manager: https://docs.python.org/3/reference/datamodel.html#context-managers
 
-* Create an Azure Monitor resource and get the instrumentation key, more information can be found `here <https://docs.microsoft.com/azure/azure-monitor/app/create-new-resource>`_.
-* Install the `requests integration package <../opencensus-ext-requests>`_ using ``pip install opencensus-ext-requests``.
-* Place your instrumentation key in a `connection string` and directly into your code.
-* Alternatively, you can specify your `connection string` in an environment variable ``APPLICATIONINSIGHTS_CONNECTION_STRING``.
+
+Customization
+-------------
+
+There are several things you can customize in OpenCensus:
+
+* **Blacklist**, which excludes certain hosts and paths from being tracked.
+  By default, the health check path for the App Engine flexible environment is
+  not tracked, you can turn it on by excluding it from the blacklist setting.
+
+* **Exporter**, which sends the traces.
+  By default, the traces are printed to stdout in JSON format. You can choose
+  different exporters to send the traces to. There are three built-in exporters,
+  which are ``PrintExporter``, ``FileExporter`` and ``LoggingExporter``, the
+  other exporters are provided as `extensions <#trace-exporter>`__.
+
+* **Sampler**, which determines how traces are sampled.
+  The default sampler is the ``ProbabilitySampler``, which samples (i.e.
+  enables tracing for) a percentage of all requests. Sampling is deterministic
+  according to the trace ID. To force sampling for all requests, or to prevent
+  any request from being sampled, see ``AlwaysOnSampler`` and
+  ``AlwaysOffSampler``.
+
+* **Propagator**, which serializes and deserializes the
+  ``SpanContext`` and its headers. The default propagator is
+  ``TraceContextPropagator``, other propagators include
+  ``BinaryFormatPropagator``, ``GoogleCloudFormatPropagator`` and
+  ``TextFormatPropagator``.
+
+
+You can customize while initializing a tracer.
 
 .. code:: python
 
     import requests
 
-    from opencensus.ext.azure.trace_exporter import AzureExporter
     from opencensus.trace import config_integration
+    from opencensus.trace import file_exporter
+    from opencensus.trace import tracer as tracer_module
+    from opencensus.trace.propagation import google_cloud_format
     from opencensus.trace.samplers import ProbabilitySampler
-    from opencensus.trace.tracer import Tracer
 
-    config_integration.trace_integrations(['requests'])
-    tracer = Tracer(
-        exporter=AzureExporter(
-            # TODO: replace this with your own instrumentation key.
-            instrumentation_key='00000000-0000-0000-0000-000000000000',
-        ),
-        sampler=ProbabilitySampler(1.0),
+    config_integration.trace_integrations(['httplib'])
+
+    tracer = tracer_module.Tracer(
+        exporter=file_exporter.FileExporter(file_name='traces'),
+        propagator=google_cloud_format.GoogleCloudFormatPropagator(),
+        sampler=ProbabilitySampler(rate=0.5),
     )
+
     with tracer.span(name='parent'):
-        response = requests.get(url='https://www.wikipedia.org/wiki/Rabbit')
+        with tracer.span(name='child'):
+            response = requests.get('http://localhost:5000')
 
+You can use a configuration file for Flask/Django/Pyramid. For more
+information, please read the
+`individual integration documentation <#integration>`_.
 
-References
-----------
+.. code:: python
 
-* `Azure Monitor <https://docs.microsoft.com/azure/azure-monitor/>`_
-* `Examples <https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-azure/examples>`_
-* `OpenCensus Project <https://opencensus.io/>`_
+    'OPENCENSUS': {
+        'TRACE': {
+            'BLACKLIST_HOSTNAMES': ['localhost', '127.0.0.1'],
+            'BLACKLIST_PATHS': ['_ah/health'],
+            'SAMPLER': 'opencensus.trace.samplers.ProbabilitySampler(rate=1)',
+            'EXPORTER': '''opencensus.ext.ocagent.trace_exporter.TraceExporter(
+                service_name='foobar',
+            )''',
+            'PROPAGATOR': 'opencensus.trace.propagation.google_cloud_format.GoogleCloudFormatPropagator()',
+        }
+    }
 
-.. _Azure Monitor: https://docs.microsoft.com/azure/azure-monitor/
-.. _OpenCensus: https://github.com/census-instrumentation/opencensus-python/
+------------
+ Extensions
+------------
+
+Integration
+-----------
+
+OpenCensus supports integration with popular web frameworks, client libraries and built-in libraries.
+
+-  `Django`_
+-  `Flask`_
+-  `gevent`_
+-  `Google Cloud Client Libraries`_
+-  `gRPC`_
+-  `httplib`_
+-  `logging`_
+-  `MySQL`_
+-  `PostgreSQL`_
+-  `pymongo`_
+-  `PyMySQL`_
+-  `Pyramid`_
+-  `requests`_
+-  `SQLAlchemy`_
+-  `threading`_
+
+Log Exporter
+------------
+
+-  `Azure`_
+
+Metrics Exporter
+----------------
+
+-  `Azure`_
+
+Stats Exporter
+--------------
+
+-  `OCAgent`_
+-  `Prometheus`_
+-  `Stackdriver`_
+
+Trace Exporter
+--------------
+
+-  `Azure`_
+-  `Datadog`_
+-  `Jaeger`_
+-  `OCAgent`_
+-  `Stackdriver`_
+-  `Zipkin`_
+
+.. _Azure: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-azure
+.. _Datadog: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-datadog
+.. _Django: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-django
+.. _Flask: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-flask
+.. _gevent: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-gevent
+.. _Google Cloud Client Libraries: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-google-cloud-clientlibs
+.. _gRPC: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-grpc
+.. _httplib: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-httplib
+.. _Jaeger: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-jaeger
+.. _logging: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-logging
+.. _MySQL: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-mysql
+.. _OCAgent: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-ocagent
+.. _PostgreSQL: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-postgresql
+.. _Prometheus: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-prometheus
+.. _pymongo: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-pymongo
+.. _PyMySQL: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-pymysql
+.. _Pyramid: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-pyramid
+.. _requests: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-requests
+.. _SQLAlchemy: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-sqlalchemy
+.. _Stackdriver: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-stackdriver
+.. _threading: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-threading
+.. _Zipkin: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-zipkin
+
+------------
+ Versioning
+------------
+
+This library follows `Semantic Versioning`_.
+
+**GA**: Libraries defined at a GA quality level are stable, and will not introduce
+backwards-incompatible changes in any minor or patch releases. We will address issues and requests
+with the highest priority. If we were to make a backwards-incompatible changes on an API, we will
+first mark the existing API as deprecated and keep it for 18 months before removing it.
+
+**Beta**: Libraries defined at a Beta quality level are expected to be mostly stable and we're
+working towards their release candidate. We will address issues and requests with a higher priority.
+There may be backwards incompatible changes in a minor version release, though not in a patch
+release. If an element is part of an API that is only meant to be used by exporters or other
+opencensus libraries, then there is no deprecation period. Otherwise, we will deprecate it for 18
+months before removing it, if possible.
+
+.. _Semantic Versioning: https://semver.org/
