@@ -14,7 +14,7 @@
 
 import unittest
 
-import gevent.monkey
+# import gevent.monkey
 import mock
 
 import opencensus.common.runtime_context as runtime_context
@@ -27,70 +27,72 @@ class TestPatching(unittest.TestCase):
     def tearDown(self):
         runtime_context.RuntimeContext = self.original_context
 
-    # @mock.patch("gevent.monkey.is_module_patched", return_value=False)
-    # def test_context_is_switched_without_contextvar_support(
-    #     self, patched_is_module_patched
-    # ):
-    #     # patched_is_module_patched.return_value = False
+    @mock.patch("gevent.monkey.is_module_patched", return_value=False)
+    def test_context_is_switched_without_contextvar_support(
+        self, patched_is_module_patched
+    ):
+        # # patched_is_module_patched.return_value = False
 
-    #     # Trick gevent into thinking it is run for the first time.
-    #     # Allows to run multiple tests.
-    #     gevent.monkey.saved = {}
+        # # Trick gevent into thinking it is run for the first time.
+        # # Allows to run multiple tests.
+        # gevent.monkey.saved = {}
 
-    #     # All module patching is disabled to avoid the need of "unpatching".
-    #     # The needed events are emitted nevertheless.
-    #     gevent.monkey.patch_all(
-    #         contextvar=False,
-    #         socket=False,
-    #         dns=False,
-    #         time=False,
-    #         select=False,
-    #         thread=False,
-    #         os=False,
-    #         ssl=False,
-    #         httplib=False,
-    #         subprocess=False,
-    #         sys=False,
-    #         aggressive=False,
-    #         Event=False,
-    #         builtins=False,
-    #         signal=False,
-    #         queue=False
-    #     )
+        # # All module patching is disabled to avoid the need of "unpatching".
+        # # The needed events are emitted nevertheless.
+        # gevent.monkey.patch_all(
+        #     contextvar=False,
+        #     socket=False,
+        #     dns=False,
+        #     time=False,
+        #     select=False,
+        #     thread=False,
+        #     os=False,
+        #     ssl=False,
+        #     httplib=False,
+        #     subprocess=False,
+        #     sys=False,
+        #     aggressive=False,
+        #     Event=False,
+        #     builtins=False,
+        #     signal=False,
+        #     queue=False
+        # )
 
-    #     assert isinstance(
-    #         runtime_context.RuntimeContext,
-    #         runtime_context._ThreadLocalRuntimeContext,
-    #     )
+        # assert isinstance(
+        #     runtime_context.RuntimeContext,
+        #     runtime_context._ThreadLocalRuntimeContext,
+        # )
+        pass
 
-    # @mock.patch("gevent.monkey.is_module_patched", return_value=True)
-    # def test_context_is_switched_with_contextvar_support(
-    #     self, patched_is_module_patched
-    # ):
+    @mock.patch("gevent.monkey.is_module_patched", return_value=True)
+    def test_context_is_switched_with_contextvar_support(
+        self, patched_is_module_patched
+    ):
 
-    #     # Trick gevent into thinking it is run for the first time.
-    #     # Allows to run multiple tests.
-    #     gevent.monkey.saved = {}
+        # # Trick gevent into thinking it is run for the first time.
+        # # Allows to run multiple tests.
+        # gevent.monkey.saved = {}
 
-    #     # All module patching is disabled to avoid the need of "unpatching".
-    #     # The needed events are emitted nevertheless.
-    #     gevent.monkey.patch_all(
-    #         contextvar=False,
-    #         socket=False,
-    #         dns=False,
-    #         time=False,
-    #         select=False,
-    #         thread=False,
-    #         os=False,
-    #         ssl=False,
-    #         httplib=False,
-    #         subprocess=False,
-    #         sys=False,
-    #         aggressive=False,
-    #         Event=False,
-    #         builtins=False,
-    #         signal=False,
-    #         queue=False
-    #     )
+        # # All module patching is disabled to avoid the need of "unpatching".
+        # # The needed events are emitted nevertheless.
+        # gevent.monkey.patch_all(
+        #     contextvar=False,
+        #     socket=False,
+        #     dns=False,
+        #     time=False,
+        #     select=False,
+        #     thread=False,
+        #     os=False,
+        #     ssl=False,
+        #     httplib=False,
+        #     subprocess=False,
+        #     sys=False,
+        #     aggressive=False,
+        #     Event=False,
+        #     builtins=False,
+        #     signal=False,
+        #     queue=False
+        # )
 
-    #     assert runtime_context.RuntimeContext is self.original_context
+        # assert runtime_context.RuntimeContext is self.original_context
+        pass
