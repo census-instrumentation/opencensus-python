@@ -23,7 +23,6 @@ from opencensus.common.utils import timestamp_to_microseconds, to_iso_str
 from opencensus.common.version import __version__ as opencensus_version
 from opencensus.ext.azure.common.version import __version__ as ext_version
 
-
 azure_monitor_context = {
     'ai.cloud.role': os.path.basename(sys.argv[0]) or 'Python Application',
     'ai.cloud.roleInstance': platform.node(),
