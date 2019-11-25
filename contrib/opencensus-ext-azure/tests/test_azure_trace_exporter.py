@@ -233,6 +233,71 @@ class TestAzureExporter(unittest.TestCase):
             envelope.data.baseType,
             'RemoteDependencyData')
 
+        # SpanKind.CLIENT missing method
+        envelope = exporter.span_data_to_envelope(SpanData(
+            name='test',
+            context=SpanContext(
+                trace_id='6e0c63257de34c90bf9efcd03927272e',
+                span_id='6e0c63257de34c91',
+                trace_options=TraceOptions('1'),
+                tracestate=Tracestate(),
+                from_header=False,
+            ),
+            span_id='6e0c63257de34c92',
+            parent_span_id='6e0c63257de34c93',
+            attributes={
+                'component': 'HTTP',
+                'http.url': 'https://www.wikipedia.org/wiki/Rabbit',
+                'http.status_code': 200,
+            },
+            start_time='2010-10-24T07:28:38.123456Z',
+            end_time='2010-10-24T07:28:38.234567Z',
+            stack_trace=None,
+            links=None,
+            status=None,
+            annotations=None,
+            message_events=None,
+            same_process_as_parent_span=None,
+            child_span_count=None,
+            span_kind=SpanKind.CLIENT,
+        ))
+        self.assertEqual(
+            envelope.iKey,
+            '12345678-1234-5678-abcd-12345678abcd')
+        self.assertEqual(
+            envelope.name,
+            'Microsoft.ApplicationInsights.RemoteDependency')
+        self.assertEqual(
+            envelope.tags['ai.operation.parentId'],
+            '|6e0c63257de34c90bf9efcd03927272e.6e0c63257de34c93.')
+        self.assertEqual(
+            envelope.tags['ai.operation.id'],
+            '6e0c63257de34c90bf9efcd03927272e')
+        self.assertEqual(
+            envelope.time,
+            '2010-10-24T07:28:38.123456Z')
+        self.assertEqual(
+            envelope.data.baseData.data,
+            'https://www.wikipedia.org/wiki/Rabbit')
+        self.assertEqual(
+            envelope.data.baseData.target,
+            'www.wikipedia.org')
+        self.assertEqual(
+            envelope.data.baseData.id,
+            '|6e0c63257de34c90bf9efcd03927272e.6e0c63257de34c92.')
+        self.assertEqual(
+            envelope.data.baseData.resultCode,
+            '200')
+        self.assertEqual(
+            envelope.data.baseData.duration,
+            '0.00:00:00.111')
+        self.assertEqual(
+            envelope.data.baseData.type,
+            'HTTP')
+        self.assertEqual(
+            envelope.data.baseType,
+            'RemoteDependencyData')
+
         # SpanKind.SERVER HTTP - 200 request
         envelope = exporter.span_data_to_envelope(SpanData(
             name='test',
