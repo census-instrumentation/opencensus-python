@@ -92,7 +92,7 @@ class Test_httplib_trace(unittest.TestCase):
             wrapped(mock_self, method, url, body, headers)
 
         expected_attributes = {'component': 'HTTP',
-            'http.url': url, 'http.method': method}
+                               'http.url': url, 'http.method': method}
         expected_name = '[httplib]request'
 
         mock_request_func.assert_called_with(mock_self, method, url, body, {
