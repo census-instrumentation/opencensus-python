@@ -91,6 +91,10 @@ def wrap_requests(requests_func):
         _span.name = '{}'.format(path)
         _span.span_kind = span_module.SpanKind.CLIENT
 
+        # Add the component type to attributes
+        _tracer.add_attribute_to_current_span(
+            "component", "http")
+
         # Add the requests host to attributes
         _tracer.add_attribute_to_current_span(
             HTTP_HOST, dest_url)

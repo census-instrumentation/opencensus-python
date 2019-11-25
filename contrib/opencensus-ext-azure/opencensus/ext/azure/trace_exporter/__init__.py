@@ -27,6 +27,11 @@ from opencensus.ext.azure.common.storage import LocalFileStorage
 from opencensus.ext.azure.common.transport import TransportMixin
 from opencensus.trace.span import SpanKind
 
+try:
+    from urllib.parse import urlparse
+except ImportError:
+    from urlparse import urlparse
+
 logger = logging.getLogger(__name__)
 
 __all__ = ['AzureExporter']
@@ -106,11 +111,19 @@ class AzureExporter(TransportMixin, BaseExporter):
                 baseType='RemoteDependencyData',
             )
             if sd.span_kind == SpanKind.CLIENT:
-                data.type = 'HTTP'  # TODO
+                if 'http.host' in sd.attributes:
+                    data.type = 'HTTP'
                 if 'http.url' in sd.attributes:
                     url = sd.attributes['http.url']
                     # TODO: error handling, probably put scheme as well
-                    data.name = utils.url_to_dependency_name(url)
+                    data.data = url
+                    parse_url = urlparse(url)
+                    # target matches authority (host:port)
+                    data.target = parse_url.netloc
+                    if "http.method" in sd.attributes:
+                        # name is METHOD/path
+                        data.name = sd.attributes["http.method"] \
+                            + "/" + parse_url.path
                 if 'http.status_code' in sd.attributes:
                     data.resultCode = str(sd.attributes['http.status_code'])
             else:

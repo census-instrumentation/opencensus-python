@@ -64,10 +64,6 @@ def timestamp_to_iso_str(timestamp):
     return to_iso_str(datetime.datetime.utcfromtimestamp(timestamp))
 
 
-def url_to_dependency_name(url):
-    return urlparse(url).netloc
-
-
 # Validate UUID format
 # Specs taken from https://tools.ietf.org/html/rfc4122
 uuid_regex_pattern = re.compile('^[0-9a-f]{8}-'
