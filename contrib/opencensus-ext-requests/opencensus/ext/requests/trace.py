@@ -93,7 +93,7 @@ def wrap_requests(requests_func):
 
         # Add the component type to attributes
         _tracer.add_attribute_to_current_span(
-            "component", "http")
+            "component", "HTTP")
 
         # Add the requests host to attributes
         _tracer.add_attribute_to_current_span(
@@ -170,6 +170,10 @@ def wrap_session_request(wrapped, instance, args, kwargs):
             tracer_headers)
     except Exception:  # pragma: NO COVER
         pass
+
+    # Add the component type to attributes
+    _tracer.add_attribute_to_current_span(
+        "component", "HTTP")
 
     # Add the requests host to attributes
     _tracer.add_attribute_to_current_span(

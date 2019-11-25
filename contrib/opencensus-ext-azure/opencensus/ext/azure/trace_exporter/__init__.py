@@ -111,8 +111,7 @@ class AzureExporter(TransportMixin, BaseExporter):
                 baseType='RemoteDependencyData',
             )
             if sd.span_kind == SpanKind.CLIENT:
-                if 'http.host' in sd.attributes:
-                    data.type = 'HTTP'
+                data.type = sd.attributes.get('component')
                 if 'http.url' in sd.attributes:
                     url = sd.attributes['http.url']
                     # TODO: error handling, probably put scheme as well
@@ -120,9 +119,9 @@ class AzureExporter(TransportMixin, BaseExporter):
                     parse_url = urlparse(url)
                     # target matches authority (host:port)
                     data.target = parse_url.netloc
-                    if "http.method" in sd.attributes:
+                    if 'http.method' in sd.attributes:
                         # name is METHOD/path
-                        data.name = sd.attributes["http.method"] \
+                        data.name = sd.attributes['http.method'] \
                             + "/" + parse_url.path
                 if 'http.status_code' in sd.attributes:
                     data.resultCode = str(sd.attributes['http.status_code'])
