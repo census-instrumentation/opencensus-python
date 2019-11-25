@@ -154,6 +154,12 @@ class TestAzureExporter(unittest.TestCase):
             '2010-10-24T07:28:38.123456Z')
         self.assertEqual(
             envelope.data.baseData.name,
+            'GET//wiki/Rabbit')
+        self.assertEqual(
+            envelope.data.baseData.data,
+            'https://www.wikipedia.org/wiki/Rabbit')
+        self.assertEqual(
+            envelope.data.baseData.target,
             'www.wikipedia.org')
         self.assertEqual(
             envelope.data.baseData.id,
