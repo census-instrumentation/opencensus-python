@@ -228,7 +228,7 @@ class TestAzureExporter(unittest.TestCase):
             '0.00:00:00.111')
         self.assertEqual(
             envelope.data.baseData.type,
-            'HTTP')
+            None)
         self.assertEqual(
             envelope.data.baseType,
             'RemoteDependencyData')
@@ -246,6 +246,7 @@ class TestAzureExporter(unittest.TestCase):
             span_id='6e0c63257de34c92',
             parent_span_id='6e0c63257de34c93',
             attributes={
+                'component': 'HTTP',
                 'http.method': 'GET',
                 'http.path': '/wiki/Rabbit',
                 'http.route': '/wiki/Rabbit',
@@ -316,6 +317,7 @@ class TestAzureExporter(unittest.TestCase):
             span_id='6e0c63257de34c92',
             parent_span_id='6e0c63257de34c93',
             attributes={
+                'component': 'HTTP',
                 'http.method': 'GET',
                 'http.path': '/wiki/Rabbit',
                 'http.route': '/wiki/Rabbit',
