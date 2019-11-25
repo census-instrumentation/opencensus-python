@@ -122,6 +122,7 @@ class TestAzureExporter(unittest.TestCase):
             span_id='6e0c63257de34c92',
             parent_span_id='6e0c63257de34c93',
             attributes={
+                'component': 'HTTP',
                 'http.method': 'GET',
                 'http.url': 'https://www.wikipedia.org/wiki/Rabbit',
                 'http.status_code': 200,
