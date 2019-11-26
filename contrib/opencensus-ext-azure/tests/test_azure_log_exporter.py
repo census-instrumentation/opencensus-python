@@ -134,3 +134,34 @@ class TestAzureLogHandler(unittest.TestCase):
             envelope.iKey,
             '12345678-1234-5678-abcd-12345678abcd')
         handler.close()
+
+    @mock.patch('requests.post', return_value=mock.Mock())
+    def test_log_record_with_custom_properties(self, requests_mock):
+        logger = logging.getLogger(self.id())
+        handler = log_exporter.AzureLogHandler(
+            instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
+            storage_path=os.path.join(TEST_FOLDER, self.id()),
+        )
+        logger.addHandler(handler)
+        logger.warning('action', {'key-1': 'value-1', 'key-2': 'value-2'})
+        handler.close()
+        post_body = requests_mock.call_args_list[0][1]['data']
+        self.assertTrue('action' in post_body)
+        self.assertTrue('key-1' in post_body)
+        self.assertTrue('key-2' in post_body)
+
+    @mock.patch('requests.post', return_value=mock.Mock())
+    def test_log_with_invalid_custom_properties(self, requests_mock):
+        logger = logging.getLogger(self.id())
+        handler = log_exporter.AzureLogHandler(
+            instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
+            storage_path=os.path.join(TEST_FOLDER, self.id()),
+        )
+        logger.addHandler(handler)
+        logger.warning('action_1_%s', None)
+        logger.warning('action_2_%s', 'not_a_dict')
+        handler.close()
+        self.assertEqual(len(os.listdir(handler.storage.path)), 0)
+        post_body = requests_mock.call_args_list[0][1]['data']
+        self.assertTrue('action_1' in post_body)
+        self.assertTrue('action_2' in post_body)
