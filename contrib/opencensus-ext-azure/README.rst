@@ -73,6 +73,20 @@ You can enrich the logs with trace IDs and span IDs by using the `logging integr
         logger.warning('In the span')
     logger.warning('After the span')
 
+You can also add custom properties to your log messages in the form of key-values.
+
+WARNING: For this feature to work, you need to pass a dictionary as the argument. If you pass arguments of any other type, the logger will ignore them. The solution is to convert these arguments into a dictionary.
+
+.. code:: python
+
+    import logging
+
+    from opencensus.ext.azure.log_exporter import AzureLogHandler
+
+    logger = logging.getLogger(__name__)
+    logger.addHandler(AzureLogHandler(connection_string='InstrumentationKey=<your-instrumentation_key-here>'))
+    logger.warning('action', {'key-1': 'value-1', 'key-2': 'value2'})
+
 Metrics
 ~~~~~~~
 
