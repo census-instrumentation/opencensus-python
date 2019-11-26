@@ -3,10 +3,12 @@
 ## Unreleased
 
 ## 1.0.1
-Released 2019-11-20
+Released 2019-11-26
 
 - Validate instrumentation key in Azure Exporters
   ([#789](https://github.com/census-instrumentation/opencensus-python/pull/789))
+- Add optional custom properties to logging messages
+  ([#822](https://github.com/census-instrumentation/opencensus-python/pull/822))
 
 ## 1.0.0
 Released 2019-09-30
