@@ -202,9 +202,9 @@ This example shows how to send a span "hello" to Azure Monitor.
     with tracer.span(name='hello'):
         print('Hello, World!')
 
-OpenCensus also supports several [integrations](https://github.com/census-instrumentation/opencensus-python#integration) which allows OpenCensus to integrate with third party libraries.
+OpenCensus also supports several `integrations <https://github.com/census-instrumentation/opencensus-python#integration>`_ which allows OpenCensus to integrate with third party libraries.
 
-This example shows how to integrate with the [requests](https://2.python-requests.org/en/master/) library.
+This example shows how to integrate with the `requests <https://2.python-requests.org/en/master/>`_ library.
 
 * Create an Azure Monitor resource and get the instrumentation key, more information can be found `here <https://docs.microsoft.com/azure/azure-monitor/app/create-new-resource>`_.
 * Install the `requests integration package <../opencensus-ext-requests>`_ using ``pip install opencensus-ext-requests``.
