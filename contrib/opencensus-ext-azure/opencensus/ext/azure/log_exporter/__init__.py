@@ -198,6 +198,8 @@ class AzureLogHandler(TransportMixin, BaseLogHandler):
             )
             envelope.data = Data(baseData=data, baseType='ExceptionData')
         else:
+            if isinstance(record.args, dict):
+                properties.update(record.args)
             envelope.name = 'Microsoft.ApplicationInsights.Message'
             data = Message(
                 message=self.format(record),
