@@ -277,6 +277,9 @@ class TestAzureExporter(unittest.TestCase):
             envelope.time,
             '2010-10-24T07:28:38.123456Z')
         self.assertEqual(
+            envelope.data.baseData.name,
+            'test')
+        self.assertEqual(
             envelope.data.baseData.data,
             'https://www.wikipedia.org/wiki/Rabbit')
         self.assertEqual(
