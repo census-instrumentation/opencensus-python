@@ -79,6 +79,39 @@ Stackdriver Prerequisites
 - Google Cloud Platform account and project.
 - Google Stackdriver Monitoring enabled on your project (Need help? `Click here`_).
 
+Google Kubernetes Engine (GKE) Prerequisites
+*********************************************
+
+If you are using OpenCensus in GKE you will also need to explicitly set the `CONTAINER_NAME` environment variable. This can be achieved many ways; for instance you can add the variable to your Dockerfile:
+
+    .. code::
+
+        ENV CONTAINER_NAME=<your container name>
+
+Another way to achieve this is in the deployment `.yaml` file for the pod:
+
+    .. code:: yaml
+
+        - name: {{ RESOURCE_NAME }}
+          ...
+          properties:
+          apiVersion: apps/v1
+          kind: Deployment
+          ...
+          spec:
+            replicas: {{ NUM_REPLICAS }}
+            ...
+            template:
+              ...
+              spec:
+                containers:
+                - name: {{ CONTAINER_NAME }}
+                  image: {{ IMAGE }}
+                  env:
+                  - ...
+                  - name: CONTAINER_NAME
+                    value: {{ CONTAINER_NAME }}
+
 .. _Click here: https://opencensus.io/codelabs/stackdriver
 
 Register the Stackdriver exporter
