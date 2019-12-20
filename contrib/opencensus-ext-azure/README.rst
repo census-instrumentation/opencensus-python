@@ -73,6 +73,20 @@ You can enrich the logs with trace IDs and span IDs by using the `logging integr
         logger.warning('In the span')
     logger.warning('After the span')
 
+You can also add custom properties to your log messages in the form of key-values.
+
+WARNING: For this feature to work, you need to pass a dictionary as the argument. If you pass arguments of any other type, the logger will ignore them. The solution is to convert these arguments into a dictionary.
+
+.. code:: python
+
+    import logging
+
+    from opencensus.ext.azure.log_exporter import AzureLogHandler
+
+    logger = logging.getLogger(__name__)
+    logger.addHandler(AzureLogHandler(connection_string='InstrumentationKey=<your-instrumentation_key-here>'))
+    logger.warning('action', {'key-1': 'value-1', 'key-2': 'value2'})
+
 Metrics
 ~~~~~~~
 
@@ -188,9 +202,9 @@ This example shows how to send a span "hello" to Azure Monitor.
     with tracer.span(name='hello'):
         print('Hello, World!')
 
-OpenCensus also supports several [integrations](https://github.com/census-instrumentation/opencensus-python#integration) which allows OpenCensus to integrate with third party libraries.
+OpenCensus also supports several `integrations <https://github.com/census-instrumentation/opencensus-python#integration>`_ which allows OpenCensus to integrate with third party libraries.
 
-This example shows how to integrate with the [requests](https://2.python-requests.org/en/master/) library.
+This example shows how to integrate with the `requests <https://2.python-requests.org/en/master/>`_ library.
 
 * Create an Azure Monitor resource and get the instrumentation key, more information can be found `here <https://docs.microsoft.com/azure/azure-monitor/app/create-new-resource>`_.
 * Install the `requests integration package <../opencensus-ext-requests>`_ using ``pip install opencensus-ext-requests``.
