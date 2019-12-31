@@ -101,6 +101,7 @@ class TestAzureExporter(unittest.TestCase):
         from opencensus.trace.span import SpanKind
         from opencensus.trace.span_context import SpanContext
         from opencensus.trace.span_data import SpanData
+        from opencensus.trace.status import Status
         from opencensus.trace.trace_options import TraceOptions
         from opencensus.trace.tracestate import Tracestate
 
@@ -131,7 +132,7 @@ class TestAzureExporter(unittest.TestCase):
             end_time='2010-10-24T07:28:38.234567Z',
             stack_trace=None,
             links=None,
-            status=None,
+            status=Status(0),
             annotations=None,
             message_events=None,
             same_process_as_parent_span=None,
@@ -146,7 +147,7 @@ class TestAzureExporter(unittest.TestCase):
             'Microsoft.ApplicationInsights.RemoteDependency')
         self.assertEqual(
             envelope.tags['ai.operation.parentId'],
-            '|6e0c63257de34c90bf9efcd03927272e.6e0c63257de34c93.')
+            '6e0c63257de34c93')
         self.assertEqual(
             envelope.tags['ai.operation.id'],
             '6e0c63257de34c90bf9efcd03927272e')
@@ -164,7 +165,7 @@ class TestAzureExporter(unittest.TestCase):
             'www.wikipedia.org')
         self.assertEqual(
             envelope.data.baseData.id,
-            '|6e0c63257de34c90bf9efcd03927272e.6e0c63257de34c92.')
+            '6e0c63257de34c92')
         self.assertEqual(
             envelope.data.baseData.resultCode,
             '200')
@@ -195,7 +196,7 @@ class TestAzureExporter(unittest.TestCase):
             end_time='2010-10-24T07:28:38.234567Z',
             stack_trace=None,
             links=None,
-            status=None,
+            status=Status(0),
             annotations=None,
             message_events=None,
             same_process_as_parent_span=None,
@@ -210,7 +211,7 @@ class TestAzureExporter(unittest.TestCase):
             'Microsoft.ApplicationInsights.RemoteDependency')
         self.assertEqual(
             envelope.tags['ai.operation.parentId'],
-            '|6e0c63257de34c90bf9efcd03927272e.6e0c63257de34c93.')
+            '6e0c63257de34c93')
         self.assertEqual(
             envelope.tags['ai.operation.id'],
             '6e0c63257de34c90bf9efcd03927272e')
@@ -222,7 +223,7 @@ class TestAzureExporter(unittest.TestCase):
             'test')
         self.assertEqual(
             envelope.data.baseData.id,
-            '|6e0c63257de34c90bf9efcd03927272e.6e0c63257de34c92.')
+            '6e0c63257de34c92')
         self.assertEqual(
             envelope.data.baseData.duration,
             '0.00:00:00.111')
@@ -254,7 +255,7 @@ class TestAzureExporter(unittest.TestCase):
             end_time='2010-10-24T07:28:38.234567Z',
             stack_trace=None,
             links=None,
-            status=None,
+            status=Status(0),
             annotations=None,
             message_events=None,
             same_process_as_parent_span=None,
@@ -269,7 +270,7 @@ class TestAzureExporter(unittest.TestCase):
             'Microsoft.ApplicationInsights.RemoteDependency')
         self.assertEqual(
             envelope.tags['ai.operation.parentId'],
-            '|6e0c63257de34c90bf9efcd03927272e.6e0c63257de34c93.')
+            '6e0c63257de34c93')
         self.assertEqual(
             envelope.tags['ai.operation.id'],
             '6e0c63257de34c90bf9efcd03927272e')
@@ -287,7 +288,7 @@ class TestAzureExporter(unittest.TestCase):
             'www.wikipedia.org')
         self.assertEqual(
             envelope.data.baseData.id,
-            '|6e0c63257de34c90bf9efcd03927272e.6e0c63257de34c92.')
+            '6e0c63257de34c92')
         self.assertEqual(
             envelope.data.baseData.resultCode,
             '200')
@@ -325,7 +326,7 @@ class TestAzureExporter(unittest.TestCase):
             end_time='2010-10-24T07:28:38.234567Z',
             stack_trace=None,
             links=None,
-            status=None,
+            status=Status(0),
             annotations=None,
             message_events=None,
             same_process_as_parent_span=None,
@@ -340,7 +341,7 @@ class TestAzureExporter(unittest.TestCase):
             'Microsoft.ApplicationInsights.Request')
         self.assertEqual(
             envelope.tags['ai.operation.parentId'],
-            '|6e0c63257de34c90bf9efcd03927272e.6e0c63257de34c93.')
+            '6e0c63257de34c93')
         self.assertEqual(
             envelope.tags['ai.operation.id'],
             '6e0c63257de34c90bf9efcd03927272e')
@@ -352,7 +353,7 @@ class TestAzureExporter(unittest.TestCase):
             '2010-10-24T07:28:38.123456Z')
         self.assertEqual(
             envelope.data.baseData.id,
-            '|6e0c63257de34c90bf9efcd03927272e.6e0c63257de34c92.')
+            '6e0c63257de34c92')
         self.assertEqual(
             envelope.data.baseData.duration,
             '0.00:00:00.111')
@@ -396,7 +397,7 @@ class TestAzureExporter(unittest.TestCase):
             end_time='2010-10-24T07:28:38.234567Z',
             stack_trace=None,
             links=None,
-            status=None,
+            status=Status(0),
             annotations=None,
             message_events=None,
             same_process_as_parent_span=None,
@@ -411,7 +412,7 @@ class TestAzureExporter(unittest.TestCase):
             'Microsoft.ApplicationInsights.Request')
         self.assertEqual(
             envelope.tags['ai.operation.parentId'],
-            '|6e0c63257de34c90bf9efcd03927272e.6e0c63257de34c93.')
+            '6e0c63257de34c93')
         self.assertEqual(
             envelope.tags['ai.operation.id'],
             '6e0c63257de34c90bf9efcd03927272e')
@@ -423,7 +424,7 @@ class TestAzureExporter(unittest.TestCase):
             '2010-10-24T07:28:38.123456Z')
         self.assertEqual(
             envelope.data.baseData.id,
-            '|6e0c63257de34c90bf9efcd03927272e.6e0c63257de34c92.')
+            '6e0c63257de34c92')
         self.assertEqual(
             envelope.data.baseData.duration,
             '0.00:00:00.111')
@@ -460,7 +461,7 @@ class TestAzureExporter(unittest.TestCase):
             end_time='2010-10-24T07:28:38.234567Z',
             stack_trace=None,
             links=None,
-            status=None,
+            status=Status(0),
             annotations=None,
             message_events=None,
             same_process_as_parent_span=None,
@@ -475,7 +476,7 @@ class TestAzureExporter(unittest.TestCase):
             'Microsoft.ApplicationInsights.Request')
         self.assertEqual(
             envelope.tags['ai.operation.parentId'],
-            '|6e0c63257de34c90bf9efcd03927272e.6e0c63257de34c93.')
+            '6e0c63257de34c93')
         self.assertEqual(
             envelope.tags['ai.operation.id'],
             '6e0c63257de34c90bf9efcd03927272e')
@@ -484,7 +485,7 @@ class TestAzureExporter(unittest.TestCase):
             '2010-10-24T07:28:38.123456Z')
         self.assertEqual(
             envelope.data.baseData.id,
-            '|6e0c63257de34c90bf9efcd03927272e.6e0c63257de34c92.')
+            '6e0c63257de34c92')
         self.assertEqual(
             envelope.data.baseData.duration,
             '0.00:00:00.111')
@@ -509,7 +510,7 @@ class TestAzureExporter(unittest.TestCase):
             end_time='2010-10-24T07:28:38.234567Z',
             stack_trace=None,
             links=None,
-            status=None,
+            status=Status(0),
             annotations=None,
             message_events=None,
             same_process_as_parent_span=None,
@@ -539,13 +540,123 @@ class TestAzureExporter(unittest.TestCase):
             '0.00:00:00.111')
         self.assertEqual(
             envelope.data.baseData.id,
-            '|6e0c63257de34c90bf9efcd03927272e.6e0c63257de34c92.')
+            '6e0c63257de34c92')
         self.assertEqual(
             envelope.data.baseData.type,
             'INPROC')
         self.assertEqual(
             envelope.data.baseType,
             'RemoteDependencyData')
+
+        # Status server status code attribute
+        envelope = exporter.span_data_to_envelope(SpanData(
+            name='test',
+            context=SpanContext(
+                trace_id='6e0c63257de34c90bf9efcd03927272e',
+                span_id='6e0c63257de34c91',
+                trace_options=TraceOptions('1'),
+                tracestate=Tracestate(),
+                from_header=False,
+            ),
+            span_id='6e0c63257de34c92',
+            parent_span_id='6e0c63257de34c93',
+            attributes={
+                'http.status_code': 201
+            },
+            start_time='2010-10-24T07:28:38.123456Z',
+            end_time='2010-10-24T07:28:38.234567Z',
+            stack_trace=None,
+            links=None,
+            status=Status(0),
+            annotations=None,
+            message_events=None,
+            same_process_as_parent_span=None,
+            child_span_count=None,
+            span_kind=SpanKind.SERVER,
+        ))
+        self.assertEqual(envelope.data.baseData.responseCode, "201")
+        self.assertTrue(envelope.data.baseData.success)
+
+        # Status server status code attribute missing
+        envelope = exporter.span_data_to_envelope(SpanData(
+            name='test',
+            context=SpanContext(
+                trace_id='6e0c63257de34c90bf9efcd03927272e',
+                span_id='6e0c63257de34c91',
+                trace_options=TraceOptions('1'),
+                tracestate=Tracestate(),
+                from_header=False,
+            ),
+            span_id='6e0c63257de34c92',
+            parent_span_id='6e0c63257de34c93',
+            attributes={},
+            start_time='2010-10-24T07:28:38.123456Z',
+            end_time='2010-10-24T07:28:38.234567Z',
+            stack_trace=None,
+            links=None,
+            status=Status(1),
+            annotations=None,
+            message_events=None,
+            same_process_as_parent_span=None,
+            child_span_count=None,
+            span_kind=SpanKind.SERVER,
+        ))
+        self.assertFalse(envelope.data.baseData.success)
+
+        # Status client status code attribute
+        envelope = exporter.span_data_to_envelope(SpanData(
+            name='test',
+            context=SpanContext(
+                trace_id='6e0c63257de34c90bf9efcd03927272e',
+                span_id='6e0c63257de34c91',
+                trace_options=TraceOptions('1'),
+                tracestate=Tracestate(),
+                from_header=False,
+            ),
+            span_id='6e0c63257de34c92',
+            parent_span_id='6e0c63257de34c93',
+            attributes={
+                'http.status_code': 201
+            },
+            start_time='2010-10-24T07:28:38.123456Z',
+            end_time='2010-10-24T07:28:38.234567Z',
+            stack_trace=None,
+            links=None,
+            status=Status(0),
+            annotations=None,
+            message_events=None,
+            same_process_as_parent_span=None,
+            child_span_count=None,
+            span_kind=SpanKind.CLIENT,
+        ))
+        self.assertEqual(envelope.data.baseData.resultCode, "201")
+        self.assertTrue(envelope.data.baseData.success)
+
+        # Status client status code attributes missing
+        envelope = exporter.span_data_to_envelope(SpanData(
+            name='test',
+            context=SpanContext(
+                trace_id='6e0c63257de34c90bf9efcd03927272e',
+                span_id='6e0c63257de34c91',
+                trace_options=TraceOptions('1'),
+                tracestate=Tracestate(),
+                from_header=False,
+            ),
+            span_id='6e0c63257de34c92',
+            parent_span_id='6e0c63257de34c93',
+            attributes={},
+            start_time='2010-10-24T07:28:38.123456Z',
+            end_time='2010-10-24T07:28:38.234567Z',
+            stack_trace=None,
+            links=None,
+            status=Status(1),
+            annotations=None,
+            message_events=None,
+            same_process_as_parent_span=None,
+            child_span_count=None,
+            span_kind=SpanKind.CLIENT,
+        ))
+        self.assertFalse(envelope.data.baseData.success)
 
         exporter._stop()
 
