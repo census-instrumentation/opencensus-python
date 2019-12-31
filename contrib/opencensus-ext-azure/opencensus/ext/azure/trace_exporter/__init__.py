@@ -74,7 +74,7 @@ class AzureExporter(TransportMixin, BaseExporter):
                     sd.end_time,
                 ),
                 responseCode=str(sd.status.code),
-                success=False, # Modify based off attributes or status
+                success=False,  # Modify based off attributes or status
                 properties={},
             )
             envelope.data = Data(baseData=data, baseType='RequestData')
@@ -104,7 +104,7 @@ class AzureExporter(TransportMixin, BaseExporter):
                     sd.start_time,
                     sd.end_time,
                 ),
-                success=False, # Modify based off attributes or status
+                success=False,  # Modify based off attributes or status
                 properties={},
             )
             envelope.data = Data(
