@@ -60,6 +60,7 @@ class AzureExporter(TransportMixin, BaseExporter):
             tags=dict(utils.azure_monitor_context),
             time=sd.start_time,
         )
+
         envelope.tags['ai.operation.id'] = sd.context.trace_id
         if sd.parent_span_id:
             envelope.tags['ai.operation.parentId'] = '{}'.format(
