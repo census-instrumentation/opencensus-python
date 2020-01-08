@@ -146,7 +146,7 @@ class ContextTracer(base.Tracer):
         current_span.add_attribute(attribute_key, attribute_value)
 
     def get_span_datas(self, span):
-        """Extracts a list of SpanData tuples from a span
+        """Extracts a list of SpanData tuples from a span.
 
         :rtype: list of opencensus.trace.span_data.SpanData
         :return list of SpanData tuples
