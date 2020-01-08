@@ -41,7 +41,7 @@ def main():
     # TODO: you need to specify the instrumentation key in a connection string
     # and place it in the APPLICATIONINSIGHTS_CONNECTION_STRING
     # environment variable.
-    exporter = metrics_exporter.new_metrics_exporter()
+    exporter = metrics_exporter.new_metrics_exporter(instrumentation_key='70c241c9-206e-4811-82b4-2bc8a52170b9')
     view_manager.register_exporter(exporter)
 
     view_manager.register_view(CARROTS_VIEW)
