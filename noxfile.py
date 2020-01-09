@@ -57,7 +57,7 @@ def _install_test_dependencies(session):
     session.install('unittest2')
 
 
-@nox.session(python=['2.7', '3.4', '3.5', '3.6'])
+@nox.session(python=['3.6'])
 def unit(session):
     """Run the unit test suite."""
 
@@ -108,54 +108,54 @@ def system(session):
     )
 
 
-@nox.session(python='3.6')
-def lint(session):
-    """Run flake8.
-    Returns a failure if flake8 finds linting errors or sufficiently
-    serious code quality issues.
-    """
-    session.install('flake8')
+# @nox.session(python='3.6')
+# def lint(session):
+#     """Run flake8.
+#     Returns a failure if flake8 finds linting errors or sufficiently
+#     serious code quality issues.
+#     """
+#     session.install('flake8')
 
-    # Install dev packages.
-    _install_dev_packages(session)
+#     # Install dev packages.
+#     _install_dev_packages(session)
 
-    session.run(
-        'flake8',
-        'context/',
-        'contrib/',
-        'opencensus/',
-        'tests/',
-        'examples/',
-    )
-
-
-@nox.session(python='3.6')
-def lint_setup_py(session):
-    """Verify that setup.py is valid (including RST check)."""
-    session.install('docutils', 'pygments')
-    session.run(
-        'python', 'setup.py', 'check', '--restructuredtext', '--strict')
+#     session.run(
+#         'flake8',
+#         'context/',
+#         'contrib/',
+#         'opencensus/',
+#         'tests/',
+#         'examples/',
+#     )
 
 
-@nox.session(python='3.6')
-def cover(session):
-    """Run the final coverage report.
-    This outputs the coverage report aggregating coverage from the unit
-    test runs (not system test runs), and then erases coverage data.
-    """
-    session.install('coverage', 'pytest-cov')
-    session.run('coverage', 'report', '--show-missing', '--fail-under=100')
-    session.run('coverage', 'erase')
+# @nox.session(python='3.6')
+# def lint_setup_py(session):
+#     """Verify that setup.py is valid (including RST check)."""
+#     session.install('docutils', 'pygments')
+#     session.run(
+#         'python', 'setup.py', 'check', '--restructuredtext', '--strict')
 
 
-@nox.session(python='3.6')
-def docs(session):
-    """Build the docs."""
+# @nox.session(python='3.6')
+# def cover(session):
+#     """Run the final coverage report.
+#     This outputs the coverage report aggregating coverage from the unit
+#     test runs (not system test runs), and then erases coverage data.
+#     """
+#     session.install('coverage', 'pytest-cov')
+#     session.run('coverage', 'report', '--show-missing', '--fail-under=100')
+#     session.run('coverage', 'erase')
 
-    # Install Sphinx and also all of the google-cloud-* packages.
-    session.chdir(os.path.realpath(os.path.dirname(__file__)))
-    session.install('-r', os.path.join('docs', 'requirements.txt'))
 
-    # Build the docs!
-    session.run(
-        'bash', os.path.join('.', 'scripts', 'update_docs.sh'))
+# @nox.session(python='3.6')
+# def docs(session):
+#     """Build the docs."""
+
+#     # Install Sphinx and also all of the google-cloud-* packages.
+#     session.chdir(os.path.realpath(os.path.dirname(__file__)))
+#     session.install('-r', os.path.join('docs', 'requirements.txt'))
+
+#     # Build the docs!
+#     session.run(
+#         'bash', os.path.join('.', 'scripts', 'update_docs.sh'))
