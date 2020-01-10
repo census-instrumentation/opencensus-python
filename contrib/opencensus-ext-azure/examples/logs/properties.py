@@ -24,7 +24,7 @@ logger.addHandler(AzureLogHandler())
 
 properties = {'customDimensions': {'key-1': 'value-1', 'key-2': 'value2'}}
 
-# Use properties logging statements
+# Use properties in logging statements
 logger.warning('action', extra=properties)
 
 # Use properties in exception logs
