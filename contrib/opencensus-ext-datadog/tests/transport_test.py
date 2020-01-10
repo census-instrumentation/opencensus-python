@@ -13,4 +13,3 @@ class TestTraces(unittest.TestCase):
     def test_send_traces(self, mr_mock):
         transport = DDTransport('test')
         transport.send_traces({})
-
