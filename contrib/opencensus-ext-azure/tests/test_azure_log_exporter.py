@@ -106,7 +106,13 @@ class TestAzureLogHandler(unittest.TestCase):
         try:
             return 1 / 0  # generate a ZeroDivisionError
         except Exception:
-            properties={'customDimensions': {'key-1': 'value-1', 'key-2': 'value-2'}}
+            properties = {
+                'customDimensions':
+                {
+                        'key-1': 'value-1',
+                        'key-2': 'value-2'
+                }
+            }
             logger.exception('Captured an exception.', extra=properties)
         handler.close()
         self.assertEqual(len(requests_mock.call_args_list), 1)
@@ -163,7 +169,13 @@ class TestAzureLogHandler(unittest.TestCase):
             storage_path=os.path.join(TEST_FOLDER, self.id()),
         )
         logger.addHandler(handler)
-        logger.warning('action', extra={'customDimensions': {'key-1': 'value-1', 'key-2': 'value-2'}})
+        logger.warning('action', extra={
+            'customDimensions':
+                {
+                    'key-1': 'value-1',
+                    'key-2': 'value-2'
+                }
+            })
         handler.close()
         post_body = requests_mock.call_args_list[0][1]['data']
         self.assertTrue('action' in post_body)
@@ -179,8 +191,12 @@ class TestAzureLogHandler(unittest.TestCase):
         )
         logger.addHandler(handler)
         logger.warning('action_1_%s', None)
-        logger.warning('action_2_%s', 'arg', extra={'customDimensions': 'not_a_dict'})
-        logger.warning('action_3_%s', 'arg', extra={'notCustomDimensions': {'key-1': 'value-1'}})
+        logger.warning('action_2_%s', 'arg', extra={
+            'customDimensions': 'not_a_dict'
+        })
+        logger.warning('action_3_%s', 'arg', extra={
+            'notCustomDimensions': {'key-1': 'value-1'}
+        })
 
         handler.close()
         self.assertEqual(len(os.listdir(handler.storage.path)), 0)

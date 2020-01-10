@@ -28,6 +28,8 @@ logger.addHandler(AzureLogHandler())
 '''
 Option 1: Use LoggerAdapters to add custom dimensions
 '''
+
+
 class CustomDimensionsAdapter(logging.LoggerAdapter):
 
     @property
@@ -42,9 +44,9 @@ class CustomDimensionsAdapter(logging.LoggerAdapter):
         if self.customDimensions:
             if 'extra' not in kwargs:
                 kwargs['extra'] = {'customDimensions': self.customDimensions}
-            
+
             elif 'extra' in kwargs and 'customDimensions' in kwargs['extra']:
-                kwargs['extra'] = { 
+                kwargs['extra'] = {
                     'customDimensions': {
                         **self.customDimensions,
                         **kwargs['extra']['customDimensions']
@@ -53,15 +55,27 @@ class CustomDimensionsAdapter(logging.LoggerAdapter):
 
         return msg, kwargs
 
-adapter = CustomDimensionsAdapter(logger, extra={'customDimensions': {'contextualKey': 'contextualValue'}})
+
+adapter = CustomDimensionsAdapter(logger, extra={
+    'customDimensions': {
+        'contextualKey': 'contextualValue'
+    }})
 
 adapter.warning('message_with_adapter')
-adapter.warning('message_with_adapter', extra={'customDimensions': {'optionalExtraKey': 'optionalExtraValue'}})
-adapter.warning('message_with_adapter_%s', 'arg', extra={'customDimensions': {'optionalExtraKey': 'optionalExtraValue'}})
+adapter.warning('message_with_adapter', extra={
+    'customDimensions': {
+        'optionalExtraKey': 'optionalExtraValue'
+    }})
+adapter.warning('message_with_adapter_%s', 'arg', extra={
+    'customDimensions': {
+        'optionalExtraKey': 'optionalExtraValue'
+    }})
 
 '''
 Option 2: Use Logging Filters to add custom dimensions
 '''
+
+
 class CustomDimensionsFilter(logging.Filter):
 
     def __init__(self, customDimensions: dict, *args, **kwargs):
@@ -77,9 +91,18 @@ class CustomDimensionsFilter(logging.Filter):
 
         return True
 
-f = CustomDimensionsFilter(customDimensions={'contextualKey': 'contextualValue'})
+
+f = CustomDimensionsFilter(customDimensions={
+    'contextualKey': 'contextualValue'
+    })
 logger.addFilter(f)
 
 logger.warning('message_with_filter')
-logger.warning('message_with_filter', extra={'customDimensions': {'optionalExtraKey': 'optionalExtraValue'}})
-logger.warning('message_with_filter_%s', 'arg', extra={'customDimensions': {'optionalExtraKey': 'optionalExtraValue'}})
+logger.warning('message_with_filter', extra={
+    'customDimensions': {
+        'optionalExtraKey': 'optionalExtraValue'
+    }})
+logger.warning('message_with_filter_%s', 'arg', extra={
+    'customDimensions': {
+        'optionalExtraKey': 'optionalExtraValue'
+    }})
