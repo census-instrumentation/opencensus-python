@@ -33,23 +33,23 @@ Option 1: Use LoggerAdapters to add custom dimensions
 class CustomDimensionsAdapter(logging.LoggerAdapter):
 
     @property
-    def customDimensions(self):
-        if self.extra and 'customDimensions' in self.extra:
-            return self.extra['customDimensions']
+    def custom_dimensions(self):
+        if self.extra and 'custom_dimensions' in self.extra:
+            return self.extra['custom_dimensions']
         else:
             return {}
 
     def process(self, msg, kwargs):
 
-        if self.customDimensions:
+        if self.custom_dimensions:
             if 'extra' not in kwargs:
-                kwargs['extra'] = {'customDimensions': self.customDimensions}
+                kwargs['extra'] = {'custom_dimensions': self.custom_dimensions}
 
-            elif 'extra' in kwargs and 'customDimensions' in kwargs['extra']:
+            elif 'extra' in kwargs and 'custom_dimensions' in kwargs['extra']:
                 kwargs['extra'] = {
-                    'customDimensions': {
-                        **self.customDimensions,
-                        **kwargs['extra']['customDimensions']
+                    'custom_dimensions': {
+                        **self.custom_dimensions,
+                        **kwargs['extra']['custom_dimensions']
                     }
                 }
 
@@ -57,18 +57,18 @@ class CustomDimensionsAdapter(logging.LoggerAdapter):
 
 
 adapter = CustomDimensionsAdapter(logger, extra={
-    'customDimensions': {
-        'contextualKey': 'contextualValue'
+    'custom_dimensions': {
+        'contextual_key': 'contextual_value'
     }})
 
 adapter.warning('message_with_adapter')
 adapter.warning('message_with_adapter', extra={
-    'customDimensions': {
-        'optionalExtraKey': 'optionalExtraValue'
+    'custom_dimensions': {
+        'optional_extra_key': 'optional_extra_value'
     }})
 adapter.warning('message_with_adapter_%s', 'arg', extra={
-    'customDimensions': {
-        'optionalExtraKey': 'optionalExtraValue'
+    'custom_dimensions': {
+        'optional_extra_key': 'optional_extra_value'
     }})
 
 '''
@@ -78,31 +78,31 @@ Option 2: Use Logging Filters to add custom dimensions
 
 class CustomDimensionsFilter(logging.Filter):
 
-    def __init__(self, customDimensions: dict, *args, **kwargs):
+    def __init__(self, custom_dimensions: dict, *args, **kwargs):
         super(CustomDimensionsFilter, self).__init__(*args, **kwargs)
-        self.customDimensions = customDimensions
+        self.custom_dimensions = custom_dimensions
 
     def filter(self, record):
 
-        if hasattr(record, 'customDimensions'):
-            record.customDimensions.update(self.customDimensions)
+        if hasattr(record, 'custom_dimensions'):
+            record.custom_dimensions.update(self.custom_dimensions)
         else:
-            setattr(record, 'customDimensions', self.customDimensions)
+            setattr(record, 'custom_dimensions', self.custom_dimensions)
 
         return True
 
 
-f = CustomDimensionsFilter(customDimensions={
-    'contextualKey': 'contextualValue'
+f = CustomDimensionsFilter(custom_dimensions={
+    'contextual_key': 'contextual_value'
     })
 logger.addFilter(f)
 
 logger.warning('message_with_filter')
 logger.warning('message_with_filter', extra={
-    'customDimensions': {
-        'optionalExtraKey': 'optionalExtraValue'
+    'custom_dimensions': {
+        'optional_extra_key': 'optional_extra_value'
     }})
 logger.warning('message_with_filter_%s', 'arg', extra={
-    'customDimensions': {
-        'optionalExtraKey': 'optionalExtraValue'
+    'custom_dimensions': {
+        'optional_extra_key': 'optional_extra_value'
     }})

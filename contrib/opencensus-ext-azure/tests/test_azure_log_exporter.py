@@ -107,10 +107,10 @@ class TestAzureLogHandler(unittest.TestCase):
             return 1 / 0  # generate a ZeroDivisionError
         except Exception:
             properties = {
-                'customDimensions':
+                'custom_dimensions':
                 {
-                        'key-1': 'value-1',
-                        'key-2': 'value-2'
+                        'key_1': 'value_1',
+                        'key_2': 'value_2'
                 }
             }
             logger.exception('Captured an exception.', extra=properties)
@@ -118,8 +118,8 @@ class TestAzureLogHandler(unittest.TestCase):
         self.assertEqual(len(requests_mock.call_args_list), 1)
         post_body = requests_mock.call_args_list[0][1]['data']
         self.assertTrue('ZeroDivisionError' in post_body)
-        self.assertTrue('key-1' in post_body)
-        self.assertTrue('key-2' in post_body)
+        self.assertTrue('key_1' in post_body)
+        self.assertTrue('key_2' in post_body)
 
     @mock.patch('requests.post', return_value=mock.Mock())
     def test_export_empty(self, request_mock):
@@ -170,17 +170,17 @@ class TestAzureLogHandler(unittest.TestCase):
         )
         logger.addHandler(handler)
         logger.warning('action', extra={
-            'customDimensions':
+            'custom_dimensions':
                 {
-                    'key-1': 'value-1',
-                    'key-2': 'value-2'
+                    'key_1': 'value_1',
+                    'key_2': 'value_2'
                 }
             })
         handler.close()
         post_body = requests_mock.call_args_list[0][1]['data']
         self.assertTrue('action' in post_body)
-        self.assertTrue('key-1' in post_body)
-        self.assertTrue('key-2' in post_body)
+        self.assertTrue('key_1' in post_body)
+        self.assertTrue('key_2' in post_body)
 
     @mock.patch('requests.post', return_value=mock.Mock())
     def test_log_with_invalid_custom_properties(self, requests_mock):
@@ -192,10 +192,10 @@ class TestAzureLogHandler(unittest.TestCase):
         logger.addHandler(handler)
         logger.warning('action_1_%s', None)
         logger.warning('action_2_%s', 'arg', extra={
-            'customDimensions': 'not_a_dict'
+            'custom_dimensions': 'not_a_dict'
         })
         logger.warning('action_3_%s', 'arg', extra={
-            'notCustomDimensions': {'key-1': 'value-1'}
+            'notcustom_dimensions': {'key_1': 'value_1'}
         })
 
         handler.close()
@@ -206,4 +206,4 @@ class TestAzureLogHandler(unittest.TestCase):
         self.assertTrue('action_3_arg' in post_body)
 
         self.assertFalse('not_a_dict' in post_body)
-        self.assertFalse('key-1' in post_body)
+        self.assertFalse('key_1' in post_body)
