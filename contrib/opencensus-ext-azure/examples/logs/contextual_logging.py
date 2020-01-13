@@ -26,7 +26,7 @@ logger.addHandler(AzureLogHandler())
 # https://docs.python.org/3/howto/logging-cookbook.html#adding-contextual-information-to-your-logging-output
 
 '''
-Option 1: Use LoggerAdapters to add custom dimensions
+Option 1: Use LoggerAdapter to add custom dimensions
 '''
 
 
@@ -46,11 +46,9 @@ class CustomDimensionsAdapter(logging.LoggerAdapter):
                 kwargs['extra'] = {'custom_dimensions': self.custom_dimensions}
 
             elif 'extra' in kwargs and 'custom_dimensions' in kwargs['extra']:
-                kwargs['extra'] = {
-                    'custom_dimensions': {
-                        **self.custom_dimensions,
-                        **kwargs['extra']['custom_dimensions']
-                    }
+                kwargs['extra']['custom_dimensions'] = {
+                    **self.custom_dimensions,
+                    **kwargs['extra']['custom_dimensions']
                 }
 
         return msg, kwargs
@@ -72,7 +70,7 @@ adapter.warning('message_with_adapter_%s', 'arg', extra={
     }})
 
 '''
-Option 2: Use Logging Filters to add custom dimensions
+Option 2: Use Logging Filter to add custom dimensions
 '''
 
 
