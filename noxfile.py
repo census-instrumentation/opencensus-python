@@ -52,7 +52,7 @@ def _install_dev_packages(session):
 def _install_test_dependencies(session):
     session.install('mock')
     session.install('pytest')
-    session.install('pytest-cov')
+    # session.install('pytest-cov')
     session.install('retrying')
     session.install('unittest2')
 
@@ -69,15 +69,8 @@ def unit(session):
 
     # Run pytest against the unit tests.
     session.run(
-        'pytest',
+        'py.test',
         '--quiet',
-        '--cov=opencensus',
-        '--cov=context',
-        '--cov=contrib',
-        '--cov-append',
-        '--cov-config=.coveragerc',
-        '--cov-report=',
-        '--cov-fail-under=97',
         'tests/unit/',
         'context/',
         'contrib/',
@@ -137,15 +130,15 @@ def lint_setup_py(session):
         'python', 'setup.py', 'check', '--restructuredtext', '--strict')
 
 
-@nox.session(python='3.6')
-def cover(session):
-    """Run the final coverage report.
-    This outputs the coverage report aggregating coverage from the unit
-    test runs (not system test runs), and then erases coverage data.
-    """
-    session.install('coverage', 'pytest-cov')
-    session.run('coverage', 'report', '--show-missing', '--fail-under=100')
-    session.run('coverage', 'erase')
+# @nox.session(python='3.6')
+# def cover(session):
+#     """Run the final coverage report.
+#     This outputs the coverage report aggregating coverage from the unit
+#     test runs (not system test runs), and then erases coverage data.
+#     """
+#     session.install('coverage', 'pytest-cov')
+#     session.run('coverage', 'report', '--show-missing', '--fail-under=100')
+#     session.run('coverage', 'erase')
 
 
 @nox.session(python='3.6')
