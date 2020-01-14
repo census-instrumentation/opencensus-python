@@ -25,7 +25,7 @@ def _install_dev_packages(session):
     session.install('-e', '.')
 
     session.install('-e', 'contrib/opencensus-ext-azure')
-    # session.install('-e', 'contrib/opencensus-ext-datadog')
+    session.install('-e', 'contrib/opencensus-ext-datadog')
     session.install('-e', 'contrib/opencensus-ext-dbapi')
     session.install('-e', 'contrib/opencensus-ext-django')
     session.install('-e', 'contrib/opencensus-ext-flask')
@@ -67,9 +67,9 @@ def unit(session):
     # Install dev packages.
     _install_dev_packages(session)
 
-    # Run py.test against the unit tests.
+    # Run pytest against the unit tests.
     session.run(
-        'py.test',
+        'pytest',
         '--quiet',
         '--cov=opencensus',
         '--cov=context',
