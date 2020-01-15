@@ -10,7 +10,7 @@ jobs:
       ignore:
         - gh-pages
     docker:
-      - image: googleapis/nox:latest
+      - image: circleci/python:3.6.9
       - image: mysql:5.7
         environment:
           MYSQL_ROOT_HOST: "%"
@@ -30,7 +30,7 @@ jobs:
       - run:
           name: Run tests - opencensus
           command: |
-            pip install --upgrade nox
+            sudo pip install --upgrade nox
             python -c "import sqlite3"
             nox -f noxfile.py -s sqlite_check
       - deploy:
