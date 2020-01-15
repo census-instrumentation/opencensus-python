@@ -52,7 +52,7 @@ def _install_dev_packages(session):
 def _install_test_dependencies(session):
     session.install('mock')
     session.install('pytest==4.6.4')
-    # session.install('pytest-cov')
+    # session.install('pytest-cov').
     session.install('retrying')
     session.install('unittest2')
 
