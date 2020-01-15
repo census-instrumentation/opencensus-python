@@ -131,7 +131,7 @@ class TestAzureMetricsExporter(unittest.TestCase):
             instrumentation_key='12345678-1234-5678-abcd-12345678abcd'
         )
         data_points = exporter._create_data_points(metric.time_series[0],
-                                                  metric.descriptor)
+                                                   metric.descriptor)
 
         self.assertEqual(len(data_points), 1)
         data_point = data_points[0]
@@ -146,7 +146,7 @@ class TestAzureMetricsExporter(unittest.TestCase):
             instrumentation_key='12345678-1234-5678-abcd-12345678abcd'
         )
         properties = exporter._create_properties(metric.time_series[0],
-                                                metric.descriptor)
+                                                 metric.descriptor)
 
         self.assertEqual(len(properties), 1)
         self.assertEqual(properties['key'], 'val')
@@ -158,7 +158,7 @@ class TestAzureMetricsExporter(unittest.TestCase):
         )
         metric.time_series[0].label_values[0]._value = None
         properties = exporter._create_properties(metric.time_series[0],
-                                                metric.descriptor)
+                                                 metric.descriptor)
 
         self.assertEqual(len(properties), 1)
         self.assertEqual(properties['key'], 'null')

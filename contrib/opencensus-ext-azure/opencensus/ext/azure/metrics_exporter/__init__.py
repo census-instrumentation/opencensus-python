@@ -12,10 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import json
 import logging
-
-import requests
 
 from opencensus.common import utils as common_utils
 from opencensus.ext.azure.common import Options, utils
