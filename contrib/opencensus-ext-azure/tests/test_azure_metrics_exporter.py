@@ -62,6 +62,8 @@ def _create_envelope():
 
 class TestAzureMetricsExporter(unittest.TestCase):
     def test_constructor_missing_key(self):
+        instrumentation_key = Options._default.instrumentation_key
+        Options._default.instrumentation_key = None
         self.assertRaises(ValueError,
                           lambda: metrics_exporter.MetricsExporter())
         Options._default.instrumentation_key = instrumentation_key
