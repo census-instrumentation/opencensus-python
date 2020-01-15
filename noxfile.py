@@ -85,6 +85,11 @@ def unit(session):
     )
 
 
+@nox.session(python=['2.7', '3.4', '3.5', '3.6'])
+def sqlite_check(session):
+    session.run('python', '-c', 'import sqlite3')
+
+
 @nox.session(python=['2.7', '3.6'])
 def system(session):
     """Run the system test suite."""
