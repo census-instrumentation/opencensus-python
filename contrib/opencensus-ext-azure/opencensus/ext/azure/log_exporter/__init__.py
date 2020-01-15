@@ -153,6 +153,7 @@ class AzureLogHandler(TransportMixin, BaseLogHandler):
             tags=dict(utils.azure_monitor_context),
             time=utils.timestamp_to_iso_str(record.created),
         )
+
         envelope.tags['ai.operation.id'] = getattr(
             record,
             'traceId',
@@ -169,6 +170,11 @@ class AzureLogHandler(TransportMixin, BaseLogHandler):
             'lineNumber': record.lineno,
             'level': record.levelname,
         }
+
+        if (hasattr(record, 'custom_dimensions') and
+                isinstance(record.custom_dimensions, dict)):
+            properties.update(record.custom_dimensions)
+
         if record.exc_info:
             exctype, _value, tb = record.exc_info
             callstack = []
@@ -198,8 +204,6 @@ class AzureLogHandler(TransportMixin, BaseLogHandler):
             )
             envelope.data = Data(baseData=data, baseType='ExceptionData')
         else:
-            if isinstance(record.args, dict):
-                properties.update(record.args)
             envelope.name = 'Microsoft.ApplicationInsights.Message'
             data = Message(
                 message=self.format(record),

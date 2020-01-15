@@ -21,4 +21,14 @@ logger = logging.getLogger(__name__)
 # and place it in the APPLICATIONINSIGHTS_CONNECTION_STRING
 # environment variable.
 logger.addHandler(AzureLogHandler())
-logger.warning('action', {'key-1': 'value-1', 'key-2': 'value2'})
+
+properties = {'custom_dimensions': {'key_1': 'value_1', 'key_2': 'value_2'}}
+
+# Use properties in logging statements
+logger.warning('action', extra=properties)
+
+# Use properties in exception logs
+try:
+    result = 1 / 0  # generate a ZeroDivisionError
+except Exception:
+    logger.exception('Captured an exception.', extra=properties)
