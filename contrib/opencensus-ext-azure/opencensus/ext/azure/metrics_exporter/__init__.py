@@ -25,6 +25,8 @@ from opencensus.ext.azure.common.protocol import (
     Envelope,
     MetricData,
 )
+from opencensus.ext.azure.common.storage import LocalFileStorage
+from opencensus.ext.azure.common.transport import TransportMixin
 from opencensus.ext.azure.metrics_exporter import standard_metrics
 from opencensus.metrics import transport
 from opencensus.metrics.export.metric_descriptor import MetricDescriptorType
@@ -35,49 +37,121 @@ __all__ = ['MetricsExporter', 'new_metrics_exporter']
 logger = logging.getLogger(__name__)
 
 
-class MetricsExporter(object):
+# class BaseMetricsExporter:
+#     def __init__(self):
+#         self._queue = Queue(capacity=8192)  # TODO: make this configurable
+#         self._worker = Worker(self._queue, self)
+#         self._worker.start()
+#         atexit.register(self._worker.stop, options.grace_period)
+
+#     def export_metrics(self, metrics):
+#         raise NotImplementedError  # pragma: NO COVER
+
+#     def flush(self, timeout=None):
+#         self._queue.flush(timeout=timeout)
+
+# class Worker(threading.Thread):
+#     daemon = True
+
+#     def __init__(self, src, dst):
+#         self._src = src
+#         self._dst = dst
+#         self._stopping = False
+#         super(Worker, self).__init__(
+#             name='{} Worker'.format(type(dst).__name__)
+#         )
+
+#     def run(self):
+#         # Indicate that this thread is an exporter thread.
+#         execution_context.set_is_exporter(True)
+#         src = self._src
+#         dst = self._dst
+#         while True:
+#             batch = src.gets(dst.max_batch_size, dst.export_interval)
+#             if batch and isinstance(batch[-1], QueueEvent):
+#                 try:
+#                     dst._export(batch[:-1], event=batch[-1])
+#                 except Exception:
+#                     logger.exception('Unhandled exception from exporter.')
+#                 if batch[-1] is src.EXIT_EVENT:
+#                     break
+#                 continue  # pragma: NO COVER
+#             try:
+#                 dst._export(batch)
+#             except Exception:
+#                 logger.exception('Unhandled exception from exporter.')
+
+#     def stop(self, timeout=None):  # pragma: NO COVER
+#         start_time = time.time()
+#         wait_time = timeout
+#         if self.is_alive() and not self._stopping:
+#             self._stopping = True
+#             self._src.put(self._src.EXIT_EVENT, block=True, timeout=wait_time)
+#             elapsed_time = time.time() - start_time
+#             wait_time = timeout and max(timeout - elapsed_time, 0)
+#         if self._src.EXIT_EVENT.wait(timeout=wait_time):
+#             return time.time() - start_time  # time taken to stop
+
+
+class MetricsExporter(TransportMixin):
     """Metrics exporter for Microsoft Azure Monitor."""
 
-    def __init__(self, options=None):
-        if options is None:
-            options = Options()
-        self.options = options
+    def __init__(self, **options):
+        self.options = Options(**options)
         utils.validate_instrumentation_key(self.options.instrumentation_key)
         if self.options.max_batch_size <= 0:
             raise ValueError('Max batch size must be at least 1.')
         self.max_batch_size = self.options.max_batch_size
+        self.storage = LocalFileStorage(
+            path=self.options.storage_path,
+            max_size=self.options.storage_max_size,
+            maintenance_period=self.options.storage_maintenance_period,
+            retention_period=self.options.storage_retention_period,
+        )
+        super(MetricsExporter, self).__init__()
 
     def export_metrics(self, metrics):
         if metrics:
             envelopes = []
             for metric in metrics:
-                # No support for histogram aggregations
-                type_ = metric.descriptor.type
-                if type_ != MetricDescriptorType.CUMULATIVE_DISTRIBUTION:
-                    md = metric.descriptor
-                    # Each time series will be uniquely identified by its
-                    # label values
-                    for time_series in metric.time_series:
-                        # Using stats, time_series should only have one point
-                        # which contains the aggregated value
-                        data_point = self.create_data_points(
-                            time_series, md)[0]
-                        # The timestamp is when the metric was recorded
-                        time_stamp = time_series.points[0].timestamp
-                        # Get the properties using label keys from metric and
-                        # label values of the time series
-                        properties = self.create_properties(time_series, md)
-                        envelopes.append(self.create_envelope(data_point,
-                                                              time_stamp,
-                                                              properties))
-            # Send data in batches of max_batch_size
+                envelopes.extend(self.metric_to_envelopes(metric))
+        #     result = self._transmit(envelopes)
+        #     if result > 0:
+        #         self.storage.put(envelopes, result)
+        #     return
+        # if len(metrics) < self.options.max_batch_size:
+        #     self._transmit_from_storage()
+        # Send data in batches of max_batch_size
             if envelopes:
                 batched_envelopes = list(common_utils.window(
                     envelopes, self.max_batch_size))
                 for batch in batched_envelopes:
                     self._transmit_without_retry(batch)
 
-    def create_data_points(self, time_series, metric_descriptor):
+    def metric_to_envelopes(self, metric):
+        envelopes = []
+        # No support for histogram aggregations
+        type_ = metric.descriptor.type
+        if type_ != MetricDescriptorType.CUMULATIVE_DISTRIBUTION:
+            md = metric.descriptor
+            # Each time series will be uniquely identified by its
+            # label values
+            for time_series in metric.time_series:
+                # Using stats, time_series should only have one
+                # point which contains the aggregated value
+                data_point = self._create_data_points(
+                    time_series, md)[0]
+                # The timestamp is when the metric was recorded
+                time_stamp = time_series.points[0].timestamp
+                # Get the properties using label keys from metric
+                # and label values of the time series
+                properties = self._create_properties(time_series, md)
+                envelopes.append(self._create_envelope(data_point,
+                                                       time_stamp,
+                                                       properties))
+        return envelopes
+
+    def _create_data_points(self, time_series, metric_descriptor):
         """Convert a metric's OC time series to list of Azure data points."""
         data_points = []
         for point in time_series.points:
@@ -88,7 +162,7 @@ class MetricsExporter(object):
             data_points.append(data_point)
         return data_points
 
-    def create_properties(self, time_series, metric_descriptor):
+    def _create_properties(self, time_series, metric_descriptor):
         properties = {}
         # We construct a properties map from the label keys and values. We
         # assume the ordering is already correct
@@ -100,7 +174,7 @@ class MetricsExporter(object):
             properties[metric_descriptor.label_keys[i].key] = value
         return properties
 
-    def create_envelope(self, data_point, time_stamp, properties):
+    def _create_envelope(self, data_point, time_stamp, properties):
         envelope = Envelope(
             iKey=self.options.instrumentation_key,
             tags=dict(utils.azure_monitor_context),
@@ -227,12 +301,11 @@ class MetricsExporter(object):
 
 
 def new_metrics_exporter(**options):
-    options_ = Options(**options)
-    exporter = MetricsExporter(options=options_)
+    exporter = MetricsExporter(**options)
     producers = [stats_module.stats]
-    if options_.enable_standard_metrics:
+    if exporter.options.enable_standard_metrics:
         producers.append(standard_metrics.producer)
     transport.get_exporter_thread(producers,
                                   exporter,
-                                  interval=options_.export_interval)
+                                  interval=exporter.options.export_interval)
     return exporter
