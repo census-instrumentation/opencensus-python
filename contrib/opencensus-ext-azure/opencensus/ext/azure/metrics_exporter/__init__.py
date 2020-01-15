@@ -37,62 +37,6 @@ __all__ = ['MetricsExporter', 'new_metrics_exporter']
 logger = logging.getLogger(__name__)
 
 
-# class BaseMetricsExporter:
-#     def __init__(self):
-#         self._queue = Queue(capacity=8192)  # TODO: make this configurable
-#         self._worker = Worker(self._queue, self)
-#         self._worker.start()
-#         atexit.register(self._worker.stop, options.grace_period)
-
-#     def export_metrics(self, metrics):
-#         raise NotImplementedError  # pragma: NO COVER
-
-#     def flush(self, timeout=None):
-#         self._queue.flush(timeout=timeout)
-
-# class Worker(threading.Thread):
-#     daemon = True
-
-#     def __init__(self, src, dst):
-#         self._src = src
-#         self._dst = dst
-#         self._stopping = False
-#         super(Worker, self).__init__(
-#             name='{} Worker'.format(type(dst).__name__)
-#         )
-
-#     def run(self):
-#         # Indicate that this thread is an exporter thread.
-#         execution_context.set_is_exporter(True)
-#         src = self._src
-#         dst = self._dst
-#         while True:
-#             batch = src.gets(dst.max_batch_size, dst.export_interval)
-#             if batch and isinstance(batch[-1], QueueEvent):
-#                 try:
-#                     dst._export(batch[:-1], event=batch[-1])
-#                 except Exception:
-#                     logger.exception('Unhandled exception from exporter.')
-#                 if batch[-1] is src.EXIT_EVENT:
-#                     break
-#                 continue  # pragma: NO COVER
-#             try:
-#                 dst._export(batch)
-#             except Exception:
-#                 logger.exception('Unhandled exception from exporter.')
-
-#     def stop(self, timeout=None):  # pragma: NO COVER
-#         start_time = time.time()
-#         wait_time = timeout
-#         if self.is_alive() and not self._stopping:
-#             self._stopping = True
-#             self._src.put(self._src.EXIT_EVENT, block=True, timeout=wait_time)
-#             elapsed_time = time.time() - start_time
-#             wait_time = timeout and max(timeout - elapsed_time, 0)
-#         if self._src.EXIT_EVENT.wait(timeout=wait_time):
-#             return time.time() - start_time  # time taken to stop
-
-
 class MetricsExporter(TransportMixin):
     """Metrics exporter for Microsoft Azure Monitor."""
 
@@ -101,6 +45,7 @@ class MetricsExporter(TransportMixin):
         utils.validate_instrumentation_key(self.options.instrumentation_key)
         if self.options.max_batch_size <= 0:
             raise ValueError('Max batch size must be at least 1.')
+        self.export_interval = self.options.export_interval
         self.max_batch_size = self.options.max_batch_size
         self.storage = LocalFileStorage(
             path=self.options.storage_path,
@@ -111,22 +56,21 @@ class MetricsExporter(TransportMixin):
         super(MetricsExporter, self).__init__()
 
     def export_metrics(self, metrics):
-        if metrics:
-            envelopes = []
-            for metric in metrics:
-                envelopes.extend(self.metric_to_envelopes(metric))
-        #     result = self._transmit(envelopes)
-        #     if result > 0:
-        #         self.storage.put(envelopes, result)
-        #     return
-        # if len(metrics) < self.options.max_batch_size:
-        #     self._transmit_from_storage()
+        envelopes = []
+        for metric in metrics:
+            envelopes.extend(self.metric_to_envelopes(metric))
         # Send data in batches of max_batch_size
-            if envelopes:
-                batched_envelopes = list(common_utils.window(
-                    envelopes, self.max_batch_size))
-                for batch in batched_envelopes:
-                    self._transmit_without_retry(batch)
+        batched_envelopes = list(common_utils.window(
+            envelopes, self.max_batch_size))
+        for batch in batched_envelopes:
+            result = self._transmit(batch)
+            if result > 0:
+                self.storage.put(batch, result)
+
+        # If there is still room to transmit envelopes, transmit from storage
+        # if available
+        if len(envelopes) < self.options.max_batch_size:
+            self._transmit_from_storage()
 
     def metric_to_envelopes(self, metric):
         envelopes = []
@@ -187,117 +131,6 @@ class MetricsExporter(TransportMixin):
         )
         envelope.data = Data(baseData=data, baseType="MetricData")
         return envelope
-
-    def _transmit_without_retry(self, envelopes):
-        # Contains logic from transport._transmit
-        # TODO: Remove this function from exporter and consolidate with
-        # transport._transmit to cover all exporter use cases. Uses cases
-        # pertain to properly handling failures and implementing a retry
-        # policy for this exporter.
-        # TODO: implement retry policy
-        """
-        Transmit the data envelopes to the ingestion service.
-        Does not perform retry logic. For partial success and
-        non-retryable failure, simply outputs result to logs.
-        This function should never throw exception.
-        """
-        try:
-            response = requests.post(
-                url=self.options.endpoint,
-                data=json.dumps(envelopes),
-                headers={
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json; charset=utf-8',
-                },
-                timeout=self.options.timeout,
-            )
-        except Exception as ex:
-            # No retry policy, log output
-            logger.warning('Transient client side error %s.', ex)
-            return
-
-        text = 'N/A'
-        data = None
-        # Handle the possible results from the response
-        if response is None:
-            logger.warning('Error: cannot read response.')
-            return
-        try:
-            status_code = response.status_code
-        except Exception as ex:
-            logger.warning('Error while reading response status code %s.', ex)
-            return
-        try:
-            text = response.text
-        except Exception as ex:
-            logger.warning('Error while reading response body %s.', ex)
-            return
-        try:
-            data = json.loads(text)
-        except Exception as ex:
-            logger.warning('Error while loading ' +
-                           'json from response body %s.', ex)
-            return
-        if status_code == 200:
-            logger.info('Transmission succeeded: %s.', text)
-            return
-        # Check for retryable partial content
-        if status_code == 206:
-            if data:
-                try:
-                    retryable_envelopes = []
-                    for error in data['errors']:
-                        if error['statusCode'] in (
-                                429,  # Too Many Requests
-                                500,  # Internal Server Error
-                                503,  # Service Unavailable
-                        ):
-                            retryable_envelopes.append(
-                                envelopes[error['index']])
-                        else:
-                            logger.error(
-                                'Data drop %s: %s %s.',
-                                error['statusCode'],
-                                error['message'],
-                                envelopes[error['index']],
-                            )
-                    # show the envelopes that can be retried manually for
-                    # visibility
-                    if retryable_envelopes:
-                        logger.warning(
-                            'Error while processing data. Data dropped. ' +
-                            'Consider manually retrying for envelopes: %s.',
-                            retryable_envelopes
-                        )
-                    return
-                except Exception:
-                    logger.exception(
-                        'Error while processing %s: %s.',
-                        status_code,
-                        text
-                    )
-                    return
-        # Check for non-retryable result
-        if status_code in (
-                206,  # Partial Content
-                429,  # Too Many Requests
-                500,  # Internal Server Error
-                503,  # Service Unavailable
-        ):
-            # server side error (retryable)
-            logger.warning(
-                'Transient server side error %s: %s. ' +
-                'Consider manually trying.',
-                status_code,
-                text,
-            )
-        else:
-            # server side error (non-retryable)
-            logger.error(
-                'Non-retryable server side error %s: %s.',
-                status_code,
-                text,
-            )
 
 
 def new_metrics_exporter(**options):
