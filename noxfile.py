@@ -85,10 +85,10 @@ def unit(session):
     )
 
 
-@nox.session(python=['2.7', '3.4', '3.5', '3.6'])
+@nox.session(python=['3.6'])
 def sqlite_check(session):
-    _install_test_dependencies(session)
-    _install_dev_packages(session)
+    # _install_test_dependencies(session)
+    # _install_dev_packages(session)
     session.run('python', '-c', 'import sqlite3')
 
 
