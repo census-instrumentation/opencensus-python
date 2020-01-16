@@ -551,6 +551,10 @@ class TestAzureExporter(unittest.TestCase):
             envelope.data.baseData.type,
             'INPROC')
         self.assertEqual(
+            envelope.data.baseData.success,
+            True
+        )
+        self.assertEqual(
             envelope.data.baseType,
             'RemoteDependencyData')
 
