@@ -73,9 +73,9 @@ You can enrich the logs with trace IDs and span IDs by using the `logging integr
         logger.warning('In the span')
     logger.warning('After the span')
 
-You can also add custom properties to your log messages in the form of key-values.
+You can also add custom properties to your log messages in the *extra* keyword argument using the custom_dimensions field.
 
-WARNING: For this feature to work, you need to pass a dictionary as the argument. If you pass arguments of any other type, the logger will ignore them. The solution is to convert these arguments into a dictionary.
+WARNING: For this feature to work, you need to pass a dictionary to the custom_dimensions field. If you pass arguments of any other type, the logger will ignore them.
 
 .. code:: python
 
@@ -85,7 +85,9 @@ WARNING: For this feature to work, you need to pass a dictionary as the argument
 
     logger = logging.getLogger(__name__)
     logger.addHandler(AzureLogHandler(connection_string='InstrumentationKey=<your-instrumentation_key-here>'))
-    logger.warning('action', {'key-1': 'value-1', 'key-2': 'value2'})
+
+    properties = {'custom_dimensions': {'key_1': 'value_1', 'key_2': 'value_2'}}
+    logger.warning('action', extra=properties)
 
 Metrics
 ~~~~~~~
