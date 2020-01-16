@@ -79,13 +79,19 @@ class AzureExporter(TransportMixin, BaseExporter):
                 properties={},
             )
             envelope.data = Data(baseData=data, baseType='RequestData')
+            data.name = ''
             if 'http.method' in sd.attributes:
                 data.name = sd.attributes['http.method']
             if 'http.route' in sd.attributes:
                 data.name = data.name + ' ' + sd.attributes['http.route']
                 envelope.tags['ai.operation.name'] = data.name
+                data.properties['request.name'] = data.name
+            elif 'http.path' in sd.attributes:
+                data.properties['request.name'] = data.name + \
+                    ' ' + sd.attributes['http.path'] 
             if 'http.url' in sd.attributes:
                 data.url = sd.attributes['http.url']
+                data.properties['request.url'] = sd.attributes['http.url']
             if 'http.status_code' in sd.attributes:
                 status_code = sd.attributes['http.status_code']
                 data.responseCode = str(status_code)
@@ -124,7 +130,7 @@ class AzureExporter(TransportMixin, BaseExporter):
                     if 'http.method' in sd.attributes:
                         # name is METHOD/path
                         data.name = sd.attributes['http.method'] \
-                            + "/" + parse_url.path
+                            + ' ' + parse_url.path
                 if 'http.status_code' in sd.attributes:
                     status_code = sd.attributes["http.status_code"]
                     data.resultCode = str(status_code)
@@ -133,6 +139,7 @@ class AzureExporter(TransportMixin, BaseExporter):
                     data.success = True
             else:
                 data.type = 'INPROC'
+                data.success = True
         # TODO: links, tracestate, tags
         for key in sd.attributes:
             # This removes redundant data from ApplicationInsights
