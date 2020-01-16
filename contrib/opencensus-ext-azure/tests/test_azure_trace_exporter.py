@@ -671,7 +671,8 @@ class TestAzureExporter(unittest.TestCase):
             child_span_count=None,
             span_kind=SpanKind.SERVER,
         ))
-        self.assertIsNone(envelope.data.baseData.properties.get('request.name'))
+        self.assertIsNone(
+            envelope.data.baseData.properties.get('request.name'))
 
         # Status client status code attribute
         envelope = exporter.span_data_to_envelope(SpanData(

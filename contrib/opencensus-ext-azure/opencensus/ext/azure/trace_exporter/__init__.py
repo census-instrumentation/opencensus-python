@@ -88,7 +88,7 @@ class AzureExporter(TransportMixin, BaseExporter):
                 data.properties['request.name'] = data.name
             elif 'http.path' in sd.attributes:
                 data.properties['request.name'] = data.name + \
-                    ' ' + sd.attributes['http.path'] 
+                    ' ' + sd.attributes['http.path']
             if 'http.url' in sd.attributes:
                 data.url = sd.attributes['http.url']
                 data.properties['request.url'] = sd.attributes['http.url']
