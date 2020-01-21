@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import atexit
 import logging
 
 from opencensus.common import utils as common_utils
@@ -60,6 +61,7 @@ class MetricsExporter(TransportMixin):
         batched_envelopes = list(common_utils.window(
             envelopes, self.max_batch_size))
         for batch in batched_envelopes:
+            print(batch)
             result = self._transmit(batch)
             if result > 0:
                 self.storage.put(batch, result)
@@ -138,4 +140,5 @@ def new_metrics_exporter(**options):
     transport.get_exporter_thread(producers,
                                   exporter,
                                   interval=exporter.options.export_interval)
+    atexit.register(exporter.export_metrics, stats_module.stats.get_metrics())
     return exporter
