@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import logging
+import random
 import threading
 import time
 import traceback
@@ -107,6 +108,16 @@ class Worker(threading.Thread):
             return time.time() - start_time  # time taken to stop
 
 
+class SamplingFilter(logging.Filter):
+
+    def __init__(self, probability=1.0):
+        super(SamplingFilter, self).__init__()
+        self.probability = probability
+
+    def filter(self, record):
+        return random.random() < self.probability
+
+
 class AzureLogHandler(TransportMixin, BaseLogHandler):
     """Handler for logging to Microsoft Azure Monitor.
 
@@ -125,6 +136,7 @@ class AzureLogHandler(TransportMixin, BaseLogHandler):
             retention_period=self.options.storage_retention_period,
         )
         super(AzureLogHandler, self).__init__()
+        self.addFilter(SamplingFilter(self.options.logging_sampling_rate))
 
     def close(self):
         self.storage.close()

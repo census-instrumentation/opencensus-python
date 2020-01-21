@@ -207,3 +207,37 @@ class TestAzureLogHandler(unittest.TestCase):
 
         self.assertFalse('not_a_dict' in post_body)
         self.assertFalse('key_1' in post_body)
+
+    @mock.patch('requests.post', return_value=mock.Mock())
+    def test_log_record_sampled(self, requests_mock):
+        logger = logging.getLogger(self.id())
+        handler = log_exporter.AzureLogHandler(
+            instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
+            logging_sampling_rate=1.0,
+        )
+        logger.addHandler(handler)
+        logger.warning('Hello_World')
+        logger.warning('Hello_World2')
+        logger.warning('Hello_World3')
+        logger.warning('Hello_World4')
+        handler.close()
+        post_body = requests_mock.call_args_list[0][1]['data']
+        self.assertTrue('Hello_World' in post_body)
+        self.assertTrue('Hello_World2' in post_body)
+        self.assertTrue('Hello_World3' in post_body)
+        self.assertTrue('Hello_World4' in post_body)
+
+    @mock.patch('requests.post', return_value=mock.Mock())
+    def test_log_record_not_sampled(self, requests_mock):
+        logger = logging.getLogger(self.id())
+        handler = log_exporter.AzureLogHandler(
+            instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
+            logging_sampling_rate=0.0,
+        )
+        logger.addHandler(handler)
+        logger.warning('Hello_World')
+        logger.warning('Hello_World2')
+        logger.warning('Hello_World3')
+        logger.warning('Hello_World4')
+        handler.close()
+        self.assertFalse(requests_mock.called)
