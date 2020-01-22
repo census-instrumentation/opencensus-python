@@ -379,7 +379,7 @@ class Collector(base_exporter.Exporter):
                 logging.error("Traces cannot be uploaded;\
                         HTTP status code: {}, message {}".format(code, msg))
         except Exception as e:  # pragma: NO COVER
-            logging.error(getattr(e, 'message', e))
+            logging.exception("Failed to emit batch - {}".format(e))
 
         finally:
             if self.http_transport.isOpen():
@@ -458,7 +458,7 @@ class AgentClientUDP(base_exporter.Exporter):
                 udp_socket.sendto(buff, self.address)
 
         except Exception as e:  # pragma: NO COVER
-            logging.error(getattr(e, 'message', e))
+            logging.exception("Failed to emit batch - {}".format(e))
 
         finally:
             if udp_socket is not None:
