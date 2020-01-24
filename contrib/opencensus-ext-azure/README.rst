@@ -89,6 +89,28 @@ WARNING: For this feature to work, you need to pass a dictionary to the custom_d
     properties = {'custom_dimensions': {'key_1': 'value_1', 'key_2': 'value_2'}}
     logger.warning('action', extra=properties)
 
+You can pass a callback function to the exporter to process telemetry before it is exported. Your callback function must
+accept an [envelope](https://github.com/microsoft/ApplicationInsights-Home/blob/master/EndpointSpecs/Schemas/Bond/Envelope.bond)
+data type as its parameter. You can see the schema for Azure Monitor data types in the envelopes [here](https://github.com/microsoft/ApplicationInsights-Home/tree/master/EndpointSpecs/Schemas/Bond).
+
+.. code:: python
+
+    import logging
+
+    from opencensus.ext.azure.log_exporter import AzureLogHandler
+
+    logger = logging.getLogger(__name__)
+
+    # Callback function to append '_hello' to each log message telemetry
+    def call_back_function(envelope):
+        envelope.data.baseData.message += '_hello'
+
+    handler = AzureLogHandler(connection_string='InstrumentationKey=<your-instrumentation_key-here>')
+    handler.add_telemetry_processor(call_back_function)
+    logger.addHandler(handler)
+    logger.warning('Hello, World!')
+
+
 Metrics
 ~~~~~~~
 
