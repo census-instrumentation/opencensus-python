@@ -92,6 +92,7 @@ WARNING: For this feature to work, you need to pass a dictionary to the custom_d
 You can pass a callback function to the exporter to process telemetry before it is exported. Your callback function must
 accept an [envelope](https://github.com/microsoft/ApplicationInsights-Home/blob/master/EndpointSpecs/Schemas/Bond/Envelope.bond)
 data type as its parameter. You can see the schema for Azure Monitor data types in the envelopes [here](https://github.com/microsoft/ApplicationInsights-Home/tree/master/EndpointSpecs/Schemas/Bond).
+The `AzureLogHandler` handles `ExceptionData` and `MessageData` data types.
 
 .. code:: python
 
@@ -200,6 +201,62 @@ Below is a list of standard metrics that are currently available:
 - Outgoing Request Rate (per second)
 - Process CPU Usage (percentage)
 - Process Private Bytes (bytes)
+
+You can pass a callback function to the exporter to process telemetry before it is exported. Your callback function must
+accept an [envelope](https://github.com/microsoft/ApplicationInsights-Home/blob/master/EndpointSpecs/Schemas/Bond/Envelope.bond)
+data type as its parameter. You can see the schema for Azure Monitor data types in the envelopes [here](https://github.com/microsoft/ApplicationInsights-Home/tree/master/EndpointSpecs/Schemas/Bond).
+The `MetricsExporter` handles `MetricData` data types.
+
+.. code:: python
+
+    import time
+
+    from opencensus.ext.azure import metrics_exporter
+    from opencensus.stats import aggregation as aggregation_module
+    from opencensus.stats import measure as measure_module
+    from opencensus.stats import stats as stats_module
+    from opencensus.stats import view as view_module
+    from opencensus.tags import tag_map as tag_map_module
+
+    stats = stats_module.stats
+    view_manager = stats.view_manager
+    stats_recorder = stats.stats_recorder
+
+    CARROTS_MEASURE = measure_module.MeasureInt("carrots",
+                                                "number of carrots",
+                                                "carrots")
+    CARROTS_VIEW = view_module.View("carrots_view",
+                                    "number of carrots",
+                                    [],
+                                    CARROTS_MEASURE,
+                                    aggregation_module.CountAggregation())
+
+    # Callback function to add 100 to the value of each metric telemetry
+    def call_back_function(envelope):
+        envelope.data.baseData.metrics[0].value += 100
+
+    def main():
+        # Enable metrics
+        # Set the interval in seconds in which you want to send metrics
+        exporter = metrics_exporter.new_metrics_exporter(connection_string='InstrumentationKey=<your-instrumentation-key-here>')
+        view_manager.register_exporter(exporter)
+
+        view_manager.register_view(CARROTS_VIEW)
+        mmap = stats_recorder.new_measurement_map()
+        tmap = tag_map_module.TagMap()
+
+        mmap.measure_int_put(CARROTS_MEASURE, 1000)
+        mmap.record(tmap)
+        # Default export interval is every 15.0s
+        # Your application should run for at least this amount
+        # of time so the exporter will meet this interval
+        # Sleep can fulfill this
+        time.sleep(60)
+
+        print("Done recording metrics")
+
+    if __name__ == "__main__":
+        main()
 
 Trace
 ~~~~~

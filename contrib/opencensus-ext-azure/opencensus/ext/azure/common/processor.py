@@ -17,7 +17,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class ProcessorMixin:
+class ProcessorMixin(object):
     """ProcessorMixin adds the ability to process telemetry processors
 
     Telemetry processors are functions that are called before exporting of
