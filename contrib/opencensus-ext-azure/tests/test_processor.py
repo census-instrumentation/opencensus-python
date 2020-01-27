@@ -16,6 +16,7 @@ import unittest
 
 from opencensus.ext.azure.common.processor import ProcessorMixin
 
+
 # pylint: disable=W0212
 class TestProcessorMixin(unittest.TestCase):
     def test_add(self):
