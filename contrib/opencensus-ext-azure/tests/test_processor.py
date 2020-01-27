@@ -12,14 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
 import unittest
 
 from opencensus.ext.azure.common.processor import ProcessorMixin
 
-import mock
-
-
+# pylint: disable=W0212
 class TestProcessorMixin(unittest.TestCase):
     def test_add(self):
         mixin = ProcessorMixin()
@@ -78,4 +75,3 @@ class TestProcessorMixin(unittest.TestCase):
         self.assertEqual(len(envelope), 2)
         self.assertEqual(envelope[0], 'add')
         self.assertEqual(envelope[1], 'hello2')
-
