@@ -40,14 +40,23 @@ class ProcessorMixin(object):
     def apply_telemetry_processors(self, envelopes):
         """Applies all telemetry processors in the order they were added.
 
-        Individual processors can throw exceptions and fail, but the applying
-        of all telemetry processors will proceed (not fast fail).
+        This function will return the list of envelopes to be exported after
+        each processor has been run sequentially. Individual processors can
+        throw exceptions and fail, but the applying of all telemetry processors
+        will proceed (not fast fail). Processors also return True if envelope
+        should be included for exporting, False otherwise.
 
         :param envelopes: The envelopes to apply each processor to.
         """
-        for processor in self._telemetry_processors:
-            for envelope in envelopes:
+        filtered_envelopes = []
+        for envelope in envelopes:
+            accepted = True
+            for processor in self._telemetry_processors:
                 try:
-                    processor(envelope)
+                    if processor(envelope) is False:
+                        accepted = False
                 except Exception as ex:
                     logger.warning('Telemetry processor failed with: %s.', ex)
+                if accepted:
+                    filtered_envelopes.append(envelope)
+        return filtered_envelopes

@@ -78,7 +78,7 @@ class MetricsExporter(ProcessorMixin):
                 batched_envelopes = list(common_utils.window(
                     envelopes, self.max_batch_size))
                 for batch in batched_envelopes:
-                    self.apply_telemetry_processors(batch)
+                    batch = self.apply_telemetry_processors(batch)
                     self._transmit_without_retry(batch)
 
     def create_data_points(self, time_series, metric_descriptor):

@@ -89,7 +89,7 @@ WARNING: For this feature to work, you need to pass a dictionary to the custom_d
     properties = {'custom_dimensions': {'key_1': 'value_1', 'key_2': 'value_2'}}
     logger.warning('action', extra=properties)
 
-You can pass a callback function to the exporter to process telemetry before it is exported. Your callback function must
+You can pass a callback function to the exporter to process telemetry before it is exported. Your callback function can return `False` if you do not want this envelope exported. Your callback function must
 accept an [envelope](https://github.com/census-instrumentation/opencensus-python/blob/master/contrib/opencensus-ext-azure/opencensus/ext/azure/common/protocol.py#L86)
 data type as its parameter. You can see the schema for Azure Monitor data types in the envelopes [here](https://github.com/census-instrumentation/opencensus-python/blob/master/contrib/opencensus-ext-azure/opencensus/ext/azure/common/protocol.py).
 The `AzureLogHandler` handles `ExceptionData` and `MessageData` data types.
@@ -105,6 +105,7 @@ The `AzureLogHandler` handles `ExceptionData` and `MessageData` data types.
     # Callback function to append '_hello' to each log message telemetry
     def callback_function(envelope):
         envelope.data.baseData.message += '_hello'
+        return True
 
     handler = AzureLogHandler(connection_string='InstrumentationKey=<your-instrumentation_key-here>')
     handler.add_telemetry_processor(callback_function)
@@ -202,7 +203,7 @@ Below is a list of standard metrics that are currently available:
 - Process CPU Usage (percentage)
 - Process Private Bytes (bytes)
 
-You can pass a callback function to the exporter to process telemetry before it is exported. Your callback function must
+You can pass a callback function to the exporter to process telemetry before it is exported. Your callback function can return `False` if you do not want this envelope exported. Your callback function must
 accept an [envelope](https://github.com/census-instrumentation/opencensus-python/blob/master/contrib/opencensus-ext-azure/opencensus/ext/azure/common/protocol.py#L86)
 data type as its parameter. You can see the schema for Azure Monitor data types in the envelopes [here](https://github.com/census-instrumentation/opencensus-python/blob/master/contrib/opencensus-ext-azure/opencensus/ext/azure/common/protocol.py).
 The `MetricsExporter` handles `MetricData` data types.
@@ -231,9 +232,9 @@ The `MetricsExporter` handles `MetricData` data types.
                                     CARROTS_MEASURE,
                                     aggregation_module.CountAggregation())
 
-    # Callback function to add 100 to the value of each metric telemetry
+    # Callback function to only export the metric if value is greater than 0
     def callback_function(envelope):
-        envelope.data.baseData.metrics[0].value += 100
+        return envelope.data.baseData.metrics[0].value > 0
 
     def main():
         # Enable metrics
@@ -314,10 +315,10 @@ This example shows how to integrate with the `requests <https://2.python-request
     with tracer.span(name='parent'):
         response = requests.get(url='https://www.wikipedia.org/wiki/Rabbit')
 
-You can pass a callback function to the exporter to process telemetry before it is exported. Your callback function must
+You can pass a callback function to the exporter to process telemetry before it is exported. Your callback function can return `False` if you do not want this envelope exported. Your callback function must
 accept an [envelope](https://github.com/census-instrumentation/opencensus-python/blob/master/contrib/opencensus-ext-azure/opencensus/ext/azure/common/protocol.py#L86)
 data type as its parameter. You can see the schema for Azure Monitor data types in the envelopes [here](https://github.com/census-instrumentation/opencensus-python/blob/master/contrib/opencensus-ext-azure/opencensus/ext/azure/common/protocol.py).
-The `MetricsExporter` handles `MetricData` data types.
+The `AzureExporter` handles `Data` data types.
 
 .. code:: python
 
@@ -333,6 +334,7 @@ The `MetricsExporter` handles `MetricData` data types.
     # Callback function to add os_type: linux to span properties
     def callback_function(envelope):
         envelope.data.baseData.properties['os_type'] = 'linux'
+        return True
 
     exporter = AzureExporter(
         connection_string='InstrumentationKey=<your-instrumentation-key-here>'

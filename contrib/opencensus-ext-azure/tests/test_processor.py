@@ -52,18 +52,18 @@ class TestProcessorMixin(unittest.TestCase):
         mixin._telemetry_processors = []
 
         def call_back_function(envelope):
-            envelope.append('hello')
+            envelope.append('_hello')
 
         def call_back_function2(envelope):
-            envelope.append('hello2')
+            envelope.append('_hello2')
         mixin.add_telemetry_processor(call_back_function)
         mixin.add_telemetry_processor(call_back_function2)
         envelope = ['add']
         mixin.apply_telemetry_processors([envelope])
         self.assertEqual(len(envelope), 3)
         self.assertEqual(envelope[0], 'add')
-        self.assertEqual(envelope[1], 'hello')
-        self.assertEqual(envelope[2], 'hello2')
+        self.assertEqual(envelope[1], '_hello')
+        self.assertEqual(envelope[2], '_hello2')
 
     def test_apply_exception(self):
         mixin = ProcessorMixin()
@@ -81,3 +81,14 @@ class TestProcessorMixin(unittest.TestCase):
         self.assertEqual(len(envelope), 2)
         self.assertEqual(envelope[0], 'add')
         self.assertEqual(envelope[1], 'hello2')
+
+    def test_apply_not_accepted(self):
+        mixin = ProcessorMixin()
+        mixin._telemetry_processors = []
+
+        def call_back_function(envelope):
+            return len(envelope) < 4
+        mixin.add_telemetry_processor(call_back_function)
+        envelopes = mixin.apply_telemetry_processors(['add', 'subtract'])
+        self.assertEqual(len(envelopes), 1)
+        self.assertEqual(envelopes[0], 'add')

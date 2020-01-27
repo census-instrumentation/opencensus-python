@@ -136,7 +136,7 @@ class AzureLogHandler(TransportMixin, ProcessorMixin, BaseLogHandler):
         try:
             if batch:
                 envelopes = [self.log_record_to_envelope(x) for x in batch]
-                self.apply_telemetry_processors(envelopes)
+                envelopes = self.apply_telemetry_processors(envelopes)
                 result = self._transmit(envelopes)
                 if result > 0:
                     self.storage.put(envelopes, result)
