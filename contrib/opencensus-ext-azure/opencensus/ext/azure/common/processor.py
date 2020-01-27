@@ -35,7 +35,7 @@ class ProcessorMixin(object):
 
     def clear_telemetry_processors(self):
         """Removes all telemetry processors"""
-        self._telemetryProcessors = []
+        self._telemetry_processors = []
 
     def apply_telemetry_processors(self, envelopes):
         """Applies all telemetry processors in the order they were added.
