@@ -90,8 +90,8 @@ WARNING: For this feature to work, you need to pass a dictionary to the custom_d
     logger.warning('action', extra=properties)
 
 You can pass a callback function to the exporter to process telemetry before it is exported. Your callback function must
-accept an [envelope](https://github.com/microsoft/ApplicationInsights-Home/blob/master/EndpointSpecs/Schemas/Bond/Envelope.bond)
-data type as its parameter. You can see the schema for Azure Monitor data types in the envelopes [here](https://github.com/microsoft/ApplicationInsights-Home/tree/master/EndpointSpecs/Schemas/Bond).
+accept an [envelope](https://github.com/census-instrumentation/opencensus-python/blob/master/contrib/opencensus-ext-azure/opencensus/ext/azure/common/protocol.py#L86)
+data type as its parameter. You can see the schema for Azure Monitor data types in the envelopes [here](https://github.com/census-instrumentation/opencensus-python/blob/master/contrib/opencensus-ext-azure/opencensus/ext/azure/common/protocol.py).
 The `AzureLogHandler` handles `ExceptionData` and `MessageData` data types.
 
 .. code:: python
@@ -103,11 +103,11 @@ The `AzureLogHandler` handles `ExceptionData` and `MessageData` data types.
     logger = logging.getLogger(__name__)
 
     # Callback function to append '_hello' to each log message telemetry
-    def call_back_function(envelope):
+    def callback_function(envelope):
         envelope.data.baseData.message += '_hello'
 
     handler = AzureLogHandler(connection_string='InstrumentationKey=<your-instrumentation_key-here>')
-    handler.add_telemetry_processor(call_back_function)
+    handler.add_telemetry_processor(callback_function)
     logger.addHandler(handler)
     logger.warning('Hello, World!')
 
@@ -203,8 +203,8 @@ Below is a list of standard metrics that are currently available:
 - Process Private Bytes (bytes)
 
 You can pass a callback function to the exporter to process telemetry before it is exported. Your callback function must
-accept an [envelope](https://github.com/microsoft/ApplicationInsights-Home/blob/master/EndpointSpecs/Schemas/Bond/Envelope.bond)
-data type as its parameter. You can see the schema for Azure Monitor data types in the envelopes [here](https://github.com/microsoft/ApplicationInsights-Home/tree/master/EndpointSpecs/Schemas/Bond).
+accept an [envelope](https://github.com/census-instrumentation/opencensus-python/blob/master/contrib/opencensus-ext-azure/opencensus/ext/azure/common/protocol.py#L86)
+data type as its parameter. You can see the schema for Azure Monitor data types in the envelopes [here](https://github.com/census-instrumentation/opencensus-python/blob/master/contrib/opencensus-ext-azure/opencensus/ext/azure/common/protocol.py).
 The `MetricsExporter` handles `MetricData` data types.
 
 .. code:: python
@@ -232,14 +232,14 @@ The `MetricsExporter` handles `MetricData` data types.
                                     aggregation_module.CountAggregation())
 
     # Callback function to add 100 to the value of each metric telemetry
-    def call_back_function(envelope):
+    def callback_function(envelope):
         envelope.data.baseData.metrics[0].value += 100
 
     def main():
         # Enable metrics
         # Set the interval in seconds in which you want to send metrics
         exporter = metrics_exporter.new_metrics_exporter(connection_string='InstrumentationKey=<your-instrumentation-key-here>')
-        exporter.add_telemetry_processor(call_back_function)
+        exporter.add_telemetry_processor(callback_function)
         view_manager.register_exporter(exporter)
 
         view_manager.register_view(CARROTS_VIEW)
@@ -315,8 +315,8 @@ This example shows how to integrate with the `requests <https://2.python-request
         response = requests.get(url='https://www.wikipedia.org/wiki/Rabbit')
 
 You can pass a callback function to the exporter to process telemetry before it is exported. Your callback function must
-accept an [envelope](https://github.com/microsoft/ApplicationInsights-Home/blob/master/EndpointSpecs/Schemas/Bond/Envelope.bond)
-data type as its parameter. You can see the schema for Azure Monitor data types in the envelopes [here](https://github.com/microsoft/ApplicationInsights-Home/tree/master/EndpointSpecs/Schemas/Bond).
+accept an [envelope](https://github.com/census-instrumentation/opencensus-python/blob/master/contrib/opencensus-ext-azure/opencensus/ext/azure/common/protocol.py#L86)
+data type as its parameter. You can see the schema for Azure Monitor data types in the envelopes [here](https://github.com/census-instrumentation/opencensus-python/blob/master/contrib/opencensus-ext-azure/opencensus/ext/azure/common/protocol.py).
 The `MetricsExporter` handles `MetricData` data types.
 
 .. code:: python
@@ -331,13 +331,13 @@ The `MetricsExporter` handles `MetricData` data types.
     config_integration.trace_integrations(['requests'])
 
     # Callback function to add os_type: linux to span properties
-    def call_back_function(envelope):
+    def callback_function(envelope):
         envelope.data.baseData.properties['os_type'] = 'linux'
 
     exporter = AzureExporter(
         connection_string='InstrumentationKey=<your-instrumentation-key-here>'
     )
-    exporter.add_telemetry_processor(call_back_function)
+    exporter.add_telemetry_processor(callback_function)
     tracer = Tracer(exporter=exporter, sampler=ProbabilitySampler(1.0))
     with tracer.span(name='parent'):
         response = requests.get(url='https://www.wikipedia.org/wiki/Rabbit')
