@@ -239,6 +239,7 @@ The `MetricsExporter` handles `MetricData` data types.
         # Enable metrics
         # Set the interval in seconds in which you want to send metrics
         exporter = metrics_exporter.new_metrics_exporter(connection_string='InstrumentationKey=<your-instrumentation-key-here>')
+        exporter.add_telemetry_processor(call_back_function)
         view_manager.register_exporter(exporter)
 
         view_manager.register_view(CARROTS_VIEW)
@@ -276,7 +277,9 @@ This example shows how to send a span "hello" to Azure Monitor.
     from opencensus.trace.tracer import Tracer
 
     tracer = Tracer(
-        exporter=AzureExporter(connection_string='InstrumentationKey=<your-instrumentation-key-here>'),
+        exporter=AzureExporter(
+            connection_string='InstrumentationKey=<your-instrumentation-key-here>'
+        ),
         sampler=ProbabilitySampler(1.0)
     )
 
@@ -304,14 +307,40 @@ This example shows how to integrate with the `requests <https://2.python-request
     config_integration.trace_integrations(['requests'])
     tracer = Tracer(
         exporter=AzureExporter(
-            # TODO: replace this with your own instrumentation key.
-            instrumentation_key='00000000-0000-0000-0000-000000000000',
+            connection_string='InstrumentationKey=<your-instrumentation-key-here>',
         ),
         sampler=ProbabilitySampler(1.0),
     )
     with tracer.span(name='parent'):
         response = requests.get(url='https://www.wikipedia.org/wiki/Rabbit')
 
+You can pass a callback function to the exporter to process telemetry before it is exported. Your callback function must
+accept an [envelope](https://github.com/microsoft/ApplicationInsights-Home/blob/master/EndpointSpecs/Schemas/Bond/Envelope.bond)
+data type as its parameter. You can see the schema for Azure Monitor data types in the envelopes [here](https://github.com/microsoft/ApplicationInsights-Home/tree/master/EndpointSpecs/Schemas/Bond).
+The `MetricsExporter` handles `MetricData` data types.
+
+.. code:: python
+
+    import requests
+
+    from opencensus.ext.azure.trace_exporter import AzureExporter
+    from opencensus.trace import config_integration
+    from opencensus.trace.samplers import ProbabilitySampler
+    from opencensus.trace.tracer import Tracer
+
+    config_integration.trace_integrations(['requests'])
+
+    # Callback function to add os_type: linux to span properties
+    def call_back_function(envelope):
+        envelope.data.baseData.properties['os_type'] = 'linux'
+
+    exporter = AzureExporter(
+        connection_string='InstrumentationKey=<your-instrumentation-key-here>'
+    )
+    exporter.add_telemetry_processor(call_back_function)
+    tracer = Tracer(exporter=exporter, sampler=ProbabilitySampler(1.0))
+    with tracer.span(name='parent'):
+        response = requests.get(url='https://www.wikipedia.org/wiki/Rabbit')
 
 References
 ----------

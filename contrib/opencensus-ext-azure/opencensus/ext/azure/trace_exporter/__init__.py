@@ -48,6 +48,7 @@ class AzureExporter(BaseExporter, ProcessorMixin, TransportMixin):
             maintenance_period=self.options.storage_maintenance_period,
             retention_period=self.options.storage_retention_period,
         )
+        self._telemetry_processors = []
         super(AzureExporter, self).__init__(**options)
 
     def span_data_to_envelope(self, sd):
