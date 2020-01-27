@@ -36,6 +36,7 @@ class TestProcessorMixin(unittest.TestCase):
     def test_apply(self):
         mixin = ProcessorMixin()
         mixin._telemetry_processors = []
+
         def call_back_function(envelope):
             envelope.append('hello')
         mixin.add_telemetry_processor(call_back_function)
@@ -49,8 +50,10 @@ class TestProcessorMixin(unittest.TestCase):
     def test_apply_multiple(self):
         mixin = ProcessorMixin()
         mixin._telemetry_processors = []
+
         def call_back_function(envelope):
             envelope.append('hello')
+
         def call_back_function2(envelope):
             envelope.append('hello2')
         mixin.add_telemetry_processor(call_back_function)
@@ -65,8 +68,10 @@ class TestProcessorMixin(unittest.TestCase):
     def test_apply_exception(self):
         mixin = ProcessorMixin()
         mixin._telemetry_processors = []
+
         def call_back_function(envelope):
             raise ValueError()
+
         def call_back_function2(envelope):
             envelope.append('hello2')
         mixin.add_telemetry_processor(call_back_function)
