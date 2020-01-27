@@ -57,6 +57,6 @@ class ProcessorMixin(object):
                         accepted = False
                 except Exception as ex:
                     logger.warning('Telemetry processor failed with: %s.', ex)
-                if accepted:
-                    filtered_envelopes.append(envelope)
+            if accepted:
+                filtered_envelopes.append(envelope)
         return filtered_envelopes
