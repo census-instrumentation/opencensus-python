@@ -79,11 +79,11 @@ class TestAzureLogHandler(unittest.TestCase):
         Options._default.instrumentation_key = instrumentation_key
 
     def test_invalid_sampling_rate(self):
-        with self.assertRaises(ValueError) as err:
+        with self.assertRaises(ValueError):
             log_exporter.AzureLogHandler(
-            instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
-            logging_sampling_rate=4.0,
-        )
+                instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
+                logging_sampling_rate=4.0,
+            )
 
     @mock.patch('requests.post', return_value=mock.Mock())
     def test_exception(self, requests_mock):
