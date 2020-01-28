@@ -28,6 +28,11 @@ from opencensus.ext.azure.common.storage import LocalFileStorage
 from opencensus.ext.azure.common.transport import TransportMixin
 from opencensus.trace.span import SpanKind
 
+try:
+    from urllib.parse import urlparse
+except ImportError:
+    from urlparse import urlparse
+
 logger = logging.getLogger(__name__)
 
 __all__ = ['AzureExporter']
@@ -57,50 +62,58 @@ class AzureExporter(BaseExporter, ProcessorMixin, TransportMixin):
             tags=dict(utils.azure_monitor_context),
             time=sd.start_time,
         )
+
         envelope.tags['ai.operation.id'] = sd.context.trace_id
         if sd.parent_span_id:
-            envelope.tags['ai.operation.parentId'] = '|{}.{}.'.format(
-                sd.context.trace_id,
+            envelope.tags['ai.operation.parentId'] = '{}'.format(
                 sd.parent_span_id,
             )
         if sd.span_kind == SpanKind.SERVER:
             envelope.name = 'Microsoft.ApplicationInsights.Request'
             data = Request(
-                id='|{}.{}.'.format(sd.context.trace_id, sd.span_id),
+                id='{}'.format(sd.span_id),
                 duration=utils.timestamp_to_duration(
                     sd.start_time,
                     sd.end_time,
                 ),
-                responseCode='0',
-                success=False,
+                responseCode=str(sd.status.code),
+                success=False,  # Modify based off attributes or status
                 properties={},
             )
             envelope.data = Data(baseData=data, baseType='RequestData')
+            data.name = ''
             if 'http.method' in sd.attributes:
                 data.name = sd.attributes['http.method']
             if 'http.route' in sd.attributes:
                 data.name = data.name + ' ' + sd.attributes['http.route']
                 envelope.tags['ai.operation.name'] = data.name
+                data.properties['request.name'] = data.name
+            elif 'http.path' in sd.attributes:
+                data.properties['request.name'] = data.name + \
+                    ' ' + sd.attributes['http.path']
             if 'http.url' in sd.attributes:
                 data.url = sd.attributes['http.url']
+                data.properties['request.url'] = sd.attributes['http.url']
             if 'http.status_code' in sd.attributes:
                 status_code = sd.attributes['http.status_code']
                 data.responseCode = str(status_code)
                 data.success = (
                     status_code >= 200 and status_code <= 399
                 )
+            elif sd.status.code == 0:
+                data.success = True
         else:
             envelope.name = \
                 'Microsoft.ApplicationInsights.RemoteDependency'
             data = RemoteDependency(
                 name=sd.name,  # TODO
-                id='|{}.{}.'.format(sd.context.trace_id, sd.span_id),
-                resultCode='0',  # TODO
+                id='{}'.format(sd.span_id),
+                resultCode=str(sd.status.code),
                 duration=utils.timestamp_to_duration(
                     sd.start_time,
                     sd.end_time,
                 ),
-                success=True,  # TODO
+                success=False,  # Modify based off attributes or status
                 properties={},
             )
             envelope.data = Data(
@@ -108,15 +121,27 @@ class AzureExporter(BaseExporter, ProcessorMixin, TransportMixin):
                 baseType='RemoteDependencyData',
             )
             if sd.span_kind == SpanKind.CLIENT:
-                data.type = 'HTTP'  # TODO
+                data.type = sd.attributes.get('component')
                 if 'http.url' in sd.attributes:
                     url = sd.attributes['http.url']
                     # TODO: error handling, probably put scheme as well
-                    data.name = utils.url_to_dependency_name(url)
+                    data.data = url
+                    parse_url = urlparse(url)
+                    # target matches authority (host:port)
+                    data.target = parse_url.netloc
+                    if 'http.method' in sd.attributes:
+                        # name is METHOD/path
+                        data.name = sd.attributes['http.method'] \
+                            + ' ' + parse_url.path
                 if 'http.status_code' in sd.attributes:
-                    data.resultCode = str(sd.attributes['http.status_code'])
+                    status_code = sd.attributes["http.status_code"]
+                    data.resultCode = str(status_code)
+                    data.success = 200 <= status_code < 400
+                elif sd.status.code == 0:
+                    data.success = True
             else:
                 data.type = 'INPROC'
+                data.success = True
         # TODO: links, tracestate, tags
         for key in sd.attributes:
             # This removes redundant data from ApplicationInsights
