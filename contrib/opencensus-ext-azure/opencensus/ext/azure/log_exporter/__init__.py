@@ -127,8 +127,7 @@ class AzureLogHandler(TransportMixin, BaseLogHandler):
     def __init__(self, **options):
         self.options = Options(**options)
         utils.validate_instrumentation_key(self.options.instrumentation_key)
-        if self.options.logging_sampling_rate < 0 or \
-           self.options.logging_sampling_rate > 1.0:
+        if not 0 <= self.options.logging_sampling_rate <= 1:
             raise ValueError('Sampling must be in the range: [0,1]')
         self.export_interval = self.options.export_interval
         self.max_batch_size = self.options.max_batch_size
