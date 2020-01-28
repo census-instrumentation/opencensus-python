@@ -15,6 +15,7 @@
 import unittest
 
 from opencensus.ext.azure.common.processor import ProcessorMixin
+from opencensus.ext.azure.common.protocol import Envelope
 
 
 # pylint: disable=W0212
@@ -37,58 +38,57 @@ class TestProcessorMixin(unittest.TestCase):
         mixin = ProcessorMixin()
         mixin._telemetry_processors = []
 
-        def call_back_function(envelope):
-            envelope.append('hello')
-        mixin.add_telemetry_processor(call_back_function)
-        envelope = ['add', 'sub']
+        def callback_function(envelope):
+            envelope.baseType += '_world'
+        mixin.add_telemetry_processor(callback_function)
+        envelope = Envelope()
+        envelope.baseType = 'type1'
         mixin.apply_telemetry_processors([envelope])
-        self.assertEqual(len(envelope), 3)
-        self.assertEqual(envelope[0], 'add')
-        self.assertEqual(envelope[1], 'sub')
-        self.assertEqual(envelope[2], 'hello')
+        self.assertEqual(envelope.baseType, 'type1_world')
 
     def test_apply_multiple(self):
         mixin = ProcessorMixin()
         mixin._telemetry_processors = []
 
-        def call_back_function(envelope):
-            envelope.append('_hello')
+        def callback_function(envelope):
+            envelope.baseType += '_world'
 
-        def call_back_function2(envelope):
-            envelope.append('_hello2')
-        mixin.add_telemetry_processor(call_back_function)
-        mixin.add_telemetry_processor(call_back_function2)
-        envelope = ['add']
+        def callback_function2(envelope):
+            envelope.baseType += '_world2'
+        mixin.add_telemetry_processor(callback_function)
+        mixin.add_telemetry_processor(callback_function2)
+        envelope = Envelope()
+        envelope.baseType = 'type1'
         mixin.apply_telemetry_processors([envelope])
-        self.assertEqual(len(envelope), 3)
-        self.assertEqual(envelope[0], 'add')
-        self.assertEqual(envelope[1], '_hello')
-        self.assertEqual(envelope[2], '_hello2')
+        self.assertEqual(envelope.baseType, 'type1_world_world2')
 
     def test_apply_exception(self):
         mixin = ProcessorMixin()
         mixin._telemetry_processors = []
 
-        def call_back_function(envelope):
+        def callback_function(envelope):
             raise ValueError()
 
-        def call_back_function2(envelope):
-            envelope.append('hello2')
-        mixin.add_telemetry_processor(call_back_function)
-        mixin.add_telemetry_processor(call_back_function2)
-        envelope = ['add']
+        def callback_function2(envelope):
+            envelope.baseType += '_world2'
+        mixin.add_telemetry_processor(callback_function)
+        mixin.add_telemetry_processor(callback_function2)
+        envelope = Envelope()
+        envelope.baseType = 'type1'
         mixin.apply_telemetry_processors([envelope])
-        self.assertEqual(len(envelope), 2)
-        self.assertEqual(envelope[0], 'add')
-        self.assertEqual(envelope[1], 'hello2')
+        self.assertEqual(envelope[0], 'type1_world2')
 
     def test_apply_not_accepted(self):
         mixin = ProcessorMixin()
         mixin._telemetry_processors = []
 
-        def call_back_function(envelope):
+        def callback_function(envelope):
             return len(envelope) < 4
-        mixin.add_telemetry_processor(call_back_function)
-        envelopes = mixin.apply_telemetry_processors(['add', 'subtract'])
+        mixin.add_telemetry_processor(callback_function)
+        envelope = Envelope()
+        envelope.baseType = 'type1'
+        envelope2 = Envelope()
+        envelope2.baseType = 'type2'
+        envelopes = mixin.apply_telemetry_processors([envelope, envelope2])
         self.assertEqual(len(envelopes), 1)
-        self.assertEqual(envelopes[0], 'add')
+        self.assertEqual(envelopes[0].baseType, 'type2')

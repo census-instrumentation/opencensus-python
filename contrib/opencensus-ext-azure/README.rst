@@ -89,10 +89,11 @@ WARNING: For this feature to work, you need to pass a dictionary to the custom_d
     properties = {'custom_dimensions': {'key_1': 'value_1', 'key_2': 'value_2'}}
     logger.warning('action', extra=properties)
 
-You can pass a callback function to the exporter to process telemetry before it is exported. Your callback function can return `False` if you do not want this envelope exported. Your callback function must
-accept an [envelope](https://github.com/census-instrumentation/opencensus-python/blob/master/contrib/opencensus-ext-azure/opencensus/ext/azure/common/protocol.py#L86)
-data type as its parameter. You can see the schema for Azure Monitor data types in the envelopes [here](https://github.com/census-instrumentation/opencensus-python/blob/master/contrib/opencensus-ext-azure/opencensus/ext/azure/common/protocol.py).
-The `AzureLogHandler` handles `ExceptionData` and `MessageData` data types.
+* You can pass a callback function to the exporter to process telemetry before it is exported.
+* Your callback function can return `False` if you do not want this envelope exported.
+* Your callback function must accept an [envelope](https://github.com/census-instrumentation/opencensus-python/blob/master/contrib/opencensus-ext-azure/opencensus/ext/azure/common/protocol.py#L86) data type as its parameter.
+* You can see the schema for Azure Monitor data types in the envelopes [here](https://github.com/census-instrumentation/opencensus-python/blob/master/contrib/opencensus-ext-azure/opencensus/ext/azure/common/protocol.py).
+* The `AzureLogHandler` handles `ExceptionData` and `MessageData` data types.
 
 .. code:: python
 
@@ -203,10 +204,12 @@ Below is a list of standard metrics that are currently available:
 - Process CPU Usage (percentage)
 - Process Private Bytes (bytes)
 
-You can pass a callback function to the exporter to process telemetry before it is exported. Your callback function can return `False` if you do not want this envelope exported. Your callback function must
-accept an [envelope](https://github.com/census-instrumentation/opencensus-python/blob/master/contrib/opencensus-ext-azure/opencensus/ext/azure/common/protocol.py#L86)
-data type as its parameter. You can see the schema for Azure Monitor data types in the envelopes [here](https://github.com/census-instrumentation/opencensus-python/blob/master/contrib/opencensus-ext-azure/opencensus/ext/azure/common/protocol.py).
-The `MetricsExporter` handles `MetricData` data types.
+
+* You can pass a callback function to the exporter to process telemetry before it is exported.
+* Your callback function can return `False` if you do not want this envelope exported.
+* Your callback function must accept an [envelope](https://github.com/census-instrumentation/opencensus-python/blob/master/contrib/opencensus-ext-azure/opencensus/ext/azure/common/protocol.py#L86) data type as its parameter.
+* You can see the schema for Azure Monitor data types in the envelopes [here](https://github.com/census-instrumentation/opencensus-python/blob/master/contrib/opencensus-ext-azure/opencensus/ext/azure/common/protocol.py).
+* The `MetricsExporter` handles `MetricData` data types.
 
 .. code:: python
 
@@ -315,10 +318,12 @@ This example shows how to integrate with the `requests <https://2.python-request
     with tracer.span(name='parent'):
         response = requests.get(url='https://www.wikipedia.org/wiki/Rabbit')
 
-You can pass a callback function to the exporter to process telemetry before it is exported. Your callback function can return `False` if you do not want this envelope exported. Your callback function must
-accept an [envelope](https://github.com/census-instrumentation/opencensus-python/blob/master/contrib/opencensus-ext-azure/opencensus/ext/azure/common/protocol.py#L86)
-data type as its parameter. You can see the schema for Azure Monitor data types in the envelopes [here](https://github.com/census-instrumentation/opencensus-python/blob/master/contrib/opencensus-ext-azure/opencensus/ext/azure/common/protocol.py).
-The `AzureExporter` handles `Data` data types.
+
+* You can pass a callback function to the exporter to process telemetry before it is exported.
+* Your callback function can return `False` if you do not want this envelope exported.
+* Your callback function must accept an [envelope](https://github.com/census-instrumentation/opencensus-python/blob/master/contrib/opencensus-ext-azure/opencensus/ext/azure/common/protocol.py#L86) data type as its parameter.
+* You can see the schema for Azure Monitor data types in the envelopes [here](https://github.com/census-instrumentation/opencensus-python/blob/master/contrib/opencensus-ext-azure/opencensus/ext/azure/common/protocol.py).
+* The `AzureExporter` handles `Data` data types.
 
 .. code:: python
 

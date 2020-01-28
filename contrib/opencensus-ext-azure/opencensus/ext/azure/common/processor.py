@@ -55,6 +55,7 @@ class ProcessorMixin(object):
                 try:
                     if processor(envelope) is False:
                         accepted = False
+                        break
                 except Exception as ex:
                     logger.warning('Telemetry processor failed with: %s.', ex)
             if accepted:
