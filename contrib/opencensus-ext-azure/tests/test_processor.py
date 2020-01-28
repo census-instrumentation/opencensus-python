@@ -76,14 +76,14 @@ class TestProcessorMixin(unittest.TestCase):
         envelope = Envelope()
         envelope.baseType = 'type1'
         mixin.apply_telemetry_processors([envelope])
-        self.assertEqual(envelope[0], 'type1_world2')
+        self.assertEqual(envelope.baseType, 'type1_world2')
 
     def test_apply_not_accepted(self):
         mixin = ProcessorMixin()
         mixin._telemetry_processors = []
 
         def callback_function(envelope):
-            return len(envelope) < 4
+            return envelope.baseType == 'type2'
         mixin.add_telemetry_processor(callback_function)
         envelope = Envelope()
         envelope.baseType = 'type1'
