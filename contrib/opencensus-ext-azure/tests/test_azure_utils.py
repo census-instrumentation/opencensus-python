@@ -37,13 +37,6 @@ class TestUtils(unittest.TestCase):
                 1287905318.123456,
             ), '2010-10-24T07:28:38.123456Z')
 
-    def test_url_to_dependency_name(self):
-        self.assertEqual(
-            utils.url_to_dependency_name(
-                'https://www.wikipedia.org/wiki/Rabbit'
-            ),
-            'www.wikipedia.org')
-
     def test_validate_instrumentation_key(self):
         key = '1234abcd-5678-4efa-8abc-1234567890ab'
         self.assertIsNone(utils.validate_instrumentation_key(key))

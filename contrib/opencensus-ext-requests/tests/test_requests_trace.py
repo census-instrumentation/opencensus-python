@@ -104,6 +104,7 @@ class Test_requests_trace(unittest.TestCase):
             wrapped(url)
 
         expected_attributes = {
+            'component': 'HTTP',
             'http.host': 'localhost:8080',
             'http.method': 'GET',
             'http.path': '/test',
@@ -247,6 +248,7 @@ class Test_requests_trace(unittest.TestCase):
                 wrapped(url)
 
         expected_attributes = {
+            'component': 'HTTP',
             'http.host': 'localhost:8080',
             'http.method': 'GET',
             'http.path': '/test',
@@ -294,6 +296,7 @@ class Test_requests_trace(unittest.TestCase):
                 wrapped(url)
 
         expected_attributes = {
+            'component': 'HTTP',
             'http.host': 'localhost:8080',
             'http.method': 'GET',
             'http.path': '/test',
@@ -342,6 +345,7 @@ class Test_requests_trace(unittest.TestCase):
                 wrapped(url)
 
         expected_attributes = {
+            'component': 'HTTP',
             'http.host': 'localhost:8080',
             'http.method': 'GET',
             'http.path': '/test',
@@ -388,6 +392,7 @@ class Test_requests_trace(unittest.TestCase):
             )
 
         expected_attributes = {
+            'component': 'HTTP',
             'http.host': 'localhost:8080',
             'http.method': 'POST',
             'http.path': '/test',
@@ -619,6 +624,7 @@ class Test_requests_trace(unittest.TestCase):
                 )
 
         expected_attributes = {
+            'component': 'HTTP',
             'http.host': 'localhost:8080',
             'http.method': 'POST',
             'http.path': '/test',
@@ -667,6 +673,7 @@ class Test_requests_trace(unittest.TestCase):
                 )
 
         expected_attributes = {
+            'component': 'HTTP',
             'http.host': 'localhost:8080',
             'http.method': 'POST',
             'http.path': '/test',
@@ -715,6 +722,7 @@ class Test_requests_trace(unittest.TestCase):
                 )
 
         expected_attributes = {
+            'component': 'HTTP',
             'http.host': 'localhost:8080',
             'http.method': 'POST',
             'http.path': '/test',
