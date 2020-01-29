@@ -78,22 +78,22 @@ class MetricsExporter(TransportMixin, ProcessorMixin):
         # No support for histogram aggregations
         if (metric.descriptor.type !=
             MetricDescriptorType.CUMULATIVE_DISTRIBUTION):
-            md = metric.descriptor
-            # Each time series will be uniquely identified by its
-            # label values
-            for time_series in metric.time_series:
-                # Using stats, time_series should only have one
-                # point which contains the aggregated value
-                data_point = self._create_data_points(
-                    time_series, md)[0]
-                # The timestamp is when the metric was recorded
-                timestamp = time_series.points[0].timestamp
-                # Get the properties using label keys from metric
-                # and label values of the time series
-                properties = self._create_properties(time_series, md)
-                envelopes.append(self._create_envelope(data_point,
-                                                       timestamp,
-                                                       properties))
+                md = metric.descriptor
+                # Each time series will be uniquely identified by its
+                # label values
+                for time_series in metric.time_series:
+                    # Using stats, time_series should only have one
+                    # point which contains the aggregated value
+                    data_point = self._create_data_points(
+                        time_series, md)[0]
+                    # The timestamp is when the metric was recorded
+                    timestamp = time_series.points[0].timestamp
+                    # Get the properties using label keys from metric
+                    # and label values of the time series
+                    properties = self._create_properties(time_series, md)
+                    envelopes.append(self._create_envelope(data_point,
+                                                        timestamp,
+                                                        properties))
         return envelopes
 
     def _create_data_points(self, time_series, metric_descriptor):

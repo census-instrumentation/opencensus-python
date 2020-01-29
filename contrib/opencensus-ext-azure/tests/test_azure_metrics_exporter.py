@@ -20,7 +20,7 @@ import mock
 from opencensus.common import utils
 from opencensus.ext.azure import metrics_exporter
 from opencensus.ext.azure.common import Options
-from opencensus.ext.azure.common.protocol import DataPoint, Envelope
+from opencensus.ext.azure.common.protocol import DataPoint
 from opencensus.ext.azure.metrics_exporter import standard_metrics
 from opencensus.metrics import label_key, label_value
 from opencensus.metrics.export import (
