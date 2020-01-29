@@ -13,12 +13,14 @@
 # limitations under the License.
 
 import logging
+import random
 import threading
 import time
 import traceback
 
 from opencensus.common.schedule import Queue, QueueEvent, QueueExitEvent
 from opencensus.ext.azure.common import Options, utils
+from opencensus.ext.azure.common.processor import ProcessorMixin
 from opencensus.ext.azure.common.protocol import (
     Data,
     Envelope,
@@ -107,7 +109,17 @@ class Worker(threading.Thread):
             return time.time() - start_time  # time taken to stop
 
 
-class AzureLogHandler(TransportMixin, BaseLogHandler):
+class SamplingFilter(logging.Filter):
+
+    def __init__(self, probability=1.0):
+        super(SamplingFilter, self).__init__()
+        self.probability = probability
+
+    def filter(self, record):
+        return random.random() < self.probability
+
+
+class AzureLogHandler(TransportMixin, ProcessorMixin, BaseLogHandler):
     """Handler for logging to Microsoft Azure Monitor.
 
     :param options: Options for the log handler.
@@ -116,6 +128,8 @@ class AzureLogHandler(TransportMixin, BaseLogHandler):
     def __init__(self, **options):
         self.options = Options(**options)
         utils.validate_instrumentation_key(self.options.instrumentation_key)
+        if not 0 <= self.options.logging_sampling_rate <= 1:
+            raise ValueError('Sampling must be in the range: [0,1]')
         self.export_interval = self.options.export_interval
         self.max_batch_size = self.options.max_batch_size
         self.storage = LocalFileStorage(
@@ -124,7 +138,9 @@ class AzureLogHandler(TransportMixin, BaseLogHandler):
             maintenance_period=self.options.storage_maintenance_period,
             retention_period=self.options.storage_retention_period,
         )
+        self._telemetry_processors = []
         super(AzureLogHandler, self).__init__()
+        self.addFilter(SamplingFilter(self.options.logging_sampling_rate))
 
     def close(self):
         self.storage.close()
@@ -134,6 +150,7 @@ class AzureLogHandler(TransportMixin, BaseLogHandler):
         try:
             if batch:
                 envelopes = [self.log_record_to_envelope(x) for x in batch]
+                envelopes = self.apply_telemetry_processors(envelopes)
                 result = self._transmit(envelopes)
                 if result > 0:
                     self.storage.put(envelopes, result)
@@ -153,6 +170,7 @@ class AzureLogHandler(TransportMixin, BaseLogHandler):
             tags=dict(utils.azure_monitor_context),
             time=utils.timestamp_to_iso_str(record.created),
         )
+
         envelope.tags['ai.operation.id'] = getattr(
             record,
             'traceId',
@@ -169,6 +187,11 @@ class AzureLogHandler(TransportMixin, BaseLogHandler):
             'lineNumber': record.lineno,
             'level': record.levelname,
         }
+
+        if (hasattr(record, 'custom_dimensions') and
+                isinstance(record.custom_dimensions, dict)):
+            properties.update(record.custom_dimensions)
+
         if record.exc_info:
             exctype, _value, tb = record.exc_info
             callstack = []
