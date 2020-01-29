@@ -17,6 +17,7 @@ import logging
 
 from opencensus.common import utils as common_utils
 from opencensus.ext.azure.common import Options, utils
+from opencensus.ext.azure.common.processor import ProcessorMixin
 from opencensus.ext.azure.common.protocol import (
     Data,
     DataPoint,
@@ -35,7 +36,7 @@ __all__ = ['MetricsExporter', 'new_metrics_exporter']
 logger = logging.getLogger(__name__)
 
 
-class MetricsExporter(TransportMixin):
+class MetricsExporter(TransportMixin, ProcessorMixin):
     """Metrics exporter for Microsoft Azure Monitor."""
 
     def __init__(self, **options):
@@ -45,6 +46,7 @@ class MetricsExporter(TransportMixin):
             raise ValueError('Max batch size must be at least 1.')
         self.export_interval = self.options.export_interval
         self.max_batch_size = self.options.max_batch_size
+        self._telemetry_processors = []
         self.storage = LocalFileStorage(
             path=self.options.storage_path,
             max_size=self.options.storage_max_size,
@@ -61,6 +63,7 @@ class MetricsExporter(TransportMixin):
         batched_envelopes = list(common_utils.window(
             envelopes, self.max_batch_size))
         for batch in batched_envelopes:
+            batch = self.apply_telemetry_processors(batch)
             result = self._transmit(batch)
             if result > 0:
                 self.storage.put(batch, result)
