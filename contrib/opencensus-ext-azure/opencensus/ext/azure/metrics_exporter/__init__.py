@@ -61,7 +61,6 @@ class MetricsExporter(TransportMixin):
         batched_envelopes = list(common_utils.window(
             envelopes, self.max_batch_size))
         for batch in batched_envelopes:
-            print(batch)
             result = self._transmit(batch)
             if result > 0:
                 self.storage.put(batch, result)
@@ -74,8 +73,8 @@ class MetricsExporter(TransportMixin):
     def metric_to_envelopes(self, metric):
         envelopes = []
         # No support for histogram aggregations
-        type_ = metric.descriptor.type
-        if type_ != MetricDescriptorType.CUMULATIVE_DISTRIBUTION:
+        if (metric.descriptor.type !=
+            MetricDescriptorType.CUMULATIVE_DISTRIBUTION):
             md = metric.descriptor
             # Each time series will be uniquely identified by its
             # label values
@@ -85,12 +84,12 @@ class MetricsExporter(TransportMixin):
                 data_point = self._create_data_points(
                     time_series, md)[0]
                 # The timestamp is when the metric was recorded
-                time_stamp = time_series.points[0].timestamp
+                timestamp = time_series.points[0].timestamp
                 # Get the properties using label keys from metric
                 # and label values of the time series
                 properties = self._create_properties(time_series, md)
                 envelopes.append(self._create_envelope(data_point,
-                                                       time_stamp,
+                                                       timestamp,
                                                        properties))
         return envelopes
 
@@ -117,11 +116,11 @@ class MetricsExporter(TransportMixin):
             properties[metric_descriptor.label_keys[i].key] = value
         return properties
 
-    def _create_envelope(self, data_point, time_stamp, properties):
+    def _create_envelope(self, data_point, timestamp, properties):
         envelope = Envelope(
             iKey=self.options.instrumentation_key,
             tags=dict(utils.azure_monitor_context),
-            time=time_stamp.isoformat(),
+            time=timestamp.isoformat(),
         )
         envelope.name = "Microsoft.ApplicationInsights.Metric"
         data = MetricData(

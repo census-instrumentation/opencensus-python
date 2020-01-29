@@ -56,10 +56,6 @@ def create_metric():
     return mm
 
 
-def _create_envelope():
-    return Envelope._default
-
-
 class TestAzureMetricsExporter(unittest.TestCase):
     def test_constructor_missing_key(self):
         instrumentation_key = Options._default.instrumentation_key
