@@ -37,6 +37,8 @@ This example shows how to send a warning level log to Azure Monitor.
     logger.addHandler(AzureLogHandler(connection_string='InstrumentationKey=<your-instrumentation_key-here>'))
     logger.warning('Hello, World!')
 
+Correlation
+###########
 
 You can enrich the logs with trace IDs and span IDs by using the `logging integration <../opencensus-ext-logging>`_.
 
@@ -73,6 +75,9 @@ You can enrich the logs with trace IDs and span IDs by using the `logging integr
         logger.warning('In the span')
     logger.warning('After the span')
 
+Custom Properties
+#################
+
 You can also add custom properties to your log messages in the *extra* keyword argument using the custom_dimensions field.
 
 WARNING: For this feature to work, you need to pass a dictionary to the custom_dimensions field. If you pass arguments of any other type, the logger will ignore them.
@@ -88,6 +93,9 @@ WARNING: For this feature to work, you need to pass a dictionary to the custom_d
 
     properties = {'custom_dimensions': {'key_1': 'value_1', 'key_2': 'value_2'}}
     logger.warning('action', extra=properties)
+
+Modifying Logs
+##############
 
 * You can pass a callback function to the exporter to process telemetry before it is exported.
 * Your callback function can return `False` if you do not want this envelope exported.
@@ -170,6 +178,9 @@ The **Azure Monitor Metrics Exporter** allows you to export metrics to `Azure Mo
     if __name__ == "__main__":
         main()
 
+Standard Metrics
+################
+
 The exporter also includes a set of standard metrics that are exported to Azure Monitor by default.
 
 .. code:: python
@@ -204,6 +215,8 @@ Below is a list of standard metrics that are currently available:
 - Process CPU Usage (percentage)
 - Process Private Bytes (bytes)
 
+Modifying Metrics
+#################
 
 * You can pass a callback function to the exporter to process telemetry before it is exported.
 * Your callback function can return `False` if you do not want this envelope exported.
@@ -290,6 +303,9 @@ This example shows how to send a span "hello" to Azure Monitor.
     with tracer.span(name='hello'):
         print('Hello, World!')
 
+Integrations
+############
+
 OpenCensus also supports several `integrations <https://github.com/census-instrumentation/opencensus-python#integration>`_ which allows OpenCensus to integrate with third party libraries.
 
 This example shows how to integrate with the `requests <https://2.python-requests.org/en/master/>`_ library.
@@ -318,6 +334,8 @@ This example shows how to integrate with the `requests <https://2.python-request
     with tracer.span(name='parent'):
         response = requests.get(url='https://www.wikipedia.org/wiki/Rabbit')
 
+Modifying Traces
+################
 
 * You can pass a callback function to the exporter to process telemetry before it is exported.
 * Your callback function can return `False` if you do not want this envelope exported.
