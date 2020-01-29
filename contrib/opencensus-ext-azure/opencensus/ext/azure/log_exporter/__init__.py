@@ -20,6 +20,7 @@ import traceback
 
 from opencensus.common.schedule import Queue, QueueEvent, QueueExitEvent
 from opencensus.ext.azure.common import Options, utils
+from opencensus.ext.azure.common.processor import ProcessorMixin
 from opencensus.ext.azure.common.protocol import (
     Data,
     Envelope,
@@ -118,7 +119,7 @@ class SamplingFilter(logging.Filter):
         return random.random() < self.probability
 
 
-class AzureLogHandler(TransportMixin, BaseLogHandler):
+class AzureLogHandler(TransportMixin, ProcessorMixin, BaseLogHandler):
     """Handler for logging to Microsoft Azure Monitor.
 
     :param options: Options for the log handler.
@@ -137,6 +138,7 @@ class AzureLogHandler(TransportMixin, BaseLogHandler):
             maintenance_period=self.options.storage_maintenance_period,
             retention_period=self.options.storage_retention_period,
         )
+        self._telemetry_processors = []
         super(AzureLogHandler, self).__init__()
         self.addFilter(SamplingFilter(self.options.logging_sampling_rate))
 
@@ -148,6 +150,7 @@ class AzureLogHandler(TransportMixin, BaseLogHandler):
         try:
             if batch:
                 envelopes = [self.log_record_to_envelope(x) for x in batch]
+                envelopes = self.apply_telemetry_processors(envelopes)
                 result = self._transmit(envelopes)
                 if result > 0:
                     self.storage.put(envelopes, result)

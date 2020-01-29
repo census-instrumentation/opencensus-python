@@ -17,6 +17,7 @@ import logging
 from opencensus.common.schedule import QueueExitEvent
 from opencensus.ext.azure.common import Options, utils
 from opencensus.ext.azure.common.exporter import BaseExporter
+from opencensus.ext.azure.common.processor import ProcessorMixin
 from opencensus.ext.azure.common.protocol import (
     Data,
     Envelope,
@@ -37,7 +38,7 @@ logger = logging.getLogger(__name__)
 __all__ = ['AzureExporter']
 
 
-class AzureExporter(TransportMixin, BaseExporter):
+class AzureExporter(BaseExporter, ProcessorMixin, TransportMixin):
     """An exporter that sends traces to Microsoft Azure Monitor.
 
     :param options: Options for the exporter.
@@ -52,6 +53,7 @@ class AzureExporter(TransportMixin, BaseExporter):
             maintenance_period=self.options.storage_maintenance_period,
             retention_period=self.options.storage_retention_period,
         )
+        self._telemetry_processors = []
         super(AzureExporter, self).__init__(**options)
 
     def span_data_to_envelope(self, sd):
@@ -152,6 +154,7 @@ class AzureExporter(TransportMixin, BaseExporter):
         try:
             if batch:
                 envelopes = [self.span_data_to_envelope(sd) for sd in batch]
+                envelopes = self.apply_telemetry_processors(envelopes)
                 result = self._transmit(envelopes)
                 if result > 0:
                     self.storage.put(envelopes, result)
