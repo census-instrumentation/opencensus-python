@@ -13,18 +13,23 @@
 # limitations under the License.
 
 import logging
+
 import requests
 import wrapt
+
+from opencensus.trace import (
+    attributes_helper,
+    exceptions_status,
+    execution_context,
+)
+from opencensus.trace import span as span_module
+from opencensus.trace import utils
+
 try:
     from urllib.parse import urlparse
 except ImportError:
     from urlparse import urlparse
 
-from opencensus.trace import attributes_helper
-from opencensus.trace import exceptions_status
-from opencensus.trace import execution_context
-from opencensus.trace import span as span_module
-from opencensus.trace import utils
 
 log = logging.getLogger(__name__)
 
@@ -85,6 +90,10 @@ def wrap_requests(requests_func):
         _span = _tracer.start_span()
         _span.name = '{}'.format(path)
         _span.span_kind = span_module.SpanKind.CLIENT
+
+        # Add the component type to attributes
+        _tracer.add_attribute_to_current_span(
+            "component", "HTTP")
 
         # Add the requests host to attributes
         _tracer.add_attribute_to_current_span(
@@ -161,6 +170,10 @@ def wrap_session_request(wrapped, instance, args, kwargs):
             tracer_headers)
     except Exception:  # pragma: NO COVER
         pass
+
+    # Add the component type to attributes
+    _tracer.add_attribute_to_current_span(
+        "component", "HTTP")
 
     # Add the requests host to attributes
     _tracer.add_attribute_to_current_span(

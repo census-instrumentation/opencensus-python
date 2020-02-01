@@ -76,6 +76,10 @@ def wrap_httplib_request(request_func):
         _span.span_kind = span_module.SpanKind.CLIENT
         _span.name = '[httplib]{}'.format(request_func.__name__)
 
+        # Add the component type to attributes
+        _tracer.add_attribute_to_current_span(
+            "component", "HTTP")
+
         # Add the request url to attributes
         _tracer.add_attribute_to_current_span(HTTP_URL, url)
 

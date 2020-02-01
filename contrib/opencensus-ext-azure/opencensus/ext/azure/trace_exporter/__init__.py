@@ -12,134 +12,71 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import logging
+import datetime
+import locale
+import os
+import platform
+import re
+import sys
 
-from opencensus.common.schedule import QueueExitEvent
-from opencensus.ext.azure.common import Options, utils
-from opencensus.ext.azure.common.exporter import BaseExporter
-from opencensus.ext.azure.common.protocol import (
-    Data,
-    Envelope,
-    RemoteDependency,
-    Request,
-)
-from opencensus.ext.azure.common.storage import LocalFileStorage
-from opencensus.ext.azure.common.transport import TransportMixin
-from opencensus.trace.span import SpanKind
+from opencensus.common.utils import timestamp_to_microseconds, to_iso_str
+from opencensus.common.version import __version__ as opencensus_version
+from opencensus.ext.azure.common.version import __version__ as ext_version
 
-logger = logging.getLogger(__name__)
+azure_monitor_context = {
+    'ai.cloud.role': os.path.basename(sys.argv[0]) or 'Python Application',
+    'ai.cloud.roleInstance': platform.node(),
+    'ai.device.id': platform.node(),
+    'ai.device.locale': locale.getdefaultlocale()[0],
+    'ai.device.osVersion': platform.version(),
+    'ai.device.type': 'Other',
+    'ai.internal.sdkVersion': 'py{}:oc{}:ext{}'.format(
+        platform.python_version(),
+        opencensus_version,
+        ext_version,
+    ),
+}
 
-__all__ = ['AzureExporter']
+
+def microseconds_to_duration(microseconds):
+    n = (microseconds + 500) // 1000  # duration in milliseconds
+    n, ms = divmod(n, 1000)
+    n, s = divmod(n, 60)
+    n, m = divmod(n, 60)
+    d, h = divmod(n, 24)
+    return '{:d}.{:02d}:{:02d}:{:02d}.{:03d}'.format(d, h, m, s, ms)
 
 
-class AzureExporter(TransportMixin, BaseExporter):
-    """An exporter that sends traces to Microsoft Azure Monitor.
+def timestamp_to_duration(start_time, end_time):
+    start_time_us = timestamp_to_microseconds(start_time)
+    end_time_us = timestamp_to_microseconds(end_time)
+    duration_us = int(end_time_us - start_time_us)
+    return microseconds_to_duration(duration_us)
 
-    :param options: Options for the exporter.
+
+def timestamp_to_iso_str(timestamp):
+    return to_iso_str(datetime.datetime.utcfromtimestamp(timestamp))
+
+
+# Validate UUID format
+# Specs taken from https://tools.ietf.org/html/rfc4122
+uuid_regex_pattern = re.compile('^[0-9a-f]{8}-'
+                                '[0-9a-f]{4}-'
+                                '[1-5][0-9a-f]{3}-'
+                                '[89ab][0-9a-f]{3}-'
+                                '[0-9a-f]{12}$')
+
+
+def validate_instrumentation_key(instrumentation_key):
+    """Validates the instrumentation key used for Azure Monitor.
+
+    An instrumentation key cannot be null or empty. An instrumentation key
+    is valid for Azure Monitor only if it is a valid UUID.
+
+    :param instrumentation_key: The instrumentation key to validate
     """
-
-    def __init__(self, **options):
-        self.options = Options(**options)
-        utils.validate_instrumentation_key(self.options.instrumentation_key)
-        self.storage = LocalFileStorage(
-            path=self.options.storage_path,
-            max_size=self.options.storage_max_size,
-            maintenance_period=self.options.storage_maintenance_period,
-            retention_period=self.options.storage_retention_period,
-        )
-        super(AzureExporter, self).__init__(**options)
-
-    def span_data_to_envelope(self, sd):
-        envelope = Envelope(
-            iKey=self.options.instrumentation_key,
-            tags=dict(utils.azure_monitor_context),
-            time=sd.start_time,
-        )
-        envelope.tags['ai.operation.id'] = sd.context.trace_id
-        if sd.parent_span_id:
-            envelope.tags['ai.operation.parentId'] = '|{}.{}.'.format(
-                sd.context.trace_id,
-                sd.parent_span_id,
-            )
-        if sd.span_kind == SpanKind.SERVER:
-            envelope.name = 'Microsoft.ApplicationInsights.Request'
-            data = Request(
-                id='|{}.{}.'.format(sd.context.trace_id, sd.span_id),
-                duration=utils.timestamp_to_duration(
-                    sd.start_time,
-                    sd.end_time,
-                ),
-                responseCode='0',
-                success=False,
-                properties={},
-            )
-            envelope.data = Data(baseData=data, baseType='RequestData')
-            if 'http.method' in sd.attributes:
-                data.name = sd.attributes['http.method']
-            if 'http.route' in sd.attributes:
-                data.name = data.name + ' ' + sd.attributes['http.route']
-                envelope.tags['ai.operation.name'] = data.name
-            if 'http.url' in sd.attributes:
-                data.url = sd.attributes['http.url']
-            if 'http.status_code' in sd.attributes:
-                status_code = sd.attributes['http.status_code']
-                data.responseCode = str(status_code)
-                data.success = (
-                    status_code >= 200 and status_code <= 399
-                )
-        else:
-            envelope.name = \
-                'Microsoft.ApplicationInsights.RemoteDependency'
-            data = RemoteDependency(
-                name=sd.name,  # TODO
-                id='|{}.{}.'.format(sd.context.trace_id, sd.span_id),
-                resultCode='0',  # TODO
-                duration=utils.timestamp_to_duration(
-                    sd.start_time,
-                    sd.end_time,
-                ),
-                success=True,  # TODO
-                properties={},
-            )
-            envelope.data = Data(
-                baseData=data,
-                baseType='RemoteDependencyData',
-            )
-            if sd.span_kind == SpanKind.CLIENT:
-                data.type = 'HTTP'  # TODO
-                if 'http.url' in sd.attributes:
-                    url = sd.attributes['http.url']
-                    # TODO: error handling, probably put scheme as well
-                    data.name = utils.url_to_dependency_name(url)
-                if 'http.status_code' in sd.attributes:
-                    data.resultCode = str(sd.attributes['http.status_code'])
-            else:
-                data.type = 'INPROC'
-        # TODO: links, tracestate, tags
-        for key in sd.attributes:
-            # This removes redundant data from ApplicationInsights
-            if key.startswith('http.'):
-                continue
-            data.properties[key] = sd.attributes[key]
-        return envelope
-
-    def emit(self, batch, event=None):
-        try:
-            if batch:
-                envelopes = [self.span_data_to_envelope(sd) for sd in batch]
-                result = self._transmit(envelopes)
-                if result > 0:
-                    self.storage.put(envelopes, result)
-            if event:
-                if isinstance(event, QueueExitEvent):
-                    self._transmit_from_storage()  # send files before exit
-                event.set()
-                return
-            if len(batch) < self.options.max_batch_size:
-                self._transmit_from_storage()
-        except Exception:
-            logger.exception('Exception occurred while exporting the data.')
-
-    def _stop(self, timeout=None):
-        self.storage.close()
-        return self._worker.stop(timeout)
+    if not instrumentation_key:
+        raise ValueError("Instrumentation key cannot be none or empty.")
+    match = uuid_regex_pattern.match(instrumentation_key)
+    if not match:
+        raise ValueError("Invalid instrumentation key.")
