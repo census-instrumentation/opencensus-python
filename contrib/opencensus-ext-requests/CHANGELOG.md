@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+## 0.7.3
+Released 2020-01-31
+
+  - Support span attribute changes in `opencensus>=0.7.7`
+
 ## 0.7.2
 Released 2019-08-26
 
