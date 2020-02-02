@@ -10,7 +10,7 @@ jobs:
       ignore:
         - gh-pages
     docker:
-      - image: googleapis/nox:0.17.0
+      - image: circleci/python:3.6.9
       - image: mysql:5.7
         environment:
           MYSQL_ROOT_HOST: "%"
@@ -28,20 +28,11 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Decrypt credentials
-          command: |
-            if [ -n "$GOOGLE_APPLICATION_CREDENTIALS" ]; then
-              openssl aes-256-cbc -d -a -k "$GOOGLE_CREDENTIALS_PASSPHRASE" \
-                  -in tests/system/credentials.json.enc \
-                  -out $GOOGLE_APPLICATION_CREDENTIALS
-            else
-              echo "No credentials. System tests will not run."
-            fi
-      - run:
           name: Run tests - opencensus
           command: |
-            pip install --upgrade nox
-            nox -f noxfile.py
+            sudo pip install --upgrade nox
+            python -c "import sqlite3"
+            nox -f noxfile.py -s sqlite_check
       - deploy:
           name: Push to PyPI (if this is a release tag).
           command: scripts/twine_upload.sh
