@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+## 0.7.3
+Released 2020-02-03
+
+- Added `component` span attribute
+
 ## 0.7.2
 Released 2019-08-06
 
