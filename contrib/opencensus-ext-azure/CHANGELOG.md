@@ -3,9 +3,14 @@
 ## Unreleased
 
 ## 1.0.2
-Released 2020-01-31
+Released 2020-02-03
 
-
+- Add local storage and retry logic for Azure Metrics Exporter
+  ([#845](https://github.com/census-instrumentation/opencensus-python/pull/845))
+- Add Fixed-rate sampling logic for Azure Log Exporter
+  ([#848](https://github.com/census-instrumentation/opencensus-python/pull/848))
+- Implement TelemetryProcessors for Azure exporters
+  ([#851](https://github.com/census-instrumentation/opencensus-python/pull/851))
 
 ## 1.0.1
 Released 2019-11-26

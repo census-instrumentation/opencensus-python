@@ -12,23 +12,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import mock
 import unittest
 from datetime import datetime
+
+import mock
 
 from opencensus.common import utils
 from opencensus.ext.azure import metrics_exporter
 from opencensus.ext.azure.common import Options
 from opencensus.ext.azure.common.protocol import DataPoint
-from opencensus.ext.azure.common.protocol import Envelope
 from opencensus.ext.azure.metrics_exporter import standard_metrics
-from opencensus.metrics import label_key
-from opencensus.metrics import label_value
-from opencensus.metrics.export import metric
-from opencensus.metrics.export import metric_descriptor
-from opencensus.metrics.export import point
-from opencensus.metrics.export import time_series
-from opencensus.metrics.export import value
+from opencensus.metrics import label_key, label_value
+from opencensus.metrics.export import (
+    metric,
+    metric_descriptor,
+    point,
+    time_series,
+    value,
+)
 from opencensus.metrics.export.metric_descriptor import MetricDescriptorType
 
 
@@ -55,10 +56,6 @@ def create_metric():
     return mm
 
 
-def create_envelope():
-    return Envelope._default
-
-
 class TestAzureMetricsExporter(unittest.TestCase):
     def test_constructor_missing_key(self):
         instrumentation_key = Options._default.instrumentation_key
@@ -68,20 +65,18 @@ class TestAzureMetricsExporter(unittest.TestCase):
         Options._default.instrumentation_key = instrumentation_key
 
     def test_constructor_invalid_batch_size(self):
-        options = Options(
-            instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
-            max_batch_size=-1)
         self.assertRaises(
             ValueError,
-            lambda: metrics_exporter.MetricsExporter(options=options)
-            )
+            lambda: metrics_exporter.MetricsExporter(
+                instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
+                max_batch_size=-1
+            ))
 
     @mock.patch('requests.post', return_value=mock.Mock())
     def test_export_metrics(self, requests_mock):
         metric = create_metric()
-        options = Options(
+        exporter = metrics_exporter.MetricsExporter(
             instrumentation_key='12345678-1234-5678-abcd-12345678abcd')
-        exporter = metrics_exporter.MetricsExporter(options)
         requests_mock.return_value.text = '{"itemsReceived":1,'\
                                           '"itemsAccepted":1,'\
                                           '"errors":[]}'
@@ -95,18 +90,16 @@ class TestAzureMetricsExporter(unittest.TestCase):
 
     def test_export_metrics_histogram(self):
         metric = create_metric()
-        options = Options(
+        exporter = metrics_exporter.MetricsExporter(
             instrumentation_key='12345678-1234-5678-abcd-12345678abcd')
         metric.descriptor._type = MetricDescriptorType.CUMULATIVE_DISTRIBUTION
-        exporter = metrics_exporter.MetricsExporter(options)
 
         self.assertIsNone(exporter.export_metrics([metric]))
 
     @mock.patch('requests.post', return_value=mock.Mock())
     def test_export_metrics_empty(self, requests_mock):
-        options = Options(
+        exporter = metrics_exporter.MetricsExporter(
             instrumentation_key='12345678-1234-5678-abcd-12345678abcd')
-        exporter = metrics_exporter.MetricsExporter(options)
         exporter.export_metrics([])
 
         self.assertEqual(len(requests_mock.call_args_list), 0)
@@ -114,10 +107,9 @@ class TestAzureMetricsExporter(unittest.TestCase):
     @mock.patch('requests.post', return_value=mock.Mock())
     def test_export_metrics_full_batch(self, requests_mock):
         metric = create_metric()
-        options = Options(
+        exporter = metrics_exporter.MetricsExporter(
             instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
             max_batch_size=1)
-        exporter = metrics_exporter.MetricsExporter(options)
         requests_mock.return_value.status_code = 200
         requests_mock.return_value.text = '{"itemsReceived":1,'\
                                           '"itemsAccepted":1,'\
@@ -129,270 +121,13 @@ class TestAzureMetricsExporter(unittest.TestCase):
         self.assertTrue('metrics' in post_body)
         self.assertTrue('properties' in post_body)
 
-    @mock.patch('opencensus.ext.azure.metrics_exporter' +
-                '.logger.warning', return_value=mock.Mock())
-    def test_transmit_client_error(self, logger_mock):
-        options = Options(
-            instrumentation_key='12345678-1234-5678-abcd-12345678abcd')
-        exporter = metrics_exporter.MetricsExporter(options)
-        exporter._transmit_without_retry(mock.Mock())
-
-        self.assertEqual(len(logger_mock.call_args_list), 1)
-
-    @mock.patch('requests.post', return_value=None)
-    @mock.patch('opencensus.ext.azure.metrics_exporter' +
-                '.logger.warning', return_value=mock.Mock())
-    def test_transmit_no_response(self, requests_mock, logger_mock):
-        envelope = create_envelope()
-        options = Options(
-            instrumentation_key='12345678-1234-5678-abcd-12345678abcd')
-        exporter = metrics_exporter.MetricsExporter(options)
-        exporter._transmit_without_retry([envelope])
-
-        self.assertEqual(len(requests_mock.call_args_list), 1)
-        self.assertEqual(len(logger_mock.call_args_list), 1)
-
-    @mock.patch('opencensus.ext.azure.metrics_exporter' +
-                '.logger.warning', return_value=mock.Mock())
-    def test_transmit_no_status_code(self, logger_mock):
-        with mock.patch('requests.post') as requests_mock:
-            type(requests_mock.return_value).status_code = mock.PropertyMock(
-                side_effect=Exception())
-            envelope = create_envelope()
-            options = Options(
-                instrumentation_key='12345678-1234-5678-abcd-12345678abcd')
-            exporter = metrics_exporter.MetricsExporter(options)
-            exporter._transmit_without_retry([envelope])
-
-            self.assertEqual(len(requests_mock.call_args_list), 1)
-            self.assertEqual(len(logger_mock.call_args_list), 1)
-
-    @mock.patch('opencensus.ext.azure.metrics_exporter' +
-                '.logger.warning', return_value=mock.Mock())
-    def test_transmit_no_response_body(self, logger_mock):
-        with mock.patch('requests.post') as requests_mock:
-            type(requests_mock.return_value).text = mock.PropertyMock(
-                side_effect=Exception())
-            envelope = create_envelope()
-            options = Options(
-                instrumentation_key='12345678-1234-5678-abcd-12345678abcd')
-            exporter = metrics_exporter.MetricsExporter(options)
-            exporter._transmit_without_retry([envelope])
-
-            self.assertEqual(len(requests_mock.call_args_list), 1)
-            self.assertEqual(len(logger_mock.call_args_list), 1)
-
-    @mock.patch('opencensus.ext.azure.metrics_exporter' +
-                '.logger.warning', return_value=mock.Mock())
-    def test_transmit_invalid_response_body(self, logger_mock):
-        with mock.patch('requests.post') as requests_mock:
-            type(requests_mock.return_value).text = mock.PropertyMock(
-                return_value='invalid')
-            envelope = create_envelope()
-            options = Options(
-                instrumentation_key='12345678-1234-5678-abcd-12345678abcd')
-            exporter = metrics_exporter.MetricsExporter(options)
-            exporter._transmit_without_retry([envelope])
-
-            self.assertEqual(len(requests_mock.call_args_list), 1)
-            self.assertEqual(len(logger_mock.call_args_list), 1)
-
-    @mock.patch('opencensus.ext.azure.metrics_exporter' +
-                '.logger.info', return_value=mock.Mock())
-    def test_transmit_success(self, logger_mock):
-        with mock.patch('requests.post') as requests_mock:
-            text = '{"itemsReceived":1,'\
-                   '"itemsAccepted":1,'\
-                   '"errors":[]}'
-            type(requests_mock.return_value).text = mock.PropertyMock(
-                return_value=text)
-            type(requests_mock.return_value).status_code = mock.PropertyMock(
-                return_value=200)
-            envelope = create_envelope()
-            options = Options(
-                instrumentation_key='12345678-1234-5678-abcd-12345678abcd')
-            exporter = metrics_exporter.MetricsExporter(options)
-            exporter._transmit_without_retry([envelope])
-
-            self.assertEqual(len(requests_mock.call_args_list), 1)
-            self.assertEqual(len(logger_mock.call_args_list), 1)
-
-    @mock.patch('opencensus.ext.azure.metrics_exporter' +
-                '.logger.warning', return_value=mock.Mock())
-    @mock.patch('opencensus.ext.azure.metrics_exporter' +
-                '.json.loads', return_value=None)
-    def test_transmit_none_data_retryable(self, logger_mock, json_mock):
-        with mock.patch('requests.post') as requests_mock:
-            text = '{"itemsReceived":1,'\
-                   '"itemsAccepted":1,'\
-                   '"errors":[{"statusCode":500, "index":0}]}'
-            type(requests_mock.return_value).text = mock.PropertyMock(
-                return_value=text)
-            type(requests_mock.return_value).status_code = mock.PropertyMock(
-                return_value=206)
-            envelope = create_envelope()
-            options = Options(
-                instrumentation_key='12345678-1234-5678-abcd-12345678abcd')
-            exporter = metrics_exporter.MetricsExporter(options)
-            exporter._transmit_without_retry([envelope])
-
-            self.assertEqual(len(requests_mock.call_args_list), 1)
-            self.assertEqual(len(logger_mock.call_args_list), 1)
-
-    @mock.patch('opencensus.ext.azure.metrics_exporter' +
-                '.logger.error', return_value=mock.Mock())
-    @mock.patch('opencensus.ext.azure.metrics_exporter' +
-                '.json.loads', return_value=None)
-    def test_transmit_none_data_non_retryable(self, logger_mock, json_mock):
-        with mock.patch('requests.post') as requests_mock:
-            text = '{"itemsReceived":1,'\
-                   '"itemsAccepted":1,'\
-                   '"errors":[{"statusCode":500, "index":0}]}'
-            type(requests_mock.return_value).text = mock.PropertyMock(
-                return_value=text)
-            type(requests_mock.return_value).status_code = mock.PropertyMock(
-                return_value=402)
-            envelope = create_envelope()
-            options = Options(
-                instrumentation_key='12345678-1234-5678-abcd-12345678abcd')
-            exporter = metrics_exporter.MetricsExporter(options)
-            exporter._transmit_without_retry([envelope])
-
-            self.assertEqual(len(requests_mock.call_args_list), 1)
-            self.assertEqual(len(logger_mock.call_args_list), 1)
-
-    @mock.patch('opencensus.ext.azure.metrics_exporter' +
-                '.logger.exception', return_value=mock.Mock())
-    def test_transmit_partial_exception(self, logger_mock):
-        with mock.patch('requests.post') as requests_mock:
-            text = '{"itemsReceived":1,'\
-                   '"itemsAccepted":1}'
-            type(requests_mock.return_value).text = mock.PropertyMock(
-                return_value=text)
-            type(requests_mock.return_value).status_code = mock.PropertyMock(
-                return_value=206)
-            envelope = create_envelope()
-            options = Options(
-                instrumentation_key='12345678-1234-5678-abcd-12345678abcd')
-            exporter = metrics_exporter.MetricsExporter(options)
-            exporter._transmit_without_retry([envelope])
-
-            self.assertEqual(len(requests_mock.call_args_list), 1)
-            self.assertEqual(len(logger_mock.call_args_list), 1)
-
-    @mock.patch('opencensus.ext.azure.metrics_exporter' +
-                '.logger.warning', return_value=mock.Mock())
-    def test_transmit_partial_retryable(self, logger_mock):
-        with mock.patch('requests.post') as requests_mock:
-            text = '{"itemsReceived":1,'\
-                   '"itemsAccepted":1,'\
-                   '"errors":[{"statusCode":429, "index":0}]}'
-            type(requests_mock.return_value).text = mock.PropertyMock(
-                return_value=text)
-            type(requests_mock.return_value).status_code = mock.PropertyMock(
-                return_value=206)
-            envelope = create_envelope()
-            options = Options(
-                instrumentation_key='12345678-1234-5678-abcd-12345678abcd')
-            exporter = metrics_exporter.MetricsExporter(options)
-            exporter._transmit_without_retry([envelope])
-
-            self.assertEqual(len(requests_mock.call_args_list), 1)
-            self.assertEqual(len(logger_mock.call_args_list), 1)
-
-    @mock.patch('opencensus.ext.azure.metrics_exporter' +
-                '.logger.error', return_value=mock.Mock())
-    def test_transmit_partial_non_retryable(self, logger_mock):
-        with mock.patch('requests.post') as requests_mock:
-            text = '{"itemsReceived":1,'\
-                   '"itemsAccepted":1,'\
-                   '"errors":[{"statusCode":402,'\
-                   '"index":0,"message":"error"}]}'
-            type(requests_mock.return_value).text = mock.PropertyMock(
-                return_value=text)
-            type(requests_mock.return_value).status_code = mock.PropertyMock(
-                return_value=206)
-            envelope = create_envelope()
-            options = Options(
-                instrumentation_key='12345678-1234-5678-abcd-12345678abcd')
-            exporter = metrics_exporter.MetricsExporter(options)
-            exporter._transmit_without_retry([envelope])
-
-            self.assertEqual(len(requests_mock.call_args_list), 1)
-            self.assertEqual(len(logger_mock.call_args_list), 1)
-
-    @mock.patch('opencensus.ext.azure.metrics_exporter' +
-                '.logger.error', return_value=mock.Mock())
-    @mock.patch('opencensus.ext.azure.metrics_exporter' +
-                '.logger.warning', return_value=mock.Mock())
-    def test_transmit_partial_mix_retryable(self, logger_mock, logger2_mock):
-        with mock.patch('requests.post') as requests_mock:
-            text = '{"itemsReceived":1,'\
-                   '"itemsAccepted":0,'\
-                   '"errors":[{"statusCode":402,'\
-                   '"index":0,"message":"error"},'\
-                   '{"statusCode":429, "index":0}]}'
-            type(requests_mock.return_value).text = mock.PropertyMock(
-                return_value=text)
-            type(requests_mock.return_value).status_code = mock.PropertyMock(
-                return_value=206)
-            envelope = create_envelope()
-            options = Options(
-                instrumentation_key='12345678-1234-5678-abcd-12345678abcd')
-            exporter = metrics_exporter.MetricsExporter(options)
-            exporter._transmit_without_retry([envelope])
-
-            self.assertEqual(len(requests_mock.call_args_list), 1)
-            self.assertEqual(len(logger_mock.call_args_list), 1)
-            self.assertEqual(len(logger2_mock.call_args_list), 1)
-
-    @mock.patch('opencensus.ext.azure.metrics_exporter' +
-                '.logger.warning', return_value=mock.Mock())
-    def test_transmit_server_retryable(self, logger_mock):
-        with mock.patch('requests.post') as requests_mock:
-            text = '{"itemsReceived":1,'\
-                   '"itemsAccepted":1,'\
-                   '"errors":[{"statusCode":500, "index":0}]}'
-            type(requests_mock.return_value).text = mock.PropertyMock(
-                return_value=text)
-            type(requests_mock.return_value).status_code = mock.PropertyMock(
-                return_value=500)
-            envelope = create_envelope()
-            options = Options(
-                instrumentation_key='12345678-1234-5678-abcd-12345678abcd')
-            exporter = metrics_exporter.MetricsExporter(options)
-            exporter._transmit_without_retry([envelope])
-
-            self.assertEqual(len(requests_mock.call_args_list), 1)
-            self.assertEqual(len(logger_mock.call_args_list), 1)
-
-    @mock.patch('opencensus.ext.azure.metrics_exporter' +
-                '.logger.error', return_value=mock.Mock())
-    def test_transmit_server_non_retryable(self, logger_mock):
-        with mock.patch('requests.post') as requests_mock:
-            text = '{"itemsReceived":1,'\
-                   '"itemsAccepted":1,'\
-                   '"errors":[{"statusCode":402, "index":0}]}'
-            type(requests_mock.return_value).text = mock.PropertyMock(
-                return_value=text)
-            type(requests_mock.return_value).status_code = mock.PropertyMock(
-                return_value=402)
-            envelope = create_envelope()
-            options = Options(
-                instrumentation_key='12345678-1234-5678-abcd-12345678abcd')
-            exporter = metrics_exporter.MetricsExporter(options)
-            exporter._transmit_without_retry([envelope])
-
-            self.assertEqual(len(requests_mock.call_args_list), 1)
-            self.assertEqual(len(logger_mock.call_args_list), 1)
-
     def test_create_data_points(self):
         metric = create_metric()
-        options = Options(
-            instrumentation_key='12345678-1234-5678-abcd-12345678abcd')
-        exporter = metrics_exporter.MetricsExporter(options)
-        data_points = exporter.create_data_points(metric.time_series[0],
-                                                  metric.descriptor)
+        exporter = metrics_exporter.MetricsExporter(
+            instrumentation_key='12345678-1234-5678-abcd-12345678abcd'
+        )
+        data_points = exporter._create_data_points(metric.time_series[0],
+                                                   metric.descriptor)
 
         self.assertEqual(len(data_points), 1)
         data_point = data_points[0]
@@ -403,42 +138,42 @@ class TestAzureMetricsExporter(unittest.TestCase):
 
     def test_create_properties(self):
         metric = create_metric()
-        options = Options(
-            instrumentation_key='12345678-1234-5678-abcd-12345678abcd')
-        exporter = metrics_exporter.MetricsExporter(options)
-        properties = exporter.create_properties(metric.time_series[0],
-                                                metric.descriptor)
+        exporter = metrics_exporter.MetricsExporter(
+            instrumentation_key='12345678-1234-5678-abcd-12345678abcd'
+        )
+        properties = exporter._create_properties(metric.time_series[0],
+                                                 metric.descriptor)
 
         self.assertEqual(len(properties), 1)
         self.assertEqual(properties['key'], 'val')
 
     def test_create_properties_none(self):
         metric = create_metric()
-        options = Options(
-            instrumentation_key='12345678-1234-5678-abcd-12345678abcd')
-        exporter = metrics_exporter.MetricsExporter(options)
+        exporter = metrics_exporter.MetricsExporter(
+            instrumentation_key='12345678-1234-5678-abcd-12345678abcd'
+        )
         metric.time_series[0].label_values[0]._value = None
-        properties = exporter.create_properties(metric.time_series[0],
-                                                metric.descriptor)
+        properties = exporter._create_properties(metric.time_series[0],
+                                                 metric.descriptor)
 
         self.assertEqual(len(properties), 1)
         self.assertEqual(properties['key'], 'null')
 
     def test_create_envelope(self):
         metric = create_metric()
-        options = Options(
-            instrumentation_key='12345678-1234-5678-abcd-12345678abcd')
-        exporter = metrics_exporter.MetricsExporter(options)
+        exporter = metrics_exporter.MetricsExporter(
+            instrumentation_key='12345678-1234-5678-abcd-12345678abcd'
+        )
         value = metric.time_series[0].points[0].value.value
         data_point = DataPoint(ns=metric.descriptor.name,
                                name=metric.descriptor.name,
                                value=value)
         timestamp = datetime(2019, 3, 20, 21, 34, 0, 537954)
         properties = {'url': 'website.com'}
-        envelope = exporter.create_envelope(data_point, timestamp, properties)
+        envelope = exporter._create_envelope(data_point, timestamp, properties)
 
         self.assertTrue('iKey' in envelope)
-        self.assertEqual(envelope.iKey, options.instrumentation_key)
+        self.assertEqual(envelope.iKey, '12345678-1234-5678-abcd-12345678abcd')
         self.assertTrue('tags' in envelope)
         self.assertTrue('time' in envelope)
         self.assertEqual(envelope.time, timestamp.isoformat())
