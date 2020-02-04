@@ -3,8 +3,8 @@
 ## Unreleased
 
 ## 0.7.7
-Released 2020-02-03
-- Update `azure` module
+Released 2020-02-04
+- Updated `azure` module
   ([#837](https://github.com/census-instrumentation/opencensus-python/pull/837),
    [#845](https://github.com/census-instrumentation/opencensus-python/pull/845),
    [#848](https://github.com/census-instrumentation/opencensus-python/pull/848),
