@@ -36,7 +36,7 @@ OpenCensus.
 Installation & basic usage
 --------------------------
 
-1. Install the opencensus package using `pip`_ or `pipenv`_:
+1. Install the opencensus packages using `pip`_ or `pipenv`_:
 
     ::
 
