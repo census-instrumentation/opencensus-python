@@ -1,8 +1,34 @@
-{% extends "base.html" %}
-
-{% block content %}
-    <h1>Hi, {{ user.username }}!</h1>
-    {% for post in posts %}
-    <div><p>{{ post.author.username }} says: <b>{{ post.body }}</b></p></div>
-    {% endfor %}
-{% endblock %}
+<!DOCTYPE html> 
+<html lang="en"> 
+<head> 
+    <meta charset="UTF-8"> 
+    <title>Todo App</title> 
+  
+</head> 
+<body> 
+    <h1>Todo List</h1> 
+    <div>Add a new todo item:  
+        <form action="{{ url_for('add') }}" method="POST"> 
+            {{ form.add_input }}
+            <p>{{ form.add_submit() }}</p>
+        </form> 
+    </div> 
+    <div> 
+        <h2>Incomplete Items</h2> 
+        <ul> 
+            {% for todo in incomplete %} 
+                <form action="{{ url_for('completed', id=todo.id) }}" method="POST"> 
+                    <li style="font-size: 30pt">{{ todo.text }}
+                    {{ form.mark_submit() }}</li>
+                </form>
+            {% endfor %}     
+        </ul> 
+        <h2>Completed Items</h2> 
+        <ul> 
+            {% for todo in complete %} 
+            <li style="font-size: 30pt">{{ todo.text }}</li> 
+            {% endfor %} 
+        </ul> 
+    </div> 
+</body> 
+</html> 
