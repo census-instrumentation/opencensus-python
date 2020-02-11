@@ -9,11 +9,14 @@ class Todo(db.Model):
 
 @app.route('/')
 def index():
-    db.create_all()
     form = ToDoForm()
     incomplete = Todo.query.filter_by(complete = False).all() 
     complete = Todo.query.filter_by(complete = True).all() 
     return render_template('index.html', title='Home', form=form, complete=complete, incomplete=incomplete)
+
+@app.route('/blacklist')
+def blacklist():
+    return render_template('blacklist.html')
 
 @app.route('/add', methods =['POST']) 
 def add(): 
