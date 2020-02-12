@@ -3,11 +3,9 @@ import requests
 from flask import render_template, request, redirect, url_for 
 from app import app, db
 from app.forms import ToDoForm
+from app.models import Todo
+from app.metrics import mmap, request_measure, tmap
 
-class Todo(db.Model):
-    id = db.Column(db.Integer, primary_key = True)
-    text = db.Column(db.String(200)) 
-    complete = db.Column(db.Boolean) 
 
 @app.route('/')
 def index():
@@ -38,6 +36,8 @@ def complete(id):
 def search(id):
     todo = Todo.query.filter_by(id = int(id)).first()
     result = requests.get('http://google.com', todo.text)
+    mmap.measure_int_put(request_measure, 1)
+    mmap.record(tmap)
     if result and result.ok and result.url:
         todo.text = result.url
     db.session.commit()
