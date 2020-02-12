@@ -1,10 +1,14 @@
+import logging
+
 from config import Config
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from opencensus.trace import config_integration
 from opencensus.ext.azure import metrics_exporter
+from opencensus.ext.azure.log_exporter import AzureLogHandler
 from opencensus.ext.flask.flask_middleware import FlaskMiddleware
 
+logger = logging.getLogger(__name__)
 app = Flask(__name__)
 app.config.from_object(Config)
 
@@ -15,6 +19,7 @@ db = SQLAlchemy(app)
 exporter = metrics_exporter.new_metrics_exporter(
     enable_standard_metrics=False,
     connection_string='InstrumentationKey=70c241c9-206e-4811-82b4-2bc8a52170b9')
+logger.addHandler(AzureLogHandler(connection_string='InstrumentationKey=70c241c9-206e-4811-82b4-2bc8a52170b9'))
 
 from app import routes
 
