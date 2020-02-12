@@ -42,6 +42,8 @@ setup(
         'flask-wtf >= 0.14.3',
         'opencensus-ext-azure >= 1.0.2',
         'opencensus-ext-flask >= 0.7.3',
+        'opencensus-ext-requests >= 0.7.3',
+        'opencensus-ext-sqlalchemy >= 0.1.2',
     ],
     extras_require={},
     license='Apache-2.0',

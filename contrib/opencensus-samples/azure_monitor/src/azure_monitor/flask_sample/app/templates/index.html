@@ -16,11 +16,15 @@
     <div> 
         <h2>Incomplete Items</h2> 
         <ul> 
-            {% for todo in incomplete %} 
-                <form action="{{ url_for('completed', id=todo.id) }}" method="POST"> 
-                    <li style="font-size: 30pt">{{ todo.text }}
-                    {{ form.mark_submit() }}</li>
-                </form>
+            {% for todo in incomplete %}
+                <li style="font-size: 30pt">{{ todo.text }}
+                    <form action="{{ url_for('complete', id=todo.id) }}" method="POST"> 
+                        {{ form.mark_submit() }}
+                    </form>
+                    <form action="{{ url_for('search', id=todo.id) }}" method="GET"> 
+                        {{ form.search_submit() }}
+                    </form>
+                </li>
             {% endfor %}     
         </ul> 
         <h2>Completed Items</h2> 
