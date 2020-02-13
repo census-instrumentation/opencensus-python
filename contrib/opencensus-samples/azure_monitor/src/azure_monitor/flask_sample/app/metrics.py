@@ -22,11 +22,11 @@ stats = stats_module.stats
 view_manager = stats.view_manager
 stats_recorder = stats.stats_recorder
 
-request_measure = measure_module.MeasureInt("requests",
-                                           "number of requests",
-                                           "requests")
-request_view = view_module.View("request view",
-                               "number of requests",
+request_measure = measure_module.MeasureInt("added tasks",
+                                           "number of added tasks",
+                                           "tasks")
+request_view = view_module.View("added tasks",
+                               "number of tasks",
                                ["application_type"],
                                request_measure,
                                aggregation_module.CountAggregation())

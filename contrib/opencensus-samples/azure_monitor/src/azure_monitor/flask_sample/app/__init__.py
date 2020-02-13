@@ -28,9 +28,7 @@ app.config.from_object(Config)
 
 db = SQLAlchemy(app)
 
-# Trace integrations for requests library and sqlalchemy sending queries to the
-# underlying database
-config_integration.trace_integrations(['requests'])
+# Trace integrations for sqlalchemy library
 config_integration.trace_integrations(['sqlalchemy'])
 
 # FlaskMiddleware will track requests for the Flask application and send

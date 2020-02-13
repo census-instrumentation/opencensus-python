@@ -21,9 +21,6 @@
                     <form action="{{ url_for('complete', id=todo.id) }}" method="POST"> 
                         {{ form.mark_submit() }}
                     </form>
-                    <form action="{{ url_for('search', id=todo.id) }}" method="GET"> 
-                        {{ form.search_submit() }}
-                    </form>
                 </li>
             {% endfor %}     
         </ul> 
