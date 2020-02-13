@@ -8,7 +8,7 @@ Installation
 
 Install OpenCensus Azure Monitor samples through `pip`.
 
-`pip install opencensus-samples-azure`
+`pip install opencensus-azure-monitor-samples`
 
 
 Flask Sample

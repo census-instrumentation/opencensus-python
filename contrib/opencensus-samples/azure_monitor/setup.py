@@ -34,7 +34,7 @@ setup(
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
     ],
-    description='Sample applications for OpenCensus Azure Monitor Exporter',
+    description='Sample applications for OpenCensus Azure Monitor Exporters',
     include_package_data=True,
     long_description=open('README.rst').read(),
     install_requires=[
