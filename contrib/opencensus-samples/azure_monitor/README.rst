@@ -1,10 +1,7 @@
-OpenCensus Samples
-******************
-
-This repository holds sample applications that demonstrate the various exporters that are supported in OpenCensus.
-
 Azure Monitor Samples
 =====================
+
+This package holds sample applications that demonstrate the usage of Azure Monitor exporters in OpenCensus.
 
 Installation
 ------------
@@ -21,8 +18,7 @@ The Azure Monitor Flask sample is a simple "To-Do" application.
 It is a [Flask](https://www.palletsprojects.com/p/flask/) web application that runs a web server on the local machine.
 The application makes calls to a local database using the [SQLAlchemy](https://pypi.org/project/SQLAlchemy/) library which supports popular databases such as SQLite, MySQL and MS-SQL.
 The sample application uses a sqlite database by default, but you may configure the `config.py` file to point to a database of your choosing.
-
-Configuration
+ 
 ^^^^^^^^^^^^^
 
 To send telemetry to Azure Monitor, pass in your instrumentation key into `INSTRUMENTATION_KEY` in `config.py`.
