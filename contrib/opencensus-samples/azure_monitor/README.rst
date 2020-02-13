@@ -62,4 +62,4 @@ Telemetry
 There are various types of telemetry that are being sent in the sample application.
 Every button click hits an endpoint that exists in the flask application, so they will be treated as incoming requests (`requests` table in Azure Monitor).
 A log message is also sent every time a button is clicked, so a log telemetry is sent (`traces` table in Azure Monitor).
-A counter metric is recorded every time the `add` button is clicked. Metric telemetry is sent every interval (`customMetrics` table in Azure Monitor).
+A counter metric is recorded every time the `add` button is clicked. Metric telemetry is sent every interval (default 15.0 s, `customMetrics` table in Azure Monitor).
