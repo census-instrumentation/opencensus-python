@@ -14,19 +14,23 @@
 
 import logging
 
-from config import Config
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from opencensus.trace import config_integration
+
+from config import Config
 from opencensus.ext.azure import metrics_exporter
 from opencensus.ext.azure.log_exporter import AzureLogHandler
 from opencensus.ext.flask.flask_middleware import FlaskMiddleware
+from opencensus.trace import config_integration
 
 logger = logging.getLogger(__name__)
 app = Flask(__name__)
 app.config.from_object(Config)
 
 db = SQLAlchemy(app)
+
+# Import here to avoid circular imports
+from app import routes  # noqa isort:skip
 
 # Trace integrations for sqlalchemy library
 config_integration.trace_integrations(['sqlalchemy'])
@@ -43,7 +47,6 @@ exporter = metrics_exporter.new_metrics_exporter(
 # Exporter for logs, will send logging data
 logger.addHandler(AzureLogHandler(connection_string='InstrumentationKey=' + Config.INSTRUMENTATION_KEY))
 
-from app import routes
 
 if __name__ == '__main__':
     app.run(host='localhost', port=5000, threaded=True)

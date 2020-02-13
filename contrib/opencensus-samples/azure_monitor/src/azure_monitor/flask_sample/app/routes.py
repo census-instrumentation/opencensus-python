@@ -12,11 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from flask import render_template, request, redirect, url_for 
+from flask import redirect, render_template, request, url_for
+
 from app import app, db, logger
 from app.forms import ToDoForm
-from app.models import Todo
 from app.metrics import mmap, request_measure, tmap
+from app.models import Todo
 
 # Hitting any of these endpoints will be tracked as incoming requests (requests)
 
