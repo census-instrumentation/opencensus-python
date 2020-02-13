@@ -18,8 +18,7 @@ OpenCensus - A stats collection and distributed tracing framework
 .. |compat_check_github| image:: https://python-compatibility-tools.appspot.com/one_badge_image?package=git%2Bgit%3A//github.com/census-instrumentation/opencensus-python.git
    :target: https://python-compatibility-tools.appspot.com/one_badge_target?package=git%2Bgit%3A//github.com/census-instrumentation/opencensus-python.git
 
-`OpenCensus`_ for Python. OpenCensus provides a framework to measure a
-server's resource usage and collect performance stats. This repositoryasdasd
+`OpenCensus`_ for Python. OpenCensus provides a framework to measure aaa
 contains Python related utilities and supporting software needed by
 OpenCensus.
 
