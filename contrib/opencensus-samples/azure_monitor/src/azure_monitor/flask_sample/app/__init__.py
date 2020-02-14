@@ -15,9 +15,9 @@
 import logging
 
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
 
 from config import Config
+from flask_sqlalchemy import SQLAlchemy
 from opencensus.ext.azure import metrics_exporter
 from opencensus.ext.azure.log_exporter import AzureLogHandler
 from opencensus.ext.flask.flask_middleware import FlaskMiddleware
