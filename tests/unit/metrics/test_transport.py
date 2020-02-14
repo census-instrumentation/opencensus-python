@@ -70,27 +70,27 @@ class TestPeriodicMetricTask(unittest.TestCase):
         self.assertEqual(mock_func.call_count, 1)
 
 
-# @mock.patch('opencensus.metrics.transport.DEFAULT_INTERVAL', INTERVAL)
-# @mock.patch('opencensus.metrics.transport.logger')
-# class TestGetExporterThreadPeriodic(unittest.TestCase):
+@mock.patch('opencensus.metrics.transport.DEFAULT_INTERVAL', INTERVAL)
+@mock.patch('opencensus.metrics.transport.logger')
+class TestGetExporterThreadPeriodic(unittest.TestCase):
 
-#     @mock.patch('opencensus.metrics.transport.itertools.chain')
-#     def test_threaded_export(self, iter_mock, mock_logger):
-#         producer = mock.Mock()
-#         exporter = mock.Mock()
-#         metrics = mock.Mock()
-#         producer.get_metrics.return_value = metrics
-#         iter_mock.return_value = producer.get_metrics.return_value
-#         try:
-#             task = transport.get_exporter_thread([producer], exporter)
-#             producer.get_metrics.assert_not_called()
-#             exporter.export_metrics.assert_not_called()
-#             time.sleep(INTERVAL + INTERVAL / 2.0)
-#             producer.get_metrics.assert_called_once_with()
-#             exporter.export_metrics.assert_called_once_with(metrics)
-#         finally:
-#             task.cancel()
-#             task.join()
+    @mock.patch('opencensus.metrics.transport.itertools.chain')
+    def test_threaded_export(self, iter_mock, mock_logger):
+        producer = mock.Mock()
+        exporter = mock.Mock()
+        metrics = mock.Mock()
+        producer.get_metrics.return_value = metrics
+        iter_mock.return_value = producer.get_metrics.return_value
+        try:
+            task = transport.get_exporter_thread([producer], exporter)
+            producer.get_metrics.assert_not_called()
+            exporter.export_metrics.assert_not_called()
+            time.sleep(INTERVAL + INTERVAL / 2.0)
+            producer.get_metrics.assert_called_once_with()
+            exporter.export_metrics.assert_called_once_with(metrics)
+        finally:
+            task.cancel()
+            task.join()
 
 #     def test_producer_error(self, mock_logger):
 #         producer = mock.Mock()
