@@ -19,15 +19,22 @@ from app.forms import ToDoForm
 from app.metrics import mmap, request_measure, tmap
 from app.models import Todo
 
-# Hitting any of these endpoints will be tracked as incoming requests (requests)
+# Hitting any endpoint will track an incoming request (requests)
+
 
 @app.route('/')
 def index():
     form = ToDoForm()
-    # These queries to the data base will be tracked as outgoing requests (dependencies)
-    incomplete = Todo.query.filter_by(complete = False).all() 
-    complete = Todo.query.filter_by(complete = True).all() 
-    return render_template('index.html', title='Home', form=form, complete=complete, incomplete=incomplete)
+    # Queries to the data base will track an outgoing request (dependencies)
+    incomplete=Todo.query.filter_by(complete = False).all()
+    complete=Todo.query.filter_by(complete = True).all()
+    return render_template(
+        'index.html',
+        title='Home',
+        form=form,
+        complete=complete,
+        incomplete=incomplete
+    )
 
 @app.route('/blacklist')
 def blacklist():
