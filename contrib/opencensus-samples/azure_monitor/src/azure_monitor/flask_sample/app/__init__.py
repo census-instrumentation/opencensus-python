@@ -15,6 +15,7 @@
 import logging
 
 from config import Config
+
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from opencensus.ext.azure import metrics_exporter
