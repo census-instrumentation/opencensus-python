@@ -45,7 +45,11 @@ exporter = metrics_exporter.new_metrics_exporter(
     connection_string='InstrumentationKey=' + Config.INSTRUMENTATION_KEY)
 
 # Exporter for logs, will send logging data
-logger.addHandler(AzureLogHandler(connection_string='InstrumentationKey=' + Config.INSTRUMENTATION_KEY))
+logger.addHandler(
+    AzureLogHandler(
+        connection_string='InstrumentationKey=' + Config.INSTRUMENTATION_KEY
+        )
+    )
 
 
 if __name__ == '__main__':

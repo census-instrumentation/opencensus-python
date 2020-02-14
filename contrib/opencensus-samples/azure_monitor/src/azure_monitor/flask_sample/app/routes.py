@@ -26,8 +26,8 @@ from app.models import Todo
 def index():
     form = ToDoForm()
     # Queries to the data base will track an outgoing request (dependencies)
-    incomplete=Todo.query.filter_by(complete = False).all()
-    complete=Todo.query.filter_by(complete = True).all()
+    incomplete = Todo.query.filter_by(complete=False).all()
+    complete = Todo.query.filter_by(complete=True).all()
     return render_template(
         'index.html',
         title='Home',
@@ -36,26 +36,29 @@ def index():
         incomplete=incomplete
     )
 
+
 @app.route('/blacklist')
 def blacklist():
     return render_template('blacklist.html')
 
-@app.route('/add', methods =['POST']) 
-def add(): 
-    todo = Todo(text = request.form['add_input'], complete = False) 
-    db.session.add(todo) 
+
+@app.route('/add', methods=['POST'])
+def add():
+    todo = Todo(text=request.form['add_input'], complete=False)
+    db.session.add(todo)
     db.session.commit()
-    # Any logging done with the logger will be tracked as logging telemetry (traces)
+    # Logging with the logger will be tracked as logging telemetry (traces)
     logger.warn("Added entry: " + todo.text)
     # Records a measure metric to be sent as telemetry (customMetrics)
     mmap.measure_int_put(request_measure, 1)
     mmap.record(tmap)
     return redirect(url_for('index'))
 
-@app.route('/complete/<id>', methods =['POST']) 
-def complete(id): 
-    todo = Todo.query.filter_by(id = int(id)).first() 
+
+@app.route('/complete/<id>', methods=['POST'])
+def complete(id):
+    todo = Todo.query.filter_by(id=int(id)).first()
     todo.complete = True
-    db.session.commit() 
+    db.session.commit()
     logger.warn("Marked complete: " + todo.text)
-    return redirect(url_for('index')) 
+    return redirect(url_for('index'))
