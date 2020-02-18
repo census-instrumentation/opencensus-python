@@ -50,8 +50,8 @@ def _install_dev_packages(session):
 
 
 def _install_test_dependencies(session):
-    session.install('mock')
-    session.install('pytest==4.6.4')
+    session.install('mock==3.0.5')
+    session.install('pytest')
     # 842 - Unit tests failing on CI due to failed import for coverage
     # Might have something to do with the CircleCI image
     # session.install('pytest-cov')
