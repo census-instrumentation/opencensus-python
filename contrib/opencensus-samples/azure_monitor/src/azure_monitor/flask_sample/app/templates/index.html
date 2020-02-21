@@ -10,9 +10,18 @@
     <div>Add a new todo item:  
         <form action="{{ url_for('add') }}" method="POST"> 
             {{ form.add_input }}
-            <p>{{ form.add_submit() }}</p>
-        </form> 
-    </div> 
+            {{ form.add_submit() }}
+        </form>
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        <ul>
+            {% for message in messages %}
+            <p>{{ message }}</p>
+            {% endfor %}
+        </ul>
+        {% endif %}
+        {% endwith %}
+    </div>
     <div> 
         <h2>Incomplete Items</h2> 
         <ul> 

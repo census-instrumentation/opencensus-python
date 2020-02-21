@@ -41,7 +41,6 @@ middleware = FlaskMiddleware(app)
 
 # Exporter for metrics, will send metrics data
 exporter = metrics_exporter.new_metrics_exporter(
-    enable_standard_metrics=False,
     connection_string='InstrumentationKey=' + Config.INSTRUMENTATION_KEY)
 
 # Exporter for logs, will send logging data

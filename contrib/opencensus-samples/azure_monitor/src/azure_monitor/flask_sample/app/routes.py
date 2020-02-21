@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from flask import redirect, render_template, request, url_for
+from flask import flash, redirect, render_template, request, url_for
 
 from app import app, db, logger
 from app.forms import ToDoForm
@@ -23,11 +23,15 @@ from app.models import Todo
 
 
 @app.route('/')
+@app.route('/error')
 def index():
     form = ToDoForm()
     # Queries to the data base will track an outgoing request (dependencies)
     incomplete = Todo.query.filter_by(complete=False).all()
     complete = Todo.query.filter_by(complete=True).all()
+    path = request.url_rule
+    if path and 'error' in path.rule:
+        flash('ERROR: String must be less than 11 characters.')
     return render_template(
         'index.html',
         title='Home',
@@ -44,15 +48,23 @@ def blacklist():
 
 @app.route('/add', methods=['POST'])
 def add():
-    todo = Todo(text=request.form['add_input'], complete=False)
-    db.session.add(todo)
-    db.session.commit()
-    # Logging with the logger will be tracked as logging telemetry (traces)
-    logger.warn("Added entry: " + todo.text)
-    # Records a measure metric to be sent as telemetry (customMetrics)
-    mmap.measure_int_put(request_measure, 1)
-    mmap.record(tmap)
-    return redirect(url_for('index'))
+    add_input = request.form['add_input']
+    # Fail if string greater than 10 characters
+    try:
+        if len(add_input) > 10:
+            raise Exception
+        todo = Todo(text=add_input, complete=False)
+        db.session.add(todo)
+        db.session.commit()
+        # Logging with the logger will be tracked as logging telemetry (traces)
+        logger.warn("Added entry: " + todo.text)
+        # Records a measure metric to be sent as telemetry (customMetrics)
+        mmap.measure_int_put(request_measure, 1)
+        mmap.record(tmap)
+    except Exception:
+        logger.exception("ERROR: Input length too long.")
+        return redirect('/error')
+    return redirect('/')
 
 
 @app.route('/complete/<id>', methods=['POST'])
@@ -62,3 +74,4 @@ def complete(id):
     db.session.commit()
     logger.warn("Marked complete: " + todo.text)
     return redirect(url_for('index'))
+
