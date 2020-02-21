@@ -12,6 +12,12 @@
             {{ form.add_input }}
             {{ form.add_submit() }}
         </form>
+        <form action="{{ url_for('invalid') }}" method="POST"> 
+            {{ form.invalid_submit() }}
+        </form>
+        <form action="{{ url_for('valid') }}" method="POST"> 
+            {{ form.valid_submit() }}
+        </form>
         {% with messages = get_flashed_messages() %}
         {% if messages %}
         <ul>

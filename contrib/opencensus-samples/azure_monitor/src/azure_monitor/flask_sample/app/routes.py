@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import requests
 
 from flask import flash, redirect, render_template, request, url_for
 
@@ -39,6 +40,22 @@ def index():
         complete=complete,
         incomplete=incomplete
     )
+
+
+@app.route('/invalid', methods=['POST'])
+def invalid():
+    url = "http://localhost:8000"
+    response = requests.get(url)
+    flash("ERROR: Invalid request to " + url)
+    return redirect('/')
+
+
+@app.route('/valid', methods=['POST'])
+def valid():
+    url = "http://google.com"
+    response = requests.get(url)
+    flash("Valid request to " + url)
+    return redirect('/')
 
 
 @app.route('/blacklist')
@@ -73,5 +90,5 @@ def complete(id):
     todo.complete = True
     db.session.commit()
     logger.warn("Marked complete: " + todo.text)
-    return redirect(url_for('index'))
+    return redirect('/')
 

@@ -13,9 +13,11 @@
 # limitations under the License.
 
 import logging
+import sys
 
 from flask import Flask
 
+sys.path.append('..')
 from config import Config
 from flask_sqlalchemy import SQLAlchemy
 from opencensus.ext.azure import metrics_exporter
@@ -52,4 +54,4 @@ logger.addHandler(
 
 
 if __name__ == '__main__':
-    app.run(host='localhost', port=5000, threaded=True)
+    app.run(host='localhost', port=5000, threaded=True, debug=True)

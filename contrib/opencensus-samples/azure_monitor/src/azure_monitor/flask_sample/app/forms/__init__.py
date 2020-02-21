@@ -21,4 +21,5 @@ class ToDoForm(FlaskForm):
     add_input = StringField('To Do', validators=[DataRequired()])
     add_submit = SubmitField('Add Item')
     mark_submit = SubmitField('Mark As Complete')
-    search_submit = SubmitField('Google Search and replace with URL')
+    invalid_submit = SubmitField('Invalid request')
+    valid_submit = SubmitField('Valid request')
