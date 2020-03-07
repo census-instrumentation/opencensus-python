@@ -1,25 +1,42 @@
-OpenCensus for Python - A stats collection and distributed tracing framework
-============================================================================
+OpenCensus Trace for Python
+===========================
 
-    `OpenCensus`_ provides a framework to measure a server's resource
-    usage and collect performance stats. This repository contains Python related
-    utilities and supporting software needed by OpenCensus.
-
-    .. _OpenCensus: https://github.com/census-instrumentation
-
+|gitter|
 |circleci|
+|pypi|
+|compat_check_pypi|
+|compat_check_github|
 
 .. |circleci| image:: https://circleci.com/gh/census-instrumentation/opencensus-python.svg?style=shield
    :target: https://circleci.com/gh/census-instrumentation/opencensus-python
+.. |gitter| image:: https://badges.gitter.im/census-instrumentation/lobby.svg
+   :target: https://gitter.im/census-instrumentation/lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
+.. |pypi| image:: https://badge.fury.io/py/opencensus.svg
+   :target: https://pypi.org/project/opencensus/
+.. |compat_check_pypi| image:: https://python-compatibility-tools.appspot.com/one_badge_image?package=opencensus
+   :target: https://python-compatibility-tools.appspot.com/one_badge_target?package=opencensus
+.. |compat_check_github| image:: https://python-compatibility-tools.appspot.com/one_badge_image?package=git%2Bgit%3A//github.com/census-instrumentation/opencensus-python.git
+   :target: https://python-compatibility-tools.appspot.com/one_badge_target?package=git%2Bgit%3A//github.com/census-instrumentation/opencensus-python.git
+
+`OpenCensus`_ for Python. OpenCensus provides a framework to measure a
+server's resource usage and collect performance stats. This repository
+contains Python related utilities and supporting software needed by
+OpenCensus.
+
+.. _OpenCensus: https://github.com/census-instrumentation
 
 -  `API Documentation`_
 
 .. _API Documentation: https://opencensus.io/api/python/trace/usage.html
 
+--------
+ Tracing
+--------
+
 Installation & basic usage
 --------------------------
 
-1. Install the opencensus-trace package using `pip`_ or `pipenv`_:
+1. Install the opencensus package using `pip`_ or `pipenv`_:
 
     ::
 
@@ -30,12 +47,24 @@ Installation & basic usage
 
     .. code:: python
 
-        from opencensus.trace import tracer as tracer_module
+        from opencensus.trace.tracer import Tracer
+        from opencensus.trace.samplers import AlwaysOnSampler
 
-        tracer = tracer_module.Tracer()
+        tracer = Tracer(sampler=AlwaysOnSampler())
 
     .. _pip: https://pip.pypa.io
     .. _pipenv: https://docs.pipenv.org/
+
+3. Initialize a view_manager and a stats_recorder for your application:
+
+    .. code:: python
+
+        from opencensus.stats import stats as stats_module
+
+        stats = stats_module.stats
+        view_manager = stats.view_manager
+        stats_recorder = stats.stats_recorder
+
 
 Usage
 -----
@@ -44,19 +73,20 @@ You can collect traces using the ``Tracer`` `context manager`_:
 
 .. code:: python
 
-    from opencensus.trace import tracer as tracer_module
+    from opencensus.trace.tracer import Tracer
+    from opencensus.trace.samplers import AlwaysOnSampler
 
     # Initialize a tracer, by default using the `PrintExporter`
-    tracer = tracer_module.Tracer()
+    tracer = Tracer(sampler=AlwaysOnSampler())
 
     # Example for creating nested spans
-    with tracer.span(name='span1') as span1:
+    with tracer.span(name='span1'):
         do_something_to_trace()
-        with span1.span(name='span1_child1') as span1_child1:
+        with tracer.span(name='span1_child1'):
             do_something_to_trace()
-        with span1.span(name='span1_child2') as span1_child2:
+        with tracer.span(name='span1_child2'):
             do_something_to_trace()
-    with tracer.span(name='span2') as span2:
+    with tracer.span(name='span2'):
         do_something_to_trace()
 
 OpenCensus will collect everything within the ``with`` statement as a single span.
@@ -65,10 +95,11 @@ Alternatively, you can explicitly start and end a span:
 
 .. code:: python
 
-    from opencensus.trace import tracer as tracer_module
+    from opencensus.trace.tracer import Tracer
+    from opencensus.trace.samplers import AlwaysOnSampler
 
     # Initialize a tracer, by default using the `PrintExporter`
-    tracer = tracer_module.Tracer()
+    tracer = Tracer(sampler=AlwaysOnSampler())
 
     tracer.start_span(name='span1')
     do_something_to_trace()
@@ -81,326 +112,165 @@ Alternatively, you can explicitly start and end a span:
 Customization
 -------------
 
-Samplers
-~~~~~~~~
+There are several things you can customize in OpenCensus:
 
-You can specify different samplers when initializing a tracer, default
-is using ``AlwaysOnSampler``, the other options are ``AlwaysOffSampler``
-and ``ProbabilitySampler``
+* **Blacklist**, which excludes certain hosts and paths from being tracked.
+  By default, the health check path for the App Engine flexible environment is
+  not tracked, you can turn it on by excluding it from the blacklist setting.
 
-.. code:: python
+* **Exporter**, which sends the traces.
+  By default, the traces are printed to stdout in JSON format. You can choose
+  different exporters to send the traces to. There are three built-in exporters,
+  which are ``PrintExporter``, ``FileExporter`` and ``LoggingExporter``, the
+  other exporters are provided as `extensions <#trace-exporter>`__.
 
-    from opencensus.trace import samplers
-    from opencensus.trace import tracer as tracer_module
+* **Sampler**, which determines how traces are sampled.
+  The default sampler is the ``ProbabilitySampler``, which samples (i.e.
+  enables tracing for) a percentage of all requests. Sampling is deterministic
+  according to the trace ID. To force sampling for all requests, or to prevent
+  any request from being sampled, see ``AlwaysOnSampler`` and
+  ``AlwaysOffSampler``.
 
-    # Sampling the requests at the rate equals 0.5
-    sampler = samplers.ProbabilitySampler(rate=0.5)
-    tracer = tracer_module.Tracer(sampler=sampler)
+* **Propagator**, which serializes and deserializes the
+  ``SpanContext`` and its headers. The default propagator is
+  ``TraceContextPropagator``, other propagators include
+  ``BinaryFormatPropagator``, ``GoogleCloudFormatPropagator`` and
+  ``TextFormatPropagator``.
 
-Exporters
-~~~~~~~~~
 
-You can choose different exporters to send the traces to. By default,
-the traces are printed to stdout in JSON format. Other options include
-writing to a file, sending to Python logging, or reporting to
-Stackdriver.
-
-This example shows how to configure OpenCensus to save the traces to a
-file:
-
-.. code:: python
-
-    from opencensus.trace import file_exporter
-    from opencensus.trace.tracers import context_tracer
-
-    exporter = file_exporter.FileExporter(file_name='traces')
-    tracer = context_tracer.ContextTracer(exporter=exporter)
-
-This example shows how to report the traces to Stackdriver Trace:
+You can customize while initializing a tracer.
 
 .. code:: python
 
-    from opencensus.ext.stackdriver import trace_exporter as stackdriver_exporter
-    from opencensus.trace import tracer as tracer_module
-
-    exporter = stackdriver_exporter.StackdriverExporter(
-        project_id='your_cloud_project')
-    tracer = tracer_module.Tracer(exporter=exporter)
-
-Propagators
-~~~~~~~~~~~
-
-You can specify the propagator type for serializing and deserializing the
-``SpanContext`` and its headers. There are currently two built in propagators:
-``GoogleCloudFormatPropagator`` and ``TextFormatPropagator``.
-
-This example shows how to use the ``GoogleCloudFormatPropagator``:
-
-.. code:: python
-
-    from opencensus.trace.propagation import google_cloud_format
-
-    propagator = google_cloud_format.GoogleCloudFormatPropagator()
-
-    # Deserialize
-    span_context = propagator.from_header(header)
-
-    # Serialize
-    header = propagator.to_header(span_context)
-
-Blacklist Paths
-~~~~~~~~~~~~~~~
-
-You can specify which paths you do not want to trace by configuring the
-blacklist paths.
-
-This example shows how to configure the blacklist to ignore the `_ah/health` endpoint
-for a Flask application:
-
-.. code:: python
-
-    from opencensus.ext.flask.flask_middleware import FlaskMiddleware
-
-    app = flask.Flask(__name__)
-
-    blacklist_paths = ['_ah/health']
-    middleware = FlaskMiddleware(app, blacklist_paths=blacklist_paths)
-
-For Django, you can configure the blacklist in the ``OPENCENSUS_TRACE_PARAMS`` in ``settings.py``:
-
-.. code:: python
-
-    OPENCENSUS_TRACE_PARAMS: {
-        ...
-        'BLACKLIST_PATHS': ['_ah/health',],
-    }
-
-
-.. note:: By default the health check path for the App Engine flexible environment is not traced,
-    but you can turn it on by excluding it from the blacklist setting.
-
-Framework Integration
----------------------
-
-OpenCensus supports integration with popular web frameworks including Django,
-Flask, and Pyramid. When the application receives a HTTP request, the tracer
-will automatically generate a span context using the trace information
-extracted from the request headers, and propagated to the child spans.
-
-Flask
-~~~~~
-
-In your application, use the middleware to wrap your app and the
-requests will be automatically traced.
-
-.. code:: python
-
-    from opencensus.ext.flask.flask_middleware import FlaskMiddleware
-
-    app = flask.Flask(__name__)
-
-    # You can also specify the sampler, exporter, propagator in the middleware,
-    # default is using `AlwaysOnSampler` as sampler, `PrintExporter` as exporter,
-    # `GoogleCloudFormatPropagator` as propagator.
-    middleware = FlaskMiddleware(app)
-
-Django
-~~~~~~
-
-For tracing Django requests, you will need to add the following line to
-the ``MIDDLEWARE`` section in the Django ``settings.py`` file.
-
-.. code:: python
-
-    MIDDLEWARE = [
-        ...
-        'opencensus.ext.django.middleware.OpencensusMiddleware',
-    ]
-
-You can configure the sampler, exporter, propagator using the ``OPENCENSUS_TRACE`` setting in
-``settings.py``:
-
-.. code:: python
-
-    OPENCENSUS_TRACE = {
-        'SAMPLER': 'opencensus.trace.samplers.probability.ProbabilitySampler',
-        'REPORTER': 'opencensus.trace.print_exporter.PrintExporter',
-        'PROPAGATOR': 'opencensus.trace.propagation.google_cloud_format.'
-                      'GoogleCloudFormatPropagator',
-    }
-
-You can configure the sampling rate and other parameters using the ``OPENCENSUS_TRACE_PARAMS``
-setting in ``settings.py``:
-
-.. code:: python
-
-    OPENCENSUS_TRACE_PARAMS = {
-        'BLACKLIST_PATHS': ['/_ah/health'],
-        'GCP_EXPORTER_PROJECT': None,
-        'SAMPLING_RATE': 0.5,
-        'SERVICE_NAME': 'my_service',
-        'ZIPKIN_EXPORTER_HOST_NAME': 'localhost',
-        'ZIPKIN_EXPORTER_PORT': 9411,
-        'ZIPKIN_EXPORTER_PROTOCOL': 'http',
-    }
-
-
-Pyramid
-~~~~~~~
-
-In your application, add the pyramid tween and your requests will be
-traced.
-
-.. code:: python
-
-    def main(global_config, **settings):
-        config = Configurator(settings=settings)
-
-        config.add_tween('opencensus.ext.pyramid'
-                         '.pyramid_middleware.OpenCensusTweenFactory')
-
-To configure the sampler, exporter, and propagator, pass the instances
-into the pyramid settings
-
-.. code:: python
-
-    from opencensus.trace import print_exporter
-    from opencensus.trace.propagation import google_cloud_format
-    from opencensus.trace.samplers import probability
-
-    settings = {}
-    settings['OPENCENSUS_TRACE'] = {
-        'EXPORTER': print_exporter.PrintExporter(),
-        'SAMPLER': probability.ProbabilitySampler(rate=0.5),
-        'PROPAGATOR': google_cloud_format.GoogleCloudFormatPropagator(),
-    }
-
-    config = Configurator(settings=settings)
-
-gRPC Integration
-----------------
-
-OpenCensus provides the implementation of interceptors for both the client side
-and server side to instrument the gRPC requests and responses. The client
-interceptors are used to create a decorated channel that intercepts client
-gRPC calls and server interceptors act as decorators over handlers.
-
-gRPC interceptor is a new feature in the grpcio1.8.0 release, please upgrade
-your grpcio to the latest version to use this feature.
-
-For sample usage, please refer to the hello world example in the examples
-directory.
-
-More information about the gRPC interceptors please see the `proposal`_.
-
-.. _proposal: https://github.com/mehrdada/proposal/blob/python-interceptors/L13-Python-Interceptors.md
-
-Service Integration
--------------------
-
-Opencensus supports integration with various popular outbound services such as
-MySQL and Requests. To enable integration you will need to pass the list of
-services to census:
-
-.. code:: python
+    import requests
 
     from opencensus.trace import config_integration
+    from opencensus.trace import file_exporter
     from opencensus.trace import tracer as tracer_module
+    from opencensus.trace.propagation import google_cloud_format
+    from opencensus.trace.samplers import ProbabilitySampler
 
-    import mysql.connector
+    config_integration.trace_integrations(['httplib'])
 
-    # Trace both mysql-connection and psycopg2
-    integration = ['mysql', 'postgresql']
+    tracer = tracer_module.Tracer(
+        exporter=file_exporter.FileExporter(file_name='traces'),
+        propagator=google_cloud_format.GoogleCloudFormatPropagator(),
+        sampler=ProbabilitySampler(rate=0.5),
+    )
 
-    config_integration.trace_integrations(integration)
+    with tracer.span(name='parent'):
+        with tracer.span(name='child'):
+            response = requests.get('http://localhost:5000')
 
+You can use a configuration file for Flask/Django/Pyramid. For more
+information, please read the
+`individual integration documentation <#integration>`_.
 
-MySQL
-~~~~~
+.. code:: python
 
-The integration with MySQL supports the `mysql-connector`_ library and is specified
-to ``trace_integrations`` using ``'mysql'``.
+    'OPENCENSUS': {
+        'TRACE': {
+            'BLACKLIST_HOSTNAMES': ['localhost', '127.0.0.1'],
+            'BLACKLIST_PATHS': ['_ah/health'],
+            'SAMPLER': 'opencensus.trace.samplers.ProbabilitySampler(rate=1)',
+            'EXPORTER': '''opencensus.ext.ocagent.trace_exporter.TraceExporter(
+                service_name='foobar',
+            )''',
+            'PROPAGATOR': 'opencensus.trace.propagation.google_cloud_format.GoogleCloudFormatPropagator()',
+        }
+    }
 
-.. _mysql-connector: https://pypi.org/project/mysql-connector
-
-PostgreSQL
-~~~~~~~~~~
-
-The integration with PostgreSQL supports the `psycopg2`_ library and is specified
-to ``trace_integrations`` using ``'postgresql'``.
-
-.. _psycopg2: https://pypi.org/project/psycopg2
-
-
-SQLAlchemy
-~~~~~~~~~~
-
-You can trace usage of the `sqlalchemy package`_, regardless of the underlying
-database, by specifying ``'sqlalchemy'`` to ``trace_integrations``.
-
-.. _SQLAlchemy package: https://pypi.org/project/SQLAlchemy
-
-.. note:: If you enable tracing of SQLAlchemy as well as the underlying database
-    driver, you will get duplicate spans. Instead, just trace SQLAlchemy.
-
-Requests
-~~~~~~~~
-
-OpenCensus can trace HTTP requests made with the `Requests package`_. The request URL,
-method, and status will be collected.
-
-You can enable Requests integration by specifying ``'requests'`` to ``trace_integrations``.
-
-.. _Requests package: https://pypi.python.org/pypi/requests
-
-
-Contributing
+------------
+ Extensions
 ------------
 
-Contributions to this library are always welcome and highly encouraged.
-
-See `CONTRIBUTING <CONTRIBUTING.md>`__ for more information on how to
-get started.
-
-
-Development
+Integration
 -----------
 
-Tests
-~~~~~
+OpenCensus supports integration with popular web frameworks, client libraries and built-in libraries.
 
-::
+-  `Django`_
+-  `Flask`_
+-  `gevent`_
+-  `Google Cloud Client Libraries`_
+-  `gRPC`_
+-  `httplib`_
+-  `logging`_
+-  `MySQL`_
+-  `PostgreSQL`_
+-  `pymongo`_
+-  `PyMySQL`_
+-  `Pyramid`_
+-  `requests`_
+-  `SQLAlchemy`_
+-  `threading`_
 
-    cd trace
-    tox -e py34
-    source .tox/py34/bin/activate
+Log Exporter
+------------
 
-    # Run the unit test
-    pip install nox
+-  `Azure`_
 
-    # See what's available in the nox suite
-    nox -l
+Metrics Exporter
+----------------
 
-    # Run a single nox command
-    nox -s "unit_tests(python_version='2.7')"
+-  `Azure`_
 
-    # Run all the nox commands
-    nox
+Stats Exporter
+--------------
 
-    # Integration test
-    # We don't have script for integration test yet, but can test as below.
-    python setup.py bdist_wheel
-    cd dist
-    pip install opencensus-0.0.1-py2.py3-none-any.whl
+-  `OCAgent`_
+-  `Prometheus`_
+-  `Stackdriver`_
 
-    # Then just run the tracers normally as you want to test.
+Trace Exporter
+--------------
 
-License
--------
+-  `Azure`_
+-  `Datadog`_
+-  `Jaeger`_
+-  `OCAgent`_
+-  `Stackdriver`_
+-  `Zipkin`_
 
-Apache 2.0 - See `LICENSE <LICENSE>`__ for more information.
+.. _Azure: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-azure
+.. _Datadog: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-datadog
+.. _Django: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-django
+.. _Flask: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-flask
+.. _gevent: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-gevent
+.. _Google Cloud Client Libraries: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-google-cloud-clientlibs
+.. _gRPC: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-grpc
+.. _httplib: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-httplib
+.. _Jaeger: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-jaeger
+.. _logging: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-logging
+.. _MySQL: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-mysql
+.. _OCAgent: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-ocagent
+.. _PostgreSQL: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-postgresql
+.. _Prometheus: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-prometheus
+.. _pymongo: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-pymongo
+.. _PyMySQL: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-pymysql
+.. _Pyramid: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-pyramid
+.. _requests: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-requests
+.. _SQLAlchemy: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-sqlalchemy
+.. _Stackdriver: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-stackdriver
+.. _threading: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-threading
+.. _Zipkin: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-zipkin
 
-Disclaimer
-----------
+------------
+ Versioning
+------------
 
-This is not an official Google product.
+This library follows `Semantic Versioning`_.
+
+**GA**: Libraries defined at a GA quality level are stable, and will not introduce
+backwards-incompatible changes in any minor or patch releases. We will address issues and requests
+with the highest priority. If we were to make a backwards-incompatible changes on an API, we will
+first mark the existing API as deprecated and keep it for 18 months before removing it.
+
+**Beta**: Libraries defined at a Beta quality level are expected to be mostly stable and we're
+working towards their release candidate. We will address issues and requests with a higher priority.
+There may be backwards incompatible changes in a minor version release, though not in a patch
+release. If an element is part of an API that is only meant to be used by exporters or other
+opencensus libraries, then there is no deprecation period. Otherwise, we will deprecate it for 18
+months before removing it, if possible.
+
+.. _Semantic Versioning: https://semver.org/

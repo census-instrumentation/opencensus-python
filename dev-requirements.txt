@@ -1,0 +1,7 @@
+pylint~=2.3
+flake8
+isort~=4.3.21
+sphinx~=2.1
+pytest==4.6.4
+pytest-cov
+black>=19.3b0,==19.*
