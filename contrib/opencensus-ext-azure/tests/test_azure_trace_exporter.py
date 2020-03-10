@@ -745,7 +745,7 @@ class TestAzureExporter(unittest.TestCase):
             exporter._transmit_from_storage()
         exporter._stop()
 
-    def test_transmission_request_exception(self):
+    def test_transmission_pre_exception(self):
         exporter = trace_exporter.AzureExporter(
             instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
             storage_path=os.path.join(TEST_FOLDER, self.id()),
@@ -771,7 +771,7 @@ class TestAzureExporter(unittest.TestCase):
         self.assertTrue(exporter.storage.get())
         exporter._stop()
 
-    def test_transmission_response_exception(self):
+    def test_transmission_exception(self):
         exporter = trace_exporter.AzureExporter(
             instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
             storage_path=os.path.join(TEST_FOLDER, self.id()),
@@ -840,7 +840,7 @@ class TestAzureExporter(unittest.TestCase):
         self.assertEqual(exporter.storage.get().get(), (3,))
         exporter._stop()
 
-    def test_transmission_206_nothing_to_retry(self):
+    def test_transmission_206_no_retry(self):
         exporter = trace_exporter.AzureExporter(
             instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
             storage_path=os.path.join(TEST_FOLDER, self.id()),
