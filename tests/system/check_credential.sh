@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Copyright 2017, OpenCensus Authors
+# Copyright 2020, OpenCensus Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,13 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Set credential env var
-export GOOGLE_APPLICATION_CREDENTIALS='google_application_credentials'
-
 # Decrypt credentials
 if [ -n "$GOOGLE_APPLICATION_CREDENTIALS" ]; then
     openssl aes-256-cbc -d -a -k "$GOOGLE_CREDENTIALS_PASSPHRASE" \
-        -in credentials.json.enc \
+        -in ./tests/system/credentials.json.enc \
         -out "$GOOGLE_APPLICATION_CREDENTIALS"
 else
     echo "No credentials. System tests will not run."
