@@ -76,5 +76,6 @@ def system(session):
         'py.test',
         '-s',
         'tests/system/',
+        external=True,
         *session.posargs
     )
