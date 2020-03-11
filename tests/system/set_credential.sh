@@ -18,6 +18,8 @@ export GOOGLE_APPLICATION_CREDENTIALS='google_application_credentials'
 
 # Decrypt credentials
 if [ -n "$GOOGLE_APPLICATION_CREDENTIALS" ]; then
+    echo "$GOOGLE_APPLICATION_CREDENTIALS"
+    echo "DAWGCRED" 
     openssl aes-256-cbc -d -a -k "$GOOGLE_CREDENTIALS_PASSPHRASE" \
         -in credentials.json.enc \
         -out "$GOOGLE_APPLICATION_CREDENTIALS"
