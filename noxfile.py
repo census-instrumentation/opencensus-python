@@ -57,7 +57,7 @@ def _install_test_dependencies(session):
     session.install('unittest2')
 
 
-@nox.session(python=['2.7', '3.6'])
+@nox.session(python=['3.6'])
 def system(session):
     """Run the system test suite."""
 
@@ -76,6 +76,5 @@ def system(session):
         'py.test',
         '-s',
         'tests/system/',
-        external=True,
         *session.posargs
     )
