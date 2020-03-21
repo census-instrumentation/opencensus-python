@@ -37,6 +37,19 @@ This example shows how to send a warning level log to Azure Monitor.
     logger.addHandler(AzureLogHandler(connection_string='InstrumentationKey=<your-instrumentation_key-here>'))
     logger.warning('Hello, World!')
 
+**IMPORTANT NOTE:**
+The root logger for the Python logging library has a logging level set to `WARNING <https://docs.python.org/3/library/logging.html#logging.Logger.setLevel>`_. Any logs that are below this level will not actually be logged, and as such, not sent to Application Insights. More on that `here <https://docs.python.org/3/library/logging.html#logging-levels>`_.
+
+To change this behaviour, set the desired level on the logger:
+
+.. code:: python
+
+     # Send DEBUG and higher
+     logger.setLevel(logging.DEBUG)
+     
+     # DEBUG is level 10, INFO is level 20
+     logger.info('This now gets sent to Application Insights')
+
 Correlation
 ###########
 
