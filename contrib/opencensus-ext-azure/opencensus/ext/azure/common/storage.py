@@ -186,8 +186,9 @@ class LocalFileStorage(object):
                     try:
                         size += os.path.getsize(fp)
                     except OSError:
-                        logger.error("Path %s does not exist or is "
-                            "inaccessible.", fp)
+                        logger.error(
+                            "Path %s does not exist or is inaccessible.", fp
+                        )
                         continue
                     if size >= self.max_size:
                         logger.warning(
