@@ -186,16 +186,16 @@ class LocalFileStorage(object):
                     try:
                         size += os.path.getsize(fp)
                     except OSError:
-                        logger.error("Path " + fp +
-                                     " does not exist or is inaccessible.")
+                        logger.error("Path %s does not exist or is "
+                            "inaccessible.", fp)
                         continue
                     if size >= self.max_size:
                         logger.warning(
                             "Persistent storage max capacity has been "
-                            "reached. Currently at {}KB. Telemetry will be "
+                            "reached. Currently at %fKB. Telemetry will be "
                             "lost. Please consider increasing the value of "
-                            "'storage_max_size' in exporter config."
-                            .format(size/1024)
+                            "'storage_max_size' in exporter config.",
+                            format(size/1024)
                         )
                         return False
         return True
