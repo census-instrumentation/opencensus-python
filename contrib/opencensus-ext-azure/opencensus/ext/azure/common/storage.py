@@ -80,7 +80,7 @@ class LocalFileStorage(object):
     def __init__(
             self,
             path,
-            max_size=100*1024*1024,  # 100MiB
+            max_size=50*1024*1024,  # 50MiB
             maintenance_period=60,  # 1 minute
             retention_period=7*24*60*60,  # 7 days
             write_timeout=60,  # 1 minute
@@ -183,7 +183,12 @@ class LocalFileStorage(object):
                 fp = os.path.join(dirpath, f)
                 # skip if it is symbolic link
                 if not os.path.islink(fp):
-                    size += os.path.getsize(fp)
+                    try:
+                        size += os.path.getsize(fp)
+                    except OSError:
+                        logger.error("Path " + fp + 
+                            " does not exist or is inaccessible.")
+                        continue
                     if size >= self.max_size:
                         logger.warning(
                             "Persistent storage max capacity has been "

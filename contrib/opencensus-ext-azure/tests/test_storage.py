@@ -149,6 +149,15 @@ class TestLocalFileStorage(unittest.TestCase):
                 os_mock.return_value = True
             self.assertTrue(stor._check_storage_size())
 
+    def test_check_storage_size_error(self):
+        input = (1, 2, 3)
+        with LocalFileStorage(os.path.join(TEST_FOLDER, 'asd5'), 1) as stor:
+            with mock.patch('os.path.getsize', side_effect=throw(OSError)):
+                stor.put(input)
+                with mock.patch('os.path.islink') as os_mock:
+                    os_mock.return_value = True
+                self.assertTrue(stor._check_storage_size())
+
     def test_maintanence_routine(self):
         with mock.patch('os.makedirs') as m:
             m.return_value = None

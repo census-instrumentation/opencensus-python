@@ -97,7 +97,7 @@ class Options(BaseObject):
         minimum_retry_interval=60,  # minimum retry interval in seconds
         proxy=None,
         storage_maintenance_period=60,
-        storage_max_size=100*1024*1024,  # 100MiB
+        storage_max_size=50*1024*1024,  # 50MiB
         storage_path=os.path.join(
             os.path.expanduser('~'),
             '.opencensus',
