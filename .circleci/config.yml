@@ -10,7 +10,7 @@ jobs:
       ignore:
         - gh-pages
     docker:
-      - image: googleapis/nox:0.18.2
+      - image: circleci/python:3.6.9
       - image: mysql:5.7
         environment:
           MYSQL_ROOT_HOST: "%"
