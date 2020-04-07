@@ -50,7 +50,7 @@ def _install_dev_packages(session):
 
 
 def _install_test_dependencies(session):
-    session.install('mock')
+    session.install('mock==3.0.5')
     session.install('pytest==4.6.4')
     # 842 - Unit tests failing on CI due to failed import for coverage
     # Might have something to do with the CircleCI image
@@ -59,7 +59,7 @@ def _install_test_dependencies(session):
     session.install('unittest2')
 
 
-@nox.session(python=['2.7', '3.4', '3.5', '3.6'])
+@nox.session(python=['2.7', '3.5', '3.6'])
 def unit(session):
     """Run the unit test suite."""
 
