@@ -66,9 +66,9 @@ class TestAzureExporter(unittest.TestCase):
         mock_logger.exception.assert_called()
         exporter._stop()
 
-    @mock.patch('opencensus.ext.azure.trace_exporter.AzureExporter.span_data_to_envelope')  # noqa: E501
-    def test_emit_failure(self, span_data_to_envelope_mock):
-        span_data_to_envelope_mock.return_value = ['bar']
+    @mock.patch('opencensus.ext.azure.trace_exporter.AzureExporter.span_data_to_envelopes')  # noqa: E501
+    def test_emit_failure(self, span_data_to_envelopes_mock):
+        span_data_to_envelopes_mock.return_value = ['bar']
         exporter = trace_exporter.AzureExporter(
             instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
             storage_path=os.path.join(TEST_FOLDER, self.id()),
@@ -80,9 +80,9 @@ class TestAzureExporter(unittest.TestCase):
         self.assertIsNone(exporter.storage.get())
         exporter._stop()
 
-    @mock.patch('opencensus.ext.azure.trace_exporter.AzureExporter.span_data_to_envelope')  # noqa: E501
-    def test_emit_success(self, span_data_to_envelope_mock):
-        span_data_to_envelope_mock.return_value = ['bar']
+    @mock.patch('opencensus.ext.azure.trace_exporter.AzureExporter.span_data_to_envelopes')  # noqa: E501
+    def test_emit_success(self, span_data_to_envelopes_mock):
+        span_data_to_envelopes_mock.return_value = ['bar']
         exporter = trace_exporter.AzureExporter(
             instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
             max_batch_size=1,
@@ -97,7 +97,7 @@ class TestAzureExporter(unittest.TestCase):
             self.assertEqual(len(os.listdir(exporter.storage.path)), 0)
         exporter._stop()
 
-    def test_span_data_to_envelope(self):
+    def test_span_data_to_envelopes(self):
         from opencensus.trace.span import SpanKind
         from opencensus.trace.span_context import SpanContext
         from opencensus.trace.span_data import SpanData
@@ -111,7 +111,7 @@ class TestAzureExporter(unittest.TestCase):
         )
 
         # SpanKind.CLIENT HTTP
-        envelope = exporter.span_data_to_envelope(SpanData(
+        envelope = next(exporter.span_data_to_envelopes(SpanData(
             name='test',
             context=SpanContext(
                 trace_id='6e0c63257de34c90bf9efcd03927272e',
@@ -138,7 +138,7 @@ class TestAzureExporter(unittest.TestCase):
             same_process_as_parent_span=None,
             child_span_count=None,
             span_kind=SpanKind.CLIENT,
-        ))
+        )))
         self.assertEqual(
             envelope.iKey,
             '12345678-1234-5678-abcd-12345678abcd')
@@ -180,7 +180,7 @@ class TestAzureExporter(unittest.TestCase):
             'RemoteDependencyData')
 
         # SpanKind.CLIENT unknown type
-        envelope = exporter.span_data_to_envelope(SpanData(
+        envelope = next(exporter.span_data_to_envelopes(SpanData(
             name='test',
             context=SpanContext(
                 trace_id='6e0c63257de34c90bf9efcd03927272e',
@@ -202,7 +202,7 @@ class TestAzureExporter(unittest.TestCase):
             same_process_as_parent_span=None,
             child_span_count=None,
             span_kind=SpanKind.CLIENT,
-        ))
+        )))
         self.assertEqual(
             envelope.iKey,
             '12345678-1234-5678-abcd-12345678abcd')
@@ -235,7 +235,7 @@ class TestAzureExporter(unittest.TestCase):
             'RemoteDependencyData')
 
         # SpanKind.CLIENT missing method
-        envelope = exporter.span_data_to_envelope(SpanData(
+        envelope = next(exporter.span_data_to_envelopes(SpanData(
             name='test',
             context=SpanContext(
                 trace_id='6e0c63257de34c90bf9efcd03927272e',
@@ -261,7 +261,7 @@ class TestAzureExporter(unittest.TestCase):
             same_process_as_parent_span=None,
             child_span_count=None,
             span_kind=SpanKind.CLIENT,
-        ))
+        )))
         self.assertEqual(
             envelope.iKey,
             '12345678-1234-5678-abcd-12345678abcd')
@@ -303,7 +303,7 @@ class TestAzureExporter(unittest.TestCase):
             'RemoteDependencyData')
 
         # SpanKind.SERVER HTTP - 200 request
-        envelope = exporter.span_data_to_envelope(SpanData(
+        envelope = next(exporter.span_data_to_envelopes(SpanData(
             name='test',
             context=SpanContext(
                 trace_id='6e0c63257de34c90bf9efcd03927272e',
@@ -332,7 +332,7 @@ class TestAzureExporter(unittest.TestCase):
             same_process_as_parent_span=None,
             child_span_count=None,
             span_kind=SpanKind.SERVER,
-        ))
+        )))
         self.assertEqual(
             envelope.iKey,
             '12345678-1234-5678-abcd-12345678abcd')
@@ -380,7 +380,7 @@ class TestAzureExporter(unittest.TestCase):
             'RequestData')
 
         # SpanKind.SERVER HTTP - Failed request
-        envelope = exporter.span_data_to_envelope(SpanData(
+        envelope = next(exporter.span_data_to_envelopes(SpanData(
             name='test',
             context=SpanContext(
                 trace_id='6e0c63257de34c90bf9efcd03927272e',
@@ -409,7 +409,7 @@ class TestAzureExporter(unittest.TestCase):
             same_process_as_parent_span=None,
             child_span_count=None,
             span_kind=SpanKind.SERVER,
-        ))
+        )))
         self.assertEqual(
             envelope.iKey,
             '12345678-1234-5678-abcd-12345678abcd')
@@ -451,7 +451,7 @@ class TestAzureExporter(unittest.TestCase):
             'RequestData')
 
         # SpanKind.SERVER unknown type
-        envelope = exporter.span_data_to_envelope(SpanData(
+        envelope = next(exporter.span_data_to_envelopes(SpanData(
             name='test',
             context=SpanContext(
                 trace_id='6e0c63257de34c90bf9efcd03927272e',
@@ -473,7 +473,7 @@ class TestAzureExporter(unittest.TestCase):
             same_process_as_parent_span=None,
             child_span_count=None,
             span_kind=SpanKind.SERVER,
-        ))
+        )))
         self.assertEqual(
             envelope.iKey,
             '12345678-1234-5678-abcd-12345678abcd')
@@ -500,7 +500,7 @@ class TestAzureExporter(unittest.TestCase):
             'RequestData')
 
         # SpanKind.UNSPECIFIED
-        envelope = exporter.span_data_to_envelope(SpanData(
+        envelope = next(exporter.span_data_to_envelopes(SpanData(
             name='test',
             context=SpanContext(
                 trace_id='6e0c63257de34c90bf9efcd03927272e',
@@ -522,7 +522,7 @@ class TestAzureExporter(unittest.TestCase):
             same_process_as_parent_span=None,
             child_span_count=None,
             span_kind=SpanKind.UNSPECIFIED,
-        ))
+        )))
         self.assertEqual(
             envelope.iKey,
             '12345678-1234-5678-abcd-12345678abcd')
@@ -559,7 +559,7 @@ class TestAzureExporter(unittest.TestCase):
             'RemoteDependencyData')
 
         # Status server status code attribute
-        envelope = exporter.span_data_to_envelope(SpanData(
+        envelope = next(exporter.span_data_to_envelopes(SpanData(
             name='test',
             context=SpanContext(
                 trace_id='6e0c63257de34c90bf9efcd03927272e',
@@ -583,12 +583,12 @@ class TestAzureExporter(unittest.TestCase):
             same_process_as_parent_span=None,
             child_span_count=None,
             span_kind=SpanKind.SERVER,
-        ))
+        )))
         self.assertEqual(envelope.data.baseData.responseCode, "201")
         self.assertTrue(envelope.data.baseData.success)
 
         # Status server status code attribute missing
-        envelope = exporter.span_data_to_envelope(SpanData(
+        envelope = next(exporter.span_data_to_envelopes(SpanData(
             name='test',
             context=SpanContext(
                 trace_id='6e0c63257de34c90bf9efcd03927272e',
@@ -610,11 +610,11 @@ class TestAzureExporter(unittest.TestCase):
             same_process_as_parent_span=None,
             child_span_count=None,
             span_kind=SpanKind.SERVER,
-        ))
+        )))
         self.assertFalse(envelope.data.baseData.success)
 
         # Server route attribute missing
-        envelope = exporter.span_data_to_envelope(SpanData(
+        envelope = next(exporter.span_data_to_envelopes(SpanData(
             name='test',
             context=SpanContext(
                 trace_id='6e0c63257de34c90bf9efcd03927272e',
@@ -642,12 +642,12 @@ class TestAzureExporter(unittest.TestCase):
             same_process_as_parent_span=None,
             child_span_count=None,
             span_kind=SpanKind.SERVER,
-        ))
+        )))
         self.assertEqual(envelope.data.baseData.properties['request.name'],
                          'GET /wiki/Rabbitz')
 
         # Server route and path attribute missing
-        envelope = exporter.span_data_to_envelope(SpanData(
+        envelope = next(exporter.span_data_to_envelopes(SpanData(
             name='test',
             context=SpanContext(
                 trace_id='6e0c63257de34c90bf9efcd03927272e',
@@ -674,12 +674,12 @@ class TestAzureExporter(unittest.TestCase):
             same_process_as_parent_span=None,
             child_span_count=None,
             span_kind=SpanKind.SERVER,
-        ))
+        )))
         self.assertIsNone(
             envelope.data.baseData.properties.get('request.name'))
 
         # Status client status code attribute
-        envelope = exporter.span_data_to_envelope(SpanData(
+        envelope = next(exporter.span_data_to_envelopes(SpanData(
             name='test',
             context=SpanContext(
                 trace_id='6e0c63257de34c90bf9efcd03927272e',
@@ -703,12 +703,12 @@ class TestAzureExporter(unittest.TestCase):
             same_process_as_parent_span=None,
             child_span_count=None,
             span_kind=SpanKind.CLIENT,
-        ))
+        )))
         self.assertEqual(envelope.data.baseData.resultCode, "201")
         self.assertTrue(envelope.data.baseData.success)
 
         # Status client status code attributes missing
-        envelope = exporter.span_data_to_envelope(SpanData(
+        envelope = next(exporter.span_data_to_envelopes(SpanData(
             name='test',
             context=SpanContext(
                 trace_id='6e0c63257de34c90bf9efcd03927272e',
@@ -730,7 +730,7 @@ class TestAzureExporter(unittest.TestCase):
             same_process_as_parent_span=None,
             child_span_count=None,
             span_kind=SpanKind.CLIENT,
-        ))
+        )))
         self.assertFalse(envelope.data.baseData.success)
 
         exporter._stop()

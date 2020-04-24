@@ -23,6 +23,7 @@ from opencensus.ext.azure.common.protocol import (
     Envelope,
     RemoteDependency,
     Request,
+    ExceptionData,
 )
 from opencensus.ext.azure.common.storage import LocalFileStorage
 from opencensus.ext.azure.common.transport import TransportMixin
@@ -56,7 +57,7 @@ class AzureExporter(BaseExporter, ProcessorMixin, TransportMixin):
         self._telemetry_processors = []
         super(AzureExporter, self).__init__(**options)
 
-    def span_data_to_envelope(self, sd):
+    def span_data_to_envelopes(self, sd):
         envelope = Envelope(
             iKey=self.options.instrumentation_key,
             tags=dict(utils.azure_monitor_context),
@@ -69,6 +70,21 @@ class AzureExporter(BaseExporter, ProcessorMixin, TransportMixin):
                 sd.parent_span_id,
             )
         if sd.span_kind == SpanKind.SERVER:
+            if 'error.message' in sd.attributes:
+                envelope.name = 'Microsoft.ApplicationInsights.Exception'
+                data = ExceptionData(
+                    exceptions=[{
+                        'id': 1,
+                        'outerId': '{}'.format(sd.span_id),
+                        'typeName': sd.attributes.get('error.name', ''),
+                        'message': sd.attributes['error.message'],
+                        'hasFullStack': 'stacktrace' in sd.attributes,
+                        'parsedStack': sd.attributes.get('stacktrace', None)
+                    }],
+                )
+                envelope.data = Data(baseData=data, baseType='ExceptionData')
+                yield envelope
+
             envelope.name = 'Microsoft.ApplicationInsights.Request'
             data = Request(
                 id='{}'.format(sd.span_id),
@@ -148,12 +164,12 @@ class AzureExporter(BaseExporter, ProcessorMixin, TransportMixin):
             if key.startswith('http.'):
                 continue
             data.properties[key] = sd.attributes[key]
-        return envelope
+        yield envelope
 
     def emit(self, batch, event=None):
         try:
             if batch:
-                envelopes = [self.span_data_to_envelope(sd) for sd in batch]
+                envelopes = [envelope for sd in batch for envelope in self.span_data_to_envelopes(sd)]
                 envelopes = self.apply_telemetry_processors(envelopes)
                 result = self._transmit(envelopes)
                 if result > 0:
