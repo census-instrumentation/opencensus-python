@@ -15,9 +15,9 @@
 """Django middleware helper to capture and trace a request."""
 import six
 
+import logging
 import sys
 import traceback
-import logging
 
 import django
 import django.conf
