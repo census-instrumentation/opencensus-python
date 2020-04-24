@@ -296,9 +296,5 @@ class OpencensusMiddleware(MiddlewareMixin):
                 attribute_value=traceback.format_tb(tb))
 
             _set_django_attributes(span, request)
-
-            tracer = _get_current_tracer()
-            tracer.end_span()
-            tracer.finish()
         except Exception:  # pragma: NO COVER
             log.error('Failed to trace request', exc_info=True)
