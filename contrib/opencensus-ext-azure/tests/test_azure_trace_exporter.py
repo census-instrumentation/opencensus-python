@@ -450,6 +450,101 @@ class TestAzureExporter(unittest.TestCase):
             envelope.data.baseType,
             'RequestData')
 
+        # SpanKind.SERVER HTTP - with exceptions
+        envelopes = exporter.span_data_to_envelopes(SpanData(
+            name='test',
+            context=SpanContext(
+                trace_id='6e0c63257de34c90bf9efcd03927272e',
+                span_id='6e0c63257de34c91',
+                trace_options=TraceOptions('1'),
+                tracestate=Tracestate(),
+                from_header=False,
+            ),
+            span_id='6e0c63257de34c92',
+            parent_span_id='6e0c63257de34c93',
+            attributes={
+                'component': 'HTTP',
+                'http.method': 'GET',
+                'http.path': '/wiki/Rabbit',
+                'http.route': '/wiki/Rabbit',
+                'http.url': 'https://www.wikipedia.org/wiki/Rabbit',
+                'http.status_code': 400,
+                'error.message': 'bork bork',
+                'error.name': 'ValueError',
+            },
+            start_time='2010-10-24T07:28:38.123456Z',
+            end_time='2010-10-24T07:28:38.234567Z',
+            stack_trace=None,
+            links=None,
+            status=Status(0),
+            annotations=None,
+            message_events=None,
+            same_process_as_parent_span=None,
+            child_span_count=None,
+            span_kind=SpanKind.SERVER,
+        ))
+
+        envelope = next(envelopes)
+        self.assertEqual(
+            envelope.iKey,
+            '12345678-1234-5678-abcd-12345678abcd')
+        self.assertEqual(
+            envelope.name,
+            'Microsoft.ApplicationInsights.Exception')
+        self.assertEqual(
+            envelope.tags['ai.operation.parentId'],
+            '6e0c63257de34c93')
+        self.assertEqual(
+            envelope.tags['ai.operation.id'],
+            '6e0c63257de34c90bf9efcd03927272e')
+        self.assertEqual(
+            envelope.time,
+            '2010-10-24T07:28:38.123456Z')
+        self.assertEqual(
+            envelope.data.baseType,
+            'ExceptionData')
+
+        envelope = next(envelopes)
+        self.assertEqual(
+            envelope.iKey,
+            '12345678-1234-5678-abcd-12345678abcd')
+        self.assertEqual(
+            envelope.name,
+            'Microsoft.ApplicationInsights.Request')
+        self.assertEqual(
+            envelope.tags['ai.operation.parentId'],
+            '6e0c63257de34c93')
+        self.assertEqual(
+            envelope.tags['ai.operation.id'],
+            '6e0c63257de34c90bf9efcd03927272e')
+        self.assertEqual(
+            envelope.tags['ai.operation.name'],
+            'GET /wiki/Rabbit')
+        self.assertEqual(
+            envelope.time,
+            '2010-10-24T07:28:38.123456Z')
+        self.assertEqual(
+            envelope.data.baseData.id,
+            '6e0c63257de34c92')
+        self.assertEqual(
+            envelope.data.baseData.duration,
+            '0.00:00:00.111')
+        self.assertEqual(
+            envelope.data.baseData.responseCode,
+            '400')
+        self.assertEqual(
+            envelope.data.baseData.name,
+            'GET /wiki/Rabbit')
+        self.assertEqual(
+            envelope.data.baseData.success,
+            False)
+        self.assertEqual(
+            envelope.data.baseData.url,
+            'https://www.wikipedia.org/wiki/Rabbit')
+        self.assertEqual(
+            envelope.data.baseType,
+            'RequestData')
+
         # SpanKind.SERVER unknown type
         envelope = next(exporter.span_data_to_envelopes(SpanData(
             name='test',

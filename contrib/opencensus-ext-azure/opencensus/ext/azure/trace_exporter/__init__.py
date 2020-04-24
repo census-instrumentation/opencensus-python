@@ -21,9 +21,9 @@ from opencensus.ext.azure.common.processor import ProcessorMixin
 from opencensus.ext.azure.common.protocol import (
     Data,
     Envelope,
+    ExceptionData,
     RemoteDependency,
     Request,
-    ExceptionData,
 )
 from opencensus.ext.azure.common.storage import LocalFileStorage
 from opencensus.ext.azure.common.transport import TransportMixin
