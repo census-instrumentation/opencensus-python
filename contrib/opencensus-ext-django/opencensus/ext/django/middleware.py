@@ -287,7 +287,7 @@ class OpencensusMiddleware(MiddlewareMixin):
             span = _get_django_span()
             span.add_attribute(
                 attribute_key=ERROR_NAME,
-                attribute_value=repr(exception))
+                attribute_value=exception.__class__.__name__)
             span.add_attribute(
                 attribute_key=ERROR_MESSAGE,
                 attribute_value=str(exception))

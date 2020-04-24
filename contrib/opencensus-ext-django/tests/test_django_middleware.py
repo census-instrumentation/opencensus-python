@@ -316,7 +316,7 @@ class TestOpencensusMiddleware(unittest.TestCase):
         with patch_settings:
             middleware_obj = middleware.OpencensusMiddleware()
 
-        test_exception = Exception("bork bork bork")
+        test_exception = RuntimeError("bork bork bork")
 
         middleware_obj.process_request(django_request)
         tracer = middleware._get_current_tracer()
@@ -336,7 +336,7 @@ class TestOpencensusMiddleware(unittest.TestCase):
             'http.url': u'http://testserver/wiki/Rabbit',
             'django.user.id': '123',
             'django.user.name': 'test_name',
-            'error.name': "Exception('bork bork bork')",
+            'error.name': "RuntimeError",
             'error.message': 'bork bork bork',
             'stacktrace': []
         }
