@@ -1,10 +1,10 @@
-from opencensus.stats.aggregation import CountAggregation
-from opencensus.stats.aggregation import SumAggregation
-from opencensus.stats.aggregation import DistributionAggregation
-from opencensus.stats import bucket_boundaries
-from opencensus.stats import view
 from opencensus.grpc import rpc_measure_constants
-# import rpc_measure_constants
+from opencensus.stats import bucket_boundaries, view
+from opencensus.stats.aggregation import (
+    CountAggregation,
+    DistributionAggregation,
+    SumAggregation,
+)
 
 """
 Defines constants for exporting views on rpc stats
