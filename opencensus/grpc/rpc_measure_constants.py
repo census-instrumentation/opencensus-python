@@ -1,6 +1,7 @@
 from opencensus.stats.measure import MeasureFloat, MeasureInt
 from opencensus.tags import tag_key
 
+
 """
 Defines constants for collecting rpc stats
 """
