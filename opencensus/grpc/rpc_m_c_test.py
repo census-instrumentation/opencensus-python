@@ -106,7 +106,7 @@ class RPCMCTest(unittest.TestCase):
             self.rpc_measure.grpc_server_received_bytes_per_method.name,
             "grpc.io/server/received_bytes_per_method",
             "grpc_server_received_bytes_per_method not set correctly")
-TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT
+
 
 if __name__ == '__main__':
     unittest.main()
