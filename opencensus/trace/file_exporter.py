@@ -36,13 +36,13 @@ class FileExporter(base_exporter.Exporter):
 
     :type file_mode: str
     :param file_mode: The file mode to open the output file with.
-                      Defaults to w+
+                      Defaults to a
 
     """
 
     def __init__(self, file_name=DEFAULT_FILENAME,
                  transport=sync.SyncTransport,
-                 file_mode='w+'):
+                 file_mode='a'):
         self.file_name = file_name
         self.transport = transport(self)
         self.file_mode = file_mode
