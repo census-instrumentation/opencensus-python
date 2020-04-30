@@ -9,41 +9,58 @@ from opencensus.grpc import rpc_measure_constants
 """
 Defines constants for exporting views on rpc stats
 """
+
+
 class RPCViewConstants:
     """
     Define variables used by constants below
     """
-    # Buckets for distributions in default views 
-    # Common histogram bucket boundaries for bytes received/sets Views (in bytes).
-    rpc_bytes_bucket_boundaries = [0, 1024, 2048, 4096, 16384, 65536, 262144, 4194304,
-                                   16777216, 67108864, 268435456, 1073741824, 4294967296]
+    # Buckets for distributions in default views
+    # Common histogram bucket boundaries for bytes
+    # received/sets Views (in bytes).
+    rpc_bytes_bucket_boundaries = [0, 1024, 2048, 4096, 16384, 65536,
+                                   262144, 4194304, 16777216, 67108864,
+                                   268435456, 1073741824, 4294967296]
 
-    # Common histogram bucket boundaries for latency and elapsed-time Views (in milliseconds).
-    rpc_millis_bucket_boundaries = [0.0, 0.01, 0.05, 0.1, 0.3, 0.6, 0.8, 1.0, 2.0, 3.0,
-                                    4.0, 5.0, 6.0, 8.0, 10.0, 13.0, 16.0, 20.0, 25.0,
-                                    30.0, 40.0, 50.0, 65.0, 80.0, 100.0, 130.0, 160.0,
-                                    200.0, 250.0, 300.0, 400.0, 500.0, 650.0, 800.0,
-                                    1000.0, 2000.0, 5000.0, 10000.0, 20000.0, 50000.0, 100000.0]
+    # Common histogram bucket boundaries for latency and
+    # elapsed-time Views (in milliseconds).
+    rpc_millis_bucket_boundaries = [0.0, 0.01, 0.05, 0.1, 0.3, 0.6,
+                                    0.8, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0,
+                                    8.0, 10.0, 13.0, 16.0, 20.0, 25.0,
+                                    30.0, 40.0, 50.0, 65.0, 80.0, 100.0,
+                                    130.0, 160.0, 200.0, 250.0, 300.0,
+                                    400.0, 500.0, 650.0, 800.0, 1000.0,
+                                    2000.0, 5000.0, 10000.0, 20000.0,
+                                    50000.0, 100000.0]
 
-    # Common histogram bucket boundaries for request/response count Views (no unit).
-    rpc_count_bucket_boundaries = [0.0, 1.0, 2.0, 4.0, 8.0, 16.0, 32.0, 64.0, 128.0, 256.0,
-                                   512.0, 1024.0, 2048.0, 4096.0, 8192.0, 16384.0, 32768.0, 65536.0]
+    # Common histogram bucket boundaries for request/response
+    # count Views (no unit).
+    rpc_count_bucket_boundaries = [0.0, 1.0, 2.0, 4.0, 8.0, 16.0, 32.0,
+                                   64.0, 128.0, 256.0, 512.0, 1024.0,
+                                   2048.0, 4096.0, 8192.0, 16384.0,
+                                   32768.0, 65536.0]
 
     # Record sum and count stats at the same time.
     count = CountAggregation()
     sum = SumAggregation()
 
     # Set up aggregation object for rpc_bytes_bucket_boundaries
-    bytes_bucket_boundaries = bucket_boundaries.BucketBoundaries(rpc_bytes_bucket_boundaries)
-    aggregation_with_bytes_histogram = DistributionAggregation(bytes_bucket_boundaries.boundaries)
+    bytes_bucket_boundaries = bucket_boundaries.BucketBoundaries(
+        rpc_bytes_bucket_boundaries)
+    aggregation_with_bytes_histogram = DistributionAggregation(
+        bytes_bucket_boundaries.boundaries)
 
     # Set up aggregation object for rpc_millis_bucket_boundaries
-    millis_bucket_boundaries = bucket_boundaries.BucketBoundaries(rpc_millis_bucket_boundaries)
-    aggregation_with_millis_histogram = DistributionAggregation(millis_bucket_boundaries.boundaries)
+    millis_bucket_boundaries = bucket_boundaries.BucketBoundaries(
+        rpc_millis_bucket_boundaries)
+    aggregation_with_millis_histogram = DistributionAggregation(
+        millis_bucket_boundaries.boundaries)
 
     # Set up aggregation object for rpc_count_bucket_boundaries
-    count_bucket_boundaries = bucket_boundaries.BucketBoundaries(rpc_count_bucket_boundaries)
-    aggregation_with_count_histogram = DistributionAggregation(count_bucket_boundaries.boundaries)
+    count_bucket_boundaries = bucket_boundaries.BucketBoundaries(
+        rpc_count_bucket_boundaries)
+    aggregation_with_count_histogram = DistributionAggregation(
+        count_bucket_boundaries.boundaries)
 
     # Initialize an instance of RPC Measure Constants
     rpc_m_c = rpc_measure_constants.RPCMeasureConstants()
@@ -180,7 +197,6 @@ class RPCViewConstants:
         columns=[rpc_m_c.grpc_server_method],
         measure=rpc_m_c.grpc_server_started_rpcs,
         aggregation=count)
-
 
     # Extra Views
     # The following set of views are considered useful
