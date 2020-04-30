@@ -56,7 +56,7 @@ class Test_Worker(unittest.TestCase):
         self.assertEqual(worker._thread._target, worker._thread_main)
         self.assertEqual(
             worker._thread._name, async_._WORKER_THREAD_NAME)
-        mock_atexit.assert_called_once_with(worker._export_pending_data)
+        mock_atexit.assert_called_once_with(worker.stop)
 
         cur_thread = worker._thread
         self._start_worker(worker)
@@ -70,6 +70,7 @@ class Test_Worker(unittest.TestCase):
 
         worker.stop()
 
+        self.assertTrue(worker._event.is_set())
         self.assertEqual(worker._queue.qsize(), 1)
         self.assertEqual(
             worker._queue.get(), async_._WORKER_TERMINATOR)
@@ -79,35 +80,24 @@ class Test_Worker(unittest.TestCase):
         # If thread not alive, do not stop twice.
         worker.stop()
 
-    def test__export_pending_data(self):
-        exporter = mock.Mock()
-        worker = async_._Worker(exporter)
-
-        self._start_worker(worker)
-        worker._export_pending_data()
-
-        self.assertFalse(worker.is_alive)
-
-        worker._export_pending_data()
-
-    def test__export_pending_data_non_empty_queue(self):
+    def test_stop_non_empty_queue(self):
         exporter = mock.Mock()
         worker = async_._Worker(exporter)
 
         self._start_worker(worker)
         worker.enqueue(mock.Mock())
-        worker._export_pending_data()
+        worker.stop()
 
         self.assertFalse(worker.is_alive)
 
-    def test__export_pending_data_did_not_join(self):
+    def test_stop_did_not_join(self):
         exporter = mock.Mock()
         worker = async_._Worker(exporter)
 
         self._start_worker(worker)
         worker._thread._terminate_on_join = False
         worker.enqueue(mock.Mock())
-        worker._export_pending_data()
+        worker.stop()
 
         self.assertFalse(worker.is_alive)
 
