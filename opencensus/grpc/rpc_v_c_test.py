@@ -59,7 +59,8 @@ class RPCVCTests(unittest.TestCase):
             "grpc_client_sent_messages_per_method_view not set correctly")
 
         self.assertEqual(
-            self.rpc_view.grpc_client_received_messages_per_method_view.description,
+            self.rpc_view.grpc_client_received_messages_per_method_view.
+            description,
             "Number of messages received",
             "grpc_client_received_messages_per_method_view not set correctly")
 
