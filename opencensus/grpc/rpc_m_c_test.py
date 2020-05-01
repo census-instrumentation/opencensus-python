@@ -65,7 +65,8 @@ class RPCMCTest(unittest.TestCase):
 
         self.assertEqual(
             self.rpc_measure.grpc_client_sent_bytes_per_method.description,
-            "Total bytes sent per method, recorded real-time as bytes are sent.",
+            "Total bytes sent per method,"
+            " recorded real-time as bytes are sent.",
             "grpc_client_sent_bytes_per_method not set properly")
 
         self.assertEqual(
