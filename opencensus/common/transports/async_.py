@@ -145,6 +145,7 @@ class _Worker(object):
             # auto-collection.
             execution_context.set_is_exporter(True)
             self._thread.start()
+            execution_context.set_is_exporter(False)
             atexit.register(self._export_pending_data)
 
     def stop(self):
