@@ -1,7 +1,7 @@
 OpenCensus - A stats collection and distributed tracing framework
 =================================================================
 
-|gitter|
+|gitter| 
 |circleci|
 |pypi|
 |compat_check_pypi|
