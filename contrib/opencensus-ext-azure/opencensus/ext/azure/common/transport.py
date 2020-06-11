@@ -55,7 +55,7 @@ class TransportMixin(object):
             )
         except requests.Timeout:
             logger.warning(
-                'Request time out. Ingestion service may be backed up. Retrying.')
+                'Request time out. Ingestion may be backed up. Retrying.')
             return self.options.minimum_retry_interval
         except Exception as ex:  # TODO: consider RequestException
             logger.warning(

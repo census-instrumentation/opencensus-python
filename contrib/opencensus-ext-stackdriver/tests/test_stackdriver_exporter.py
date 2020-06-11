@@ -257,7 +257,7 @@
 
 #         self.assertEqual(spans, expected_traces)
 
-#     def test_translate_common_attributes_to_stackdriver_no_attribute_map(self):
+#     def test_translate_common_attributes_to_stackdriver_no_map(self):
 #         project_id = 'PROJECT'
 #         client = mock.Mock()
 #         client.project = project_id
