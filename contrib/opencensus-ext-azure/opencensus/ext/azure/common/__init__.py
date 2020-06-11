@@ -113,4 +113,3 @@ class Options(BaseObject):
         storage_retention_period=7*24*60*60,
         timeout=10.0,  # networking timeout in seconds
     )
-

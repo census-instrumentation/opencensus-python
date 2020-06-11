@@ -26,12 +26,12 @@ class TransportMixin(object):
             # give a few more seconds for blob lease operation
             # to reduce the chance of race (for perf consideration)
             if blob.lease(self.options.timeout + 5):
-                envelopes = blob.get()  # TODO: handle error
+                envelopes = blob.get()
                 result = self._transmit(envelopes)
                 if result > 0:
                     blob.lease(result)
                 else:
-                    blob.delete(silent=True)
+                    blob.delete()
 
     def _transmit(self, envelopes):
         """

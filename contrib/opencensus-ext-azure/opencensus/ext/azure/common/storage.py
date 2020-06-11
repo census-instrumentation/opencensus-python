@@ -25,14 +25,13 @@ class LocalFileBlob(object):
     def __init__(self, fullpath):
         self.fullpath = fullpath
 
-    def delete(self, silent=False):
+    def delete(self):
         try:
             os.remove(self.fullpath)
         except Exception:
-            if not silent:
-                raise
+            pass  # keep silent
 
-    def get(self, silent=False):
+    def get(self):
         try:
             with open(self.fullpath, 'r') as file:
                 return tuple(
@@ -40,10 +39,9 @@ class LocalFileBlob(object):
                     for line in file.readlines()
                 )
         except Exception:
-            if not silent:
-                raise
+            pass  # keep silent
 
-    def put(self, data, lease_period=0, silent=False):
+    def put(self, data, lease_period=0):
         try:
             fullpath = self.fullpath + '.tmp'
             with open(fullpath, 'w') as file:
@@ -59,8 +57,7 @@ class LocalFileBlob(object):
             os.rename(fullpath, self.fullpath)
             return self
         except Exception:
-            if not silent:
-                raise
+            pass  # keep silent
 
     def lease(self, period):
         timestamp = _now() + _seconds(period)
@@ -163,7 +160,7 @@ class LocalFileStorage(object):
             pass
         return None
 
-    def put(self, data, lease_period=0, silent=False):
+    def put(self, data, lease_period=0):
         if not self._check_storage_size():
             return None
         blob = LocalFileBlob(os.path.join(
@@ -173,7 +170,7 @@ class LocalFileStorage(object):
                 '{:08x}'.format(random.getrandbits(32)),  # thread-safe random
             ),
         ))
-        return blob.put(data, lease_period=lease_period, silent=silent)
+        return blob.put(data, lease_period=lease_period)
 
     def _check_storage_size(self):
         size = 0

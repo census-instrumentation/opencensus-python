@@ -45,39 +45,38 @@ def throw(exc_type, *args, **kwargs):
 class TestLocalFileBlob(unittest.TestCase):
     def test_delete(self):
         blob = LocalFileBlob(os.path.join(TEST_FOLDER, 'foobar'))
-        blob.delete(silent=True)
-        self.assertRaises(Exception, lambda: blob.delete())
-        self.assertRaises(Exception, lambda: blob.delete(silent=False))
+        blob.delete()
+        with mock.patch('os.remove') as m:
+            blob.delete()
+            m.assert_called_once_with(os.path.join(TEST_FOLDER, 'foobar'))
 
     def test_get(self):
         blob = LocalFileBlob(os.path.join(TEST_FOLDER, 'foobar'))
-        self.assertIsNone(blob.get(silent=True))
-        self.assertRaises(Exception, lambda: blob.get())
-        self.assertRaises(Exception, lambda: blob.get(silent=False))
+        self.assertIsNone(blob.get())
 
-    def test_put_error(self):
-        blob = LocalFileBlob(os.path.join(TEST_FOLDER, 'foobar'))
-        with mock.patch('os.rename', side_effect=throw(Exception)):
-            self.assertRaises(Exception, lambda: blob.put([1, 2, 3]))
+    # def test_put_error(self):
+    #     blob = LocalFileBlob(os.path.join(TEST_FOLDER, 'foobar'))
+    #     with mock.patch('os.rename', side_effect=throw(Exception)):
+    #         self.assertRaises(Exception, lambda: blob.put([1, 2, 3]))
 
     def test_put_without_lease(self):
         blob = LocalFileBlob(os.path.join(TEST_FOLDER, 'foobar.blob'))
         input = (1, 2, 3)
-        blob.delete(silent=True)
+        blob.delete()
         blob.put(input)
         self.assertEqual(blob.get(), input)
 
     def test_put_with_lease(self):
         blob = LocalFileBlob(os.path.join(TEST_FOLDER, 'foobar.blob'))
         input = (1, 2, 3)
-        blob.delete(silent=True)
+        blob.delete()
         blob.put(input, lease_period=0.01)
         blob.lease(0.01)
         self.assertEqual(blob.get(), input)
 
     def test_lease_error(self):
         blob = LocalFileBlob(os.path.join(TEST_FOLDER, 'foobar.blob'))
-        blob.delete(silent=True)
+        blob.delete()
         self.assertEqual(blob.lease(0.01), None)
 
 
@@ -113,8 +112,7 @@ class TestLocalFileStorage(unittest.TestCase):
         with LocalFileStorage(os.path.join(TEST_FOLDER, 'bar')) as stor:
             self.assertEqual(stor.get().get(), input)
             with mock.patch('os.rename', side_effect=throw(Exception)):
-                self.assertIsNone(stor.put(input, silent=True))
-                self.assertRaises(Exception, lambda: stor.put(input))
+                self.assertIsNone(stor.put(input))
 
     def test_put_max_size(self):
         input = (1, 2, 3)
