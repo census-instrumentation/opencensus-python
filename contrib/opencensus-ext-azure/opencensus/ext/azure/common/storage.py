@@ -114,8 +114,8 @@ class LocalFileStorage(object):
             if not os.path.isdir(self.path):
                 os.makedirs(self.path)
         except Exception:
-            if not silent:
-                raise
+            # Race case will throw OSError which we can ignore
+            pass
         try:
             for blob in self.gets():
                 pass

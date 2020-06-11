@@ -98,12 +98,17 @@ class Options(BaseObject):
         proxy=None,
         storage_maintenance_period=60,
         storage_max_size=50*1024*1024,  # 50MiB
+        # sys.argv[0] returns name of executing script
+        # sys.argv[0] returns full path of executing script on Windows, so we
+        # use os.path.basename() to get just the name
         storage_path=os.path.join(
             os.path.expanduser('~'),
             '.opencensus',
             '.azure',
             os.path.basename(sys.argv[0]) or '.console',
         ),
+        # NOTE: sys.argv[0] is sometimes not the name of the executable script
+        # if run via different mechanism. i.e. gunicorn
         storage_retention_period=7*24*60*60,
         timeout=10.0,  # networking timeout in seconds
     )
