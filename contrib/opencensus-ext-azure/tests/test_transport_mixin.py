@@ -13,11 +13,12 @@
 # limitations under the License.
 
 import json
-import mock
 import os
-import requests
 import shutil
 import unittest
+
+import mock
+import requests
 
 from opencensus.ext.azure.common import Options
 from opencensus.ext.azure.common.storage import LocalFileStorage
