@@ -158,33 +158,26 @@ class TestLocalFileStorage(unittest.TestCase):
                     os_mock.return_value = True
                 self.assertTrue(stor._check_storage_size())
 
-    def test_maintanence_routine(self):
+    def test_maintenance_routine(self):
+        with mock.patch('os.makedirs') as m:
+            LocalFileStorage(os.path.join(TEST_FOLDER, 'baz'))
+            m.assert_called_once_with(os.path.join(TEST_FOLDER, 'baz'))
         with mock.patch('os.makedirs') as m:
             m.return_value = None
-            self.assertRaises(
-                Exception,
-                lambda: LocalFileStorage(os.path.join(TEST_FOLDER, 'baz')),
-            )
+            LocalFileStorage(os.path.join(TEST_FOLDER, 'baz'))
+            m.assert_called_once_with(os.path.join(TEST_FOLDER, 'baz'))
         with mock.patch('os.makedirs', side_effect=throw(Exception)):
-            self.assertRaises(
-                Exception,
-                lambda: LocalFileStorage(os.path.join(TEST_FOLDER, 'baz')),
-            )
+            LocalFileStorage(os.path.join(TEST_FOLDER, 'baz'))
+            m.assert_called_once_with(os.path.join(TEST_FOLDER, 'baz'))
         with mock.patch('os.listdir', side_effect=throw(Exception)):
-            self.assertRaises(
-                Exception,
-                lambda: LocalFileStorage(os.path.join(TEST_FOLDER, 'baz')),
-            )
+            LocalFileStorage(os.path.join(TEST_FOLDER, 'baz'))
+            m.assert_called_once_with(os.path.join(TEST_FOLDER, 'baz'))
         with LocalFileStorage(os.path.join(TEST_FOLDER, 'baz')) as stor:
-            with mock.patch('os.listdir', side_effect=throw(Exception)):
-                stor._maintenance_routine(silent=True)
-                self.assertRaises(
-                    Exception,
-                    lambda: stor._maintenance_routine(),
-                )
-            with mock.patch('os.path.isdir', side_effect=throw(Exception)):
-                stor._maintenance_routine(silent=True)
-                self.assertRaises(
-                    Exception,
-                    lambda: stor._maintenance_routine(),
-                )
+            with mock.patch('os.listdir', side_effect=throw(Exception)) as p:
+                stor._maintenance_routine()
+                stor._maintenance_routine()
+                self.assertEqual(p.call_count, 2)
+            with mock.patch('os.path.isdir', side_effect=throw(Exception)) as l:
+                stor._maintenance_routine()
+                stor._maintenance_routine()
+                self.assertEqual(l.call_count, 2)

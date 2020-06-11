@@ -101,14 +101,16 @@ class Options(BaseObject):
         # sys.argv[0] returns name of executing script
         # sys.argv[0] returns full path of executing script on Windows, so we
         # use os.path.basename() to get just the name
+        # NOTE: sys.argv[0] is sometimes not the name of the executable script
+        # if run via different mechanism. i.e. gunicorn
+        # TODO: Might need a different name for folder in these cases
         storage_path=os.path.join(
             os.path.expanduser('~'),
             '.opencensus',
             '.azure',
             os.path.basename(sys.argv[0]) or '.console',
         ),
-        # NOTE: sys.argv[0] is sometimes not the name of the executable script
-        # if run via different mechanism. i.e. gunicorn
         storage_retention_period=7*24*60*60,
         timeout=10.0,  # networking timeout in seconds
     )
+

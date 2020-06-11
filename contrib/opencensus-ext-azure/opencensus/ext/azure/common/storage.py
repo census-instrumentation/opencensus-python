@@ -90,11 +90,11 @@ class LocalFileStorage(object):
         self.maintenance_period = maintenance_period
         self.retention_period = retention_period
         self.write_timeout = write_timeout
-        self._maintenance_routine(silent=False)
+        # Run maintenance routine once upon instantiating
+        self._maintenance_routine()
         self._maintenance_task = PeriodicTask(
             interval=self.maintenance_period,
             function=self._maintenance_routine,
-            kwargs={'silent': True},
         )
         self._maintenance_task.daemon = True
         self._maintenance_task.start()
@@ -109,7 +109,7 @@ class LocalFileStorage(object):
     def __exit__(self, type, value, traceback):
         self.close()
 
-    def _maintenance_routine(self, silent=False):
+    def _maintenance_routine(self):
         try:
             if not os.path.isdir(self.path):
                 os.makedirs(self.path)
@@ -120,8 +120,7 @@ class LocalFileStorage(object):
             for blob in self.gets():
                 pass
         except Exception:
-            if not silent:
-                raise
+            pass  # keep silent
 
     def gets(self):
         now = _now()
