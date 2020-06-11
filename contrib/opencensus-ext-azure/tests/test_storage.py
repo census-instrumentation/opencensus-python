@@ -172,6 +172,6 @@ class TestLocalFileStorage(unittest.TestCase):
                 self.assertEqual(p.call_count, 2)
             with mock.patch(
                 'os.path.isdir', side_effect=throw(Exception)) as isdir:
-                stor._maintenance_routine()
-                stor._maintenance_routine()
-                self.assertEqual(isdir.call_count, 2)
+                    stor._maintenance_routine()
+                    stor._maintenance_routine()
+                    self.assertEqual(isdir.call_count, 2)
