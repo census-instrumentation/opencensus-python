@@ -53,7 +53,7 @@ def process_options(options):
     if options.storage_path is None:
         options.storage_path = os.path.join(
                 tempfile.gettempdir(),
-                TEMPDIR_PREFIX + options.instrumentation_key
+                TEMPDIR_PREFIX + options.instrumentation_key or ""
             )
 
 
