@@ -54,11 +54,6 @@ class TestLocalFileBlob(unittest.TestCase):
         blob = LocalFileBlob(os.path.join(TEST_FOLDER, 'foobar'))
         self.assertIsNone(blob.get())
 
-    # def test_put_error(self):
-    #     blob = LocalFileBlob(os.path.join(TEST_FOLDER, 'foobar'))
-    #     with mock.patch('os.rename', side_effect=throw(Exception)):
-    #         self.assertRaises(Exception, lambda: blob.put([1, 2, 3]))
-
     def test_put_without_lease(self):
         blob = LocalFileBlob(os.path.join(TEST_FOLDER, 'foobar.blob'))
         input = (1, 2, 3)

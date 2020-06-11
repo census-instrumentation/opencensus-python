@@ -41,6 +41,8 @@ class TransportMixin(object):
         Return the next retry time in seconds for retryable failure.
         This function should never throw exception.
         """
+        if not envelopes:
+            return 0
         try:
             response = requests.post(
                 url=self.options.endpoint,
@@ -51,8 +53,11 @@ class TransportMixin(object):
                 },
                 timeout=self.options.timeout,
             )
+        except requests.Timeout:
+            logger.warning('Request time out. Ingestion service may be backed up. Retrying.')
+            return self.options.minimum_retry_interval
         except Exception as ex:  # TODO: consider RequestException
-            logger.warning('Transient client side error %s.', ex)
+            logger.warning('Transient client side error %s. Retrying.', ex)
             # client side error (retryable)
             return self.options.minimum_retry_interval
 
