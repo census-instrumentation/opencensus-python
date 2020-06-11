@@ -14,14 +14,17 @@
 
 import os
 import sys
+import tempfile
 
 from opencensus.ext.azure.common.protocol import BaseObject
 
 INGESTION_ENDPOINT = 'ingestionendpoint'
 INSTRUMENTATION_KEY = 'instrumentationkey'
+TEMPDIR_PREFIX = "opencensus-python-"
 
 
 def process_options(options):
+    # Connection string/ikey
     code_cs = parse_connection_string(options.connection_string)
     code_ikey = options.instrumentation_key
     env_cs = parse_connection_string(
@@ -45,6 +48,13 @@ def process_options(options):
         or env_cs.get(INGESTION_ENDPOINT) \
         or 'https://dc.services.visualstudio.com'
     options.endpoint = endpoint + '/v2/track'
+
+    # storage path
+    if options.storage_path is None:
+        options.storage_path = os.path.join(
+                tempfile.gettempdir(),
+                TEMPDIR_PREFIX + options.instrumentation_key
+            )
 
 
 def parse_connection_string(connection_string):
@@ -98,18 +108,7 @@ class Options(BaseObject):
         proxy=None,
         storage_maintenance_period=60,
         storage_max_size=50*1024*1024,  # 50MiB
-        # sys.argv[0] returns name of executing script
-        # sys.argv[0] returns full path of executing script on Windows, so we
-        # use os.path.basename() to get just the name
-        # NOTE: sys.argv[0] is sometimes not the name of the executable script
-        # if run via different mechanism. i.e. gunicorn
-        # TODO: Might need a different name for folder in these cases
-        storage_path=os.path.join(
-            os.path.expanduser('~'),
-            '.opencensus',
-            '.azure',
-            os.path.basename(sys.argv[0]) or '.console',
-        ),
+        storage_path=None,
         storage_retention_period=7*24*60*60,
         timeout=10.0,  # networking timeout in seconds
     )
