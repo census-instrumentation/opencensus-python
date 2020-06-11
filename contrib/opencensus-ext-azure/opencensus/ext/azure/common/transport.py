@@ -57,7 +57,7 @@ class TransportMixin(object):
             logger.warning('Request time out. Ingestion service may be backed up. Retrying.')
             return self.options.minimum_retry_interval
         except Exception as ex:  # TODO: consider RequestException
-            logger.warning('Transient client side error %s. Retrying.', ex)
+            logger.warning('Retrying due to transient client side error %s.', ex)
             # client side error (retryable)
             return self.options.minimum_retry_interval
 
