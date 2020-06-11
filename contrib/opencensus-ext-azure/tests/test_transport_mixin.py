@@ -132,7 +132,6 @@ class TestTransportMixin(unittest.TestCase):
             self.assertIsNone(mixin.storage.get())
             self.assertEqual(len(os.listdir(mixin.storage.path)), 1)
 
-
     def test_transmission_206_500(self):
         mixin = TransportMixin()
         mixin.options = Options()
@@ -212,7 +211,6 @@ class TestTransportMixin(unittest.TestCase):
                 post.return_value = MockResponse(400, '{}')
                 mixin._transmit_from_storage()
             self.assertEqual(len(os.listdir(mixin.storage.path)), 0)
-
 
     def test_transmission_500(self):
         mixin = TransportMixin()

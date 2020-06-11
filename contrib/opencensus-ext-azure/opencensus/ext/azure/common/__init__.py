@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import os
-import sys
 import tempfile
 
 from opencensus.ext.azure.common.protocol import BaseObject
