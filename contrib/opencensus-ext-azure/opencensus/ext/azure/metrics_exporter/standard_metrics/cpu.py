@@ -19,6 +19,7 @@ from opencensus.metrics.export.gauge import DerivedDoubleGauge
 
 class ProcessorTimeMetric(object):
     NAME = "\\Processor(_Total)\\% Processor Time"
+
     @staticmethod
     def get_value():
         cpu_times_percent = psutil.cpu_times_percent()
