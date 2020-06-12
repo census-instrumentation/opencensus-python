@@ -2,11 +2,15 @@ OpenCensus - A stats collection and distributed tracing framework
 =================================================================
 
 |gitter|
+|travisci|
 |circleci|
 |pypi|
 |compat_check_pypi|
 |compat_check_github|
 
+
+.. |travisci| image:: https://travis-ci.org/census-instrumentation/opencensus-python.svg?branch=master
+    :target: https://travis-ci.org/census-instrumentation/opencensus-python
 .. |circleci| image:: https://circleci.com/gh/census-instrumentation/opencensus-python.svg?style=shield
    :target: https://circleci.com/gh/census-instrumentation/opencensus-python
 .. |gitter| image:: https://badges.gitter.im/census-instrumentation/lobby.svg
