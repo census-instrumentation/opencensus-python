@@ -4,6 +4,8 @@
 
 - Change default path of local storage
   ([#903](https://github.com/census-instrumentation/opencensus-python/pull/903))
+- Add support to initialize azure exporters with proxies
+  ([#902](https://github.com/census-instrumentation/opencensus-python/pull/902))
 
 ## 1.0.1
 Released 2019-11-26
