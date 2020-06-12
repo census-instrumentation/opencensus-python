@@ -2,6 +2,6 @@
 # This file controls who is tagged for review for any given pull request.
 
 # For anything not explicitly taken by someone else:
-*       @census-instrumentation/global-owners @c24t @reyang @songy23 @victoraugustolls
+*       @census-instrumentation/global-owners @c24t @lzchen @reyang @songy23 @victoraugustolls
 
-/contrib/opencensus-ext-azure/ @lzchen
+/contrib/opencensus-ext-azure/ @hectorhdzg
