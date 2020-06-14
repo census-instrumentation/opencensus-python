@@ -85,6 +85,17 @@ class TestAzureLogHandler(unittest.TestCase):
                 logging_sampling_rate=4.0,
             )
 
+    def test_init_handler_with_proxies(self):
+        handler = log_exporter.AzureLogHandler(
+            instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
+            proxies='{"https":"https://test-proxy.com"}',
+        )
+
+        self.assertEqual(
+            handler.options.proxies,
+            '{"https":"https://test-proxy.com"}',
+        )
+
     @mock.patch('requests.post', return_value=mock.Mock())
     def test_exception(self, requests_mock):
         logger = logging.getLogger(self.id())

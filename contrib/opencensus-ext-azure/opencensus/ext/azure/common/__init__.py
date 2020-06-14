@@ -56,6 +56,9 @@ def process_options(options):
                 TEMPDIR_PREFIX + TEMPDIR_SUFFIX
             )
 
+    if options.proxies is None:
+        options.proxies = '{}'
+
 
 def parse_connection_string(connection_string):
     if connection_string is None:
@@ -105,7 +108,7 @@ class Options(BaseObject):
         logging_sampling_rate=1.0,
         max_batch_size=100,
         minimum_retry_interval=60,  # minimum retry interval in seconds
-        proxy=None,
+        proxies=None,  # string maps url schemes to the url of the proxies
         storage_maintenance_period=60,
         storage_max_size=50*1024*1024,  # 50MiB
         storage_path=None,
