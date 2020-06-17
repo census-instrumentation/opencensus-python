@@ -10,6 +10,7 @@ Released 2020-06-17
 - Add support to initialize azure exporters with proxies
   ([#902](https://github.com/census-instrumentation/opencensus-python/pull/902))
 
+
 ## 1.0.2
 Released 2020-02-04
 
