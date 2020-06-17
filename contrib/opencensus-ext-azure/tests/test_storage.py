@@ -12,17 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import mock
 import os
 import shutil
 import unittest
 
-from opencensus.ext.azure.common.storage import _now
-from opencensus.ext.azure.common.storage import _seconds
-from opencensus.ext.azure.common.storage import LocalFileBlob
-from opencensus.ext.azure.common.storage import LocalFileStorage
+import mock
 
-TEST_FOLDER = os.path.abspath('.test')
+from opencensus.ext.azure.common.storage import (
+    LocalFileBlob,
+    LocalFileStorage,
+    _now,
+    _seconds,
+)
+
+TEST_FOLDER = os.path.abspath('.test.storage')
 
 
 def setUpModule():
@@ -112,6 +115,48 @@ class TestLocalFileStorage(unittest.TestCase):
             with mock.patch('os.rename', side_effect=throw(Exception)):
                 self.assertIsNone(stor.put(input, silent=True))
                 self.assertRaises(Exception, lambda: stor.put(input))
+
+    def test_put_max_size(self):
+        input = (1, 2, 3)
+        with LocalFileStorage(os.path.join(TEST_FOLDER, 'asd')) as stor:
+            size_mock = mock.Mock()
+            size_mock.return_value = False
+            stor._check_storage_size = size_mock
+            stor.put(input)
+            self.assertEqual(stor.get(), None)
+
+    def test_check_storage_size_full(self):
+        input = (1, 2, 3)
+        with LocalFileStorage(os.path.join(TEST_FOLDER, 'asd2'), 1) as stor:
+            stor.put(input)
+            self.assertFalse(stor._check_storage_size())
+
+    def test_check_storage_size_not_full(self):
+        input = (1, 2, 3)
+        with LocalFileStorage(os.path.join(TEST_FOLDER, 'asd3'), 1000) as stor:
+            stor.put(input)
+            self.assertTrue(stor._check_storage_size())
+
+    def test_check_storage_size_no_files(self):
+        with LocalFileStorage(os.path.join(TEST_FOLDER, 'asd3'), 1000) as stor:
+            self.assertTrue(stor._check_storage_size())
+
+    def test_check_storage_size_links(self):
+        input = (1, 2, 3)
+        with LocalFileStorage(os.path.join(TEST_FOLDER, 'asd4'), 1000) as stor:
+            stor.put(input)
+            with mock.patch('os.path.islink') as os_mock:
+                os_mock.return_value = True
+            self.assertTrue(stor._check_storage_size())
+
+    def test_check_storage_size_error(self):
+        input = (1, 2, 3)
+        with LocalFileStorage(os.path.join(TEST_FOLDER, 'asd5'), 1) as stor:
+            with mock.patch('os.path.getsize', side_effect=throw(OSError)):
+                stor.put(input)
+                with mock.patch('os.path.islink') as os_mock:
+                    os_mock.return_value = True
+                self.assertTrue(stor._check_storage_size())
 
     def test_maintanence_routine(self):
         with mock.patch('os.makedirs') as m:
