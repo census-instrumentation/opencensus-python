@@ -52,6 +52,7 @@ class TransportMixin(object):
                     'Content-Type': 'application/json; charset=utf-8',
                 },
                 timeout=self.options.timeout,
+                proxies=json.loads(self.options.proxies),
             )
         except requests.Timeout:
             logger.warning(

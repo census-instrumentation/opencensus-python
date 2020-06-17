@@ -45,6 +45,17 @@ class TestAzureExporter(unittest.TestCase):
         self.assertRaises(ValueError, lambda: trace_exporter.AzureExporter())
         Options._default.instrumentation_key = instrumentation_key
 
+    def test_init_exporter_with_proxies(self):
+        exporter = trace_exporter.AzureExporter(
+            instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
+            proxies='{"https":"https://test-proxy.com"}',
+        )
+
+        self.assertEqual(
+            exporter.options.proxies,
+            '{"https":"https://test-proxy.com"}',
+        )
+
     @mock.patch('requests.post', return_value=mock.Mock())
     def test_emit_empty(self, request_mock):
         exporter = trace_exporter.AzureExporter(
