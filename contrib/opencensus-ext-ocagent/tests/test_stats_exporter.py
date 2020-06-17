@@ -20,10 +20,10 @@ import unittest
 from concurrent import futures
 from datetime import datetime
 
+import grpc
 import mock
 from google.protobuf import timestamp_pb2
 
-import grpc
 from opencensus.common import resource, utils
 from opencensus.common.version import __version__ as opencensus_version
 from opencensus.ext.ocagent import stats_exporter as ocagent

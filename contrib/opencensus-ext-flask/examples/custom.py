@@ -15,12 +15,12 @@
 import os
 
 import flask
+import grpc
 import mysql.connector
 import psycopg2
 import requests
 import sqlalchemy
 
-import grpc
 import hello_world_pb2
 import hello_world_pb2_grpc
 from opencensus.ext.flask.flask_middleware import FlaskMiddleware

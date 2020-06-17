@@ -2,6 +2,7 @@ from datetime import datetime
 
 from grpc.framework.foundation import future
 from grpc.framework.interfaces.face import face
+
 from opencensus.trace import execution_context, time_event
 
 

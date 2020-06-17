@@ -15,11 +15,11 @@
 import logging
 
 from google.rpc import code_pb2
+from pymongo import monitoring
 
 from opencensus.trace import execution_context
 from opencensus.trace import span as span_module
 from opencensus.trace import status as status_module
-from pymongo import monitoring
 
 log = logging.getLogger(__name__)
 

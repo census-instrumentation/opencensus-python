@@ -18,6 +18,9 @@
 import unittest
 
 import mock
+from pyramid.registry import Registry
+from pyramid.response import Response
+from pyramid.testing import DummyRequest
 
 from opencensus.common.transports import sync
 from opencensus.ext.pyramid import pyramid_middleware
@@ -27,9 +30,6 @@ from opencensus.trace import span as span_module
 from opencensus.trace.blank_span import BlankSpan
 from opencensus.trace.propagation import trace_context_http_header_format
 from opencensus.trace.tracers import noop_tracer
-from pyramid.registry import Registry
-from pyramid.response import Response
-from pyramid.testing import DummyRequest
 
 
 class TestPyramidMiddleware(unittest.TestCase):

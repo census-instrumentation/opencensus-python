@@ -13,9 +13,9 @@
 # limitations under the License.
 import sys
 
+import grpc
 from google.rpc import code_pb2
 
-import grpc
 from opencensus.ext import grpc as oc_grpc
 from opencensus.ext.grpc import utils as grpc_utils
 from opencensus.trace import attributes_helper, execution_context

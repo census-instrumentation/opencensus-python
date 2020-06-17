@@ -15,9 +15,9 @@
 import collections
 import logging
 
+import grpc
 import six
 
-import grpc
 from opencensus.ext import grpc as oc_grpc
 from opencensus.ext.grpc import utils as grpc_utils
 from opencensus.trace import attributes_helper, execution_context

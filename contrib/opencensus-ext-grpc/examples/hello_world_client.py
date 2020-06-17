@@ -15,6 +15,7 @@
 from __future__ import print_function
 
 import grpc
+
 import hello_world_pb2
 import hello_world_pb2_grpc
 from opencensus.ext.grpc import client_interceptor

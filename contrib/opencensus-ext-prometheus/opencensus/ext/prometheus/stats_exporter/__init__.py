@@ -14,13 +14,14 @@
 
 import re
 
-from opencensus.common.transports import sync
-from opencensus.stats import aggregation_data as aggregation_data_module
-from opencensus.stats import base_exporter
 from prometheus_client import start_http_server
 from prometheus_client.core import (REGISTRY, CollectorRegistry,
                                     CounterMetricFamily, GaugeMetricFamily,
                                     HistogramMetricFamily, UnknownMetricFamily)
+
+from opencensus.common.transports import sync
+from opencensus.stats import aggregation_data as aggregation_data_module
+from opencensus.stats import base_exporter
 
 
 class Options(object):

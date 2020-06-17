@@ -16,6 +16,7 @@
 from threading import Lock
 
 import grpc
+
 from opencensus.common.transports import sync
 from opencensus.ext.ocagent import utils as ocagent_utils
 from opencensus.ext.ocagent.trace_exporter import utils
