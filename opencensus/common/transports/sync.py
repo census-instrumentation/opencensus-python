@@ -26,4 +26,3 @@ class SyncTransport(base.Transport):
         self.exporter.emit(datas)
         # Reset the context
         execution_context.set_is_exporter(False)
-
