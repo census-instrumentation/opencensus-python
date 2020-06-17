@@ -14,6 +14,7 @@
 
 import json
 import logging
+
 import requests
 
 logger = logging.getLogger(__name__)
@@ -25,12 +26,12 @@ class TransportMixin(object):
             # give a few more seconds for blob lease operation
             # to reduce the chance of race (for perf consideration)
             if blob.lease(self.options.timeout + 5):
-                envelopes = blob.get()  # TODO: handle error
+                envelopes = blob.get()
                 result = self._transmit(envelopes)
                 if result > 0:
                     blob.lease(result)
                 else:
-                    blob.delete(silent=True)
+                    blob.delete()
 
     def _transmit(self, envelopes):
         """
@@ -40,6 +41,8 @@ class TransportMixin(object):
         Return the next retry time in seconds for retryable failure.
         This function should never throw exception.
         """
+        if not envelopes:
+            return 0
         try:
             response = requests.post(
                 url=self.options.endpoint,
@@ -50,8 +53,13 @@ class TransportMixin(object):
                 },
                 timeout=self.options.timeout,
             )
+        except requests.Timeout:
+            logger.warning(
+                'Request time out. Ingestion may be backed up. Retrying.')
+            return self.options.minimum_retry_interval
         except Exception as ex:  # TODO: consider RequestException
-            logger.warning('Transient client side error %s.', ex)
+            logger.warning(
+                'Retrying due to transient client side error %s.', ex)
             # client side error (retryable)
             return self.options.minimum_retry_interval
 
