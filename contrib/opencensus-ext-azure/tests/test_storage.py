@@ -12,17 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import mock
 import os
 import shutil
 import unittest
 
-from opencensus.ext.azure.common.storage import _now
-from opencensus.ext.azure.common.storage import _seconds
-from opencensus.ext.azure.common.storage import LocalFileBlob
-from opencensus.ext.azure.common.storage import LocalFileStorage
+import mock
 
-TEST_FOLDER = os.path.abspath('.test')
+from opencensus.ext.azure.common.storage import (
+    LocalFileBlob,
+    LocalFileStorage,
+    _now,
+    _seconds,
+)
+
+TEST_FOLDER = os.path.abspath('.test.storage')
 
 
 def setUpModule():
@@ -42,39 +45,33 @@ def throw(exc_type, *args, **kwargs):
 class TestLocalFileBlob(unittest.TestCase):
     def test_delete(self):
         blob = LocalFileBlob(os.path.join(TEST_FOLDER, 'foobar'))
-        blob.delete(silent=True)
-        self.assertRaises(Exception, lambda: blob.delete())
-        self.assertRaises(Exception, lambda: blob.delete(silent=False))
+        blob.delete()
+        with mock.patch('os.remove') as m:
+            blob.delete()
+            m.assert_called_once_with(os.path.join(TEST_FOLDER, 'foobar'))
 
     def test_get(self):
         blob = LocalFileBlob(os.path.join(TEST_FOLDER, 'foobar'))
-        self.assertIsNone(blob.get(silent=True))
-        self.assertRaises(Exception, lambda: blob.get())
-        self.assertRaises(Exception, lambda: blob.get(silent=False))
-
-    def test_put_error(self):
-        blob = LocalFileBlob(os.path.join(TEST_FOLDER, 'foobar'))
-        with mock.patch('os.rename', side_effect=throw(Exception)):
-            self.assertRaises(Exception, lambda: blob.put([1, 2, 3]))
+        self.assertIsNone(blob.get())
 
     def test_put_without_lease(self):
         blob = LocalFileBlob(os.path.join(TEST_FOLDER, 'foobar.blob'))
         input = (1, 2, 3)
-        blob.delete(silent=True)
+        blob.delete()
         blob.put(input)
         self.assertEqual(blob.get(), input)
 
     def test_put_with_lease(self):
         blob = LocalFileBlob(os.path.join(TEST_FOLDER, 'foobar.blob'))
         input = (1, 2, 3)
-        blob.delete(silent=True)
+        blob.delete()
         blob.put(input, lease_period=0.01)
         blob.lease(0.01)
         self.assertEqual(blob.get(), input)
 
     def test_lease_error(self):
         blob = LocalFileBlob(os.path.join(TEST_FOLDER, 'foobar.blob'))
-        blob.delete(silent=True)
+        blob.delete()
         self.assertEqual(blob.lease(0.01), None)
 
 
@@ -110,36 +107,71 @@ class TestLocalFileStorage(unittest.TestCase):
         with LocalFileStorage(os.path.join(TEST_FOLDER, 'bar')) as stor:
             self.assertEqual(stor.get().get(), input)
             with mock.patch('os.rename', side_effect=throw(Exception)):
-                self.assertIsNone(stor.put(input, silent=True))
-                self.assertRaises(Exception, lambda: stor.put(input))
+                self.assertIsNone(stor.put(input))
 
-    def test_maintanence_routine(self):
+    def test_put_max_size(self):
+        input = (1, 2, 3)
+        with LocalFileStorage(os.path.join(TEST_FOLDER, 'asd')) as stor:
+            size_mock = mock.Mock()
+            size_mock.return_value = False
+            stor._check_storage_size = size_mock
+            stor.put(input)
+            self.assertEqual(stor.get(), None)
+
+    def test_check_storage_size_full(self):
+        input = (1, 2, 3)
+        with LocalFileStorage(os.path.join(TEST_FOLDER, 'asd2'), 1) as stor:
+            stor.put(input)
+            self.assertFalse(stor._check_storage_size())
+
+    def test_check_storage_size_not_full(self):
+        input = (1, 2, 3)
+        with LocalFileStorage(os.path.join(TEST_FOLDER, 'asd3'), 1000) as stor:
+            stor.put(input)
+            self.assertTrue(stor._check_storage_size())
+
+    def test_check_storage_size_no_files(self):
+        with LocalFileStorage(os.path.join(TEST_FOLDER, 'asd3'), 1000) as stor:
+            self.assertTrue(stor._check_storage_size())
+
+    def test_check_storage_size_links(self):
+        input = (1, 2, 3)
+        with LocalFileStorage(os.path.join(TEST_FOLDER, 'asd4'), 1000) as stor:
+            stor.put(input)
+            with mock.patch('os.path.islink') as os_mock:
+                os_mock.return_value = True
+            self.assertTrue(stor._check_storage_size())
+
+    def test_check_storage_size_error(self):
+        input = (1, 2, 3)
+        with LocalFileStorage(os.path.join(TEST_FOLDER, 'asd5'), 1) as stor:
+            with mock.patch('os.path.getsize', side_effect=throw(OSError)):
+                stor.put(input)
+                with mock.patch('os.path.islink') as os_mock:
+                    os_mock.return_value = True
+                self.assertTrue(stor._check_storage_size())
+
+    def test_maintenance_routine(self):
+        with mock.patch('os.makedirs') as m:
+            LocalFileStorage(os.path.join(TEST_FOLDER, 'baz'))
+            m.assert_called_once_with(os.path.join(TEST_FOLDER, 'baz'))
         with mock.patch('os.makedirs') as m:
             m.return_value = None
-            self.assertRaises(
-                Exception,
-                lambda: LocalFileStorage(os.path.join(TEST_FOLDER, 'baz')),
-            )
+            LocalFileStorage(os.path.join(TEST_FOLDER, 'baz'))
+            m.assert_called_once_with(os.path.join(TEST_FOLDER, 'baz'))
         with mock.patch('os.makedirs', side_effect=throw(Exception)):
-            self.assertRaises(
-                Exception,
-                lambda: LocalFileStorage(os.path.join(TEST_FOLDER, 'baz')),
-            )
+            LocalFileStorage(os.path.join(TEST_FOLDER, 'baz'))
+            m.assert_called_once_with(os.path.join(TEST_FOLDER, 'baz'))
         with mock.patch('os.listdir', side_effect=throw(Exception)):
-            self.assertRaises(
-                Exception,
-                lambda: LocalFileStorage(os.path.join(TEST_FOLDER, 'baz')),
-            )
+            LocalFileStorage(os.path.join(TEST_FOLDER, 'baz'))
+            m.assert_called_once_with(os.path.join(TEST_FOLDER, 'baz'))
         with LocalFileStorage(os.path.join(TEST_FOLDER, 'baz')) as stor:
-            with mock.patch('os.listdir', side_effect=throw(Exception)):
-                stor._maintenance_routine(silent=True)
-                self.assertRaises(
-                    Exception,
-                    lambda: stor._maintenance_routine(),
-                )
-            with mock.patch('os.path.isdir', side_effect=throw(Exception)):
-                stor._maintenance_routine(silent=True)
-                self.assertRaises(
-                    Exception,
-                    lambda: stor._maintenance_routine(),
-                )
+            with mock.patch('os.listdir', side_effect=throw(Exception)) as p:
+                stor._maintenance_routine()
+                stor._maintenance_routine()
+                self.assertEqual(p.call_count, 2)
+            patch = 'os.path.isdir'
+            with mock.patch(patch, side_effect=throw(Exception)) as isdir:
+                stor._maintenance_routine()
+                stor._maintenance_routine()
+                self.assertEqual(isdir.call_count, 2)

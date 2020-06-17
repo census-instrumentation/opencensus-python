@@ -13,15 +13,17 @@
 # limitations under the License.
 
 import os
-import sys
+import tempfile
 
 from opencensus.ext.azure.common.protocol import BaseObject
 
 INGESTION_ENDPOINT = 'ingestionendpoint'
 INSTRUMENTATION_KEY = 'instrumentationkey'
+TEMPDIR_PREFIX = "opencensus-python-"
 
 
 def process_options(options):
+    # Connection string/ikey
     code_cs = parse_connection_string(options.connection_string)
     code_ikey = options.instrumentation_key
     env_cs = parse_connection_string(
@@ -45,6 +47,17 @@ def process_options(options):
         or env_cs.get(INGESTION_ENDPOINT) \
         or 'https://dc.services.visualstudio.com'
     options.endpoint = endpoint + '/v2/track'
+
+    # storage path
+    if options.storage_path is None:
+        TEMPDIR_SUFFIX = options.instrumentation_key or ""
+        options.storage_path = os.path.join(
+                tempfile.gettempdir(),
+                TEMPDIR_PREFIX + TEMPDIR_SUFFIX
+            )
+
+    if options.proxies is None:
+        options.proxies = '{}'
 
 
 def parse_connection_string(connection_string):
@@ -95,15 +108,10 @@ class Options(BaseObject):
         logging_sampling_rate=1.0,
         max_batch_size=100,
         minimum_retry_interval=60,  # minimum retry interval in seconds
-        proxy=None,
+        proxies=None,  # string maps url schemes to the url of the proxies
         storage_maintenance_period=60,
-        storage_max_size=100*1024*1024,
-        storage_path=os.path.join(
-            os.path.expanduser('~'),
-            '.opencensus',
-            '.azure',
-            os.path.basename(sys.argv[0]) or '.console',
-        ),
+        storage_max_size=50*1024*1024,  # 50MiB
+        storage_path=None,
         storage_retention_period=7*24*60*60,
         timeout=10.0,  # networking timeout in seconds
     )

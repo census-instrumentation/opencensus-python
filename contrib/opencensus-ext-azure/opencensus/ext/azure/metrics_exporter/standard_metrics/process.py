@@ -24,6 +24,7 @@ PROCESS = psutil.Process()
 
 class ProcessMemoryMetric(object):
     NAME = "\\Process(??APP_WIN32_PROC??)\\Private Bytes"
+
     @staticmethod
     def get_value():
         try:

@@ -1,9 +1,12 @@
 import datetime
 import json
-import random
+import logging
 import os
+import random
 
 from opencensus.common.schedule import PeriodicTask
+
+logger = logging.getLogger(__name__)
 
 
 def _fmt(timestamp):
@@ -22,14 +25,13 @@ class LocalFileBlob(object):
     def __init__(self, fullpath):
         self.fullpath = fullpath
 
-    def delete(self, silent=False):
+    def delete(self):
         try:
             os.remove(self.fullpath)
         except Exception:
-            if not silent:
-                raise
+            pass  # keep silent
 
-    def get(self, silent=False):
+    def get(self):
         try:
             with open(self.fullpath, 'r') as file:
                 return tuple(
@@ -37,10 +39,9 @@ class LocalFileBlob(object):
                     for line in file.readlines()
                 )
         except Exception:
-            if not silent:
-                raise
+            pass  # keep silent
 
-    def put(self, data, lease_period=0, silent=False):
+    def put(self, data, lease_period=0):
         try:
             fullpath = self.fullpath + '.tmp'
             with open(fullpath, 'w') as file:
@@ -56,8 +57,7 @@ class LocalFileBlob(object):
             os.rename(fullpath, self.fullpath)
             return self
         except Exception:
-            if not silent:
-                raise
+            pass  # keep silent
 
     def lease(self, period):
         timestamp = _now() + _seconds(period)
@@ -77,7 +77,7 @@ class LocalFileStorage(object):
     def __init__(
             self,
             path,
-            max_size=100*1024*1024,  # 100MB
+            max_size=50*1024*1024,  # 50MiB
             maintenance_period=60,  # 1 minute
             retention_period=7*24*60*60,  # 7 days
             write_timeout=60,  # 1 minute
@@ -87,11 +87,11 @@ class LocalFileStorage(object):
         self.maintenance_period = maintenance_period
         self.retention_period = retention_period
         self.write_timeout = write_timeout
-        self._maintenance_routine(silent=False)
+        # Run maintenance routine once upon instantiating
+        self._maintenance_routine()
         self._maintenance_task = PeriodicTask(
             interval=self.maintenance_period,
             function=self._maintenance_routine,
-            kwargs={'silent': True},
         )
         self._maintenance_task.daemon = True
         self._maintenance_task.start()
@@ -106,19 +106,18 @@ class LocalFileStorage(object):
     def __exit__(self, type, value, traceback):
         self.close()
 
-    def _maintenance_routine(self, silent=False):
+    def _maintenance_routine(self):
         try:
             if not os.path.isdir(self.path):
                 os.makedirs(self.path)
         except Exception:
-            if not silent:
-                raise
+            # Race case will throw OSError which we can ignore
+            pass
         try:
             for blob in self.gets():
                 pass
         except Exception:
-            if not silent:
-                raise
+            pass  # keep silent
 
     def gets(self):
         now = _now()
@@ -161,7 +160,9 @@ class LocalFileStorage(object):
             pass
         return None
 
-    def put(self, data, lease_period=0, silent=False):
+    def put(self, data, lease_period=0):
+        if not self._check_storage_size():
+            return None
         blob = LocalFileBlob(os.path.join(
             self.path,
             '{}-{}.blob'.format(
@@ -169,4 +170,29 @@ class LocalFileStorage(object):
                 '{:08x}'.format(random.getrandbits(32)),  # thread-safe random
             ),
         ))
-        return blob.put(data, lease_period=lease_period, silent=silent)
+        return blob.put(data, lease_period=lease_period)
+
+    def _check_storage_size(self):
+        size = 0
+        for dirpath, dirnames, filenames in os.walk(self.path):
+            for f in filenames:
+                fp = os.path.join(dirpath, f)
+                # skip if it is symbolic link
+                if not os.path.islink(fp):
+                    try:
+                        size += os.path.getsize(fp)
+                    except OSError:
+                        logger.error(
+                            "Path %s does not exist or is inaccessible.", fp
+                        )
+                        continue
+                    if size >= self.max_size:
+                        logger.warning(
+                            "Persistent storage max capacity has been "
+                            "reached. Currently at %fKB. Telemetry will be "
+                            "lost. Please consider increasing the value of "
+                            "'storage_max_size' in exporter config.",
+                            format(size/1024)
+                        )
+                        return False
+        return True

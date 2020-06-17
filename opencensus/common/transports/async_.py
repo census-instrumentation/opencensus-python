@@ -93,6 +93,9 @@ class _Worker(object):
         Pulls pending data off the queue and writes them in
         batches to the specified tracing backend using the exporter.
         """
+        # Indicate that this thread is an exporter thread.
+        # Used to suppress tracking of requests in this thread.
+        execution_context.set_is_exporter(True)
         quit_ = False
 
         while True:
@@ -142,9 +145,6 @@ class _Worker(object):
             self._thread = threading.Thread(
                 target=self._thread_main, name=_WORKER_THREAD_NAME)
             self._thread.daemon = True
-            # Indicate that this thread is an exporter thread. Used for
-            # auto-collection.
-            execution_context.set_is_exporter(True)
             self._thread.start()
             atexit.register(self._export_pending_data)
 
