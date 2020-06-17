@@ -2,10 +2,24 @@
 
 ## Unreleased
 
+## 1.0.3
+Released 2020-06-17
+
 - Change default path of local storage
   ([#903](https://github.com/census-instrumentation/opencensus-python/pull/903))
 - Add support to initialize azure exporters with proxies
   ([#902](https://github.com/census-instrumentation/opencensus-python/pull/902))
+
+
+## 1.0.2
+Released 2020-02-04
+
+- Add local storage and retry logic for Azure Metrics Exporter
+  ([#845](https://github.com/census-instrumentation/opencensus-python/pull/845))
+- Add Fixed-rate sampling logic for Azure Log Exporter
+  ([#848](https://github.com/census-instrumentation/opencensus-python/pull/848))
+- Implement TelemetryProcessors for Azure exporters
+  ([#851](https://github.com/census-instrumentation/opencensus-python/pull/851))
 
 ## 1.0.1
 Released 2019-11-26
