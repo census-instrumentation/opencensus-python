@@ -18,12 +18,8 @@ import logging
 from opencensus.common import utils as common_utils
 from opencensus.ext.azure.common import Options, utils
 from opencensus.ext.azure.common.processor import ProcessorMixin
-from opencensus.ext.azure.common.protocol import (
-    Data,
-    DataPoint,
-    Envelope,
-    MetricData,
-)
+from opencensus.ext.azure.common.protocol import (Data, DataPoint, Envelope,
+                                                  MetricData)
 from opencensus.ext.azure.common.storage import LocalFileStorage
 from opencensus.ext.azure.common.transport import TransportMixin
 from opencensus.ext.azure.metrics_exporter import standard_metrics

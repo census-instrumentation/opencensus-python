@@ -13,9 +13,8 @@
 # limitations under the License.
 
 import re
-from opencensus.trace.tracestate import Tracestate
-from opencensus.trace.tracestate import _KEY_FORMAT
-from opencensus.trace.tracestate import _VALUE_FORMAT
+
+from opencensus.trace.tracestate import _KEY_FORMAT, _VALUE_FORMAT, Tracestate
 
 _DELIMITER_FORMAT = '[ \t]*,[ \t]*'
 _MEMBER_FORMAT = '(%s)(=)(%s)' % (_KEY_FORMAT, _VALUE_FORMAT)

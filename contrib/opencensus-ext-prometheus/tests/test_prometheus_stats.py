@@ -12,11 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from datetime import datetime
-import mock
 import unittest
+from datetime import datetime
 
-from prometheus_client.core import Sample
+import mock
 
 from opencensus.ext.prometheus import stats_exporter as prometheus
 from opencensus.stats import aggregation as aggregation_module
@@ -27,6 +26,7 @@ from opencensus.stats import view_data as view_data_module
 from opencensus.tags import tag_key as tag_key_module
 from opencensus.tags import tag_map as tag_map_module
 from opencensus.tags import tag_value as tag_value_module
+from prometheus_client.core import Sample
 
 MiB = 1 << 20
 FRONTEND_KEY = tag_key_module.TagKey("myorg_keys_frontend")

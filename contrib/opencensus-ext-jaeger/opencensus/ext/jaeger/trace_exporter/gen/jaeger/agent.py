@@ -6,10 +6,10 @@
 #  options string: py:new_style
 #
 
-from thrift.Thrift import TType, TMessageType, TApplicationException
-from thrift.Thrift import TProcessor
-from thrift.transport import TTransport
 from opencensus.ext.jaeger.trace_exporter.gen.jaeger import jaeger
+from thrift.Thrift import (TApplicationException, TMessageType, TProcessor,
+                           TType)
+from thrift.transport import TTransport
 
 
 class Iface(object):

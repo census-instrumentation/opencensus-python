@@ -18,12 +18,8 @@ from opencensus.common.schedule import QueueExitEvent
 from opencensus.ext.azure.common import Options, utils
 from opencensus.ext.azure.common.exporter import BaseExporter
 from opencensus.ext.azure.common.processor import ProcessorMixin
-from opencensus.ext.azure.common.protocol import (
-    Data,
-    Envelope,
-    RemoteDependency,
-    Request,
-)
+from opencensus.ext.azure.common.protocol import (Data, Envelope,
+                                                  RemoteDependency, Request)
 from opencensus.ext.azure.common.storage import LocalFileStorage
 from opencensus.ext.azure.common.transport import TransportMixin
 from opencensus.trace.span import SpanKind

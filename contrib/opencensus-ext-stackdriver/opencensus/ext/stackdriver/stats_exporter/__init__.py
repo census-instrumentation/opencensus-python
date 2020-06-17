@@ -12,31 +12,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from datetime import datetime
 import itertools
 import os
 import platform
 import re
 import string
 import threading
+from datetime import datetime
 
+import google.auth
 from google.api_core.gapic_v1 import client_info
 from google.cloud import monitoring_v3
-import google.auth
 
 from opencensus.common import utils
-from opencensus.common.monitored_resource import aws_identity_doc_utils
-from opencensus.common.monitored_resource import gcp_metadata_config
-from opencensus.common.monitored_resource import k8s_utils
-from opencensus.common.monitored_resource import monitored_resource
+from opencensus.common.monitored_resource import (aws_identity_doc_utils,
+                                                  gcp_metadata_config,
+                                                  k8s_utils,
+                                                  monitored_resource)
 from opencensus.common.version import __version__
-from opencensus.metrics import label_key
-from opencensus.metrics import label_value
-from opencensus.metrics import transport
+from opencensus.metrics import label_key, label_value, transport
 from opencensus.metrics.export import metric as metric_module
 from opencensus.metrics.export import metric_descriptor
 from opencensus.stats import stats
-
 
 MAX_TIME_SERIES_PER_UPLOAD = 200
 OPENCENSUS_TASK = "opencensus_task"

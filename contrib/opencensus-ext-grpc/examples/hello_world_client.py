@@ -15,13 +15,11 @@
 from __future__ import print_function
 
 import grpc
-
 import hello_world_pb2
 import hello_world_pb2_grpc
-
-from opencensus.trace.tracer import Tracer
 from opencensus.ext.grpc import client_interceptor
 from opencensus.ext.stackdriver import trace_exporter as stackdriver_exporter
+from opencensus.trace.tracer import Tracer
 
 HOST_PORT = 'localhost:50051'
 

@@ -23,13 +23,8 @@ from opencensus.ext.azure.common import Options
 from opencensus.ext.azure.common.protocol import DataPoint
 from opencensus.ext.azure.metrics_exporter import standard_metrics
 from opencensus.metrics import label_key, label_value
-from opencensus.metrics.export import (
-    metric,
-    metric_descriptor,
-    point,
-    time_series,
-    value,
-)
+from opencensus.metrics.export import (metric, metric_descriptor, point,
+                                       time_series, value)
 from opencensus.metrics.export.metric_descriptor import MetricDescriptorType
 
 

@@ -17,11 +17,8 @@ import logging
 import requests
 import wrapt
 
-from opencensus.trace import (
-    attributes_helper,
-    exceptions_status,
-    execution_context,
-)
+from opencensus.trace import (attributes_helper, exceptions_status,
+                              execution_context)
 from opencensus.trace import span as span_module
 from opencensus.trace import utils
 

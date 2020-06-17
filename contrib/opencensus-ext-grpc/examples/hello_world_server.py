@@ -12,14 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from concurrent import futures
 import time
+from concurrent import futures
 
 import grpc
-
 import hello_world_pb2
 import hello_world_pb2_grpc
-
 from opencensus.ext.grpc import server_interceptor
 from opencensus.ext.stackdriver import trace_exporter as stackdriver_exporter
 from opencensus.trace import samplers

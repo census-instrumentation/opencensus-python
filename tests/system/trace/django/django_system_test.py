@@ -13,14 +13,14 @@
 # limitations under the License.
 
 import os
-import requests
 import signal
 import subprocess
+import unittest
 import uuid
 
-from retrying import retry
+import requests
 
-import unittest
+from retrying import retry
 
 PROJECT = os.environ.get('GCLOUD_PROJECT_PYTHON')
 

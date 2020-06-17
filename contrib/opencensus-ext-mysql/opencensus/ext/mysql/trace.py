@@ -14,6 +14,7 @@
 
 import inspect
 import logging
+
 import mysql.connector
 
 from opencensus.ext.dbapi import trace

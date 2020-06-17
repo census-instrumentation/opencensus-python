@@ -12,10 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from datetime import datetime
-from datetime import timedelta
 import codecs
 import unittest
+from datetime import datetime, timedelta
 
 from opencensus.ext.ocagent.trace_exporter import utils
 from opencensus.proto.trace.v1 import trace_pb2

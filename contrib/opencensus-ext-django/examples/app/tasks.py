@@ -1,5 +1,7 @@
-from celery import shared_task
 import random
+
+from celery import shared_task
+
 
 @shared_task
 def create(total):

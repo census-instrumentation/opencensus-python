@@ -15,8 +15,7 @@
 import logging
 import sys
 
-from opencensus.trace import attributes_helper
-from opencensus.trace import execution_context
+from opencensus.trace import attributes_helper, execution_context
 from opencensus.trace import span as span_module
 from opencensus.trace import utils
 

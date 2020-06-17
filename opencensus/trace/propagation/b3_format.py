@@ -13,7 +13,7 @@
 # limitations under the License.
 
 
-from opencensus.trace.span_context import SpanContext, INVALID_SPAN_ID
+from opencensus.trace.span_context import INVALID_SPAN_ID, SpanContext
 from opencensus.trace.trace_options import TraceOptions
 
 _STATE_HEADER_KEY = 'b3'

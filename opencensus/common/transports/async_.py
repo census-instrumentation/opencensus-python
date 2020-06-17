@@ -16,8 +16,7 @@ import atexit
 import logging
 import threading
 
-from six.moves import queue
-from six.moves import range
+from six.moves import queue, range
 
 from opencensus.common.transports import base
 from opencensus.trace import execution_context

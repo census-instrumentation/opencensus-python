@@ -6,11 +6,12 @@
 #  options string: py:new_style
 #
 
-from thrift.Thrift import TType, TMessageType, TApplicationException
-from thrift.protocol.TProtocol import TProtocolException
-import sys
 import logging
-from thrift.Thrift import TProcessor
+import sys
+
+from thrift.protocol.TProtocol import TProtocolException
+from thrift.Thrift import (TApplicationException, TMessageType, TProcessor,
+                           TType)
 from thrift.transport import TTransport
 
 

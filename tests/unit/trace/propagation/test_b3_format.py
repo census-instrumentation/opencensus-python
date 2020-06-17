@@ -13,10 +13,11 @@
 # limitations under the License.
 
 import unittest
+
 import mock
 
-from opencensus.trace.span_context import INVALID_SPAN_ID
 from opencensus.trace.propagation import b3_format
+from opencensus.trace.span_context import INVALID_SPAN_ID
 
 
 class TestB3FormatPropagator(unittest.TestCase):

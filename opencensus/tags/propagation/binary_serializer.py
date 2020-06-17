@@ -15,8 +15,8 @@
 # -*- coding: utf-8 -*-
 
 import logging
-import six
 
+import six
 from google.protobuf.internal.encoder import _VarintBytes
 
 from opencensus.tags import tag_map as tag_map_module

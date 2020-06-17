@@ -14,9 +14,9 @@
 
 import unittest
 
+from opencensus.trace.propagation.tracestate_string_format import \
+    TracestateStringFormatter
 from opencensus.trace.tracestate import Tracestate
-from opencensus.trace.propagation.tracestate_string_format \
-    import TracestateStringFormatter
 
 formatter = TracestateStringFormatter()
 

@@ -14,8 +14,8 @@
 
 import inspect
 import logging
-import pymysql
 
+import pymysql
 from opencensus.ext.dbapi import trace
 
 MODULE_NAME = 'pymysql'

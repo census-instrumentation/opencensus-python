@@ -13,9 +13,11 @@
 # limitations under the License.
 
 import unittest
+
 import mock
-from opencensus.stats import view_manager as view_manager_module
+
 from opencensus.stats import execution_context
+from opencensus.stats import view_manager as view_manager_module
 from opencensus.stats.measure_to_view_map import MeasureToViewMap
 
 

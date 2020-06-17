@@ -14,12 +14,8 @@
 
 from wsgiref.simple_server import make_server
 
-from opencensus.trace import config_integration
-from opencensus.trace import print_exporter
-from opencensus.trace import samplers
-
 from app import main
-
+from opencensus.trace import config_integration, print_exporter, samplers
 
 config_integration.trace_integrations(['requests'])
 

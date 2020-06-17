@@ -13,10 +13,11 @@
 # limitations under the License.
 
 import logging
+
 import psutil
 
-from opencensus.metrics.export.gauge import DerivedLongGauge
-from opencensus.metrics.export.gauge import DerivedDoubleGauge
+from opencensus.metrics.export.gauge import (DerivedDoubleGauge,
+                                             DerivedLongGauge)
 
 logger = logging.getLogger(__name__)
 PROCESS = psutil.Process()

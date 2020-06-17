@@ -12,8 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from six import assertRaisesRegex
 import unittest
+
+from six import assertRaisesRegex
 
 from opencensus.metrics.export import summary as summary_module
 

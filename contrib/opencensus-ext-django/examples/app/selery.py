@@ -12,14 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
 import logging
+import os
 
 from celery import Celery
 from celery.signals import setup_logging
-from opencensus.ext.azure.log_exporter import AzureLogHandler
-
 from django.conf import settings
+
+from opencensus.ext.azure.log_exporter import AzureLogHandler
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'app.settings')
 

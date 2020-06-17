@@ -17,17 +17,10 @@ import unittest
 
 import mock
 
-from opencensus.metrics.export import metric_descriptor
-from opencensus.metrics.export import point
-from opencensus.metrics.export import value
-from opencensus.stats import aggregation
-from opencensus.stats import aggregation_data
-from opencensus.stats import measure
-from opencensus.stats import metric_utils
-from opencensus.stats import view
-from opencensus.stats import view_data
-from opencensus.tags import tag_key
-from opencensus.tags import tag_value
+from opencensus.metrics.export import metric_descriptor, point, value
+from opencensus.stats import (aggregation, aggregation_data, measure,
+                              metric_utils, view, view_data)
+from opencensus.tags import tag_key, tag_value
 
 
 class TestMetricUtils(unittest.TestCase):

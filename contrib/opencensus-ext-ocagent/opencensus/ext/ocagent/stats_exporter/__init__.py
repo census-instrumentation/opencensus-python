@@ -15,17 +15,17 @@
 import logging
 
 from google.api_core import bidi
+
+import grpc
 from opencensus.common.monitored_resource import monitored_resource
 from opencensus.ext.ocagent import utils
 from opencensus.metrics import transport
-from opencensus.metrics.export import metric_descriptor
-from opencensus.metrics.export import value
-from opencensus.proto.agent.metrics.v1 import metrics_service_pb2
-from opencensus.proto.agent.metrics.v1 import metrics_service_pb2_grpc
+from opencensus.metrics.export import metric_descriptor, value
+from opencensus.proto.agent.metrics.v1 import (metrics_service_pb2,
+                                               metrics_service_pb2_grpc)
 from opencensus.proto.metrics.v1 import metrics_pb2
 from opencensus.proto.resource.v1 import resource_pb2
 from opencensus.stats import stats
-import grpc
 
 
 class StatsExporter(object):
