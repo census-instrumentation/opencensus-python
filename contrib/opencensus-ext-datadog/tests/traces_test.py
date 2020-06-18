@@ -2,10 +2,15 @@ import unittest
 
 import mock
 
-from opencensus.ext.datadog.traces import (DatadogTraceExporter, Options,
-                                           atts_to_metadata, convert_id,
-                                           new_trace_exporter, to_dd_type,
-                                           value_from_atts_elem)
+from opencensus.ext.datadog.traces import (
+    DatadogTraceExporter,
+    Options,
+    atts_to_metadata,
+    convert_id,
+    new_trace_exporter,
+    to_dd_type,
+    value_from_atts_elem,
+)
 from opencensus.trace import span_context
 from opencensus.trace import span_data as span_data_module
 
