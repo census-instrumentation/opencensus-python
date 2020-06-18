@@ -25,10 +25,12 @@ from google.api_core.gapic_v1 import client_info
 from google.cloud import monitoring_v3
 
 from opencensus.common import utils
-from opencensus.common.monitored_resource import (aws_identity_doc_utils,
-                                                  gcp_metadata_config,
-                                                  k8s_utils,
-                                                  monitored_resource)
+from opencensus.common.monitored_resource import (
+    aws_identity_doc_utils,
+    gcp_metadata_config,
+    k8s_utils,
+    monitored_resource,
+)
 from opencensus.common.version import __version__
 from opencensus.metrics import label_key, label_value, transport
 from opencensus.metrics.export import metric as metric_module

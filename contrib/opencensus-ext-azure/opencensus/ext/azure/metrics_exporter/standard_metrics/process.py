@@ -16,8 +16,10 @@ import logging
 
 import psutil
 
-from opencensus.metrics.export.gauge import (DerivedDoubleGauge,
-                                             DerivedLongGauge)
+from opencensus.metrics.export.gauge import (
+    DerivedDoubleGauge,
+    DerivedLongGauge,
+)
 
 logger = logging.getLogger(__name__)
 PROCESS = psutil.Process()

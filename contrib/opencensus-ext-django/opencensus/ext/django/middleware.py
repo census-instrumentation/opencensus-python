@@ -13,18 +13,23 @@
 # limitations under the License.
 
 """Django middleware helper to capture and trace a request."""
+import six
+
 import logging
 
 import django
 import django.conf
-import six
 from django.db import connection
 from django.utils.deprecation import MiddlewareMixin
 from google.rpc import code_pb2
 
 from opencensus.common import configuration
-from opencensus.trace import (attributes_helper, execution_context,
-                              print_exporter, samplers)
+from opencensus.trace import (
+    attributes_helper,
+    execution_context,
+    print_exporter,
+    samplers,
+)
 from opencensus.trace import span as span_module
 from opencensus.trace import status as status_module
 from opencensus.trace import tracer as tracer_module

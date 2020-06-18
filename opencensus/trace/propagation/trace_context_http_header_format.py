@@ -14,8 +14,9 @@
 
 import re
 
-from opencensus.trace.propagation.tracestate_string_format import \
-    TracestateStringFormatter
+from opencensus.trace.propagation.tracestate_string_format import (
+    TracestateStringFormatter,
+)
 from opencensus.trace.span_context import SpanContext
 from opencensus.trace.trace_options import TraceOptions
 

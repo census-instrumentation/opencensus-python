@@ -18,9 +18,12 @@ import unittest
 
 import mock
 
-from opencensus.ext.azure.common.storage import (LocalFileBlob,
-                                                 LocalFileStorage, _now,
-                                                 _seconds)
+from opencensus.ext.azure.common.storage import (
+    LocalFileBlob,
+    LocalFileStorage,
+    _now,
+    _seconds,
+)
 
 TEST_FOLDER = os.path.abspath('.test.storage')
 

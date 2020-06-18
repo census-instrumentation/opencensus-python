@@ -18,8 +18,14 @@ import unittest
 import mock
 
 from opencensus.metrics.export import metric_descriptor, point, value
-from opencensus.stats import (aggregation, aggregation_data, measure,
-                              metric_utils, view, view_data)
+from opencensus.stats import (
+    aggregation,
+    aggregation_data,
+    measure,
+    metric_utils,
+    view,
+    view_data,
+)
 from opencensus.tags import tag_key, tag_value
 
 

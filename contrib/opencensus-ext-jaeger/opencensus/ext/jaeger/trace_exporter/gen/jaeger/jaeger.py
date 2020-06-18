@@ -10,8 +10,12 @@ import logging
 import sys
 
 from thrift.protocol.TProtocol import TProtocolException
-from thrift.Thrift import (TApplicationException, TMessageType, TProcessor,
-                           TType)
+from thrift.Thrift import (
+    TApplicationException,
+    TMessageType,
+    TProcessor,
+    TType,
+)
 from thrift.transport import TTransport
 
 

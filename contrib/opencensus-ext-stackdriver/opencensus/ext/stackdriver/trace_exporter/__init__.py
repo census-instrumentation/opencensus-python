@@ -17,10 +17,12 @@ from collections import defaultdict
 
 from google.cloud.trace.client import Client
 
-from opencensus.common.monitored_resource import (aws_identity_doc_utils,
-                                                  gcp_metadata_config,
-                                                  k8s_utils,
-                                                  monitored_resource)
+from opencensus.common.monitored_resource import (
+    aws_identity_doc_utils,
+    gcp_metadata_config,
+    k8s_utils,
+    monitored_resource,
+)
 from opencensus.common.transports import sync
 from opencensus.common.version import __version__
 from opencensus.trace import attributes_helper, base_exporter, span_data

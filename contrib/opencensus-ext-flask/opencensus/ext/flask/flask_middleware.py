@@ -12,16 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import six
+
 import logging
 import sys
 
 import flask
-import six
 from google.rpc import code_pb2
 
 from opencensus.common import configuration
-from opencensus.trace import (attributes_helper, execution_context,
-                              print_exporter, samplers)
+from opencensus.trace import (
+    attributes_helper,
+    execution_context,
+    print_exporter,
+    samplers,
+)
 from opencensus.trace import span as span_module
 from opencensus.trace import stack_trace, status
 from opencensus.trace import tracer as tracer_module
