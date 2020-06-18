@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from six import assertRaisesRegex
+
 import unittest
 
 from opencensus.metrics.export import summary as summary_module

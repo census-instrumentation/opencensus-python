@@ -16,8 +16,7 @@ import atexit
 import threading
 import time
 
-from opencensus.common.schedule import Queue
-from opencensus.common.schedule import QueueEvent
+from opencensus.common.schedule import Queue, QueueEvent
 from opencensus.ext.azure.common import Options
 from opencensus.trace import execution_context
 

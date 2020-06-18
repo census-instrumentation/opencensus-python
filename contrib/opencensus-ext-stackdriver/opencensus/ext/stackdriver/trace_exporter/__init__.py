@@ -12,22 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from collections import defaultdict
 import os
+from collections import defaultdict
 
 from google.cloud.trace.client import Client
 
-from opencensus.common.monitored_resource import aws_identity_doc_utils
-from opencensus.common.monitored_resource import gcp_metadata_config
-from opencensus.common.monitored_resource import k8s_utils
-from opencensus.common.monitored_resource import monitored_resource
+from opencensus.common.monitored_resource import (
+    aws_identity_doc_utils,
+    gcp_metadata_config,
+    k8s_utils,
+    monitored_resource,
+)
 from opencensus.common.transports import sync
 from opencensus.common.version import __version__
-from opencensus.trace import attributes_helper
-from opencensus.trace import base_exporter
-from opencensus.trace import span_data
+from opencensus.trace import attributes_helper, base_exporter, span_data
 from opencensus.trace.attributes import Attributes
-
 
 # Agent
 AGENT = 'opencensus-python [{}]'.format(__version__)

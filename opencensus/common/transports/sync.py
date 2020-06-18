@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from opencensus.common.transports import base
+from opencensus.trace import execution_context
 
 
 class SyncTransport(base.Transport):
@@ -25,4 +26,3 @@ class SyncTransport(base.Transport):
         self.exporter.emit(datas)
         # Reset the context
         execution_context.set_is_exporter(False)
-

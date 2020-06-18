@@ -14,18 +14,20 @@
 
 import logging
 
+import grpc
 from google.api_core import bidi
+
 from opencensus.common.monitored_resource import monitored_resource
 from opencensus.ext.ocagent import utils
 from opencensus.metrics import transport
-from opencensus.metrics.export import metric_descriptor
-from opencensus.metrics.export import value
-from opencensus.proto.agent.metrics.v1 import metrics_service_pb2
-from opencensus.proto.agent.metrics.v1 import metrics_service_pb2_grpc
+from opencensus.metrics.export import metric_descriptor, value
+from opencensus.proto.agent.metrics.v1 import (
+    metrics_service_pb2,
+    metrics_service_pb2_grpc,
+)
 from opencensus.proto.metrics.v1 import metrics_pb2
 from opencensus.proto.resource.v1 import resource_pb2
 from opencensus.stats import stats
-import grpc
 
 
 class StatsExporter(object):
@@ -142,8 +144,8 @@ def _get_metric_descriptor_proto(descriptor):
 
 def _get_label_keys_proto(label_keys):
     return [
-        metrics_pb2.LabelKey(key=l.key, description=l.description)
-        for l in label_keys
+        metrics_pb2.LabelKey(key=label.key, description=label.description)
+        for label in label_keys
     ]
 
 

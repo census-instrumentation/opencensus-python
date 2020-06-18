@@ -13,13 +13,15 @@
 # limitations under the License.
 
 import collections
-import mock
-import requests
 import sys
 import unittest
 
+import mock
+import requests
+
 from opencensus.ext.azure.metrics_exporter import standard_metrics
 from opencensus.trace import execution_context
+
 if sys.version_info < (3,):
     from BaseHTTPServer import HTTPServer
 else:

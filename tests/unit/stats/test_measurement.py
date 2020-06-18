@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from opencensus.stats import measurement as measurement_module
-
 import unittest
+
+from opencensus.stats import measurement as measurement_module
 
 
 class TestMeasurement(unittest.TestCase):

@@ -12,9 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import mock
 import os
 import unittest
+
+import mock
 
 from opencensus.common.monitored_resource import gcp_metadata_config
 

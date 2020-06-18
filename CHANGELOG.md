@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## 0.7.9
+Released 2020-06-17
+
+- Hotfix
+  ([#915](https://github.com/census-instrumentation/opencensus-python/pull/915))
+
 ## 0.7.8
 Released 2020-06-17
 

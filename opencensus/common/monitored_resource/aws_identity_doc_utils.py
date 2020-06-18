@@ -12,8 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from opencensus.common.http_handler import get_request
 import json
+
+from opencensus.common.http_handler import get_request
 
 REGION_KEY = 'region'
 ACCOUNT_ID_KEY = 'aws_account'

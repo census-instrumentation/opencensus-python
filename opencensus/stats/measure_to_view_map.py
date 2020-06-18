@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from collections import defaultdict
 import copy
 import logging
+from collections import defaultdict
 
 from opencensus.stats import metric_utils
 from opencensus.stats import view_data as view_data_module

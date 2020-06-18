@@ -15,6 +15,7 @@
 """Translates opencensus span data to trace proto"""
 
 from google.protobuf.wrappers_pb2 import BoolValue, UInt32Value
+
 from opencensus.ext.ocagent import utils as ocagent_utils
 from opencensus.proto.trace.v1 import trace_pb2
 

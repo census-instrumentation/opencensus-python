@@ -14,8 +14,9 @@
 
 # -*- coding: utf-8 -*-
 
-import logging
 import six
+
+import logging
 
 from google.protobuf.internal.encoder import _VarintBytes
 

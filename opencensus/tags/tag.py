@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from collections import namedtuple
+
 from opencensus.tags.tag_key import TagKey
 from opencensus.tags.tag_value import TagValue
 

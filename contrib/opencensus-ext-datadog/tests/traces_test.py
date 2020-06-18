@@ -2,13 +2,17 @@ import unittest
 
 import mock
 
-from opencensus.ext.datadog.traces import (convert_id, to_dd_type,
-                                           value_from_atts_elem,
-                                           atts_to_metadata,
-                                           new_trace_exporter,
-                                           DatadogTraceExporter, Options)
-from opencensus.trace import span_data as span_data_module
+from opencensus.ext.datadog.traces import (
+    DatadogTraceExporter,
+    Options,
+    atts_to_metadata,
+    convert_id,
+    new_trace_exporter,
+    to_dd_type,
+    value_from_atts_elem,
+)
 from opencensus.trace import span_context
+from opencensus.trace import span_data as span_data_module
 
 
 class TestTraces(unittest.TestCase):
