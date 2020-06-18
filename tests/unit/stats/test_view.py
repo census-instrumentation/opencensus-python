@@ -48,7 +48,7 @@ class TestView(unittest.TestCase):
         mock_agg.get_metric_type.return_value = \
             metric_descriptor.MetricDescriptorType.CUMULATIVE_DOUBLE
         test_view = view_module.View("name", "description", ["tk1", "tk2"],
-                              mock_measure, mock_agg)
+                                     mock_measure, mock_agg)
 
         self.assertIsNone(test_view._metric_descriptor)
         md = test_view.get_metric_descriptor()

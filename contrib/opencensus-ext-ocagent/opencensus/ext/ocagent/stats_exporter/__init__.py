@@ -142,8 +142,8 @@ def _get_metric_descriptor_proto(descriptor):
 
 def _get_label_keys_proto(label_keys):
     return [
-        metrics_pb2.LabelKey(key=l.key, description=l.description)
-        for l in label_keys
+        metrics_pb2.LabelKey(key=label.key, description=label.description)
+        for label in label_keys
     ]
 
 

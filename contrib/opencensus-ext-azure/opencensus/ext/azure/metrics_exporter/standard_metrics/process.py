@@ -53,6 +53,7 @@ class ProcessMemoryMetric(object):
 
 class ProcessCPUMetric(object):
     NAME = "\\Process(??APP_WIN32_PROC??)\\% Processor Time"
+
     @staticmethod
     def get_value():
         try:

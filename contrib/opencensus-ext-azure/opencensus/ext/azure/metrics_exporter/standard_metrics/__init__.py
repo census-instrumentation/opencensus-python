@@ -14,10 +14,10 @@
 
 from opencensus.ext.azure.metrics_exporter.standard_metrics.cpu import \
     ProcessorTimeMetric
-from opencensus.ext.azure.metrics_exporter.standard_metrics.http_dependency import \
-    DependencyRateMetric
-from opencensus.ext.azure.metrics_exporter.standard_metrics.http_requests import (
-    RequestsAvgExecutionMetric, RequestsRateMetric)
+from opencensus.ext.azure.metrics_exporter.standard_metrics \
+.http_dependency import DependencyRateMetric
+from opencensus.ext.azure.metrics_exporter.standard_metrics \
+    .http_requests import (RequestsAvgExecutionMetric, RequestsRateMetric)
 from opencensus.ext.azure.metrics_exporter.standard_metrics.memory import \
     AvailableMemoryMetric
 from opencensus.ext.azure.metrics_exporter.standard_metrics.process import (
