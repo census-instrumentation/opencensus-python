@@ -47,7 +47,7 @@ class TestStandardMetrics(unittest.TestCase):
         producer = standard_metrics.AzureStandardMetricsProducer()
         metrics = producer.get_metrics()
 
-        self.assertEqual(len(metrics), 7)
+        self.assertEqual(len(metrics), 6)
 
     def test_register_metrics(self):
         registry = standard_metrics.register_metrics()
