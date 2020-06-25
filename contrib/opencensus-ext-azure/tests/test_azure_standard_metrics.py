@@ -20,7 +20,6 @@ import mock
 import requests
 
 from opencensus.ext.azure.metrics_exporter import standard_metrics
-from opencensus.trace import execution_context
 
 if sys.version_info < (3,):
     from BaseHTTPServer import HTTPServer
@@ -33,10 +32,8 @@ ORIGINAL_CONS = HTTPServer.__init__
 
 class TestStandardMetrics(unittest.TestCase):
     def setUp(self):
-        standard_metrics.http_dependency.dependency_map.clear()
         standard_metrics.http_requests.requests_map.clear()
         requests.Session.request = ORIGINAL_FUNCTION
-        standard_metrics.http_dependency.ORIGINAL_REQUEST = ORIGINAL_FUNCTION
         standard_metrics.http_requests.ORIGINAL_CONSTRUCTOR = ORIGINAL_CONS
 
     @mock.patch('opencensus.ext.azure.metrics_exporter'
