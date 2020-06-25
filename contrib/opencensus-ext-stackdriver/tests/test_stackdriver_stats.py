@@ -826,8 +826,8 @@ class TestCreateTimeseries(unittest.TestCase):
         expected_distb = google.api.distribution_pb2.Distribution(
             count=1,
             mean=26214400.0,
-            bucket_options=google.api.distribution_pb2.Distribution.BucketOptions(
-                explicit_buckets=google.api.distribution_pb2.Distribution.BucketOptions.Explicit(
+            bucket_options=google.api.distribution_pb2.Distribution.BucketOptions(  # noqa
+                explicit_buckets=google.api.distribution_pb2.Distribution.BucketOptions.Explicit(  # noqa
                     bounds=[0.0, 16777216.0, 268435456.0])),
             bucket_counts=[0, 0, 1, 0]
         )
@@ -1213,8 +1213,8 @@ class TestCreateTimeseries(unittest.TestCase):
         expected_distb = google.api.distribution_pb2.Distribution(
             count=1,
             mean=26214400.0,
-            bucket_options=google.api.distribution_pb2.Distribution.BucketOptions(
-                explicit_buckets=google.api.distribution_pb2.Distribution.BucketOptions.Explicit(
+            bucket_options=google.api.distribution_pb2.Distribution.BucketOptions(  # noqa
+                explicit_buckets=google.api.distribution_pb2.Distribution.BucketOptions.Explicit(  # noqa
                     bounds=[0.0, 16777216.0, 268435456.0])),
             bucket_counts=[0, 0, 1, 0]
         )
@@ -1233,8 +1233,8 @@ class TestCreateTimeseries(unittest.TestCase):
         expected_distb = google.api.distribution_pb2.Distribution(
             count=1,
             mean=12582912.0,
-            bucket_options=google.api.distribution_pb2.Distribution.BucketOptions(
-                explicit_buckets=google.api.distribution_pb2.Distribution.BucketOptions.Explicit(
+            bucket_options=google.api.distribution_pb2.Distribution.BucketOptions(  # noqa
+                explicit_buckets=google.api.distribution_pb2.Distribution.BucketOptions.Explicit(  # noqa
                     bounds=[0.0, 16777216.0, 268435456.0])),
             bucket_counts=[0, 1, 0, 0]
         )
@@ -1335,8 +1335,8 @@ class TestCreateTimeseries(unittest.TestCase):
             count=100,
             mean=4.5,
             sum_of_squared_deviation=825.0,
-            bucket_options=google.api.distribution_pb2.Distribution.BucketOptions(
-                explicit_buckets=google.api.distribution_pb2.Distribution.BucketOptions.Explicit(
+            bucket_options=google.api.distribution_pb2.Distribution.BucketOptions(  # noqa
+                explicit_buckets=google.api.distribution_pb2.Distribution.BucketOptions.Explicit(  # noqa
                     bounds=[0, 2, 4, 6, 8])),
             bucket_counts=[0, 20, 20, 20, 20, 20]
         )
