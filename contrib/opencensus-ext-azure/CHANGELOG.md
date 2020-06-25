@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Remove depedency rate from standard metrics
+- Remove dependency rate from standard metrics
   ([#903](https://github.com/census-instrumentation/opencensus-python/pull/903))
 
 ## 1.0.3
