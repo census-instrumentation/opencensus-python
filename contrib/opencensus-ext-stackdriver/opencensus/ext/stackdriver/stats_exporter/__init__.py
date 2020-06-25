@@ -201,6 +201,7 @@ class StackdriverStatsExporter(object):
             sd_dist_val.count = point.value.count
             sd_dist_val.sum_of_squared_deviation =\
                 point.value.sum_of_squared_deviation
+            sd_dist_val.mean = point.value.sum / sd_dist_val.count
 
             assert sd_dist_val.bucket_options.explicit_buckets.bounds == []
             sd_dist_val.bucket_options.explicit_buckets.bounds.extend(
