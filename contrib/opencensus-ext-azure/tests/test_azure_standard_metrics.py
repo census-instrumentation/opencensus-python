@@ -55,7 +55,7 @@ class TestStandardMetrics(unittest.TestCase):
     def test_register_metrics(self):
         registry = standard_metrics.register_metrics()
 
-        self.assertEqual(len(registry.get_metrics()), 7)
+        self.assertEqual(len(registry.get_metrics()), 6)
 
     def test_get_available_memory_metric(self):
         metric = standard_metrics.AvailableMemoryMetric()
@@ -143,58 +143,6 @@ class TestStandardMetrics(unittest.TestCase):
             standard_metrics.ProcessCPUMetric.get_value()
 
             logger_mock.exception.assert_called()
-
-    def test_dependency_patch(self):
-        map = standard_metrics.http_dependency.dependency_map
-        standard_metrics.http_dependency.ORIGINAL_REQUEST = lambda x: None
-        session = requests.Session()
-        execution_context.set_is_exporter(False)
-        result = standard_metrics.http_dependency.dependency_patch(session)
-
-        self.assertEqual(map['count'], 1)
-        self.assertIsNone(result)
-
-    def test_dependency_patch_exporter_thread(self):
-        map = standard_metrics.http_dependency.dependency_map
-        standard_metrics.http_dependency.ORIGINAL_REQUEST = lambda x: None
-        session = mock.Mock()
-        execution_context.set_is_exporter(True)
-        result = standard_metrics.http_dependency.dependency_patch(session)
-
-        self.assertIsNone(map.get('count'))
-        self.assertIsNone(result)
-
-    def test_get_dependency_rate_metric(self):
-        metric = standard_metrics.DependencyRateMetric()
-        gauge = metric()
-
-        self.assertEqual(gauge.descriptor.name,
-                         '\\ApplicationInsights\\Dependency Calls/Sec')
-
-    def test_get_dependency_rate_first_time(self):
-        rate = standard_metrics.DependencyRateMetric.get_value()
-
-        self.assertEqual(rate, 0)
-
-    @mock.patch('opencensus.ext.azure.metrics_exporter'
-                '.standard_metrics.http_dependency.time')
-    def test_get_dependency_rate(self, time_mock):
-        time_mock.time.return_value = 100
-        standard_metrics.http_dependency.dependency_map['last_time'] = 98
-        standard_metrics.http_dependency.dependency_map['count'] = 4
-        rate = standard_metrics.DependencyRateMetric.get_value()
-
-        self.assertEqual(rate, 2)
-
-    @mock.patch('opencensus.ext.azure.metrics_exporter'
-                '.standard_metrics.http_dependency.time')
-    def test_get_dependency_rate_error(self, time_mock):
-        time_mock.time.return_value = 100
-        standard_metrics.http_dependency.dependency_map['last_result'] = 5
-        standard_metrics.http_dependency.dependency_map['last_time'] = 100
-        result = standard_metrics.DependencyRateMetric.get_value()
-
-        self.assertEqual(result, 5)
 
     def test_request_patch(self):
         map = standard_metrics.http_requests.requests_map

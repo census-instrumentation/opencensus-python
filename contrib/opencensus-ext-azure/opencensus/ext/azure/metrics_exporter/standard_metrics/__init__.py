@@ -15,9 +15,6 @@
 from opencensus.ext.azure.metrics_exporter.standard_metrics.cpu import (
     ProcessorTimeMetric,
 )
-from opencensus.ext.azure.metrics_exporter.standard_metrics.http_dependency import (  # noqa E501
-    DependencyRateMetric,
-)
 from opencensus.ext.azure.metrics_exporter.standard_metrics.http_requests import (  # noqa E501
     RequestsAvgExecutionMetric,
     RequestsRateMetric,
@@ -34,7 +31,6 @@ from opencensus.metrics.export.metric_producer import MetricProducer
 
 # List of standard metrics to track
 STANDARD_METRICS = [AvailableMemoryMetric,
-                    DependencyRateMetric,
                     ProcessCPUMetric,
                     ProcessMemoryMetric,
                     ProcessorTimeMetric,
