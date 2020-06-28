@@ -14,24 +14,14 @@
 
 import logging
 
-from opencensus.ext.azure.log_exporter import AzureLogHandler
+from opencensus.ext.azure.log_exporter import AzureEventHandler
 
 logger = logging.getLogger(__name__)
 # TODO: you need to specify the instrumentation key in a connection string
 # and place it in the APPLICATIONINSIGHTS_CONNECTION_STRING
 # environment variable.
-logger.addHandler(AzureLogHandler())
-
-properties = {'custom_dimensions': {'key_1': 'value_1', 'key_2': 'value_2'}}
-
-# Use properties in logging statements
-logger.warning('action', extra=properties)
-
-# Use properties in exception logs
-try:
-    result = 1 / 0  # generate a ZeroDivisionError
-except Exception:
-    logger.exception('Captured an exception.', extra=properties)
+logger.addHandler(AzureEventHandler())
+logger.setLevel(logging.INFO)
+logger.info('Hello, World!')
 
 input("...")
-

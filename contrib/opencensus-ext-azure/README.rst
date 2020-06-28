@@ -121,6 +121,21 @@ Modifying Logs
     logger.addHandler(handler)
     logger.warning('Hello, World!')
 
+Events
+######
+
+You can send `customEvent` telemetry in exactly the same way you would send `trace` telemetry except using the `AzureEventHandler` instead.
+
+.. code:: python
+
+    import logging
+
+    from opencensus.ext.azure.log_exporter import AzureEventHandler
+
+    logger = logging.getLogger(__name__)
+    logger.addHandler(AzureEventHandler(connection_string='InstrumentationKey=<your-instrumentation_key-here>'))
+    logger.setLevel(logging.INFO)
+    logger.info('Hello, World!')
 
 Metrics
 ~~~~~~~
