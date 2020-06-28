@@ -34,4 +34,3 @@ except Exception:
     logger.exception('Captured an exception.', extra=properties)
 
 input("...")
-

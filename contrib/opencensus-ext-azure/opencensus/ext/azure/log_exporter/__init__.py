@@ -38,7 +38,7 @@ __all__ = ['AzureEventHandler', 'AzureLogHandler']
 
 
 class BaseLogHandler(logging.Handler):
-    
+
     def __init__(self, **options):
         super(BaseLogHandler, self).__init__()
         self.options = Options(**options)
@@ -162,9 +162,9 @@ class AzureLogHandler(TransportMixin, ProcessorMixin, BaseLogHandler):
             'level': record.levelname,
         }
         if (hasattr(record, 'custom_dimensions') and
-            isinstance(record.custom_dimensions, dict)):
+                isinstance(record.custom_dimensions, dict)):
             properties.update(record.custom_dimensions)
-            
+  
         if record.exc_info:
             exctype, _value, tb = record.exc_info
             callstack = []
@@ -212,7 +212,7 @@ class AzureEventHandler(TransportMixin, ProcessorMixin, BaseLogHandler):
 
         properties = {}
         if (hasattr(record, 'custom_dimensions') and
-            isinstance(record.custom_dimensions, dict)):
+                isinstance(record.custom_dimensions, dict)):
             properties.update(record.custom_dimensions)
 
         envelope.name = 'Microsoft.ApplicationInsights.Event'
