@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+## 1.0.4
+Released 2020-06-29
+
+- Remove dependency rate from standard metrics
+  ([#903](https://github.com/census-instrumentation/opencensus-python/pull/903))
+- Implement customEvents using AzureEventHandler
+  ([#925](https://github.com/census-instrumentation/opencensus-python/pull/925))
+
 ## 1.0.3
 Released 2020-06-17
 
