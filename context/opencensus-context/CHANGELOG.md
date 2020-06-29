@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+## 0.1.2
+Released 2020-06-29
+
+- Release source distribution
+
 ## 0.1.1
 Released 2019-05-31
 
