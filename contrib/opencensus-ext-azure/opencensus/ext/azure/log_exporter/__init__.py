@@ -24,6 +24,7 @@ from opencensus.ext.azure.common.processor import ProcessorMixin
 from opencensus.ext.azure.common.protocol import (
     Data,
     Envelope,
+    Event,
     ExceptionData,
     Message,
 )
@@ -33,17 +34,51 @@ from opencensus.trace import execution_context
 
 logger = logging.getLogger(__name__)
 
-__all__ = ['AzureLogHandler']
+__all__ = ['AzureEventHandler', 'AzureLogHandler']
 
 
 class BaseLogHandler(logging.Handler):
-    def __init__(self):
+
+    def __init__(self, **options):
         super(BaseLogHandler, self).__init__()
+        self.options = Options(**options)
+        utils.validate_instrumentation_key(self.options.instrumentation_key)
+        if not 0 <= self.options.logging_sampling_rate <= 1:
+            raise ValueError('Sampling must be in the range: [0,1]')
+        self.export_interval = self.options.export_interval
+        self.max_batch_size = self.options.max_batch_size
+        self.storage = LocalFileStorage(
+            path=self.options.storage_path,
+            max_size=self.options.storage_max_size,
+            maintenance_period=self.options.storage_maintenance_period,
+            retention_period=self.options.storage_retention_period,
+        )
+        self._telemetry_processors = []
+        self.addFilter(SamplingFilter(self.options.logging_sampling_rate))
         self._queue = Queue(capacity=8192)  # TODO: make this configurable
         self._worker = Worker(self._queue, self)
         self._worker.start()
 
+    def _export(self, batch, event=None):  # pragma: NO COVER
+        try:
+            if batch:
+                envelopes = [self.log_record_to_envelope(x) for x in batch]
+                envelopes = self.apply_telemetry_processors(envelopes)
+                result = self._transmit(envelopes)
+                if result > 0:
+                    self.storage.put(envelopes, result)
+            if event:
+                if isinstance(event, QueueExitEvent):
+                    self._transmit_from_storage()  # send files before exit
+                return
+            if len(batch) < self.options.max_batch_size:
+                self._transmit_from_storage()
+        finally:
+            if event:
+                event.set()
+
     def close(self):
+        self.storage.close()
         self._worker.stop()
 
     def createLock(self):
@@ -52,14 +87,7 @@ class BaseLogHandler(logging.Handler):
     def emit(self, record):
         self._queue.put(record, block=False)
 
-    def _export(self, batch, event=None):
-        try:
-            return self.export(batch)
-        finally:
-            if event:
-                event.set()
-
-    def export(self, batch):
+    def log_record_to_envelope(self, record):
         raise NotImplementedError  # pragma: NO COVER
 
     def flush(self, timeout=None):
@@ -121,66 +149,11 @@ class SamplingFilter(logging.Filter):
 
 
 class AzureLogHandler(TransportMixin, ProcessorMixin, BaseLogHandler):
-    """Handler for logging to Microsoft Azure Monitor.
-
-    :param options: Options for the log handler.
-    """
-
-    def __init__(self, **options):
-        self.options = Options(**options)
-        utils.validate_instrumentation_key(self.options.instrumentation_key)
-        if not 0 <= self.options.logging_sampling_rate <= 1:
-            raise ValueError('Sampling must be in the range: [0,1]')
-        self.export_interval = self.options.export_interval
-        self.max_batch_size = self.options.max_batch_size
-        self.storage = LocalFileStorage(
-            path=self.options.storage_path,
-            max_size=self.options.storage_max_size,
-            maintenance_period=self.options.storage_maintenance_period,
-            retention_period=self.options.storage_retention_period,
-        )
-        self._telemetry_processors = []
-        super(AzureLogHandler, self).__init__()
-        self.addFilter(SamplingFilter(self.options.logging_sampling_rate))
-
-    def close(self):
-        self.storage.close()
-        super(AzureLogHandler, self).close()
-
-    def _export(self, batch, event=None):  # pragma: NO COVER
-        try:
-            if batch:
-                envelopes = [self.log_record_to_envelope(x) for x in batch]
-                envelopes = self.apply_telemetry_processors(envelopes)
-                result = self._transmit(envelopes)
-                if result > 0:
-                    self.storage.put(envelopes, result)
-            if event:
-                if isinstance(event, QueueExitEvent):
-                    self._transmit_from_storage()  # send files before exit
-                return
-            if len(batch) < self.options.max_batch_size:
-                self._transmit_from_storage()
-        finally:
-            if event:
-                event.set()
+    """Handler for logging to Microsoft Azure Monitor."""
 
     def log_record_to_envelope(self, record):
-        envelope = Envelope(
-            iKey=self.options.instrumentation_key,
-            tags=dict(utils.azure_monitor_context),
-            time=utils.timestamp_to_iso_str(record.created),
-        )
+        envelope = create_envelope(self.options.instrumentation_key, record)
 
-        envelope.tags['ai.operation.id'] = getattr(
-            record,
-            'traceId',
-            '00000000000000000000000000000000',
-        )
-        envelope.tags['ai.operation.parentId'] = '|{}.{}.'.format(
-            envelope.tags['ai.operation.id'],
-            getattr(record, 'spanId', '0000000000000000'),
-        )
         properties = {
             'process': record.processName,
             'module': record.module,
@@ -188,7 +161,6 @@ class AzureLogHandler(TransportMixin, ProcessorMixin, BaseLogHandler):
             'lineNumber': record.lineno,
             'level': record.levelname,
         }
-
         if (hasattr(record, 'custom_dimensions') and
                 isinstance(record.custom_dimensions, dict)):
             properties.update(record.custom_dimensions)
@@ -230,3 +202,43 @@ class AzureLogHandler(TransportMixin, ProcessorMixin, BaseLogHandler):
             )
             envelope.data = Data(baseData=data, baseType='MessageData')
         return envelope
+
+
+class AzureEventHandler(TransportMixin, ProcessorMixin, BaseLogHandler):
+    """Handler for sending custom events to Microsoft Azure Monitor."""
+
+    def log_record_to_envelope(self, record):
+        envelope = create_envelope(self.options.instrumentation_key, record)
+
+        properties = {}
+        if (hasattr(record, 'custom_dimensions') and
+                isinstance(record.custom_dimensions, dict)):
+            properties.update(record.custom_dimensions)
+
+        envelope.name = 'Microsoft.ApplicationInsights.Event'
+        data = Event(
+            name=self.format(record),
+            properties=properties,
+        )
+        envelope.data = Data(baseData=data, baseType='EventData')
+
+        return envelope
+
+
+def create_envelope(instrumentation_key, record):
+    envelope = Envelope(
+        iKey=instrumentation_key,
+        tags=dict(utils.azure_monitor_context),
+        time=utils.timestamp_to_iso_str(record.created),
+    )
+    envelope.tags['ai.operation.id'] = getattr(
+        record,
+        'traceId',
+        '00000000000000000000000000000000',
+    )
+    envelope.tags['ai.operation.parentId'] = '|{}.{}.'.format(
+        envelope.tags['ai.operation.id'],
+        getattr(record, 'spanId', '0000000000000000'),
+    )
+
+    return envelope
