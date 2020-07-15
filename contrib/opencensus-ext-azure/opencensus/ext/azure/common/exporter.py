@@ -61,7 +61,9 @@ class Worker(threading.Thread):
         self.src = src
         self.dst = dst
         self._stopping = False
-        super(Worker, self).__init__()
+        super(Worker, self).__init__(
+            name="Trace Exporter Worker"
+        )
 
     def run(self):  # pragma: NO COVER
         # Indicate that this thread is an exporter thread.

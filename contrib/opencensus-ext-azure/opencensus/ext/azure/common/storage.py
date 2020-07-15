@@ -81,6 +81,7 @@ class LocalFileStorage(object):
             maintenance_period=60,  # 1 minute
             retention_period=7*24*60*60,  # 7 days
             write_timeout=60,  # 1 minute
+            source=None,
     ):
         self.path = os.path.abspath(path)
         self.max_size = max_size
@@ -92,6 +93,7 @@ class LocalFileStorage(object):
         self._maintenance_task = PeriodicTask(
             interval=self.maintenance_period,
             function=self._maintenance_routine,
+            name='{} Storage Worker'.format(source)
         )
         self._maintenance_task.daemon = True
         self._maintenance_task.start()

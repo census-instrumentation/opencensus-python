@@ -34,8 +34,8 @@ class PeriodicTask(threading.Thread):
     :param args: The kwargs passed in while calling `function`.
     """
 
-    def __init__(self, interval, function, args=None, kwargs=None):
-        super(PeriodicTask, self).__init__()
+    def __init__(self, interval, function, args=None, kwargs=None, name=None):
+        super(PeriodicTask, self).__init__(name=name)
         self.interval = interval
         self.function = function
         self.args = args or []
