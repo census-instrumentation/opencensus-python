@@ -62,7 +62,7 @@ class Worker(threading.Thread):
         self.dst = dst
         self._stopping = False
         super(Worker, self).__init__(
-            name="Trace Exporter Worker"
+            name="AzureExporter Worker"
         )
 
     def run(self):  # pragma: NO COVER

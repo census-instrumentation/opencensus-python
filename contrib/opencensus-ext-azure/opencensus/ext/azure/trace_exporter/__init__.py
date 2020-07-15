@@ -55,10 +55,10 @@ class AzureExporter(BaseExporter, ProcessorMixin, TransportMixin):
             retention_period=self.options.storage_retention_period,
             source=self.__class__.__name__,
         )
-        heartbeat_metrics.enable_heartbeat_metrics(
-            self.options.connection_string, self.options.instrumentation_key)
         self._telemetry_processors = []
         super(AzureExporter, self).__init__(**options)
+        heartbeat_metrics.enable_heartbeat_metrics(
+            self.options.connection_string, self.options.instrumentation_key)
 
     def span_data_to_envelope(self, sd):
         envelope = Envelope(

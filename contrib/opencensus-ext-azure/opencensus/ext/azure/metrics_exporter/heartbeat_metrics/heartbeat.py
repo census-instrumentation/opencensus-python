@@ -23,7 +23,7 @@ from opencensus.metrics.label_key import LabelKey
 from opencensus.metrics.label_value import LabelValue
 
 class HeartbeatMetric:
-    NAME = "Heartbeat"
+    NAME = "Heartbeatz"
 
     def __init__(self):
         self.properties = OrderedDict()
@@ -35,12 +35,12 @@ class HeartbeatMetric:
             )
         )
         self.properties[LabelKey("osType", '')] = LabelValue(platform.system())
-        if os.environ.get("WEBSITE_SITE_NAME")is not None:  # Web apps
+        if os.environ.get("WEBSITE_SITE_NAME") is not None:  # Web apps
             self.properties[LabelKey("appSrv_SiteName", '')] = LabelValue(os.environ.get("WEBSITE_SITE_NAME"))
             self.properties[LabelKey("appSrv_wsStamp", '')] = LabelValue(os.environ.get("WEBSITE_HOME_STAMPNAME", ''))
             self.properties[LabelKey("appSrv_wsHost", '')] = LabelValue(os.environ.get("WEBSITE_HOSTNAME", ''))
-        else:
-            self.properties[LabelKey("test", '')] = LabelValue("test_value")
+        elif os.environ.get("FUNCTIONS_WORKER_RUNTIME") is not None:  # Function apps
+            self.properties[LabelKey("azfunction_appId", '')] = LabelValue(os.environ.get("WEBSITE_HOSTNAME"))
 
     def __call__(self):
         """ Returns a derived gauge for the heartbeat metric.
