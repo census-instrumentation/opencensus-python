@@ -23,7 +23,7 @@ from opencensus.metrics.label_key import LabelKey
 from opencensus.metrics.label_value import LabelValue
 
 class HeartbeatMetric:
-    NAME = "Heartbeatz"
+    NAME = "Heartbeat"
 
     def __init__(self):
         self.properties = OrderedDict()
