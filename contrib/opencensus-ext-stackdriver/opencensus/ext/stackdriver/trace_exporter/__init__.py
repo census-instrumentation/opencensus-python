@@ -23,7 +23,7 @@ from opencensus.common.monitored_resource import (
     k8s_utils,
     monitored_resource,
 )
-from opencensus.common.transports import sync
+from opencensus.common.transports.async_ import AsyncTransport
 from opencensus.common.version import __version__
 from opencensus.trace import attributes_helper, base_exporter, span_data
 from opencensus.trace.attributes import Attributes
@@ -180,7 +180,7 @@ class StackdriverExporter(base_exporter.Exporter):
     """
 
     def __init__(self, client=None, project_id=None,
-                 transport=sync.SyncTransport):
+                 transport=AsyncTransport):
         # The client will handle the case when project_id is None
         if client is None:
             client = Client(project=project_id)
