@@ -542,7 +542,7 @@ class MockPeriodicMetricTask(object):
     Simulate calling export asynchronously from another thread synchronously
     from this one.
     """
-    def __init__(self, interval=None, function=None, args=None, kwargs=None):
+    def __init__(self, interval=None, function=None, args=None, kwargs=None, name=None):
         self.function = function
         self.logger = mock.Mock()
         self.start = mock.Mock()

@@ -14,13 +14,14 @@
 
 import os
 import platform
-
 from collections import OrderedDict
+
 from opencensus.common.version import __version__ as opencensus_version
 from opencensus.ext.azure.common.version import __version__ as ext_version
 from opencensus.metrics.export.gauge import LongGauge
 from opencensus.metrics.label_key import LabelKey
 from opencensus.metrics.label_value import LabelValue
+
 
 class HeartbeatMetric:
     NAME = "Heartbeat"

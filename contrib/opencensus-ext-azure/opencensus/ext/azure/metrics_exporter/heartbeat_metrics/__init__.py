@@ -15,7 +15,9 @@
 import threading
 
 from opencensus.ext.azure.metrics_exporter import MetricsExporter
-from opencensus.ext.azure.metrics_exporter.heartbeat_metrics.heartbeat import HeartbeatMetric
+from opencensus.ext.azure.metrics_exporter.heartbeat_metrics.heartbeat import (
+    HeartbeatMetric,
+)
 from opencensus.metrics import transport
 from opencensus.metrics.export.gauge import Registry
 from opencensus.metrics.export.metric_producer import MetricProducer
