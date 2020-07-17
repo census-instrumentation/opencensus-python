@@ -36,14 +36,16 @@ class HeartbeatMetric:
             )
         )
         self.properties[LabelKey("osType", '')] = LabelValue(platform.system())
-        if os.environ.get("WEBSITE_SITE_NAME") is not None:  # Web apps
+        if os.environ.get("WEBSITE_SITE_NAME") is not None:
+            # Web apps
             self.properties[LabelKey("appSrv_SiteName", '')] = \
-            LabelValue(os.environ.get("WEBSITE_SITE_NAME"))
+                LabelValue(os.environ.get("WEBSITE_SITE_NAME"))
             self.properties[LabelKey("appSrv_wsStamp", '')] = \
-            LabelValue(os.environ.get("WEBSITE_HOME_STAMPNAME", ''))
+                LabelValue(os.environ.get("WEBSITE_HOME_STAMPNAME", ''))
             self.properties[LabelKey("appSrv_wsHost", '')] = \
                 LabelValue(os.environ.get("WEBSITE_HOSTNAME", ''))
-        elif os.environ.get("FUNCTIONS_WORKER_RUNTIME") is not None:  # Function apps
+        elif os.environ.get("FUNCTIONS_WORKER_RUNTIME") is not None:
+            # Function apps
             self.properties[LabelKey("azfunction_appId", '')] = \
                 LabelValue(os.environ.get("WEBSITE_HOSTNAME"))
 

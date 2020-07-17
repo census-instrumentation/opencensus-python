@@ -50,7 +50,14 @@ class PeriodicMetricTask(PeriodicTask):
 
     daemon = True
 
-    def __init__(self, interval=None, function=None, args=None, kwargs=None, name=None):
+    def __init__(
+        self,
+        interval=None,
+        function=None,
+        args=None,
+        kwargs=None,
+        name=None
+    ):
         if interval is None:
             interval = DEFAULT_INTERVAL
 
@@ -117,6 +124,10 @@ def get_exporter_thread(metric_producers, exporter, interval=None):
 
         export(itertools.chain(*all_gets))
 
-    tt = PeriodicMetricTask(interval, export_all, name=exporter.__class__.__name__)
+    tt = PeriodicMetricTask(
+        interval,
+        export_all,
+        name=exporter.__class__.__name__
+    )
     tt.start()
     return tt

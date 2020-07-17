@@ -86,7 +86,8 @@ class TestHeartbeatMetrics(unittest.TestCase):
         ))
         self.assertEqual(values[1].value, platform.system())
 
-    @mock.patch.dict(os.environ,
+    @mock.patch.dict(
+        os.environ,
         {
             "WEBSITE_SITE_NAME": "site_name",
             "WEBSITE_HOME_STAMPNAME": "stamp_name",
@@ -116,7 +117,8 @@ class TestHeartbeatMetrics(unittest.TestCase):
         self.assertEqual(values[3].value, "stamp_name")
         self.assertEqual(values[4].value, "host_name")
 
-    @mock.patch.dict(os.environ,
+    @mock.patch.dict(
+        os.environ,
         {
             "FUNCTIONS_WORKER_RUNTIME": "python",
             "WEBSITE_HOSTNAME": "host_name",
@@ -147,8 +149,10 @@ class TestHeartbeatMetrics(unittest.TestCase):
         gauge = metric()
 
         self.assertEqual(gauge.descriptor.name, 'Heartbeat')
-        self.assertEqual(gauge.descriptor.description,
-            'Heartbeat metric with custom dimensions')
+        self.assertEqual(
+            gauge.descriptor.description,
+            'Heartbeat metric with custom dimensions'
+        )
         self.assertEqual(gauge.descriptor.unit, 'count')
         self.assertEqual(gauge.descriptor._type, 1)
         self.assertEqual(
