@@ -29,7 +29,7 @@ class HeartbeatMetric:
     def __init__(self):
         self.properties = OrderedDict()
         self.properties[LabelKey("sdk", '')] = LabelValue(
-                'py{}:oc{}:ext{}'.format(
+            'py{}:oc{}:ext{}'.format(
                 platform.python_version(),
                 opencensus_version,
                 ext_version,
@@ -37,11 +37,15 @@ class HeartbeatMetric:
         )
         self.properties[LabelKey("osType", '')] = LabelValue(platform.system())
         if os.environ.get("WEBSITE_SITE_NAME") is not None:  # Web apps
-            self.properties[LabelKey("appSrv_SiteName", '')] = LabelValue(os.environ.get("WEBSITE_SITE_NAME"))
-            self.properties[LabelKey("appSrv_wsStamp", '')] = LabelValue(os.environ.get("WEBSITE_HOME_STAMPNAME", ''))
-            self.properties[LabelKey("appSrv_wsHost", '')] = LabelValue(os.environ.get("WEBSITE_HOSTNAME", ''))
+            self.properties[LabelKey("appSrv_SiteName", '')] = \
+            LabelValue(os.environ.get("WEBSITE_SITE_NAME"))
+            self.properties[LabelKey("appSrv_wsStamp", '')] = \
+            LabelValue(os.environ.get("WEBSITE_HOME_STAMPNAME", ''))
+            self.properties[LabelKey("appSrv_wsHost", '')] = \
+                LabelValue(os.environ.get("WEBSITE_HOSTNAME", ''))
         elif os.environ.get("FUNCTIONS_WORKER_RUNTIME") is not None:  # Function apps
-            self.properties[LabelKey("azfunction_appId", '')] = LabelValue(os.environ.get("WEBSITE_HOSTNAME"))
+            self.properties[LabelKey("azfunction_appId", '')] = \
+                LabelValue(os.environ.get("WEBSITE_HOSTNAME"))
 
     def __call__(self):
         """ Returns a derived gauge for the heartbeat metric.

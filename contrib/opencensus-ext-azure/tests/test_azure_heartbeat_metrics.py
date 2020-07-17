@@ -21,15 +21,12 @@ import mock
 from opencensus.common.version import __version__ as opencensus_version
 from opencensus.ext.azure.common.version import __version__ as ext_version
 from opencensus.ext.azure.metrics_exporter import heartbeat_metrics
-from opencensus.metrics.label_key import LabelKey
-from opencensus.metrics.label_value import LabelValue
 
 
 class TestHeartbeatMetrics(unittest.TestCase):
     def setUp(self):
         # pylint: disable=protected-access
         heartbeat_metrics._HEARTBEAT_METRICS = None
-
 
     @mock.patch('opencensus.ext.azure.metrics_exporter'
                 '.heartbeat_metrics.register_metrics')
@@ -55,8 +52,12 @@ class TestHeartbeatMetrics(unittest.TestCase):
         # pylint: disable=protected-access
         self.assertIsNone(heartbeat_metrics._HEARTBEAT_METRICS)
         heartbeat_metrics.enable_heartbeat_metrics(None, ikey)
-        self.assertTrue(isinstance(heartbeat_metrics._HEARTBEAT_METRICS,
-                                   heartbeat_metrics.AzureHeartbeatMetricsProducer))
+        self.assertTrue(
+            isinstance(
+                heartbeat_metrics._HEARTBEAT_METRICS,
+                heartbeat_metrics.AzureHeartbeatMetricsProducer
+            )
+        )
         transport_mock.assert_called()
 
     @mock.patch('opencensus.metrics.transport.get_exporter_thread')
@@ -79,10 +80,10 @@ class TestHeartbeatMetrics(unittest.TestCase):
         self.assertEqual(keys[0].key, "sdk")
         self.assertEqual(keys[1].key, "osType")
         self.assertEqual(values[0].value, 'py{}:oc{}:ext{}'.format(
-                platform.python_version(),
-                opencensus_version,
-                ext_version,
-            ))
+            platform.python_version(),
+            opencensus_version,
+            ext_version,
+        ))
         self.assertEqual(values[1].value, platform.system())
 
     @mock.patch.dict(os.environ,
@@ -103,10 +104,10 @@ class TestHeartbeatMetrics(unittest.TestCase):
         self.assertEqual(keys[0].key, "sdk")
         self.assertEqual(keys[1].key, "osType")
         self.assertEqual(values[0].value, 'py{}:oc{}:ext{}'.format(
-                platform.python_version(),
-                opencensus_version,
-                ext_version,
-            ))
+            platform.python_version(),
+            opencensus_version,
+            ext_version,
+        ))
         self.assertEqual(values[1].value, platform.system())
         self.assertEqual(keys[2].key, "appSrv_SiteName")
         self.assertEqual(keys[3].key, "appSrv_wsStamp")
@@ -132,15 +133,16 @@ class TestHeartbeatMetrics(unittest.TestCase):
         self.assertEqual(keys[0].key, "sdk")
         self.assertEqual(keys[1].key, "osType")
         self.assertEqual(values[0].value, 'py{}:oc{}:ext{}'.format(
-                platform.python_version(),
-                opencensus_version,
-                ext_version,
-            ))
+            platform.python_version(),
+            opencensus_version,
+            ext_version,
+        ))
         self.assertEqual(values[1].value, platform.system())
         self.assertEqual(keys[2].key, "azfunction_appId")
         self.assertEqual(values[2].value, "host_name")
- 
+
     def test_heartbeat_metric(self):
+        # pylint: disable=protected-access
         metric = heartbeat_metrics.HeartbeatMetric()
         gauge = metric()
 
@@ -149,7 +151,11 @@ class TestHeartbeatMetrics(unittest.TestCase):
             'Heartbeat metric with custom dimensions')
         self.assertEqual(gauge.descriptor.unit, 'count')
         self.assertEqual(gauge.descriptor._type, 1)
-        self.assertEqual(gauge.descriptor.label_keys,
-            list(metric.properties.keys()))
-        self.assertEqual(gauge._len_label_keys,
-            len(metric.properties.keys()))
+        self.assertEqual(
+            gauge.descriptor.label_keys,
+            list(metric.properties.keys())
+        )
+        self.assertEqual(
+            gauge._len_label_keys,
+            len(metric.properties.keys())
+        )

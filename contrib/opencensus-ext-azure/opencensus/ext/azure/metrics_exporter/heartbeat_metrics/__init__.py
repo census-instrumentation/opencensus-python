@@ -25,6 +25,7 @@ from opencensus.metrics.export.metric_producer import MetricProducer
 _HEARTBEAT_METRICS = None
 _HEARTBEAT_LOCK = threading.Lock()
 
+
 def enable_heartbeat_metrics(connection_string, ikey):
     with _HEARTBEAT_LOCK:
         # Only start heartbeat if did not exist before
@@ -40,6 +41,7 @@ def enable_heartbeat_metrics(connection_string, ikey):
             transport.get_exporter_thread([_HEARTBEAT_METRICS],
                                           exporter,
                                           exporter.options.export_interval)
+
 
 def register_metrics():
     registry = Registry()
