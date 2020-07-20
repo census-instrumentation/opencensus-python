@@ -23,6 +23,7 @@ from opencensus.stats import measure as measure_module
 from opencensus.stats import stats as stats_module
 from opencensus.stats import view as view_module
 from opencensus.tags import tag_map as tag_map_module
+import os
 
 # Create the measures
 # The latency in milliseconds
@@ -55,7 +56,7 @@ def main():
     exporter = stackdriver.new_stats_exporter(
         stackdriver.Options(project_id=project_id))
     view_manager.register_exporter(exporter)
-
+    print (os.getpid())
     view_manager.register_view(latency_view)
     mmap = stats_recorder.new_measurement_map()
     tmap = tag_map_module.TagMap()

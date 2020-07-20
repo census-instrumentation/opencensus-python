@@ -18,7 +18,9 @@ import logging
 from opencensus.common import utils
 from opencensus.common.schedule import PeriodicTask
 from opencensus.trace import execution_context
-
+import atexit
+import pdb
+import os
 logger = logging.getLogger(__name__)
 
 DEFAULT_INTERVAL = 60
@@ -50,6 +52,7 @@ class PeriodicMetricTask(PeriodicTask):
     def __init__(self, interval=None, function=None, args=None, kwargs=None):
         if interval is None:
             interval = DEFAULT_INTERVAL
+        atexit.register(self.run)
 
         self.func = function
 
