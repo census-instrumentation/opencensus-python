@@ -55,6 +55,7 @@ def main():
     exporter = stackdriver.new_stats_exporter(
         stackdriver.Options(project_id=project_id))
     view_manager.register_exporter(exporter)
+
     view_manager.register_view(latency_view)
     mmap = stats_recorder.new_measurement_map()
     tmap = tag_map_module.TagMap()
