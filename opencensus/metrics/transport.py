@@ -44,11 +44,21 @@ class PeriodicMetricTask(PeriodicTask):
 
     :type kwargs: dict
     :param args: The kwargs passed in while calling `function`.
+
+    :type name: str
+    :param name: The source of the worker. Used for naming.
     """
 
     daemon = True
 
-    def __init__(self, interval=None, function=None, args=None, kwargs=None):
+    def __init__(
+        self,
+        interval=None,
+        function=None,
+        args=None,
+        kwargs=None,
+        name=None
+    ):
         if interval is None:
             interval = DEFAULT_INTERVAL
         atexit.register(self.run)
@@ -64,7 +74,9 @@ class PeriodicMetricTask(PeriodicTask):
             except Exception:
                 logger.exception("Error handling metric export")
 
-        super(PeriodicMetricTask, self).__init__(interval, func, args, kwargs)
+        super(PeriodicMetricTask, self).__init__(
+            interval, func, args, kwargs, '{} Worker'.format(name)
+        )
 
     def run(self):
         # Indicate that this thread is an exporter thread.
@@ -114,6 +126,10 @@ def get_exporter_thread(metric_producers, exporter, interval=None):
 
         export(itertools.chain(*all_gets))
 
-    tt = PeriodicMetricTask(interval, export_all)
+    tt = PeriodicMetricTask(
+        interval,
+        export_all,
+        name=exporter.__class__.__name__
+    )
     tt.start()
     return tt
