@@ -16,15 +16,15 @@ import datetime
 import json
 import os
 import platform
-import requests
 from collections import OrderedDict
+
+import requests
 
 from opencensus.common.version import __version__ as opencensus_version
 from opencensus.ext.azure.common.version import __version__ as ext_version
 from opencensus.metrics.export.gauge import LongGauge
 from opencensus.metrics.label_key import LabelKey
 from opencensus.metrics.label_value import LabelValue
-
 
 _AIMS_URI = "http://169.254.169.254/metadata/instance/compute"
 _AIMS_API_VERSION = "api-version=2017-12-01"
