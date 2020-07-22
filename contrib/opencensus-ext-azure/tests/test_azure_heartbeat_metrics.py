@@ -30,6 +30,7 @@ class MockResponse(object):
         self.status_code = status_code
         self.text = text
 
+
 def throw(exc_type, *args, **kwargs):
     def func(*_args, **_kwargs):
         raise exc_type(*args, **kwargs)
@@ -45,8 +46,12 @@ class TestHeartbeatMetrics(unittest.TestCase):
         producer = heartbeat_metrics.AzureHeartbeatMetricsProducer()
         # pylint: disable=protected-access
         metric = producer._heartbeat
-        self.assertTrue(isinstance(metric,
-            heartbeat_metrics.heartbeat.HeartbeatMetric))
+        self.assertTrue(
+            isinstance(
+                metric,
+                heartbeat_metrics.heartbeat.HeartbeatMetric
+            )
+        )
 
     def test_producer_get_metrics(self):
         producer = heartbeat_metrics.AzureHeartbeatMetricsProducer()
@@ -170,7 +175,8 @@ class TestHeartbeatMetrics(unittest.TestCase):
 
     def test_heartbeat_metric_init_vm(self):
         with mock.patch('requests.get') as get:
-            get.return_value = MockResponse(200,
+            get.return_value = MockResponse(
+                200,
                 json.dumps(
                     {
                         'vmId': 5,
@@ -202,8 +208,10 @@ class TestHeartbeatMetrics(unittest.TestCase):
             self.assertEqual(values[4].value, "Linux")
 
     def test_heartbeat_metric_not_vm(self):
-        with mock.patch('requests.get',
-            throw(requests.exceptions.ConnectionError)):
+        with mock.patch(
+            'requests.get',
+            throw(requests.exceptions.ConnectionError)
+        ):
             metric = heartbeat_metrics.HeartbeatMetric()
             self.assertFalse(metric.is_vm)
             self.assertEqual(metric.NAME, 'Heartbeat')
@@ -212,7 +220,8 @@ class TestHeartbeatMetrics(unittest.TestCase):
 
     def test_heartbeat_metric_vm_error_response(self):
         with mock.patch('requests.get') as get:
-            get.return_value = MockResponse(200,
+            get.return_value = MockResponse(
+                200,
                 json.dumps(
                     {
                         'vmId': 5,
@@ -225,8 +234,10 @@ class TestHeartbeatMetrics(unittest.TestCase):
             self.assertTrue(metric.is_vm)
             keys = list(metric.properties.keys())
             self.assertEqual(len(keys), 5)
-            with mock.patch('requests.get',
-                throw(Exception)):
+            with mock.patch(
+                'requests.get',
+                throw(Exception)
+            ):
                 metric.vm_data.clear()
                 self.assertTrue(metric.is_vm)
                 self.assertEqual(len(metric.vm_data), 0)

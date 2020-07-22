@@ -93,17 +93,18 @@ class HeartbeatMetric:
                 self.properties[LabelKey("azInst_subscriptionId", '')] = \
                     LabelValue(self.vm_data.get("subscriptionId", ''))
                 self.properties[LabelKey("azInst_osType", '')] = \
-                    LabelValue(self.vm_data.get("osType", ''))   
+                    LabelValue(self.vm_data.get("osType", ''))
 
     def get_azure_compute_metadata(self):
         try:
-            request_url = "{0}?{1}&{2}".format(_AIMS_URI, _AIMS_API_VERSION, _AIMS_FORMAT)
-            response = requests.get(request_url, headers={"MetaData":"True"})
+            request_url = "{0}?{1}&{2}".format(
+                _AIMS_URI, _AIMS_API_VERSION, _AIMS_FORMAT)
+            response = requests.get(request_url, headers={"MetaData": "True"})
         except requests.exceptions.ConnectionError:
             # Not in VM
             self.is_vm = False
             return False
-        
+
         self.is_vm = True
         try:
             text = response.text
