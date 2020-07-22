@@ -12,7 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json
 import os
+import requests
 import platform
 import unittest
 
@@ -23,28 +25,34 @@ from opencensus.ext.azure.common.version import __version__ as ext_version
 from opencensus.ext.azure.metrics_exporter import heartbeat_metrics
 
 
+class MockResponse(object):
+    def __init__(self, status_code, text):
+        self.status_code = status_code
+        self.text = text
+
+def throw(exc_type, *args, **kwargs):
+    def func(*_args, **_kwargs):
+        raise exc_type(*args, **kwargs)
+    return func
+
+
 class TestHeartbeatMetrics(unittest.TestCase):
     def setUp(self):
         # pylint: disable=protected-access
         heartbeat_metrics._HEARTBEAT_METRICS = None
 
-    @mock.patch('opencensus.ext.azure.metrics_exporter'
-                '.heartbeat_metrics.register_metrics')
-    def test_producer_ctor(self, avail_mock):
-        heartbeat_metrics.AzureHeartbeatMetricsProducer()
-
-        self.assertEqual(len(avail_mock.call_args_list), 1)
+    def test_producer_ctor(self):
+        producer = heartbeat_metrics.AzureHeartbeatMetricsProducer()
+        # pylint: disable=protected-access
+        metric = producer._heartbeat
+        self.assertTrue(isinstance(metric,
+            heartbeat_metrics.heartbeat.HeartbeatMetric))
 
     def test_producer_get_metrics(self):
         producer = heartbeat_metrics.AzureHeartbeatMetricsProducer()
         metrics = producer.get_metrics()
 
         self.assertEqual(len(metrics), 1)
-
-    def test_register_metrics(self):
-        registry = heartbeat_metrics.register_metrics()
-
-        self.assertEqual(len(registry.get_metrics()), 1)
 
     @mock.patch('opencensus.metrics.transport.get_exporter_thread')
     def test_enable_heartbeat_metrics(self, transport_mock):
@@ -61,7 +69,7 @@ class TestHeartbeatMetrics(unittest.TestCase):
         transport_mock.assert_called()
 
     @mock.patch('opencensus.metrics.transport.get_exporter_thread')
-    def test_enable_heartbeat_metrics_exits(self, transport_mock):
+    def test_enable_heartbeat_metrics_exists(self, transport_mock):
         # pylint: disable=protected-access
         producer = heartbeat_metrics.AzureHeartbeatMetricsProducer()
         heartbeat_metrics._HEARTBEAT_METRICS = producer
@@ -85,6 +93,23 @@ class TestHeartbeatMetrics(unittest.TestCase):
             ext_version,
         ))
         self.assertEqual(values[1].value, platform.system())
+        gauge = metric.heartbeat
+
+        self.assertEqual(gauge.descriptor.name, 'Heartbeat')
+        self.assertEqual(
+            gauge.descriptor.description,
+            'Heartbeat metric with custom dimensions'
+        )
+        self.assertEqual(gauge.descriptor.unit, 'count')
+        self.assertEqual(gauge.descriptor._type, 1)
+        self.assertEqual(
+            gauge.descriptor.label_keys,
+            list(metric.properties.keys())
+        )
+        self.assertEqual(
+            gauge._len_label_keys,
+            len(metric.properties.keys())
+        )
 
     @mock.patch.dict(
         os.environ,
@@ -143,23 +168,68 @@ class TestHeartbeatMetrics(unittest.TestCase):
         self.assertEqual(keys[2].key, "azfunction_appId")
         self.assertEqual(values[2].value, "host_name")
 
-    def test_heartbeat_metric(self):
-        # pylint: disable=protected-access
-        metric = heartbeat_metrics.HeartbeatMetric()
-        gauge = metric()
+    def test_heartbeat_metric_init_vm(self):
+        with mock.patch('requests.get') as get:
+            get.return_value = MockResponse(200,
+                json.dumps(
+                    {
+                        'vmId': 5,
+                        'subscriptionId': 3,
+                        'osType': 'Linux'
+                    }
+                )
+            )
+            metric = heartbeat_metrics.HeartbeatMetric()
+            self.assertTrue(metric.is_vm)
+            self.assertEqual(metric.NAME, 'Heartbeat')
+            keys = list(metric.properties.keys())
+            values = list(metric.properties.values())
+            self.assertEqual(len(keys), 5)
+            self.assertEqual(len(keys), len(values))
+            self.assertEqual(keys[0].key, "sdk")
+            self.assertEqual(keys[1].key, "osType")
+            self.assertEqual(values[0].value, 'py{}:oc{}:ext{}'.format(
+                platform.python_version(),
+                opencensus_version,
+                ext_version,
+            ))
+            self.assertEqual(values[1].value, platform.system())
+            self.assertEqual(keys[2].key, "azInst_vmId")
+            self.assertEqual(values[2].value, 5)
+            self.assertEqual(keys[3].key, "azInst_subscriptionId")
+            self.assertEqual(values[3].value, 3)
+            self.assertEqual(keys[4].key, "azInst_osType")
+            self.assertEqual(values[4].value, "Linux")
 
-        self.assertEqual(gauge.descriptor.name, 'Heartbeat')
-        self.assertEqual(
-            gauge.descriptor.description,
-            'Heartbeat metric with custom dimensions'
-        )
-        self.assertEqual(gauge.descriptor.unit, 'count')
-        self.assertEqual(gauge.descriptor._type, 1)
-        self.assertEqual(
-            gauge.descriptor.label_keys,
-            list(metric.properties.keys())
-        )
-        self.assertEqual(
-            gauge._len_label_keys,
-            len(metric.properties.keys())
-        )
+    def test_heartbeat_metric_not_vm(self):
+        with mock.patch('requests.get',
+            throw(requests.exceptions.ConnectionError)):
+            metric = heartbeat_metrics.HeartbeatMetric()
+            self.assertFalse(metric.is_vm)
+            self.assertEqual(metric.NAME, 'Heartbeat')
+            keys = list(metric.properties.keys())
+            self.assertEqual(len(keys), 2)
+
+    def test_heartbeat_metric_vm_error_response(self):
+        with mock.patch('requests.get') as get:
+            get.return_value = MockResponse(200,
+                json.dumps(
+                    {
+                        'vmId': 5,
+                        'subscriptionId': 3,
+                        'osType': 'Linux'
+                    }
+                )
+            )
+            metric = heartbeat_metrics.HeartbeatMetric()
+            self.assertTrue(metric.is_vm)
+            keys = list(metric.properties.keys())
+            self.assertEqual(len(keys), 5)
+            with mock.patch('requests.get',
+                throw(Exception)):
+                metric.vm_data.clear()
+                self.assertTrue(metric.is_vm)
+                self.assertEqual(len(metric.vm_data), 0)
+                self.assertTrue(metric.is_vm)
+                keys = list(metric.properties.keys())
+                self.assertEqual(len(keys), 5)

@@ -101,6 +101,7 @@ class HeartbeatMetric:
             response = requests.get(request_url, headers={"MetaData":"True"})
         except requests.exceptions.ConnectionError:
             # Not in VM
+            self.is_vm = False
             return False
         
         self.is_vm = True
