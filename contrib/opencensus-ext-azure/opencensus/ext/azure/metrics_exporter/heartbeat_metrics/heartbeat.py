@@ -54,11 +54,12 @@ class HeartbeatMetric:
             # Only need to update if in vm (properties could change)
             self.properties.clear()
             self.update_properties()
-            self.heartbeat.clear()
-            # pylint: disable=protected-access
-            self.heartbeat.descriptor._label_keys = \
-                list(self.properties.keys())
-            self.heartbeat._len_label_keys = len(list(self.properties.keys()))
+            self.heartbeat = LongGauge(
+                HeartbeatMetric.NAME,
+                'Heartbeat metric with custom dimensions',
+                'count',
+                list(self.properties.keys()),
+            )
             self.heartbeat.get_or_create_time_series(
                 list(self.properties.values())
             )
@@ -104,6 +105,8 @@ class HeartbeatMetric:
             # Not in VM
             self.is_vm = False
             return False
+        except requests.exceptions.RequestException:
+            pass  # retry
 
         self.is_vm = True
         try:
