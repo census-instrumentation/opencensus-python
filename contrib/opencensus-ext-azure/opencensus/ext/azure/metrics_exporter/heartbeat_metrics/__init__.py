@@ -19,7 +19,6 @@ from opencensus.ext.azure.metrics_exporter.heartbeat_metrics.heartbeat import (
     HeartbeatMetric,
 )
 from opencensus.metrics import transport
-from opencensus.metrics.export.gauge import Registry
 from opencensus.metrics.export.metric_producer import MetricProducer
 
 _HEARTBEAT_METRICS = None
@@ -43,20 +42,13 @@ def enable_heartbeat_metrics(connection_string, ikey):
                                           exporter.options.export_interval)
 
 
-def register_metrics():
-    registry = Registry()
-    metric = HeartbeatMetric()
-    registry.add_gauge(metric())
-    return registry
-
-
 class AzureHeartbeatMetricsProducer(MetricProducer):
     """Implementation of the producer of heartbeat metrics.
 
     Includes Azure attach rate metrics, implemented using gauges.
     """
     def __init__(self):
-        self.registry = register_metrics()
+        self._heartbeat = HeartbeatMetric()
 
     def get_metrics(self):
-        return self.registry.get_metrics()
+        return self._heartbeat.get_metrics()

@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+## 0.7.3
+Released 2020-06-29
+
   - Add mean property for distribution values
   ([#919](https://github.com/census-instrumentation/opencensus-python/pull/919))
 
