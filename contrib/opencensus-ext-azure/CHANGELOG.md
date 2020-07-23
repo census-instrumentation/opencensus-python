@@ -2,8 +2,18 @@
 
 ## Unreleased
 
+- Attach rate metrics via Heartbeat for Web and Function apps
+  ([#930](https://github.com/census-instrumentation/opencensus-python/pull/930))
+- Attach rate metrics for VM
+  ([#935](https://github.com/census-instrumentation/opencensus-python/pull/935))
+
+## 1.0.4
+Released 2020-06-29
+
 - Remove dependency rate from standard metrics
   ([#903](https://github.com/census-instrumentation/opencensus-python/pull/903))
+- Implement customEvents using AzureEventHandler
+  ([#925](https://github.com/census-instrumentation/opencensus-python/pull/925))
 
 ## 1.0.3
 Released 2020-06-17
@@ -12,7 +22,6 @@ Released 2020-06-17
   ([#903](https://github.com/census-instrumentation/opencensus-python/pull/903))
 - Add support to initialize azure exporters with proxies
   ([#902](https://github.com/census-instrumentation/opencensus-python/pull/902))
-
 
 ## 1.0.2
 Released 2020-02-04
