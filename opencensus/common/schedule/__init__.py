@@ -14,9 +14,9 @@
 
 from six.moves import queue
 
+import atexit
 import threading
 import time
-import atexit
 
 
 class PeriodicTask(threading.Thread):

@@ -18,7 +18,6 @@ import logging
 from opencensus.common import utils
 from opencensus.common.schedule import PeriodicTask
 from opencensus.trace import execution_context
-import atexit
 
 logger = logging.getLogger(__name__)
 
