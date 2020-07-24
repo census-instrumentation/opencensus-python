@@ -51,7 +51,7 @@ class PeriodicMetricTask(PeriodicTask):
     def __init__(self, interval=None, function=None, args=None, kwargs=None):
         if interval is None:
             interval = DEFAULT_INTERVAL
-        atexit.register(self.run)
+
 
         self.func = function
 
@@ -65,6 +65,7 @@ class PeriodicMetricTask(PeriodicTask):
                 logger.exception("Error handling metric export")
 
         super(PeriodicMetricTask, self).__init__(interval, func, args, kwargs)
+
 
     def run(self):
         # Indicate that this thread is an exporter thread.
