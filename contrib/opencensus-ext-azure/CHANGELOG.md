@@ -6,6 +6,8 @@
   ([#930](https://github.com/census-instrumentation/opencensus-python/pull/930))
 - Attach rate metrics for VM
   ([#935](https://github.com/census-instrumentation/opencensus-python/pull/935))
+- Add links in properties for trace exporter envelopes
+  ([#935](https://github.com/census-instrumentation/opencensus-python/pull/935))
 
 ## 1.0.4
 Released 2020-06-29

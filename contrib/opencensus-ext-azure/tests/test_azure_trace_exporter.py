@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json
 import os
 import shutil
 import unittest
@@ -19,6 +20,7 @@ import unittest
 import mock
 
 from opencensus.ext.azure import trace_exporter
+from opencensus.trace.link import Link
 
 TEST_FOLDER = os.path.abspath('.test.exporter')
 
@@ -141,7 +143,9 @@ class TestAzureExporter(unittest.TestCase):
             start_time='2010-10-24T07:28:38.123456Z',
             end_time='2010-10-24T07:28:38.234567Z',
             stack_trace=None,
-            links=None,
+            links=[
+                Link('6e0c63257de34c90bf9efcd03927272e', '6e0c63257de34c91')
+            ],
             status=Status(0),
             annotations=None,
             message_events=None,
@@ -188,6 +192,17 @@ class TestAzureExporter(unittest.TestCase):
         self.assertEqual(
             envelope.data.baseType,
             'RemoteDependencyData')
+        json_dict = json.loads(
+            envelope.data.baseData.properties["_MS.links"]
+        )[0]
+        self.assertEqual(
+            json_dict["id"],
+            "6e0c63257de34c91",
+        )
+        self.assertEqual(
+            json_dict["operation_Id"],
+            "6e0c63257de34c90bf9efcd03927272e",
+        )
 
         # SpanKind.CLIENT unknown type
         envelope = exporter.span_data_to_envelope(SpanData(
