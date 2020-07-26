@@ -61,7 +61,6 @@ class PeriodicMetricTask(PeriodicTask):
         if interval is None:
             interval = DEFAULT_INTERVAL
 
-
         self.func = function
 
         def func(*aa, **kw):
@@ -76,7 +75,6 @@ class PeriodicMetricTask(PeriodicTask):
         super(PeriodicMetricTask, self).__init__(
             interval, func, args, kwargs, '{} Worker'.format(name)
         )
-
 
     def run(self):
         # Indicate that this thread is an exporter thread.

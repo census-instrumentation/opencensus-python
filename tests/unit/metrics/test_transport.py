@@ -53,7 +53,6 @@ class TestPeriodicMetricTask(unittest.TestCase):
             task = transport.PeriodicMetricTask(INTERVAL, mock_func)
             task.start()
             mock_atexit.assert_called_once()
-    
     '''
     def test_periodic_task(self):
         mock_func = mock.Mock()

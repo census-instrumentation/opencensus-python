@@ -46,7 +46,6 @@ class PeriodicTask(threading.Thread):
         self.kwargs = kwargs or {}
         self.finished = threading.Event()
 
-
     def run(self):
         wait_time = self.interval
         atexit.register(self.function, *self.args, **self.kwargs)
