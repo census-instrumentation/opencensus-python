@@ -14,7 +14,6 @@
 
 from six.moves import queue
 
-import atexit
 import threading
 import time
 

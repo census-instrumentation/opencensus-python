@@ -11,14 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import atexit
 import itertools
 import logging
 
 from opencensus.common import utils
 from opencensus.common.schedule import PeriodicTask
 from opencensus.trace import execution_context
-import atexit
 
 logger = logging.getLogger(__name__)
 
