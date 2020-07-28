@@ -48,7 +48,6 @@ class PeriodicTask(threading.Thread):
 
     def run(self):
         wait_time = self.interval
-        atexit.register(self.function, *self.args, **self.kwargs)
         while not self.finished.wait(wait_time):
             start_time = time.time()
             self.function(*self.args, **self.kwargs)

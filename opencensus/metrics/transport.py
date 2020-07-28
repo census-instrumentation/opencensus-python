@@ -18,6 +18,7 @@ import logging
 from opencensus.common import utils
 from opencensus.common.schedule import PeriodicTask
 from opencensus.trace import execution_context
+import atexit
 
 logger = logging.getLogger(__name__)
 
@@ -79,6 +80,7 @@ class PeriodicMetricTask(PeriodicTask):
     def run(self):
         # Indicate that this thread is an exporter thread.
         # Used to suppress tracking of requests in this thread
+        atexit.register(self.func, *self.args, **self.kwargs)
         execution_context.set_is_exporter(True)
         super(PeriodicMetricTask, self).run()
 
