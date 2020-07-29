@@ -31,11 +31,14 @@ class PeriodicTask(threading.Thread):
     :param args: The args passed in while calling `function`.
 
     :type kwargs: dict
-    :param args: The kwargs passed in while calling `function`.
+    :param kwargs: The kwargs passed in while calling `function`.
+
+    :type name: str
+    :param name: The source of the worker. Used for naming.
     """
 
-    def __init__(self, interval, function, args=None, kwargs=None):
-        super(PeriodicTask, self).__init__()
+    def __init__(self, interval, function, args=None, kwargs=None, name=None):
+        super(PeriodicTask, self).__init__(name=name)
         self.interval = interval
         self.function = function
         self.args = args or []

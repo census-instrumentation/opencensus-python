@@ -52,7 +52,9 @@ class MetricsExporter(TransportMixin, ProcessorMixin):
             max_size=self.options.storage_max_size,
             maintenance_period=self.options.storage_maintenance_period,
             retention_period=self.options.storage_retention_period,
+            source=self.__class__.__name__,
         )
+        self._atexit_handler = atexit.register(self.shutdown)
         super(MetricsExporter, self).__init__()
 
     def export_metrics(self, metrics):
@@ -133,6 +135,13 @@ class MetricsExporter(TransportMixin, ProcessorMixin):
         envelope.data = Data(baseData=data, baseType="MetricData")
         return envelope
 
+    def shutdown(self):
+        # flush metrics on exit
+        self.export_metrics(stats_module.stats.get_metrics())
+        if self._atexit_handler is not None:
+            atexit.unregister(self._atexit_handler)
+            self._atexit_handler = None
+
 
 def new_metrics_exporter(**options):
     exporter = MetricsExporter(**options)
@@ -142,5 +151,9 @@ def new_metrics_exporter(**options):
     transport.get_exporter_thread(producers,
                                   exporter,
                                   interval=exporter.options.export_interval)
-    atexit.register(exporter.export_metrics, stats_module.stats.get_metrics())
+    from opencensus.ext.azure.metrics_exporter import heartbeat_metrics
+    heartbeat_metrics.enable_heartbeat_metrics(
+        exporter.options.connection_string,
+        exporter.options.instrumentation_key
+    )
     return exporter
