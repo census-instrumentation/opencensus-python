@@ -218,6 +218,17 @@ class TestHeartbeatMetrics(unittest.TestCase):
             keys = list(metric.properties.keys())
             self.assertEqual(len(keys), 2)
 
+    def test_heartbeat_metric_not_vm_timeout(self):
+        with mock.patch(
+            'requests.get',
+            throw(requests.Timeout)
+        ):
+            metric = heartbeat_metrics.HeartbeatMetric()
+            self.assertFalse(metric.is_vm)
+            self.assertEqual(metric.NAME, 'Heartbeat')
+            keys = list(metric.properties.keys())
+            self.assertEqual(len(keys), 2)
+
     def test_heartbeat_metric_vm_error_response(self):
         with mock.patch('requests.get') as get:
             get.return_value = MockResponse(

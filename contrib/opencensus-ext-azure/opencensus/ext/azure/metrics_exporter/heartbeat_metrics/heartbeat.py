@@ -100,8 +100,9 @@ class HeartbeatMetric:
         try:
             request_url = "{0}?{1}&{2}".format(
                 _AIMS_URI, _AIMS_API_VERSION, _AIMS_FORMAT)
-            response = requests.get(request_url, headers={"MetaData": "True"})
-        except requests.exceptions.ConnectionError:
+            response = requests.get(
+                request_url, headers={"MetaData": "True"}, timeout=5.0)
+        except (requests.exceptions.ConnectionError, requests.Timeout):
             # Not in VM
             self.is_vm = False
             return False
