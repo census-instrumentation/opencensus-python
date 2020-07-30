@@ -1,6 +1,8 @@
 # Changelog
 
 ## Unreleased
+  - Change default transporter in stackdriver exporter
+  ([#929](https://github.com/census-instrumentation/opencensus-python/pull/929))
 
 ## 0.7.3
 Released 2020-06-29
