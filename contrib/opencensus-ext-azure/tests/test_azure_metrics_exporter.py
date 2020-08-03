@@ -186,32 +186,65 @@ class TestAzureMetricsExporter(unittest.TestCase):
         self.assertTrue('properties' in envelope.data.baseData)
         self.assertEqual(envelope.data.baseData.properties, properties)
 
+    def test_shutdown(self):
+        mock_thread = mock.Mock()
+        mock_storage = mock.Mock()
+        exporter = metrics_exporter.MetricsExporter(
+            instrumentation_key='12345678-1234-5678-abcd-12345678abcd'
+        )
+        exporter.exporter_thread = mock_thread
+        exporter.storage = mock_storage
+        exporter.shutdown()
+        mock_thread.close.assert_called_once()
+        mock_storage.close.assert_called_once()
+
     @mock.patch('opencensus.ext.azure.metrics_exporter'
                 '.transport.get_exporter_thread')
     def test_new_metrics_exporter(self, exporter_mock):
+        with mock.patch('opencensus.ext.azure.metrics_exporter'
+                '.heartbeat_metrics.enable_heartbeat_metrics') as hb:
+            hb.return_value = None
+            iKey = '12345678-1234-5678-abcd-12345678abcd'
+            exporter = metrics_exporter.new_metrics_exporter(
+                instrumentation_key=iKey)
+
+            self.assertEqual(exporter.options.instrumentation_key, iKey)
+            self.assertEqual(len(exporter_mock.call_args_list), 1)
+            self.assertEqual(len(exporter_mock.call_args[0][0]), 2)
+            producer_class = standard_metrics.AzureStandardMetricsProducer
+            self.assertFalse(isinstance(exporter_mock.call_args[0][0][0],
+                                        producer_class))
+            self.assertTrue(isinstance(exporter_mock.call_args[0][0][1],
+                                    producer_class))
+
+    @mock.patch('opencensus.ext.azure.metrics_exporter'
+                '.transport.get_exporter_thread')
+    def test_new_metrics_exporter_no_standard_metrics(self, exporter_mock):
+        with mock.patch('opencensus.ext.azure.metrics_exporter'
+                '.heartbeat_metrics.enable_heartbeat_metrics') as hb:
+            hb.return_value = None
+            iKey = '12345678-1234-5678-abcd-12345678abcd'
+            exporter = metrics_exporter.new_metrics_exporter(
+                instrumentation_key=iKey, enable_standard_metrics=False)
+
+            self.assertEqual(exporter.options.instrumentation_key, iKey)
+            self.assertEqual(len(exporter_mock.call_args_list), 1)
+            self.assertEqual(len(exporter_mock.call_args[0][0]), 1)
+            producer_class = standard_metrics.AzureStandardMetricsProducer
+            self.assertFalse(isinstance(exporter_mock.call_args[0][0][0],
+                                        producer_class))
+
+    @mock.patch('opencensus.ext.azure.metrics_exporter'
+                '.heartbeat_metrics.enable_heartbeat_metrics')
+    @mock.patch('opencensus.ext.azure.metrics_exporter'
+                '.transport.get_exporter_thread')
+    def test_new_metrics_exporter_heartbeat(self, exporter_mock, heartbeat_mock):
         iKey = '12345678-1234-5678-abcd-12345678abcd'
         exporter = metrics_exporter.new_metrics_exporter(
             instrumentation_key=iKey)
 
         self.assertEqual(exporter.options.instrumentation_key, iKey)
-        self.assertEqual(len(exporter_mock.call_args_list), 1)
-        self.assertEqual(len(exporter_mock.call_args[0][0]), 2)
-        producer_class = standard_metrics.AzureStandardMetricsProducer
-        self.assertFalse(isinstance(exporter_mock.call_args[0][0][0],
-                                    producer_class))
-        self.assertTrue(isinstance(exporter_mock.call_args[0][0][1],
-                                   producer_class))
-
-    @mock.patch('opencensus.ext.azure.metrics_exporter'
-                '.transport.get_exporter_thread')
-    def test_new_metrics_exporter_no_standard_metrics(self, exporter_mock):
-        iKey = '12345678-1234-5678-abcd-12345678abcd'
-        exporter = metrics_exporter.new_metrics_exporter(
-            instrumentation_key=iKey, enable_standard_metrics=False)
-
-        self.assertEqual(exporter.options.instrumentation_key, iKey)
-        self.assertEqual(len(exporter_mock.call_args_list), 1)
-        self.assertEqual(len(exporter_mock.call_args[0][0]), 1)
-        producer_class = standard_metrics.AzureStandardMetricsProducer
-        self.assertFalse(isinstance(exporter_mock.call_args[0][0][0],
-                                    producer_class))
+        self.assertEqual(len(heartbeat_mock.call_args_list), 1)
+        self.assertEqual(len(heartbeat_mock.call_args[0]), 2)
+        self.assertEqual(heartbeat_mock.call_args[0][0], None)
+        self.assertEqual(heartbeat_mock.call_args[0][1], iKey)
