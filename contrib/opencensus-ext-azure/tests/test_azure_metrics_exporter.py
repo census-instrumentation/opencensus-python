@@ -202,7 +202,7 @@ class TestAzureMetricsExporter(unittest.TestCase):
                 '.transport.get_exporter_thread')
     def test_new_metrics_exporter(self, exporter_mock):
         with mock.patch('opencensus.ext.azure.metrics_exporter'
-                '.heartbeat_metrics.enable_heartbeat_metrics') as hb:
+                        '.heartbeat_metrics.enable_heartbeat_metrics') as hb:
             hb.return_value = None
             iKey = '12345678-1234-5678-abcd-12345678abcd'
             exporter = metrics_exporter.new_metrics_exporter(
@@ -215,13 +215,13 @@ class TestAzureMetricsExporter(unittest.TestCase):
             self.assertFalse(isinstance(exporter_mock.call_args[0][0][0],
                                         producer_class))
             self.assertTrue(isinstance(exporter_mock.call_args[0][0][1],
-                                    producer_class))
+                                       producer_class))
 
     @mock.patch('opencensus.ext.azure.metrics_exporter'
                 '.transport.get_exporter_thread')
     def test_new_metrics_exporter_no_standard_metrics(self, exporter_mock):
         with mock.patch('opencensus.ext.azure.metrics_exporter'
-                '.heartbeat_metrics.enable_heartbeat_metrics') as hb:
+                        '.heartbeat_metrics.enable_heartbeat_metrics') as hb:
             hb.return_value = None
             iKey = '12345678-1234-5678-abcd-12345678abcd'
             exporter = metrics_exporter.new_metrics_exporter(
@@ -235,16 +235,16 @@ class TestAzureMetricsExporter(unittest.TestCase):
                                         producer_class))
 
     @mock.patch('opencensus.ext.azure.metrics_exporter'
-                '.heartbeat_metrics.enable_heartbeat_metrics')
-    @mock.patch('opencensus.ext.azure.metrics_exporter'
                 '.transport.get_exporter_thread')
-    def test_new_metrics_exporter_heartbeat(self, exporter_mock, heartbeat_mock):
-        iKey = '12345678-1234-5678-abcd-12345678abcd'
-        exporter = metrics_exporter.new_metrics_exporter(
-            instrumentation_key=iKey)
+    def test_new_metrics_exporter_heartbeat(self, exporter_mock):
+        with mock.patch('opencensus.ext.azure.metrics_exporter'
+                        '.heartbeat_metrics.enable_heartbeat_metrics') as hb:
+            iKey = '12345678-1234-5678-abcd-12345678abcd'
+            exporter = metrics_exporter.new_metrics_exporter(
+                instrumentation_key=iKey)
 
-        self.assertEqual(exporter.options.instrumentation_key, iKey)
-        self.assertEqual(len(heartbeat_mock.call_args_list), 1)
-        self.assertEqual(len(heartbeat_mock.call_args[0]), 2)
-        self.assertEqual(heartbeat_mock.call_args[0][0], None)
-        self.assertEqual(heartbeat_mock.call_args[0][1], iKey)
+            self.assertEqual(exporter.options.instrumentation_key, iKey)
+            self.assertEqual(len(hb.call_args_list), 1)
+            self.assertEqual(len(hb.call_args[0]), 2)
+            self.assertEqual(hb.call_args[0][0], None)
+            self.assertEqual(hb.call_args[0][1], iKey)
