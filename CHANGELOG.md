@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- PeriodicMetricTask flush on exit
+([#943](https://github.com/census-instrumentation/opencensus-python/pull/943))
+
 ## 0.7.10
 Released 2020-06-29
 
