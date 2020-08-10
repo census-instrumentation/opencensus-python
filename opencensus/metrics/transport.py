@@ -71,8 +71,8 @@ class PeriodicMetricTask(PeriodicTask):
             except TransportError as ex:
                 logger.exception(ex)
                 self.cancel()
-            except Exception:
-                logger.exception("Error handling metric export")
+            except Exception as ex:
+                logger.exception("Error handling metric export: {}".format(ex))
 
         super(PeriodicMetricTask, self).__init__(
             interval, func, args, kwargs, '{} Worker'.format(name)
