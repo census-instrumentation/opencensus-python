@@ -37,9 +37,10 @@ def enable_heartbeat_metrics(connection_string, ikey):
             )
             producer = AzureHeartbeatMetricsProducer()
             _HEARTBEAT_METRICS = producer
-            transport.get_exporter_thread([_HEARTBEAT_METRICS],
-                                          exporter,
-                                          exporter.options.export_interval)
+            exporter.exporter_thread = \
+                transport.get_exporter_thread([_HEARTBEAT_METRICS],
+                                              exporter,
+                                              exporter.options.export_interval)
 
 
 class AzureHeartbeatMetricsProducer(MetricProducer):
