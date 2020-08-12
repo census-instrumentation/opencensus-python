@@ -36,9 +36,9 @@ class HeartbeatMetric:
 
     def __init__(self):
         self.vm_data = {}
-        self.is_vm = False
+        self.vm_retry = False
         self.properties = OrderedDict()
-        self.update_properties()
+        self._init_properties()
         self.heartbeat = LongGauge(
             HeartbeatMetric.NAME,
             'Heartbeat metric with custom dimensions',
@@ -50,22 +50,23 @@ class HeartbeatMetric:
         )
 
     def get_metrics(self):
-        if self.is_vm:
-            # Only need to update if in vm (properties could change)
-            self.properties.clear()
-            self.update_properties()
-            self.heartbeat = LongGauge(
-                HeartbeatMetric.NAME,
-                'Heartbeat metric with custom dimensions',
-                'count',
-                list(self.properties.keys()),
-            )
-            self.heartbeat.get_or_create_time_series(
-                list(self.properties.values())
-            )
+        if self.vm_retry:
+            # Only need to possibly update if vm retry
+            if self._get_azure_compute_metadata() and not self.vm_retry:
+                self._populate_vm_data()
+                # Recreate the metric to initialize key/values
+                self.heartbeat = LongGauge(
+                    HeartbeatMetric.NAME,
+                    'Heartbeat metric with custom dimensions',
+                    'count',
+                    list(self.properties.keys()),
+                )
+                self.heartbeat.get_or_create_time_series(
+                    list(self.properties.values())
+                )
         return [self.heartbeat.get_metric(datetime.datetime.utcnow())]
 
-    def update_properties(self):
+    def _init_properties(self):
         self.properties[LabelKey("sdk", '')] = LabelValue(
             'py{}:oc{}:ext{}'.format(
                 platform.python_version(),
@@ -86,17 +87,11 @@ class HeartbeatMetric:
             # Function apps
             self.properties[LabelKey("azfunction_appId", '')] = \
                 LabelValue(os.environ.get("WEBSITE_HOSTNAME"))
-        elif self.get_azure_compute_metadata():
+        elif self._get_azure_compute_metadata() and not self.vm_retry:
             # VM
-            if self.vm_data:
-                self.properties[LabelKey("azInst_vmId", '')] = \
-                    LabelValue(self.vm_data.get("vmId", ''))
-                self.properties[LabelKey("azInst_subscriptionId", '')] = \
-                    LabelValue(self.vm_data.get("subscriptionId", ''))
-                self.properties[LabelKey("azInst_osType", '')] = \
-                    LabelValue(self.vm_data.get("osType", ''))
+            self._populate_vm_data()
 
-    def get_azure_compute_metadata(self):
+    def _get_azure_compute_metadata(self):
         try:
             request_url = "{0}?{1}&{2}".format(
                 _AIMS_URI, _AIMS_API_VERSION, _AIMS_FORMAT)
@@ -104,17 +99,28 @@ class HeartbeatMetric:
                 request_url, headers={"MetaData": "True"}, timeout=5.0)
         except (requests.exceptions.ConnectionError, requests.Timeout):
             # Not in VM
-            self.is_vm = False
+            self.vm_retry = False
             return False
         except requests.exceptions.RequestException:
-            pass  # retry
+            self.vm_retry = True  # retry
+            return False
 
-        self.is_vm = True
         try:
             text = response.text
             self.vm_data = json.loads(text)
         except Exception:  # pylint: disable=broad-except
             # Error in reading response body, retry
-            pass
+            self.vm_retry = True
+            return False
 
+        self.vm_retry = False
         return True
+
+    def _populate_vm_data(self):
+        if self.vm_data:
+            self.properties[LabelKey("azInst_vmId", '')] = \
+                LabelValue(self.vm_data.get("vmId", ''))
+            self.properties[LabelKey("azInst_subscriptionId", '')] = \
+                LabelValue(self.vm_data.get("subscriptionId", ''))
+            self.properties[LabelKey("azInst_osType", '')] = \
+                LabelValue(self.vm_data.get("osType", ''))

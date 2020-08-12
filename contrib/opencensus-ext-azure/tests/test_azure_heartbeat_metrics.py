@@ -186,7 +186,7 @@ class TestHeartbeatMetrics(unittest.TestCase):
                 )
             )
             metric = heartbeat_metrics.HeartbeatMetric()
-            self.assertTrue(metric.is_vm)
+            self.assertFalse(metric.vm_retry)
             self.assertEqual(metric.NAME, 'Heartbeat')
             keys = list(metric.properties.keys())
             values = list(metric.properties.values())
@@ -213,7 +213,7 @@ class TestHeartbeatMetrics(unittest.TestCase):
             throw(requests.exceptions.ConnectionError)
         ):
             metric = heartbeat_metrics.HeartbeatMetric()
-            self.assertFalse(metric.is_vm)
+            self.assertFalse(metric.vm_retry)
             self.assertEqual(metric.NAME, 'Heartbeat')
             keys = list(metric.properties.keys())
             self.assertEqual(len(keys), 2)
@@ -224,34 +224,34 @@ class TestHeartbeatMetrics(unittest.TestCase):
             throw(requests.Timeout)
         ):
             metric = heartbeat_metrics.HeartbeatMetric()
-            self.assertFalse(metric.is_vm)
+            self.assertFalse(metric.vm_retry)
             self.assertEqual(metric.NAME, 'Heartbeat')
             keys = list(metric.properties.keys())
             self.assertEqual(len(keys), 2)
 
-    def test_heartbeat_metric_vm_error_response(self):
-        with mock.patch('requests.get') as get:
-            get.return_value = MockResponse(
-                200,
-                json.dumps(
-                    {
-                        'vmId': 5,
-                        'subscriptionId': 3,
-                        'osType': 'Linux'
-                    }
-                )
-            )
+    def test_heartbeat_metric_vm_retry(self):
+        with mock.patch(
+            'requests.get',
+            throw(requests.exceptions.RequestException)
+        ):
             metric = heartbeat_metrics.HeartbeatMetric()
-            self.assertTrue(metric.is_vm)
+            self.assertTrue(metric.vm_retry)
             keys = list(metric.properties.keys())
-            self.assertEqual(len(keys), 5)
-            with mock.patch(
-                'requests.get',
-                throw(Exception)
-            ):
-                metric.vm_data.clear()
-                self.assertTrue(metric.is_vm)
-                self.assertEqual(len(metric.vm_data), 0)
-                self.assertTrue(metric.is_vm)
+            self.assertEqual(len(keys), 2)
+            self.assertEqual(len(metric.vm_data), 0)
+            with mock.patch('requests.get') as get:
+                get.return_value = MockResponse(
+                    200,
+                    json.dumps(
+                        {
+                            'vmId': 5,
+                            'subscriptionId': 3,
+                            'osType': 'Linux'
+                        }
+                    )
+                )
+                metric.get_metrics()
+                self.assertFalse(metric.vm_retry)
+                self.assertEqual(len(metric.vm_data), 3)
                 keys = list(metric.properties.keys())
                 self.assertEqual(len(keys), 5)

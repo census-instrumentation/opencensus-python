@@ -8,6 +8,8 @@
   ([#935](https://github.com/census-instrumentation/opencensus-python/pull/935))
 - Add links in properties for trace exporter envelopes
   ([#936](https://github.com/census-instrumentation/opencensus-python/pull/936))
+- Fix attach rate metrics for VM to only ping data service on retry
+  ([#946](https://github.com/census-instrumentation/opencensus-python/pull/946))
 
 ## 1.0.4
 Released 2020-06-29
