@@ -230,7 +230,10 @@ class TestHeartbeatMetrics(unittest.TestCase):
             self.assertEqual(len(keys), 2)
 
     def test_heartbeat_metric_vm_retry(self):
-        with mock.patch('requests.get', throw(requests.exceptions.RequestException)):
+        with mock.patch(
+            'requests.get',
+            throw(requests.exceptions.RequestException)
+        ):
             metric = heartbeat_metrics.HeartbeatMetric()
             self.assertTrue(metric.vm_retry)
             keys = list(metric.properties.keys())
