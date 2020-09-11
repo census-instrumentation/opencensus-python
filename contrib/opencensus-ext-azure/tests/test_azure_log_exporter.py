@@ -315,7 +315,7 @@ class TestAzureEventHandler(unittest.TestCase):
             handler.options.queue_capacity,
             500
         )
-
+        # pylint: disable=protected-access
         self.assertEqual(
             handler._worker._src._queue.maxsize,
             500

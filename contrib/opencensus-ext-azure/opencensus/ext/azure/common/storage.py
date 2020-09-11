@@ -152,7 +152,8 @@ class LocalFileStorage(object):
                     try:
                         os.remove(path)
                         logger.warning(
-                            'File write exceeded retention. Dropping telemetry')
+                            'File write exceeded retention.
+                            'Dropping telemetry')
                     except Exception:
                         pass  # keep silent
                 else:

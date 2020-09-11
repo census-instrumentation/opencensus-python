@@ -68,7 +68,7 @@ class TestAzureExporter(unittest.TestCase):
             exporter.options.queue_capacity,
             500
         )
-
+        # pylint: disable=protected-access
         self.assertEqual(
             exporter._worker.src._queue.maxsize,
             500
