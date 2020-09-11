@@ -58,6 +58,22 @@ class TestAzureExporter(unittest.TestCase):
             '{"https":"https://test-proxy.com"}',
         )
 
+    def test_init_exporter_with_queue_capacity(self):
+        exporter = trace_exporter.AzureExporter(
+            instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
+            queue_capacity=500,
+        )
+
+        self.assertEqual(
+            exporter.options.queue_capacity,
+            500
+        )
+
+        self.assertEqual(
+            exporter._worker.src._queue.maxsize,
+            500
+        )
+
     @mock.patch('requests.post', return_value=mock.Mock())
     def test_emit_empty(self, request_mock):
         exporter = trace_exporter.AzureExporter(

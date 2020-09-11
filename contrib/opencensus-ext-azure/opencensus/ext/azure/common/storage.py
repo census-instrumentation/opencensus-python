@@ -133,7 +133,9 @@ class LocalFileStorage(object):
             if path.endswith('.tmp'):
                 if name < timeout_deadline:
                     try:
-                        os.remove(path)  # TODO: log data loss
+                        os.remove(path)
+                        logger.warning(
+                            'File write exceeded timeout. Dropping telemetry')
                     except Exception:
                         pass  # keep silent
             if path.endswith('.lock'):
@@ -148,7 +150,9 @@ class LocalFileStorage(object):
             if path.endswith('.blob'):
                 if name < retention_deadline:
                     try:
-                        os.remove(path)  # TODO: log data loss
+                        os.remove(path)
+                        logger.warning(
+                            'File write exceeded retention. Dropping telemetry')
                     except Exception:
                         pass  # keep silent
                 else:
