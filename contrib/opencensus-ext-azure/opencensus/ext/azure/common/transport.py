@@ -79,7 +79,6 @@ class TransportMixin(object):
             logger.info('Transmission succeeded: %s.', text)
             return 0
         if response.status_code == 206:  # Partial Content
-            # TODO: store the unsent data
             if data:
                 try:
                     resend_envelopes = []

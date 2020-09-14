@@ -10,6 +10,8 @@
   ([#936](https://github.com/census-instrumentation/opencensus-python/pull/936))
 - Fix attach rate metrics for VM to only ping data service on retry
   ([#946](https://github.com/census-instrumentation/opencensus-python/pull/946))
+- Added queue capacity configuration for exporters
+  ([#949](https://github.com/census-instrumentation/opencensus-python/pull/949))
 
 ## 1.0.4
 Released 2020-06-29

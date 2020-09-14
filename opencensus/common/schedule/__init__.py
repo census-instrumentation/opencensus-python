@@ -14,8 +14,11 @@
 
 from six.moves import queue
 
+import logging
 import threading
 import time
+
+logger = logging.getLogger(__name__)
 
 
 class PeriodicTask(threading.Thread):
@@ -128,7 +131,7 @@ class Queue(object):
         try:
             self._queue.put(item, block, timeout)
         except queue.Full:
-            pass  # TODO: log data loss
+            logger.warning('Queue is full. Dropping telemetry.')
 
     def puts(self, items, block=True, timeout=None):
         if block and timeout is not None:
