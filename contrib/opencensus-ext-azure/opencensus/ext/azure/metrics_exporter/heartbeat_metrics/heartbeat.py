@@ -37,20 +37,23 @@ class HeartbeatMetric:
     def __init__(self):
         self.vm_data = {}
         self.vm_retry = False
+        self.init = False
         self.properties = OrderedDict()
-        self._init_properties()
-        self.heartbeat = LongGauge(
-            HeartbeatMetric.NAME,
-            'Heartbeat metric with custom dimensions',
-            'count',
-            list(self.properties.keys()),
-        )
-        self.heartbeat.get_or_create_time_series(
-            list(self.properties.values())
-        )
 
     def get_metrics(self):
-        if self.vm_retry:
+        if not self.init:
+            self._init_properties()
+            self.heartbeat = LongGauge(
+                HeartbeatMetric.NAME,
+                'Heartbeat metric with custom dimensions',
+                'count',
+                list(self.properties.keys()),
+            )
+            self.heartbeat.get_or_create_time_series(
+                list(self.properties.values())
+            )
+            self.init = True
+        elif self.vm_retry:
             # Only need to possibly update if vm retry
             if self._get_azure_compute_metadata() and not self.vm_retry:
                 self._populate_vm_data()
@@ -64,7 +67,10 @@ class HeartbeatMetric:
                 self.heartbeat.get_or_create_time_series(
                     list(self.properties.values())
                 )
-        return [self.heartbeat.get_metric(datetime.datetime.utcnow())]
+        if self.heartbeat:
+            return [self.heartbeat.get_metric(datetime.datetime.utcnow())]
+        else:
+            return []
 
     def _init_properties(self):
         self.properties[LabelKey("sdk", '')] = LabelValue(
