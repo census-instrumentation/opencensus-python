@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import atexit
 import threading
 import time
 
@@ -32,7 +31,6 @@ class BaseExporter(object):
         # TODO: worker should not be created in the base exporter
         self._worker = Worker(self._queue, self)
         self._worker.start()
-        atexit.register(self._worker.stop, options.grace_period)
 
     # Ideally we don't want to have `emit`
     # Exporter will have one public method - `export`, which is a blocking
