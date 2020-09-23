@@ -86,7 +86,10 @@ class PeriodicMetricTask(PeriodicTask):
 
     def close(self):
         try:
-            return self.func(*self.args, **self.kwargs)
+            # Suppress request tracking on flush
+            execution_context.set_is_exporter(True)
+            self.func(*self.args, **self.kwargs)
+            execution_context.set_is_exporter(False)
         except Exception as ex:
             logger.exception("Error handling metric flush: {}".format(ex))
         self.cancel()
