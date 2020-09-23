@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import atexit
 import json
 import logging
 
@@ -58,6 +59,7 @@ class AzureExporter(BaseExporter, ProcessorMixin, TransportMixin):
         )
         self._telemetry_processors = []
         super(AzureExporter, self).__init__(**options)
+        atexit.register(self._stop, self.options.grace_period)
         heartbeat_metrics.enable_heartbeat_metrics(
             self.options.connection_string, self.options.instrumentation_key)
 
@@ -181,4 +183,4 @@ class AzureExporter(BaseExporter, ProcessorMixin, TransportMixin):
 
     def _stop(self, timeout=None):
         self.storage.close()
-        return self._worker.stop(timeout)
+        self._worker.stop(timeout)

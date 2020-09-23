@@ -84,7 +84,16 @@ class TestHeartbeatMetrics(unittest.TestCase):
 
     def test_heartbeat_metric_init(self):
         metric = heartbeat_metrics.HeartbeatMetric()
+        self.assertEqual(len(metric.vm_data), 0)
+        self.assertFalse(metric.vm_retry)
+        self.assertFalse(metric.init)
+        self.assertEqual(len(metric.properties), 0)
 
+    def test_heartbeat_metric_get_metric_init(self):
+        metric = heartbeat_metrics.HeartbeatMetric()
+        self.assertFalse(metric.init)
+        metrics = metric.get_metrics()
+        self.assertTrue(metric.init)
         self.assertEqual(metric.NAME, 'Heartbeat')
         keys = list(metric.properties.keys())
         values = list(metric.properties.values())
@@ -115,6 +124,7 @@ class TestHeartbeatMetrics(unittest.TestCase):
             gauge._len_label_keys,
             len(metric.properties.keys())
         )
+        self.assertEqual(len(metrics), 1)
 
     @mock.patch.dict(
         os.environ,
@@ -126,7 +136,9 @@ class TestHeartbeatMetrics(unittest.TestCase):
     )
     def test_heartbeat_metric_init_webapp(self):
         metric = heartbeat_metrics.HeartbeatMetric()
-
+        self.assertFalse(metric.init)
+        metric.get_metrics()
+        self.assertTrue(metric.init)
         self.assertEqual(metric.NAME, 'Heartbeat')
         keys = list(metric.properties.keys())
         values = list(metric.properties.values())
@@ -156,7 +168,9 @@ class TestHeartbeatMetrics(unittest.TestCase):
     )
     def test_heartbeat_metric_init_functionapp(self):
         metric = heartbeat_metrics.HeartbeatMetric()
-
+        self.assertFalse(metric.init)
+        metric.get_metrics()
+        self.assertTrue(metric.init)
         self.assertEqual(metric.NAME, 'Heartbeat')
         keys = list(metric.properties.keys())
         values = list(metric.properties.values())
@@ -186,6 +200,10 @@ class TestHeartbeatMetrics(unittest.TestCase):
                 )
             )
             metric = heartbeat_metrics.HeartbeatMetric()
+            self.assertFalse(metric.init)
+            self.assertFalse(metric.vm_retry)
+            metric.get_metrics()
+            self.assertTrue(metric.init)
             self.assertFalse(metric.vm_retry)
             self.assertEqual(metric.NAME, 'Heartbeat')
             keys = list(metric.properties.keys())
@@ -213,6 +231,10 @@ class TestHeartbeatMetrics(unittest.TestCase):
             throw(requests.exceptions.ConnectionError)
         ):
             metric = heartbeat_metrics.HeartbeatMetric()
+            self.assertFalse(metric.init)
+            self.assertFalse(metric.vm_retry)
+            metric.get_metrics()
+            self.assertTrue(metric.init)
             self.assertFalse(metric.vm_retry)
             self.assertEqual(metric.NAME, 'Heartbeat')
             keys = list(metric.properties.keys())
@@ -224,6 +246,10 @@ class TestHeartbeatMetrics(unittest.TestCase):
             throw(requests.Timeout)
         ):
             metric = heartbeat_metrics.HeartbeatMetric()
+            self.assertFalse(metric.init)
+            self.assertFalse(metric.vm_retry)
+            metric.get_metrics()
+            self.assertTrue(metric.init)
             self.assertFalse(metric.vm_retry)
             self.assertEqual(metric.NAME, 'Heartbeat')
             keys = list(metric.properties.keys())
@@ -235,6 +261,10 @@ class TestHeartbeatMetrics(unittest.TestCase):
             throw(requests.exceptions.RequestException)
         ):
             metric = heartbeat_metrics.HeartbeatMetric()
+            self.assertFalse(metric.init)
+            self.assertFalse(metric.vm_retry)
+            metric.get_metrics()
+            self.assertTrue(metric.init)
             self.assertTrue(metric.vm_retry)
             keys = list(metric.properties.keys())
             self.assertEqual(len(keys), 2)
