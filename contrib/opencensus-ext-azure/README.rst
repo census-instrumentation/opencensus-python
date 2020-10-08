@@ -121,6 +121,21 @@ Modifying Logs
     logger.addHandler(handler)
     logger.warning('Hello, World!')
 
+Events
+######
+
+You can send `customEvent` telemetry in exactly the same way you would send `trace` telemetry except using the `AzureEventHandler` instead.
+
+.. code:: python
+
+    import logging
+
+    from opencensus.ext.azure.log_exporter import AzureEventHandler
+
+    logger = logging.getLogger(__name__)
+    logger.addHandler(AzureEventHandler(connection_string='InstrumentationKey=<your-instrumentation_key-here>'))
+    logger.setLevel(logging.INFO)
+    logger.info('Hello, World!')
 
 Metrics
 ~~~~~~~
@@ -178,10 +193,10 @@ The **Azure Monitor Metrics Exporter** allows you to export metrics to `Azure Mo
     if __name__ == "__main__":
         main()
 
-Standard Metrics
-################
+Performance counters
+####################
 
-The exporter also includes a set of standard metrics that are exported to Azure Monitor by default.
+The exporter also includes a set of performance counters that are exported to Azure Monitor by default.
 
 .. code:: python
 
@@ -191,7 +206,7 @@ The exporter also includes a set of standard metrics that are exported to Azure 
     from opencensus.ext.azure import metrics_exporter
 
     def main():
-        # All you need is the next line. You can disable standard metrics by
+        # All you need is the next line. You can disable performance counters by
         # passing in enable_standard_metrics=False into the constructor of
         # new_metrics_exporter() 
         _exporter = metrics_exporter.new_metrics_exporter(connection_string='InstrumentationKey=<your-instrumentation-key-here>')
@@ -205,13 +220,12 @@ The exporter also includes a set of standard metrics that are exported to Azure 
     if __name__ == "__main__":
         main()
 
-Below is a list of standard metrics that are currently available:
+Below is a list of performance counters that are currently available:
 
 - Available Memory (bytes)
 - CPU Processor Time (percentage)
 - Incoming Request Rate (per second)
 - Incoming Request Average Execution Time (milliseconds)
-- Outgoing Request Rate (per second)
 - Process CPU Usage (percentage)
 - Process Private Bytes (bytes)
 

@@ -26,6 +26,6 @@ config_integration.trace_integrations(['requests'])
 tracer = Tracer(exporter=AzureExporter(), sampler=ProbabilitySampler(1.0))
 with tracer.span(name='parent'):
     with tracer.span(name='child'):
-        response = requests.get(url='http://localhost:8080/')
+        response = requests.get(url='http://example.com/')
         print(response.status_code)
         print(response.text)

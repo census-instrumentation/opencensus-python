@@ -90,6 +90,24 @@ class TestOptions(unittest.TestCase):
         self.assertEqual(options.endpoint,
                          'https://dc.services.visualstudio.com/v2/track')
 
+    def test_process_options_proxies_default(self):
+        options = common.Options()
+        options.proxies = "{}"
+        common.process_options(options)
+
+        self.assertEqual(options.proxies, "{}")
+
+    def test_process_options_proxies_set_proxies(self):
+        options = common.Options()
+        options.connection_string = None
+        options.proxies = '{"https": "https://test-proxy.com"}'
+        common.process_options(options)
+
+        self.assertEqual(
+            options.proxies,
+            '{"https": "https://test-proxy.com"}'
+        )
+
     def test_parse_connection_string_none(self):
         cs = None
         result = common.parse_connection_string(cs)

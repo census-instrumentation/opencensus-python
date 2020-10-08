@@ -20,6 +20,7 @@ import unittest
 import mock
 
 from opencensus.ext.azure import trace_exporter
+from opencensus.trace.link import Link
 
 TEST_FOLDER = os.path.abspath('.test.exporter')
 
@@ -45,6 +46,33 @@ class TestAzureExporter(unittest.TestCase):
         Options._default.instrumentation_key = None
         self.assertRaises(ValueError, lambda: trace_exporter.AzureExporter())
         Options._default.instrumentation_key = instrumentation_key
+
+    def test_init_exporter_with_proxies(self):
+        exporter = trace_exporter.AzureExporter(
+            instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
+            proxies='{"https":"https://test-proxy.com"}',
+        )
+
+        self.assertEqual(
+            exporter.options.proxies,
+            '{"https":"https://test-proxy.com"}',
+        )
+
+    def test_init_exporter_with_queue_capacity(self):
+        exporter = trace_exporter.AzureExporter(
+            instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
+            queue_capacity=500,
+        )
+
+        self.assertEqual(
+            exporter.options.queue_capacity,
+            500
+        )
+        # pylint: disable=protected-access
+        self.assertEqual(
+            exporter._worker.src._queue.maxsize,
+            500
+        )
 
     @mock.patch('requests.post', return_value=mock.Mock())
     def test_emit_empty(self, request_mock):
@@ -131,7 +159,9 @@ class TestAzureExporter(unittest.TestCase):
             start_time='2010-10-24T07:28:38.123456Z',
             end_time='2010-10-24T07:28:38.234567Z',
             stack_trace=None,
-            links=None,
+            links=[
+                Link('6e0c63257de34c90bf9efcd03927272e', '6e0c63257de34c91')
+            ],
             status=Status(0),
             annotations=None,
             message_events=None,
@@ -178,6 +208,17 @@ class TestAzureExporter(unittest.TestCase):
         self.assertEqual(
             envelope.data.baseType,
             'RemoteDependencyData')
+        json_dict = json.loads(
+            envelope.data.baseData.properties["_MS.links"]
+        )[0]
+        self.assertEqual(
+            json_dict["id"],
+            "6e0c63257de34c91",
+        )
+        self.assertEqual(
+            json_dict["operation_Id"],
+            "6e0c63257de34c90bf9efcd03927272e",
+        )
 
         # SpanKind.CLIENT unknown type
         envelope = exporter.span_data_to_envelope(SpanData(
@@ -734,183 +775,3 @@ class TestAzureExporter(unittest.TestCase):
         self.assertFalse(envelope.data.baseData.success)
 
         exporter._stop()
-
-    def test_transmission_nothing(self):
-        exporter = trace_exporter.AzureExporter(
-            instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
-            storage_path=os.path.join(TEST_FOLDER, self.id()),
-        )
-        with mock.patch('requests.post') as post:
-            post.return_value = None
-            exporter._transmit_from_storage()
-        exporter._stop()
-
-    def test_transmission_pre_exception(self):
-        exporter = trace_exporter.AzureExporter(
-            instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
-            storage_path=os.path.join(TEST_FOLDER, self.id()),
-        )
-        exporter.storage.put([1, 2, 3])
-        with mock.patch('requests.post', throw(Exception)):
-            exporter._transmit_from_storage()
-        self.assertIsNone(exporter.storage.get())
-        self.assertEqual(len(os.listdir(exporter.storage.path)), 1)
-        exporter._stop()
-
-    @mock.patch('requests.post', return_value=mock.Mock())
-    def test_transmission_lease_failure(self, requests_mock):
-        requests_mock.return_value = MockResponse(200, 'unknown')
-        exporter = trace_exporter.AzureExporter(
-            instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
-            storage_path=os.path.join(TEST_FOLDER, self.id()),
-        )
-        exporter.storage.put([1, 2, 3])
-        with mock.patch('opencensus.ext.azure.common.storage.LocalFileBlob.lease') as lease:  # noqa: E501
-            lease.return_value = False
-            exporter._transmit_from_storage()
-        self.assertTrue(exporter.storage.get())
-        exporter._stop()
-
-    def test_transmission_exception(self):
-        exporter = trace_exporter.AzureExporter(
-            instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
-            storage_path=os.path.join(TEST_FOLDER, self.id()),
-        )
-        exporter.storage.put([1, 2, 3])
-        with mock.patch('requests.post') as post:
-            post.return_value = MockResponse(200, None)
-            del post.return_value.text
-            exporter._transmit_from_storage()
-        self.assertIsNone(exporter.storage.get())
-        self.assertEqual(len(os.listdir(exporter.storage.path)), 0)
-        exporter._stop()
-
-    def test_transmission_200(self):
-        exporter = trace_exporter.AzureExporter(
-            instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
-            storage_path=os.path.join(TEST_FOLDER, self.id()),
-        )
-        exporter.storage.put([1, 2, 3])
-        exporter.storage.put([1, 2, 3])
-        with mock.patch('requests.post') as post:
-            post.return_value = MockResponse(200, 'unknown')
-            exporter._transmit_from_storage()
-        self.assertIsNone(exporter.storage.get())
-        self.assertEqual(len(os.listdir(exporter.storage.path)), 0)
-        exporter._stop()
-
-    def test_transmission_206(self):
-        exporter = trace_exporter.AzureExporter(
-            instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
-            storage_path=os.path.join(TEST_FOLDER, self.id()),
-        )
-        exporter.storage.put([1, 2, 3])
-        with mock.patch('requests.post') as post:
-            post.return_value = MockResponse(206, 'unknown')
-            exporter._transmit_from_storage()
-        self.assertIsNone(exporter.storage.get())
-        self.assertEqual(len(os.listdir(exporter.storage.path)), 1)
-        exporter._stop()
-
-    def test_transmission_206_500(self):
-        exporter = trace_exporter.AzureExporter(
-            instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
-            storage_path=os.path.join(TEST_FOLDER, self.id()),
-        )
-        exporter.storage.put([1, 2, 3, 4, 5])
-        with mock.patch('requests.post') as post:
-            post.return_value = MockResponse(206, json.dumps({
-                'itemsReceived': 5,
-                'itemsAccepted': 3,
-                'errors': [
-                    {
-                        'index': 0,
-                        'statusCode': 400,
-                        'message': '',
-                    },
-                    {
-                        'index': 2,
-                        'statusCode': 500,
-                        'message': 'Internal Server Error',
-                    },
-                ],
-            }))
-            exporter._transmit_from_storage()
-        self.assertEqual(len(os.listdir(exporter.storage.path)), 1)
-        self.assertEqual(exporter.storage.get().get(), (3,))
-        exporter._stop()
-
-    def test_transmission_206_no_retry(self):
-        exporter = trace_exporter.AzureExporter(
-            instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
-            storage_path=os.path.join(TEST_FOLDER, self.id()),
-        )
-        exporter.storage.put([1, 2, 3])
-        with mock.patch('requests.post') as post:
-            post.return_value = MockResponse(206, json.dumps({
-                'itemsReceived': 3,
-                'itemsAccepted': 2,
-                'errors': [
-                    {
-                        'index': 0,
-                        'statusCode': 400,
-                        'message': '',
-                    },
-                ],
-            }))
-            exporter._transmit_from_storage()
-        self.assertEqual(len(os.listdir(exporter.storage.path)), 0)
-        exporter._stop()
-
-    def test_transmission_206_bogus(self):
-        exporter = trace_exporter.AzureExporter(
-            instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
-            storage_path=os.path.join(TEST_FOLDER, self.id()),
-        )
-        exporter.storage.put([1, 2, 3, 4, 5])
-        with mock.patch('requests.post') as post:
-            post.return_value = MockResponse(206, json.dumps({
-                'itemsReceived': 5,
-                'itemsAccepted': 3,
-                'errors': [
-                    {
-                        'foo': 0,
-                        'bar': 1,
-                    },
-                ],
-            }))
-            exporter._transmit_from_storage()
-        self.assertIsNone(exporter.storage.get())
-        self.assertEqual(len(os.listdir(exporter.storage.path)), 0)
-        exporter._stop()
-
-    def test_transmission_400(self):
-        exporter = trace_exporter.AzureExporter(
-            instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
-            storage_path=os.path.join(TEST_FOLDER, self.id()),
-        )
-        exporter.storage.put([1, 2, 3])
-        with mock.patch('requests.post') as post:
-            post.return_value = MockResponse(400, '{}')
-            exporter._transmit_from_storage()
-        self.assertEqual(len(os.listdir(exporter.storage.path)), 0)
-        exporter._stop()
-
-    def test_transmission_500(self):
-        exporter = trace_exporter.AzureExporter(
-            instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
-            storage_path=os.path.join(TEST_FOLDER, self.id()),
-        )
-        exporter.storage.put([1, 2, 3])
-        with mock.patch('requests.post') as post:
-            post.return_value = MockResponse(500, '{}')
-            exporter._transmit_from_storage()
-        self.assertIsNone(exporter.storage.get())
-        self.assertEqual(len(os.listdir(exporter.storage.path)), 1)
-        exporter._stop()
-
-
-class MockResponse(object):
-    def __init__(self, status_code, text):
-        self.status_code = status_code
-        self.text = text

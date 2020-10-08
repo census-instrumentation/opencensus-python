@@ -32,3 +32,5 @@ try:
     result = 1 / 0  # generate a ZeroDivisionError
 except Exception:
     logger.exception('Captured an exception.', extra=properties)
+
+input("...")

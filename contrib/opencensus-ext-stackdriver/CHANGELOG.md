@@ -1,6 +1,14 @@
 # Changelog
 
 ## Unreleased
+  - Change default transporter in stackdriver exporter
+  ([#929](https://github.com/census-instrumentation/opencensus-python/pull/929))
+
+## 0.7.3
+Released 2020-06-29
+
+  - Add mean property for distribution values
+  ([#919](https://github.com/census-instrumentation/opencensus-python/pull/919))
 
 ## 0.7.2
 Released 2019-08-26

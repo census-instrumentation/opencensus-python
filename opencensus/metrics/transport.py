@@ -43,15 +43,27 @@ class PeriodicMetricTask(PeriodicTask):
 
     :type kwargs: dict
     :param args: The kwargs passed in while calling `function`.
+
+    :type name: str
+    :param name: The source of the worker. Used for naming.
     """
 
     daemon = True
 
-    def __init__(self, interval=None, function=None, args=None, kwargs=None):
+    def __init__(
+        self,
+        interval=None,
+        function=None,
+        args=None,
+        kwargs=None,
+        name=None
+    ):
         if interval is None:
             interval = DEFAULT_INTERVAL
 
         self.func = function
+        self.args = args
+        self.kwargs = kwargs
 
         def func(*aa, **kw):
             try:
@@ -59,15 +71,28 @@ class PeriodicMetricTask(PeriodicTask):
             except TransportError as ex:
                 logger.exception(ex)
                 self.cancel()
-            except Exception:
-                logger.exception("Error handling metric export")
+            except Exception as ex:
+                logger.exception("Error handling metric export: {}".format(ex))
 
-        super(PeriodicMetricTask, self).__init__(interval, func, args, kwargs)
+        super(PeriodicMetricTask, self).__init__(
+            interval, func, args, kwargs, '{} Worker'.format(name)
+        )
 
     def run(self):
         # Indicate that this thread is an exporter thread.
+        # Used to suppress tracking of requests in this thread
         execution_context.set_is_exporter(True)
         super(PeriodicMetricTask, self).run()
+
+    def close(self):
+        try:
+            # Suppress request tracking on flush
+            execution_context.set_is_exporter(True)
+            self.func(*self.args, **self.kwargs)
+            execution_context.set_is_exporter(False)
+        except Exception as ex:
+            logger.exception("Error handling metric flush: {}".format(ex))
+        self.cancel()
 
 
 def get_exporter_thread(metric_producers, exporter, interval=None):
@@ -111,6 +136,10 @@ def get_exporter_thread(metric_producers, exporter, interval=None):
 
         export(itertools.chain(*all_gets))
 
-    tt = PeriodicMetricTask(interval, export_all)
+    tt = PeriodicMetricTask(
+        interval,
+        export_all,
+        name=exporter.__class__.__name__
+    )
     tt.start()
     return tt

@@ -35,20 +35,19 @@ This example shows how to report the traces to Stackdriver Trace:
     pip install google-cloud-trace
     pipenv install google-cloud-trace
 
-By default, traces are exported synchronously, which introduces latency during
-your code's execution. To avoid blocking code execution, you can initialize
-your exporter to use a background thread.
+By default, traces are exported asynchronously, to reduce latency during
+your code's execution. If you would like to export data on the main thread
+use the synchronous transporter:
 
-This example shows how to configure OpenCensus to use a background thread:
 
 .. code:: python
 
-    from opencensus.common.transports.async_ import AsyncTransport
+    from opencensus.common.transports.sync import SyncTransport
     from opencensus.ext.stackdriver import trace_exporter as stackdriver_exporter
     from opencensus.trace import tracer as tracer_module
 
     exporter = stackdriver_exporter.StackdriverExporter(
-        project_id='your_cloud_project', transport=AsyncTransport)
+        project_id='your_cloud_project', transport=SyncTransport)
     tracer = tracer_module.Tracer(exporter=exporter)
 
 Stats
