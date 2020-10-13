@@ -2,9 +2,6 @@
 
 ## Unreleased
 
-## 1.0.5
-Released 2020-10-13
-
 - Attach rate metrics via Heartbeat for Web and Function apps
   ([#930](https://github.com/census-instrumentation/opencensus-python/pull/930))
 - Attach rate metrics for VM

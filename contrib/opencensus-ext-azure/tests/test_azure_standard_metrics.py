@@ -78,7 +78,7 @@ class TestStandardMetrics(unittest.TestCase):
                          '\\Process(??APP_WIN32_PROC??)\\Private Bytes')
 
     def test_get_process_private_bytes(self):
-        with mock.patch('opencensus.ext.azure.metrics_exporter'
+        with mock.patch('opencensus.ext.azure.metrics_exporter' +
                         '.standard_metrics.process.PROCESS') as process_mock:
             memory = collections.namedtuple('memory', 'rss')
             pmem = memory(rss=100)
@@ -90,7 +90,7 @@ class TestStandardMetrics(unittest.TestCase):
     @mock.patch('opencensus.ext.azure.metrics_exporter'
                 '.standard_metrics.process.logger')
     def test_get_process_private_bytes_exception(self, logger_mock):
-        with mock.patch('opencensus.ext.azure.metrics_exporter'
+        with mock.patch('opencensus.ext.azure.metrics_exporter' +
                         '.standard_metrics.process.PROCESS') as process_mock:
             process_mock.memory_info.side_effect = Exception()
             standard_metrics.ProcessMemoryMetric.get_value()
