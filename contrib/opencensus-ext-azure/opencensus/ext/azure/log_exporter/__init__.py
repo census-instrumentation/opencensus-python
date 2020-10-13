@@ -81,6 +81,24 @@ class BaseLogHandler(logging.Handler):
             if event:
                 event.set()
 
+    def _export(self, batch, event=None):  # pragma: NO COVER
+        try:
+            if batch:
+                envelopes = [self.log_record_to_envelope(x) for x in batch]
+                envelopes = self.apply_telemetry_processors(envelopes)
+                result = self._transmit(envelopes)
+                if result > 0:
+                    self.storage.put(envelopes, result)
+            if event:
+                if isinstance(event, QueueExitEvent):
+                    self._transmit_from_storage()  # send files before exit
+                return
+            if len(batch) < self.options.max_batch_size:
+                self._transmit_from_storage()
+        finally:
+            if event:
+                event.set()
+
     def close(self):
         self.storage.close()
         self._worker.stop()

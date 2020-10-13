@@ -93,7 +93,7 @@ class _Worker(object):
         batches to the specified tracing backend using the exporter.
         """
         # Indicate that this thread is an exporter thread.
-        # Used to suppress tracking of requests in this thread
+        # Used to suppress tracking of requests in this thread.
         execution_context.set_is_exporter(True)
         quit_ = False
 

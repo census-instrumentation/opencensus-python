@@ -39,7 +39,7 @@ setup(
     include_package_data=True,
     long_description=open('README.rst').read(),
     install_requires=[
-        'opencensus >= 0.8.dev0, < 1.0.0',
+        'opencensus >= 0.7.0, < 1.0.0',
         'psycopg2-binary >= 2.7.3.1',
     ],
     extras_require={},
