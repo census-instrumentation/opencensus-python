@@ -2,21 +2,27 @@
 
 ## Unreleased
 
+## 0.7.11
+Released 2020-10-13
+
+- PeriodicMetricTask flush on exit
+([#943](https://github.com/census-instrumentation/opencensus-python/pull/943))
+
 ## 0.7.10
 Released 2020-06-29
 
 - Updated `azure` module
-  ([#903](https://github.com/census-instrumentation/opencensus-python/pull/903),
-   [#925](https://github.com/census-instrumentation/opencensus-python/pull/925))
+([#903](https://github.com/census-instrumentation/opencensus-python/pull/903),
+ [#925](https://github.com/census-instrumentation/opencensus-python/pull/925))
 
 - Updated `stackdriver` module
-  ([#919](https://github.com/census-instrumentation/opencensus-python/pull/919))
+([#919](https://github.com/census-instrumentation/opencensus-python/pull/919))
 
 ## 0.7.9
 Released 2020-06-17
 
-- Hotfix
-  ([#915](https://github.com/census-instrumentation/opencensus-python/pull/915))
+- Hotfix for breaking change
+  ([#915](https://github.com/census-instrumentation/opencensus-python/pull/915),
 
 ## 0.7.8
 Released 2020-06-17
@@ -26,13 +32,13 @@ Released 2020-06-17
    [#902](https://github.com/census-instrumentation/opencensus-python/pull/902))
 
 ## 0.7.7
-Released 2020-02-04
+Released 2020-02-03
 
 - Updated `azure` module
-  ([#837](https://github.com/census-instrumentation/opencensus-python/pull/837),
-   [#845](https://github.com/census-instrumentation/opencensus-python/pull/845),
-   [#848](https://github.com/census-instrumentation/opencensus-python/pull/848),
-   [#851](https://github.com/census-instrumentation/opencensus-python/pull/851))
+([#837](https://github.com/census-instrumentation/opencensus-python/pull/837),
+ [#845](https://github.com/census-instrumentation/opencensus-python/pull/845),
+ [#848](https://github.com/census-instrumentation/opencensus-python/pull/848),
+ [#851](https://github.com/census-instrumentation/opencensus-python/pull/851))
 
 ## 0.7.6
 Released 2019-11-26

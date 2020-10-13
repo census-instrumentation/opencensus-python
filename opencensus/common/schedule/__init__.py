@@ -14,8 +14,11 @@
 
 from six.moves import queue
 
+import logging
 import threading
 import time
+
+logger = logging.getLogger(__name__)
 
 
 class PeriodicTask(threading.Thread):
@@ -31,11 +34,14 @@ class PeriodicTask(threading.Thread):
     :param args: The args passed in while calling `function`.
 
     :type kwargs: dict
-    :param args: The kwargs passed in while calling `function`.
+    :param kwargs: The kwargs passed in while calling `function`.
+
+    :type name: str
+    :param name: The source of the worker. Used for naming.
     """
 
-    def __init__(self, interval, function, args=None, kwargs=None):
-        super(PeriodicTask, self).__init__()
+    def __init__(self, interval, function, args=None, kwargs=None, name=None):
+        super(PeriodicTask, self).__init__(name=name)
         self.interval = interval
         self.function = function
         self.args = args or []
@@ -125,7 +131,7 @@ class Queue(object):
         try:
             self._queue.put(item, block, timeout)
         except queue.Full:
-            pass  # TODO: log data loss
+            logger.warning('Queue is full. Dropping telemetry.')
 
     def puts(self, items, block=True, timeout=None):
         if block and timeout is not None:

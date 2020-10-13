@@ -2,6 +2,20 @@
 
 ## Unreleased
 
+## 1.0.5
+Released 2020-10-13
+
+- Attach rate metrics via Heartbeat for Web and Function apps
+  ([#930](https://github.com/census-instrumentation/opencensus-python/pull/930))
+- Attach rate metrics for VM
+  ([#935](https://github.com/census-instrumentation/opencensus-python/pull/935))
+- Add links in properties for trace exporter envelopes
+  ([#936](https://github.com/census-instrumentation/opencensus-python/pull/936))
+- Fix attach rate metrics for VM to only ping data service on retry
+  ([#946](https://github.com/census-instrumentation/opencensus-python/pull/946))
+- Added queue capacity configuration for exporters
+  ([#949](https://github.com/census-instrumentation/opencensus-python/pull/949))
+
 ## 1.0.4
 Released 2020-06-29
 
@@ -17,7 +31,6 @@ Released 2020-06-17
   ([#903](https://github.com/census-instrumentation/opencensus-python/pull/903))
 - Add support to initialize azure exporters with proxies
   ([#902](https://github.com/census-instrumentation/opencensus-python/pull/902))
-
 
 ## 1.0.2
 Released 2020-02-04

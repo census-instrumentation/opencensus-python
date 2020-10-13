@@ -30,6 +30,7 @@ from opencensus.ext.azure.common.protocol import (
 )
 from opencensus.ext.azure.common.storage import LocalFileStorage
 from opencensus.ext.azure.common.transport import TransportMixin
+from opencensus.ext.azure.metrics_exporter import heartbeat_metrics
 from opencensus.trace import execution_context
 
 logger = logging.getLogger(__name__)
@@ -52,12 +53,33 @@ class BaseLogHandler(logging.Handler):
             max_size=self.options.storage_max_size,
             maintenance_period=self.options.storage_maintenance_period,
             retention_period=self.options.storage_retention_period,
+            source=self.__class__.__name__,
         )
         self._telemetry_processors = []
         self.addFilter(SamplingFilter(self.options.logging_sampling_rate))
-        self._queue = Queue(capacity=8192)  # TODO: make this configurable
+        self._queue = Queue(capacity=self.options.queue_capacity)
         self._worker = Worker(self._queue, self)
         self._worker.start()
+        heartbeat_metrics.enable_heartbeat_metrics(
+            self.options.connection_string, self.options.instrumentation_key)
+
+    def _export(self, batch, event=None):  # pragma: NO COVER
+        try:
+            if batch:
+                envelopes = [self.log_record_to_envelope(x) for x in batch]
+                envelopes = self.apply_telemetry_processors(envelopes)
+                result = self._transmit(envelopes)
+                if result > 0:
+                    self.storage.put(envelopes, result)
+            if event:
+                if isinstance(event, QueueExitEvent):
+                    self._transmit_from_storage()  # send files before exit
+                return
+            if len(batch) < self.options.max_batch_size:
+                self._transmit_from_storage()
+        finally:
+            if event:
+                event.set()
 
     def _export(self, batch, event=None):  # pragma: NO COVER
         try:
