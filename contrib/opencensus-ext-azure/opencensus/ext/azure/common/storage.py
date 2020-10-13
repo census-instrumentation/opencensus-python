@@ -81,6 +81,7 @@ class LocalFileStorage(object):
             maintenance_period=60,  # 1 minute
             retention_period=7*24*60*60,  # 7 days
             write_timeout=60,  # 1 minute
+            source=None,
     ):
         self.path = os.path.abspath(path)
         self.max_size = max_size
@@ -92,6 +93,7 @@ class LocalFileStorage(object):
         self._maintenance_task = PeriodicTask(
             interval=self.maintenance_period,
             function=self._maintenance_routine,
+            name='{} Storage Worker'.format(source)
         )
         self._maintenance_task.daemon = True
         self._maintenance_task.start()
@@ -131,7 +133,9 @@ class LocalFileStorage(object):
             if path.endswith('.tmp'):
                 if name < timeout_deadline:
                     try:
-                        os.remove(path)  # TODO: log data loss
+                        os.remove(path)
+                        logger.warning(
+                            'File write exceeded timeout. Dropping telemetry')
                     except Exception:
                         pass  # keep silent
             if path.endswith('.lock'):
@@ -146,7 +150,10 @@ class LocalFileStorage(object):
             if path.endswith('.blob'):
                 if name < retention_deadline:
                     try:
-                        os.remove(path)  # TODO: log data loss
+                        os.remove(path)
+                        logger.warning(
+                            'File write exceeded retention.' +
+                            'Dropping telemetry')
                     except Exception:
                         pass  # keep silent
                 else:

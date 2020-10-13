@@ -56,6 +56,7 @@ def process_options(options):
                 TEMPDIR_PREFIX + TEMPDIR_SUFFIX
             )
 
+    # proxies
     if options.proxies is None:
         options.proxies = '{}'
 
@@ -109,6 +110,7 @@ class Options(BaseObject):
         max_batch_size=100,
         minimum_retry_interval=60,  # minimum retry interval in seconds
         proxies=None,  # string maps url schemes to the url of the proxies
+        queue_capacity=8192,
         storage_maintenance_period=60,
         storage_max_size=50*1024*1024,  # 50MiB
         storage_path=None,

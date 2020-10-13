@@ -98,6 +98,22 @@ class TestAzureLogHandler(unittest.TestCase):
             '{"https":"https://test-proxy.com"}',
         )
 
+    def test_init_handler_with_queue_capacity(self):
+        handler = log_exporter.AzureLogHandler(
+            instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
+            queue_capacity=500,
+        )
+
+        self.assertEqual(
+            handler.options.queue_capacity,
+            500
+        )
+
+        self.assertEqual(
+            handler._worker._src._queue.maxsize,
+            500
+        )
+
     @mock.patch('requests.post', return_value=mock.Mock())
     def test_exception(self, requests_mock):
         logger = logging.getLogger(self.id())
@@ -287,6 +303,22 @@ class TestAzureEventHandler(unittest.TestCase):
         self.assertEqual(
             handler.options.proxies,
             '{"https":"https://test-proxy.com"}',
+        )
+
+    def test_init_handler_with_queue_capacity(self):
+        handler = log_exporter.AzureEventHandler(
+            instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
+            queue_capacity=500,
+        )
+
+        self.assertEqual(
+            handler.options.queue_capacity,
+            500
+        )
+        # pylint: disable=protected-access
+        self.assertEqual(
+            handler._worker._src._queue.maxsize,
+            500
         )
 
     @mock.patch('requests.post', return_value=mock.Mock())

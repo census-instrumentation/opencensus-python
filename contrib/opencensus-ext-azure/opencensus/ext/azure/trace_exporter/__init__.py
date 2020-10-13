@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import atexit
+import json
 import logging
 
 from opencensus.common.schedule import QueueExitEvent
@@ -26,6 +28,7 @@ from opencensus.ext.azure.common.protocol import (
 )
 from opencensus.ext.azure.common.storage import LocalFileStorage
 from opencensus.ext.azure.common.transport import TransportMixin
+from opencensus.ext.azure.metrics_exporter import heartbeat_metrics
 from opencensus.trace.span import SpanKind
 
 try:
@@ -52,9 +55,13 @@ class AzureExporter(BaseExporter, ProcessorMixin, TransportMixin):
             max_size=self.options.storage_max_size,
             maintenance_period=self.options.storage_maintenance_period,
             retention_period=self.options.storage_retention_period,
+            source=self.__class__.__name__,
         )
         self._telemetry_processors = []
         super(AzureExporter, self).__init__(**options)
+        atexit.register(self._stop, self.options.grace_period)
+        heartbeat_metrics.enable_heartbeat_metrics(
+            self.options.connection_string, self.options.instrumentation_key)
 
     def span_data_to_envelope(self, sd):
         envelope = Envelope(
@@ -142,7 +149,13 @@ class AzureExporter(BaseExporter, ProcessorMixin, TransportMixin):
             else:
                 data.type = 'INPROC'
                 data.success = True
-        # TODO: links, tracestate, tags
+        if sd.links:
+            links = []
+            for link in sd.links:
+                links.append(
+                    {"operation_Id": link.trace_id, "id": link.span_id})
+            data.properties["_MS.links"] = json.dumps(links)
+        # TODO: tracestate, tags
         for key in sd.attributes:
             # This removes redundant data from ApplicationInsights
             if key.startswith('http.'):
@@ -170,4 +183,4 @@ class AzureExporter(BaseExporter, ProcessorMixin, TransportMixin):
 
     def _stop(self, timeout=None):
         self.storage.close()
-        return self._worker.stop(timeout)
+        self._worker.stop(timeout)
