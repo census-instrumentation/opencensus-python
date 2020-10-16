@@ -14,7 +14,7 @@
 
 from setuptools import find_packages, setup
 
-exec(open('context/opencensus-context/opencensus/common/version/__init__.py').read())
+exec(open('/home/travis/build/census-instrumentation/opencensus-python/context/opencensus-context/opencensus/common/version/__init__.py').read())
 
 setup(
     name='opencensus-context',
