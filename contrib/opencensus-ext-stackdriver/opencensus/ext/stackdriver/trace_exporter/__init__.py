@@ -175,8 +175,8 @@ class StackdriverExporter(base_exporter.Exporter):
     :param transport: Class for creating new transport objects. It should
                       extend from the base_exporter :class:`.Transport` type
                       and implement :meth:`.Transport.export`. Defaults to
-                      :class:`.SyncTransport`. The other option is
-                      :class:`.AsyncTransport`.
+                      :class:`.AsyncTransport`. The other option is
+                      :class:`.SyncTransport`.
     """
 
     def __init__(self, client=None, project_id=None,
