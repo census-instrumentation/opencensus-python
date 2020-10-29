@@ -114,8 +114,9 @@ class OpenCensusServerInterceptor(grpc.ServerInterceptor):
 
         span.span_kind = span_module.SpanKind.SERVER
 
-        grpc_host = servicer_context._rpc_event.call_details.host.decode('utf-8')
-        grpc_method = servicer_context._rpc_event.call_details.method.decode('utf-8')
+        grpc_call_details = servicer_context._rpc_event.call_details
+        grpc_host = grpc_call_details.host.decode('utf-8')
+        grpc_method = grpc_call_details.method.decode('utf-8')
 
         tracer.add_attribute_to_current_span(
             attribute_key=attributes_helper.COMMON_ATTRIBUTES.get(
@@ -141,7 +142,7 @@ class OpenCensusServerInterceptor(grpc.ServerInterceptor):
         tracer.add_attribute_to_current_span(
             attribute_key=attributes_helper.COMMON_ATTRIBUTES.get(
                 ATTRIBUTE_HTTP_URL),
-            attribute_value= grpc_host + grpc_method)
+            attribute_value=grpc_host + grpc_method)
 
         execution_context.set_opencensus_tracer(tracer)
         execution_context.set_current_span(span)
