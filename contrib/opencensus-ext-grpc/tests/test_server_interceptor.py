@@ -38,7 +38,9 @@ class TestOpenCensusServerInterceptor(unittest.TestCase):
             '.tracer_module.Tracer', MockTracer)
         mock_context = mock.Mock()
         mock_context.invocation_metadata = mock.Mock(return_value=None)
-        mock_context._rpc_event.call_details.method = 'hello'
+
+        mock_context._rpc_event.call_details.host = b'localhost'
+        mock_context._rpc_event.call_details.method = b'hello'
         interceptor = server_interceptor.OpenCensusServerInterceptor(
             None, None)
         mock_handler = mock.Mock()
@@ -53,6 +55,11 @@ class TestOpenCensusServerInterceptor(unittest.TestCase):
 
         expected_attributes = {
             'component': 'grpc',
+            'grpc.method': 'hello',
+            'http.host': 'localhost',
+            'http.method': 'POST',
+            'http.route': 'hello',
+            'http.url': 'localhosthello'
         }
 
         self.assertEqual(
@@ -78,7 +85,8 @@ class TestOpenCensusServerInterceptor(unittest.TestCase):
             mock_handler.response_streaming = rsp_streaming
             mock_continuation = mock.Mock(return_value=mock_handler)
 
-            mock_context._rpc_event.call_details.method = 'hello'
+            mock_context._rpc_event.call_details.host = b'localhost'
+            mock_context._rpc_event.call_details.method = b'hello'
             interceptor = server_interceptor.OpenCensusServerInterceptor(
                 None, None)
 
@@ -89,6 +97,11 @@ class TestOpenCensusServerInterceptor(unittest.TestCase):
 
             expected_attributes = {
                 'component': 'grpc',
+                'grpc.method': 'hello',
+                'http.host': 'localhost',
+                'http.method': 'POST',
+                'http.route': 'hello',
+                'http.url': 'localhosthello'
             }
 
             self.assertEqual(
@@ -110,7 +123,9 @@ class TestOpenCensusServerInterceptor(unittest.TestCase):
                 None, None)
             mock_context = mock.Mock()
             mock_context.invocation_metadata = mock.Mock(return_value=None)
-            mock_context._rpc_event.call_details.method = 'hello'
+
+            mock_context._rpc_event.call_details.host = b'localhost'
+            mock_context._rpc_event.call_details.method = b'hello'
             mock_handler = mock.Mock()
             mock_handler.request_streaming = req_streaming
             mock_handler.response_streaming = rsp_streaming
@@ -128,6 +143,11 @@ class TestOpenCensusServerInterceptor(unittest.TestCase):
 
             expected_attributes = {
                 'component': 'grpc',
+                'grpc.method': 'hello',
+                'http.host': 'localhost',
+                'http.method': 'POST',
+                'http.route': 'hello',
+                'http.url': 'localhosthello',
                 'error.message': 'Test'
             }
 
