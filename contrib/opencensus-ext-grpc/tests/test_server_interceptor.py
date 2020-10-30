@@ -14,10 +14,10 @@
 
 import unittest
 
+import grpc
 import mock
 from google.rpc import code_pb2
 
-import grpc
 from opencensus.ext.grpc import server_interceptor
 from opencensus.ext.grpc import utils as grpc_utils
 from opencensus.trace import execution_context
