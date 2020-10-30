@@ -39,25 +39,26 @@ GRPC_METHOD = attributes_helper.GRPC_ATTRIBUTES['GRPC_METHOD']
 
 RECV_PREFIX = 'Recv'
 
-grpc_http_status_mapping = {
-    grpc.StatusCode.OK : 200,
-    grpc.StatusCode.FAILED_PRECONDITION : 400,
-    grpc.StatusCode.INVALID_ARGUMENT : 400,
-    grpc.StatusCode.OUT_OF_RANGE : 400,
-    grpc.StatusCode.UNAUTHENTICATED : 401,
-    grpc.StatusCode.PERMISSION_DENIED : 403,
-    grpc.StatusCode.NOT_FOUND : 404,
-    grpc.StatusCode.ABORTED : 409,
-    grpc.StatusCode.ALREADY_EXISTS : 409,
-    grpc.StatusCode.RESOURCE_EXHAUSTED : 429,
-    grpc.StatusCode.CANCELLED : 499,
-    grpc.StatusCode.UNKNOWN : 500,
-    grpc.StatusCode.INTERNAL : 500,
-    grpc.StatusCode.DATA_LOSS : 500,
-    grpc.StatusCode.UNIMPLEMENTED : 501,
-    grpc.StatusCode.UNAVAILABLE : 503,
-    grpc.StatusCode.DEADLINE_EXCEEDED : 504
+GRPC_HTTP_STATUS_MAPPING = {
+    grpc.StatusCode.OK: 200,
+    grpc.StatusCode.FAILED_PRECONDITION: 400,
+    grpc.StatusCode.INVALID_ARGUMENT: 400,
+    grpc.StatusCode.OUT_OF_RANGE: 400,
+    grpc.StatusCode.UNAUTHENTICATED: 401,
+    grpc.StatusCode.PERMISSION_DENIED: 403,
+    grpc.StatusCode.NOT_FOUND: 404,
+    grpc.StatusCode.ABORTED: 409,
+    grpc.StatusCode.ALREADY_EXISTS: 409,
+    grpc.StatusCode.RESOURCE_EXHAUSTED: 429,
+    grpc.StatusCode.CANCELLED: 499,
+    grpc.StatusCode.UNKNOWN: 500,
+    grpc.StatusCode.INTERNAL: 500,
+    grpc.StatusCode.DATA_LOSS: 500,
+    grpc.StatusCode.UNIMPLEMENTED: 501,
+    grpc.StatusCode.UNAVAILABLE: 503,
+    grpc.StatusCode.DEADLINE_EXCEEDED: 504
 }
+
 
 class OpenCensusServerInterceptor(grpc.ServerInterceptor):
     def __init__(self, sampler=None, exporter=None):
@@ -173,15 +174,18 @@ class OpenCensusServerInterceptor(grpc.ServerInterceptor):
         execution_context.set_current_span(span)
         return span
 
+
 def _convert_grpc_code_to_http_status_code(grpc_state_code):
     """
     Converts a gRPC state code into the corresponding HTTP response status.
-    See: https://github.com/googleapis/googleapis/blob/master/google/rpc/code.proto
+    See:
+    https://github.com/googleapis/googleapis/blob/master/google/rpc/code.proto
     """
     if grpc_state_code is None:
         return 200
     else:
-        return grpc_http_status_mapping.get(grpc_state_code, 500)
+        return GRPC_HTTP_STATUS_MAPPING.get(grpc_state_code, 500)
+
 
 def _add_exc_info(span):
     exc_type, exc_value, tb = sys.exc_info()

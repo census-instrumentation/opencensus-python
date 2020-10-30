@@ -23,6 +23,9 @@ from opencensus.ext.grpc import utils as grpc_utils
 from opencensus.trace import execution_context
 from opencensus.trace import span as span_module
 
+MOCK_HOST = b'localhost:5000'
+MOCK_METHOD = b'/helloworld.Greeter/SayHello'
+
 
 class TestOpenCensusServerInterceptor(unittest.TestCase):
     def test_constructor(self):
@@ -40,8 +43,8 @@ class TestOpenCensusServerInterceptor(unittest.TestCase):
         mock_context = mock.Mock()
         mock_context.invocation_metadata = mock.Mock(return_value=None)
 
-        mock_context._rpc_event.call_details.host = b'localhost:5000'
-        mock_context._rpc_event.call_details.method = b'/helloworld.Greeter/SayHello'
+        mock_context._rpc_event.call_details.host = MOCK_HOST
+        mock_context._rpc_event.call_details.method = MOCK_METHOD
         mock_context._state.code = grpc.StatusCode.OK
         interceptor = server_interceptor.OpenCensusServerInterceptor(
             None, None)
@@ -89,8 +92,8 @@ class TestOpenCensusServerInterceptor(unittest.TestCase):
             mock_handler.response_streaming = rsp_streaming
             mock_continuation = mock.Mock(return_value=mock_handler)
 
-            mock_context._rpc_event.call_details.host = b'localhost:5000'
-            mock_context._rpc_event.call_details.method = b'/helloworld.Greeter/SayHello'
+            mock_context._rpc_event.call_details.host = MOCK_HOST
+            mock_context._rpc_event.call_details.method = MOCK_METHOD
             mock_context._state.code = grpc.StatusCode.OK
             interceptor = server_interceptor.OpenCensusServerInterceptor(
                 None, None)
@@ -107,7 +110,7 @@ class TestOpenCensusServerInterceptor(unittest.TestCase):
                 'http.method': 'POST',
                 'http.route': '/helloworld.Greeter/SayHello',
                 'http.path': '/helloworld.Greeter/SayHello',
-                'http.url': 'grpc://localhost:5000/helloworld.Greeter/SayHello',
+                'http.url': 'grpc://localhost:5000/helloworld.Greeter/SayHello',    # noqa: E501
                 'http.status_code': 200
             }
 
@@ -131,8 +134,8 @@ class TestOpenCensusServerInterceptor(unittest.TestCase):
             mock_context = mock.Mock()
             mock_context.invocation_metadata = mock.Mock(return_value=None)
 
-            mock_context._rpc_event.call_details.host = b'localhost:5000'
-            mock_context._rpc_event.call_details.method = b'/helloworld.Greeter/SayHello'
+            mock_context._rpc_event.call_details.host = MOCK_HOST
+            mock_context._rpc_event.call_details.method = MOCK_METHOD
             mock_handler = mock.Mock()
             mock_handler.request_streaming = req_streaming
             mock_handler.response_streaming = rsp_streaming
@@ -155,7 +158,7 @@ class TestOpenCensusServerInterceptor(unittest.TestCase):
                 'http.method': 'POST',
                 'http.route': '/helloworld.Greeter/SayHello',
                 'http.path': '/helloworld.Greeter/SayHello',
-                'http.url': 'grpc://localhost:5000/helloworld.Greeter/SayHello',
+                'http.url': 'grpc://localhost:5000/helloworld.Greeter/SayHello',    # noqa: E501
                 'http.status_code': 500,
                 'error.message': 'Test'
             }
