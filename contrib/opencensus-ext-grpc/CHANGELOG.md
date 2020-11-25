@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Extract byte size from proto-plus messages
+  ([#976](https://github.com/census-instrumentation/opencensus-python/pull/976))
+
 ## 0.7.1
 Released 2019-08-05
 
