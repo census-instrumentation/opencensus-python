@@ -89,6 +89,7 @@ class TestHeartbeatMetrics(unittest.TestCase):
         self.assertFalse(metric.init)
         self.assertEqual(len(metric.properties), 0)
 
+    # @unittest.skip("L101 is failing in Github action run for some reason")
     def test_heartbeat_metric_get_metric_init(self):
         metric = heartbeat_metrics.HeartbeatMetric()
         self.assertFalse(metric.init)
@@ -97,6 +98,7 @@ class TestHeartbeatMetrics(unittest.TestCase):
         self.assertEqual(metric.NAME, 'Heartbeat')
         keys = list(metric.properties.keys())
         values = list(metric.properties.values())
+        self.fail("WEBSITE_SITE_NAME value is '{}'".format(os.environ.get("WEBSITE_SITE_NAME")))
         self.assertEqual(len(keys), 2)
         self.assertEqual(len(keys), len(values))
         self.assertEqual(keys[0].key, "sdk")
