@@ -148,13 +148,13 @@ This example shows how to use the ``GoogleCloudFormatPropagator``:
     # Serialize
     header = propagator.to_header(span_context)
 
-Blacklist Paths
-~~~~~~~~~~~~~~~
+Excludelist Paths
+~~~~~~~~~~~~~~~~~
 
 You can specify which paths you do not want to trace by configuring the
-blacklist paths.
+excludelist paths.
 
-This example shows how to configure the blacklist to ignore the `_ah/health` endpoint
+This example shows how to configure the excludelist to ignore the `_ah/health` endpoint
 for a Flask application:
 
 .. code:: python
@@ -163,21 +163,21 @@ for a Flask application:
 
     app = flask.Flask(__name__)
 
-    blacklist_paths = ['_ah/health']
-    middleware = FlaskMiddleware(app, blacklist_paths=blacklist_paths)
+    excludelist_paths = ['_ah/health']
+    middleware = FlaskMiddleware(app, excludelist_paths=excludelist_paths)
 
-For Django, you can configure the blacklist in the ``OPENCENSUS_TRACE_PARAMS`` in ``settings.py``:
+For Django, you can configure the excludelist in the ``OPENCENSUS_TRACE_PARAMS`` in ``settings.py``:
 
 .. code:: python
 
     OPENCENSUS_TRACE_PARAMS: {
         ...
-        'BLACKLIST_PATHS': ['_ah/health',],
+        'EXCLUDELIST_PATHS': ['_ah/health',],
     }
 
 
 .. note:: By default the health check path for the App Engine flexible environment is not traced,
-    but you can turn it on by excluding it from the blacklist setting.
+    but you can turn it on by excluding it from the excludelist setting.
 
 Framework Integration
 ---------------------
@@ -235,7 +235,7 @@ setting in ``settings.py``:
 .. code:: python
 
     OPENCENSUS_TRACE_PARAMS = {
-        'BLACKLIST_PATHS': ['/_ah/health'],
+        'EXCLUDELIST_PATHS': ['/_ah/health'],
         'GCP_EXPORTER_PROJECT': None,
         'SAMPLING_RATE': 0.5,
         'SERVICE_NAME': 'my_service',

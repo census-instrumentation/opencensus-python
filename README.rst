@@ -118,9 +118,9 @@ Customization
 
 There are several things you can customize in OpenCensus:
 
-* **Blacklist**, which excludes certain hosts and paths from being tracked.
+* **excludelist**, which excludes certain hosts and paths from being tracked.
   By default, the health check path for the App Engine flexible environment is
-  not tracked, you can turn it on by excluding it from the blacklist setting.
+  not tracked, you can turn it on by excluding it from the excludelist setting.
 
 * **Exporter**, which sends the traces.
   By default, the traces are printed to stdout in JSON format. You can choose
@@ -174,8 +174,8 @@ information, please read the
 
     'OPENCENSUS': {
         'TRACE': {
-            'BLACKLIST_HOSTNAMES': ['localhost', '127.0.0.1'],
-            'BLACKLIST_PATHS': ['_ah/health'],
+            'EXCLUDELIST_HOSTNAMES': ['localhost', '127.0.0.1'],
+            'EXCLUDELIST_PATHS': ['_ah/health'],
             'SAMPLER': 'opencensus.trace.samplers.ProbabilitySampler(rate=1)',
             'EXPORTER': '''opencensus.ext.ocagent.trace_exporter.TraceExporter(
                 service_name='foobar',

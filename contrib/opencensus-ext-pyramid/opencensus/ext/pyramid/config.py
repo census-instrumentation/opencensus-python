@@ -21,7 +21,7 @@ DEFAULT_PYRAMID_TRACER_CONFIG = {
     'PROPAGATOR': trace_context_http_header_format.TraceContextPropagator(),
     # https://cloud.google.com/appengine/docs/flexible/python/
     # how-instances-are-managed#health_checking
-    'BLACKLIST_PATHS': ['_ah/health'],
+    'EXCLUDELIST_PATHS': ['_ah/health'],
 }
 
 
