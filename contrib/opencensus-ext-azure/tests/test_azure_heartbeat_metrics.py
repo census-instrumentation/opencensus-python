@@ -98,7 +98,7 @@ class TestHeartbeatMetrics(unittest.TestCase):
         self.assertEqual(metric.NAME, 'Heartbeat')
         keys = list(metric.properties.keys())
         values = list(metric.properties.values())
-        self.fail("WEBSITE_SITE_NAME value is '{}'".format(os.environ.get("WEBSITE_SITE_NAME")))
+        self.fail("WEBSITE_SITE_NAME value is '{}' \nproperty keys: {}".format(os.environ.get("WEBSITE_SITE_NAME"), keys))
         self.assertEqual(len(keys), 2)
         self.assertEqual(len(keys), len(values))
         self.assertEqual(keys[0].key, "sdk")
