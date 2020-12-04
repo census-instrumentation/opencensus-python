@@ -36,11 +36,5 @@ jobs:
           path: .tox
           # bump version prefix to fully reset caches
           key: v1-tox-${{ matrix.python-version }}-${{ hashFiles('tox.ini') }}
-      - name: Run unit tests
-        run: tox -e ${{ matrix.python-version }}-unit
-      - name: Run lint, setup, docs
-        if: ${{ matrix.python-version == 'py37' }}
-        run: >
-          tox -e ${{ matrix.python-version }}-lint
-              -e ${{ matrix.python-version }}-setup
-              -e ${{ matrix.python-version }}-docs
+      - name: run tox
+        run: tox -f ${{ matrix.python-version }}
