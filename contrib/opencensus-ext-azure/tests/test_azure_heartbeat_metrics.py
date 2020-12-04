@@ -97,7 +97,7 @@ class TestHeartbeatMetrics(unittest.TestCase):
         self.assertEqual(metric.NAME, 'Heartbeat')
         keys = list(metric.properties.keys())
         values = list(metric.properties.values())
-        self.assertEqual(len(keys), 2)
+        self.assertEqual(len(keys), 5)
         self.assertEqual(len(keys), len(values))
         self.assertEqual(keys[0].key, "sdk")
         self.assertEqual(keys[1].key, "osType")
