@@ -89,6 +89,8 @@ class TestHeartbeatMetrics(unittest.TestCase):
         self.assertFalse(metric.init)
         self.assertEqual(len(metric.properties), 0)
 
+    # TODO @lzchen #981
+    @unittest.skip("Failing because github workflow runs on Azure")
     def test_heartbeat_metric_get_metric_init(self):
         metric = heartbeat_metrics.HeartbeatMetric()
         self.assertFalse(metric.init)

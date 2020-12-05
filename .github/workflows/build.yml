@@ -7,8 +7,34 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    # 18.04 needed for python3.4
+    runs-on: ubuntu-18.04
+    env:
+      # We use these variables to convert between tox and GHA version literals
+      py27: 2.7
+      py34: 3.4
+      py35: 3.5
+      py36: 3.6
+      py37: 3.7
+    strategy:
+      # ensures the entire test matrix is run, even if one permutation fails
+      fail-fast: false
+      matrix:
+        python-version: [py27, py34, py35, py36, py37]
     steps:
-      - uses: actions/checkout@v2
-      - name: Build and test
-        run: echo "Hello world!"
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Set up Python ${{ env[matrix.python-version] }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ env[matrix.python-version] }}
+      - name: Install tox
+        run: pip install -U tox-factor
+      - name: Cache tox environment
+        uses: actions/cache@v2
+        with:
+          path: .tox
+          # bump version prefix to fully reset caches
+          key: v1-tox-${{ matrix.python-version }}-${{ hashFiles('tox.ini') }}
+      - name: run tox
+        run: tox -f ${{ matrix.python-version }}
