@@ -118,7 +118,7 @@ Customization
 
 There are several things you can customize in OpenCensus:
 
-* **excludelist**, which excludes certain hosts and paths from being tracked.
+* **Excludelist**, which excludes certain hosts and paths from being tracked.
   By default, the health check path for the App Engine flexible environment is
   not tracked, you can turn it on by excluding it from the excludelist setting.
 
