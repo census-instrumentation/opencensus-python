@@ -28,7 +28,6 @@ from opencensus.ext.azure.common.protocol import (
 )
 from opencensus.ext.azure.common.storage import LocalFileStorage
 from opencensus.ext.azure.common.transport import TransportMixin
-from opencensus.ext.azure.metrics_exporter import heartbeat_metrics
 from opencensus.trace.span import SpanKind
 
 try:
@@ -60,8 +59,6 @@ class AzureExporter(BaseExporter, ProcessorMixin, TransportMixin):
         self._telemetry_processors = []
         super(AzureExporter, self).__init__(**options)
         atexit.register(self._stop, self.options.grace_period)
-        heartbeat_metrics.enable_heartbeat_metrics(
-            self.options.connection_string, self.options.instrumentation_key)
 
     def span_data_to_envelope(self, sd):
         envelope = Envelope(
