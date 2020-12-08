@@ -98,6 +98,20 @@ class TestFlaskMiddleware(unittest.TestCase):
         self.assertTrue(app.before_request.called)
         self.assertTrue(app.after_request.called)
 
+    def test_constructor_tracer_and_other_args_are_mutually_exclusive(self):
+        app = mock.Mock(config={})
+        tracer = mock.Mock()
+
+        for arg in ['propagator', 'exporter', 'sampler']:
+            kwargs = {}
+            kwargs[arg] = mock.Mock()
+
+            expected_msg = ('tracer and sampler / exporter / propagator '
+                            'arguments are mutually exclusive')
+            self.assertRaisesRegexp(ValueError, expected_msg,
+                                    flask_middleware.FlaskMiddleware,
+                                    app=app, tracer=tracer, **kwargs)
+
     def test_init_app_config(self):
         app = mock.Mock()
         app.config = {
@@ -188,6 +202,21 @@ class TestFlaskMiddleware(unittest.TestCase):
             span = tracer.current_span()
 
             assert isinstance(span, BlankSpan)
+
+    def test__before_request_existing_tracer_instance(self):
+        app = self.create_app()
+        tracer = mock.Mock()
+        flask_middleware.FlaskMiddleware(app=app,
+                                         tracer=tracer)
+        context = app.test_request_context(
+            path='/foo/bar',
+            headers={})
+
+        assert len(tracer.start_span.call_args_list) == 0
+
+        with context:
+            app.preprocess_request()
+            assert len(tracer.start_span.call_args_list) == 1
 
     def test_header_encoding(self):
         # The test is for detecting the encoding compatibility issue in

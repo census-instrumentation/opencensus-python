@@ -55,6 +55,17 @@ class FlaskMiddleware(object):
     :type blacklist_paths: list
     :param blacklist_paths: Paths that do not trace.
 
+    :type tracer: :class:`~opencensus.trace.tracer.Tracer`
+    :param tracer: Trace instance to use for each request. If not provided,
+                   new instance will be instantiated for each request.
+
+                   This comes handy in scenarios where you want to use the
+                   same singleton Tracer instance for your code and all
+                   the extensions.
+
+                   NOTE: This argument is mutually exclusive with
+                   sampler, exporter and propagator argument.
+
     :type sampler: :class:`~opencensus.trace.samplers.base.Sampler`
     :param sampler: A sampler. It should extend from the base
                     :class:`.Sampler` type and implement
@@ -76,10 +87,16 @@ class FlaskMiddleware(object):
                        :class:`.TextFormatPropagator`.
     """
 
-    def __init__(self, app=None, blacklist_paths=None, sampler=None,
-                 exporter=None, propagator=None):
+    def __init__(self, app=None, blacklist_paths=None, tracer=None,
+                 sampler=None, exporter=None, propagator=None):
+        if tracer and (sampler or exporter or propagator):
+            msg = ('tracer and sampler / exporter / propagator arguments '
+                   'are mutually exclusive')
+            raise ValueError(msg)
+
         self.app = app
         self.blacklist_paths = blacklist_paths
+        self.tracer = tracer
         self.sampler = sampler
         self.exporter = exporter
         self.propagator = propagator
@@ -136,11 +153,14 @@ class FlaskMiddleware(object):
         try:
             span_context = self.propagator.from_headers(flask.request.headers)
 
-            tracer = tracer_module.Tracer(
-                span_context=span_context,
-                sampler=self.sampler,
-                exporter=self.exporter,
-                propagator=self.propagator)
+            if not self.tracer:
+                tracer = tracer_module.Tracer(
+                    span_context=span_context,
+                    sampler=self.sampler,
+                    exporter=self.exporter,
+                    propagator=self.propagator)
+            else:
+                tracer = self.tracer
 
             span = tracer.start_span()
             span.span_kind = span_module.SpanKind.SERVER
