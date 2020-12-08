@@ -167,6 +167,20 @@ class TestOpenCensusServerInterceptor(unittest.TestCase):
         new_handler = server_interceptor._wrap_rpc_behavior(None, lambda: None)
         self.assertEqual(new_handler, None)
 
+    def test_extract_byte_size(self):
+        # should work with a google.protobuf message
+        google_protobuf_mock = mock.Mock()
+        google_protobuf_mock.ByteSize.return_value = 5
+        self.assertEqual(grpc_utils.extract_byte_size(google_protobuf_mock), 5)
+
+        # should work with a proto-plus style message
+        protoplus_protobuf_mock = mock.Mock(spec=[])
+        type(protoplus_protobuf_mock).pb = mock.Mock()
+        type(protoplus_protobuf_mock).pb.return_value.ByteSize.return_value = 5
+        self.assertEqual(
+            grpc_utils.extract_byte_size(protoplus_protobuf_mock), 5
+        )
+
 
 class MockTracer(object):
     def __init__(self, *args, **kwargs):
