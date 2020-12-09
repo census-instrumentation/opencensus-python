@@ -30,7 +30,6 @@ from opencensus.ext.azure.common.protocol import (
 )
 from opencensus.ext.azure.common.storage import LocalFileStorage
 from opencensus.ext.azure.common.transport import TransportMixin
-from opencensus.ext.azure.metrics_exporter import heartbeat_metrics
 from opencensus.trace import execution_context
 
 logger = logging.getLogger(__name__)
@@ -60,8 +59,6 @@ class BaseLogHandler(logging.Handler):
         self._queue = Queue(capacity=self.options.queue_capacity)
         self._worker = Worker(self._queue, self)
         self._worker.start()
-        heartbeat_metrics.enable_heartbeat_metrics(
-            self.options.connection_string, self.options.instrumentation_key)
 
     def _export(self, batch, event=None):  # pragma: NO COVER
         try:
