@@ -234,6 +234,7 @@ class TestAzureMetricsExporter(unittest.TestCase):
             self.assertFalse(isinstance(exporter_mock.call_args[0][0][0],
                                         producer_class))
 
+    @unittest.skip("Skip because disabling heartbeat metrics")
     @mock.patch('opencensus.ext.azure.metrics_exporter'
                 '.transport.get_exporter_thread')
     def test_new_metrics_exporter_heartbeat(self, exporter_mock):
