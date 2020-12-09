@@ -46,8 +46,8 @@ HTTP_STATUS_CODE = attributes_helper.COMMON_ATTRIBUTES['HTTP_STATUS_CODE']
 REQUEST_THREAD_LOCAL_KEY = 'django_request'
 SPAN_THREAD_LOCAL_KEY = 'django_span'
 
-BLACKLIST_PATHS = 'BLACKLIST_PATHS'
-BLACKLIST_HOSTNAMES = 'BLACKLIST_HOSTNAMES'
+EXCLUDELIST_PATHS = 'EXCLUDELIST_PATHS'
+EXCLUDELIST_HOSTNAMES = 'EXCLUDELIST_HOSTNAMES'
 
 log = logging.getLogger(__name__)
 
@@ -160,9 +160,9 @@ class OpencensusMiddleware(MiddlewareMixin):
         if isinstance(self.propagator, six.string_types):
             self.propagator = configuration.load(self.propagator)
 
-        self.blacklist_paths = settings.get(BLACKLIST_PATHS, None)
+        self.excludelist_paths = settings.get(EXCLUDELIST_PATHS, None)
 
-        self.blacklist_hostnames = settings.get(BLACKLIST_HOSTNAMES, None)
+        self.excludelist_hostnames = settings.get(EXCLUDELIST_HOSTNAMES, None)
 
         if django.VERSION >= (2,):  # pragma: NO COVER
             connection.execute_wrappers.append(_trace_db_call)
@@ -173,8 +173,8 @@ class OpencensusMiddleware(MiddlewareMixin):
         :type request: :class:`~django.http.request.HttpRequest`
         :param request: Django http request.
         """
-        # Do not trace if the url is blacklisted
-        if utils.disable_tracing_url(request.path, self.blacklist_paths):
+        # Do not trace if the url is excludelisted
+        if utils.disable_tracing_url(request.path, self.excludelist_paths):
             return
 
         # Add the request to thread local
@@ -183,8 +183,8 @@ class OpencensusMiddleware(MiddlewareMixin):
             request)
 
         execution_context.set_opencensus_attr(
-            'blacklist_hostnames',
-            self.blacklist_hostnames)
+            'excludelist_hostnames',
+            self.excludelist_hostnames)
 
         try:
             # Start tracing this request
@@ -234,8 +234,8 @@ class OpencensusMiddleware(MiddlewareMixin):
         function name add set it as the span name.
         """
 
-        # Do not trace if the url is blacklisted
-        if utils.disable_tracing_url(request.path, self.blacklist_paths):
+        # Do not trace if the url is excludelisted
+        if utils.disable_tracing_url(request.path, self.excludelist_paths):
             return
 
         try:
@@ -248,8 +248,8 @@ class OpencensusMiddleware(MiddlewareMixin):
             log.error('Failed to trace request', exc_info=True)
 
     def process_response(self, request, response):
-        # Do not trace if the url is blacklisted
-        if utils.disable_tracing_url(request.path, self.blacklist_paths):
+        # Do not trace if the url is excludelisted
+        if utils.disable_tracing_url(request.path, self.excludelist_paths):
             return response
 
         try:

@@ -4,6 +4,8 @@
 
 - PeriodicMetricTask flush on exit
 ([#943](https://github.com/census-instrumentation/opencensus-python/pull/943))
+- Change blacklist to excludelist
+([#977](https://github.com/census-instrumentation/opencensus-python/pull/977))
 
 ## 0.7.10
 Released 2020-06-29

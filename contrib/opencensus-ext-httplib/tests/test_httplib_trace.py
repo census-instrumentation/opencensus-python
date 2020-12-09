@@ -103,7 +103,7 @@ class Test_httplib_trace(unittest.TestCase):
         self.assertEqual(span_module.SpanKind.CLIENT,
                          mock_tracer.span.span_kind)
 
-    def test_wrap_httplib_request_blacklist_ok(self):
+    def test_wrap_httplib_request_excludelist_ok(self):
         mock_span = mock.Mock()
         span_id = '1234'
         mock_span.span_id = span_id
@@ -139,7 +139,7 @@ class Test_httplib_trace(unittest.TestCase):
             'traceparent': '00-123-456-01',
         })
 
-    def test_wrap_httplib_request_blacklist_nok(self):
+    def test_wrap_httplib_request_excludelist_nok(self):
         mock_span = mock.Mock()
         span_id = '1234'
         mock_span.span_id = span_id

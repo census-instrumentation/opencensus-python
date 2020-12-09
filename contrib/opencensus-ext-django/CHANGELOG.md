@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Change blacklist to excludelist
+([#977](https://github.com/census-instrumentation/opencensus-python/pull/977))
+
 ## 0.7.2
 Released 2019-09-30
 
