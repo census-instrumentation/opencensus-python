@@ -13,7 +13,7 @@
 - Added queue capacity configuration for exporters
   ([#949](https://github.com/census-instrumentation/opencensus-python/pull/949))
 - Disable heartbeat metrics in exporters
-  ([#949](https://github.com/census-instrumentation/opencensus-python/pull/949))
+  ([#984](https://github.com/census-instrumentation/opencensus-python/pull/984))
 
 ## 1.0.4
 Released 2020-06-29
