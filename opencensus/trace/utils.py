@@ -19,10 +19,10 @@ from google.rpc import code_pb2
 from opencensus.trace import execution_context
 from opencensus.trace.status import Status
 
-# By default the blacklist urls are not tracing, currently just include the
+# By default the excludelist urls are not tracing, currently just include the
 # health check url. The paths are literal string matched instead of regular
 # expressions. Do not include the '/' at the beginning of the path.
-DEFAULT_BLACKLIST_PATHS = [
+DEFAULT_EXCLUDELIST_PATHS = [
     '_ah/health',
 ]
 
@@ -42,20 +42,20 @@ def get_func_name(func):
     return func_name
 
 
-def disable_tracing_url(url, blacklist_paths=None):
-    """Disable tracing on the provided blacklist paths, by default not tracing
+def disable_tracing_url(url, excludelist_paths=None):
+    """Disable tracing on the provided excludelist paths, by default not tracing
     the health check request.
 
-    If the url path starts with the blacklisted path, return True.
+    If the url path starts with the excludelisted path, return True.
 
-    :type blacklist_paths: list
-    :param blacklist_paths: Paths that not tracing.
+    :type excludelist_paths: list
+    :param excludelist_paths: Paths that not tracing.
 
     :rtype: bool
     :returns: True if not tracing, False if tracing.
     """
-    if blacklist_paths is None:
-        blacklist_paths = DEFAULT_BLACKLIST_PATHS
+    if excludelist_paths is None:
+        excludelist_paths = DEFAULT_EXCLUDELIST_PATHS
 
     # Remove the 'https?|ftp://' if exists
     url = re.sub(URL_PATTERN, '', url)
@@ -63,39 +63,39 @@ def disable_tracing_url(url, blacklist_paths=None):
     # Split the url by the first '/' and get the path part
     url_path = url.split('/', 1)[1]
 
-    for path in blacklist_paths:
+    for path in excludelist_paths:
         if url_path.startswith(path):
             return True
 
     return False
 
 
-def disable_tracing_hostname(url, blacklist_hostnames=None):
-    """Disable tracing for the provided blacklist URLs, by default not tracing
+def disable_tracing_hostname(url, excludelist_hostnames=None):
+    """Disable tracing for the provided excludelist URLs, by default not tracing
     the exporter url.
 
-    If the url path starts with the blacklisted path, return True.
+    If the url path starts with the excludelisted path, return True.
 
-    :type blacklist_hostnames: list
-    :param blacklist_hostnames: URL that not tracing.
+    :type excludelist_hostnames: list
+    :param excludelist_hostnames: URL that not tracing.
 
     :rtype: bool
     :returns: True if not tracing, False if tracing.
     """
-    if blacklist_hostnames is None:
+    if excludelist_hostnames is None:
         # Exporter host_name are not traced by default
         _tracer = execution_context.get_opencensus_tracer()
         try:
-            blacklist_hostnames = [
+            excludelist_hostnames = [
                 '{}:{}'.format(
                     _tracer.exporter.host_name,
                     _tracer.exporter.port
                 )
             ]
         except(AttributeError):
-            blacklist_hostnames = []
+            excludelist_hostnames = []
 
-    return url in blacklist_hostnames
+    return url in excludelist_hostnames
 
 
 def status_from_http_code(http_code):
