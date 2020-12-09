@@ -76,7 +76,6 @@ class TransportMixin(object):
             except Exception:
                 pass
         if response.status_code == 200:
-            logger.info('Transmission succeeded: %s.', text)
             return 0
         if response.status_code == 206:  # Partial Content
             if data:
