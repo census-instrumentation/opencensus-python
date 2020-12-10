@@ -14,6 +14,8 @@
   ([#949](https://github.com/census-instrumentation/opencensus-python/pull/949))
 - Disable heartbeat metrics in exporters
   ([#984](https://github.com/census-instrumentation/opencensus-python/pull/984))
+- Loosen instrumentation key validation to GUID
+  ([#984](https://github.com/census-instrumentation/opencensus-python/pull/984))
 
 ## 1.0.4
 Released 2020-06-29
