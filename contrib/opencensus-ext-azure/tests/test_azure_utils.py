@@ -121,12 +121,14 @@ class TestUtils(unittest.TestCase):
         self.assertRaises(ValueError,
                           lambda: utils.validate_instrumentation_key(key))
 
-    def test_invalid_key_version(self):
-        key = '1234abcd-5678-6efa-8abc-1234567890ab'
-        self.assertRaises(ValueError,
-                          lambda: utils.validate_instrumentation_key(key))
+    def test_valid_key_section2_hex(self):
+        key = '1234abcd-567a-4efa-8abc-1234567890ab'
+        self.assertIsNone(utils.validate_instrumentation_key(key))
 
-    def test_invalid_key_variant(self):
-        key = '1234abcd-5678-4efa-2abc-1234567890ab'
-        self.assertRaises(ValueError,
-                          lambda: utils.validate_instrumentation_key(key))
+    def test_valid_key_section3_hex(self):
+        key = '1234abcd-5678-befa-8abc-1234567890ab'
+        self.assertIsNone(utils.validate_instrumentation_key(key))
+
+    def test_valid_key_section4_hex(self):
+        key = '1234abcd-5678-4efa-cabc-1234567890ab'
+        self.assertIsNone(utils.validate_instrumentation_key(key))
