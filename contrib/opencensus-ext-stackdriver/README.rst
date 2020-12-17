@@ -32,8 +32,8 @@ This example shows how to report the traces to Stackdriver Trace:
 
 ::
 
-    pip install google-cloud-trace
-    pipenv install google-cloud-trace
+    pip install google-cloud-trace<1.0.0
+    pipenv install google-cloud-trace<1.0.0
 
 By default, traces are exported asynchronously, to reduce latency during
 your code's execution. If you would like to export data on the main thread
