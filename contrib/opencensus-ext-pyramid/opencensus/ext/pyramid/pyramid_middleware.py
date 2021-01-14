@@ -27,7 +27,7 @@ HTTP_ROUTE = attributes_helper.COMMON_ATTRIBUTES['HTTP_ROUTE']
 HTTP_URL = attributes_helper.COMMON_ATTRIBUTES['HTTP_URL']
 HTTP_STATUS_CODE = attributes_helper.COMMON_ATTRIBUTES['HTTP_STATUS_CODE']
 
-BLACKLIST_PATHS = 'BLACKLIST_PATHS'
+EXCLUDELIST_PATHS = 'EXCLUDELIST_PATHS'
 
 
 log = logging.getLogger(__name__)
@@ -62,7 +62,7 @@ class OpenCensusTweenFactory(object):
         self.exporter = settings.EXPORTER
         self.propagator = settings.PROPAGATOR
 
-        self._blacklist_paths = settings.BLACKLIST_PATHS
+        self._excludelist_paths = settings.EXCLUDELIST_PATHS
 
     def __call__(self, request):
         self._before_request(request)
@@ -74,7 +74,7 @@ class OpenCensusTweenFactory(object):
         return response
 
     def _before_request(self, request):
-        if utils.disable_tracing_url(request.path, self._blacklist_paths):
+        if utils.disable_tracing_url(request.path, self._excludelist_paths):
             return
 
         try:
@@ -113,7 +113,7 @@ class OpenCensusTweenFactory(object):
             log.error('Failed to trace request', exc_info=True)
 
     def _after_request(self, request, response):
-        if utils.disable_tracing_url(request.path, self._blacklist_paths):
+        if utils.disable_tracing_url(request.path, self._excludelist_paths):
             return
 
         try:

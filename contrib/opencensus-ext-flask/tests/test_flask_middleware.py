@@ -165,14 +165,14 @@ class TestFlaskMiddleware(unittest.TestCase):
             span_context = tracer.span_context
             self.assertEqual(span_context.trace_id, trace_id)
 
-    def test__before_request_blacklist(self):
+    def test__before_request_excludelist(self):
         flask_trace_header = 'traceparent'
         trace_id = '2dd43a1d6b2549c6bc2a1a54c2fc0b05'
         span_id = '6e0c63257de34c92'
         flask_trace_id = '00-{}-{}-00'.format(trace_id, span_id)
 
         app = self.create_app()
-        # Use the AlwaysOnSampler here to prove that the blacklist takes
+        # Use the AlwaysOnSampler here to prove that the excludelist takes
         # precedence over the sampler
         flask_middleware.FlaskMiddleware(app=app,
                                          sampler=samplers.AlwaysOnSampler())
@@ -349,7 +349,7 @@ class TestFlaskMiddleware(unittest.TestCase):
             self.assertEqual(span.attributes, expected_attributes)
             assert isinstance(span.parent_span, base.NullContextManager)
 
-    def test__after_request_blacklist(self):
+    def test__after_request_excludelist(self):
         flask_trace_header = 'traceparent'
         trace_id = '2dd43a1d6b2549c6bc2a1a54c2fc0b05'
         span_id = '6e0c63257de34c92'

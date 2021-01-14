@@ -6,7 +6,7 @@ from opencensus.trace.samplers import AlwaysOnSampler
 
 app = Flask(__name__)
 middleware = FlaskMiddleware(app,
-                             blacklist_paths=['/healthz'],
+                             excludelist_paths=['/healthz'],
                              sampler=AlwaysOnSampler(),
                              exporter=DatadogTraceExporter(
                                  Options(service='python-export-test',

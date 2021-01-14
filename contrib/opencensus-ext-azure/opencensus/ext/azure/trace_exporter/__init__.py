@@ -60,8 +60,6 @@ class AzureExporter(BaseExporter, ProcessorMixin, TransportMixin):
         self._telemetry_processors = []
         super(AzureExporter, self).__init__(**options)
         atexit.register(self._stop, self.options.grace_period)
-        heartbeat_metrics.enable_heartbeat_metrics(
-            self.options.connection_string, self.options.instrumentation_key)
 
     def span_data_to_envelope(self, sd):
         envelope = Envelope(

@@ -13,7 +13,7 @@ You can enable requests integration by specifying ``'requests'`` to ``trace_inte
 
 It's possible to configure a list of URL you don't want traced. By default the request to exporter
 won't be traced. It's configurable by giving an array of hostname/port to the attribute
-``blacklist_hostnames`` in OpenCensus context's attributes:
+``excludelist_hostnames`` in OpenCensus context's attributes:
 
 Only the hostname must be specified if only the hostname is specified in the URL request.
 
