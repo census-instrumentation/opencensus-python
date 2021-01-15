@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+## 1.0.6
+Released 2021-01-14
+
+- Disable heartbeat metrics in exporters
+  ([#984](https://github.com/census-instrumentation/opencensus-python/pull/984))
+- Loosen instrumentation key validation to GUID
+  ([#984](https://github.com/census-instrumentation/opencensus-python/pull/984))
+
+## 1.0.5
+Released 2020-10-13
+
 - Attach rate metrics via Heartbeat for Web and Function apps
   ([#930](https://github.com/census-instrumentation/opencensus-python/pull/930))
 - Attach rate metrics for VM
@@ -12,10 +23,6 @@
   ([#946](https://github.com/census-instrumentation/opencensus-python/pull/946))
 - Added queue capacity configuration for exporters
   ([#949](https://github.com/census-instrumentation/opencensus-python/pull/949))
-- Disable heartbeat metrics in exporters
-  ([#984](https://github.com/census-instrumentation/opencensus-python/pull/984))
-- Loosen instrumentation key validation to GUID
-  ([#984](https://github.com/census-instrumentation/opencensus-python/pull/984))
 
 ## 1.0.4
 Released 2020-06-29

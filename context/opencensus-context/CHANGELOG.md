@@ -2,8 +2,6 @@
 
 ## Unreleased
 
-## opencensus-ext-context 0.1.2
-
 ## 0.1.2
 Released 2020-06-29
 

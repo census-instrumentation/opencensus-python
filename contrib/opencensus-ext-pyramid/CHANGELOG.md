@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+## 0.7.4
+Released 2021-01-14
+
 - Change blacklist to excludelist
 ([#977](https://github.com/census-instrumentation/opencensus-python/pull/977))
 
