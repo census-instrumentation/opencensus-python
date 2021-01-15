@@ -40,8 +40,8 @@ HTTP_ROUTE = attributes_helper.COMMON_ATTRIBUTES['HTTP_ROUTE']
 HTTP_URL = attributes_helper.COMMON_ATTRIBUTES['HTTP_URL']
 HTTP_STATUS_CODE = attributes_helper.COMMON_ATTRIBUTES['HTTP_STATUS_CODE']
 
-BLACKLIST_PATHS = 'BLACKLIST_PATHS'
-BLACKLIST_HOSTNAMES = 'BLACKLIST_HOSTNAMES'
+EXCLUDELIST_PATHS = 'EXCLUDELIST_PATHS'
+EXCLUDELIST_HOSTNAMES = 'EXCLUDELIST_HOSTNAMES'
 
 log = logging.getLogger(__name__)
 
@@ -52,8 +52,8 @@ class FlaskMiddleware(object):
     :type app: :class: `~flask.Flask`
     :param app: A flask application.
 
-    :type blacklist_paths: list
-    :param blacklist_paths: Paths that do not trace.
+    :type excludelist_paths: list
+    :param excludelist_paths: Paths that do not trace.
 
     :type sampler: :class:`~opencensus.trace.samplers.base.Sampler`
     :param sampler: A sampler. It should extend from the base
@@ -76,10 +76,10 @@ class FlaskMiddleware(object):
                        :class:`.TextFormatPropagator`.
     """
 
-    def __init__(self, app=None, blacklist_paths=None, sampler=None,
+    def __init__(self, app=None, excludelist_paths=None, sampler=None,
                  exporter=None, propagator=None):
         self.app = app
-        self.blacklist_paths = blacklist_paths
+        self.excludelist_paths = excludelist_paths
         self.sampler = sampler
         self.exporter = exporter
         self.propagator = propagator
@@ -112,10 +112,10 @@ class FlaskMiddleware(object):
             if isinstance(self.propagator, six.string_types):
                 self.propagator = configuration.load(self.propagator)
 
-        self.blacklist_paths = settings.get(BLACKLIST_PATHS,
-                                            self.blacklist_paths)
+        self.excludelist_paths = settings.get(EXCLUDELIST_PATHS,
+                                              self.excludelist_paths)
 
-        self.blacklist_hostnames = settings.get(BLACKLIST_HOSTNAMES, None)
+        self.excludelist_hostnames = settings.get(EXCLUDELIST_HOSTNAMES, None)
 
         self.setup_trace()
 
@@ -129,8 +129,10 @@ class FlaskMiddleware(object):
 
         See: http://flask.pocoo.org/docs/0.12/api/#flask.Flask.before_request
         """
-        # Do not trace if the url is blacklisted
-        if utils.disable_tracing_url(flask.request.url, self.blacklist_paths):
+        # Do not trace if the url is in the exclude list
+        if utils.disable_tracing_url(
+            flask.request.url, self.excludelist_paths
+        ):
             return
 
         try:
@@ -161,8 +163,8 @@ class FlaskMiddleware(object):
                 HTTP_URL, str(flask.request.url)
             )
             execution_context.set_opencensus_attr(
-                'blacklist_hostnames',
-                self.blacklist_hostnames
+                'excludelist_hostnames',
+                self.excludelist_hostnames
             )
         except Exception:  # pragma: NO COVER
             log.error('Failed to trace request', exc_info=True)
@@ -172,8 +174,10 @@ class FlaskMiddleware(object):
 
         See: http://flask.pocoo.org/docs/0.12/api/#flask.Flask.after_request
         """
-        # Do not trace if the url is blacklisted
-        if utils.disable_tracing_url(flask.request.url, self.blacklist_paths):
+        # Do not trace if the url is in the exclude list
+        if utils.disable_tracing_url(
+            flask.request.url, self.excludelist_paths
+        ):
             return response
 
         try:
@@ -193,8 +197,10 @@ class FlaskMiddleware(object):
             return response
 
     def _teardown_request(self, exception):
-        # Do not trace if the url is blacklisted
-        if utils.disable_tracing_url(flask.request.url, self.blacklist_paths):
+        # Do not trace if the url is in the exclude list
+        if utils.disable_tracing_url(
+            flask.request.url, self.excludelist_paths
+        ):
             return
 
         try:

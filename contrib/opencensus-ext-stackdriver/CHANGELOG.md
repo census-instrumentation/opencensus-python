@@ -1,29 +1,12 @@
 # Changelog
 
+## Unreleased
+
 ## 0.7.4
 Released 2020-10-13
 
   - Change default transporter in stackdriver exporter
   ([#929](https://github.com/census-instrumentation/opencensus-python/pull/929))
-
-## 0.7.3
-Released 2020-06-29
-
-  - Add mean property for distribution values
-  ([#919](https://github.com/census-instrumentation/opencensus-python/pull/919))
-
-## 0.7.2
-Released 2019-08-26
-
-  - Delete SD integ test metric descriptors
-  ([#770](https://github.com/census-instrumentation/opencensus-python/pull/770))
-  - Updated `http.status_code` attribute to be an int.
-  ([#755](https://github.com/census-instrumentation/opencensus-python/pull/755))
-
-## 0.7.1
-Released 2019-08-05
-
-  - Support exporter changes in `opencensus>=0.7.0`
 
 ## 0.7.3
 Released 2020-06-29

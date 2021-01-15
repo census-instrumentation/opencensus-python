@@ -149,7 +149,9 @@ class SamplingFilter(logging.Filter):
         self.probability = probability
 
     def filter(self, record):
-        return random.random() < self.probability
+        val = random.random()
+        print(val)
+        return val < self.probability
 
 
 class AzureLogHandler(TransportMixin, ProcessorMixin, BaseLogHandler):

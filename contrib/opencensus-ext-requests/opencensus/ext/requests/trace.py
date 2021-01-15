@@ -74,14 +74,14 @@ def wrap_requests(requests_func):
         # Check if request was sent from an exporter. If so, do not wrap.
         if execution_context.is_exporter():
             return requests_func(url, *args, **kwargs)
-        blacklist_hostnames = execution_context.get_opencensus_attr(
-            'blacklist_hostnames')
+        excludelist_hostnames = execution_context.get_opencensus_attr(
+            'excludelist_hostnames')
         parsed_url = urlparse(url)
         if parsed_url.port is None:
             dest_url = parsed_url.hostname
         else:
             dest_url = '{}:{}'.format(parsed_url.hostname, parsed_url.port)
-        if utils.disable_tracing_hostname(dest_url, blacklist_hostnames):
+        if utils.disable_tracing_hostname(dest_url, excludelist_hostnames):
             return requests_func(url, *args, **kwargs)
 
         path = parsed_url.path if parsed_url.path else '/'
@@ -145,14 +145,14 @@ def wrap_session_request(wrapped, instance, args, kwargs):
     method = kwargs.get('method') or args[0]
     url = kwargs.get('url') or args[1]
 
-    blacklist_hostnames = execution_context.get_opencensus_attr(
-        'blacklist_hostnames')
+    excludelist_hostnames = execution_context.get_opencensus_attr(
+        'excludelist_hostnames')
     parsed_url = urlparse(url)
     if parsed_url.port is None:
         dest_url = parsed_url.hostname
     else:
         dest_url = '{}:{}'.format(parsed_url.hostname, parsed_url.port)
-    if utils.disable_tracing_hostname(dest_url, blacklist_hostnames):
+    if utils.disable_tracing_hostname(dest_url, excludelist_hostnames):
         return wrapped(*args, **kwargs)
 
     path = parsed_url.path if parsed_url.path else '/'
