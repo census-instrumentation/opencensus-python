@@ -167,9 +167,6 @@ class OpencensusMiddleware(MiddlewareMixin):
         if django.VERSION >= (2,):  # pragma: NO COVER
             connection.execute_wrappers.append(_trace_db_call)
 
-        if django.VERSION >= (2,):  # pragma: NO COVER
-            connection.execute_wrappers.append(_trace_db_call)
-
     def process_request(self, request):
         """Called on each request, before Django decides which view to execute.
 
