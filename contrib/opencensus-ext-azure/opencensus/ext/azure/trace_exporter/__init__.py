@@ -28,7 +28,6 @@ from opencensus.ext.azure.common.protocol import (
 )
 from opencensus.ext.azure.common.storage import LocalFileStorage
 from opencensus.ext.azure.common.transport import TransportMixin
-from opencensus.ext.azure.metrics_exporter import heartbeat_metrics
 from opencensus.trace.span import SpanKind
 
 try:
