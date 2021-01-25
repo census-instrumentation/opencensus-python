@@ -5,7 +5,6 @@
 ## 1.0.7
 Released 2021-01-25
 
-
 - Hotfix
 ([#1004](https://github.com/census-instrumentation/opencensus-python/pull/1004))
 
