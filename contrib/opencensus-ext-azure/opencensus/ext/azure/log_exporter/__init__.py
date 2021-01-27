@@ -172,6 +172,7 @@ class AzureLogHandler(TransportMixin, ProcessorMixin, BaseLogHandler):
             level = 0
             has_full_stack = False
             exc_type = "N/A"
+            message = self.format(record)
             if tb is not None:
                 has_full_stack = True
                 for fileName, line, method, _text in traceback.extract_tb(tb):
@@ -183,6 +184,9 @@ class AzureLogHandler(TransportMixin, ProcessorMixin, BaseLogHandler):
                     })
                     level += 1
                 callstack.reverse()
+            elif record.message:
+                message = record.message
+
             if exctype is not None:
                 exc_type = exctype.__name__
 
@@ -193,7 +197,7 @@ class AzureLogHandler(TransportMixin, ProcessorMixin, BaseLogHandler):
                     'id': 1,
                     'outerId': 0,
                     'typeName': exc_type,
-                    'message': self.format(record),
+                    'message': message,
                     'hasFullStack': has_full_stack,
                     'parsedStack': callstack,
                 }],
