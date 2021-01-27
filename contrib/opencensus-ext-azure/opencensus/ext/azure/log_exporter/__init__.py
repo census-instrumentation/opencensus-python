@@ -170,24 +170,31 @@ class AzureLogHandler(TransportMixin, ProcessorMixin, BaseLogHandler):
             exctype, _value, tb = record.exc_info
             callstack = []
             level = 0
-            for fileName, line, method, _text in traceback.extract_tb(tb):
-                callstack.append({
-                    'level': level,
-                    'method': method,
-                    'fileName': fileName,
-                    'line': line,
-                })
-                level += 1
-            callstack.reverse()
+            has_full_stack = False
+            exc_type = "N/A"
+            if tb is not None:
+                has_full_stack = True
+                for fileName, line, method, _text in traceback.extract_tb(tb):
+                    callstack.append({
+                        'level': level,
+                        'method': method,
+                        'fileName': fileName,
+                        'line': line,
+                    })
+                    level += 1
+                callstack.reverse()
+            if exctype is not None:
+                exc_type = exctype.__name__
 
             envelope.name = 'Microsoft.ApplicationInsights.Exception'
+
             data = ExceptionData(
                 exceptions=[{
                     'id': 1,
                     'outerId': 0,
-                    'typeName': exctype.__name__,
+                    'typeName': exc_type,
                     'message': self.format(record),
-                    'hasFullStack': True,
+                    'hasFullStack': has_full_stack,
                     'parsedStack': callstack,
                 }],
                 severityLevel=max(0, record.levelno - 1) // 10,

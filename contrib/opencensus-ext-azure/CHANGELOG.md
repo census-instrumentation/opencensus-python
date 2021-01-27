@@ -2,13 +2,22 @@
 
 ## Unreleased
 
+- Fix `logger.exception` with no exception info throwing error
+([#1004](https://github.com/census-instrumentation/opencensus-python/pull/1004))
+
+## 1.0.7
+Released 2021-01-25
+
+- Hotfix
+([#1004](https://github.com/census-instrumentation/opencensus-python/pull/1004))
+
 ## 1.0.6
 Released 2021-01-14
 
 - Disable heartbeat metrics in exporters
   ([#984](https://github.com/census-instrumentation/opencensus-python/pull/984))
 - Loosen instrumentation key validation to GUID
-  ([#984](https://github.com/census-instrumentation/opencensus-python/pull/984))
+  ([#986](https://github.com/census-instrumentation/opencensus-python/pull/986))
 
 ## 1.0.5
 Released 2020-10-13
