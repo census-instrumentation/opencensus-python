@@ -3,7 +3,7 @@
 ## Unreleased
 
 - Fix `logger.exception` with no exception info throwing error
-([#1004](https://github.com/census-instrumentation/opencensus-python/pull/1004))
+([#1006](https://github.com/census-instrumentation/opencensus-python/pull/1006))
 
 ## 1.0.7
 Released 2021-01-25
