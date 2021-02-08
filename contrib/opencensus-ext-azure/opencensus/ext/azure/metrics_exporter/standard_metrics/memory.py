@@ -19,6 +19,7 @@ from opencensus.metrics.export.gauge import DerivedLongGauge
 
 class AvailableMemoryMetric(object):
     NAME = "\\Memory\\Available Bytes"
+
     @staticmethod
     def get_value():
         return psutil.virtual_memory().available

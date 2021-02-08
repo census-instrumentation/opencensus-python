@@ -22,3 +22,5 @@ logger = logging.getLogger(__name__)
 # environment variable.
 logger.addHandler(AzureLogHandler())
 logger.warning('Hello, World!')
+
+input("...")

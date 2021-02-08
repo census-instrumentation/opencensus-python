@@ -71,7 +71,7 @@ OPENCENSUS = {
         'PROPAGATOR':
             'opencensus.trace.propagation.google_cloud_format.'
             'GoogleCloudFormatPropagator()',
-        'BLACKLIST_PATHS': [
+        'EXCLUDELIST_PATHS': [
             '_ah/health',
         ],
     }

@@ -22,7 +22,7 @@ Usage
     from opencensus.ext.flask.flask_middleware import FlaskMiddleware
     
     app = Flask(__name__)
-    middleware = FlaskMiddleware(app, blacklist_paths=['_ah/health'])
+    middleware = FlaskMiddleware(app, excludelist_paths=['_ah/health'])
     
     @app.route('/')
     def hello():

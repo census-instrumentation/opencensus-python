@@ -58,6 +58,7 @@ class TestPeriodicMetricTask(unittest.TestCase):
         self.assertEqual(mock_func.call_count, 2)
         time.sleep(INTERVAL)
         self.assertEqual(mock_func.call_count, 3)
+        task.cancel()
 
     def test_periodic_task_cancel(self):
         mock_func = mock.Mock()
@@ -67,6 +68,14 @@ class TestPeriodicMetricTask(unittest.TestCase):
         self.assertEqual(mock_func.call_count, 1)
         task.cancel()
         time.sleep(INTERVAL)
+        self.assertEqual(mock_func.call_count, 1)
+
+    def test_periodic_task_close(self):
+        mock_func = mock.Mock()
+        task = transport.PeriodicMetricTask(100, mock_func)
+        task.start()
+        mock_func.assert_not_called()
+        task.close()
         self.assertEqual(mock_func.call_count, 1)
 
 

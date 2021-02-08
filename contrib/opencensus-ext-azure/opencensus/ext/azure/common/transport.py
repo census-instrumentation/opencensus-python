@@ -26,12 +26,12 @@ class TransportMixin(object):
             # give a few more seconds for blob lease operation
             # to reduce the chance of race (for perf consideration)
             if blob.lease(self.options.timeout + 5):
-                envelopes = blob.get()  # TODO: handle error
+                envelopes = blob.get()
                 result = self._transmit(envelopes)
                 if result > 0:
                     blob.lease(result)
                 else:
-                    blob.delete(silent=True)
+                    blob.delete()
 
     def _transmit(self, envelopes):
         """
@@ -41,6 +41,8 @@ class TransportMixin(object):
         Return the next retry time in seconds for retryable failure.
         This function should never throw exception.
         """
+        if not envelopes:
+            return 0
         try:
             response = requests.post(
                 url=self.options.endpoint,
@@ -50,9 +52,15 @@ class TransportMixin(object):
                     'Content-Type': 'application/json; charset=utf-8',
                 },
                 timeout=self.options.timeout,
+                proxies=json.loads(self.options.proxies),
             )
+        except requests.Timeout:
+            logger.warning(
+                'Request time out. Ingestion may be backed up. Retrying.')
+            return self.options.minimum_retry_interval
         except Exception as ex:  # TODO: consider RequestException
-            logger.warning('Transient client side error %s.', ex)
+            logger.warning(
+                'Retrying due to transient client side error %s.', ex)
             # client side error (retryable)
             return self.options.minimum_retry_interval
 
@@ -68,10 +76,8 @@ class TransportMixin(object):
             except Exception:
                 pass
         if response.status_code == 200:
-            logger.info('Transmission succeeded: %s.', text)
             return 0
         if response.status_code == 206:  # Partial Content
-            # TODO: store the unsent data
             if data:
                 try:
                     resend_envelopes = []

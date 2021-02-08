@@ -2,6 +2,63 @@
 
 ## Unreleased
 
+- Fix `logger.exception` with no exception info throwing error
+([#1006](https://github.com/census-instrumentation/opencensus-python/pull/1006))
+
+## 1.0.7
+Released 2021-01-25
+
+- Hotfix
+([#1004](https://github.com/census-instrumentation/opencensus-python/pull/1004))
+
+## 1.0.6
+Released 2021-01-14
+
+- Disable heartbeat metrics in exporters
+  ([#984](https://github.com/census-instrumentation/opencensus-python/pull/984))
+- Loosen instrumentation key validation to GUID
+  ([#986](https://github.com/census-instrumentation/opencensus-python/pull/986))
+
+## 1.0.5
+Released 2020-10-13
+
+- Attach rate metrics via Heartbeat for Web and Function apps
+  ([#930](https://github.com/census-instrumentation/opencensus-python/pull/930))
+- Attach rate metrics for VM
+  ([#935](https://github.com/census-instrumentation/opencensus-python/pull/935))
+- Add links in properties for trace exporter envelopes
+  ([#936](https://github.com/census-instrumentation/opencensus-python/pull/936))
+- Fix attach rate metrics for VM to only ping data service on retry
+  ([#946](https://github.com/census-instrumentation/opencensus-python/pull/946))
+- Added queue capacity configuration for exporters
+  ([#949](https://github.com/census-instrumentation/opencensus-python/pull/949))
+
+## 1.0.4
+Released 2020-06-29
+
+- Remove dependency rate from standard metrics
+  ([#903](https://github.com/census-instrumentation/opencensus-python/pull/903))
+- Implement customEvents using AzureEventHandler
+  ([#925](https://github.com/census-instrumentation/opencensus-python/pull/925))
+
+## 1.0.3
+Released 2020-06-17
+
+- Change default path of local storage
+  ([#903](https://github.com/census-instrumentation/opencensus-python/pull/903))
+- Add support to initialize azure exporters with proxies
+  ([#902](https://github.com/census-instrumentation/opencensus-python/pull/902))
+
+## 1.0.2
+Released 2020-02-04
+
+- Add local storage and retry logic for Azure Metrics Exporter
+  ([#845](https://github.com/census-instrumentation/opencensus-python/pull/845))
+- Add Fixed-rate sampling logic for Azure Log Exporter
+  ([#848](https://github.com/census-instrumentation/opencensus-python/pull/848))
+- Implement TelemetryProcessors for Azure exporters
+  ([#851](https://github.com/census-instrumentation/opencensus-python/pull/851))
+
 ## 1.0.1
 Released 2019-11-26
 
