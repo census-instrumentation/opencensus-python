@@ -53,9 +53,9 @@ class TestUtils(unittest.TestCase):
 
     def test_disable_tracing_url_explicit(self):
         url = 'http://127.0.0.1:8080/test_no_tracing'
-        blacklist_paths = ['test_no_tracing']
+        excludelist_paths = ['test_no_tracing']
 
-        disable_tracing = utils.disable_tracing_url(url, blacklist_paths)
+        disable_tracing = utils.disable_tracing_url(url, excludelist_paths)
         self.assertTrue(disable_tracing)
 
     def test_disable_tracing_hostname_default(self):
@@ -65,14 +65,16 @@ class TestUtils(unittest.TestCase):
         self.assertFalse(disable_tracing)
 
     def test_disable_tracing_hostname_explicit(self):
-        blacklist_paths = ['127.0.0.1', '192.168.0.1:80']
+        excludelist_paths = ['127.0.0.1', '192.168.0.1:80']
 
         url = '127.0.0.1:8080'
-        disable_tracing = utils.disable_tracing_hostname(url, blacklist_paths)
+        disable_tracing = utils.disable_tracing_hostname(
+            url, excludelist_paths)
         self.assertFalse(disable_tracing)
 
         url = '127.0.0.1:80'
-        disable_tracing = utils.disable_tracing_hostname(url, blacklist_paths)
+        disable_tracing = utils.disable_tracing_hostname(
+            url, excludelist_paths)
         self.assertFalse(disable_tracing)
 
     def test_grpc_code_from_http_code(self):

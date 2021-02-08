@@ -12,18 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from opencensus.ext.azure.trace_exporter import AzureExporter
-from opencensus.trace.samplers import ProbabilitySampler
-from opencensus.trace.tracer import Tracer
+import logging
 
-tracer = Tracer(
-    exporter=AzureExporter(
-        # TODO: replace the all-zero GUID with your instrumentation key.
-        connection_string='InstrumentationKey= \
-        00000000-0000-0000-0000-000000000000',
-    ),
-    sampler=ProbabilitySampler(rate=1.0),
-)
+from opencensus.ext.azure.log_exporter import AzureEventHandler
 
-with tracer.span(name='foo'):
-    print('Hello, World!')
+logger = logging.getLogger(__name__)
+# TODO: you need to specify the instrumentation key in a connection string
+# and place it in the APPLICATIONINSIGHTS_CONNECTION_STRING
+# environment variable.
+logger.addHandler(AzureEventHandler())
+logger.setLevel(logging.INFO)
+logger.info('Hello, World!')
+
+input("...")

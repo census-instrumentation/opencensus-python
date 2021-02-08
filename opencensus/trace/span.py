@@ -370,7 +370,7 @@ class Span(base_span.BaseSpan):
 
     def __iter__(self):
         """Iterate through the span tree."""
-        for span in chain(*(map(iter, self.children))):
+        for span in chain.from_iterable(map(iter, self.children)):
             yield span
         yield self
 

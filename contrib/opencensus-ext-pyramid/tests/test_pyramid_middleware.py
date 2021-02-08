@@ -167,7 +167,7 @@ class TestPyramidMiddleware(unittest.TestCase):
         span_context = tracer.span_context
         self.assertEqual(span_context.trace_id, trace_id)
 
-    def test__before_request_blacklist(self):
+    def test__before_request_excludelist(self):
         pyramid_trace_header = 'traceparent'
         trace_id = '2dd43a1d6b2549c6bc2a1a54c2fc0b05'
         span_id = '6e0c63257de34c92'
@@ -248,7 +248,7 @@ class TestPyramidMiddleware(unittest.TestCase):
 
         self.assertEqual(span.attributes, expected_attributes)
 
-    def test__after_request_blacklist(self):
+    def test__after_request_excludelist(self):
         pyramid_trace_header = 'traceparent'
         trace_id = '2dd43a1d6b2549c6bc2a1a54c2fc0b05'
         span_id = '6e0c63257de34c92'

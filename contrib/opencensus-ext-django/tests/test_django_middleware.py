@@ -127,17 +127,17 @@ class TestOpencensusMiddleware(unittest.TestCase):
 
         self.assertEqual(span.name, 'mock.mock.Mock')
 
-    def test_blacklist_path(self):
+    def test_excludelist_path(self):
         from opencensus.ext.django import middleware
 
         execution_context.clear()
 
-        blacklist_paths = ['test_blacklist_path']
+        excludelist_paths = ['test_excludelist_path']
         settings = type('Test', (object,), {})
         settings.OPENCENSUS = {
             'TRACE': {
                 'SAMPLER': 'opencensus.trace.samplers.AlwaysOnSampler()',  # noqa
-                'BLACKLIST_PATHS': blacklist_paths,
+                'EXCLUDELIST_PATHS': excludelist_paths,
                 'EXPORTER': mock.Mock(),
             }
         }
@@ -148,11 +148,11 @@ class TestOpencensusMiddleware(unittest.TestCase):
         with patch_settings:
             middleware_obj = middleware.OpencensusMiddleware()
 
-        django_request = RequestFactory().get('/test_blacklist_path')
+        django_request = RequestFactory().get('/test_excludelist_path')
         disabled = utils.disable_tracing_url(django_request.path,
-                                             blacklist_paths)
+                                             excludelist_paths)
         self.assertTrue(disabled)
-        self.assertEqual(middleware_obj.blacklist_paths, blacklist_paths)
+        self.assertEqual(middleware_obj.excludelist_paths, excludelist_paths)
 
         # test process_request
         middleware_obj.process_request(django_request)

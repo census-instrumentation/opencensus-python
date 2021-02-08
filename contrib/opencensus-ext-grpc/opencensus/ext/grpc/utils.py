@@ -6,6 +6,17 @@ from grpc.framework.interfaces.face import face
 from opencensus.trace import execution_context, time_event
 
 
+def extract_byte_size(proto_message):
+    """Gets the byte size from a google.protobuf or proto-plus message"""
+    if hasattr(proto_message, "ByteSize"):
+        # google.protobuf message
+        return proto_message.ByteSize()
+    if hasattr(type(proto_message), "pb"):
+        # proto-plus message
+        return type(proto_message).pb(proto_message).ByteSize()
+    return None
+
+
 def add_message_event(proto_message, span, message_event_type, message_id=1):
     """Adds a MessageEvent to the span based off of the given protobuf
     message
@@ -15,7 +26,7 @@ def add_message_event(proto_message, span, message_event_type, message_id=1):
             datetime.utcnow(),
             message_id,
             type=message_event_type,
-            uncompressed_size_bytes=proto_message.ByteSize()
+            uncompressed_size_bytes=extract_byte_size(proto_message),
         )
     )
 

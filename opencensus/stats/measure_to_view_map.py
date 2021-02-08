@@ -19,6 +19,8 @@ from collections import defaultdict
 from opencensus.stats import metric_utils
 from opencensus.stats import view_data as view_data_module
 
+logger = logging.getLogger(__name__)
+
 
 class MeasureToViewMap(object):
     """Measure To View Map stores a map from names of Measures to
@@ -90,13 +92,13 @@ class MeasureToViewMap(object):
                 # ignore the views that are already registered
                 return
             else:
-                logging.warning(
+                logger.warning(
                     "A different view with the same name is already registered"
                 )  # pragma: NO COVER
         measure = view.measure
         registered_measure = self._registered_measures.get(measure.name)
         if registered_measure is not None and registered_measure != measure:
-            logging.warning(
+            logger.warning(
                 "A different measure with the same name is already registered")
         self._registered_views[view.name] = view
         if registered_measure is None:

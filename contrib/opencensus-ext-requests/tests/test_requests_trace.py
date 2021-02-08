@@ -124,7 +124,7 @@ class Test_requests_trace(unittest.TestCase):
             mock_tracer.current_span.status.__dict__
         )
 
-    def test_wrap_requests_blacklist_ok(self):
+    def test_wrap_requests_excludelist_ok(self):
         mock_return = mock.Mock()
         mock_return.status_code = 200
         return_value = mock_return
@@ -157,7 +157,7 @@ class Test_requests_trace(unittest.TestCase):
 
         self.assertEqual(expected_name, mock_tracer.current_span.name)
 
-    def test_wrap_requests_blacklist_nok(self):
+    def test_wrap_requests_excludelist_nok(self):
         mock_return = mock.Mock()
         mock_return.status_code = 200
         return_value = mock_return
@@ -413,7 +413,7 @@ class Test_requests_trace(unittest.TestCase):
             mock_tracer.current_span.status.__dict__
         )
 
-    def test_wrap_session_request_blacklist_ok(self):
+    def test_wrap_session_request_excludelist_ok(self):
         def wrapped(*args, **kwargs):
             result = mock.Mock()
             result.status_code = 200
@@ -448,7 +448,7 @@ class Test_requests_trace(unittest.TestCase):
         expected_name = '/'
         self.assertEqual(expected_name, mock_tracer.current_span.name)
 
-    def test_wrap_session_request_blacklist_nok(self):
+    def test_wrap_session_request_excludelist_nok(self):
         def wrapped(*args, **kwargs):
             result = mock.Mock()
             result.status_code = 200

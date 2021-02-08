@@ -52,7 +52,10 @@ class MetricsExporter(TransportMixin, ProcessorMixin):
             max_size=self.options.storage_max_size,
             maintenance_period=self.options.storage_maintenance_period,
             retention_period=self.options.storage_retention_period,
+            source=self.__class__.__name__,
         )
+        self._atexit_handler = atexit.register(self.shutdown)
+        self.exporter_thread = None
         super(MetricsExporter, self).__init__()
 
     def export_metrics(self, metrics):
@@ -133,14 +136,21 @@ class MetricsExporter(TransportMixin, ProcessorMixin):
         envelope.data = Data(baseData=data, baseType="MetricData")
         return envelope
 
+    def shutdown(self):
+        # Flush the exporter thread
+        if self.exporter_thread:
+            self.exporter_thread.close()
+        # Shutsdown storage worker
+        self.storage.close()
+
 
 def new_metrics_exporter(**options):
     exporter = MetricsExporter(**options)
     producers = [stats_module.stats]
     if exporter.options.enable_standard_metrics:
         producers.append(standard_metrics.producer)
-    transport.get_exporter_thread(producers,
-                                  exporter,
-                                  interval=exporter.options.export_interval)
-    atexit.register(exporter.export_metrics, stats_module.stats.get_metrics())
+    exporter.exporter_thread = transport.get_exporter_thread(
+                                    producers,
+                                    exporter,
+                                    interval=exporter.options.export_interval)
     return exporter
