@@ -39,11 +39,7 @@ And add the ``OPENCENSUS`` section:
         }
     }
     
-Additional configuration can be provided, please read
-`Customization <https://github.com/census-instrumentation/opencensus-python#customization>`_
-for a complete reference.
-
-For customization the exporter has to be instantiated separately
+For customization of the exporter:
 
 .. code:: python
 
@@ -61,7 +57,9 @@ For customization the exporter has to be instantiated separately
     def callback(envelope):
     return False
 
-Both forms assumes Environmental Variable ``APPINSIGHTS_INSTRUMENTATIONKEY`` exists.
+Additional configuration can be provided, please read
+`Customization <https://github.com/census-instrumentation/opencensus-python#customization>`_
+for a complete reference.
 
 References
 ----------
