@@ -55,7 +55,7 @@ For customization of the exporter:
     }
     
     def callback(envelope):
-    return False
+        return False
 
 Additional configuration can be provided, please read
 `Customization <https://github.com/census-instrumentation/opencensus-python#customization>`_
