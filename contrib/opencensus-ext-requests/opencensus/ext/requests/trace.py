@@ -63,6 +63,7 @@ def trace_integration(tracer=None):
     wrapt.wrap_function_wrapper(
         MODULE_NAME, 'Session.request', wrap_session_request)
 
+
 def wrap_session_request(wrapped, instance, args, kwargs):
     """Wrap the session function to trace it."""
     # Check if request was sent from an exporter. If so, do not wrap.
