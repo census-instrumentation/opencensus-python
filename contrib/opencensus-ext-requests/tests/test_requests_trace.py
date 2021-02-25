@@ -27,55 +27,34 @@ from opencensus.trace.tracers import noop_tracer
 class Test_requests_trace(unittest.TestCase):
     def test_trace_integration(self):
         mock_wrap = mock.Mock()
-        mock_requests = mock.Mock()
+        patch_wrapt = mock.patch('wrapt.wrap_function_wrapper', mock_wrap)
 
-        wrap_result = 'wrap result'
-        mock_wrap.return_value = wrap_result
-
-        for func in trace.REQUESTS_WRAP_METHODS:
-            mock_func = mock.Mock()
-            mock_func.__name__ = func
-            setattr(mock_requests, func, mock_func)
-
-        patch_wrap = mock.patch(
-            'opencensus.ext.requests.trace.wrap_requests', mock_wrap)
-        patch_requests = mock.patch(
-            'opencensus.ext.requests.trace.requests', mock_requests)
-
-        with patch_wrap, patch_requests:
+        with patch_wrapt:
             trace.trace_integration()
 
             self.assertIsInstance(execution_context.get_opencensus_tracer(),
                                   noop_tracer.NoopTracer)
-
-        for func in trace.REQUESTS_WRAP_METHODS:
-            self.assertEqual(getattr(mock_requests, func), wrap_result)
+            mock_wrap.assert_called_once_with(
+                trace.MODULE_NAME,
+                'Session.request',
+                trace.wrap_session_request)
 
     def test_trace_integration_set_tracer(self):
         mock_wrap = mock.Mock()
-        mock_requests = mock.Mock()
-
-        wrap_result = 'wrap result'
-        mock_wrap.return_value = wrap_result
-
-        for func in trace.REQUESTS_WRAP_METHODS:
-            mock_func = mock.Mock()
-            mock_func.__name__ = func
-            setattr(mock_requests, func, mock_func)
-
-        patch_wrap = mock.patch(
-            'opencensus.ext.requests.trace.wrap_requests', mock_wrap)
-        patch_requests = mock.patch(
-            'opencensus.ext.requests.trace.requests', mock_requests)
+        patch_wrapt = mock.patch('wrapt.wrap_function_wrapper', mock_wrap)
 
         class TmpTracer(noop_tracer.NoopTracer):
             pass
 
-        with patch_wrap, patch_requests:
+        with patch_wrapt:
             trace.trace_integration(tracer=TmpTracer())
 
             self.assertIsInstance(execution_context.get_opencensus_tracer(),
                                   TmpTracer)
+            mock_wrap.assert_called_once_with(
+                trace.MODULE_NAME,
+                'Session.request',
+                trace.wrap_session_request)
 
     def test_wrap_session_request(self):
         wrapped = mock.Mock(return_value=mock.Mock(status_code=200))

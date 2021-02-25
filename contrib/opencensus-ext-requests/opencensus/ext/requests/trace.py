@@ -35,10 +35,6 @@ log = logging.getLogger(__name__)
 
 MODULE_NAME = 'requests'
 
-REQUESTS_WRAP_METHODS = ['get', 'post', 'put', 'delete', 'head', 'options']
-SESSION_WRAP_METHODS = 'request'
-SESSION_CLASS_NAME = 'Session'
-
 HTTP_HOST = attributes_helper.COMMON_ATTRIBUTES['HTTP_HOST']
 HTTP_METHOD = attributes_helper.COMMON_ATTRIBUTES['HTTP_METHOD']
 HTTP_PATH = attributes_helper.COMMON_ATTRIBUTES['HTTP_PATH']
