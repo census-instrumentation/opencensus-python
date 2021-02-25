@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Fix duplicate spans being emitted from requests
+([#977](https://github.com/census-instrumentation/opencensus-python/pull/977))
+
 ## 0.7.4
 Released 2021-01-14
 
