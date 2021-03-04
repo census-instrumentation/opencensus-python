@@ -47,13 +47,15 @@ class BaseLogHandler(logging.Handler):
             raise ValueError('Sampling must be in the range: [0,1]')
         self.export_interval = self.options.export_interval
         self.max_batch_size = self.options.max_batch_size
-        self.storage = LocalFileStorage(
-            path=self.options.storage_path,
-            max_size=self.options.storage_max_size,
-            maintenance_period=self.options.storage_maintenance_period,
-            retention_period=self.options.storage_retention_period,
-            source=self.__class__.__name__,
-        )
+        self.storage = None
+        if self.options.enable_local_storage:
+            self.storage = LocalFileStorage(
+                path=self.options.storage_path,
+                max_size=self.options.storage_max_size,
+                maintenance_period=self.options.storage_maintenance_period,
+                retention_period=self.options.storage_retention_period,
+                source=self.__class__.__name__,
+            )
         self._telemetry_processors = []
         self.addFilter(SamplingFilter(self.options.logging_sampling_rate))
         self._queue = Queue(capacity=self.options.queue_capacity)
@@ -66,7 +68,8 @@ class BaseLogHandler(logging.Handler):
                 envelopes = [self.log_record_to_envelope(x) for x in batch]
                 envelopes = self.apply_telemetry_processors(envelopes)
                 result = self._transmit(envelopes)
-                if result > 0:
+                # Only store files if local storage enabled
+                if self.storage and result > 0:
                     self.storage.put(envelopes, result)
             if event:
                 if isinstance(event, QueueExitEvent):
@@ -79,8 +82,10 @@ class BaseLogHandler(logging.Handler):
                 event.set()
 
     def close(self):
-        self.storage.close()
-        self._worker.stop()
+        if self.storage:
+            self.storage.close()
+        if self._worker:
+            self._worker.stop()
 
     def createLock(self):
         self.lock = None

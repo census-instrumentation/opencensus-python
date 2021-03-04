@@ -47,13 +47,15 @@ class MetricsExporter(TransportMixin, ProcessorMixin):
         self.export_interval = self.options.export_interval
         self.max_batch_size = self.options.max_batch_size
         self._telemetry_processors = []
-        self.storage = LocalFileStorage(
-            path=self.options.storage_path,
-            max_size=self.options.storage_max_size,
-            maintenance_period=self.options.storage_maintenance_period,
-            retention_period=self.options.storage_retention_period,
-            source=self.__class__.__name__,
-        )
+        self.storage = None
+        if self.options.enable_local_storage:
+            self.storage = LocalFileStorage(
+                path=self.options.storage_path,
+                max_size=self.options.storage_max_size,
+                maintenance_period=self.options.storage_maintenance_period,
+                retention_period=self.options.storage_retention_period,
+                source=self.__class__.__name__,
+            )
         self._atexit_handler = atexit.register(self.shutdown)
         self.exporter_thread = None
         super(MetricsExporter, self).__init__()
@@ -68,7 +70,8 @@ class MetricsExporter(TransportMixin, ProcessorMixin):
         for batch in batched_envelopes:
             batch = self.apply_telemetry_processors(batch)
             result = self._transmit(batch)
-            if result > 0:
+            # Only store files if local storage enabled
+            if self.storage and result > 0:
                 self.storage.put(batch, result)
 
         # If there is still room to transmit envelopes, transmit from storage
@@ -141,7 +144,8 @@ class MetricsExporter(TransportMixin, ProcessorMixin):
         if self.exporter_thread:
             self.exporter_thread.close()
         # Shutsdown storage worker
-        self.storage.close()
+        if self.storage:
+            self.storage.close()
 
 
 def new_metrics_exporter(**options):
