@@ -274,8 +274,8 @@ class OpencensusMiddleware(MiddlewareMixin):
             return response
 
     def process_exception(self, request, exception):
-        # Do not trace if the url is blacklisted
-        if utils.disable_tracing_url(request.path, self.blacklist_paths):
+        # Do not trace if the url is excluded
+        if utils.disable_tracing_url(request.path, self.excludelist_paths):
             return
 
         try:
