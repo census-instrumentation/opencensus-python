@@ -348,7 +348,7 @@ class TestOpencensusMiddleware(unittest.TestCase):
 
         middleware_obj.process_exception(django_request, test_exception)
 
-        self.assertEqual(span.attributes, expected_attributes, str(span.attributes))
+        self.assertEqual(span.attributes, expected_attributes)
 
 
 class Test__set_django_attributes(unittest.TestCase):
