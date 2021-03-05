@@ -49,13 +49,15 @@ class AzureExporter(BaseExporter, ProcessorMixin, TransportMixin):
     def __init__(self, **options):
         self.options = Options(**options)
         utils.validate_instrumentation_key(self.options.instrumentation_key)
-        self.storage = LocalFileStorage(
-            path=self.options.storage_path,
-            max_size=self.options.storage_max_size,
-            maintenance_period=self.options.storage_maintenance_period,
-            retention_period=self.options.storage_retention_period,
-            source=self.__class__.__name__,
-        )
+        self.storage = None
+        if self.options.enable_local_storage:
+            self.storage = LocalFileStorage(
+                path=self.options.storage_path,
+                max_size=self.options.storage_max_size,
+                maintenance_period=self.options.storage_maintenance_period,
+                retention_period=self.options.storage_retention_period,
+                source=self.__class__.__name__,
+            )
         self._telemetry_processors = []
         super(AzureExporter, self).__init__(**options)
         atexit.register(self._stop, self.options.grace_period)
@@ -166,7 +168,8 @@ class AzureExporter(BaseExporter, ProcessorMixin, TransportMixin):
                 envelopes = [self.span_data_to_envelope(sd) for sd in batch]
                 envelopes = self.apply_telemetry_processors(envelopes)
                 result = self._transmit(envelopes)
-                if result > 0:
+                # Only store files if local storage enabled
+                if self.storage and result > 0:
                     self.storage.put(envelopes, result)
             if event:
                 if isinstance(event, QueueExitEvent):
@@ -179,5 +182,7 @@ class AzureExporter(BaseExporter, ProcessorMixin, TransportMixin):
             logger.exception('Exception occurred while exporting the data.')
 
     def _stop(self, timeout=None):
-        self.storage.close()
-        self._worker.stop(timeout)
+        if self.storage:
+            self.storage.close()
+        if self._worker:
+            self._worker.stop(timeout)

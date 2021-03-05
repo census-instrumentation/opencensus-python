@@ -101,6 +101,7 @@ class Options(BaseObject):
 
     _default = BaseObject(
         connection_string=None,
+        enable_local_storage=True,
         enable_standard_metrics=True,
         endpoint='https://dc.services.visualstudio.com/v2/track',
         export_interval=15.0,
