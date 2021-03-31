@@ -14,7 +14,6 @@
 
 import sys
 import traceback
-import types
 import unittest
 
 import mock
@@ -319,10 +318,15 @@ class TestOpencensusMiddleware(unittest.TestCase):
         with patch_settings:
             middleware_obj = middleware.OpencensusMiddleware()
 
+        tb = None
         try:
             raise RuntimeError("bork bork bork")
         except Exception as exc:
             test_exception = exc
+            if hasattr(exc, "__traceback__"):
+                tb = exc.__traceback__
+            else:
+                _, _, tb = sys.exc_info()
 
         middleware_obj.process_request(django_request)
         tracer = middleware._get_current_tracer()
@@ -344,7 +348,7 @@ class TestOpencensusMiddleware(unittest.TestCase):
             'django.user.name': 'test_name',
             'error.name': "RuntimeError",
             'error.message': 'bork bork bork',
-            'stacktrace': '\n'.join(traceback.format_tb(test_exception.__traceback__))
+            'stacktrace': '\n'.join(traceback.format_tb(tb))
         }
 
         mock_user = mock.Mock()
