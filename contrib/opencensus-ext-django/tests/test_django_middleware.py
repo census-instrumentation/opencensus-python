@@ -20,7 +20,6 @@ import unittest
 import mock
 from django.test import RequestFactory
 from django.test.utils import teardown_test_environment
-from opencensus import trace
 
 from opencensus.trace import execution_context, print_exporter, samplers
 from opencensus.trace import span as span_module
@@ -320,8 +319,10 @@ class TestOpencensusMiddleware(unittest.TestCase):
         with patch_settings:
             middleware_obj = middleware.OpencensusMiddleware()
 
-        test_exception = RuntimeError("bork bork bork")
-        test_exception.__traceback__ = types.TracebackType(None, sys._getframe(1), 0, 1)
+        try:
+            raise RuntimeError("bork bork bork")
+        except Exception as exc:
+            test_exception = exc
 
         middleware_obj.process_request(django_request)
         tracer = middleware._get_current_tracer()
