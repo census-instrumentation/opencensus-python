@@ -40,7 +40,7 @@ setup(
     long_description=open('README.rst').read(),
     install_requires=[
         'opencensus >= 0.8.dev0, < 1.0.0',
-        'SQLAlchemy >= 1.1.14, < 1.4.3', # https://github.com/sqlalchemy/sqlalchemy/issues/6168
+        'SQLAlchemy >= 1.1.14, < 1.3.24', # https://github.com/sqlalchemy/sqlalchemy/issues/6168
     ],
     extras_require={},
     license='Apache-2.0',
