@@ -293,7 +293,7 @@ class OpencensusMiddleware(MiddlewareMixin):
                 attribute_value=str(exception))
             span.add_attribute(
                 attribute_key=STACKTRACE,
-                attribute_value=traceback.format_tb(tb))
+                attribute_value='\n'.join(traceback.format_tb(tb)))
 
             _set_django_attributes(span, request)
         except Exception:  # pragma: NO COVER
