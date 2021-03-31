@@ -16,6 +16,8 @@
 import six
 
 import logging
+import sys
+import traceback
 
 import django
 import django.conf
@@ -42,6 +44,9 @@ HTTP_PATH = attributes_helper.COMMON_ATTRIBUTES['HTTP_PATH']
 HTTP_ROUTE = attributes_helper.COMMON_ATTRIBUTES['HTTP_ROUTE']
 HTTP_URL = attributes_helper.COMMON_ATTRIBUTES['HTTP_URL']
 HTTP_STATUS_CODE = attributes_helper.COMMON_ATTRIBUTES['HTTP_STATUS_CODE']
+ERROR_MESSAGE = attributes_helper.COMMON_ATTRIBUTES['ERROR_MESSAGE']
+ERROR_NAME = attributes_helper.COMMON_ATTRIBUTES['ERROR_NAME']
+STACKTRACE = attributes_helper.COMMON_ATTRIBUTES['STACKTRACE']
 
 REQUEST_THREAD_LOCAL_KEY = 'django_request'
 SPAN_THREAD_LOCAL_KEY = 'django_span'
@@ -267,3 +272,29 @@ class OpencensusMiddleware(MiddlewareMixin):
             log.error('Failed to trace request', exc_info=True)
         finally:
             return response
+
+    def process_exception(self, request, exception):
+        # Do not trace if the url is excluded
+        if utils.disable_tracing_url(request.path, self.excludelist_paths):
+            return
+
+        try:
+            if hasattr(exception, '__traceback__'):
+                tb = exception.__traceback__
+            else:
+                _, _, tb = sys.exc_info()
+
+            span = _get_django_span()
+            span.add_attribute(
+                attribute_key=ERROR_NAME,
+                attribute_value=exception.__class__.__name__)
+            span.add_attribute(
+                attribute_key=ERROR_MESSAGE,
+                attribute_value=str(exception))
+            span.add_attribute(
+                attribute_key=STACKTRACE,
+                attribute_value='\n'.join(traceback.format_tb(tb)))
+
+            _set_django_attributes(span, request)
+        except Exception:  # pragma: NO COVER
+            log.error('Failed to trace request', exc_info=True)

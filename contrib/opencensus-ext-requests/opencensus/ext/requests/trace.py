@@ -35,10 +35,6 @@ log = logging.getLogger(__name__)
 
 MODULE_NAME = 'requests'
 
-REQUESTS_WRAP_METHODS = ['get', 'post', 'put', 'delete', 'head', 'options']
-SESSION_WRAP_METHODS = 'request'
-SESSION_CLASS_NAME = 'Session'
-
 HTTP_HOST = attributes_helper.COMMON_ATTRIBUTES['HTTP_HOST']
 HTTP_METHOD = attributes_helper.COMMON_ATTRIBUTES['HTTP_METHOD']
 HTTP_PATH = attributes_helper.COMMON_ATTRIBUTES['HTTP_PATH']
@@ -57,83 +53,15 @@ def trace_integration(tracer=None):
         # not handle None being used in the execution context.
         execution_context.set_opencensus_tracer(tracer)
 
-    # Wrap the requests functions
-    for func in REQUESTS_WRAP_METHODS:
-        requests_func = getattr(requests, func)
-        wrapped = wrap_requests(requests_func)
-        setattr(requests, requests_func.__name__, wrapped)
-
     # Wrap Session class
+    # Since
+    # https://github.com/psf/requests/commit/d72d1162142d1bf8b1b5711c664fbbd674f349d1
+    # (v0.7.0, Oct 23, 2011), get, post, etc are implemented via request which
+    # again, is implemented via Session.request (`Session` was named `session`
+    # before v1.0.0, Dec 17, 2012, see
+    # https://github.com/psf/requests/commit/4e5c4a6ab7bb0195dececdd19bb8505b872fe120)
     wrapt.wrap_function_wrapper(
         MODULE_NAME, 'Session.request', wrap_session_request)
-
-
-def wrap_requests(requests_func):
-    """Wrap the requests function to trace it."""
-    def call(url, *args, **kwargs):
-        # Check if request was sent from an exporter. If so, do not wrap.
-        if execution_context.is_exporter():
-            return requests_func(url, *args, **kwargs)
-        excludelist_hostnames = execution_context.get_opencensus_attr(
-            'excludelist_hostnames')
-        parsed_url = urlparse(url)
-        if parsed_url.port is None:
-            dest_url = parsed_url.hostname
-        else:
-            dest_url = '{}:{}'.format(parsed_url.hostname, parsed_url.port)
-        if utils.disable_tracing_hostname(dest_url, excludelist_hostnames):
-            return requests_func(url, *args, **kwargs)
-
-        path = parsed_url.path if parsed_url.path else '/'
-
-        _tracer = execution_context.get_opencensus_tracer()
-        _span = _tracer.start_span()
-        _span.name = '{}'.format(path)
-        _span.span_kind = span_module.SpanKind.CLIENT
-
-        # Add the component type to attributes
-        _tracer.add_attribute_to_current_span(
-            "component", "HTTP")
-
-        # Add the requests host to attributes
-        _tracer.add_attribute_to_current_span(
-            HTTP_HOST, dest_url)
-
-        # Add the requests method to attributes
-        _tracer.add_attribute_to_current_span(
-            HTTP_METHOD, requests_func.__name__.upper())
-
-        # Add the requests path to attributes
-        _tracer.add_attribute_to_current_span(
-            HTTP_PATH, path)
-
-        # Add the requests url to attributes
-        _tracer.add_attribute_to_current_span(HTTP_URL, url)
-
-        try:
-            result = requests_func(url, *args, **kwargs)
-        except requests.Timeout:
-            _span.set_status(exceptions_status.TIMEOUT)
-            raise
-        except requests.URLRequired:
-            _span.set_status(exceptions_status.INVALID_URL)
-            raise
-        except Exception as e:
-            _span.set_status(exceptions_status.unknown(e))
-            raise
-        else:
-            # Add the status code to attributes
-            _tracer.add_attribute_to_current_span(
-                HTTP_STATUS_CODE, result.status_code
-            )
-            _span.set_status(
-                utils.status_from_http_code(result.status_code)
-            )
-            return result
-        finally:
-            _tracer.end_span()
-
-    return call
 
 
 def wrap_session_request(wrapped, instance, args, kwargs):

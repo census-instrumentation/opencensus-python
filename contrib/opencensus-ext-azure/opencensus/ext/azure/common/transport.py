@@ -22,16 +22,17 @@ logger = logging.getLogger(__name__)
 
 class TransportMixin(object):
     def _transmit_from_storage(self):
-        for blob in self.storage.gets():
-            # give a few more seconds for blob lease operation
-            # to reduce the chance of race (for perf consideration)
-            if blob.lease(self.options.timeout + 5):
-                envelopes = blob.get()
-                result = self._transmit(envelopes)
-                if result > 0:
-                    blob.lease(result)
-                else:
-                    blob.delete()
+        if self.storage:
+            for blob in self.storage.gets():
+                # give a few more seconds for blob lease operation
+                # to reduce the chance of race (for perf consideration)
+                if blob.lease(self.options.timeout + 5):
+                    envelopes = blob.get()
+                    result = self._transmit(envelopes)
+                    if result > 0:
+                        blob.lease(result)
+                    else:
+                        blob.delete()
 
     def _transmit(self, envelopes):
         """
