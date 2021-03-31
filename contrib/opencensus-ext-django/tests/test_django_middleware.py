@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import sys
+import traceback
 import unittest
 
 import mock
@@ -288,6 +290,73 @@ class TestOpencensusMiddleware(unittest.TestCase):
         tracer.start_span()
         self.assertNotEqual(span, tracer.current_span())
         middleware_obj.process_response(django_request, django_response)
+
+        self.assertEqual(span.attributes, expected_attributes)
+
+    def test_process_exception(self):
+        from opencensus.ext.django import middleware
+
+        trace_id = '2dd43a1d6b2549c6bc2a1a54c2fc0b05'
+        span_id = '6e0c63257de34c92'
+        django_trace_id = '00-{}-{}-00'.format(trace_id, span_id)
+
+        django_request = RequestFactory().get('/wiki/Rabbit', **{
+            'traceparent': django_trace_id,
+        })
+
+        # Force the test request to be sampled
+        settings = type('Test', (object,), {})
+        settings.OPENCENSUS = {
+            'TRACE': {
+                'SAMPLER': 'opencensus.trace.samplers.AlwaysOnSampler()',  # noqa
+            }
+        }
+        patch_settings = mock.patch(
+            'django.conf.settings',
+            settings)
+
+        with patch_settings:
+            middleware_obj = middleware.OpencensusMiddleware()
+
+        tb = None
+        try:
+            raise RuntimeError("bork bork bork")
+        except Exception as exc:
+            test_exception = exc
+            if hasattr(exc, "__traceback__"):
+                tb = exc.__traceback__
+            else:
+                _, _, tb = sys.exc_info()
+
+        middleware_obj.process_request(django_request)
+        tracer = middleware._get_current_tracer()
+        span = tracer.current_span()
+
+        exporter_mock = mock.Mock()
+        tracer.exporter = exporter_mock
+
+        django_response = mock.Mock()
+        django_response.status_code = 200
+
+        expected_attributes = {
+            'http.host': u'testserver',
+            'http.method': 'GET',
+            'http.path': u'/wiki/Rabbit',
+            'http.route': u'/wiki/Rabbit',
+            'http.url': u'http://testserver/wiki/Rabbit',
+            'django.user.id': '123',
+            'django.user.name': 'test_name',
+            'error.name': "RuntimeError",
+            'error.message': 'bork bork bork',
+            'stacktrace': '\n'.join(traceback.format_tb(tb))
+        }
+
+        mock_user = mock.Mock()
+        mock_user.pk = 123
+        mock_user.get_username.return_value = 'test_name'
+        django_request.user = mock_user
+
+        middleware_obj.process_exception(django_request, test_exception)
 
         self.assertEqual(span.attributes, expected_attributes)
 
