@@ -12,11 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import sys
+import traceback
+import types
 import unittest
 
 import mock
 from django.test import RequestFactory
 from django.test.utils import teardown_test_environment
+from opencensus import trace
 
 from opencensus.trace import execution_context, print_exporter, samplers
 from opencensus.trace import span as span_module
@@ -317,6 +321,7 @@ class TestOpencensusMiddleware(unittest.TestCase):
             middleware_obj = middleware.OpencensusMiddleware()
 
         test_exception = RuntimeError("bork bork bork")
+        test_exception.__traceback__ = types.TracebackType(None, sys._getframe(1), 0, 1)
 
         middleware_obj.process_request(django_request)
         tracer = middleware._get_current_tracer()
@@ -338,7 +343,7 @@ class TestOpencensusMiddleware(unittest.TestCase):
             'django.user.name': 'test_name',
             'error.name': "RuntimeError",
             'error.message': 'bork bork bork',
-            'stacktrace': []
+            'stacktrace': '\n'.join(traceback.format_tb(test_exception.__traceback__))
         }
 
         mock_user = mock.Mock()
