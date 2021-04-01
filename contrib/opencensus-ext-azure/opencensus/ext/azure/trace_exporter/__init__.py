@@ -181,8 +181,8 @@ class AzureExporter(BaseExporter, ProcessorMixin, TransportMixin):
     def emit(self, batch, event=None):
         try:
             if batch:
-                envelopes = [envelope 
-                             for sd in batch 
+                envelopes = [envelope
+                             for sd in batch
                              for envelope in self.span_data_to_envelopes(sd)]
                 envelopes = self.apply_telemetry_processors(envelopes)
                 result = self._transmit(envelopes)
