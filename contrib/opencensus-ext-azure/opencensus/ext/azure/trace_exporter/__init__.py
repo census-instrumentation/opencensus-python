@@ -16,6 +16,16 @@ import atexit
 import json
 import logging
 
+from opencensus.ext.django.middleware import (
+    ERROR_MESSAGE,
+    ERROR_NAME,
+    HTTP_METHOD,
+    HTTP_PATH,
+    HTTP_URL,
+    HTTP_ROUTE,
+    HTTP_STATUS_CODE,
+    STACKTRACE)
+
 from opencensus.common.schedule import QueueExitEvent
 from opencensus.ext.azure.common import Options, utils
 from opencensus.ext.azure.common.exporter import BaseExporter
@@ -63,7 +73,7 @@ class AzureExporter(BaseExporter, ProcessorMixin, TransportMixin):
         super(AzureExporter, self).__init__(**options)
         atexit.register(self._stop, self.options.grace_period)
 
-    def span_data_to_envelopes(self, sd):
+    def span_data_to_envelope(self, sd):
         envelope = Envelope(
             iKey=self.options.instrumentation_key,
             tags=dict(utils.azure_monitor_context),
@@ -75,17 +85,17 @@ class AzureExporter(BaseExporter, ProcessorMixin, TransportMixin):
             envelope.tags['ai.operation.parentId'] = '{}'.format(
                 sd.parent_span_id,
             )
-        if sd.span_kind == SpanKind.SERVER:
-            if 'error.message' in sd.attributes:
+        if sd.span_kind in {SpanKind.SERVER, SpanKind.CLIENT}:
+            if ERROR_MESSAGE in sd.attributes:
                 envelope.name = 'Microsoft.ApplicationInsights.Exception'
                 data = ExceptionData(
                     exceptions=[{
                         'id': 1,
                         'outerId': '{}'.format(sd.span_id),
-                        'typeName': sd.attributes.get('error.name', ''),
-                        'message': sd.attributes['error.message'],
-                        'hasFullStack': 'stacktrace' in sd.attributes,
-                        'parsedStack': sd.attributes.get('stacktrace', None)
+                        'typeName': sd.attributes.get(ERROR_NAME, ''),
+                        'message': sd.attributes[ERROR_MESSAGE],
+                        'hasFullStack': STACKTRACE in sd.attributes,
+                        'parsedStack': sd.attributes.get(STACKTRACE, None)
                     }],
                 )
                 envelope.data = Data(baseData=data, baseType='ExceptionData')
@@ -104,20 +114,20 @@ class AzureExporter(BaseExporter, ProcessorMixin, TransportMixin):
             )
             envelope.data = Data(baseData=data, baseType='RequestData')
             data.name = ''
-            if 'http.method' in sd.attributes:
-                data.name = sd.attributes['http.method']
-            if 'http.route' in sd.attributes:
-                data.name = data.name + ' ' + sd.attributes['http.route']
+            if HTTP_METHOD in sd.attributes:
+                data.name = sd.attributes[HTTP_METHOD]
+            if HTTP_ROUTE in sd.attributes:
+                data.name = data.name + ' ' + sd.attributes[HTTP_ROUTE]
                 envelope.tags['ai.operation.name'] = data.name
                 data.properties['request.name'] = data.name
-            elif 'http.path' in sd.attributes:
+            elif HTTP_PATH in sd.attributes:
                 data.properties['request.name'] = data.name + \
-                    ' ' + sd.attributes['http.path']
-            if 'http.url' in sd.attributes:
-                data.url = sd.attributes['http.url']
-                data.properties['request.url'] = sd.attributes['http.url']
-            if 'http.status_code' in sd.attributes:
-                status_code = sd.attributes['http.status_code']
+                    ' ' + sd.attributes[HTTP_PATH]
+            if HTTP_URL in sd.attributes:
+                data.url = sd.attributes[HTTP_URL]
+                data.properties['request.url'] = sd.attributes[HTTP_URL]
+            if HTTP_STATUS_CODE in sd.attributes:
+                status_code = sd.attributes[HTTP_STATUS_CODE]
                 data.responseCode = str(status_code)
                 data.success = (
                     status_code >= 200 and status_code <= 399
@@ -144,19 +154,19 @@ class AzureExporter(BaseExporter, ProcessorMixin, TransportMixin):
             )
             if sd.span_kind == SpanKind.CLIENT:
                 data.type = sd.attributes.get('component')
-                if 'http.url' in sd.attributes:
-                    url = sd.attributes['http.url']
+                if HTTP_URL in sd.attributes:
+                    url = sd.attributes[HTTP_URL]
                     # TODO: error handling, probably put scheme as well
                     data.data = url
                     parse_url = urlparse(url)
                     # target matches authority (host:port)
                     data.target = parse_url.netloc
-                    if 'http.method' in sd.attributes:
+                    if HTTP_METHOD in sd.attributes:
                         # name is METHOD/path
-                        data.name = sd.attributes['http.method'] \
+                        data.name = sd.attributes[HTTP_METHOD] \
                             + ' ' + parse_url.path
-                if 'http.status_code' in sd.attributes:
-                    status_code = sd.attributes["http.status_code"]
+                if HTTP_STATUS_CODE in sd.attributes:
+                    status_code = sd.attributes[HTTP_STATUS_CODE]
                     data.resultCode = str(status_code)
                     data.success = 200 <= status_code < 400
                 elif sd.status.code == 0:
@@ -183,7 +193,7 @@ class AzureExporter(BaseExporter, ProcessorMixin, TransportMixin):
             if batch:
                 envelopes = [envelope
                              for sd in batch
-                             for envelope in self.span_data_to_envelopes(sd)]
+                             for envelope in self.span_data_to_envelope(sd)]
                 envelopes = self.apply_telemetry_processors(envelopes)
                 result = self._transmit(envelopes)
                 # Only store files if local storage enabled

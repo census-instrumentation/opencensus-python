@@ -94,9 +94,9 @@ class TestAzureExporter(unittest.TestCase):
         mock_logger.exception.assert_called()
         exporter._stop()
 
-    @mock.patch('opencensus.ext.azure.trace_exporter.AzureExporter.span_data_to_envelopes')  # noqa: E501
-    def test_emit_failure(self, span_data_to_envelopes_mock):
-        span_data_to_envelopes_mock.return_value = ['bar']
+    @mock.patch('opencensus.ext.azure.trace_exporter.AzureExporter.span_data_to_envelope')  # noqa: E501
+    def test_emit_failure(self, span_data_to_envelope_mock):
+        span_data_to_envelope_mock.return_value = ['bar']
         exporter = trace_exporter.AzureExporter(
             instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
             storage_path=os.path.join(TEST_FOLDER, self.id()),
@@ -108,9 +108,9 @@ class TestAzureExporter(unittest.TestCase):
         self.assertIsNone(exporter.storage.get())
         exporter._stop()
 
-    @mock.patch('opencensus.ext.azure.trace_exporter.AzureExporter.span_data_to_envelopes')  # noqa: E501
-    def test_emit_success(self, span_data_to_envelopes_mock):
-        span_data_to_envelopes_mock.return_value = ['bar']
+    @mock.patch('opencensus.ext.azure.trace_exporter.AzureExporter.span_data_to_envelope')  # noqa: E501
+    def test_emit_success(self, span_data_to_envelope_mock):
+        span_data_to_envelope_mock.return_value = ['bar']
         exporter = trace_exporter.AzureExporter(
             instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
             max_batch_size=1,
@@ -125,7 +125,7 @@ class TestAzureExporter(unittest.TestCase):
             self.assertEqual(len(os.listdir(exporter.storage.path)), 0)
         exporter._stop()
 
-    def test_span_data_to_envelopes(self):
+    def test_span_data_to_envelope(self):
         from opencensus.trace.span import SpanKind
         from opencensus.trace.span_context import SpanContext
         from opencensus.trace.span_data import SpanData
@@ -139,7 +139,7 @@ class TestAzureExporter(unittest.TestCase):
         )
 
         # SpanKind.CLIENT HTTP
-        envelope = next(exporter.span_data_to_envelopes(SpanData(
+        envelope = next(exporter.span_data_to_envelope(SpanData(
             name='test',
             context=SpanContext(
                 trace_id='6e0c63257de34c90bf9efcd03927272e',
@@ -221,7 +221,7 @@ class TestAzureExporter(unittest.TestCase):
         )
 
         # SpanKind.CLIENT unknown type
-        envelope = next(exporter.span_data_to_envelopes(SpanData(
+        envelope = next(exporter.span_data_to_envelope(SpanData(
             name='test',
             context=SpanContext(
                 trace_id='6e0c63257de34c90bf9efcd03927272e',
@@ -276,7 +276,7 @@ class TestAzureExporter(unittest.TestCase):
             'RemoteDependencyData')
 
         # SpanKind.CLIENT missing method
-        envelope = next(exporter.span_data_to_envelopes(SpanData(
+        envelope = next(exporter.span_data_to_envelope(SpanData(
             name='test',
             context=SpanContext(
                 trace_id='6e0c63257de34c90bf9efcd03927272e',
@@ -344,7 +344,7 @@ class TestAzureExporter(unittest.TestCase):
             'RemoteDependencyData')
 
         # SpanKind.SERVER HTTP - 200 request
-        envelope = next(exporter.span_data_to_envelopes(SpanData(
+        envelope = next(exporter.span_data_to_envelope(SpanData(
             name='test',
             context=SpanContext(
                 trace_id='6e0c63257de34c90bf9efcd03927272e',
@@ -421,7 +421,7 @@ class TestAzureExporter(unittest.TestCase):
             'RequestData')
 
         # SpanKind.SERVER HTTP - Failed request
-        envelope = next(exporter.span_data_to_envelopes(SpanData(
+        envelope = next(exporter.span_data_to_envelope(SpanData(
             name='test',
             context=SpanContext(
                 trace_id='6e0c63257de34c90bf9efcd03927272e',
@@ -492,7 +492,7 @@ class TestAzureExporter(unittest.TestCase):
             'RequestData')
 
         # SpanKind.SERVER HTTP - with exceptions
-        envelopes = exporter.span_data_to_envelopes(SpanData(
+        envelopes = exporter.span_data_to_envelope(SpanData(
             name='test',
             context=SpanContext(
                 trace_id='6e0c63257de34c90bf9efcd03927272e',
@@ -587,7 +587,7 @@ class TestAzureExporter(unittest.TestCase):
             'RequestData')
 
         # SpanKind.SERVER unknown type
-        envelope = next(exporter.span_data_to_envelopes(SpanData(
+        envelope = next(exporter.span_data_to_envelope(SpanData(
             name='test',
             context=SpanContext(
                 trace_id='6e0c63257de34c90bf9efcd03927272e',
@@ -636,7 +636,7 @@ class TestAzureExporter(unittest.TestCase):
             'RequestData')
 
         # SpanKind.UNSPECIFIED
-        envelope = next(exporter.span_data_to_envelopes(SpanData(
+        envelope = next(exporter.span_data_to_envelope(SpanData(
             name='test',
             context=SpanContext(
                 trace_id='6e0c63257de34c90bf9efcd03927272e',
@@ -695,7 +695,7 @@ class TestAzureExporter(unittest.TestCase):
             'RemoteDependencyData')
 
         # Status server status code attribute
-        envelope = next(exporter.span_data_to_envelopes(SpanData(
+        envelope = next(exporter.span_data_to_envelope(SpanData(
             name='test',
             context=SpanContext(
                 trace_id='6e0c63257de34c90bf9efcd03927272e',
@@ -724,7 +724,7 @@ class TestAzureExporter(unittest.TestCase):
         self.assertTrue(envelope.data.baseData.success)
 
         # Status server status code attribute missing
-        envelope = next(exporter.span_data_to_envelopes(SpanData(
+        envelope = next(exporter.span_data_to_envelope(SpanData(
             name='test',
             context=SpanContext(
                 trace_id='6e0c63257de34c90bf9efcd03927272e',
@@ -750,7 +750,7 @@ class TestAzureExporter(unittest.TestCase):
         self.assertFalse(envelope.data.baseData.success)
 
         # Server route attribute missing
-        envelope = next(exporter.span_data_to_envelopes(SpanData(
+        envelope = next(exporter.span_data_to_envelope(SpanData(
             name='test',
             context=SpanContext(
                 trace_id='6e0c63257de34c90bf9efcd03927272e',
@@ -783,7 +783,7 @@ class TestAzureExporter(unittest.TestCase):
                          'GET /wiki/Rabbitz')
 
         # Server route and path attribute missing
-        envelope = next(exporter.span_data_to_envelopes(SpanData(
+        envelope = next(exporter.span_data_to_envelope(SpanData(
             name='test',
             context=SpanContext(
                 trace_id='6e0c63257de34c90bf9efcd03927272e',
@@ -815,7 +815,7 @@ class TestAzureExporter(unittest.TestCase):
             envelope.data.baseData.properties.get('request.name'))
 
         # Status client status code attribute
-        envelope = next(exporter.span_data_to_envelopes(SpanData(
+        envelope = next(exporter.span_data_to_envelope(SpanData(
             name='test',
             context=SpanContext(
                 trace_id='6e0c63257de34c90bf9efcd03927272e',
@@ -844,7 +844,7 @@ class TestAzureExporter(unittest.TestCase):
         self.assertTrue(envelope.data.baseData.success)
 
         # Status client status code attributes missing
-        envelope = next(exporter.span_data_to_envelopes(SpanData(
+        envelope = next(exporter.span_data_to_envelope(SpanData(
             name='test',
             context=SpanContext(
                 trace_id='6e0c63257de34c90bf9efcd03927272e',
