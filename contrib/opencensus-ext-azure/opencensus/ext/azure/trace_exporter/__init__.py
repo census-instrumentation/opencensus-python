@@ -16,16 +16,6 @@ import atexit
 import json
 import logging
 
-from opencensus.ext.django.middleware import (
-    ERROR_MESSAGE,
-    ERROR_NAME,
-    HTTP_METHOD,
-    HTTP_PATH,
-    HTTP_ROUTE,
-    HTTP_STATUS_CODE,
-    HTTP_URL,
-    STACKTRACE)
-
 from opencensus.common.schedule import QueueExitEvent
 from opencensus.ext.azure.common import Options, utils
 from opencensus.ext.azure.common.exporter import BaseExporter
@@ -39,6 +29,16 @@ from opencensus.ext.azure.common.protocol import (
 )
 from opencensus.ext.azure.common.storage import LocalFileStorage
 from opencensus.ext.azure.common.transport import TransportMixin
+from opencensus.ext.django.middleware import (
+    ERROR_MESSAGE,
+    ERROR_NAME,
+    HTTP_METHOD,
+    HTTP_PATH,
+    HTTP_ROUTE,
+    HTTP_STATUS_CODE,
+    HTTP_URL,
+    STACKTRACE,
+)
 from opencensus.trace.span import SpanKind
 
 try:
