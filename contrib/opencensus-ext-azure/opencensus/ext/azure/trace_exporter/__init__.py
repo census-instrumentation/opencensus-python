@@ -21,9 +21,9 @@ from opencensus.ext.django.middleware import (
     ERROR_NAME,
     HTTP_METHOD,
     HTTP_PATH,
-    HTTP_URL,
     HTTP_ROUTE,
     HTTP_STATUS_CODE,
+    HTTP_URL,
     STACKTRACE)
 
 from opencensus.common.schedule import QueueExitEvent
@@ -85,7 +85,7 @@ class AzureExporter(BaseExporter, ProcessorMixin, TransportMixin):
             envelope.tags['ai.operation.parentId'] = '{}'.format(
                 sd.parent_span_id,
             )
-        if sd.span_kind in {SpanKind.SERVER, SpanKind.CLIENT}:
+        if sd.span_kind == SpanKind.SERVER:
             if ERROR_MESSAGE in sd.attributes:
                 envelope.name = 'Microsoft.ApplicationInsights.Exception'
                 data = ExceptionData(

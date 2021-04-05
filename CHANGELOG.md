@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Updated `azure` module
+([#886](https://github.com/census-instrumentation/opencensus-python/pull/886))
 - PeriodicMetricTask flush on exit
 ([#943](https://github.com/census-instrumentation/opencensus-python/pull/943))
 - Change blacklist to excludelist
