@@ -48,6 +48,14 @@ def process_options(options):
         or 'https://dc.services.visualstudio.com'
     options.endpoint = endpoint + '/v2/track'
 
+    # Authorization
+    # `azure.core.credentials.TokenCredential` class must be valid
+    if options.credential and \
+        not hasattr(options.credential, 'get_token'):
+        raise ValueError(
+            'Must pass in valid TokenCredential.'
+        )
+
     # storage path
     if options.storage_path is None:
         TEMPDIR_SUFFIX = options.instrumentation_key or ""
@@ -101,6 +109,7 @@ class Options(BaseObject):
 
     _default = BaseObject(
         connection_string=None,
+        credential=None,
         enable_local_storage=True,
         enable_standard_metrics=True,
         endpoint='https://dc.services.visualstudio.com/v2/track',

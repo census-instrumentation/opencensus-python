@@ -39,6 +39,8 @@ setup(
     include_package_data=True,
     long_description=open('README.rst').read(),
     install_requires=[
+        'azure-core >= 1.12.0, < 2.0.0',
+        'azure-identity >= 1.5.0 < 2.0.0',
         'opencensus >= 0.8.dev0, < 1.0.0',
         'psutil >= 5.6.3',
         'requests >= 2.19.0',

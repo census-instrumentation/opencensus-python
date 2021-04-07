@@ -17,8 +17,11 @@ import logging
 
 import requests
 
-logger = logging.getLogger(__name__)
+from azure.core.exceptions import ClientAuthenticationError
+from azure.identity._exceptions import CredentialUnavailableError
 
+logger = logging.getLogger(__name__)
+_MONITOR_OAUTH_SCOPE = "https://monitor.azure.com/.default"
 
 class TransportMixin(object):
     def _transmit_from_storage(self):
@@ -45,13 +48,17 @@ class TransportMixin(object):
         if not envelopes:
             return 0
         try:
+            headers = {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json; charset=utf-8',
+            }
+            if self.options.credential:
+                token = self.options.credential.get_token(_MONITOR_OAUTH_SCOPE)
+                headers["Authorization"] = "Bearer {}".format(token.token)
             response = requests.post(
                 url=self.options.endpoint,
                 data=json.dumps(envelopes),
-                headers={
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json; charset=utf-8',
-                },
+                headers=headers,
                 timeout=self.options.timeout,
                 proxies=json.loads(self.options.proxies),
             )
@@ -59,11 +66,26 @@ class TransportMixin(object):
             logger.warning(
                 'Request time out. Ingestion may be backed up. Retrying.')
             return self.options.minimum_retry_interval
-        except Exception as ex:  # TODO: consider RequestException
+        except requests.RequestException as ex:
             logger.warning(
                 'Retrying due to transient client side error %s.', ex)
             # client side error (retryable)
             return self.options.minimum_retry_interval
+        except CredentialUnavailableError as ex:
+            logger.warning(
+                'Error with credential configuration %s', ex
+            )
+            return -1
+        except ClientAuthenticationError as ex:
+            logger.warning(
+                'Error getting token %s', ex
+            )
+            return self.options.minimum_retry_interval
+        except Exception as ex:
+            logger.warning(
+                'Error when sending request %s. Dropping telemetry.', ex)
+            # Extraneous error (non-retryable)
+            return -1
 
         text = 'N/A'
         data = None
@@ -119,6 +141,13 @@ class TransportMixin(object):
                 text,
             )
             # server side error (retryable)
+            return self.options.minimum_retry_interval
+        # Authentication error
+        if response.status_code == 401:
+            logger.warning(
+                'Unauthorized to send telemetry to this endpoint. Your '
+                'credentials may not have the correct permissions'
+            )
             return self.options.minimum_retry_interval
         logger.error(
             'Non-retryable server side error %s: %s.',
