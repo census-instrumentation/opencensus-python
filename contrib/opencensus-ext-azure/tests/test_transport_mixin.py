@@ -158,12 +158,13 @@ class TestTransportMixin(unittest.TestCase):
     def test_transmission_auth(self):
         mixin = TransportMixin()
         mixin.options = Options()
+        url = 'https://dc.services.visualstudio.com/v2/track'
+        mixin.options.endpoint = url
         credential = mock.Mock()
         mixin.options.credential = credential
         token_mock = mock.Mock()
         token_mock.token = "test_token"
         credential.get_token.return_value = token_mock
-        url = 'https://eastus-1.in.applicationinsights.azure.com//v2/track'
         data = '[1, 2, 3]'
         headers = {
             'Accept': 'application/json',
