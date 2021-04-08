@@ -90,8 +90,7 @@ class TestTransportMixin(unittest.TestCase):
         with LocalFileStorage(os.path.join(TEST_FOLDER, self.id())) as stor:
             mixin.storage = stor
             mixin.storage.put([1, 2, 3])
-            with mock.patch(
-                'requests.post',throw(CredentialUnavailableError)):
+            with mock.patch('requests.post', throw(CredentialUnavailableError)):  # noqa: E501
                 mixin._transmit_from_storage()
             self.assertIsNone(mixin.storage.get())
             self.assertEqual(len(os.listdir(mixin.storage.path)), 0)
