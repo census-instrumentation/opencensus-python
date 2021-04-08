@@ -25,7 +25,8 @@ from azure.identity._exceptions import CredentialUnavailableError
 from opencensus.ext.azure.common import Options
 from opencensus.ext.azure.common.storage import LocalFileStorage
 from opencensus.ext.azure.common.transport import (
-    TransportMixin, _MONITOR_OAUTH_SCOPE
+    _MONITOR_OAUTH_SCOPE,
+    TransportMixin,
 )
 
 TEST_FOLDER = os.path.abspath('.test.transport')
