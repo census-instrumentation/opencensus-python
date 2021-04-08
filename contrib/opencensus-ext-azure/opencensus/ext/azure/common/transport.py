@@ -22,6 +22,7 @@ from azure.identity._exceptions import CredentialUnavailableError
 logger = logging.getLogger(__name__)
 _MONITOR_OAUTH_SCOPE = "https://monitor.azure.com//.default"
 
+
 class TransportMixin(object):
     def _transmit_from_storage(self):
         if self.storage:

@@ -50,8 +50,7 @@ def process_options(options):
 
     # Authorization
     # `azure.core.credentials.TokenCredential` class must be valid
-    if options.credential and \
-        not hasattr(options.credential, 'get_token'):
+    if options.credential and not hasattr(options.credential, 'get_token'):
         raise ValueError(
             'Must pass in valid TokenCredential.'
         )
