@@ -19,14 +19,18 @@ from opencensus.trace.tracer import Tracer
 
 # This example uses VisualStudioCodeCredential, which authenticates
 # an Azure user signed into Visual Studio Code
-# See https://github.com/Azure/azure-sdk-for-python/blob/master/sdk/identity/azure-identity/README.md#credential-classes
+# See https://github.com/Azure/azure-sdk-for-python/blob/master/sdk/identity/azure-identity/README.md#credential-classes  # noqa: E501
 # for different credential classes.
 credential = VisualStudioCodeCredential()
 
 # TODO: you need to specify the instrumentation key in a connection string
 # and place it in the APPLICATIONINSIGHTS_CONNECTION_STRING
 # environment variable.
-tracer = Tracer(exporter=AzureExporter(credential=credential), sampler=ProbabilitySampler(1.0))
+tracer = Tracer(
+    exporter=AzureExporter(credential=credential),
+    sampler=ProbabilitySampler(1.0)
+)
+
 
 with tracer.span(name='foo'):
     print('Hello, World!')
