@@ -24,7 +24,9 @@ from azure.identity._exceptions import CredentialUnavailableError
 
 from opencensus.ext.azure.common import Options
 from opencensus.ext.azure.common.storage import LocalFileStorage
-from opencensus.ext.azure.common.transport import TransportMixin
+from opencensus.ext.azure.common.transport import (
+    TransportMixin, _MONITOR_OAUTH_SCOPE
+)
 
 TEST_FOLDER = os.path.abspath('.test.transport')
 
@@ -179,8 +181,7 @@ class TestTransportMixin(unittest.TestCase):
                 mixin._transmit_from_storage()
                 post.assert_called_with(
                     url=url, data=data, headers=headers, timeout=10.0, proxies={})
-            credential.get_token.assert_called_with(
-                "https://monitor.azure.com/.default")
+            credential.get_token.assert_called_with(_MONITOR_OAUTH_SCOPE)
             self.assertIsNone(mixin.storage.get())
             self.assertEqual(len(os.listdir(mixin.storage.path)), 0)
             credential.get_token.assert_called_once()
