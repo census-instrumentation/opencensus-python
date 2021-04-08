@@ -26,7 +26,7 @@ from opencensus.ext.azure.common import Options
 from opencensus.ext.azure.common.storage import LocalFileStorage
 from opencensus.ext.azure.common.transport import TransportMixin
 
-TEST_FOLDER = os.path.abspath('.test.storage')
+TEST_FOLDER = os.path.abspath('.test.transport')
 
 
 def setUpModule():
