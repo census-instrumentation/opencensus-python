@@ -72,14 +72,10 @@ class TransportMixin(object):
             # client side error (retryable)
             return self.options.minimum_retry_interval
         except CredentialUnavailableError as ex:
-            logger.warning(
-                'Error with credential configuration %s', ex
-            )
+            logger.warning('Credential error. %s. Dropping telemetry.', ex)
             return -1
         except ClientAuthenticationError as ex:
-            logger.warning(
-                'Error getting token %s', ex
-            )
+            logger.warning('Authentication error %s', ex)
             return self.options.minimum_retry_interval
         except Exception as ex:
             logger.warning(
