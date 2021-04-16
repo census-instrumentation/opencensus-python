@@ -29,16 +29,7 @@ from opencensus.ext.azure.common.protocol import (
 )
 from opencensus.ext.azure.common.storage import LocalFileStorage
 from opencensus.ext.azure.common.transport import TransportMixin
-from opencensus.ext.django.middleware import (
-    ERROR_MESSAGE,
-    ERROR_NAME,
-    HTTP_METHOD,
-    HTTP_PATH,
-    HTTP_ROUTE,
-    HTTP_STATUS_CODE,
-    HTTP_URL,
-    STACKTRACE,
-)
+from opencensus.trace import attributes_helper
 from opencensus.trace.span import SpanKind
 
 try:
@@ -49,6 +40,15 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 __all__ = ['AzureExporter']
+
+HTTP_METHOD = attributes_helper.COMMON_ATTRIBUTES['HTTP_METHOD']
+HTTP_PATH = attributes_helper.COMMON_ATTRIBUTES['HTTP_PATH']
+HTTP_ROUTE = attributes_helper.COMMON_ATTRIBUTES['HTTP_ROUTE']
+HTTP_URL = attributes_helper.COMMON_ATTRIBUTES['HTTP_URL']
+HTTP_STATUS_CODE = attributes_helper.COMMON_ATTRIBUTES['HTTP_STATUS_CODE']
+ERROR_MESSAGE = attributes_helper.COMMON_ATTRIBUTES['ERROR_MESSAGE']
+ERROR_NAME = attributes_helper.COMMON_ATTRIBUTES['ERROR_NAME']
+STACKTRACE = attributes_helper.COMMON_ATTRIBUTES['STACKTRACE']
 
 
 class AzureExporter(BaseExporter, ProcessorMixin, TransportMixin):
