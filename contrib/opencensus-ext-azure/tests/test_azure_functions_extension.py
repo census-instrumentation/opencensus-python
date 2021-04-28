@@ -44,10 +44,7 @@ class TestAzureFunctionsExtension(unittest.TestCase):
 
     @mock.patch('opencensus.ext.azure.extension.azure_functions'
                 '.config_integration')
-    def test_configure_method_should_setup_trace_integration(
-        self,
-        cfg_mock: mock.Mock
-    ):
+    def test_configure_method_should_setup_trace_integration(self, cfg_mock):
         self._instance.configure(['requests'])
         cfg_mock.trace_integrations.assert_called_once_with(['requests'])
 
@@ -55,7 +52,7 @@ class TestAzureFunctionsExtension(unittest.TestCase):
                 '.AzureExporter')
     def test_configure_method_should_setup_azure_exporter(
         self,
-        azure_exporter_mock: mock.Mock
+        azure_exporter_mock
     ):
         self._instance.configure(['requests'])
         azure_exporter_mock.assert_called_with(connection_string=None)
@@ -64,7 +61,7 @@ class TestAzureFunctionsExtension(unittest.TestCase):
                 '.AzureExporter')
     def test_configure_method_shouold_setup_azure_exporter_with_connstring(
         self,
-        azure_exporter_mock: mock.Mock
+        azure_exporter_mock
     ):
         self._instance.configure(['request'], MOCK_AZURE_EXPORTER_CONNSTRING)
         azure_exporter_mock.assert_called_with(
@@ -87,9 +84,7 @@ class TestAzureFunctionsExtension(unittest.TestCase):
         self._instance.pre_invocation_app_level(mock_logger, mock_context)
         self.assertTrue(hasattr(mock_context, 'tracer'))
 
-    def test_post_invocation_should_ignore_tracer_deallocation_if_not_set(
-        self
-    ):
+    def test_post_invocation_should_ignore_tracer_deallocation_if_not_set(self):
         mock_context = MockContext()
         mock_logger = mock.Mock()
         mock_func_args = {}
@@ -98,9 +93,7 @@ class TestAzureFunctionsExtension(unittest.TestCase):
             mock_logger, mock_context, mock_func_args, mock_func_ret
         )
 
-    def test_post_invocation_should_delete_tracer_from_context(
-        self
-    ):
+    def test_post_invocation_should_delete_tracer_from_context(self):
         mock_context = MockContext()
         mock_tracer = mock.Mock()
         setattr(mock_context, 'tracer', mock_tracer)
