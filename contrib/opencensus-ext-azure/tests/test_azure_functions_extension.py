@@ -13,11 +13,14 @@
 # limitations under the License.
 
 import os
+import sys
 import unittest
 
 import mock
 
 from opencensus.ext.azure.extension.azure_functions import OpenCensusExtension
+
+IS_SUPPORTED_PYTHON_VERSION = sys.version_info.major == 3
 
 MOCK_APPINSIGHTS_KEY = 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee'
 MOCK_AZURE_EXPORTER_CONNSTRING = (
@@ -25,6 +28,10 @@ MOCK_AZURE_EXPORTER_CONNSTRING = (
     'IngestionEndpoint=https://mock.in.applicationinsights.azure.com/'
 )
 
+unittest.skipIf(
+    not IS_SUPPORTED_PYTHON_VERSION,
+    'Azure Functions only support Python 3.x'
+)
 class MockContext(object):
     class MockTraceContext(object):
         Tracestate = 'rojo=00f067aa0ba902b7'

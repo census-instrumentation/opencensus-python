@@ -12,10 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from logging import Logger
-from typing import Dict, List, Optional
-
-from azure.functions import AppExtensionBase, Context
+from azure.functions import AppExtensionBase
 from opencensus.trace import config_integration
 from opencensus.trace.propagation.trace_context_http_header_format import (
     TraceContextPropagator,
@@ -35,13 +32,13 @@ class OpenCensusExtension(AppExtensionBase):
 
     @classmethod
     def init(cls):
-        cls._exporter = None # type: Optional[AzureExporter]
-        cls._trace_integrations = [] # type: List[str]
+        cls._exporter = None
+        cls._trace_integrations = []
 
     @classmethod
     def configure(cls,
-                  libraries, # type: List[str]
-                  connection_string = None, # type: Optional[str]
+                  libraries,
+                  connection_string = None,
                   *args,
                   **kwargs):
         """Configure libraries for integrating into OpenCensus extension.
@@ -62,11 +59,11 @@ class OpenCensusExtension(AppExtensionBase):
 
     @classmethod
     def pre_invocation_app_level(cls,
-                                 logger, # type: Logger
-                                 context, # type: Context
-                                 func_args = {}, # type: Dict[str, object]
+                                 logger,
+                                 context,
+                                 func_args = {},
                                  *args,
-                                 **kwargs) -> None:
+                                 **kwargs):
         """An implementation of pre invocation hooks on Function App's level.
         The Python Worker Extension Interface is defined in
         https://github.com/Azure/azure-functions-python-library/
@@ -94,12 +91,12 @@ class OpenCensusExtension(AppExtensionBase):
 
     @classmethod
     def post_invocation_app_level(cls,
-                                  logger, # type: Logger
-                                  context, # type: Context
-                                  func_args, # type: Dict[str, object]
-                                  func_ret, # type: Optional[object]
+                                  logger,
+                                  context,
+                                  func_args,
+                                  func_ret,
                                   *args,
-                                  **kwargs) -> None:
+                                  **kwargs):
         """An implementation of post invocation hooks on Function App's level.
         The Python Worker Extension Interface is defined in
         https://github.com/Azure/azure-functions-python-library/
