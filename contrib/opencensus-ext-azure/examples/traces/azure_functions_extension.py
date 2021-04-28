@@ -23,7 +23,6 @@ import logging
 
 import requests
 
-import azure.functions as func
 from opencensus.ext.azure.extension.azure_functions import OpenCensusExtension
 
 OpenCensusExtension.configure(
@@ -31,7 +30,7 @@ OpenCensusExtension.configure(
     connection_string='InstrumentationKey=aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee'
 )
 
-def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
+def main(req, context):
     logging.info('Executing HttpTrigger with OpenCensus extension')
 
     with context.tracer.span("parent"):
