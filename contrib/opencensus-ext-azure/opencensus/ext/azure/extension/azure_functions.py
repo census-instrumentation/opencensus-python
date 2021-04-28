@@ -15,10 +15,7 @@
 from logging import Logger
 from typing import Dict, List, Optional
 
-from azure.functions import (
-    AppExtensionBase,
-    Context,
-)
+from azure.functions import AppExtensionBase, Context
 from opencensus.trace import config_integration
 from opencensus.trace.propagation.trace_context_http_header_format import (
     TraceContextPropagator,
@@ -27,6 +24,7 @@ from opencensus.trace.samplers import ProbabilitySampler
 from opencensus.trace.tracer import Tracer
 
 from ..trace_exporter import AzureExporter
+
 
 class OpenCensusExtension(AppExtensionBase):
     """Extension for Azure Functions integration to export traces into Azure
@@ -37,13 +35,13 @@ class OpenCensusExtension(AppExtensionBase):
 
     @classmethod
     def init(cls):
-        cls._exporter: Optional[AzureExporter] = None
-        cls._trace_integrations: List[str] = []
+        cls._exporter = None # type: Optional[AzureExporter]
+        cls._trace_integrations = [] # type: List[str]
 
     @classmethod
     def configure(cls,
-                  libraries: List[str],
-                  connection_string: Optional[str] = None,
+                  libraries, # type: List[str]
+                  connection_string = None, # type: Optional[str]
                   *args,
                   **kwargs):
         """Configure libraries for integrating into OpenCensus extension.
@@ -64,9 +62,9 @@ class OpenCensusExtension(AppExtensionBase):
 
     @classmethod
     def pre_invocation_app_level(cls,
-                                 logger: Logger,
-                                 context: Context,
-                                 func_args: Dict[str, object] = {},
+                                 logger, # type: Logger
+                                 context, # type: Context
+                                 func_args = {}, # type: Dict[str, object]
                                  *args,
                                  **kwargs) -> None:
         """An implementation of pre invocation hooks on Function App's level.
@@ -96,10 +94,10 @@ class OpenCensusExtension(AppExtensionBase):
 
     @classmethod
     def post_invocation_app_level(cls,
-                                  logger: Logger,
-                                  context: Context,
-                                  func_args: Dict[str, object],
-                                  func_ret: Optional[object],
+                                  logger, # type: Logger
+                                  context, # type: Context
+                                  func_args, # type: Dict[str, object]
+                                  func_ret, # type: Optional[object]
                                   *args,
                                   **kwargs) -> None:
         """An implementation of post invocation hooks on Function App's level.

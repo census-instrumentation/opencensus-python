@@ -20,6 +20,7 @@
 # https://aka.ms/functions-python-vscode
 import json
 import logging
+
 import requests
 
 import azure.functions as func
