@@ -17,7 +17,7 @@ import traceback
 import unittest
 
 import mock
-from django.test import RequestFactory
+from django.test import RequestFactory, override_settings
 from django.test.utils import teardown_test_environment
 
 from opencensus.trace import execution_context, print_exporter, samplers
@@ -115,6 +115,59 @@ class TestOpencensusMiddleware(unittest.TestCase):
             'http.path': u'/wiki/Rabbit',
             'http.route': u'/wiki/Rabbit',
             'http.url': u'http://testserver/wiki/Rabbit',
+        }
+        self.assertEqual(span.span_kind, span_module.SpanKind.SERVER)
+        self.assertEqual(span.attributes, expected_attributes)
+        self.assertEqual(span.parent_span.span_id, span_id)
+
+        span_context = tracer.span_context
+        self.assertEqual(span_context.trace_id, trace_id)
+
+        # test process_view
+        view_func = mock.Mock()
+        middleware_obj.process_view(django_request, view_func)
+
+        self.assertEqual(span.name, 'mock.mock.Mock')
+
+    @override_settings(ALLOWED_HOSTS=['allowedhost'])
+    def test_process_request_with_disallowed_host(self):
+        from opencensus.ext.django import middleware
+
+        trace_id = '2dd43a1d6b2549c6bc2a1a54c2fc0b05'
+        span_id = '6e0c63257de34c92'
+        django_trace_id = '00-{}-{}-00'.format(trace_id, span_id)
+
+        django_request = RequestFactory().get('/wiki/Rabbit', **{
+            'HTTP_HOST': 'notallowedhost',
+            'HTTP_TRACEPARENT': django_trace_id})
+
+        # Force the test request to be sampled
+        settings = type('Test', (object,), {})
+        settings.OPENCENSUS = {
+            'TRACE': {
+                'SAMPLER': 'opencensus.trace.samplers.AlwaysOnSampler()',  # noqa
+            }
+        }
+        patch_settings = mock.patch(
+            'django.conf.settings',
+            settings)
+
+        with patch_settings:
+            middleware_obj = middleware.OpencensusMiddleware()
+
+        # test process_request
+        middleware_obj.process_request(django_request)
+
+        tracer = middleware._get_current_tracer()
+
+        span = tracer.current_span()
+
+        expected_attributes = {
+            'http.host': u'notallowedhost',
+            'http.method': 'GET',
+            'http.path': u'/wiki/Rabbit',
+            'http.route': u'/wiki/Rabbit',
+            'http.url': u'http://notallowedhost/wiki/Rabbit',
         }
         self.assertEqual(span.span_kind, span_module.SpanKind.SERVER)
         self.assertEqual(span.attributes, expected_attributes)
