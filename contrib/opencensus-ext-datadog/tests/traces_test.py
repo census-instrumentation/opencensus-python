@@ -91,7 +91,7 @@
 #         }]
 
 #         for tc in test_cases:
-#             self.assertEqual(value_from_atts_elem(tc['elem']), tc['expected'])
+#             self.assertEqual(value_from_atts_elem(tc['elem']), tc['expected'])  # noqa: E501
 
 #     def test_export(self):
 #         mock_dd_transport = mock.Mock()
@@ -326,7 +326,7 @@
 #         ]
 
 #         for tc in test_cases:
-#             out = atts_to_metadata(tc.get('input'), meta=tc.get('input_meta'))
+#             out = atts_to_metadata(tc.get('input'), meta=tc.get('input_meta'))  # noqa: E501
 #             self.assertEqual(out, tc.get('output'))
 
 #     def test_new_trace_exporter(self):
