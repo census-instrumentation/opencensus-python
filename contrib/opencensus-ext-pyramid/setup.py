@@ -40,7 +40,7 @@ setup(
     long_description=open('README.rst').read(),
     install_requires=[
         'pyramid >= 1.9.1, < 2.0.0',
-        'opencensus >= 0.8.dev0, < 1.0.0',
+        'opencensus >= 0.7.13, < 1.0.0',
     ],
     extras_require={},
     license='Apache-2.0',
