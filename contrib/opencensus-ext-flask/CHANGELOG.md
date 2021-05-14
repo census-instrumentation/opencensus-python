@@ -5,7 +5,7 @@
 ## 0.7.5
 Released 2021-05-13
 
-- Restrict `flask` version `1.1.3` as it throws an exception on `Python v2.7`
+- Restrict `flask` version `1.1.3` as it throws an exception on `Python v2.7` - https://github.com/pallets/flask/issues/4050
 ([#1032](https://github.com/census-instrumentation/opencensus-python/pull/1032))
 
 ## 0.7.4
