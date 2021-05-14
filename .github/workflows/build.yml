@@ -15,7 +15,6 @@ jobs:
     env:
       # We use these variables to convert between tox and GHA version literals
       py27: 2.7
-      py34: 3.4
       py35: 3.5
       py36: 3.6
       py37: 3.7
@@ -23,7 +22,7 @@ jobs:
       # ensures the entire test matrix is run, even if one permutation fails
       fail-fast: false
       matrix:
-        python-version: [py27, py34, py35, py36, py37]
+        python-version: [py27, py35, py36, py37]
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
