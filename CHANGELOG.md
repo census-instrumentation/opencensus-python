@@ -2,12 +2,20 @@
 
 ## Unreleased
 
-- Updated `azure` module
-([#886](https://github.com/census-instrumentation/opencensus-python/pull/886))
-- PeriodicMetricTask flush on exit
-([#943](https://github.com/census-instrumentation/opencensus-python/pull/943))
-- Change blacklist to excludelist
-([#977](https://github.com/census-instrumentation/opencensus-python/pull/977))
+# 0.7.13
+Released 2021-05-13
+
+- Updated `azure`, `django`, `flask`, `requests` modules
+
+# 0.7.12
+Released 2021-01-14
+
+- Updated `azure`, `django`, `flask`, `grpc`, `httplib`, `pyramid`, `requests` modules
+
+# 0.7.11
+Released 2020-10-13
+
+- Updated `azure`, `stackdriver` modules
 
 ## 0.7.10
 Released 2020-06-29
