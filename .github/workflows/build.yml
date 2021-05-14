@@ -40,3 +40,4 @@ jobs:
           key: v1-tox-${{ matrix.python-version }}-${{ hashFiles('tox.ini') }}
       - name: run tox
         run: tox -f ${{ matrix.python-version }}
+        run: tox -r
