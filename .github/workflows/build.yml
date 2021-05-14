@@ -32,12 +32,11 @@ jobs:
           python-version: ${{ env[matrix.python-version] }}
       - name: Install tox
         run: pip install -U tox-factor
-      - name: Cache tox environment
-        uses: actions/cache@v2
-        with:
-          path: .tox
-          # bump version prefix to fully reset caches
-          key: v1-tox-${{ matrix.python-version }}-${{ hashFiles('tox.ini') }}
+      # - name: Cache tox environment
+      #   uses: actions/cache@v2
+      #   with:
+      #     path: .tox
+      #     # bump version prefix to fully reset caches
+      #     key: v1-tox-${{ matrix.python-version }}-${{ hashFiles('tox.ini') }}
       - name: run tox
         run: tox -f ${{ matrix.python-version }}
-        run: tox -r
