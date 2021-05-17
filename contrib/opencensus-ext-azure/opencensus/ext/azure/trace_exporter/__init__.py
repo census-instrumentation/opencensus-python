@@ -23,11 +23,13 @@ from opencensus.ext.azure.common.processor import ProcessorMixin
 from opencensus.ext.azure.common.protocol import (
     Data,
     Envelope,
+    ExceptionData,
     RemoteDependency,
     Request,
 )
 from opencensus.ext.azure.common.storage import LocalFileStorage
 from opencensus.ext.azure.common.transport import TransportMixin
+from opencensus.trace import attributes_helper
 from opencensus.trace.span import SpanKind
 
 try:
@@ -38,6 +40,15 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 __all__ = ['AzureExporter']
+
+HTTP_METHOD = attributes_helper.COMMON_ATTRIBUTES['HTTP_METHOD']
+HTTP_PATH = attributes_helper.COMMON_ATTRIBUTES['HTTP_PATH']
+HTTP_ROUTE = attributes_helper.COMMON_ATTRIBUTES['HTTP_ROUTE']
+HTTP_URL = attributes_helper.COMMON_ATTRIBUTES['HTTP_URL']
+HTTP_STATUS_CODE = attributes_helper.COMMON_ATTRIBUTES['HTTP_STATUS_CODE']
+ERROR_MESSAGE = attributes_helper.COMMON_ATTRIBUTES['ERROR_MESSAGE']
+ERROR_NAME = attributes_helper.COMMON_ATTRIBUTES['ERROR_NAME']
+STACKTRACE = attributes_helper.COMMON_ATTRIBUTES['STACKTRACE']
 
 
 class AzureExporter(BaseExporter, ProcessorMixin, TransportMixin):
@@ -75,6 +86,21 @@ class AzureExporter(BaseExporter, ProcessorMixin, TransportMixin):
                 sd.parent_span_id,
             )
         if sd.span_kind == SpanKind.SERVER:
+            if ERROR_MESSAGE in sd.attributes:
+                envelope.name = 'Microsoft.ApplicationInsights.Exception'
+                data = ExceptionData(
+                    exceptions=[{
+                        'id': 1,
+                        'outerId': '{}'.format(sd.span_id),
+                        'typeName': sd.attributes.get(ERROR_NAME, ''),
+                        'message': sd.attributes[ERROR_MESSAGE],
+                        'hasFullStack': STACKTRACE in sd.attributes,
+                        'parsedStack': sd.attributes.get(STACKTRACE, None)
+                    }],
+                )
+                envelope.data = Data(baseData=data, baseType='ExceptionData')
+                yield envelope
+
             envelope.name = 'Microsoft.ApplicationInsights.Request'
             data = Request(
                 id='{}'.format(sd.span_id),
@@ -88,20 +114,20 @@ class AzureExporter(BaseExporter, ProcessorMixin, TransportMixin):
             )
             envelope.data = Data(baseData=data, baseType='RequestData')
             data.name = ''
-            if 'http.method' in sd.attributes:
-                data.name = sd.attributes['http.method']
-            if 'http.route' in sd.attributes:
-                data.name = data.name + ' ' + sd.attributes['http.route']
+            if HTTP_METHOD in sd.attributes:
+                data.name = sd.attributes[HTTP_METHOD]
+            if HTTP_ROUTE in sd.attributes:
+                data.name = data.name + ' ' + sd.attributes[HTTP_ROUTE]
                 envelope.tags['ai.operation.name'] = data.name
                 data.properties['request.name'] = data.name
-            elif 'http.path' in sd.attributes:
+            elif HTTP_PATH in sd.attributes:
                 data.properties['request.name'] = data.name + \
-                    ' ' + sd.attributes['http.path']
-            if 'http.url' in sd.attributes:
-                data.url = sd.attributes['http.url']
-                data.properties['request.url'] = sd.attributes['http.url']
-            if 'http.status_code' in sd.attributes:
-                status_code = sd.attributes['http.status_code']
+                    ' ' + sd.attributes[HTTP_PATH]
+            if HTTP_URL in sd.attributes:
+                data.url = sd.attributes[HTTP_URL]
+                data.properties['request.url'] = sd.attributes[HTTP_URL]
+            if HTTP_STATUS_CODE in sd.attributes:
+                status_code = sd.attributes[HTTP_STATUS_CODE]
                 data.responseCode = str(status_code)
                 data.success = (
                     status_code >= 200 and status_code <= 399
@@ -128,19 +154,19 @@ class AzureExporter(BaseExporter, ProcessorMixin, TransportMixin):
             )
             if sd.span_kind == SpanKind.CLIENT:
                 data.type = sd.attributes.get('component')
-                if 'http.url' in sd.attributes:
-                    url = sd.attributes['http.url']
+                if HTTP_URL in sd.attributes:
+                    url = sd.attributes[HTTP_URL]
                     # TODO: error handling, probably put scheme as well
                     data.data = url
                     parse_url = urlparse(url)
                     # target matches authority (host:port)
                     data.target = parse_url.netloc
-                    if 'http.method' in sd.attributes:
+                    if HTTP_METHOD in sd.attributes:
                         # name is METHOD/path
-                        data.name = sd.attributes['http.method'] \
+                        data.name = sd.attributes[HTTP_METHOD] \
                             + ' ' + parse_url.path
-                if 'http.status_code' in sd.attributes:
-                    status_code = sd.attributes["http.status_code"]
+                if HTTP_STATUS_CODE in sd.attributes:
+                    status_code = sd.attributes[HTTP_STATUS_CODE]
                     data.resultCode = str(status_code)
                     data.success = 200 <= status_code < 400
                 elif sd.status.code == 0:
@@ -160,12 +186,14 @@ class AzureExporter(BaseExporter, ProcessorMixin, TransportMixin):
             if key.startswith('http.'):
                 continue
             data.properties[key] = sd.attributes[key]
-        return envelope
+        yield envelope
 
     def emit(self, batch, event=None):
         try:
             if batch:
-                envelopes = [self.span_data_to_envelope(sd) for sd in batch]
+                envelopes = [envelope
+                             for sd in batch
+                             for envelope in self.span_data_to_envelope(sd)]
                 envelopes = self.apply_telemetry_processors(envelopes)
                 result = self._transmit(envelopes)
                 # Only store files if local storage enabled
