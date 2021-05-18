@@ -299,6 +299,7 @@ class OpencensusMiddleware(MiddlewareMixin):
                 attribute_key=STACKTRACE,
                 attribute_value='\n'.join(traceback.format_tb(tb)))
 
-            _set_django_attributes(span, request)
+            if self.include_user_data:
+                _set_django_attributes(span, request)
         except Exception:  # pragma: NO COVER
             log.error('Failed to trace request', exc_info=True)
