@@ -53,6 +53,7 @@ SPAN_THREAD_LOCAL_KEY = 'django_span'
 
 EXCLUDELIST_PATHS = 'EXCLUDELIST_PATHS'
 EXCLUDELIST_HOSTNAMES = 'EXCLUDELIST_HOSTNAMES'
+INCLUDE_USER_DATA = 'INCLUDE_USER_DATA'
 
 log = logging.getLogger(__name__)
 
@@ -169,6 +170,8 @@ class OpencensusMiddleware(MiddlewareMixin):
 
         self.excludelist_hostnames = settings.get(EXCLUDELIST_HOSTNAMES, None)
 
+        self.include_user_data = settings.get(INCLUDE_USER_DATA, True)
+
         if django.VERSION >= (2,):  # pragma: NO COVER
             connection.execute_wrappers.append(_trace_db_call)
 
@@ -263,7 +266,8 @@ class OpencensusMiddleware(MiddlewareMixin):
                 attribute_key=HTTP_STATUS_CODE,
                 attribute_value=response.status_code)
 
-            _set_django_attributes(span, request)
+            if self.include_user_data:
+                _set_django_attributes(span, request)
 
             tracer = _get_current_tracer()
             tracer.end_span()

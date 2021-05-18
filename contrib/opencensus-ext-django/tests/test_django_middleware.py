@@ -236,6 +236,52 @@ class TestOpencensusMiddleware(unittest.TestCase):
 
         self.assertEqual(span.attributes, expected_attributes)
 
+    def test_no_user_data(self):
+        from opencensus.ext.django import middleware
+
+        trace_id = '2dd43a1d6b2549c6bc2a1a54c2fc0b05'
+        span_id = '6e0c63257de34c92'
+        django_trace_id = '00-{}-{}-00'.format(trace_id, span_id)
+
+        django_request = RequestFactory().get('/wiki/Rabbit', **{
+            'traceparent': django_trace_id,
+        })
+
+        # Force the test request to be sampled
+        settings = type('Test', (object,), {})
+        settings.OPENCENSUS = {
+            'TRACE': {
+                'SAMPLER': 'opencensus.trace.samplers.AlwaysOnSampler()',  # noqa
+                'INCLUDE_USER_DATA': False
+            },
+        }
+        patch_settings = mock.patch(
+            'django.conf.settings',
+            settings)
+
+        with patch_settings:
+            middleware_obj = middleware.OpencensusMiddleware()
+
+        middleware_obj.process_request(django_request)
+        tracer = middleware._get_current_tracer()
+        span = tracer.current_span()
+
+        exporter_mock = mock.Mock()
+        tracer.exporter = exporter_mock
+
+        django_response = mock.Mock()
+        django_response.status_code = 200
+
+        mock_user = mock.Mock()
+        mock_user.pk = 123
+        mock_user.get_username.return_value = 'test_name'
+        django_request.user = mock_user
+
+        middleware_obj.process_response(django_request, django_response)
+        actual_attributes = span.attributes
+        self.assertNotIn('django.user.id', actual_attributes)
+        self.assertNotIn('django.user.name', actual_attributes)
+
     def test_process_response_unfinished_child_span(self):
         from opencensus.ext.django import middleware
 
