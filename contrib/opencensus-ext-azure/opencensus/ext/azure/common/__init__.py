@@ -46,7 +46,7 @@ def process_options(options):
     endpoint = code_cs.get(INGESTION_ENDPOINT) \
         or env_cs.get(INGESTION_ENDPOINT) \
         or 'https://dc.services.visualstudio.com'
-    options.endpoint = endpoint + '/v2/track'
+    options.endpoint = endpoint
 
     # Authorization
     # `azure.core.credentials.TokenCredential` class must be valid

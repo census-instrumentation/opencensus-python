@@ -20,7 +20,7 @@ from azure.core.exceptions import ClientAuthenticationError
 from azure.identity._exceptions import CredentialUnavailableError
 
 logger = logging.getLogger(__name__)
-_MONITOR_OAUTH_SCOPE = "https://monitor.azure.com//.default"
+_MONITOR_OAUTH_SCOPE = "https://monitor.azure.com/.default"
 
 
 class TransportMixin(object):
@@ -52,11 +52,16 @@ class TransportMixin(object):
                 'Accept': 'application/json',
                 'Content-Type': 'application/json; charset=utf-8',
             }
+            endpoint = self.options.endpoint
             if self.options.credential:
                 token = self.options.credential.get_token(_MONITOR_OAUTH_SCOPE)
                 headers["Authorization"] = "Bearer {}".format(token.token)
+                # Use new api for aad scenario
+                endpoint += '/v2.1/track'
+            else:
+                endpoint += '/v2/track'
             response = requests.post(
-                url=self.options.endpoint,
+                url=endpoint,
                 data=json.dumps(envelopes),
                 headers=headers,
                 timeout=self.options.timeout,
@@ -141,8 +146,9 @@ class TransportMixin(object):
         # Authentication error
         if response.status_code == 401:
             logger.warning(
-                'Unauthorized to send telemetry to this endpoint. Your '
-                'credentials may not have the correct permissions'
+                'Authentication error %s: %s.',
+                response.status_code,
+                text,
             )
             return self.options.minimum_retry_interval
         logger.error(
