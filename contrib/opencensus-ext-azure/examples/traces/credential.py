@@ -11,26 +11,22 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from azure.identity import VisualStudioCodeCredential
+from azure.identity import ClientSecretCredential
 
 from opencensus.ext.azure.trace_exporter import AzureExporter
 from opencensus.trace.samplers import ProbabilitySampler
 from opencensus.trace.tracer import Tracer
 
-# This example uses VisualStudioCodeCredential, which authenticates
-# an Azure user signed into Visual Studio Code
-# See https://github.com/Azure/azure-sdk-for-python/blob/master/sdk/identity/azure-identity/README.md#credential-classes  # noqa: E501
-# for different credential classes.
-credential = VisualStudioCodeCredential()
+tenant_id = "<tenant-id>"
+client_id = "<client-id>"
+client_secret = "<client-secret>"
 
-# TODO: you need to specify the instrumentation key in a connection string
-# and place it in the APPLICATIONINSIGHTS_CONNECTION_STRING
-# environment variable.
+credential = ClientSecretCredential(tenant_id=tenant_id, client_id=client_id, client_secret=client_secret)
+
 tracer = Tracer(
-    exporter=AzureExporter(credential=credential),
+    exporter=AzureExporter(credential=credential, connection_string="<your-connection-string>"),
     sampler=ProbabilitySampler(1.0)
 )
-
 
 with tracer.span(name='foo'):
     print('Hello, World!')

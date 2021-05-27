@@ -20,7 +20,7 @@ from azure.core.exceptions import ClientAuthenticationError
 from azure.identity._exceptions import CredentialUnavailableError
 
 logger = logging.getLogger(__name__)
-_MONITOR_OAUTH_SCOPE = "https://monitor.azure.com/.default"
+_MONITOR_OAUTH_SCOPE = "https://monitor.azure.com//.default"
 
 
 class TransportMixin(object):
