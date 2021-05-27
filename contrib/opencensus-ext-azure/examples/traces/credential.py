@@ -21,10 +21,15 @@ tenant_id = "<tenant-id>"
 client_id = "<client-id>"
 client_secret = "<client-secret>"
 
-credential = ClientSecretCredential(tenant_id=tenant_id, client_id=client_id, client_secret=client_secret)
+credential = ClientSecretCredential(
+    tenant_id=tenant_id,
+    client_id=client_id,
+    client_secret=client_secret
+)
 
 tracer = Tracer(
-    exporter=AzureExporter(credential=credential, connection_string="<your-connection-string>"),
+    exporter=AzureExporter(
+        credential=credential, connection_string="<your-connection-string>"),
     sampler=ProbabilitySampler(1.0)
 )
 
