@@ -16,7 +16,6 @@ import json
 import logging
 
 import requests
-
 from azure.core.exceptions import ClientAuthenticationError
 from azure.identity._exceptions import CredentialUnavailableError
 
