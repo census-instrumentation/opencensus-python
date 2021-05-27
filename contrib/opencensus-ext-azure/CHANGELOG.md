@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Enable AAD authorization via TokenCredential
+([#1021](https://github.com/census-instrumentation/opencensus-python/pull/1021))
+
 ## 1.0.8
 Released 2021-05-13
 
@@ -9,8 +12,6 @@ Released 2021-05-13
 ([#1006](https://github.com/census-instrumentation/opencensus-python/pull/1006))
 - Add `enable_local_storage` to turn on/off local storage + retry + flushing logic
 ([#1016](https://github.com/census-instrumentation/opencensus-python/pull/1016))
-- Enable AAD authorization via TokenCredential
-([#1021](https://github.com/census-instrumentation/opencensus-python/pull/1021))
 
 ## 1.0.7
 Released 2021-01-25
