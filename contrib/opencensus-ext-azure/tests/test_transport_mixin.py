@@ -161,7 +161,7 @@ class TestTransportMixin(unittest.TestCase):
     def test_transmission_auth(self):
         mixin = TransportMixin()
         mixin.options = Options()
-        url = 'https://dc.services.visualstudio.com/v2.1/track'
+        url = 'https://dc.services.visualstudio.com'
         mixin.options.endpoint = url
         credential = mock.Mock()
         mixin.options.credential = credential
@@ -181,7 +181,7 @@ class TestTransportMixin(unittest.TestCase):
                 post.return_value = MockResponse(200, 'unknown')
                 mixin._transmit_from_storage()
                 post.assert_called_with(
-                    url=url,
+                    url=url + '/v2.1/track',
                     data=data,
                     headers=headers,
                     timeout=10.0,
