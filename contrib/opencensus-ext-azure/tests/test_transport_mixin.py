@@ -161,7 +161,7 @@ class TestTransportMixin(unittest.TestCase):
     def test_transmission_auth(self):
         mixin = TransportMixin()
         mixin.options = Options()
-        url = 'https://dc.services.visualstudio.com/v2/track'
+        url = 'https://dc.services.visualstudio.com/v2.1/track'
         mixin.options.endpoint = url
         credential = mock.Mock()
         mixin.options.credential = credential
