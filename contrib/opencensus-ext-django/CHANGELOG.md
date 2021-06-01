@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## 0.7.5
+Released 2021-05-13
+
+- Add exception tracing to django middleware
+([#885](https://github.com/census-instrumentation/opencensus-python/pull/885))
+
 ## 0.7.4
 Released 2021-01-19
 
