@@ -151,6 +151,16 @@ class TransportMixin(object):
                 text,
             )
             return self.options.minimum_retry_interval
+        # Forbidden error
+        # Can occur when v2 endpoint is used while AI resource is configured
+        # with disableLocalAuth
+        if response.status_code == 403:
+            logger.warning(
+                'Forbidden error %s: %s.',
+                response.status_code,
+                text,
+            )
+            return self.options.minimum_retry_interval
         logger.error(
             'Non-retryable server side error %s: %s.',
             response.status_code,
