@@ -71,7 +71,7 @@ class TestOptions(unittest.TestCase):
             'Authorization=ikey;IngestionEndpoint=456'
         common.process_options(options)
 
-        self.assertEqual(options.endpoint, '123/v2/track')
+        self.assertEqual(options.endpoint, '123')
 
     def test_process_options_endpoint_env_cs(self):
         options = common.Options()
@@ -80,7 +80,7 @@ class TestOptions(unittest.TestCase):
             'Authorization=ikey;IngestionEndpoint=456'
         common.process_options(options)
 
-        self.assertEqual(options.endpoint, '456/v2/track')
+        self.assertEqual(options.endpoint, '456')
 
     def test_process_options_endpoint_default(self):
         options = common.Options()
@@ -88,7 +88,7 @@ class TestOptions(unittest.TestCase):
         common.process_options(options)
 
         self.assertEqual(options.endpoint,
-                         'https://dc.services.visualstudio.com/v2/track')
+                         'https://dc.services.visualstudio.com')
 
     def test_process_options_proxies_default(self):
         options = common.Options()
