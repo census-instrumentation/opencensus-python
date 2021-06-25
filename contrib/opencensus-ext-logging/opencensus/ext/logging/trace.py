@@ -24,4 +24,10 @@ def trace_integration(tracer=None):
     with extra traceId, spanId, and traceSampled attributes from the opencensus
     context.
     """
+
+    if tracer is not None:
+        # Ensure that the execution context is updated and the 
+        # TraceLogger uses it
+        execution_context.set_opencensus_tracer(tracer)
+
     logging.setLoggerClass(TraceLogger)
