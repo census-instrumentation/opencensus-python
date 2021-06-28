@@ -15,6 +15,7 @@
 import logging
 
 from opencensus.log import TraceLogger
+from opencensus.trace import execution_context
 
 
 def trace_integration(tracer=None):
@@ -26,7 +27,7 @@ def trace_integration(tracer=None):
     """
 
     if tracer is not None:
-        # Ensure that the execution context is updated and the 
+        # Ensure that the execution context is updated and the
         # TraceLogger uses it
         execution_context.set_opencensus_tracer(tracer)
 

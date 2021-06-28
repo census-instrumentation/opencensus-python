@@ -15,7 +15,13 @@
 import logging
 import unittest
 
+import mock
+
+from opencensus.ext.logging import trace
+from opencensus.log import TraceLogger
 from opencensus.trace import config_integration
+from opencensus.trace import execution_context
+from opencensus.trace.tracers import noop_tracer
 
 
 class TestLoggingIntegration(unittest.TestCase):
@@ -31,3 +37,16 @@ class TestLoggingIntegration(unittest.TestCase):
         self.assertEqual(self._old_logger_class, logging.getLoggerClass())
         config_integration.trace_integrations(['logging'])
         self.assertNotEqual(self._old_logger_class, logging.getLoggerClass())
+
+    def test_trace_integration_set_tracer(self):
+        mock_wrap = mock.Mock()
+        patch_logging = mock.patch('logging.setLoggerClass', mock_wrap)
+
+        with patch_logging:
+            trace.trace_integration(tracer=noop_tracer.NoopTracer())
+
+            # ensure the execution context has the right tracer
+            self.assertIsInstance(execution_context.get_opencensus_tracer(),
+                                    noop_tracer.NoopTracer)
+            # ensure the correct logger is set
+            mock_wrap.assert_called_once_with(TraceLogger)
