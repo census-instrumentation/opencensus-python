@@ -380,6 +380,11 @@ Modifying Traces
     tracer = Tracer(exporter=exporter, sampler=ProbabilitySampler(1.0))
     with tracer.span(name='parent'):
         response = requests.get(url='https://www.wikipedia.org/wiki/Rabbit')
+        
+Integrate with Azure Functions
+##############################
+
+Users who want to capture custom telemetry in Azure Functions environments are encouraged to used the OpenCensus Python Azure Functions [extension](https://github.com/census-ecosystem/opencensus-python-extensions-azure/tree/main/extensions/functions#opencensus-python-azure-functions-extension). More deetails can be found [here](https://docs.microsoft.com/azure/azure-functions/functions-reference-python?tabs=application-level#log-custom-telemetry).
 
 References
 ----------
