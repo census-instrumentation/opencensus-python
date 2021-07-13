@@ -44,6 +44,8 @@ setup(
         'opencensus >= 0.8.dev0, < 1.0.0',
         'opencensus-ext-grpc >= 0.3.0, < 1.0.0',
         'opencensus-ext-requests >= 0.1.2, < 1.0.0',
+        'google-cloud-core ~= 1.7; python_version == "2.7" or python_version >= "3.6"',
+        'google-cloud-core ~= 1.4; python_version == "3.4" or python_version == "3.5"',
     ],
     extras_require={},
     license='Apache-2.0',
