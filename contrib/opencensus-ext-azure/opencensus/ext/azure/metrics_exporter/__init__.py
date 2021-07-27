@@ -157,4 +157,9 @@ def new_metrics_exporter(**options):
                                     producers,
                                     exporter,
                                     interval=exporter.options.export_interval)
+    from opencensus.ext.azure.metrics_exporter import statsbeat_metrics
+    statsbeat_metrics.enable_statsbeat_metrics(
+        exporter.options.connection_string,
+        exporter.options.instrumentation_key
+    )
     return exporter

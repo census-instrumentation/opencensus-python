@@ -15,41 +15,43 @@
 import threading
 
 from opencensus.ext.azure.metrics_exporter import MetricsExporter
-from opencensus.ext.azure.metrics_exporter.heartbeat_metrics.heartbeat import (
-    HeartbeatMetric,
+from opencensus.ext.azure.metrics_exporter.statsbeat_metrics.statsbeat import (
+    _StatsbeatMetrics,
 )
 from opencensus.metrics import transport
 from opencensus.metrics.export.metric_producer import MetricProducer
 
-_HEARTBEAT_METRICS = None
-_HEARTBEAT_LOCK = threading.Lock()
+_STATSBEAT_METRICS = None
+_STATSBEAT_LOCK = threading.Lock()
 
 
-def enable_heartbeat_metrics(connection_string, ikey):
-    with _HEARTBEAT_LOCK:
-        # Only start heartbeat if did not exist before
-        global _HEARTBEAT_METRICS  # pylint: disable=global-statement
-        if _HEARTBEAT_METRICS is None:
+def enable_statsbeat_metrics(connection_string, ikey):
+    with _STATSBEAT_LOCK:
+        # Only start statsbeat if did not exist before
+        global _STATSBEAT_METRICS  # pylint: disable=global-statement
+        if _STATSBEAT_METRICS is None:
             exporter = MetricsExporter(
                 connection_string=connection_string,
                 instrumentation_key=ikey,
-                export_interval=900.0,  # Send every 15 minutes
+                export_interval=5.0,  # Send every 15 minutes
             )
-            producer = AzureHeartbeatMetricsProducer()
-            _HEARTBEAT_METRICS = producer
+            producer = _AzureStatsbeatMetricsProducer(
+                instrumentation_key = exporter.options.instrumentation_key
+            )
+            _STATSBEAT_METRICS = producer
             exporter.exporter_thread = \
-                transport.get_exporter_thread([_HEARTBEAT_METRICS],
+                transport.get_exporter_thread([_STATSBEAT_METRICS],
                                               exporter,
                                               exporter.options.export_interval)
 
 
-class AzureHeartbeatMetricsProducer(MetricProducer):
-    """Implementation of the producer of heartbeat metrics.
+class _AzureStatsbeatMetricsProducer(MetricProducer):
+    """Implementation of the producer of statsbeat metrics.
 
     Includes Azure attach rate metrics, implemented using gauges.
     """
-    def __init__(self):
-        self._heartbeat = HeartbeatMetric()
+    def __init__(self, instrumentation_key):
+        self._statsbeat = _StatsbeatMetrics(instrumentation_key)
 
     def get_metrics(self):
-        return self._heartbeat.get_metrics()
+        return self._statsbeat.get_metrics()
