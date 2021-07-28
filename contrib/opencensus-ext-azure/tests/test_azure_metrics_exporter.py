@@ -202,7 +202,7 @@ class TestAzureMetricsExporter(unittest.TestCase):
                 '.transport.get_exporter_thread')
     def test_new_metrics_exporter(self, exporter_mock):
         with mock.patch('opencensus.ext.azure.metrics_exporter'
-                        '.heartbeat_metrics.enable_heartbeat_metrics') as hb:
+                        '.statsbeat_metrics.enable_statsbeat_metrics') as hb:
             hb.return_value = None
             iKey = '12345678-1234-5678-abcd-12345678abcd'
             exporter = metrics_exporter.new_metrics_exporter(
@@ -221,7 +221,7 @@ class TestAzureMetricsExporter(unittest.TestCase):
                 '.transport.get_exporter_thread')
     def test_new_metrics_exporter_no_standard_metrics(self, exporter_mock):
         with mock.patch('opencensus.ext.azure.metrics_exporter'
-                        '.heartbeat_metrics.enable_heartbeat_metrics') as hb:
+                        '.statsbeat_metrics.enable_statsbeat_metrics') as hb:
             hb.return_value = None
             iKey = '12345678-1234-5678-abcd-12345678abcd'
             exporter = metrics_exporter.new_metrics_exporter(
@@ -239,7 +239,7 @@ class TestAzureMetricsExporter(unittest.TestCase):
                 '.transport.get_exporter_thread')
     def test_new_metrics_exporter_heartbeat(self, exporter_mock):
         with mock.patch('opencensus.ext.azure.metrics_exporter'
-                        '.heartbeat_metrics.enable_heartbeat_metrics') as hb:
+                        '.statsbeat_metrics.enable_statsbeat_metrics') as hb:
             iKey = '12345678-1234-5678-abcd-12345678abcd'
             exporter = metrics_exporter.new_metrics_exporter(
                 instrumentation_key=iKey)
