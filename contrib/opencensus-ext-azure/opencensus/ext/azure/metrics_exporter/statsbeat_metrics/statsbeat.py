@@ -33,7 +33,7 @@ _AIMS_FORMAT = "format=json"
 _TELEMETRY_NAME = "Statsbeat"
 _ATTACH_METRIC_NAME = "Attach"
 
-_RP_NAMES = ["aks","appsvc","function","vm"]
+_RP_NAMES = ["aks","appsvc","function","vm","unknown"]
 
 
 def _get_attach_properties():
@@ -74,7 +74,7 @@ class _StatsbeatMetrics:
 
     def _get_attach_metric(self, metric):
         properties = []
-        os_type = ''
+        vm_os_type = ''
         # rpId
         if os.environ.get("WEBSITE_SITE_NAME") is not None:
             # Web apps
@@ -92,6 +92,7 @@ class _StatsbeatMetrics:
             properties.append(LabelValue(os.environ.get("WEBSITE_HOSTNAME")))
         elif self.vm_retry and self._get_azure_compute_metadata():
             # VM
+            properties.append(LabelValue(_RP_NAMES[3]))
             properties.append(
                 LabelValue(
                     '{}//{}'.format(
@@ -99,15 +100,16 @@ class _StatsbeatMetrics:
                         self.vm_data.get("subscriptionId", '')),
                 )
             )
-            os_type = self.vm_data.get("osType", '')
+            vm_os_type = self.vm_data.get("osType", '')
         else:
             # Not in any rp or VM metadata failed
-            return None
+            properties.append(LabelValue(_RP_NAMES[4]))
+            properties.append(LabelValue(""))
         
         properties.append(LabelValue("sdk"))  # attach type
         properties.append(LabelValue(self._instrumentation_key))  # cikey
         properties.append(LabelValue(platform.python_version()))  # runTimeVersion
-        properties.append(LabelValue(os_type or platform.system()))  # os
+        properties.append(LabelValue(vm_os_type or platform.system()))  # os
         properties.append(LabelValue("python"))  # language
         properties.append(
             LabelValue(azure_monitor_context['ai.internal.sdkVersion']))  # version

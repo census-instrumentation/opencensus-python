@@ -153,7 +153,7 @@ class TestStatsbeatMetrics(unittest.TestCase):
             "WEBSITE_HOSTNAME": "host_name",
         }
     )
-    def test_statsbeat_metric_get_attach_metric_function(self):
+    def test_statsbeat_metric_get_attach_metric_functions(self):
         # pylint: disable=protected-access
         stats = _StatsbeatMetrics("ikey")
         metric = stats._get_attach_metric(stats._attach_metric)
@@ -168,102 +168,109 @@ class TestStatsbeatMetrics(unittest.TestCase):
         self.assertEqual(properties[6].value, "python")
         self.assertEqual(properties[7].value, azure_monitor_context["ai.internal.sdkVersion"])
 
+    def test_statsbeat_metric_get_attach_metric_vm(self):
+        stats = _StatsbeatMetrics("ikey")
+        vm_data = {}
+        vm_data["vmId"] = "123"
+        vm_data["subscriptionId"] = "sub123"
+        vm_data["osType"] = "linux"
+        stats.vm_data = vm_data
+        self.vm_retry = True
+        metadata_mock = mock.Mock()
+        metadata_mock.return_value = True
+        stats._get_azure_compute_metadata = metadata_mock
+        metric = stats._get_attach_metric(stats._attach_metric)
+        properties = metric._time_series[0]._label_values
+        self.assertEqual(len(properties), 8)
+        self.assertEqual(properties[0].value, _RP_NAMES[3])
+        self.assertEqual(properties[1].value, "123//sub123")
+        self.assertEqual(properties[2].value, "sdk")
+        self.assertEqual(properties[3].value, "ikey")
+        self.assertEqual(properties[4].value, platform.python_version())
+        self.assertEqual(properties[5].value, "linux")
+        self.assertEqual(properties[6].value, "python")
+        self.assertEqual(properties[7].value, azure_monitor_context["ai.internal.sdkVersion"])
 
-    # def test_heartbeat_metric_init_vm(self):
-    #     with mock.patch('requests.get') as get:
-    #         get.return_value = MockResponse(
-    #             200,
-    #             json.dumps(
-    #                 {
-    #                     'vmId': 5,
-    #                     'subscriptionId': 3,
-    #                     'osType': 'Linux'
-    #                 }
-    #             )
-    #         )
-    #         metric = heartbeat_metrics.HeartbeatMetric()
-    #         self.assertFalse(metric.init)
-    #         self.assertFalse(metric.vm_retry)
-    #         metric.get_metrics()
-    #         self.assertTrue(metric.init)
-    #         self.assertFalse(metric.vm_retry)
-    #         self.assertEqual(metric.NAME, 'Heartbeat')
-    #         keys = list(metric.properties.keys())
-    #         values = list(metric.properties.values())
-    #         self.assertEqual(len(keys), 5)
-    #         self.assertEqual(len(keys), len(values))
-    #         self.assertEqual(keys[0].key, "sdk")
-    #         self.assertEqual(keys[1].key, "osType")
-    #         self.assertEqual(values[0].value, 'py{}:oc{}:ext{}'.format(
-    #             platform.python_version(),
-    #             opencensus_version,
-    #             ext_version,
-    #         ))
-    #         self.assertEqual(values[1].value, platform.system())
-    #         self.assertEqual(keys[2].key, "azInst_vmId")
-    #         self.assertEqual(values[2].value, 5)
-    #         self.assertEqual(keys[3].key, "azInst_subscriptionId")
-    #         self.assertEqual(values[3].value, 3)
-    #         self.assertEqual(keys[4].key, "azInst_osType")
-    #         self.assertEqual(values[4].value, "Linux")
+    def test_statsbeat_metric_get_attach_metric_vm_no_os(self):
+        stats = _StatsbeatMetrics("ikey")
+        vm_data = {}
+        vm_data["vmId"] = "123"
+        vm_data["subscriptionId"] = "sub123"
+        vm_data["osType"] = None
+        stats.vm_data = vm_data
+        self.vm_retry = True
+        metadata_mock = mock.Mock()
+        metadata_mock.return_value = True
+        stats._get_azure_compute_metadata = metadata_mock
+        metric = stats._get_attach_metric(stats._attach_metric)
+        properties = metric._time_series[0]._label_values
+        self.assertEqual(len(properties), 8)
+        self.assertEqual(properties[5].value, platform.system())
 
-    # def test_heartbeat_metric_not_vm(self):
-    #     with mock.patch(
-    #         'requests.get',
-    #         throw(requests.exceptions.ConnectionError)
-    #     ):
-    #         metric = heartbeat_metrics.HeartbeatMetric()
-    #         self.assertFalse(metric.init)
-    #         self.assertFalse(metric.vm_retry)
-    #         metric.get_metrics()
-    #         self.assertTrue(metric.init)
-    #         self.assertFalse(metric.vm_retry)
-    #         self.assertEqual(metric.NAME, 'Heartbeat')
-    #         keys = list(metric.properties.keys())
-    #         self.assertEqual(len(keys), 2)
+    def test_statsbeat_metric_get_attach_metric_unknown(self):
+        stats = _StatsbeatMetrics("ikey")
+        stats.vm_retry = False
+        metric = stats._get_attach_metric(stats._attach_metric)
+        properties = metric._time_series[0]._label_values
+        self.assertEqual(len(properties), 8)
+        self.assertEqual(properties[0].value, _RP_NAMES[4])
+        self.assertEqual(properties[1].value, "")
+        self.assertEqual(properties[2].value, "sdk")
+        self.assertEqual(properties[3].value, "ikey")
+        self.assertEqual(properties[4].value, platform.python_version())
+        self.assertEqual(properties[5].value, platform.system())
+        self.assertEqual(properties[6].value, "python")
+        self.assertEqual(properties[7].value, azure_monitor_context["ai.internal.sdkVersion"])
 
-    # def test_heartbeat_metric_not_vm_timeout(self):
-    #     with mock.patch(
-    #         'requests.get',
-    #         throw(requests.Timeout)
-    #     ):
-    #         metric = heartbeat_metrics.HeartbeatMetric()
-    #         self.assertFalse(metric.init)
-    #         self.assertFalse(metric.vm_retry)
-    #         metric.get_metrics()
-    #         self.assertTrue(metric.init)
-    #         self.assertFalse(metric.vm_retry)
-    #         self.assertEqual(metric.NAME, 'Heartbeat')
-    #         keys = list(metric.properties.keys())
-    #         self.assertEqual(len(keys), 2)
+    def test_get_azure_compute_metadata(self):
+        with mock.patch('requests.get') as get:
+            get.return_value = MockResponse(
+                200,
+                json.dumps(
+                    {
+                        'vmId': 5,
+                        'subscriptionId': 3,
+                        'osType': 'Linux'
+                    }
+                )
+            )
+            stats = _StatsbeatMetrics("ikey")
+            vm_result = stats._get_azure_compute_metadata()
+            self.assertTrue(vm_result)
+            self.assertEqual(stats.vm_data["vmId"], 5)
+            self.assertEqual(stats.vm_data["subscriptionId"], 3)
+            self.assertEqual(stats.vm_data["osType"], "Linux")
+            self.assertTrue(stats.vm_retry)
 
-    # def test_heartbeat_metric_vm_retry(self):
-    #     with mock.patch(
-    #         'requests.get',
-    #         throw(requests.exceptions.RequestException)
-    #     ):
-    #         metric = heartbeat_metrics.HeartbeatMetric()
-    #         self.assertFalse(metric.init)
-    #         self.assertFalse(metric.vm_retry)
-    #         metric.get_metrics()
-    #         self.assertTrue(metric.init)
-    #         self.assertTrue(metric.vm_retry)
-    #         keys = list(metric.properties.keys())
-    #         self.assertEqual(len(keys), 2)
-    #         self.assertEqual(len(metric.vm_data), 0)
-    #         with mock.patch('requests.get') as get:
-    #             get.return_value = MockResponse(
-    #                 200,
-    #                 json.dumps(
-    #                     {
-    #                         'vmId': 5,
-    #                         'subscriptionId': 3,
-    #                         'osType': 'Linux'
-    #                     }
-    #                 )
-    #             )
-    #             metric.get_metrics()
-    #             self.assertFalse(metric.vm_retry)
-    #             self.assertEqual(len(metric.vm_data), 3)
-    #             keys = list(metric.properties.keys())
-    #             self.assertEqual(len(keys), 5)
+    def test_get_azure_compute_metadata_not_vm(self):
+        with mock.patch(
+            'requests.get',
+            throw(requests.exceptions.ConnectionError)
+        ):
+            stats = _StatsbeatMetrics("ikey")
+            vm_result = stats._get_azure_compute_metadata()
+            self.assertFalse(vm_result)
+            self.assertEqual(len(stats.vm_data), 0)
+            self.assertFalse(stats.vm_retry)
+
+    def test_get_azure_compute_metadata_not_vm_timeout(self):
+        with mock.patch(
+            'requests.get',
+            throw(requests.Timeout)
+        ):
+            stats = _StatsbeatMetrics("ikey")
+            vm_result = stats._get_azure_compute_metadata()
+            self.assertFalse(vm_result)
+            self.assertEqual(len(stats.vm_data), 0)
+            self.assertFalse(stats.vm_retry)
+
+    def test_get_azure_compute_metadata_vm_retry(self):
+        with mock.patch(
+            'requests.get',
+            throw(requests.exceptions.RequestException)
+        ):
+            stats = _StatsbeatMetrics("ikey")
+            vm_result = stats._get_azure_compute_metadata()
+            self.assertFalse(vm_result)
+            self.assertEqual(len(stats.vm_data), 0)
+            self.assertTrue(stats.vm_retry)
