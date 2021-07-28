@@ -80,7 +80,8 @@ class TestStatsbeatMetrics(unittest.TestCase):
                 statsbeat_metrics._AzureStatsbeatMetricsProducer
             )
         )
-        self.assertEqual(statsbeat_metrics._STATSBEAT_METRICS._statsbeat._instrumentation_key, ikey)
+        self.assertEqual(
+            statsbeat_metrics._STATSBEAT_METRICS._statsbeat._instrumentation_key, ikey)  # noqa: E501
         exporter_mock.assert_called()
 
     @mock.patch('opencensus.metrics.transport.get_exporter_thread')
@@ -92,7 +93,8 @@ class TestStatsbeatMetrics(unittest.TestCase):
         self.assertEqual(statsbeat_metrics._STATSBEAT_METRICS, producer)
         exporter_mock.assert_not_called()
 
-    @mock.patch('opencensus.ext.azure.metrics_exporter.statsbeat_metrics.statsbeat._get_attach_properties')
+    @mock.patch(
+        'opencensus.ext.azure.metrics_exporter.statsbeat_metrics.statsbeat._get_attach_properties')  # noqa: E501
     def test_statsbeat_metric_init(self, attach_mock):
         # pylint: disable=protected-access
         metric = _StatsbeatMetrics("ikey")
@@ -146,7 +148,8 @@ class TestStatsbeatMetrics(unittest.TestCase):
         self.assertEqual(properties[4].value, platform.python_version())
         self.assertEqual(properties[5].value, platform.system())
         self.assertEqual(properties[6].value, "python")
-        self.assertEqual(properties[7].value, azure_monitor_context["ai.internal.sdkVersion"])
+        self.assertEqual(
+            properties[7].value, azure_monitor_context["ai.internal.sdkVersion"])  # noqa: E501
 
     @mock.patch.dict(
         os.environ,
@@ -168,7 +171,8 @@ class TestStatsbeatMetrics(unittest.TestCase):
         self.assertEqual(properties[4].value, platform.python_version())
         self.assertEqual(properties[5].value, platform.system())
         self.assertEqual(properties[6].value, "python")
-        self.assertEqual(properties[7].value, azure_monitor_context["ai.internal.sdkVersion"])
+        self.assertEqual(
+            properties[7].value, azure_monitor_context["ai.internal.sdkVersion"])  # noqa: E501
 
     def test_statsbeat_metric_get_attach_metric_vm(self):
         stats = _StatsbeatMetrics("ikey")
@@ -191,7 +195,8 @@ class TestStatsbeatMetrics(unittest.TestCase):
         self.assertEqual(properties[4].value, platform.python_version())
         self.assertEqual(properties[5].value, "linux")
         self.assertEqual(properties[6].value, "python")
-        self.assertEqual(properties[7].value, azure_monitor_context["ai.internal.sdkVersion"])
+        self.assertEqual(
+            properties[7].value, azure_monitor_context["ai.internal.sdkVersion"])  # noqa: E501
 
     def test_statsbeat_metric_get_attach_metric_vm_no_os(self):
         stats = _StatsbeatMetrics("ikey")
@@ -222,7 +227,8 @@ class TestStatsbeatMetrics(unittest.TestCase):
         self.assertEqual(properties[4].value, platform.python_version())
         self.assertEqual(properties[5].value, platform.system())
         self.assertEqual(properties[6].value, "python")
-        self.assertEqual(properties[7].value, azure_monitor_context["ai.internal.sdkVersion"])
+        self.assertEqual(
+            properties[7].value, azure_monitor_context["ai.internal.sdkVersion"])  # noqa: E501
 
     def test_get_azure_compute_metadata(self):
         with mock.patch('requests.get') as get:

@@ -38,7 +38,7 @@ def enable_statsbeat_metrics(ikey):
             )
             # The user's ikey is the one being tracked
             producer = _AzureStatsbeatMetricsProducer(
-                instrumentation_key = ikey
+                instrumentation_key=ikey
             )
             _STATSBEAT_METRICS = producer
             exporter.exporter_thread = \

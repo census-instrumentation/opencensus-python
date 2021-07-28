@@ -27,17 +27,19 @@ from opencensus.metrics.label_value import LabelValue
 _AIMS_URI = "http://169.254.169.254/metadata/instance/compute"
 _AIMS_API_VERSION = "api-version=2017-12-01"
 _AIMS_FORMAT = "format=json"
-_STATS_CONNECTION_STRING = "InstrumentationKey=c4a29126-a7cb-47e5-b348-11414998b11e;IngestionEndpoint=https://dc.services.visualstudio.com/"
+
+_STATS_CONNECTION_STRING = "InstrumentationKey=c4a29126-a7cb-47e5-b348-11414998b11e;IngestionEndpoint=https://dc.services.visualstudio.com/"  # noqa: E501
 
 _TELEMETRY_NAME = "Statsbeat"
 _ATTACH_METRIC_NAME = "Attach"
 
-_RP_NAMES = ["aks","appsvc","function","vm","unknown"]
+_RP_NAMES = ["aks", "appsvc", "function", "vm", "unknown"]
 
 
 def _get_attach_properties():
     properties = []
-    properties.append(LabelKey("rp", 'name of the rp, e.g. appsvc, vm, function, aks, etc.'))
+    properties.append(
+        LabelKey("rp", 'name of the rp, e.g. appsvc, vm, function, aks, etc.'))
     properties.append(LabelKey("rpid", 'unique id of rp'))
     properties.append(LabelKey("attach", 'codeless or sdk'))
     properties.append(LabelKey("cikey", 'customer ikey'))
@@ -104,14 +106,16 @@ class _StatsbeatMetrics:
             # Not in any rp or VM metadata failed
             properties.append(LabelValue(_RP_NAMES[4]))
             properties.append(LabelValue(""))
-        
+
         properties.append(LabelValue("sdk"))  # attach type
         properties.append(LabelValue(self._instrumentation_key))  # cikey
-        properties.append(LabelValue(platform.python_version()))  # runTimeVersion
+        # runTimeVersion
+        properties.append(LabelValue(platform.python_version()))
         properties.append(LabelValue(vm_os_type or platform.system()))  # os
         properties.append(LabelValue("python"))  # language
+        # version
         properties.append(
-            LabelValue(azure_monitor_context['ai.internal.sdkVersion']))  # version
+            LabelValue(azure_monitor_context['ai.internal.sdkVersion']))
         metric.get_or_create_time_series(properties)
         return metric.get_metric(datetime.datetime.utcnow())
 
