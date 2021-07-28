@@ -31,6 +31,7 @@ def enable_statsbeat_metrics(connection_string, ikey):
         global _STATSBEAT_METRICS  # pylint: disable=global-statement
         if _STATSBEAT_METRICS is None:
             exporter = MetricsExporter(
+                is_stats=True,
                 connection_string=connection_string,
                 instrumentation_key=ikey,
                 export_interval=5.0,  # Send every 15 minutes

@@ -39,8 +39,9 @@ logger = logging.getLogger(__name__)
 class MetricsExporter(TransportMixin, ProcessorMixin):
     """Metrics exporter for Microsoft Azure Monitor."""
 
-    def __init__(self, **options):
+    def __init__(self, is_stats=False, **options):
         self.options = Options(**options)
+        self._is_stats = is_stats
         utils.validate_instrumentation_key(self.options.instrumentation_key)
         if self.options.max_batch_size <= 0:
             raise ValueError('Max batch size must be at least 1.')
@@ -131,7 +132,10 @@ class MetricsExporter(TransportMixin, ProcessorMixin):
             tags=dict(utils.azure_monitor_context),
             time=timestamp.isoformat(),
         )
-        envelope.name = "Microsoft.ApplicationInsights.Metric"
+        if self._is_stats:
+            envelope.name = "Statsbeat"
+        else:
+            envelope.name = "Microsoft.ApplicationInsights.Metric"
         data = MetricData(
             metrics=[data_point],
             properties=properties
