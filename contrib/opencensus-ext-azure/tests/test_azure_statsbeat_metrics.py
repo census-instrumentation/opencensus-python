@@ -69,11 +69,11 @@ class TestStatsbeatMetrics(unittest.TestCase):
         mock_stats.get_metrics.assert_called_once()
 
     @mock.patch('opencensus.metrics.transport.get_exporter_thread')
-    def test_enable_statsbeat_metrics(self, exporter_mock):
+    def test_collect_statsbeat_metrics(self, exporter_mock):
         ikey = '12345678-1234-5678-abcd-12345678abcd'
         # pylint: disable=protected-access
         self.assertIsNone(statsbeat_metrics._STATSBEAT_METRICS)
-        statsbeat_metrics.enable_statsbeat_metrics(ikey)
+        statsbeat_metrics.collect_statsbeat_metrics(ikey)
         self.assertTrue(
             isinstance(
                 statsbeat_metrics._STATSBEAT_METRICS,
@@ -85,11 +85,11 @@ class TestStatsbeatMetrics(unittest.TestCase):
         exporter_mock.assert_called()
 
     @mock.patch('opencensus.metrics.transport.get_exporter_thread')
-    def test_enable_statsbeat_metrics_exists(self, exporter_mock):
+    def test_collect_statsbeat_metrics_exists(self, exporter_mock):
         # pylint: disable=protected-access
         producer = statsbeat_metrics._AzureStatsbeatMetricsProducer("ikey")
         statsbeat_metrics._STATSBEAT_METRICS = producer
-        statsbeat_metrics.enable_statsbeat_metrics(None)
+        statsbeat_metrics.collect_statsbeat_metrics(None)
         self.assertEqual(statsbeat_metrics._STATSBEAT_METRICS, producer)
         exporter_mock.assert_not_called()
 
@@ -141,7 +141,7 @@ class TestStatsbeatMetrics(unittest.TestCase):
         metric = stats._get_attach_metric(stats._attach_metric)
         properties = metric._time_series[0]._label_values
         self.assertEqual(len(properties), 8)
-        self.assertEqual(properties[0].value, _RP_NAMES[1])
+        self.assertEqual(properties[0].value, _RP_NAMES[0])
         self.assertEqual(properties[1].value, "site_name/stamp_name")
         self.assertEqual(properties[2].value, "sdk")
         self.assertEqual(properties[3].value, "ikey")
@@ -164,7 +164,7 @@ class TestStatsbeatMetrics(unittest.TestCase):
         metric = stats._get_attach_metric(stats._attach_metric)
         properties = metric._time_series[0]._label_values
         self.assertEqual(len(properties), 8)
-        self.assertEqual(properties[0].value, _RP_NAMES[2])
+        self.assertEqual(properties[0].value, _RP_NAMES[1])
         self.assertEqual(properties[1].value, "host_name")
         self.assertEqual(properties[2].value, "sdk")
         self.assertEqual(properties[3].value, "ikey")
@@ -188,7 +188,7 @@ class TestStatsbeatMetrics(unittest.TestCase):
         metric = stats._get_attach_metric(stats._attach_metric)
         properties = metric._time_series[0]._label_values
         self.assertEqual(len(properties), 8)
-        self.assertEqual(properties[0].value, _RP_NAMES[3])
+        self.assertEqual(properties[0].value, _RP_NAMES[2])
         self.assertEqual(properties[1].value, "123//sub123")
         self.assertEqual(properties[2].value, "sdk")
         self.assertEqual(properties[3].value, "ikey")
@@ -220,7 +220,7 @@ class TestStatsbeatMetrics(unittest.TestCase):
         metric = stats._get_attach_metric(stats._attach_metric)
         properties = metric._time_series[0]._label_values
         self.assertEqual(len(properties), 8)
-        self.assertEqual(properties[0].value, _RP_NAMES[4])
+        self.assertEqual(properties[0].value, _RP_NAMES[3])
         self.assertEqual(properties[1].value, "")
         self.assertEqual(properties[2].value, "sdk")
         self.assertEqual(properties[3].value, "ikey")

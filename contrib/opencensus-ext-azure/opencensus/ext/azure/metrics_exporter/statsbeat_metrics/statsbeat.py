@@ -28,12 +28,22 @@ _AIMS_URI = "http://169.254.169.254/metadata/instance/compute"
 _AIMS_API_VERSION = "api-version=2017-12-01"
 _AIMS_FORMAT = "format=json"
 
-_STATS_CONNECTION_STRING = "InstrumentationKey=c4a29126-a7cb-47e5-b348-11414998b11e;IngestionEndpoint=https://dc.services.visualstudio.com/"  # noqa: E501
+_DEFAULT_STATS_CONNECTION_STRING = "InstrumentationKey=c4a29126-a7cb-47e5-b348-11414998b11e;IngestionEndpoint=https://dc.services.visualstudio.com/"  # noqa: E501
 
-_TELEMETRY_NAME = "Statsbeat"
 _ATTACH_METRIC_NAME = "Attach"
 
-_RP_NAMES = ["aks", "appsvc", "function", "vm", "unknown"]
+_RP_NAMES = ["appsvc", "function", "vm", "unknown"]
+
+
+def _get_stats_connection_string():
+    cs_env = os.environ.get("APPLICATION_INSIGHTS_CONNECTION_STRING_STATS")
+    if cs_env:
+        return cs_env
+    else:
+        return _DEFAULT_STATS_CONNECTION_STRING
+
+
+_STATS_CONNECTION_STRING = _get_stats_connection_string()
 
 
 def _get_attach_properties():
@@ -46,7 +56,7 @@ def _get_attach_properties():
     properties.append(LabelKey("runtimeVersion", 'Python version'))
     properties.append(LabelKey("os", 'os of application being instrumented'))
     properties.append(LabelKey("language", 'Python'))
-    properties.append(LabelKey("version", 'version of exporter package'))
+    properties.append(LabelKey("version", 'sdkVersion'))
     return properties
 
 
@@ -79,7 +89,7 @@ class _StatsbeatMetrics:
         # rpId
         if os.environ.get("WEBSITE_SITE_NAME") is not None:
             # Web apps
-            properties.append(LabelValue(_RP_NAMES[1]))
+            properties.append(LabelValue(_RP_NAMES[0]))
             properties.append(
                 LabelValue(
                     '{}/{}'.format(
@@ -89,11 +99,11 @@ class _StatsbeatMetrics:
             )
         elif os.environ.get("FUNCTIONS_WORKER_RUNTIME") is not None:
             # Function apps
-            properties.append(LabelValue(_RP_NAMES[2]))
+            properties.append(LabelValue(_RP_NAMES[1]))
             properties.append(LabelValue(os.environ.get("WEBSITE_HOSTNAME")))
         elif self.vm_retry and self._get_azure_compute_metadata():
             # VM
-            properties.append(LabelValue(_RP_NAMES[3]))
+            properties.append(LabelValue(_RP_NAMES[2]))
             properties.append(
                 LabelValue(
                     '{}//{}'.format(
@@ -104,7 +114,7 @@ class _StatsbeatMetrics:
             vm_os_type = self.vm_data.get("osType", '')
         else:
             # Not in any rp or VM metadata failed
-            properties.append(LabelValue(_RP_NAMES[4]))
+            properties.append(LabelValue(_RP_NAMES[3]))
             properties.append(LabelValue(""))
 
         properties.append(LabelValue("sdk"))  # attach type

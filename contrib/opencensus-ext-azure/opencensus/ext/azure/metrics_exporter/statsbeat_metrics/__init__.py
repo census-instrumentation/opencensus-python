@@ -26,7 +26,7 @@ _STATSBEAT_METRICS = None
 _STATSBEAT_LOCK = threading.Lock()
 
 
-def enable_statsbeat_metrics(ikey):
+def collect_statsbeat_metrics(ikey):
     with _STATSBEAT_LOCK:
         # Only start statsbeat if did not exist before
         global _STATSBEAT_METRICS  # pylint: disable=global-statement
