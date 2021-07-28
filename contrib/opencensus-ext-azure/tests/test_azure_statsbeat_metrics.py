@@ -18,6 +18,7 @@ import platform
 import unittest
 
 import mock
+from opencensus.ext.azure.metrics_exporter.statsbeat_metrics import statsbeat
 import requests
 
 from opencensus.metrics.export.gauge import LongGauge
@@ -72,13 +73,14 @@ class TestStatsbeatMetrics(unittest.TestCase):
         ikey = '12345678-1234-5678-abcd-12345678abcd'
         # pylint: disable=protected-access
         self.assertIsNone(statsbeat_metrics._STATSBEAT_METRICS)
-        statsbeat_metrics.enable_statsbeat_metrics(None, ikey)
+        statsbeat_metrics.enable_statsbeat_metrics(ikey)
         self.assertTrue(
             isinstance(
                 statsbeat_metrics._STATSBEAT_METRICS,
                 statsbeat_metrics._AzureStatsbeatMetricsProducer
             )
         )
+        self.assertEqual(statsbeat_metrics._STATSBEAT_METRICS._statsbeat._instrumentation_key, ikey)
         exporter_mock.assert_called()
 
     @mock.patch('opencensus.metrics.transport.get_exporter_thread')
@@ -86,7 +88,7 @@ class TestStatsbeatMetrics(unittest.TestCase):
         # pylint: disable=protected-access
         producer = statsbeat_metrics._AzureStatsbeatMetricsProducer("ikey")
         statsbeat_metrics._STATSBEAT_METRICS = producer
-        statsbeat_metrics.enable_statsbeat_metrics(None, None)
+        statsbeat_metrics.enable_statsbeat_metrics(None)
         self.assertEqual(statsbeat_metrics._STATSBEAT_METRICS, producer)
         exporter_mock.assert_not_called()
 

@@ -36,8 +36,9 @@ def enable_statsbeat_metrics(ikey):
                 connection_string=_STATS_CONNECTION_STRING,
                 export_interval=5.0,  # Send every 15 minutes
             )
+            # The user's ikey is the one being tracked
             producer = _AzureStatsbeatMetricsProducer(
-                instrumentation_key = exporter.options.instrumentation_key
+                instrumentation_key = ikey
             )
             _STATSBEAT_METRICS = producer
             exporter.exporter_thread = \
