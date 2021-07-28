@@ -18,17 +18,17 @@ import platform
 import unittest
 
 import mock
-from opencensus.ext.azure.metrics_exporter.statsbeat_metrics import statsbeat
 import requests
 
-from opencensus.metrics.export.gauge import LongGauge
 from opencensus.ext.azure.common.utils import azure_monitor_context
 from opencensus.ext.azure.metrics_exporter import statsbeat_metrics
 from opencensus.ext.azure.metrics_exporter.statsbeat_metrics.statsbeat import (
-    _get_attach_properties,
     _RP_NAMES,
+    _get_attach_properties,
     _StatsbeatMetrics,
 )
+from opencensus.metrics.export.gauge import LongGauge
+
 
 class MockResponse(object):
     def __init__(self, status_code, text):
