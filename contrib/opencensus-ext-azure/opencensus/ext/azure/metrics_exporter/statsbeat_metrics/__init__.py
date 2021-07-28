@@ -16,6 +16,7 @@ import threading
 
 from opencensus.ext.azure.metrics_exporter import MetricsExporter
 from opencensus.ext.azure.metrics_exporter.statsbeat_metrics.statsbeat import (
+    _STATS_CONNECTION_STRING,
     _StatsbeatMetrics,
 )
 from opencensus.metrics import transport
@@ -25,15 +26,14 @@ _STATSBEAT_METRICS = None
 _STATSBEAT_LOCK = threading.Lock()
 
 
-def enable_statsbeat_metrics(connection_string, ikey):
+def enable_statsbeat_metrics(ikey):
     with _STATSBEAT_LOCK:
         # Only start statsbeat if did not exist before
         global _STATSBEAT_METRICS  # pylint: disable=global-statement
         if _STATSBEAT_METRICS is None:
             exporter = MetricsExporter(
                 is_stats=True,
-                connection_string=connection_string,
-                instrumentation_key=ikey,
+                connection_string=_STATS_CONNECTION_STRING,
                 export_interval=5.0,  # Send every 15 minutes
             )
             producer = _AzureStatsbeatMetricsProducer(

@@ -16,8 +16,6 @@ import datetime
 import json
 import os
 import platform
-from collections import OrderedDict
-from opencensus.ext.azure.metrics_exporter import statsbeat_metrics
 
 import requests
 
@@ -29,6 +27,7 @@ from opencensus.metrics.label_value import LabelValue
 _AIMS_URI = "http://169.254.169.254/metadata/instance/compute"
 _AIMS_API_VERSION = "api-version=2017-12-01"
 _AIMS_FORMAT = "format=json"
+_STATS_CONNECTION_STRING = "InstrumentationKey=c4a29126-a7cb-47e5-b348-11414998b11e;IngestionEndpoint=https://dc.services.visualstudio.com/"
 
 _TELEMETRY_NAME = "Statsbeat"
 _ATTACH_METRIC_NAME = "Attach"
