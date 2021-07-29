@@ -20,7 +20,7 @@ import unittest
 import mock
 import requests
 
-from opencensus.ext.azure.common.utils import azure_monitor_context
+from opencensus.ext.azure.common.version import __version__ as ext_version
 from opencensus.ext.azure.metrics_exporter import statsbeat_metrics
 from opencensus.ext.azure.metrics_exporter.statsbeat_metrics.statsbeat import (
     _RP_NAMES,
@@ -149,7 +149,7 @@ class TestStatsbeatMetrics(unittest.TestCase):
         self.assertEqual(properties[5].value, platform.system())
         self.assertEqual(properties[6].value, "python")
         self.assertEqual(
-            properties[7].value, azure_monitor_context["ai.internal.sdkVersion"])  # noqa: E501
+            properties[7].value, ext_version)  # noqa: E501
 
     @mock.patch.dict(
         os.environ,
@@ -172,7 +172,7 @@ class TestStatsbeatMetrics(unittest.TestCase):
         self.assertEqual(properties[5].value, platform.system())
         self.assertEqual(properties[6].value, "python")
         self.assertEqual(
-            properties[7].value, azure_monitor_context["ai.internal.sdkVersion"])  # noqa: E501
+            properties[7].value, ext_version)  # noqa: E501
 
     def test_statsbeat_metric_get_attach_metric_vm(self):
         stats = _StatsbeatMetrics("ikey")
@@ -196,7 +196,7 @@ class TestStatsbeatMetrics(unittest.TestCase):
         self.assertEqual(properties[5].value, "linux")
         self.assertEqual(properties[6].value, "python")
         self.assertEqual(
-            properties[7].value, azure_monitor_context["ai.internal.sdkVersion"])  # noqa: E501
+            properties[7].value, ext_version)  # noqa: E501
 
     def test_statsbeat_metric_get_attach_metric_vm_no_os(self):
         stats = _StatsbeatMetrics("ikey")
@@ -228,7 +228,7 @@ class TestStatsbeatMetrics(unittest.TestCase):
         self.assertEqual(properties[5].value, platform.system())
         self.assertEqual(properties[6].value, "python")
         self.assertEqual(
-            properties[7].value, azure_monitor_context["ai.internal.sdkVersion"])  # noqa: E501
+            properties[7].value, ext_version)  # noqa: E501
 
     def test_get_azure_compute_metadata(self):
         with mock.patch('requests.get') as get:

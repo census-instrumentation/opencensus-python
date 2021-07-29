@@ -19,7 +19,7 @@ import platform
 
 import requests
 
-from opencensus.ext.azure.common.utils import azure_monitor_context
+from opencensus.ext.azure.common.version import __version__ as ext_version
 from opencensus.metrics.export.gauge import LongGauge
 from opencensus.metrics.label_key import LabelKey
 from opencensus.metrics.label_value import LabelValue
@@ -66,7 +66,7 @@ def _get_attach_properties():
     properties.append(LabelKey("runtimeVersion", 'Python version'))
     properties.append(LabelKey("os", 'os of application being instrumented'))
     properties.append(LabelKey("language", 'Python'))
-    properties.append(LabelKey("version", 'sdkVersion'))
+    properties.append(LabelKey("version", 'sdkVersion - version of the ext'))
     return properties
 
 
@@ -135,7 +135,7 @@ class _StatsbeatMetrics:
         properties.append(LabelValue("python"))  # language
         # version
         properties.append(
-            LabelValue(azure_monitor_context['ai.internal.sdkVersion']))
+            LabelValue(ext_version))
         metric.get_or_create_time_series(properties)
         return metric.get_metric(datetime.datetime.utcnow())
 
