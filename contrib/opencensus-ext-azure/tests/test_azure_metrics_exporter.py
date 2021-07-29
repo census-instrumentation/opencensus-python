@@ -21,6 +21,7 @@ from opencensus.common import utils
 from opencensus.ext.azure.common import Options
 from opencensus.ext.azure.common.protocol import DataPoint
 from opencensus.ext.azure.metrics_exporter import (
+    new_metrics_exporter,
     standard_metrics,
     MetricsExporter,
 )
@@ -207,8 +208,7 @@ class TestAzureMetricsExporter(unittest.TestCase):
                         '.statsbeat_metrics.collect_statsbeat_metrics') as hb:
             hb.return_value = None
             iKey = '12345678-1234-5678-abcd-12345678abcd'
-            exporter = metrics_exporter.new_metrics_exporter(
-                instrumentation_key=iKey)
+            exporter = new_metrics_exporter(instrumentation_key=iKey)
 
             self.assertEqual(exporter.options.instrumentation_key, iKey)
             self.assertEqual(len(exporter_mock.call_args_list), 1)
@@ -226,7 +226,7 @@ class TestAzureMetricsExporter(unittest.TestCase):
                         '.statsbeat_metrics.collect_statsbeat_metrics') as hb:
             hb.return_value = None
             iKey = '12345678-1234-5678-abcd-12345678abcd'
-            exporter = metrics_exporter.new_metrics_exporter(
+            exporter = new_metrics_exporter(
                 instrumentation_key=iKey, enable_standard_metrics=False)
 
             self.assertEqual(exporter.options.instrumentation_key, iKey)
@@ -243,8 +243,7 @@ class TestAzureMetricsExporter(unittest.TestCase):
         with mock.patch('opencensus.ext.azure.metrics_exporter'
                         '.statsbeat_metrics.collect_statsbeat_metrics') as hb:
             iKey = '12345678-1234-5678-abcd-12345678abcd'
-            exporter = metrics_exporter.new_metrics_exporter(
-                instrumentation_key=iKey)
+            exporter = new_metrics_exporter(instrumentation_key=iKey)
 
             self.assertEqual(exporter.options.instrumentation_key, iKey)
             self.assertEqual(len(hb.call_args_list), 1)
