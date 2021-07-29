@@ -21,9 +21,9 @@ from opencensus.common import utils
 from opencensus.ext.azure.common import Options
 from opencensus.ext.azure.common.protocol import DataPoint
 from opencensus.ext.azure.metrics_exporter import (
+    MetricsExporter,
     new_metrics_exporter,
     standard_metrics,
-    MetricsExporter,
 )
 from opencensus.metrics import label_key, label_value
 from opencensus.metrics.export import (

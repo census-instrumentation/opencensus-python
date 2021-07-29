@@ -27,7 +27,6 @@ from opencensus.ext.azure.common.protocol import (
 from opencensus.ext.azure.common.storage import LocalFileStorage
 from opencensus.ext.azure.common.transport import TransportMixin
 from opencensus.ext.azure.metrics_exporter import standard_metrics
-
 from opencensus.metrics import transport
 from opencensus.metrics.export.metric_descriptor import MetricDescriptorType
 from opencensus.stats import stats as stats_module
