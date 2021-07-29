@@ -29,6 +29,7 @@ _AIMS_API_VERSION = "api-version=2017-12-01"
 _AIMS_FORMAT = "format=json"
 
 _DEFAULT_STATS_CONNECTION_STRING = "InstrumentationKey=c4a29126-a7cb-47e5-b348-11414998b11e;IngestionEndpoint=https://dc.services.visualstudio.com/"  # noqa: E501
+_DEFAULT_STATS_SHORT_EXPORT_INTERVAL = 900
 
 _ATTACH_METRIC_NAME = "Attach"
 
@@ -36,14 +37,23 @@ _RP_NAMES = ["appsvc", "function", "vm", "unknown"]
 
 
 def _get_stats_connection_string():
-    cs_env = os.environ.get("APPLICATION_INSIGHTS_CONNECTION_STRING_STATS")
+    cs_env = os.environ.get("APPLICATION_INSIGHTS_STATS_CONNECTION_STRING")
     if cs_env:
         return cs_env
     else:
         return _DEFAULT_STATS_CONNECTION_STRING
 
 
+def _get_stats_short_export_interval():
+    ei_env = os.environ.get("APPLICATION_INSIGHTS_STATS_SHORT_EXPORT_INTERVAL")
+    if ei_env:
+        return ei_env
+    else:
+        return _DEFAULT_STATS_SHORT_EXPORT_INTERVAL
+
+
 _STATS_CONNECTION_STRING = _get_stats_connection_string()
+_STATS_SHORT_EXPORT_INTERVAL = _get_stats_short_export_interval()
 
 
 def _get_attach_properties():
