@@ -18,10 +18,12 @@ from datetime import datetime
 import mock
 
 from opencensus.common import utils
-from opencensus.ext.azure import metrics_exporter
 from opencensus.ext.azure.common import Options
 from opencensus.ext.azure.common.protocol import DataPoint
-from opencensus.ext.azure.metrics_exporter import standard_metrics
+from opencensus.ext.azure.metrics_exporter import (
+    standard_metrics,
+    MetricsExporter,
+)
 from opencensus.metrics import label_key, label_value
 from opencensus.metrics.export import (
     metric,
@@ -61,13 +63,13 @@ class TestAzureMetricsExporter(unittest.TestCase):
         instrumentation_key = Options._default.instrumentation_key
         Options._default.instrumentation_key = None
         self.assertRaises(ValueError,
-                          lambda: metrics_exporter.MetricsExporter())
+                          lambda: MetricsExporter())
         Options._default.instrumentation_key = instrumentation_key
 
     def test_constructor_invalid_batch_size(self):
         self.assertRaises(
             ValueError,
-            lambda: metrics_exporter.MetricsExporter(
+            lambda: MetricsExporter(
                 instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
                 max_batch_size=-1
             ))
@@ -75,7 +77,7 @@ class TestAzureMetricsExporter(unittest.TestCase):
     @mock.patch('requests.post', return_value=mock.Mock())
     def test_export_metrics(self, requests_mock):
         metric = create_metric()
-        exporter = metrics_exporter.MetricsExporter(
+        exporter = MetricsExporter(
             instrumentation_key='12345678-1234-5678-abcd-12345678abcd')
         requests_mock.return_value.text = '{"itemsReceived":1,'\
                                           '"itemsAccepted":1,'\
@@ -90,7 +92,7 @@ class TestAzureMetricsExporter(unittest.TestCase):
 
     def test_export_metrics_histogram(self):
         metric = create_metric()
-        exporter = metrics_exporter.MetricsExporter(
+        exporter = MetricsExporter(
             instrumentation_key='12345678-1234-5678-abcd-12345678abcd')
         metric.descriptor._type = MetricDescriptorType.CUMULATIVE_DISTRIBUTION
 
@@ -98,7 +100,7 @@ class TestAzureMetricsExporter(unittest.TestCase):
 
     @mock.patch('requests.post', return_value=mock.Mock())
     def test_export_metrics_empty(self, requests_mock):
-        exporter = metrics_exporter.MetricsExporter(
+        exporter = MetricsExporter(
             instrumentation_key='12345678-1234-5678-abcd-12345678abcd')
         exporter.export_metrics([])
 
@@ -107,7 +109,7 @@ class TestAzureMetricsExporter(unittest.TestCase):
     @mock.patch('requests.post', return_value=mock.Mock())
     def test_export_metrics_full_batch(self, requests_mock):
         metric = create_metric()
-        exporter = metrics_exporter.MetricsExporter(
+        exporter = MetricsExporter(
             instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
             max_batch_size=1)
         requests_mock.return_value.status_code = 200
@@ -123,7 +125,7 @@ class TestAzureMetricsExporter(unittest.TestCase):
 
     def test_create_data_points(self):
         metric = create_metric()
-        exporter = metrics_exporter.MetricsExporter(
+        exporter = MetricsExporter(
             instrumentation_key='12345678-1234-5678-abcd-12345678abcd'
         )
         data_points = exporter._create_data_points(metric.time_series[0],
@@ -138,7 +140,7 @@ class TestAzureMetricsExporter(unittest.TestCase):
 
     def test_create_properties(self):
         metric = create_metric()
-        exporter = metrics_exporter.MetricsExporter(
+        exporter = MetricsExporter(
             instrumentation_key='12345678-1234-5678-abcd-12345678abcd'
         )
         properties = exporter._create_properties(metric.time_series[0],
@@ -149,7 +151,7 @@ class TestAzureMetricsExporter(unittest.TestCase):
 
     def test_create_properties_none(self):
         metric = create_metric()
-        exporter = metrics_exporter.MetricsExporter(
+        exporter = MetricsExporter(
             instrumentation_key='12345678-1234-5678-abcd-12345678abcd'
         )
         metric.time_series[0].label_values[0]._value = None
@@ -161,7 +163,7 @@ class TestAzureMetricsExporter(unittest.TestCase):
 
     def test_create_envelope(self):
         metric = create_metric()
-        exporter = metrics_exporter.MetricsExporter(
+        exporter = MetricsExporter(
             instrumentation_key='12345678-1234-5678-abcd-12345678abcd'
         )
         value = metric.time_series[0].points[0].value.value
@@ -189,7 +191,7 @@ class TestAzureMetricsExporter(unittest.TestCase):
     def test_shutdown(self):
         mock_thread = mock.Mock()
         mock_storage = mock.Mock()
-        exporter = metrics_exporter.MetricsExporter(
+        exporter = MetricsExporter(
             instrumentation_key='12345678-1234-5678-abcd-12345678abcd'
         )
         exporter.exporter_thread = mock_thread

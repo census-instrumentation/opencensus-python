@@ -26,10 +26,8 @@ from opencensus.ext.azure.common.protocol import (
 )
 from opencensus.ext.azure.common.storage import LocalFileStorage
 from opencensus.ext.azure.common.transport import TransportMixin
-from opencensus.ext.azure.metrics_exporter import (
-    standard_metrics,
-    statsbeat_metrics,
-)
+from opencensus.ext.azure.metrics_exporter import standard_metrics
+
 from opencensus.metrics import transport
 from opencensus.metrics.export.metric_descriptor import MetricDescriptorType
 from opencensus.stats import stats as stats_module
@@ -164,6 +162,7 @@ def new_metrics_exporter(**options):
                                     producers,
                                     exporter,
                                     interval=exporter.options.export_interval)
+    from opencensus.ext.azure.metrics_exporter import statsbeat_metrics
     # Stats will track the user's ikey
     statsbeat_metrics.collect_statsbeat_metrics(
         exporter.options.instrumentation_key
