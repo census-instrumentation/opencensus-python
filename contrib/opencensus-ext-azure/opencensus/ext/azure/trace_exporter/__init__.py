@@ -29,6 +29,7 @@ from opencensus.ext.azure.common.protocol import (
 )
 from opencensus.ext.azure.common.storage import LocalFileStorage
 from opencensus.ext.azure.common.transport import TransportMixin
+from opencensus.ext.azure.metrics_exporter import statsbeat_metrics
 from opencensus.trace import attributes_helper
 from opencensus.trace.span import SpanKind
 
@@ -72,6 +73,10 @@ class AzureExporter(BaseExporter, ProcessorMixin, TransportMixin):
         self._telemetry_processors = []
         super(AzureExporter, self).__init__(**options)
         atexit.register(self._stop, self.options.grace_period)
+        # start statsbeat on exporter instantiation
+        statsbeat_metrics.collect_statsbeat_metrics(
+            self.options.instrumentation_key
+        )
 
     def span_data_to_envelope(self, sd):
         envelope = Envelope(
