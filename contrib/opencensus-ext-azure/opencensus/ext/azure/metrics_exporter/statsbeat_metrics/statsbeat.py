@@ -52,6 +52,7 @@ def _get_stats_short_export_interval():
     else:
         return _DEFAULT_STATS_SHORT_EXPORT_INTERVAL
 
+
 def _get_stats_long_export_interval():
     ei_env = os.environ.get("APPLICATION_INSIGHTS_STATS_LONG_EXPORT_INTERVAL")
     if ei_env:
