@@ -120,13 +120,25 @@ class TestStatsbeatMetrics(unittest.TestCase):
         self.assertEqual(properties[6].key, "language")
         self.assertEqual(properties[7].key, "version")
 
-    def test_statsbeat_metric_get_metrics(self):
+    def test_statsbeat_metric_get_initial_metrics(self):
         # pylint: disable=protected-access
         metric = statsbeat_metrics._StatsbeatMetrics("ikey")
         attach_metric_mock = mock.Mock()
+        attach_metric_mock.return_value = "metric"
         metric._get_attach_metric = attach_metric_mock
-        metric.get_metrics()
+        metrics = metric.get_initial_metrics()
         attach_metric_mock.assert_called_once()
+        self.assertEqual(metrics, ["metric"])
+
+    def test_statsbeat_metric_get_metrics(self):
+        # pylint: disable=protected-access
+        metric = statsbeat_metrics._StatsbeatMetrics("ikey")
+        initial_metric_mock = mock.Mock()
+        initial_metric_mock.return_value = ["test"]
+        metric.get_initial_metrics = initial_metric_mock
+        metrics = metric.get_metrics()
+        initial_metric_mock.assert_called_once()
+        self.assertEqual(metrics, ["test"])
 
     @mock.patch.dict(
         os.environ,
@@ -221,7 +233,7 @@ class TestStatsbeatMetrics(unittest.TestCase):
         properties = metric._time_series[0]._label_values
         self.assertEqual(len(properties), 8)
         self.assertEqual(properties[0].value, _RP_NAMES[3])
-        self.assertEqual(properties[1].value, "")
+        self.assertEqual(properties[1].value, _RP_NAMES[3])
         self.assertEqual(properties[2].value, "sdk")
         self.assertEqual(properties[3].value, "ikey")
         self.assertEqual(properties[4].value, platform.python_version())
