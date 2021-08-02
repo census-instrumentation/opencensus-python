@@ -45,6 +45,7 @@ class CustomLogHandler(log_exporter.BaseLogHandler):
         self.callback = callback
         super(CustomLogHandler, self).__init__(
             instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
+            enable_stats_metrics=False,
         )
 
     def export(self, batch):
@@ -77,12 +78,15 @@ class TestAzureLogHandler(unittest.TestCase):
         from opencensus.ext.azure.common import Options
         instrumentation_key = Options._default.instrumentation_key
         Options._default.instrumentation_key = None
-        self.assertRaises(ValueError, lambda: log_exporter.AzureLogHandler())
+        self.assertRaises(ValueError, lambda: log_exporter.AzureLogHandler(
+            enable_stats_metrics=False,
+        ))
         Options._default.instrumentation_key = instrumentation_key
 
     def test_invalid_sampling_rate(self):
         with self.assertRaises(ValueError):
             log_exporter.AzureLogHandler(
+                enable_stats_metrics=False,
                 instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
                 logging_sampling_rate=4.0,
             )
@@ -100,6 +104,7 @@ class TestAzureLogHandler(unittest.TestCase):
 
     def test_init_handler_with_queue_capacity(self):
         handler = log_exporter.AzureLogHandler(
+            enable_stats_metrics=False,
             instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
             queue_capacity=500,
         )
@@ -118,6 +123,7 @@ class TestAzureLogHandler(unittest.TestCase):
     def test_exception(self, requests_mock):
         logger = logging.getLogger(self.id())
         handler = log_exporter.AzureLogHandler(
+            enable_stats_metrics=False,
             instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
             storage_path=os.path.join(TEST_FOLDER, self.id()),
         )
@@ -135,6 +141,7 @@ class TestAzureLogHandler(unittest.TestCase):
     def test_exception_with_custom_properties(self, requests_mock):
         logger = logging.getLogger(self.id())
         handler = log_exporter.AzureLogHandler(
+            enable_stats_metrics=False,
             instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
             storage_path=os.path.join(TEST_FOLDER, self.id()),
         )
@@ -160,6 +167,7 @@ class TestAzureLogHandler(unittest.TestCase):
     @mock.patch('requests.post', return_value=mock.Mock())
     def test_export_empty(self, request_mock):
         handler = log_exporter.AzureLogHandler(
+            enable_stats_metrics=False,
             instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
             storage_path=os.path.join(TEST_FOLDER, self.id()),
         )
@@ -172,6 +180,7 @@ class TestAzureLogHandler(unittest.TestCase):
     def test_export_failure(self, log_record_to_envelope_mock):
         log_record_to_envelope_mock.return_value = ['bar']
         handler = log_exporter.AzureLogHandler(
+            enable_stats_metrics=False,
             instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
             storage_path=os.path.join(TEST_FOLDER, self.id()),
         )
@@ -185,6 +194,7 @@ class TestAzureLogHandler(unittest.TestCase):
 
     def test_log_record_to_envelope(self):
         handler = log_exporter.AzureLogHandler(
+            enable_stats_metrics=False,
             instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
             storage_path=os.path.join(TEST_FOLDER, self.id()),
         )
@@ -201,6 +211,7 @@ class TestAzureLogHandler(unittest.TestCase):
     def test_log_record_with_custom_properties(self, requests_mock):
         logger = logging.getLogger(self.id())
         handler = log_exporter.AzureLogHandler(
+            enable_stats_metrics=False,
             instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
             storage_path=os.path.join(TEST_FOLDER, self.id()),
         )
@@ -222,6 +233,7 @@ class TestAzureLogHandler(unittest.TestCase):
     def test_log_with_invalid_custom_properties(self, requests_mock):
         logger = logging.getLogger(self.id())
         handler = log_exporter.AzureLogHandler(
+            enable_stats_metrics=False,
             instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
             storage_path=os.path.join(TEST_FOLDER, self.id()),
         )
@@ -248,6 +260,7 @@ class TestAzureLogHandler(unittest.TestCase):
     def test_log_record_sampled(self, requests_mock):
         logger = logging.getLogger(self.id())
         handler = log_exporter.AzureLogHandler(
+            enable_stats_metrics=False,
             instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
             logging_sampling_rate=1.0,
         )
@@ -267,6 +280,7 @@ class TestAzureLogHandler(unittest.TestCase):
     def test_log_record_not_sampled(self, requests_mock):
         logger = logging.getLogger(self.id())
         handler = log_exporter.AzureLogHandler(
+            enable_stats_metrics=False,
             instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
             logging_sampling_rate=0.0,
         )
@@ -284,18 +298,22 @@ class TestAzureEventHandler(unittest.TestCase):
         from opencensus.ext.azure.common import Options
         instrumentation_key = Options._default.instrumentation_key
         Options._default.instrumentation_key = None
-        self.assertRaises(ValueError, lambda: log_exporter.AzureEventHandler())
+        self.assertRaises(ValueError, lambda: log_exporter.AzureEventHandler(
+            enable_stats_metrics=False,
+        ))
         Options._default.instrumentation_key = instrumentation_key
 
     def test_invalid_sampling_rate(self):
         with self.assertRaises(ValueError):
             log_exporter.AzureEventHandler(
+                enable_stats_metrics=False,
                 instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
                 logging_sampling_rate=4.0,
             )
 
     def test_init_handler_with_proxies(self):
         handler = log_exporter.AzureEventHandler(
+            enable_stats_metrics=False,
             instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
             proxies='{"https":"https://test-proxy.com"}',
         )
@@ -307,6 +325,7 @@ class TestAzureEventHandler(unittest.TestCase):
 
     def test_init_handler_with_queue_capacity(self):
         handler = log_exporter.AzureEventHandler(
+            enable_stats_metrics=False,
             instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
             queue_capacity=500,
         )
@@ -325,6 +344,7 @@ class TestAzureEventHandler(unittest.TestCase):
     def test_exception(self, requests_mock):
         logger = logging.getLogger(self.id())
         handler = log_exporter.AzureEventHandler(
+            enable_stats_metrics=False,
             instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
             storage_path=os.path.join(TEST_FOLDER, self.id()),
         )
@@ -342,6 +362,7 @@ class TestAzureEventHandler(unittest.TestCase):
     def test_exception_with_custom_properties(self, requests_mock):
         logger = logging.getLogger(self.id())
         handler = log_exporter.AzureEventHandler(
+            enable_stats_metrics=False,
             instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
             storage_path=os.path.join(TEST_FOLDER, self.id()),
         )
@@ -367,6 +388,7 @@ class TestAzureEventHandler(unittest.TestCase):
     @mock.patch('requests.post', return_value=mock.Mock())
     def test_export_empty(self, request_mock):
         handler = log_exporter.AzureEventHandler(
+            enable_stats_metrics=False,
             instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
             storage_path=os.path.join(TEST_FOLDER, self.id()),
         )
@@ -379,6 +401,7 @@ class TestAzureEventHandler(unittest.TestCase):
     def test_export_failure(self, log_record_to_envelope_mock):
         log_record_to_envelope_mock.return_value = ['bar']
         handler = log_exporter.AzureEventHandler(
+            enable_stats_metrics=False,
             instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
             storage_path=os.path.join(TEST_FOLDER, self.id()),
         )
@@ -392,6 +415,7 @@ class TestAzureEventHandler(unittest.TestCase):
 
     def test_log_record_to_envelope(self):
         handler = log_exporter.AzureEventHandler(
+            enable_stats_metrics=False,
             instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
             storage_path=os.path.join(TEST_FOLDER, self.id()),
         )
@@ -408,6 +432,7 @@ class TestAzureEventHandler(unittest.TestCase):
     def test_log_record_with_custom_properties(self, requests_mock):
         logger = logging.getLogger(self.id())
         handler = log_exporter.AzureEventHandler(
+            enable_stats_metrics=False,
             instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
             storage_path=os.path.join(TEST_FOLDER, self.id()),
         )
@@ -429,6 +454,7 @@ class TestAzureEventHandler(unittest.TestCase):
     def test_log_with_invalid_custom_properties(self, requests_mock):
         logger = logging.getLogger(self.id())
         handler = log_exporter.AzureEventHandler(
+            enable_stats_metrics=False,
             instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
             storage_path=os.path.join(TEST_FOLDER, self.id()),
         )
@@ -455,6 +481,7 @@ class TestAzureEventHandler(unittest.TestCase):
     def test_log_record_sampled(self, requests_mock):
         logger = logging.getLogger(self.id())
         handler = log_exporter.AzureEventHandler(
+            enable_stats_metrics=False,
             instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
             logging_sampling_rate=1.0,
         )
@@ -474,6 +501,7 @@ class TestAzureEventHandler(unittest.TestCase):
     def test_log_record_not_sampled(self, requests_mock):
         logger = logging.getLogger(self.id())
         handler = log_exporter.AzureEventHandler(
+            enable_stats_metrics=False,
             instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
             logging_sampling_rate=0.0,
         )

@@ -63,9 +63,10 @@ class BaseLogHandler(logging.Handler):
         self._worker = Worker(self._queue, self)
         self._worker.start()
         # start statsbeat on exporter instantiation
-        statsbeat_metrics.collect_statsbeat_metrics(
-            self.options.instrumentation_key
-        )
+        if self.options.enable_stats_metrics:
+            statsbeat_metrics.collect_statsbeat_metrics(
+                self.options.instrumentation_key
+            )
 
     def _export(self, batch, event=None):  # pragma: NO COVER
         try:
