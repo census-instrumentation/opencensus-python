@@ -111,7 +111,7 @@ class Options(BaseObject):
         credential=None,  # Credential class used by AAD auth
         enable_local_storage=True,
         enable_standard_metrics=True,  # Used by metrics exporter, True to send standard metrics  # noqa: E501
-        enable_stats_metrics=True, # True to send stats metrics
+        enable_stats_metrics=True,  # True to send stats metrics
         endpoint='https://dc.services.visualstudio.com/v2/track',
         export_interval=15.0,
         grace_period=5.0,
