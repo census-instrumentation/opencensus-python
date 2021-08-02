@@ -39,6 +39,6 @@ jobs:
         with:
           path: .tox
           # bump version prefix to fully reset caches
-          key: v1-tox-${{ matrix.python-version }}-${{ hashFiles('tox.ini') }}
+          key: v2-tox-${{ matrix.python-version }}-${{ hashFiles('tox.ini') }}
       - name: run tox
         run: tox -f ${{ matrix.python-version }}
