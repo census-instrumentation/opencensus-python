@@ -63,10 +63,9 @@ class TestAzureMetricsExporter(unittest.TestCase):
     def test_constructor_missing_key(self):
         instrumentation_key = Options._default.instrumentation_key
         Options._default.instrumentation_key = None
-        self.assertRaises(ValueError,
-                          lambda: MetricsExporter(
-                              enable_stats_metrics=False,
-                          ))
+        self.assertRaises(ValueError, lambda: MetricsExporter(
+            enable_stats_metrics=False,
+        ))
         Options._default.instrumentation_key = instrumentation_key
 
     def test_constructor_invalid_batch_size(self):

@@ -41,14 +41,14 @@ def throw(exc_type, *args, **kwargs):
 
 class TestAzureExporter(unittest.TestCase):
 
-    @mock.patch('opencensus.ext.azure.metrics_exporter.statsbeat_metrics.collect_statsbeat_metrics')
-    def test_ctor(self, stats_mock):
+    def test_ctor(self):
         from opencensus.ext.azure.common import Options
         instrumentation_key = Options._default.instrumentation_key
         Options._default.instrumentation_key = None
-        self.assertRaises(ValueError, lambda: trace_exporter.AzureExporter())
+        self.assertRaises(ValueError, lambda: trace_exporter.AzureExporter(
+            enable_stats_metrics=False,
+        ))
         Options._default.instrumentation_key = instrumentation_key
-        stats_mock.assert_called_once()
 
     def test_init_exporter_with_proxies(self):
         exporter = trace_exporter.AzureExporter(
