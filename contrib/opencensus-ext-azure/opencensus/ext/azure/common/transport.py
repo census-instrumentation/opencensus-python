@@ -14,6 +14,8 @@
 
 import json
 import logging
+import threading
+import time
 
 import requests
 from azure.core.exceptions import ClientAuthenticationError
@@ -21,6 +23,8 @@ from azure.identity._exceptions import CredentialUnavailableError
 
 logger = logging.getLogger(__name__)
 _MONITOR_OAUTH_SCOPE = "https://monitor.azure.com//.default"
+_requests_lock = threading.Lock()
+_requests_map = {}
 
 
 class TransportMixin(object):
@@ -88,6 +92,7 @@ class TransportMixin(object):
             # Extraneous error (non-retryable)
             return -1
 
+
         text = 'N/A'
         data = None
         try:
@@ -100,6 +105,8 @@ class TransportMixin(object):
             except Exception:
                 pass
         if response.status_code == 200:
+            with _requests_lock:
+                _requests_map['success'] = _requests_map.get('success', 0) + 1
             return 0
         if response.status_code == 206:  # Partial Content
             if data:

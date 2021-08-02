@@ -15,6 +15,7 @@
 import json
 import os
 import platform
+from time import perf_counter
 import unittest
 
 import mock
@@ -26,7 +27,9 @@ from opencensus.ext.azure.metrics_exporter.statsbeat_metrics.statsbeat import (
     _RP_NAMES,
     _get_attach_properties,
     _StatsbeatMetrics,
+    _STATS_LONG_INTERVAL_THRESHOLD,
 )
+from requests.exceptions import ProxyError
 from opencensus.metrics.export.gauge import LongGauge
 
 
@@ -98,8 +101,8 @@ class TestStatsbeatMetrics(unittest.TestCase):
     def test_statsbeat_metric_init(self, attach_mock):
         # pylint: disable=protected-access
         metric = _StatsbeatMetrics("ikey")
-        self.assertEqual(len(metric.vm_data), 0)
-        self.assertTrue(metric.vm_retry)
+        self.assertEqual(len(metric._vm_data), 0)
+        self.assertTrue(metric._vm_retry)
         self.assertEqual(metric._instrumentation_key, "ikey")
         self.assertTrue(
             isinstance(
@@ -133,12 +136,18 @@ class TestStatsbeatMetrics(unittest.TestCase):
     def test_statsbeat_metric_get_metrics(self):
         # pylint: disable=protected-access
         metric = statsbeat_metrics._StatsbeatMetrics("ikey")
+        metric._long_threshold_count = _STATS_LONG_INTERVAL_THRESHOLD
         initial_metric_mock = mock.Mock()
-        initial_metric_mock.return_value = ["test"]
+        network_metric_mock = mock.Mock()
+        initial_metric_mock.return_value = ["initial"]
+        network_metric_mock.return_value = ["network"]
         metric.get_initial_metrics = initial_metric_mock
+        metric._get_network_metrics = network_metric_mock
         metrics = metric.get_metrics()
         initial_metric_mock.assert_called_once()
-        self.assertEqual(metrics, ["test"])
+        network_metric_mock.assert_called_once()
+        self.assertEqual(metrics, ["initial", "network"])
+        self.assertEqual(metric._long_threshold_count, 0)
 
     @mock.patch.dict(
         os.environ,
@@ -150,7 +159,7 @@ class TestStatsbeatMetrics(unittest.TestCase):
     def test_statsbeat_metric_get_attach_metric_appsvc(self):
         # pylint: disable=protected-access
         stats = _StatsbeatMetrics("ikey")
-        metric = stats._get_attach_metric(stats._attach_metric)
+        metric = stats._get_attach_metric()
         properties = metric._time_series[0]._label_values
         self.assertEqual(len(properties), 8)
         self.assertEqual(properties[0].value, _RP_NAMES[0])
@@ -173,7 +182,7 @@ class TestStatsbeatMetrics(unittest.TestCase):
     def test_statsbeat_metric_get_attach_metric_functions(self):
         # pylint: disable=protected-access
         stats = _StatsbeatMetrics("ikey")
-        metric = stats._get_attach_metric(stats._attach_metric)
+        metric = stats._get_attach_metric()
         properties = metric._time_series[0]._label_values
         self.assertEqual(len(properties), 8)
         self.assertEqual(properties[0].value, _RP_NAMES[1])
@@ -188,16 +197,16 @@ class TestStatsbeatMetrics(unittest.TestCase):
 
     def test_statsbeat_metric_get_attach_metric_vm(self):
         stats = _StatsbeatMetrics("ikey")
-        vm_data = {}
-        vm_data["vmId"] = "123"
-        vm_data["subscriptionId"] = "sub123"
-        vm_data["osType"] = "linux"
-        stats.vm_data = vm_data
-        self.vm_retry = True
+        _vm_data = {}
+        _vm_data["vmId"] = "123"
+        _vm_data["subscriptionId"] = "sub123"
+        _vm_data["osType"] = "linux"
+        stats._vm_data = _vm_data
+        self._vm_retry = True
         metadata_mock = mock.Mock()
         metadata_mock.return_value = True
         stats._get_azure_compute_metadata = metadata_mock
-        metric = stats._get_attach_metric(stats._attach_metric)
+        metric = stats._get_attach_metric()
         properties = metric._time_series[0]._label_values
         self.assertEqual(len(properties), 8)
         self.assertEqual(properties[0].value, _RP_NAMES[2])
@@ -212,24 +221,24 @@ class TestStatsbeatMetrics(unittest.TestCase):
 
     def test_statsbeat_metric_get_attach_metric_vm_no_os(self):
         stats = _StatsbeatMetrics("ikey")
-        vm_data = {}
-        vm_data["vmId"] = "123"
-        vm_data["subscriptionId"] = "sub123"
-        vm_data["osType"] = None
-        stats.vm_data = vm_data
-        self.vm_retry = True
+        _vm_data = {}
+        _vm_data["vmId"] = "123"
+        _vm_data["subscriptionId"] = "sub123"
+        _vm_data["osType"] = None
+        stats._vm_data = _vm_data
+        self._vm_retry = True
         metadata_mock = mock.Mock()
         metadata_mock.return_value = True
         stats._get_azure_compute_metadata = metadata_mock
-        metric = stats._get_attach_metric(stats._attach_metric)
+        metric = stats._get_attach_metric()
         properties = metric._time_series[0]._label_values
         self.assertEqual(len(properties), 8)
         self.assertEqual(properties[5].value, platform.system())
 
     def test_statsbeat_metric_get_attach_metric_unknown(self):
         stats = _StatsbeatMetrics("ikey")
-        stats.vm_retry = False
-        metric = stats._get_attach_metric(stats._attach_metric)
+        stats._vm_retry = False
+        metric = stats._get_attach_metric()
         properties = metric._time_series[0]._label_values
         self.assertEqual(len(properties), 8)
         self.assertEqual(properties[0].value, _RP_NAMES[3])
@@ -257,10 +266,10 @@ class TestStatsbeatMetrics(unittest.TestCase):
             stats = _StatsbeatMetrics("ikey")
             vm_result = stats._get_azure_compute_metadata()
             self.assertTrue(vm_result)
-            self.assertEqual(stats.vm_data["vmId"], 5)
-            self.assertEqual(stats.vm_data["subscriptionId"], 3)
-            self.assertEqual(stats.vm_data["osType"], "Linux")
-            self.assertTrue(stats.vm_retry)
+            self.assertEqual(stats._vm_data["vmId"], 5)
+            self.assertEqual(stats._vm_data["subscriptionId"], 3)
+            self.assertEqual(stats._vm_data["osType"], "Linux")
+            self.assertTrue(stats._vm_retry)
 
     def test_get_azure_compute_metadata_not_vm(self):
         with mock.patch(
@@ -270,8 +279,8 @@ class TestStatsbeatMetrics(unittest.TestCase):
             stats = _StatsbeatMetrics("ikey")
             vm_result = stats._get_azure_compute_metadata()
             self.assertFalse(vm_result)
-            self.assertEqual(len(stats.vm_data), 0)
-            self.assertFalse(stats.vm_retry)
+            self.assertEqual(len(stats._vm_data), 0)
+            self.assertFalse(stats._vm_retry)
 
     def test_get_azure_compute_metadata_not_vm_timeout(self):
         with mock.patch(
@@ -281,10 +290,10 @@ class TestStatsbeatMetrics(unittest.TestCase):
             stats = _StatsbeatMetrics("ikey")
             vm_result = stats._get_azure_compute_metadata()
             self.assertFalse(vm_result)
-            self.assertEqual(len(stats.vm_data), 0)
-            self.assertFalse(stats.vm_retry)
+            self.assertEqual(len(stats._vm_data), 0)
+            self.assertFalse(stats._vm_retry)
 
-    def test_get_azure_compute_metadata_vm_retry(self):
+    def test_get_azure_compute_metadata__vm_retry(self):
         with mock.patch(
             'requests.get',
             throw(requests.exceptions.RequestException)
@@ -292,5 +301,5 @@ class TestStatsbeatMetrics(unittest.TestCase):
             stats = _StatsbeatMetrics("ikey")
             vm_result = stats._get_azure_compute_metadata()
             self.assertFalse(vm_result)
-            self.assertEqual(len(stats.vm_data), 0)
-            self.assertTrue(stats.vm_retry)
+            self.assertEqual(len(stats._vm_data), 0)
+            self.assertTrue(stats._vm_retry)

@@ -18,6 +18,7 @@ from opencensus.ext.azure.metrics_exporter import MetricsExporter
 from opencensus.ext.azure.metrics_exporter.statsbeat_metrics.statsbeat import (
     _STATS_CONNECTION_STRING,
     _STATS_LONG_EXPORT_INTERVAL,
+    _STATS_SHORT_EXPORT_INTERVAL,
     _StatsbeatMetrics,
 )
 from opencensus.metrics import transport
@@ -36,7 +37,7 @@ def collect_statsbeat_metrics(ikey):
                 is_stats=True,
                 connection_string=_STATS_CONNECTION_STRING,
                 enable_standard_metrics=False,
-                export_interval=_STATS_LONG_EXPORT_INTERVAL,  # 24h by default
+                export_interval=_STATS_SHORT_EXPORT_INTERVAL,  # 15m by default
             )
             # The user's ikey is the one being tracked
             producer = _AzureStatsbeatMetricsProducer(
