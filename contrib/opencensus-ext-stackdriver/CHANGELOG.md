@@ -3,7 +3,7 @@
 ## Unreleased
 
 - Drop python <3.6 in opencensus-ext-stackdriver
-  [#1050](https://github.com/census-instrumentation/opencensus-python/pull/1050)
+  [#1056](https://github.com/census-instrumentation/opencensus-python/pull/1056)
 
 ## 0.7.4
 Released 2020-10-14
