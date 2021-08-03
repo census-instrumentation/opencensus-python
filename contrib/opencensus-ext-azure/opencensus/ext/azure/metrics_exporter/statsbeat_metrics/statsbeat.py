@@ -29,7 +29,8 @@ _AIMS_API_VERSION = "api-version=2017-12-01"
 _AIMS_FORMAT = "format=json"
 
 _DEFAULT_STATS_CONNECTION_STRING = "InstrumentationKey=c4a29126-a7cb-47e5-b348-11414998b11e;IngestionEndpoint=https://dc.services.visualstudio.com/"  # noqa: E501
-_DEFAULT_STATS_SHORT_EXPORT_INTERVAL = 900
+_DEFAULT_STATS_SHORT_EXPORT_INTERVAL = 900  # 15 minutes
+_DEFAULT_STATS_LONG_EXPORT_INTERVAL = 86400  # 24 hours
 
 _ATTACH_METRIC_NAME = "Attach"
 
@@ -52,8 +53,17 @@ def _get_stats_short_export_interval():
         return _DEFAULT_STATS_SHORT_EXPORT_INTERVAL
 
 
+def _get_stats_long_export_interval():
+    ei_env = os.environ.get("APPLICATION_INSIGHTS_STATS_LONG_EXPORT_INTERVAL")
+    if ei_env:
+        return ei_env
+    else:
+        return _DEFAULT_STATS_LONG_EXPORT_INTERVAL
+
+
 _STATS_CONNECTION_STRING = _get_stats_connection_string()
 _STATS_SHORT_EXPORT_INTERVAL = _get_stats_short_export_interval()
+_STATS_LONG_EXPORT_INTERVAL = _get_stats_long_export_interval()
 
 
 def _get_attach_properties():
@@ -84,12 +94,16 @@ class _StatsbeatMetrics:
             _get_attach_properties(),
         )
 
-    def get_metrics(self):
+    def get_initial_metrics(self):
         stats_metrics = []
         if self._attach_metric:
             attach_metric = self._get_attach_metric(self._attach_metric)
             if attach_metric:
                 stats_metrics.append(attach_metric)
+        return stats_metrics
+
+    def get_metrics(self):
+        stats_metrics = self.get_initial_metrics()
 
         return stats_metrics
 
@@ -125,7 +139,7 @@ class _StatsbeatMetrics:
         else:
             # Not in any rp or VM metadata failed
             properties.append(LabelValue(_RP_NAMES[3]))
-            properties.append(LabelValue(""))
+            properties.append(LabelValue(_RP_NAMES[3]))
 
         properties.append(LabelValue("sdk"))  # attach type
         properties.append(LabelValue(self._instrumentation_key))  # cikey

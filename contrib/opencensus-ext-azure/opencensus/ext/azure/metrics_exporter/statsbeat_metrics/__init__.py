@@ -17,7 +17,7 @@ import threading
 from opencensus.ext.azure.metrics_exporter import MetricsExporter
 from opencensus.ext.azure.metrics_exporter.statsbeat_metrics.statsbeat import (
     _STATS_CONNECTION_STRING,
-    _STATS_SHORT_EXPORT_INTERVAL,
+    _STATS_LONG_EXPORT_INTERVAL,
     _StatsbeatMetrics,
 )
 from opencensus.metrics import transport
@@ -35,13 +35,16 @@ def collect_statsbeat_metrics(ikey):
             exporter = MetricsExporter(
                 is_stats=True,
                 connection_string=_STATS_CONNECTION_STRING,
-                export_interval=_STATS_SHORT_EXPORT_INTERVAL,  # 15 minutes by default  # noqa: E501
+                enable_standard_metrics=False,
+                export_interval=_STATS_LONG_EXPORT_INTERVAL,  # 24h by default
             )
             # The user's ikey is the one being tracked
             producer = _AzureStatsbeatMetricsProducer(
                 instrumentation_key=ikey
             )
             _STATSBEAT_METRICS = producer
+            # Export some initial stats on program start
+            exporter.export_metrics(_STATSBEAT_METRICS.get_initial_metrics())
             exporter.exporter_thread = \
                 transport.get_exporter_thread([_STATSBEAT_METRICS],
                                               exporter,
@@ -58,3 +61,6 @@ class _AzureStatsbeatMetricsProducer(MetricProducer):
 
     def get_metrics(self):
         return self._statsbeat.get_metrics()
+
+    def get_initial_metrics(self):
+        return self._statsbeat.get_initial_metrics()
