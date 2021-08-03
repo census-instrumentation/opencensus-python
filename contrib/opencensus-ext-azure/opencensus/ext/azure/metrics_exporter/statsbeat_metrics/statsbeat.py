@@ -14,7 +14,6 @@
 
 import datetime
 import json
-from opencensus.metrics.export import metric_producer
 import os
 import platform
 
@@ -116,14 +115,14 @@ class _StatsbeatMetrics:
         self._long_threshold_count = 0
         # Network metrics - metrics related to request calls to Breeze
         self._network_metrics = {}
-        # Map of network metric type -> tuple(metric, gauge function)
+        # Map of gauge function -> metric
         # Gauge function is the callback used to populate the metric value
-        self._network_metrics['success'] = (DerivedLongGauge(
+        self._network_metrics[_get_success_count_value] = DerivedLongGauge(
             _REQ_SUC_COUNT_NAME,
             'Request success count',
             'count',
             _get_network_properties(),
-        ), _get_success_count_value)
+        )
 
     # Metrics that are sent on application start
     def get_initial_metrics(self):
@@ -151,10 +150,9 @@ class _StatsbeatMetrics:
     def _get_network_metrics(self):
         properties = self._get_common_properties()
         metrics = []
-        for type, metric_tuple in self._network_metrics.items():
-            # metric_tuple is (metric, gauge function)
-            metric_tuple[0].create_time_series(properties, metric_tuple[1])
-            metrics.append(metric_tuple[0].get_metric(datetime.datetime.utcnow()))
+        for fn, metric in self._network_metrics.items():
+            metric.create_time_series(properties, fn)
+            metrics.append(metric.get_metric(datetime.datetime.utcnow()))
         return metrics
 
     def _get_attach_metric(self):
