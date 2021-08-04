@@ -99,8 +99,8 @@ Modifying Logs
 
 * You can pass a callback function to the exporter to process telemetry before it is exported.
 * Your callback function can return `False` if you do not want this envelope exported.
-* Your callback function must accept an [envelope](https://github.com/census-instrumentation/opencensus-python/blob/master/contrib/opencensus-ext-azure/opencensus/ext/azure/common/protocol.py#L86) data type as its parameter.
-* You can see the schema for Azure Monitor data types in the envelopes [here](https://github.com/census-instrumentation/opencensus-python/blob/master/contrib/opencensus-ext-azure/opencensus/ext/azure/common/protocol.py).
+* Your callback function must accept an `envelope <https://github.com/census-instrumentation/opencensus-python/blob/master/contrib/opencensus-ext-azure/opencensus/ext/azure/common/protocol.py#L86>`_ data type as its parameter.
+* You can see the schema for Azure Monitor data types in the envelopes `here <https://github.com/census-instrumentation/opencensus-python/blob/master/contrib/opencensus-ext-azure/opencensus/ext/azure/common/protocol.py>`_.
 * The `AzureLogHandler` handles `ExceptionData` and `MessageData` data types.
 
 .. code:: python
@@ -234,8 +234,8 @@ Modifying Metrics
 
 * You can pass a callback function to the exporter to process telemetry before it is exported.
 * Your callback function can return `False` if you do not want this envelope exported.
-* Your callback function must accept an [envelope](https://github.com/census-instrumentation/opencensus-python/blob/master/contrib/opencensus-ext-azure/opencensus/ext/azure/common/protocol.py#L86) data type as its parameter.
-* You can see the schema for Azure Monitor data types in the envelopes [here](https://github.com/census-instrumentation/opencensus-python/blob/master/contrib/opencensus-ext-azure/opencensus/ext/azure/common/protocol.py).
+* Your callback function must accept an `envelope <https://github.com/census-instrumentation/opencensus-python/blob/master/contrib/opencensus-ext-azure/opencensus/ext/azure/common/protocol.py#L86>`_ data type as its parameter.
+* You can see the schema for Azure Monitor data types in the envelopes `here <https://github.com/census-instrumentation/opencensus-python/blob/master/contrib/opencensus-ext-azure/opencensus/ext/azure/common/protocol.py>`_.
 * The `MetricsExporter` handles `MetricData` data types.
 
 .. code:: python
@@ -353,8 +353,8 @@ Modifying Traces
 
 * You can pass a callback function to the exporter to process telemetry before it is exported.
 * Your callback function can return `False` if you do not want this envelope exported.
-* Your callback function must accept an [envelope](https://github.com/census-instrumentation/opencensus-python/blob/master/contrib/opencensus-ext-azure/opencensus/ext/azure/common/protocol.py#L86) data type as its parameter.
-* You can see the schema for Azure Monitor data types in the envelopes [here](https://github.com/census-instrumentation/opencensus-python/blob/master/contrib/opencensus-ext-azure/opencensus/ext/azure/common/protocol.py).
+* Your callback function must accept an `envelope <https://github.com/census-instrumentation/opencensus-python/blob/master/contrib/opencensus-ext-azure/opencensus/ext/azure/common/protocol.py#L86>`_ data type as its parameter.
+* You can see the schema for Azure Monitor data types in the envelopes `here <https://github.com/census-instrumentation/opencensus-python/blob/master/contrib/opencensus-ext-azure/opencensus/ext/azure/common/protocol.py>`_.
 * The `AzureExporter` handles `Data` data types.
 
 .. code:: python
@@ -384,7 +384,7 @@ Modifying Traces
 Integrate with Azure Functions
 ##############################
 
-Users who want to capture custom telemetry in Azure Functions environments are encouraged to used the OpenCensus Python Azure Functions [extension](https://github.com/census-ecosystem/opencensus-python-extensions-azure/tree/main/extensions/functions#opencensus-python-azure-functions-extension). More deetails can be found [here](https://docs.microsoft.com/azure/azure-functions/functions-reference-python?tabs=application-level#log-custom-telemetry).
+Users who want to capture custom telemetry in Azure Functions environments are encouraged to used the OpenCensus Python Azure Functions `extension <https://github.com/census-ecosystem/opencensus-python-extensions-azure/tree/main/extensions/functions#opencensus-python-azure-functions-extension>`_. More details can be found `here <https://docs.microsoft.com/azure/azure-functions/functions-reference-python?tabs=application-level#log-custom-telemetry>`_.
 
 References
 ----------

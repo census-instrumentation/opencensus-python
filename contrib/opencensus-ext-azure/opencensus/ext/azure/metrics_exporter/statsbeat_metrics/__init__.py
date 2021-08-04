@@ -17,7 +17,6 @@ import threading
 from opencensus.ext.azure.metrics_exporter import MetricsExporter
 from opencensus.ext.azure.metrics_exporter.statsbeat_metrics.statsbeat import (
     _STATS_CONNECTION_STRING,
-    _STATS_LONG_EXPORT_INTERVAL,
     _STATS_SHORT_EXPORT_INTERVAL,
     _StatsbeatMetrics,
 )
