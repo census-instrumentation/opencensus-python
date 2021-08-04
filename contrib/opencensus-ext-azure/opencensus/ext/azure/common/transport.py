@@ -95,7 +95,6 @@ class TransportMixin(object):
             # Extraneous error (non-retryable)
             return -1
 
-
         text = 'N/A'
         data = None
         try:
@@ -110,7 +109,7 @@ class TransportMixin(object):
         if response.status_code == 200:
             if self._check_stats_collection():
                 with _requests_lock:
-                    _requests_map['success'] = _requests_map.get('success', 0) + 1
+                    _requests_map['success'] = _requests_map.get('success', 0) + 1  # noqa: E501
             return 0
         if response.status_code == 206:  # Partial Content
             if data:

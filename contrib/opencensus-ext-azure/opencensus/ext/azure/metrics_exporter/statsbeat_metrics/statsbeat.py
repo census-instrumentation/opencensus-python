@@ -69,7 +69,8 @@ def _get_stats_long_export_interval():
 _STATS_CONNECTION_STRING = _get_stats_connection_string()
 _STATS_SHORT_EXPORT_INTERVAL = _get_stats_short_export_interval()
 _STATS_LONG_EXPORT_INTERVAL = _get_stats_long_export_interval()
-_STATS_LONG_INTERVAL_THRESHOLD = _STATS_LONG_EXPORT_INTERVAL / _STATS_SHORT_EXPORT_INTERVAL
+_STATS_LONG_INTERVAL_THRESHOLD = _STATS_LONG_EXPORT_INTERVAL / _STATS_SHORT_EXPORT_INTERVAL  # noqa: E501
+
 
 def _get_common_properties():
     properties = []
@@ -83,14 +84,17 @@ def _get_common_properties():
     properties.append(LabelKey("version", 'sdkVersion - version of the ext'))
     return properties
 
+
 def _get_attach_properties():
     properties = _get_common_properties()
-    properties.insert(1,LabelKey("rpid", 'unique id of rp'))
+    properties.insert(1, LabelKey("rpid", 'unique id of rp'))
     return properties
+
 
 def _get_network_properties():
     properties = _get_common_properties()
     return properties
+
 
 def _get_success_count_value():
     with _requests_lock:
