@@ -172,8 +172,10 @@ class TestStatsbeatMetrics(unittest.TestCase):
 
     def test_get_success_count_value(self):
         _requests_map.clear()
+        _requests_map['last_success'] = 5
         _requests_map['success'] = 10
-        self.assertEqual(_get_success_count_value(), 10)
+        self.assertEqual(_get_success_count_value(), 5)
+        self.assertEqual(_requests_map['last_success'], 10)
         _requests_map.clear()
 
     def test_statsbeat_metric_get_initial_metrics(self):
@@ -227,6 +229,26 @@ class TestStatsbeatMetrics(unittest.TestCase):
         metrics = stats._get_network_metrics()
         self.assertEqual(len(metrics), 1)
         self.assertEqual(metrics[0]._time_series[0].points[0].value.value, 5)
+        for metric in metrics:
+            properties = metric._time_series[0]._label_values
+            self.assertEqual(len(properties), 7)
+            self.assertEqual(properties[0].value, _RP_NAMES[3])
+            self.assertEqual(properties[1].value, "sdk")
+            self.assertEqual(properties[2].value, "ikey")
+            self.assertEqual(properties[3].value, platform.python_version())
+            self.assertEqual(properties[4].value, platform.system())
+            self.assertEqual(properties[5].value, "python")
+            self.assertEqual(
+                properties[6].value, ext_version)
+
+    @mock.patch(
+        'opencensus.ext.azure.metrics_exporter.statsbeat_metrics.statsbeat._get_success_count_value')  # noqa: E501
+    def test_get_network_metrics_zero(self, suc_mock):
+        # pylint: disable=protected-access
+        stats = _StatsbeatMetrics("ikey")
+        suc_mock.return_value = 0
+        metrics = stats._get_network_metrics()
+        self.assertEqual(len(metrics), 0)
         for metric in metrics:
             properties = metric._time_series[0]._label_values
             self.assertEqual(len(properties), 7)

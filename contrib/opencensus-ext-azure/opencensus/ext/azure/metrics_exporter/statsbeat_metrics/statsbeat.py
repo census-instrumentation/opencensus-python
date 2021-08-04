@@ -14,13 +14,17 @@
 
 import datetime
 import json
+import logging
 import os
 import platform
 
 import requests
 
 from opencensus.ext.azure.common.version import __version__ as ext_version
-from opencensus.ext.azure.common.transport import _requests_map
+from opencensus.ext.azure.common.transport import (
+    _requests_lock,
+    _requests_map,
+)
 from opencensus.metrics.export.gauge import (
     DerivedLongGauge,
     LongGauge,
@@ -41,6 +45,8 @@ _REQ_SUC_COUNT_NAME = "Request Success Count"
 
 _RP_NAMES = ["appsvc", "function", "vm", "unknown"]
 
+_logger = logging.getLogger(__name__)
+
 
 def _get_stats_connection_string():
     cs_env = os.environ.get("APPLICATION_INSIGHTS_STATS_CONNECTION_STRING")
@@ -53,7 +59,7 @@ def _get_stats_connection_string():
 def _get_stats_short_export_interval():
     ei_env = os.environ.get("APPLICATION_INSIGHTS_STATS_SHORT_EXPORT_INTERVAL")
     if ei_env:
-        return ei_env
+        return int(ei_env)
     else:
         return _DEFAULT_STATS_SHORT_EXPORT_INTERVAL
 
@@ -61,7 +67,7 @@ def _get_stats_short_export_interval():
 def _get_stats_long_export_interval():
     ei_env = os.environ.get("APPLICATION_INSIGHTS_STATS_LONG_EXPORT_INTERVAL")
     if ei_env:
-        return ei_env
+        return int(ei_env)
     else:
         return _DEFAULT_STATS_LONG_EXPORT_INTERVAL
 
@@ -93,7 +99,11 @@ def _get_network_properties():
     return properties
 
 def _get_success_count_value():
-    return _requests_map.get('success', 0)
+    with _requests_lock:
+        interval_count = _requests_map.get('success', 0) \
+                    - _requests_map.get('last_success', 0)
+        _requests_map['last_success'] = _requests_map.get('success', 0)
+        return interval_count
 
 
 class _StatsbeatMetrics:
@@ -136,14 +146,17 @@ class _StatsbeatMetrics:
     # Metrics sent every statsbeat interval
     def get_metrics(self):
         metrics = []
-        # Initial metrics use the long export interval
-        # Only export once long count hits threshold
-        self._long_threshold_count = self._long_threshold_count + 1
-        if self._long_threshold_count >= _STATS_LONG_INTERVAL_THRESHOLD:
-            metrics.extend(self.get_initial_metrics())
-            self._long_threshold_count = 0
-        network_metrics = self._get_network_metrics()
-        metrics.extend(network_metrics)
+        try:
+            # Initial metrics use the long export interval
+            # Only export once long count hits threshold
+            self._long_threshold_count = self._long_threshold_count + 1
+            if self._long_threshold_count >= _STATS_LONG_INTERVAL_THRESHOLD:
+                metrics.extend(self.get_initial_metrics())
+                self._long_threshold_count = 0
+            network_metrics = self._get_network_metrics()
+            metrics.extend(network_metrics)
+        except Exception as ex:
+            _logger.warning('Error while exporting stats metrics %s.', ex)
 
         return metrics
 
@@ -151,8 +164,14 @@ class _StatsbeatMetrics:
         properties = self._get_common_properties()
         metrics = []
         for fn, metric in self._network_metrics.items():
+            # NOTE: A time series is a set of unique label values
+            # If the label values ever change, a separate time series will be
+            # created, however, `_get_properties()` should never change
             metric.create_time_series(properties, fn)
-            metrics.append(metric.get_metric(datetime.datetime.utcnow()))
+            stats_metric = metric.get_metric(datetime.datetime.utcnow())
+            # Don't export if value is 0
+            if stats_metric.time_series[0].points[0].value.value != 0:
+                metrics.append(stats_metric)
         return metrics
 
     def _get_attach_metric(self):
