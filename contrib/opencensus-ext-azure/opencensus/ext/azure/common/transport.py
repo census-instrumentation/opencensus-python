@@ -15,7 +15,6 @@
 import json
 import logging
 import threading
-import time
 
 import requests
 from azure.core.exceptions import ClientAuthenticationError

@@ -20,22 +20,19 @@ import unittest
 import mock
 import requests
 
-from opencensus.ext.azure.common.version import __version__ as ext_version
 from opencensus.ext.azure.common.transport import _requests_map
+from opencensus.ext.azure.common.version import __version__ as ext_version
 from opencensus.ext.azure.metrics_exporter import statsbeat_metrics
 from opencensus.ext.azure.metrics_exporter.statsbeat_metrics.statsbeat import (
     _RP_NAMES,
+    _STATS_LONG_INTERVAL_THRESHOLD,
     _get_attach_properties,
     _get_common_properties,
     _get_network_properties,
     _get_success_count_value,
     _StatsbeatMetrics,
-    _STATS_LONG_INTERVAL_THRESHOLD,
 )
-from opencensus.metrics.export.gauge import (
-    DerivedLongGauge,
-    LongGauge,
-)
+from opencensus.metrics.export.gauge import DerivedLongGauge, LongGauge
 
 
 class MockResponse(object):
