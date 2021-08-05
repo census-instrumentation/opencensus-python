@@ -151,8 +151,7 @@ class _StatsbeatMetrics:
             # Only export once long count hits threshold
             with self._stats_lock:
                 self._long_threshold_count = self._long_threshold_count + 1
-                if self._long_threshold_count >= \
-                    _STATS_LONG_INTERVAL_THRESHOLD:
+                if self._long_threshold_count >= _STATS_LONG_INTERVAL_THRESHOLD:  # noqa: E501
                     metrics.extend(self.get_initial_metrics())
                     self._long_threshold_count = 0
             network_metrics = self._get_network_metrics()
