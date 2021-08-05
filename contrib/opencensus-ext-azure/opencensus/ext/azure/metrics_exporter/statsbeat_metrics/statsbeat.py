@@ -17,6 +17,7 @@ import json
 import logging
 import os
 import platform
+import threading
 
 import requests
 
@@ -108,6 +109,7 @@ class _StatsbeatMetrics:
 
     def __init__(self, instrumentation_key):
         self._instrumentation_key = instrumentation_key
+        self._stats_lock = threading.Lock()
         self._vm_data = {}
         self._vm_retry = True
         self._rp = _RP_NAMES[3]
@@ -147,10 +149,11 @@ class _StatsbeatMetrics:
         try:
             # Initial metrics use the long export interval
             # Only export once long count hits threshold
-            self._long_threshold_count = self._long_threshold_count + 1
-            if self._long_threshold_count >= _STATS_LONG_INTERVAL_THRESHOLD:
-                metrics.extend(self.get_initial_metrics())
-                self._long_threshold_count = 0
+            with self._stats_lock:
+                self._long_threshold_count = self._long_threshold_count + 1
+                if self._long_threshold_count >= _STATS_LONG_INTERVAL_THRESHOLD:
+                    metrics.extend(self.get_initial_metrics())
+                    self._long_threshold_count = 0
             network_metrics = self._get_network_metrics()
             metrics.extend(network_metrics)
         except Exception as ex:
