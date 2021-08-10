@@ -54,6 +54,18 @@ class MockResponse(object):
 
 # pylint: disable=W0212
 class TestTransportMixin(unittest.TestCase):
+    def test_check_stats_collection(self):
+        mixin = TransportMixin()
+        mixin.options = Options()
+        mixin.options.enable_stats_metrics = True
+        self.assertTrue(mixin._check_stats_collection())
+        mixin._is_stats = False
+        self.assertTrue(mixin._check_stats_collection())
+        mixin._is_stats = True
+        self.assertFalse(mixin._check_stats_collection())
+        mixin.options.enable_stats_metrics = False
+        self.assertFalse(mixin._check_stats_collection())
+
     def test_transmission_nothing(self):
         mixin = TransportMixin()
         with LocalFileStorage(os.path.join(TEST_FOLDER, self.id())) as stor:
