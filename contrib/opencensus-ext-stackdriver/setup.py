@@ -37,7 +37,7 @@ setup(
     include_package_data=True,
     long_description=open('README.rst').read(),
     install_requires=[
-        'google-cloud-monitoring >= 0.30.0, < 1.0.0',
+        'google-cloud-monitoring ~= 2.0',
         'google-cloud-trace >= 0.20.0, < 1.0.0',
         'rsa <= 4.0; python_version<="3.4"',
         'opencensus >= 0.8.dev0, < 1.0.0',
