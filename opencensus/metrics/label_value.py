@@ -33,3 +33,10 @@ class LabelValue(object):
     def value(self):
         """the value for the label"""
         return self._value
+
+    def __eq__(self, other):
+        return isinstance(other, LabelValue) and \
+            self.value == other.value
+
+    def __hash__(self):
+        return hash(self.value)

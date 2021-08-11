@@ -14,6 +14,7 @@
 
 import json
 import logging
+import threading
 
 import requests
 from azure.core.exceptions import ClientAuthenticationError
@@ -21,9 +22,15 @@ from azure.identity._exceptions import CredentialUnavailableError
 
 logger = logging.getLogger(__name__)
 _MONITOR_OAUTH_SCOPE = "https://monitor.azure.com//.default"
+_requests_lock = threading.Lock()
+_requests_map = {}
 
 
 class TransportMixin(object):
+    def _check_stats_collection(self):
+        return self.options.enable_stats_metrics and \
+            (not hasattr(self, '_is_stats') or not self._is_stats)
+
     def _transmit_from_storage(self):
         if self.storage:
             for blob in self.storage.gets():
@@ -100,6 +107,9 @@ class TransportMixin(object):
             except Exception:
                 pass
         if response.status_code == 200:
+            if self._check_stats_collection():
+                with _requests_lock:
+                    _requests_map['success'] = _requests_map.get('success', 0) + 1  # noqa: E501
             return 0
         if response.status_code == 206:  # Partial Content
             if data:
