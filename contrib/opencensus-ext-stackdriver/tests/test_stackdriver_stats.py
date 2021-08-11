@@ -852,10 +852,12 @@ class TestCreateTimeseries(unittest.TestCase):
         )
         self.assertEqual(value.distribution_value, expected_distb)
 
-        self.assertEqual(time_series.points[0].interval.start_time.seconds, 1545699663)
-        self.assertEqual(time_series.points[0].interval.start_time.nanos, 4053)
-        self.assertEqual(time_series.points[0].interval.end_time.seconds, 1545699723)
-        self.assertEqual(time_series.points[0].interval.end_time.nanos, 4053)
+        start_time_pb = time_series.points[0].interval.start_time.timestamp_pb()
+        end_time_pb = time_series.points[0].interval.end_time.timestamp_pb()
+        self.assertEqual(start_time_pb.seconds, 1545699663)
+        self.assertEqual(start_time_pb.nanos, 4053)
+        self.assertEqual(end_time_pb.seconds, 1545699723)
+        self.assertEqual(end_time_pb.nanos, 4053)
 
     @mock.patch('opencensus.ext.stackdriver.stats_exporter.'
                 'monitored_resource.get_instance')
