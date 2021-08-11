@@ -852,7 +852,9 @@ class TestCreateTimeseries(unittest.TestCase):
         )
         self.assertEqual(value.distribution_value, expected_distb)
 
-        start_time_pb = time_series.points[0].interval.start_time.timestamp_pb()
+        start_time_pb = (
+            time_series.points[0].interval.start_time.timestamp_pb()
+        )
         end_time_pb = time_series.points[0].interval.end_time.timestamp_pb()
         self.assertEqual(start_time_pb.seconds, 1545699663)
         self.assertEqual(start_time_pb.nanos, 4053)
