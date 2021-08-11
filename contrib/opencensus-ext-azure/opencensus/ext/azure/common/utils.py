@@ -23,19 +23,35 @@ from opencensus.common.utils import timestamp_to_microseconds, to_iso_str
 from opencensus.common.version import __version__ as opencensus_version
 from opencensus.ext.azure.common.version import __version__ as ext_version
 
-azure_monitor_context = {
-    'ai.cloud.role': os.path.basename(sys.argv[0]) or 'Python Application',
-    'ai.cloud.roleInstance': platform.node(),
-    'ai.device.id': platform.node(),
-    'ai.device.locale': locale.getdefaultlocale()[0],
-    'ai.device.osVersion': platform.version(),
-    'ai.device.type': 'Other',
-    'ai.internal.sdkVersion': 'py{}:oc{}:ext{}'.format(
-        platform.python_version(),
-        opencensus_version,
-        ext_version,
-    ),
-}
+_azure_monitor_context = {}
+
+
+def get_azure_monitor_context(
+        role_name=(
+            os.getenv('APPLICATIONINSIGHTS_ROLE_NAME') or
+            os.path.basename(sys.argv[0]) or
+            'Python Application'),
+        role_instance=platform.node(),
+        device_id=platform.node(),
+        device_locale=locale.getdefaultlocale()[0],
+        device_osVersion=platform.version(),
+        device_type='Other',
+        internal_sdkVersion='py{}:oc{}:ext{}'.format(
+            platform.python_version(), opencensus_version, ext_version)):
+    global _azure_monitor_context
+
+    if not _azure_monitor_context:
+        _azure_monitor_context = {
+            'ai.cloud.role': role_name,
+            'ai.cloud.roleInstance': role_instance,
+            'ai.device.id': device_id,
+            'ai.device.locale': device_locale,
+            'ai.device.osVersion': device_osVersion,
+            'ai.device.type': device_type,
+            'ai.internal.sdkVersion': internal_sdkVersion,
+        }
+
+    return _azure_monitor_context
 
 
 def microseconds_to_duration(microseconds):

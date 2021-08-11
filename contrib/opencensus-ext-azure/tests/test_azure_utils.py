@@ -18,6 +18,7 @@ from opencensus.ext.azure.common import utils
 
 
 class TestUtils(unittest.TestCase):
+
     def test_microseconds_to_duration(self):
         us_to_duration = utils.microseconds_to_duration
         self.assertEqual(us_to_duration(0), '0.00:00:00.000')
@@ -132,3 +133,45 @@ class TestUtils(unittest.TestCase):
     def test_valid_key_section4_hex(self):
         key = '1234abcd-5678-4efa-cabc-1234567890ab'
         self.assertIsNone(utils.validate_instrumentation_key(key))
+
+    def test_correct_initialization_monitor_context(self):
+        role_name = 'test_role_name'
+        role_instance = 'test_role_instance'
+        device_id = 'test_device_id'
+        device_locale = 'test_device_locale'
+        device_osVersion = 'test_device_osVersion'
+        device_type = 'test_device_type'
+        internal_sdkVersion = 'test_internal_sdkVersion'
+
+        utils._azure_monitor_context = {}
+
+        context = utils.get_azure_monitor_context(
+            role_name=role_name,
+            role_instance=role_instance,
+            device_id=device_id,
+            device_locale=device_locale,
+            device_osVersion=device_osVersion,
+            device_type=device_type,
+            internal_sdkVersion=internal_sdkVersion)
+
+        self.assertEqual(context['ai.cloud.role'], role_name)
+        self.assertEqual(context['ai.cloud.roleInstance'], role_instance)
+        self.assertEqual(context['ai.device.id'], device_id)
+        self.assertEqual(context['ai.device.locale'], device_locale)
+        self.assertEqual(context['ai.device.osVersion'], device_osVersion)
+        self.assertEqual(context['ai.device.type'], device_type)
+        self.assertEqual(
+            context['ai.internal.sdkVersion'],
+            internal_sdkVersion)
+
+    def test_monitor_context_initialized_once(self):
+        role_name = "first"
+        other_role_name = "second"
+
+        utils._azure_monitor_context = {}
+        context = utils.get_azure_monitor_context(role_name=role_name)
+        self.assertEqual(context['ai.cloud.role'], role_name)
+
+        second_context = utils.get_azure_monitor_context(
+            role_name=other_role_name)
+        self.assertEqual(second_context['ai.cloud.role'], role_name)

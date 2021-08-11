@@ -82,7 +82,7 @@ class AzureExporter(BaseExporter, ProcessorMixin, TransportMixin):
     def span_data_to_envelope(self, sd):
         envelope = Envelope(
             iKey=self.options.instrumentation_key,
-            tags=dict(utils.azure_monitor_context),
+            tags=dict(utils.get_azure_monitor_context()),
             time=sd.start_time,
         )
 

@@ -251,7 +251,7 @@ class AzureEventHandler(TransportMixin, ProcessorMixin, BaseLogHandler):
 def create_envelope(instrumentation_key, record):
     envelope = Envelope(
         iKey=instrumentation_key,
-        tags=dict(utils.azure_monitor_context),
+        tags=dict(utils.get_azure_monitor_context()),
         time=utils.timestamp_to_iso_str(record.created),
     )
     envelope.tags['ai.operation.id'] = getattr(

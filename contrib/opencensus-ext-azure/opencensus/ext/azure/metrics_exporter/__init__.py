@@ -129,7 +129,7 @@ class MetricsExporter(TransportMixin, ProcessorMixin):
     def _create_envelope(self, data_point, timestamp, properties):
         envelope = Envelope(
             iKey=self.options.instrumentation_key,
-            tags=dict(utils.azure_monitor_context),
+            tags=dict(utils.get_azure_monitor_context()),
             time=timestamp.isoformat(),
         )
         if self._is_stats:
