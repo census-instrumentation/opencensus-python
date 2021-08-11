@@ -21,8 +21,10 @@ import threading
 from datetime import datetime
 
 import google.auth
+from google.api import metric_pb2
 from google.api_core.gapic_v1 import client_info
 from google.cloud import monitoring_v3
+from google.protobuf import timestamp_pb2
 
 from opencensus.common import utils
 from opencensus.common.monitored_resource import (
@@ -51,20 +53,20 @@ GLOBAL_RESOURCE_TYPE = 'global'
 # OC metric descriptor type to SD metric kind and value type
 OC_MD_TO_SD_TYPE = {
     metric_descriptor.MetricDescriptorType.CUMULATIVE_INT64:
-    (monitoring_v3.enums.MetricDescriptor.MetricKind.CUMULATIVE,
-     monitoring_v3.enums.MetricDescriptor.ValueType.INT64),
+    (metric_pb2.MetricDescriptor.MetricKind.CUMULATIVE,
+     metric_pb2.MetricDescriptor.ValueType.INT64),
     metric_descriptor.MetricDescriptorType.CUMULATIVE_DOUBLE:
-    (monitoring_v3.enums.MetricDescriptor.MetricKind.CUMULATIVE,
-     monitoring_v3.enums.MetricDescriptor.ValueType.DOUBLE),
+    (metric_pb2.MetricDescriptor.MetricKind.CUMULATIVE,
+     metric_pb2.MetricDescriptor.ValueType.DOUBLE),
     metric_descriptor.MetricDescriptorType.CUMULATIVE_DISTRIBUTION:
-    (monitoring_v3.enums.MetricDescriptor.MetricKind.CUMULATIVE,
-     monitoring_v3.enums.MetricDescriptor.ValueType.DISTRIBUTION),
+    (metric_pb2.MetricDescriptor.MetricKind.CUMULATIVE,
+     metric_pb2.MetricDescriptor.ValueType.DISTRIBUTION),
     metric_descriptor.MetricDescriptorType.GAUGE_INT64:
-    (monitoring_v3.enums.MetricDescriptor.MetricKind.GAUGE,
-     monitoring_v3.enums.MetricDescriptor.ValueType.INT64),
+    (metric_pb2.MetricDescriptor.MetricKind.GAUGE,
+     metric_pb2.MetricDescriptor.ValueType.INT64),
     metric_descriptor.MetricDescriptorType.GAUGE_DOUBLE:
-    (monitoring_v3.enums.MetricDescriptor.MetricKind.GAUGE,
-     monitoring_v3.enums.MetricDescriptor.ValueType.DOUBLE)
+    (metric_pb2.MetricDescriptor.MetricKind.GAUGE,
+     metric_pb2.MetricDescriptor.ValueType.DOUBLE)
 }
 
 
@@ -158,7 +160,9 @@ class StackdriverStatsExporter(object):
         ts_batches = self.create_batched_time_series(metrics)
         for ts_batch in ts_batches:
             self.client.create_time_series(
-                self.client.project_path(self.options.project_id), ts_batch)
+                name=self.client.common_project_path(self.options.project_id),
+                time_series=ts_batch,
+            )
 
     def create_batched_time_series(self, metrics,
                                    batch_size=MAX_TIME_SERIES_PER_UPLOAD):
@@ -173,7 +177,7 @@ class StackdriverStatsExporter(object):
 
     def _convert_series(self, metric, ts):
         """Convert an OC timeseries to a SD series."""
-        series = monitoring_v3.types.TimeSeries()
+        series = monitoring_v3.TimeSeries()
         series.metric.type = self.get_metric_type(metric.descriptor)
 
         for lk, lv in self.options.default_monitoring_labels.items():
@@ -187,9 +191,10 @@ class StackdriverStatsExporter(object):
         set_monitored_resource(series, self.options.resource)
 
         for point in ts.points:
-            sd_point = series.points.add()
+            sd_point = monitoring_v3.Point()
             # this just modifies points, no return
             self._convert_point(metric, ts, point, sd_point)
+            series.points.append(sd_point)
         return series
 
     def _convert_point(self, metric, ts, point, sd_point):
@@ -245,14 +250,17 @@ class StackdriverStatsExporter(object):
         timestamp_start = (start - EPOCH_DATETIME).total_seconds()
         timestamp_end = (end - EPOCH_DATETIME).total_seconds()
 
-        sd_point.interval.end_time.seconds = int(timestamp_end)
+        end_time_pb = timestamp_pb2.Timestamp()
+        end_time_pb.seconds = int(timestamp_end)
+        end_time_pb.nanos = int((timestamp_end - end_time_pb.seconds) * 1e9)
+        sd_point.interval.end_time = end_time_pb
 
-        secs = sd_point.interval.end_time.seconds
-        sd_point.interval.end_time.nanos = int((timestamp_end - secs) * 1e9)
-
-        start_time = sd_point.interval.start_time
-        start_time.seconds = int(timestamp_start)
-        start_time.nanos = int((timestamp_start - start_time.seconds) * 1e9)
+        start_time_pb = timestamp_pb2.Timestamp()
+        start_time_pb.seconds = int(timestamp_start)
+        start_time_pb.nanos = int(
+            (timestamp_start - start_time_pb.seconds) * 1e9,
+        )
+        sd_point.interval.start_time = start_time_pb
 
     def get_metric_type(self, oc_md):
         """Get a SD metric type for an OC metric descriptor."""
@@ -273,7 +281,7 @@ class StackdriverStatsExporter(object):
         desc_labels = new_label_descriptors(
             self.options.default_monitoring_labels, oc_md.label_keys)
 
-        descriptor = monitoring_v3.types.MetricDescriptor(labels=desc_labels)
+        descriptor = metric_pb2.MetricDescriptor(labels=desc_labels)
         metric_type = self.get_metric_type(oc_md)
         descriptor.type = metric_type
         descriptor.metric_kind = metric_kind
@@ -295,8 +303,10 @@ class StackdriverStatsExporter(object):
                 return self._md_cache[metric_type]
 
         descriptor = self.get_metric_descriptor(oc_md)
-        project_name = self.client.project_path(self.options.project_id)
-        sd_md = self.client.create_metric_descriptor(project_name, descriptor)
+        project_name = self.client.common_project_path(self.options.project_id)
+        sd_md = self.client.create_metric_descriptor(
+            name=project_name, metric_descriptor=descriptor
+        )
         with self._md_lock:
             self._md_cache[metric_type] = sd_md
         return sd_md

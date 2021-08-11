@@ -46,7 +46,7 @@ class TestBasicStats(unittest.TestCase):
 
     def check_sd_md(self, exporter, view_description):
         """Check that the metric descriptor was written to stackdriver."""
-        name = exporter.client.project_path(PROJECT)
+        name = exporter.client.common_project_path(PROJECT)
         list_metrics_descriptors = exporter.client.list_metric_descriptors(
             name)
 
