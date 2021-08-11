@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import unittest
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import google.auth
 import mock
@@ -812,6 +812,9 @@ class TestCreateTimeseries(unittest.TestCase):
         v_data = measure_map.measure_to_view_map.get_view(
             VIDEO_SIZE_VIEW_NAME, None)
 
+        v_data._start_time = (
+            TEST_TIME - timedelta(minutes=1)
+        ).strftime(stackdriver.EPOCH_PATTERN)
         v_data = metric_utils.view_data_to_metric(v_data, TEST_TIME)
 
         time_series_list = exporter.create_time_series_list(v_data)
@@ -839,6 +842,11 @@ class TestCreateTimeseries(unittest.TestCase):
             bucket_counts=[0, 0, 1, 0]
         )
         self.assertEqual(value.distribution_value, expected_distb)
+
+        self.assertEqual(time_series.points[0].interval.start_time.seconds, 1545699663)
+        self.assertEqual(time_series.points[0].interval.start_time.nanos, 4053)
+        self.assertEqual(time_series.points[0].interval.end_time.seconds, 1545699723)
+        self.assertEqual(time_series.points[0].interval.end_time.nanos, 4053)
 
     @mock.patch('opencensus.ext.stackdriver.stats_exporter.'
                 'monitored_resource.get_instance')
