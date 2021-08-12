@@ -9,7 +9,7 @@
 - Implement network metrics via Statbeat - Success count
 ([#1059](https://github.com/census-instrumentation/opencensus-python/pull/1059))
 - Implement network metrics via Statbeat - Others
-([#1059](https://github.com/census-instrumentation/opencensus-python/pull/1059))
+([#1062](https://github.com/census-instrumentation/opencensus-python/pull/1062))
 
 ## 1.0.8
 Released 2021-05-13

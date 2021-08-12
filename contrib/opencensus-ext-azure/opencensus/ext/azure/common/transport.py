@@ -112,7 +112,7 @@ class TransportMixin(object):
                 with _requests_lock:
                     duration = _requests_map.get('duration', 0)
                     _requests_map['duration'] = duration + (end_time - start_time)
-            if exception is None:
+            if exception is not None:
                 return exception
 
         text = 'N/A'
