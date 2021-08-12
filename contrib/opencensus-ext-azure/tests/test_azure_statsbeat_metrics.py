@@ -269,7 +269,7 @@ class TestStatsbeatMetrics(unittest.TestCase):
         'opencensus.ext.azure.metrics_exporter.statsbeat_metrics.statsbeat._get_failure_count_value')  # noqa: E501
     @mock.patch(
         'opencensus.ext.azure.metrics_exporter.statsbeat_metrics.statsbeat._get_success_count_value')  # noqa: E501
-    def test_get_network_metrics(self, mock1, mock2, mock3, mock4, mock5, mock6):
+    def test_get_network_metrics(self, mock1, mock2, mock3, mock4, mock5, mock6):  # noqa: E501
         # pylint: disable=protected-access
         stats = _StatsbeatMetrics("ikey")
         mock1.return_value = 5
@@ -297,7 +297,6 @@ class TestStatsbeatMetrics(unittest.TestCase):
             self.assertEqual(properties[5].value, "python")
             self.assertEqual(
                 properties[6].value, ext_version)
-        
 
     @mock.patch(
         'opencensus.ext.azure.metrics_exporter.statsbeat_metrics.statsbeat._get_success_count_value')  # noqa: E501

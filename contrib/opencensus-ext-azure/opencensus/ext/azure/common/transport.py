@@ -111,7 +111,7 @@ class TransportMixin(object):
             if self._check_stats_collection():
                 with _requests_lock:
                     duration = _requests_map.get('duration', 0)
-                    _requests_map['duration'] = duration + (end_time - start_time)
+                    _requests_map['duration'] = duration + (end_time - start_time)  # noqa: E501
             if exception is not None:
                 return exception
 
