@@ -27,11 +27,11 @@ from opencensus.ext.azure.metrics_exporter.statsbeat_metrics.statsbeat import (
     _RP_NAMES,
     _STATS_LONG_INTERVAL_THRESHOLD,
     _get_attach_properties,
-    _get_common_properties,
-    _get_network_properties,
     _get_average_duration_value,
+    _get_common_properties,
     _get_exception_count_value,
     _get_failure_count_value,
+    _get_network_properties,
     _get_retry_count_value,
     _get_success_count_value,
     _get_throttle_count_value,
@@ -273,19 +273,19 @@ class TestStatsbeatMetrics(unittest.TestCase):
         # pylint: disable=protected-access
         stats = _StatsbeatMetrics("ikey")
         mock1.return_value = 5
-        mock2.return_value = 6
-        mock3.return_value = 7
-        mock4.return_value = 8
-        mock5.return_value = 9
-        mock6.return_value = 10
+        mock2.return_value = 5
+        mock3.return_value = 5
+        mock4.return_value = 5
+        mock5.return_value = 5
+        mock6.return_value = 5
         metrics = stats._get_network_metrics()
         self.assertEqual(len(metrics), 6)
         self.assertEqual(metrics[0]._time_series[0].points[0].value.value, 5)
-        self.assertEqual(metrics[1]._time_series[0].points[0].value.value, 6)
-        self.assertEqual(metrics[2]._time_series[0].points[0].value.value, 7)
-        self.assertEqual(metrics[3]._time_series[0].points[0].value.value, 8)
-        self.assertEqual(metrics[4]._time_series[0].points[0].value.value, 9)
-        self.assertEqual(metrics[5]._time_series[0].points[0].value.value, 10)
+        self.assertEqual(metrics[1]._time_series[0].points[0].value.value, 5)
+        self.assertEqual(metrics[2]._time_series[0].points[0].value.value, 5)
+        self.assertEqual(metrics[3]._time_series[0].points[0].value.value, 5)
+        self.assertEqual(metrics[4]._time_series[0].points[0].value.value, 5)
+        self.assertEqual(metrics[5]._time_series[0].points[0].value.value, 5)
         for metric in metrics:
             properties = metric._time_series[0]._label_values
             self.assertEqual(len(properties), 7)
