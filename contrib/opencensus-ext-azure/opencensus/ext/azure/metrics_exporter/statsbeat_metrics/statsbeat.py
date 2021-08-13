@@ -40,6 +40,7 @@ _DEFAULT_STATS_SHORT_EXPORT_INTERVAL = 900  # 15 minutes
 _DEFAULT_STATS_LONG_EXPORT_INTERVAL = 86400  # 24 hours
 
 _ATTACH_METRIC_NAME = "Attach"
+_FEATURE_METRIC_NAME = "Feature"
 _REQ_SUC_COUNT_NAME = "Request Success Count"
 _REQ_FAIL_COUNT_NAME = "Request Failure Count"
 _REQ_DURATION_NAME = "Request Duration"
@@ -48,8 +49,15 @@ _REQ_THROTTLE_NAME = "Request Throttle Count"
 _REQ_EXCEPTION_NAME = "Request Exception Count"
 
 _RP_NAMES = ["appsvc", "function", "vm", "unknown"]
+_FEATURE_TYPES = ["Feature", "Instrumentation"]
 
 _logger = logging.getLogger(__name__)
+
+
+class _StatsbeatFeature:
+    NONE = 0
+    DISK_RETRY = 1
+    AAD_HANDLING = 2
 
 
 def _get_stats_connection_string():
@@ -103,6 +111,13 @@ def _get_attach_properties():
 
 def _get_network_properties():
     properties = _get_common_properties()
+    return properties
+
+
+def _get_feature_properties():
+    properties = _get_common_properties()
+    properties.insert(4, LabelKey("feature", 'represents enabled features'))
+    properties.insert(4, LabelKey("type", 'type, either feature or instrumentation'))  # noqa: E501
     return properties
 
 
@@ -162,8 +177,13 @@ def _get_exception_count_value():
 
 class _StatsbeatMetrics:
 
-    def __init__(self, instrumentation_key):
-        self._instrumentation_key = instrumentation_key
+    def __init__(self, options):
+        # Properties are instantiated here because currently there is no way
+        # to modify them during runtime
+        self._instrumentation_key = options.instrumentation_key
+        self._feature = _StatsbeatFeature.NONE
+        if options.enable_local_storage:
+            self._feature |= _StatsbeatFeature.DISK_RETRY
         self._stats_lock = threading.Lock()
         self._vm_data = {}
         self._vm_retry = True
@@ -197,7 +217,7 @@ class _StatsbeatMetrics:
         self._network_metrics[_get_average_duration_value] = DerivedDoubleGauge(  # noqa: E501
             _REQ_DURATION_NAME,
             'Statsbeat metric tracking average request duration',
-            'count',
+            'duration',
             _get_network_properties(),
         )
         self._network_metrics[_get_retry_count_value] = DerivedLongGauge(
@@ -218,6 +238,14 @@ class _StatsbeatMetrics:
             'count',
             _get_network_properties(),
         )
+        # feature/instrumentation metrics
+        # metrics related to what features and instrumentations are enabled
+        self._feature_metric = LongGauge(
+            _ATTACH_METRIC_NAME,
+            'Statsbeat metric related to features and instrumentations enabled',  # noqa: E501
+            'count',
+            _get_feature_properties(),
+        )
 
     # Metrics that are sent on application start
     def get_initial_metrics(self):
@@ -226,6 +254,10 @@ class _StatsbeatMetrics:
             attach_metric = self._get_attach_metric()
             if attach_metric:
                 stats_metrics.append(attach_metric)
+        if self._feature_metric:
+            feature_metric = self._get_feature_metric()
+            if feature_metric:
+                stats_metrics.append(feature_metric)
         return stats_metrics
 
     # Metrics sent every statsbeat interval
@@ -259,6 +291,13 @@ class _StatsbeatMetrics:
             if stats_metric.time_series[0].points[0].value.value != 0:
                 metrics.append(stats_metric)
         return metrics
+
+    def _get_feature_metric(self):
+        properties = self._get_common_properties()
+        properties.insert(4, LabelValue(self._feature))  # feature long
+        properties.insert(4, LabelValue(_FEATURE_TYPES[0]))  # type
+        self._feature_metric.get_or_create_time_series(properties)
+        return self._feature_metric.get_metric(datetime.datetime.utcnow())
 
     def _get_attach_metric(self):
         properties = []

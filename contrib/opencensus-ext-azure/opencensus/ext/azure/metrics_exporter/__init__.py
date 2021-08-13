@@ -165,7 +165,5 @@ def new_metrics_exporter(**options):
     if exporter.options.enable_stats_metrics:
         from opencensus.ext.azure.metrics_exporter import statsbeat_metrics
         # Stats will track the user's ikey
-        statsbeat_metrics.collect_statsbeat_metrics(
-            exporter.options.instrumentation_key
-        )
+        statsbeat_metrics.collect_statsbeat_metrics(exporter.options)
     return exporter

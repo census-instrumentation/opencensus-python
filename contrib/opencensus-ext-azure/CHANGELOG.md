@@ -4,12 +4,14 @@
 
 - Enable AAD authorization via TokenCredential
 ([#1021](https://github.com/census-instrumentation/opencensus-python/pull/1021))
-- Implement attach rate metrics via Statbeat
+- Implement attach rate metrics via Stastbeat
 ([#1053](https://github.com/census-instrumentation/opencensus-python/pull/1053))
-- Implement network metrics via Statbeat - Success count
+- Implement network metrics via Statsbeat - Success count
 ([#1059](https://github.com/census-instrumentation/opencensus-python/pull/1059))
-- Implement network metrics via Statbeat - Others
+- Implement network metrics via Statsbeat - Others
 ([#1062](https://github.com/census-instrumentation/opencensus-python/pull/1062))
+- Implement feature metrics via Statsbeat
+([#1063](https://github.com/census-instrumentation/opencensus-python/pull/1063))
 
 ## 1.0.8
 Released 2021-05-13

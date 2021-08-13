@@ -75,9 +75,7 @@ class AzureExporter(BaseExporter, ProcessorMixin, TransportMixin):
         atexit.register(self._stop, self.options.grace_period)
         # start statsbeat on exporter instantiation
         if self.options.enable_stats_metrics:
-            statsbeat_metrics.collect_statsbeat_metrics(
-                self.options.instrumentation_key
-            )
+            statsbeat_metrics.collect_statsbeat_metrics(self.options)
 
     def span_data_to_envelope(self, sd):
         envelope = Envelope(
