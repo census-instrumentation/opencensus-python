@@ -2,13 +2,20 @@
 
 ## Unreleased
 
+- Enable AAD authorization via TokenCredential
+([#1021](https://github.com/census-instrumentation/opencensus-python/pull/1021))
+- Implement attach rate metrics via Statbeat
+([#1053](https://github.com/census-instrumentation/opencensus-python/pull/1053))
+- Implement network metrics via Statbeat - Success count
+([#1059](https://github.com/census-instrumentation/opencensus-python/pull/1059))
+
 ## 1.0.8
 Released 2021-05-13
 
 - Fix `logger.exception` with no exception info throwing error
 ([#1006](https://github.com/census-instrumentation/opencensus-python/pull/1006))
 - Add `enable_local_storage` to turn on/off local storage + retry + flushing logic
-([#1006](https://github.com/census-instrumentation/opencensus-python/pull/1006))
+([#1016](https://github.com/census-instrumentation/opencensus-python/pull/1016))
 
 ## 1.0.7
 Released 2021-01-25

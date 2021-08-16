@@ -39,8 +39,9 @@ logger = logging.getLogger(__name__)
 class MetricsExporter(TransportMixin, ProcessorMixin):
     """Metrics exporter for Microsoft Azure Monitor."""
 
-    def __init__(self, **options):
+    def __init__(self, is_stats=False, **options):
         self.options = Options(**options)
+        self._is_stats = is_stats
         utils.validate_instrumentation_key(self.options.instrumentation_key)
         if self.options.max_batch_size <= 0:
             raise ValueError('Max batch size must be at least 1.')
@@ -131,7 +132,10 @@ class MetricsExporter(TransportMixin, ProcessorMixin):
             tags=dict(utils.azure_monitor_context),
             time=timestamp.isoformat(),
         )
-        envelope.name = "Microsoft.ApplicationInsights.Metric"
+        if self._is_stats:
+            envelope.name = "Statsbeat"
+        else:
+            envelope.name = "Microsoft.ApplicationInsights.Metric"
         data = MetricData(
             metrics=[data_point],
             properties=properties
@@ -141,7 +145,8 @@ class MetricsExporter(TransportMixin, ProcessorMixin):
 
     def shutdown(self):
         # Flush the exporter thread
-        if self.exporter_thread:
+        # Do not flush if metrics exporter for stats
+        if self.exporter_thread and not self._is_stats:
             self.exporter_thread.close()
         # Shutsdown storage worker
         if self.storage:
@@ -157,4 +162,10 @@ def new_metrics_exporter(**options):
                                     producers,
                                     exporter,
                                     interval=exporter.options.export_interval)
+    if exporter.options.enable_stats_metrics:
+        from opencensus.ext.azure.metrics_exporter import statsbeat_metrics
+        # Stats will track the user's ikey
+        statsbeat_metrics.collect_statsbeat_metrics(
+            exporter.options.instrumentation_key
+        )
     return exporter

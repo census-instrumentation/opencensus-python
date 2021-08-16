@@ -19,12 +19,17 @@ import unittest
 
 import mock
 import requests
+from azure.core.exceptions import ClientAuthenticationError
+from azure.identity._exceptions import CredentialUnavailableError
 
 from opencensus.ext.azure.common import Options
 from opencensus.ext.azure.common.storage import LocalFileStorage
-from opencensus.ext.azure.common.transport import TransportMixin
+from opencensus.ext.azure.common.transport import (
+    _MONITOR_OAUTH_SCOPE,
+    TransportMixin,
+)
 
-TEST_FOLDER = os.path.abspath('.test.storage')
+TEST_FOLDER = os.path.abspath('.test.transport')
 
 
 def setUpModule():
@@ -49,6 +54,18 @@ class MockResponse(object):
 
 # pylint: disable=W0212
 class TestTransportMixin(unittest.TestCase):
+    def test_check_stats_collection(self):
+        mixin = TransportMixin()
+        mixin.options = Options()
+        mixin.options.enable_stats_metrics = True
+        self.assertTrue(mixin._check_stats_collection())
+        mixin._is_stats = False
+        self.assertTrue(mixin._check_stats_collection())
+        mixin._is_stats = True
+        self.assertFalse(mixin._check_stats_collection())
+        mixin.options.enable_stats_metrics = False
+        self.assertFalse(mixin._check_stats_collection())
+
     def test_transmission_nothing(self):
         mixin = TransportMixin()
         with LocalFileStorage(os.path.join(TEST_FOLDER, self.id())) as stor:
@@ -68,6 +85,39 @@ class TestTransportMixin(unittest.TestCase):
             self.assertIsNone(mixin.storage.get())
             self.assertEqual(len(os.listdir(mixin.storage.path)), 1)
 
+    def test_transmission_pre_req_exception(self):
+        mixin = TransportMixin()
+        mixin.options = Options()
+        with LocalFileStorage(os.path.join(TEST_FOLDER, self.id())) as stor:
+            mixin.storage = stor
+            mixin.storage.put([1, 2, 3])
+            with mock.patch('requests.post', throw(requests.RequestException)):
+                mixin._transmit_from_storage()
+            self.assertIsNone(mixin.storage.get())
+            self.assertEqual(len(os.listdir(mixin.storage.path)), 1)
+
+    def test_transmission_cred_exception(self):
+        mixin = TransportMixin()
+        mixin.options = Options()
+        with LocalFileStorage(os.path.join(TEST_FOLDER, self.id())) as stor:
+            mixin.storage = stor
+            mixin.storage.put([1, 2, 3])
+            with mock.patch('requests.post', throw(CredentialUnavailableError)):  # noqa: E501
+                mixin._transmit_from_storage()
+            self.assertIsNone(mixin.storage.get())
+            self.assertEqual(len(os.listdir(mixin.storage.path)), 0)
+
+    def test_transmission_client_exception(self):
+        mixin = TransportMixin()
+        mixin.options = Options()
+        with LocalFileStorage(os.path.join(TEST_FOLDER, self.id())) as stor:
+            mixin.storage = stor
+            mixin.storage.put([1, 2, 3])
+            with mock.patch('requests.post', throw(ClientAuthenticationError)):
+                mixin._transmit_from_storage()
+            self.assertIsNone(mixin.storage.get())
+            self.assertEqual(len(os.listdir(mixin.storage.path)), 1)
+
     def test_transmission_pre_exception(self):
         mixin = TransportMixin()
         mixin.options = Options()
@@ -77,7 +127,7 @@ class TestTransportMixin(unittest.TestCase):
             with mock.patch('requests.post', throw(Exception)):
                 mixin._transmit_from_storage()
             self.assertIsNone(mixin.storage.get())
-            self.assertEqual(len(os.listdir(mixin.storage.path)), 1)
+            self.assertEqual(len(os.listdir(mixin.storage.path)), 0)
 
     @mock.patch('requests.post', return_value=mock.Mock())
     def test_transmission_lease_failure(self, requests_mock):
@@ -119,6 +169,40 @@ class TestTransportMixin(unittest.TestCase):
                 mixin._transmit_from_storage()
             self.assertIsNone(mixin.storage.get())
             self.assertEqual(len(os.listdir(mixin.storage.path)), 0)
+
+    def test_transmission_auth(self):
+        mixin = TransportMixin()
+        mixin.options = Options()
+        url = 'https://dc.services.visualstudio.com'
+        mixin.options.endpoint = url
+        credential = mock.Mock()
+        mixin.options.credential = credential
+        token_mock = mock.Mock()
+        token_mock.token = "test_token"
+        credential.get_token.return_value = token_mock
+        data = '[1, 2, 3]'
+        headers = {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json; charset=utf-8',
+            'Authorization': 'Bearer test_token',
+        }
+        with LocalFileStorage(os.path.join(TEST_FOLDER, self.id())) as stor:
+            mixin.storage = stor
+            mixin.storage.put([1, 2, 3])
+            with mock.patch('requests.post') as post:
+                post.return_value = MockResponse(200, 'unknown')
+                mixin._transmit_from_storage()
+                post.assert_called_with(
+                    url=url + '/v2.1/track',
+                    data=data,
+                    headers=headers,
+                    timeout=10.0,
+                    proxies={}
+                )
+            credential.get_token.assert_called_with(_MONITOR_OAUTH_SCOPE)
+            self.assertIsNone(mixin.storage.get())
+            self.assertEqual(len(os.listdir(mixin.storage.path)), 0)
+            credential.get_token.assert_called_once()
 
     def test_transmission_206(self):
         mixin = TransportMixin()
@@ -201,16 +285,16 @@ class TestTransportMixin(unittest.TestCase):
             self.assertIsNone(mixin.storage.get())
             self.assertEqual(len(os.listdir(mixin.storage.path)), 0)
 
-    def test_transmission_400(self):
+    def test_transmission_401(self):
         mixin = TransportMixin()
         mixin.options = Options()
         with LocalFileStorage(os.path.join(TEST_FOLDER, self.id())) as stor:
             mixin.storage = stor
             mixin.storage.put([1, 2, 3])
             with mock.patch('requests.post') as post:
-                post.return_value = MockResponse(400, '{}')
+                post.return_value = MockResponse(401, '{}')
                 mixin._transmit_from_storage()
-            self.assertEqual(len(os.listdir(mixin.storage.path)), 0)
+            self.assertEqual(len(os.listdir(mixin.storage.path)), 1)
 
     def test_transmission_500(self):
         mixin = TransportMixin()
@@ -223,3 +307,14 @@ class TestTransportMixin(unittest.TestCase):
                 mixin._transmit_from_storage()
             self.assertIsNone(mixin.storage.get())
             self.assertEqual(len(os.listdir(mixin.storage.path)), 1)
+
+    def test_transmission_400(self):
+        mixin = TransportMixin()
+        mixin.options = Options()
+        with LocalFileStorage(os.path.join(TEST_FOLDER, self.id())) as stor:
+            mixin.storage = stor
+            mixin.storage.put([1, 2, 3])
+            with mock.patch('requests.post') as post:
+                post.return_value = MockResponse(400, '{}')
+                mixin._transmit_from_storage()
+            self.assertEqual(len(os.listdir(mixin.storage.path)), 0)

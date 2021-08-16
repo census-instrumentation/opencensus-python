@@ -13,10 +13,11 @@
 # limitations under the License.
 
 import unittest
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import google.auth
 import mock
+from google.api import metric_pb2
 from google.cloud import monitoring_v3
 
 from opencensus.common import utils
@@ -433,12 +434,12 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         sd_md = exporter.get_metric_descriptor(oc_md)
         self.assertEqual(
             sd_md.metric_kind,
-            monitoring_v3.enums.MetricDescriptor.MetricKind.GAUGE)
+            metric_pb2.MetricDescriptor.MetricKind.GAUGE)
         self.assertEqual(
             sd_md.value_type,
-            monitoring_v3.enums.MetricDescriptor.ValueType.INT64)
+            metric_pb2.MetricDescriptor.ValueType.INT64)
 
-        self.assertIsInstance(sd_md, monitoring_v3.types.MetricDescriptor)
+        self.assertIsInstance(sd_md, metric_pb2.MetricDescriptor)
         exporter.client.create_metric_descriptor.assert_not_called()
 
     def test_get_metric_descriptor_bad_type(self):
@@ -530,9 +531,13 @@ class TestStackdriverStatsExporter(unittest.TestCase):
         exporter.export_metrics([mm])
 
         self.assertEqual(exporter.client.create_time_series.call_count, 1)
-        sd_args = exporter.client.create_time_series.call_args[0][1]
+        sd_args = exporter.client.create_time_series.call_args.kwargs[
+            'time_series'
+        ]
         self.assertEqual(len(sd_args), 1)
-        [sd_arg] = exporter.client.create_time_series.call_args[0][1]
+        [sd_arg] = exporter.client.create_time_series.call_args.kwargs[
+            'time_series'
+        ]
         self.assertEqual(sd_arg.points[0].value.int64_value, 123)
 
 
@@ -654,21 +659,25 @@ class TestAsyncStatsExport(unittest.TestCase):
             exporter.client.create_metric_descriptor.call_count,
             1)
         md_call_arg =\
-            exporter.client.create_metric_descriptor.call_args[0][1]
+            exporter.client.create_metric_descriptor.call_args.kwargs[
+                'metric_descriptor'
+            ]
         self.assertEqual(
             md_call_arg.metric_kind,
-            monitoring_v3.enums.MetricDescriptor.MetricKind.GAUGE
+            metric_pb2.MetricDescriptor.MetricKind.GAUGE
         )
         self.assertEqual(
             md_call_arg.value_type,
-            monitoring_v3.enums.MetricDescriptor.ValueType.INT64
+            metric_pb2.MetricDescriptor.ValueType.INT64
         )
 
         exporter.client.create_time_series.assert_called()
         self.assertEqual(
             exporter.client.create_time_series.call_count,
             1)
-        ts_call_arg = exporter.client.create_time_series.call_args[0][1]
+        ts_call_arg = exporter.client.create_time_series.call_args.kwargs[
+            'time_series'
+        ]
         self.assertEqual(len(ts_call_arg), 1)
         self.assertEqual(len(ts_call_arg[0].points), 1)
         self.assertEqual(ts_call_arg[0].points[0].value.int64_value, 123)
@@ -812,6 +821,9 @@ class TestCreateTimeseries(unittest.TestCase):
         v_data = measure_map.measure_to_view_map.get_view(
             VIDEO_SIZE_VIEW_NAME, None)
 
+        v_data._start_time = (
+            TEST_TIME - timedelta(minutes=1)
+        ).strftime(stackdriver.EPOCH_PATTERN)
         v_data = metric_utils.view_data_to_metric(v_data, TEST_TIME)
 
         time_series_list = exporter.create_time_series_list(v_data)
@@ -839,6 +851,15 @@ class TestCreateTimeseries(unittest.TestCase):
             bucket_counts=[0, 0, 1, 0]
         )
         self.assertEqual(value.distribution_value, expected_distb)
+
+        start_time_pb = (
+            time_series.points[0].interval.start_time.timestamp_pb()
+        )
+        end_time_pb = time_series.points[0].interval.end_time.timestamp_pb()
+        self.assertEqual(start_time_pb.seconds, 1545699663)
+        self.assertEqual(start_time_pb.nanos, 4053)
+        self.assertEqual(end_time_pb.seconds, 1545699723)
+        self.assertEqual(end_time_pb.nanos, 4053)
 
     @mock.patch('opencensus.ext.stackdriver.stats_exporter.'
                 'monitored_resource.get_instance')
@@ -1024,7 +1045,7 @@ class TestCreateTimeseries(unittest.TestCase):
         self.assertIsNotNone(time_series.resource)
 
         self.assertEqual(len(time_series.points), 1)
-        expected_value = monitoring_v3.types.TypedValue()
+        expected_value = monitoring_v3.TypedValue()
         # TODO: #565
         expected_value.double_value = 25.0 * MiB
         self.assertEqual(time_series.points[0].value, expected_value)
@@ -1066,7 +1087,7 @@ class TestCreateTimeseries(unittest.TestCase):
         self.assertIsNotNone(time_series.resource)
 
         self.assertEqual(len(time_series.points), 1)
-        expected_value = monitoring_v3.types.TypedValue()
+        expected_value = monitoring_v3.TypedValue()
         expected_value.int64_value = 3
         self.assertEqual(time_series.points[0].value, expected_value)
 
@@ -1107,7 +1128,7 @@ class TestCreateTimeseries(unittest.TestCase):
         self.assertIsNotNone(time_series.resource)
 
         self.assertEqual(len(time_series.points), 1)
-        expected_value = monitoring_v3.types.TypedValue()
+        expected_value = monitoring_v3.TypedValue()
         expected_value.double_value = 25.7 * MiB
         self.assertEqual(time_series.points[0].value, expected_value)
 
@@ -1163,7 +1184,7 @@ class TestCreateTimeseries(unittest.TestCase):
         self.assertIsNotNone(time_series.resource)
 
         self.assertEqual(len(time_series.points), 1)
-        expected_value = monitoring_v3.types.TypedValue()
+        expected_value = monitoring_v3.TypedValue()
         expected_value.double_value = 2.2 + 25 * MiB
         self.assertEqual(time_series.points[0].value, expected_value)
 
@@ -1290,7 +1311,7 @@ class TestCreateTimeseries(unittest.TestCase):
         self.assertIsNotNone(time_series.resource)
 
         self.assertEqual(len(time_series.points), 1)
-        expected_value = monitoring_v3.types.TypedValue()
+        expected_value = monitoring_v3.TypedValue()
         # TODO: #565
         expected_value.double_value = 25.0 * MiB
         self.assertEqual(time_series.points[0].value, expected_value)

@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Added missing google-cloud-core dependency
+  [#1049](https://github.com/census-instrumentation/opencensus-python/pull/1049)
+
 ## 0.1.2
 Released 2019-04-24
 
