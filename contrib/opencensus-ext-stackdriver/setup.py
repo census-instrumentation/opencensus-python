@@ -40,7 +40,7 @@ setup(
         'google-cloud-monitoring ~= 2.0',
         'google-cloud-trace >= 0.20.0, < 1.0.0',
         'rsa <= 4.0; python_version<="3.4"',
-        'opencensus >= 0.7.13, < 1.0.0',
+        'opencensus >= 0.8.dev0, < 1.0.0',
     ],
     python_requires=">=3.6",
     extras_require={},
