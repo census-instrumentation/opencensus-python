@@ -53,8 +53,9 @@ def trace_integration(tracer=None):
         httplib.HTTPConnection, HTTPLIB_RESPONSE_FUNC)
     wrapped_response = wrap_httplib_response(response_func)
     setattr(httplib.HTTPConnection, response_func.__name__, wrapped_response)
-    
+
     execution_context.add_integration(_Integrations.HTTP_LIB)
+
 
 def wrap_httplib_request(request_func):
     """Wrap the httplib request function to trace. Create a new span and update

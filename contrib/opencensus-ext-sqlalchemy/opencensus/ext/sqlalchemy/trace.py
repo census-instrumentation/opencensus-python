@@ -34,6 +34,7 @@ def trace_integration(tracer=None):
     trace_engine(engine.Engine)
     execution_context.add_integration(_Integrations.SQLALCHEMY)
 
+
 def trace_engine(engine):
     """Register the event before cursor execute and after cursor execute
     to the event listner of the engine.
