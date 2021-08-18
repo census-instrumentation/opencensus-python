@@ -22,9 +22,9 @@ from opencensus.trace import (
     exceptions_status,
     execution_context,
 )
+from opencensus.trace import integrations
 from opencensus.trace import span as span_module
 from opencensus.trace import utils
-from opencensus.trace.integrations import _Integrations
 
 try:
     from urllib.parse import urlparse
@@ -63,7 +63,8 @@ def trace_integration(tracer=None):
     # https://github.com/psf/requests/commit/4e5c4a6ab7bb0195dececdd19bb8505b872fe120)
     wrapt.wrap_function_wrapper(
         MODULE_NAME, 'Session.request', wrap_session_request)
-    execution_context.add_integration(_Integrations.REQUESTS)
+    # pylint: disable=protected-access
+    integrations.add_integration(integrations._Integrations.REQUESTS)
 
 
 def wrap_session_request(wrapped, instance, args, kwargs):

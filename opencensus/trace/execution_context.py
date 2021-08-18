@@ -19,19 +19,6 @@ _attrs_slot = RuntimeContext.register_slot('attrs', lambda: {})
 _current_span_slot = RuntimeContext.register_slot('current_span', None)
 _exporter_slot = RuntimeContext.register_slot('is_exporter', False)
 _tracer_slot = RuntimeContext.register_slot('tracer', noop_tracer.NoopTracer())
-_integrations_slot = RuntimeContext.register_slot('integrations', 0)
-
-
-def get_integrations():
-    return RuntimeContext.integrations
-
-
-def add_integration(integration):
-    RuntimeContext.integrations |= integration
-
-
-def remove_intregration(integration):
-    RuntimeContext.integrations &= integration
 
 
 def is_exporter():

@@ -12,6 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import threading
+
+
+_INTEGRATIONS_BIT_MASK = 0
+_INTEGRATIONS_LOCK = threading.Lock()
+
 class _Integrations:
     NONE = 0
     DJANGO = 1
@@ -26,3 +32,19 @@ class _Integrations:
     PYRAMID = 512
     REQUESTS = 1024
     SQLALCHEMY = 2056
+
+
+def get_integrations():
+    return _INTEGRATIONS_BIT_MASK
+
+
+def add_integration(integration):
+    with _INTEGRATIONS_LOCK:
+        global _INTEGRATIONS_BIT_MASK  # pylint: disable=global-statement
+        _INTEGRATIONS_BIT_MASK |= integration
+
+
+def remove_intregration(integration):
+    with _INTEGRATIONS_LOCK:
+        global _INTEGRATIONS_BIT_MASK  # pylint: disable=global-statement
+        _INTEGRATIONS_BIT_MASK &= ~integration

@@ -15,8 +15,7 @@
 import logging
 
 from opencensus.log import TraceLogger
-from opencensus.trace import execution_context
-from opencensus.trace.integrations import _Integrations
+from opencensus.trace import integrations
 
 
 def trace_integration(tracer=None):
@@ -27,4 +26,5 @@ def trace_integration(tracer=None):
     context.
     """
     logging.setLoggerClass(TraceLogger)
-    execution_context.add_integration(_Integrations.LOGGING)
+    # pylint: disable=protected-access
+    integrations.add_integration(integrations._Integrations.LOGGING)

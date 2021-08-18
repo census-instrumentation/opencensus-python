@@ -32,11 +32,11 @@ from opencensus.trace import (
     print_exporter,
     samplers,
 )
+from opencensus.trace import integrations
 from opencensus.trace import span as span_module
 from opencensus.trace import status as status_module
 from opencensus.trace import tracer as tracer_module
 from opencensus.trace import utils
-from opencensus.trace.integrations import _Integrations
 from opencensus.trace.propagation import trace_context_http_header_format
 
 HTTP_HOST = attributes_helper.COMMON_ATTRIBUTES['HTTP_HOST']
@@ -173,7 +173,8 @@ class OpencensusMiddleware(MiddlewareMixin):
         if django.VERSION >= (2,):  # pragma: NO COVER
             connection.execute_wrappers.append(_trace_db_call)
 
-        execution_context.add_integration(_Integrations.DJANGO)
+        # pylint: disable=protected-access
+        integrations.add_integration(integrations._Integrations.DJANGO)
 
     def process_request(self, request):
         """Called on each request, before Django decides which view to execute.
