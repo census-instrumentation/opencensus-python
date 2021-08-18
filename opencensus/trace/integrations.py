@@ -12,19 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import logging
-
-from opencensus.log import TraceLogger
-from opencensus.trace import execution_context
-from opencensus.trace.integrations import _Integrations
-
-
-def trace_integration(tracer=None):
-    """Replace the global default logging class with `TraceLogger`.
-
-    Loggers created after the integration will produce `LogRecord`s
-    with extra traceId, spanId, and traceSampled attributes from the opencensus
-    context.
-    """
-    logging.setLoggerClass(TraceLogger)
-    execution_context.add_integration(_Integrations.LOGGING)
+class _Integrations:
+    NONE = 0
+    DJANGO = 1
+    FLASK = 2
+    GOOGLE_CLOUD = 4
+    HTTP_LIB = 8
+    LOGGING = 16
+    MYSQL = 32
+    POSTGRESQL = 64
+    PYMONGO = 128
+    PYMYSQL = 256
+    PYRAMID = 512
+    REQUESTS = 1024
+    SQLALCHEMY = 2056

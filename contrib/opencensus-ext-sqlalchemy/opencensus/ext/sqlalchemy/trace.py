@@ -18,6 +18,7 @@ from sqlalchemy import engine, event
 
 from opencensus.trace import execution_context
 from opencensus.trace import span as span_module
+from opencensus.trace.integrations import _Integrations
 
 log = logging.getLogger(__name__)
 
@@ -31,7 +32,7 @@ def trace_integration(tracer=None):
     """
     log.info('Integrated module: {}'.format(MODULE_NAME))
     trace_engine(engine.Engine)
-
+    execution_context.add_integration(_Integrations.SQLALCHEMY)
 
 def trace_engine(engine):
     """Register the event before cursor execute and after cursor execute

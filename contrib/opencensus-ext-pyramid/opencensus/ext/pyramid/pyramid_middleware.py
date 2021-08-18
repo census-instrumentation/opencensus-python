@@ -19,6 +19,7 @@ from opencensus.trace import attributes_helper, execution_context
 from opencensus.trace import span as span_module
 from opencensus.trace import tracer as tracer_module
 from opencensus.trace import utils
+from opencensus.trace.integrations import _Integrations
 
 HTTP_HOST = attributes_helper.COMMON_ATTRIBUTES['HTTP_HOST']
 HTTP_METHOD = attributes_helper.COMMON_ATTRIBUTES['HTTP_METHOD']
@@ -63,6 +64,8 @@ class OpenCensusTweenFactory(object):
         self.propagator = settings.PROPAGATOR
 
         self._excludelist_paths = settings.EXCLUDELIST_PATHS
+
+        execution_context.add_integration(_Integrations.PYRAMID)
 
     def __call__(self, request):
         self._before_request(request)

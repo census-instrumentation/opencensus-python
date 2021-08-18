@@ -20,6 +20,7 @@ from pymongo import monitoring
 from opencensus.trace import execution_context
 from opencensus.trace import span as span_module
 from opencensus.trace import status as status_module
+from opencensus.trace.integrations import _Integrations
 
 log = logging.getLogger(__name__)
 
@@ -32,6 +33,7 @@ def trace_integration(tracer=None):
     """Integrate with pymongo to trace it using event listener."""
     log.info('Integrated module: {}'.format(MODULE_NAME))
     monitoring.register(MongoCommandListener(tracer=tracer))
+    execution_context.add_integration(_Integrations.PYMONGO)
 
 
 class MongoCommandListener(monitoring.CommandListener):
