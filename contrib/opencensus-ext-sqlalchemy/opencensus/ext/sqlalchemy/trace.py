@@ -16,8 +16,7 @@ import logging
 
 from sqlalchemy import engine, event
 
-from opencensus.trace import execution_context
-from opencensus.trace import integrations
+from opencensus.trace import execution_context, integrations
 from opencensus.trace import span as span_module
 
 log = logging.getLogger(__name__)

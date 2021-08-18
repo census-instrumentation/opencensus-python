@@ -19,8 +19,7 @@ import psycopg2
 from psycopg2 import connect as pg_connect
 from psycopg2.extensions import cursor as pgcursor
 
-from opencensus.trace import execution_context
-from opencensus.trace import integrations
+from opencensus.trace import execution_context, integrations
 from opencensus.trace import span as span_module
 
 log = logging.getLogger(__name__)

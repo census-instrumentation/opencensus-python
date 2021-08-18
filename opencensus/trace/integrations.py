@@ -14,7 +14,6 @@
 
 import threading
 
-
 _INTEGRATIONS_BIT_MASK = 0
 _INTEGRATIONS_LOCK = threading.Lock()
 

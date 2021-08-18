@@ -24,10 +24,10 @@ from opencensus.common import configuration
 from opencensus.trace import (
     attributes_helper,
     execution_context,
+    integrations,
     print_exporter,
     samplers,
 )
-from opencensus.trace import integrations
 from opencensus.trace import span as span_module
 from opencensus.trace import stack_trace, status
 from opencensus.trace import tracer as tracer_module
