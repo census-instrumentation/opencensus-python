@@ -15,7 +15,7 @@
 import logging
 import sys
 
-from opencensus.trace import attributes_helper, execution_context
+from opencensus.trace import attributes_helper, execution_context, integrations
 from opencensus.trace import span as span_module
 from opencensus.trace import utils
 
@@ -52,6 +52,9 @@ def trace_integration(tracer=None):
         httplib.HTTPConnection, HTTPLIB_RESPONSE_FUNC)
     wrapped_response = wrap_httplib_response(response_func)
     setattr(httplib.HTTPConnection, response_func.__name__, wrapped_response)
+
+    # pylint: disable=protected-access
+    integrations.add_integration(integrations._Integrations.HTTP_LIB)
 
 
 def wrap_httplib_request(request_func):
