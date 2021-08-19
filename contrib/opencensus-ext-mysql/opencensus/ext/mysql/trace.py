@@ -18,6 +18,7 @@ import logging
 import mysql.connector
 
 from opencensus.ext.dbapi import trace
+from opencensus.trace import integrations
 
 MODULE_NAME = 'mysql'
 
@@ -31,3 +32,5 @@ def trace_integration(tracer=None):
     conn_module = inspect.getmodule(conn_func)
     wrapped = trace.wrap_conn(conn_func)
     setattr(conn_module, CONN_WRAP_METHOD, wrapped)
+    # pylint: disable=protected-access
+    integrations.add_integration(integrations._Integrations.MYSQL)

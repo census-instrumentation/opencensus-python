@@ -17,7 +17,7 @@ import logging
 from google.rpc import code_pb2
 from pymongo import monitoring
 
-from opencensus.trace import execution_context
+from opencensus.trace import execution_context, integrations
 from opencensus.trace import span as span_module
 from opencensus.trace import status as status_module
 
@@ -32,6 +32,8 @@ def trace_integration(tracer=None):
     """Integrate with pymongo to trace it using event listener."""
     log.info('Integrated module: {}'.format(MODULE_NAME))
     monitoring.register(MongoCommandListener(tracer=tracer))
+    # pylint: disable=protected-access
+    integrations.add_integration(integrations._Integrations.PYMONGO)
 
 
 class MongoCommandListener(monitoring.CommandListener):
