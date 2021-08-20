@@ -10,7 +10,7 @@
 ([#1059](https://github.com/census-instrumentation/opencensus-python/pull/1059))
 - Implement network metrics via Statsbeat - Others
 ([#1062](https://github.com/census-instrumentation/opencensus-python/pull/1062))
-- Implement feature metrics via Statsbeat
+- Implement feature and instrumentation metrics via Statsbeat
 ([#1063](https://github.com/census-instrumentation/opencensus-python/pull/1063))
 
 ## 1.0.8

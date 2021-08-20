@@ -45,6 +45,7 @@ from opencensus.metrics.export.gauge import (
     DerivedLongGauge,
     LongGauge,
 )
+from opencensus.trace import integrations
 
 _OPTIONS = Options(
     instrumentation_key="ikey",
@@ -187,9 +188,15 @@ class TestStatsbeatMetrics(unittest.TestCase):
                 LongGauge,
             )
         )
+        self.assertTrue(
+            isinstance(
+                metric._instrumentation_metric,
+                LongGauge,
+            )
+        )
         attach_mock.assert_called_once()
         network_mock.assert_called()
-        feature_mock.assert_called_once()
+        self.assertEqual(feature_mock.call_count, 2)
         self.assertEqual(network_mock.call_count, 6)
 
     def test_get_attach_properties(self):
@@ -250,12 +257,16 @@ class TestStatsbeatMetrics(unittest.TestCase):
         attach_metric_mock.return_value = "attach"
         feature_metric_mock = mock.Mock()
         feature_metric_mock.return_value = "feature"
+        instr_metric_mock = mock.Mock()
+        instr_metric_mock.return_value = "instr"
         metric._get_attach_metric = attach_metric_mock
         metric._get_feature_metric = feature_metric_mock
+        metric._get_instrumentation_metric = instr_metric_mock
         metrics = metric.get_initial_metrics()
         attach_metric_mock.assert_called_once()
         feature_metric_mock.assert_called_once()
-        self.assertEqual(metrics, ["attach", "feature"])
+        instr_metric_mock.assert_called_once()
+        self.assertEqual(metrics, ["attach", "feature", "instr"])
 
     def test_statsbeat_metric_get_metrics(self):
         # pylint: disable=protected-access
@@ -304,6 +315,25 @@ class TestStatsbeatMetrics(unittest.TestCase):
         self.assertEqual(properties[7].value, "python")
         self.assertEqual(
             properties[8].value, ext_version)  # noqa: E501
+
+    def test_get_instrumentation_metric(self):
+        original_integrations = integrations._INTEGRATIONS_BIT_MASK
+        integrations._INTEGRATIONS_BIT_MASK = 1024
+        stats = _StatsbeatMetrics(_OPTIONS)
+        metric = stats._get_instrumentation_metric()
+        properties = metric._time_series[0]._label_values
+        self.assertEqual(len(properties), 9)
+        self.assertEqual(properties[0].value, _RP_NAMES[3])
+        self.assertEqual(properties[1].value, "sdk")
+        self.assertEqual(properties[2].value, "ikey")
+        self.assertEqual(properties[3].value, platform.python_version())
+        self.assertEqual(properties[4].value, _FEATURE_TYPES[1])
+        self.assertEqual(properties[5].value, 1024)
+        self.assertEqual(properties[6].value, platform.system())
+        self.assertEqual(properties[7].value, "python")
+        self.assertEqual(
+            properties[8].value, ext_version)  # noqa: E501
+        integrations._INTEGRATIONS_BIT_MASK = original_integrations
 
     @mock.patch(
         'opencensus.ext.azure.metrics_exporter.statsbeat_metrics.statsbeat._get_exception_count_value')  # noqa: E501

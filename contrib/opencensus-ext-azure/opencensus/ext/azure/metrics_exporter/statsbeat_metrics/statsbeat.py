@@ -30,6 +30,7 @@ from opencensus.metrics.export.gauge import (
 )
 from opencensus.metrics.label_key import LabelKey
 from opencensus.metrics.label_value import LabelValue
+from opencensus.trace.integrations import get_integrations
 
 _AIMS_URI = "http://169.254.169.254/metadata/instance/compute"
 _AIMS_API_VERSION = "api-version=2017-12-01"
@@ -241,8 +242,15 @@ class _StatsbeatMetrics:
         # feature/instrumentation metrics
         # metrics related to what features and instrumentations are enabled
         self._feature_metric = LongGauge(
-            _ATTACH_METRIC_NAME,
-            'Statsbeat metric related to features and instrumentations enabled',  # noqa: E501
+            _FEATURE_METRIC_NAME,
+            'Statsbeat metric related to features enabled',  # noqa: E501
+            'count',
+            _get_feature_properties(),
+        )
+        # Instrumentation metric uses same name/properties as feature
+        self._instrumentation_metric = LongGauge(
+            _FEATURE_METRIC_NAME,
+            'Statsbeat metric related to instrumentations enabled',  # noqa: E501
             'count',
             _get_feature_properties(),
         )
@@ -258,6 +266,10 @@ class _StatsbeatMetrics:
             feature_metric = self._get_feature_metric()
             if feature_metric:
                 stats_metrics.append(feature_metric)
+        if self._instrumentation_metric:
+            instr_metric = self._get_instrumentation_metric()
+            if instr_metric:
+                stats_metrics.append(instr_metric)
         return stats_metrics
 
     # Metrics sent every statsbeat interval
@@ -298,6 +310,13 @@ class _StatsbeatMetrics:
         properties.insert(4, LabelValue(_FEATURE_TYPES[0]))  # type
         self._feature_metric.get_or_create_time_series(properties)
         return self._feature_metric.get_metric(datetime.datetime.utcnow())
+
+    def _get_instrumentation_metric(self):
+        properties = self._get_common_properties()
+        properties.insert(4, LabelValue(get_integrations()))  # instr long
+        properties.insert(4, LabelValue(_FEATURE_TYPES[1]))  # type
+        self._instrumentation_metric.get_or_create_time_series(properties)
+        return self._instrumentation_metric.get_metric(datetime.datetime.utcnow())
 
     def _get_attach_metric(self):
         properties = []
