@@ -20,6 +20,7 @@ from google.cloud import _helpers
 
 from opencensus.ext.grpc.client_interceptor import OpenCensusClientInterceptor
 from opencensus.ext.requests.trace import trace_integration as trace_requests
+from opencensus.trace import integrations
 
 log = logging.getLogger(__name__)
 
@@ -41,6 +42,9 @@ def trace_integration(tracer=None):
 
     # Integrate with HTTP
     trace_http(tracer)
+
+    # pylint: disable=protected-access
+    integrations.add_integration(integrations._Integrations.GOOGLE_CLOUD)
 
 
 def trace_grpc(tracer=None):

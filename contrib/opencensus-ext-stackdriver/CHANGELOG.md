@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+## 0.8.0
+Released 2021-08-16
+
+- Upgrade google-cloud-monitoring dep to v2.X, update usage
+  [#1060](https://github.com/census-instrumentation/opencensus-python/pull/1060)
 - Drop python <3.6 in opencensus-ext-stackdriver
   [#1056](https://github.com/census-instrumentation/opencensus-python/pull/1056)
 
