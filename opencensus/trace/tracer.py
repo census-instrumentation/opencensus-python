@@ -97,7 +97,7 @@ class Tracer(object):
         """End all spans."""
         self.tracer.finish()
 
-    def span(self, name='span'):
+    def span(self, name='span',timestamps=None):
         """Create a new span with the trace using the context information.
 
         :type name: str
@@ -106,7 +106,10 @@ class Tracer(object):
         :rtype: :class:`~opencensus.trace.span.Span`
         :returns: The Span object.
         """
-        return self.tracer.span(name)
+        if timestamps is None:
+            return self.tracer.span(name)
+        else:
+            return self.tracer.span(name,timestamps)
 
     def start_span(self, name='span'):
         return self.tracer.start_span(name)

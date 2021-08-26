@@ -18,7 +18,8 @@ except ImportError:
     from opencensus.common.backports import WeakMethod
 
 import calendar
-import datetime
+import datetime as dt
+from datetime import datetime
 import weakref
 
 UTF8 = 'utf-8'
@@ -72,7 +73,9 @@ def check_str_length(str_to_check, limit=MAX_LENGTH):
 def to_iso_str(ts=None):
     """Get an ISO 8601 string for a UTC datetime."""
     if ts is None:
-        ts = datetime.datetime.utcnow()
+        now = datetime.utcnow()
+        ts = int(datetime.timestamp(now)*1000000)
+        ts = datetime.fromtimestamp(int(ts)/1000000.0)
     return ts.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
 
 
@@ -81,7 +84,7 @@ def timestamp_to_microseconds(timestamp):
     :param timestamp
     :return time in microseconds
     """
-    timestamp_str = datetime.datetime.strptime(timestamp, ISO_DATETIME_REGEX)
+    timestamp_str = dt.datetime.strptime(timestamp, ISO_DATETIME_REGEX)
     epoch_time_secs = calendar.timegm(timestamp_str.timetuple())
     epoch_time_mus = epoch_time_secs * 1e6 + timestamp_str.microsecond
     return epoch_time_mus
