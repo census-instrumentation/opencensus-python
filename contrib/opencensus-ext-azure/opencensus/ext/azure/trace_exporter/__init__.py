@@ -59,7 +59,7 @@ class AzureExporter(BaseExporter, ProcessorMixin, TransportMixin):
     """
 
     def __init__(self, **options):
-        self.options = Options(**options)
+        super(AzureExporter, self).__init__(**options)
         utils.validate_instrumentation_key(self.options.instrumentation_key)
         self.storage = None
         if self.options.enable_local_storage:
@@ -71,7 +71,6 @@ class AzureExporter(BaseExporter, ProcessorMixin, TransportMixin):
                 source=self.__class__.__name__,
             )
         self._telemetry_processors = []
-        super(AzureExporter, self).__init__(**options)
         atexit.register(self._stop, self.options.grace_period)
         # start statsbeat on exporter instantiation
         if self.options.enable_stats_metrics:

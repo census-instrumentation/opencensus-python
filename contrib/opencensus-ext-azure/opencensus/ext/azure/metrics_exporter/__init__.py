@@ -40,7 +40,7 @@ class MetricsExporter(TransportMixin, ProcessorMixin):
     """Metrics exporter for Microsoft Azure Monitor."""
 
     def __init__(self, is_stats=False, **options):
-        self.options = Options(**options)
+        super(MetricsExporter, self).__init__(**options)
         self._is_stats = is_stats
         utils.validate_instrumentation_key(self.options.instrumentation_key)
         if self.options.max_batch_size <= 0:
@@ -59,7 +59,6 @@ class MetricsExporter(TransportMixin, ProcessorMixin):
             )
         self._atexit_handler = atexit.register(self.shutdown)
         self.exporter_thread = None
-        super(MetricsExporter, self).__init__()
 
     def export_metrics(self, metrics):
         envelopes = []

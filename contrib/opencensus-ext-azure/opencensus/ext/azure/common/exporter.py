@@ -23,16 +23,16 @@ from opencensus.trace import execution_context
 
 class BaseExporter(object):
     def __init__(self, **options):
-        options = Options(**options)
-        self.export_interval = options.export_interval
-        self.max_batch_size = options.max_batch_size
+        self.options = Options(**options)
+        self.export_interval = self.options.export_interval
+        self.max_batch_size = self.options.max_batch_size
         # TODO: queue should be moved to tracer
         # too much refactor work, leave to the next PR
-        self._queue = Queue(capacity=options.queue_capacity)
+        self._queue = Queue(capacity=self.options.queue_capacity)
         # TODO: worker should not be created in the base exporter
         self._worker = Worker(self._queue, self)
         self._worker.start()
-        atexit.register(self._worker.stop, options.grace_period)
+        atexit.register(self._worker.stop, self.options.grace_period)
 
     # Ideally we don't want to have `emit`
     # Exporter will have one public method - `export`, which is a blocking

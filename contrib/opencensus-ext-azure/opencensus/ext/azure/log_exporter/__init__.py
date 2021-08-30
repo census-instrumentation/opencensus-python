@@ -41,8 +41,7 @@ __all__ = ['AzureEventHandler', 'AzureLogHandler']
 class BaseLogHandler(logging.Handler):
 
     def __init__(self, **options):
-        super(BaseLogHandler, self).__init__()
-        self.options = Options(**options)
+        super(BaseLogHandler, self).__init__(**options)
         utils.validate_instrumentation_key(self.options.instrumentation_key)
         if not 0 <= self.options.logging_sampling_rate <= 1:
             raise ValueError('Sampling must be in the range: [0,1]')
