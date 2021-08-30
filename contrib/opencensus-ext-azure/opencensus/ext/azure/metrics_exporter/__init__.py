@@ -40,7 +40,8 @@ class MetricsExporter(TransportMixin, ProcessorMixin):
     """Metrics exporter for Microsoft Azure Monitor."""
 
     def __init__(self, is_stats=False, **options):
-        super(MetricsExporter, self).__init__(**options)
+        super(MetricsExporter, self).__init__()
+        self.options = Options(**options)
         self._is_stats = is_stats
         utils.validate_instrumentation_key(self.options.instrumentation_key)
         if self.options.max_batch_size <= 0:
