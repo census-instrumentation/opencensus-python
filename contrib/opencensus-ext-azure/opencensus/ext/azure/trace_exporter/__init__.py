@@ -17,7 +17,7 @@ import json
 import logging
 
 from opencensus.common.schedule import QueueExitEvent
-from opencensus.ext.azure.common import Options, utils
+from opencensus.ext.azure.common import utils
 from opencensus.ext.azure.common.exporter import BaseExporter
 from opencensus.ext.azure.common.processor import ProcessorMixin
 from opencensus.ext.azure.common.protocol import (
@@ -60,7 +60,6 @@ class AzureExporter(BaseExporter, ProcessorMixin, TransportMixin):
 
     def __init__(self, **options):
         super(AzureExporter, self).__init__(**options)
-        utils.validate_instrumentation_key(self.options.instrumentation_key)
         self.storage = None
         if self.options.enable_local_storage:
             self.storage = LocalFileStorage(

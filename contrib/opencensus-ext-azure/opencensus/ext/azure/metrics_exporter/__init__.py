@@ -42,8 +42,8 @@ class MetricsExporter(TransportMixin, ProcessorMixin):
     def __init__(self, is_stats=False, **options):
         super(MetricsExporter, self).__init__()
         self.options = Options(**options)
-        self._is_stats = is_stats
         utils.validate_instrumentation_key(self.options.instrumentation_key)
+        self._is_stats = is_stats
         if self.options.max_batch_size <= 0:
             raise ValueError('Max batch size must be at least 1.')
         self.export_interval = self.options.export_interval

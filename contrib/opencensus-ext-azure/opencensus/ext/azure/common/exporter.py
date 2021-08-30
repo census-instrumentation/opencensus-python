@@ -17,13 +17,14 @@ import threading
 import time
 
 from opencensus.common.schedule import Queue, QueueEvent
-from opencensus.ext.azure.common import Options
+from opencensus.ext.azure.common import Options, utils
 from opencensus.trace import execution_context
 
 
 class BaseExporter(object):
     def __init__(self, **options):
         self.options = Options(**options)
+        utils.validate_instrumentation_key(self.options.instrumentation_key)
         self.export_interval = self.options.export_interval
         self.max_batch_size = self.options.max_batch_size
         # TODO: queue should be moved to tracer
