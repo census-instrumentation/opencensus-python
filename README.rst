@@ -34,7 +34,7 @@ OpenCensus.
 .. _API Documentation: https://opencensus.io/api/python/trace/usage.html
 
 --------
- Tracing
+ Tracing 
 --------
 
 Installation & basic usage
