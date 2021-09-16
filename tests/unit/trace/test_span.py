@@ -17,7 +17,7 @@ import unittest
 from collections import OrderedDict
 
 import mock
-from google.rpc import code_pb2
+from opencensus.trace import code as code_pb2
 
 from opencensus.common import utils
 from opencensus.trace.span import BoundedDict, BoundedList

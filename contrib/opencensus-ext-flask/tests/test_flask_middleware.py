@@ -19,7 +19,7 @@ import unittest
 
 import flask
 import mock
-from google.rpc import code_pb2
+from opencensus.trace import code as code_pb2
 from werkzeug.exceptions import NotFound
 
 from opencensus.ext.flask import flask_middleware

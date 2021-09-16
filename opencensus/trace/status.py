@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from google.rpc import code_pb2
+from opencensus.trace import code as code_pb2
 
 
 class Status(object):
@@ -21,7 +21,8 @@ class Status(object):
     It is used by gRPC.
 
     :type code: int
-    :param code: An enum value of :class: `~google.rpc.Code`.
+    :param code: An enum value of :class: `~google.rpc.Code`. Also provided by
+        opencensus.trace.code module to avoid protobuf dependency
 
     :type message: str
     :param message: A developer-facing error message, should be in English.

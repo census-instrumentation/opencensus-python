@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from google.rpc import code_pb2
-
+from opencensus.trace import code as code_pb2
 from opencensus.trace.status import Status
 
 CANCELLED = Status(code_pb2.CANCELLED)

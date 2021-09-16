@@ -14,7 +14,7 @@
 
 import unittest
 
-from google.rpc import code_pb2
+from opencensus.trace import code as code_pb2
 
 from opencensus.trace import status as status_module
 

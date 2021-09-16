@@ -23,11 +23,11 @@ import django
 import django.conf
 from django.db import connection
 from django.utils.deprecation import MiddlewareMixin
-from google.rpc import code_pb2
 
 from opencensus.common import configuration
+from opencensus.trace import attributes_helper
+from opencensus.trace import code as code_pb2
 from opencensus.trace import (
-    attributes_helper,
     execution_context,
     integrations,
     print_exporter,

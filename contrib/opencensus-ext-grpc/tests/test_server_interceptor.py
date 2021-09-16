@@ -15,7 +15,7 @@
 import unittest
 
 import mock
-from google.rpc import code_pb2
+from opencensus.trace import code as code_pb2
 
 from opencensus.ext.grpc import server_interceptor
 from opencensus.ext.grpc import utils as grpc_utils
