@@ -43,7 +43,7 @@ setup(
     long_description=open('README.rst').read(),
     install_requires=[
         'opencensus-context == 0.2.dev0',
-        'google-api-core >= 1.0.0, < 2.0.0',
+        'google-api-core >= 1.0.0, <= 1.31.1',
     ],
     extras_require={},
     license='Apache-2.0',
