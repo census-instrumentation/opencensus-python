@@ -197,6 +197,8 @@ class TestStatsbeatMetrics(unittest.TestCase):
         attach_mock.assert_called_once()
         network_mock.assert_called()
         self.assertEqual(feature_mock.call_count, 2)
+        attach_mock.assert_called_once()
+        network_mock.assert_called()
         self.assertEqual(network_mock.call_count, 6)
 
     def test_get_attach_properties(self):

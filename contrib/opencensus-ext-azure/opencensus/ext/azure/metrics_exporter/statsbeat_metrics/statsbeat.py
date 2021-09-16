@@ -218,7 +218,7 @@ class _StatsbeatMetrics:
         self._network_metrics[_get_average_duration_value] = DerivedDoubleGauge(  # noqa: E501
             _REQ_DURATION_NAME,
             'Statsbeat metric tracking average request duration',
-            'duration',
+            'count',
             _get_network_properties(),
         )
         self._network_metrics[_get_retry_count_value] = DerivedLongGauge(
@@ -361,9 +361,7 @@ class _StatsbeatMetrics:
         properties.append(LabelValue(platform.python_version()))
         properties.append(LabelValue(self._os_type or platform.system()))  # os
         properties.append(LabelValue("python"))  # language
-        # version
-        properties.append(
-            LabelValue(ext_version))
+        properties.append(LabelValue(ext_version))  # version
         return properties
 
     def _get_azure_compute_metadata(self):
