@@ -16,7 +16,7 @@ import logging
 
 from sqlalchemy import engine, event
 
-from opencensus.trace import execution_context
+from opencensus.trace import execution_context, integrations
 from opencensus.trace import span as span_module
 
 log = logging.getLogger(__name__)
@@ -31,6 +31,8 @@ def trace_integration(tracer=None):
     """
     log.info('Integrated module: {}'.format(MODULE_NAME))
     trace_engine(engine.Engine)
+    # pylint: disable=protected-access
+    integrations.add_integration(integrations._Integrations.SQLALCHEMY)
 
 
 def trace_engine(engine):

@@ -29,6 +29,7 @@ from opencensus.common import configuration
 from opencensus.trace import (
     attributes_helper,
     execution_context,
+    integrations,
     print_exporter,
     samplers,
 )
@@ -171,6 +172,9 @@ class OpencensusMiddleware(MiddlewareMixin):
 
         if django.VERSION >= (2,):  # pragma: NO COVER
             connection.execute_wrappers.append(_trace_db_call)
+
+        # pylint: disable=protected-access
+        integrations.add_integration(integrations._Integrations.DJANGO)
 
     def process_request(self, request):
         """Called on each request, before Django decides which view to execute.

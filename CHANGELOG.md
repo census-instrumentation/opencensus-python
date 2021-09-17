@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Added integration tracking functionality
+([#1065](https://github.com/census-instrumentation/opencensus-python/pull/1065))
+
 # 0.7.13
 Released 2021-05-13
 
@@ -31,7 +34,7 @@ Released 2020-06-29
 Released 2020-06-17
 
 - Hotfix for breaking change
-  ([#915](https://github.com/census-instrumentation/opencensus-python/pull/915),
+  ([#915](https://github.com/census-instrumentation/opencensus-python/pull/915))
 
 ## 0.7.8
 Released 2020-06-17

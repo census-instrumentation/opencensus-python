@@ -23,7 +23,11 @@ import requests
 
 from opencensus.ext.azure.common.transport import _requests_lock, _requests_map
 from opencensus.ext.azure.common.version import __version__ as ext_version
-from opencensus.metrics.export.gauge import DerivedLongGauge, LongGauge
+from opencensus.metrics.export.gauge import (
+    DerivedDoubleGauge,
+    DerivedLongGauge,
+    LongGauge,
+)
 from opencensus.metrics.label_key import LabelKey
 from opencensus.metrics.label_value import LabelValue
 
@@ -37,6 +41,11 @@ _DEFAULT_STATS_LONG_EXPORT_INTERVAL = 86400  # 24 hours
 
 _ATTACH_METRIC_NAME = "Attach"
 _REQ_SUC_COUNT_NAME = "Request Success Count"
+_REQ_FAIL_COUNT_NAME = "Request Failure Count"
+_REQ_DURATION_NAME = "Request Duration"
+_REQ_RETRY_NAME = "Request Retry Count"
+_REQ_THROTTLE_NAME = "Request Throttle Count"
+_REQ_EXCEPTION_NAME = "Request Exception Count"
 
 _RP_NAMES = ["appsvc", "function", "vm", "unknown"]
 
@@ -105,6 +114,52 @@ def _get_success_count_value():
         return interval_count
 
 
+def _get_failure_count_value():
+    with _requests_lock:
+        interval_count = _requests_map.get('failure', 0) \
+                    - _requests_map.get('last_failure', 0)
+        _requests_map['last_failure'] = _requests_map.get('failure', 0)
+        return interval_count
+
+
+def _get_average_duration_value():
+    with _requests_lock:
+        interval_duration = _requests_map.get('duration', 0) \
+            - _requests_map.get('last_duration', 0)
+        interval_count = _requests_map.get('count', 0) \
+            - _requests_map.get('last_count', 0)
+        _requests_map['last_duration'] = _requests_map.get('duration', 0)
+        if interval_duration > 0 and interval_count > 0:
+            result = interval_duration / interval_count
+            # Convert to milliseconds
+            return result * 1000.0
+        return 0
+
+
+def _get_retry_count_value():
+    with _requests_lock:
+        interval_count = _requests_map.get('retry', 0) \
+                    - _requests_map.get('last_retry', 0)
+        _requests_map['last_retry'] = _requests_map.get('retry', 0)
+        return interval_count
+
+
+def _get_throttle_count_value():
+    with _requests_lock:
+        interval_count = _requests_map.get('throttle', 0) \
+                    - _requests_map.get('last_throttle', 0)
+        _requests_map['last_throttle'] = _requests_map.get('throttle', 0)
+        return interval_count
+
+
+def _get_exception_count_value():
+    with _requests_lock:
+        interval_count = _requests_map.get('exception', 0) \
+                    - _requests_map.get('last_exception', 0)
+        _requests_map['last_exception'] = _requests_map.get('exception', 0)
+        return interval_count
+
+
 class _StatsbeatMetrics:
 
     def __init__(self, instrumentation_key):
@@ -129,7 +184,37 @@ class _StatsbeatMetrics:
         # Gauge function is the callback used to populate the metric value
         self._network_metrics[_get_success_count_value] = DerivedLongGauge(
             _REQ_SUC_COUNT_NAME,
-            'Request success count',
+            'Statsbeat metric tracking request success count',
+            'count',
+            _get_network_properties(),
+        )
+        self._network_metrics[_get_failure_count_value] = DerivedLongGauge(
+            _REQ_FAIL_COUNT_NAME,
+            'Statsbeat metric tracking request failure count',
+            'count',
+            _get_network_properties(),
+        )
+        self._network_metrics[_get_average_duration_value] = DerivedDoubleGauge(  # noqa: E501
+            _REQ_DURATION_NAME,
+            'Statsbeat metric tracking average request duration',
+            'count',
+            _get_network_properties(),
+        )
+        self._network_metrics[_get_retry_count_value] = DerivedLongGauge(
+            _REQ_RETRY_NAME,
+            'Statsbeat metric tracking request retry count',
+            'count',
+            _get_network_properties(),
+        )
+        self._network_metrics[_get_throttle_count_value] = DerivedLongGauge(
+            _REQ_THROTTLE_NAME,
+            'Statsbeat metric tracking request throttle count',
+            'count',
+            _get_network_properties(),
+        )
+        self._network_metrics[_get_exception_count_value] = DerivedLongGauge(
+            _REQ_EXCEPTION_NAME,
+            'Statsbeat metric tracking request exception count',
             'count',
             _get_network_properties(),
         )
