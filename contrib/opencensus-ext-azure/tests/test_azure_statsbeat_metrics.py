@@ -27,12 +27,21 @@ from opencensus.ext.azure.metrics_exporter.statsbeat_metrics.statsbeat import (
     _RP_NAMES,
     _STATS_LONG_INTERVAL_THRESHOLD,
     _get_attach_properties,
+    _get_average_duration_value,
     _get_common_properties,
+    _get_exception_count_value,
+    _get_failure_count_value,
     _get_network_properties,
+    _get_retry_count_value,
     _get_success_count_value,
+    _get_throttle_count_value,
     _StatsbeatMetrics,
 )
-from opencensus.metrics.export.gauge import DerivedLongGauge, LongGauge
+from opencensus.metrics.export.gauge import (
+    DerivedDoubleGauge,
+    DerivedLongGauge,
+    LongGauge,
+)
 
 
 class MockResponse(object):
@@ -133,8 +142,39 @@ class TestStatsbeatMetrics(unittest.TestCase):
                 DerivedLongGauge,
             )
         )
+        self.assertTrue(
+            isinstance(
+                metric._network_metrics[_get_failure_count_value],
+                DerivedLongGauge,
+            )
+        )
+        self.assertTrue(
+            isinstance(
+                metric._network_metrics[_get_average_duration_value],
+                DerivedDoubleGauge,
+            )
+        )
+        self.assertTrue(
+            isinstance(
+                metric._network_metrics[_get_retry_count_value],
+                DerivedLongGauge,
+            )
+        )
+        self.assertTrue(
+            isinstance(
+                metric._network_metrics[_get_throttle_count_value],
+                DerivedLongGauge,
+            )
+        )
+        self.assertTrue(
+            isinstance(
+                metric._network_metrics[_get_exception_count_value],
+                DerivedLongGauge,
+            )
+        )
         attach_mock.assert_called_once()
-        network_mock.assert_called_once()
+        network_mock.assert_called()
+        self.assertEqual(network_mock.call_count, 6)
 
     def test_get_attach_properties(self):
         properties = _get_attach_properties()
@@ -218,14 +258,34 @@ class TestStatsbeatMetrics(unittest.TestCase):
         self.assertEqual(metric._long_threshold_count, 2)
 
     @mock.patch(
+        'opencensus.ext.azure.metrics_exporter.statsbeat_metrics.statsbeat._get_exception_count_value')  # noqa: E501
+    @mock.patch(
+        'opencensus.ext.azure.metrics_exporter.statsbeat_metrics.statsbeat._get_throttle_count_value')  # noqa: E501
+    @mock.patch(
+        'opencensus.ext.azure.metrics_exporter.statsbeat_metrics.statsbeat._get_retry_count_value')  # noqa: E501
+    @mock.patch(
+        'opencensus.ext.azure.metrics_exporter.statsbeat_metrics.statsbeat._get_average_duration_value')  # noqa: E501
+    @mock.patch(
+        'opencensus.ext.azure.metrics_exporter.statsbeat_metrics.statsbeat._get_failure_count_value')  # noqa: E501
+    @mock.patch(
         'opencensus.ext.azure.metrics_exporter.statsbeat_metrics.statsbeat._get_success_count_value')  # noqa: E501
-    def test_get_network_metrics(self, suc_mock):
+    def test_get_network_metrics(self, mock1, mock2, mock3, mock4, mock5, mock6):  # noqa: E501
         # pylint: disable=protected-access
         stats = _StatsbeatMetrics("ikey")
-        suc_mock.return_value = 5
+        mock1.return_value = 5
+        mock2.return_value = 5
+        mock3.return_value = 5
+        mock4.return_value = 5
+        mock5.return_value = 5
+        mock6.return_value = 5
         metrics = stats._get_network_metrics()
-        self.assertEqual(len(metrics), 1)
+        self.assertEqual(len(metrics), 6)
         self.assertEqual(metrics[0]._time_series[0].points[0].value.value, 5)
+        self.assertEqual(metrics[1]._time_series[0].points[0].value.value, 5)
+        self.assertEqual(metrics[2]._time_series[0].points[0].value.value, 5)
+        self.assertEqual(metrics[3]._time_series[0].points[0].value.value, 5)
+        self.assertEqual(metrics[4]._time_series[0].points[0].value.value, 5)
+        self.assertEqual(metrics[5]._time_series[0].points[0].value.value, 5)
         for metric in metrics:
             properties = metric._time_series[0]._label_values
             self.assertEqual(len(properties), 7)
