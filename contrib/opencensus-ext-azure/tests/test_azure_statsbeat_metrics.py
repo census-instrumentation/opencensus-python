@@ -25,6 +25,7 @@ from opencensus.ext.azure.common.transport import _requests_map
 from opencensus.ext.azure.common.version import __version__ as ext_version
 from opencensus.ext.azure.metrics_exporter import statsbeat_metrics
 from opencensus.ext.azure.metrics_exporter.statsbeat_metrics.statsbeat import (
+    _ENDPOINT_TYPES,
     _FEATURE_TYPES,
     _RP_NAMES,
     _STATS_LONG_INTERVAL_THRESHOLD,
@@ -50,6 +51,7 @@ from opencensus.trace import integrations
 _OPTIONS = Options(
     instrumentation_key="ikey",
     enable_local_storage=True,
+    endpoint="test-endpoint",
 )
 
 
@@ -368,15 +370,16 @@ class TestStatsbeatMetrics(unittest.TestCase):
         self.assertEqual(metrics[5]._time_series[0].points[0].value.value, 5)
         for metric in metrics:
             properties = metric._time_series[0]._label_values
-            self.assertEqual(len(properties), 7)
+            self.assertEqual(len(properties), 9)
             self.assertEqual(properties[0].value, _RP_NAMES[3])
             self.assertEqual(properties[1].value, "sdk")
             self.assertEqual(properties[2].value, "ikey")
             self.assertEqual(properties[3].value, platform.python_version())
             self.assertEqual(properties[4].value, platform.system())
             self.assertEqual(properties[5].value, "python")
-            self.assertEqual(
-                properties[6].value, ext_version)
+            self.assertEqual(properties[6].value, ext_version)
+            self.assertEqual(properties[7].value, _ENDPOINT_TYPES[0])
+            self.assertEqual(properties[8].value, _OPTIONS.endpoint)
 
     @mock.patch(
         'opencensus.ext.azure.metrics_exporter.statsbeat_metrics.statsbeat._get_success_count_value')  # noqa: E501

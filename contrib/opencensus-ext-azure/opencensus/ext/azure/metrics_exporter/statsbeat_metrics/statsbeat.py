@@ -49,7 +49,8 @@ _REQ_RETRY_NAME = "Request Retry Count"
 _REQ_THROTTLE_NAME = "Request Throttle Count"
 _REQ_EXCEPTION_NAME = "Request Exception Count"
 
-_RP_NAMES = ["appsvc", "function", "vm", "unknown"]
+_ENDPOINT_TYPES = ["breeze"]
+_RP_NAMES = ["appsvc", "functions", "vm", "unknown"]
 _FEATURE_TYPES = ["Feature", "Instrumentation"]
 
 _logger = logging.getLogger(__name__)
@@ -112,6 +113,8 @@ def _get_attach_properties():
 
 def _get_network_properties():
     properties = _get_common_properties()
+    properties.append(LabelKey("endpoint", "ingestion endpoint type"))
+    properties.append(LabelKey("host", "destination of ingestion endpoint"))
     return properties
 
 
@@ -179,8 +182,7 @@ def _get_exception_count_value():
 class _StatsbeatMetrics:
 
     def __init__(self, options):
-        # Properties are instantiated here because currently there is no way
-        # to modify them during runtime
+        self._options = options
         self._instrumentation_key = options.instrumentation_key
         self._feature = _StatsbeatFeature.NONE
         if options.enable_local_storage:
@@ -292,6 +294,8 @@ class _StatsbeatMetrics:
 
     def _get_network_metrics(self):
         properties = self._get_common_properties()
+        properties.append(LabelValue(_ENDPOINT_TYPES[0]))  # endpoint
+        properties.append(LabelValue(self._options.endpoint))  # host
         metrics = []
         for fn, metric in self._network_metrics.items():
             # NOTE: A time series is a set of unique label values
