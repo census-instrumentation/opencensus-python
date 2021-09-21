@@ -30,6 +30,7 @@ _requests_map = {}
 
 class TransportMixin(object):
     def _check_stats_collection(self):
+        # noqa: E501
         return not os.environ.get("APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL") and \
             (not hasattr(self, '_is_stats') or not self._is_stats)
 
