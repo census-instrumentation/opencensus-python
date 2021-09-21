@@ -21,7 +21,6 @@ import threading
 
 import requests
 
-
 from opencensus.ext.azure.common.transport import _requests_lock, _requests_map
 from opencensus.ext.azure.common.version import __version__ as ext_version
 from opencensus.metrics.export.gauge import (

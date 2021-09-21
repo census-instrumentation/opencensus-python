@@ -43,11 +43,11 @@ class TestAzureExporter(unittest.TestCase):
 
     def setUp(self):
         os.environ["APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL"] = "True"
-        return super().setUp()
+        return super(TestAzureExporter, self).setUp()
 
     def tearDown(self):
         del os.environ["APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL"]
-        return super().tearDown()
+        return super(TestAzureExporter, self).tearDown()
 
     def test_ctor(self):
         from opencensus.ext.azure.common import Options
