@@ -17,10 +17,8 @@ import json
 import logging
 import os
 import platform
-import threading
-from opencensus.ext.azure.common import INSTRUMENTATION_KEY
-
 import requests
+import threading
 
 from opencensus.ext.azure.common.transport import _requests_lock, _requests_map
 from opencensus.ext.azure.common.version import __version__ as ext_version
