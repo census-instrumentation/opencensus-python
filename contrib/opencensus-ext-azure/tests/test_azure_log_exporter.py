@@ -59,7 +59,7 @@ class TestBaseLogHandler(unittest.TestCase):
 
     def tearDown(self):
         del os.environ["APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL"]
-        return super(TestBaseLogHandler, ).tearDown()
+        return super(TestBaseLogHandler, self).tearDown()
 
     def test_basic(self):
         logger = logging.getLogger(self.id())
