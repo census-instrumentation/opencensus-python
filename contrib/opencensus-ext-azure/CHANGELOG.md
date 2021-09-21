@@ -11,7 +11,7 @@
 - Implement network metrics via Statsbeat - Others
 ([#1062](https://github.com/census-instrumentation/opencensus-python/pull/1062))
 - Implement feature and instrumentation metrics via Statsbeat
-([#1063](https://github.com/census-instrumentation/opencensus-python/pull/1063))
+([#1076](https://github.com/census-instrumentation/opencensus-python/pull/1076))
 
 ## 1.0.8
 Released 2021-05-13

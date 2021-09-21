@@ -136,7 +136,7 @@ class TestStatsbeatMetrics(unittest.TestCase):
         'opencensus.ext.azure.metrics_exporter.statsbeat_metrics.statsbeat._get_network_properties')  # noqa: E501
     @mock.patch(
         'opencensus.ext.azure.metrics_exporter.statsbeat_metrics.statsbeat._get_attach_properties')  # noqa: E501
-    def test_statsbeat_metric_init(self, attach_mock, network_mock, feature_mock):
+    def test_statsbeat_metric_init(self, attach_mock, network_mock, feature_mock):  # noqa: E501
         # pylint: disable=protected-access
         metric = _StatsbeatMetrics(_OPTIONS)
         self.assertEqual(len(metric._vm_data), 0)

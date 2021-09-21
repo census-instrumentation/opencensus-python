@@ -320,7 +320,7 @@ class _StatsbeatMetrics:
         properties.insert(4, LabelValue(get_integrations()))  # instr long
         properties.insert(4, LabelValue(_FEATURE_TYPES[1]))  # type
         self._instrumentation_metric.get_or_create_time_series(properties)
-        return self._instrumentation_metric.get_metric(datetime.datetime.utcnow())
+        return self._instrumentation_metric.get_metric(datetime.datetime.utcnow())  # noqa: E501
 
     def _get_attach_metric(self):
         properties = []
