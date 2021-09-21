@@ -18,6 +18,7 @@ import logging
 import os
 import platform
 import threading
+from opencensus.ext.azure.common import INSTRUMENTATION_KEY
 
 import requests
 
@@ -51,9 +52,12 @@ _REQ_EXCEPTION_NAME = "Request Exception Count"
 
 _ENDPOINT_TYPES = ["breeze"]
 _RP_NAMES = ["appsvc", "functions", "vm", "unknown"]
-_FEATURE_TYPES = ["Feature", "Instrumentation"]
 
 _logger = logging.getLogger(__name__)
+
+class _FEATURE_TYPES:
+    FEATURE = 0
+    INSTRUMENTATION = 1
 
 
 class _StatsbeatFeature:
@@ -311,14 +315,14 @@ class _StatsbeatMetrics:
     def _get_feature_metric(self):
         properties = self._get_common_properties()
         properties.insert(4, LabelValue(self._feature))  # feature long
-        properties.insert(4, LabelValue(_FEATURE_TYPES[0]))  # type
+        properties.insert(4, LabelValue(_FEATURE_TYPES.FEATURE))  # type
         self._feature_metric.get_or_create_time_series(properties)
         return self._feature_metric.get_metric(datetime.datetime.utcnow())
 
     def _get_instrumentation_metric(self):
         properties = self._get_common_properties()
         properties.insert(4, LabelValue(get_integrations()))  # instr long
-        properties.insert(4, LabelValue(_FEATURE_TYPES[1]))  # type
+        properties.insert(4, LabelValue(_FEATURE_TYPES.INSTRUMENTATION))  # type
         self._instrumentation_metric.get_or_create_time_series(properties)
         return self._instrumentation_metric.get_metric(datetime.datetime.utcnow())  # noqa: E501
 
