@@ -14,6 +14,7 @@
 
 import atexit
 import logging
+import os
 
 from opencensus.common import utils as common_utils
 from opencensus.ext.azure.common import Options, utils
@@ -162,10 +163,8 @@ def new_metrics_exporter(**options):
                                     producers,
                                     exporter,
                                     interval=exporter.options.export_interval)
-    if exporter.options.enable_stats_metrics:
+    if not os.environ.get("APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL"):
         from opencensus.ext.azure.metrics_exporter import statsbeat_metrics
         # Stats will track the user's ikey
-        statsbeat_metrics.collect_statsbeat_metrics(
-            exporter.options.instrumentation_key
-        )
+        statsbeat_metrics.collect_statsbeat_metrics(exporter.options)
     return exporter

@@ -14,6 +14,7 @@
 
 import json
 import logging
+import os
 import threading
 import time
 
@@ -29,8 +30,7 @@ _requests_map = {}
 
 class TransportMixin(object):
     def _check_stats_collection(self):
-        return self.options.enable_stats_metrics and \
-            (not hasattr(self, '_is_stats') or not self._is_stats)
+        return not os.environ.get("APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL") and (not hasattr(self, '_is_stats') or not self._is_stats)  # noqa: E501
 
     def _transmit_from_storage(self):
         if self.storage:

@@ -41,18 +41,23 @@ def throw(exc_type, *args, **kwargs):
 
 class TestAzureExporter(unittest.TestCase):
 
+    def setUp(self):
+        os.environ["APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL"] = "True"
+        return super(TestAzureExporter, self).setUp()
+
+    def tearDown(self):
+        del os.environ["APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL"]
+        return super(TestAzureExporter, self).tearDown()
+
     def test_ctor(self):
         from opencensus.ext.azure.common import Options
         instrumentation_key = Options._default.instrumentation_key
         Options._default.instrumentation_key = None
-        self.assertRaises(ValueError, lambda: trace_exporter.AzureExporter(
-            enable_stats_metrics=False,
-        ))
+        self.assertRaises(ValueError, lambda: trace_exporter.AzureExporter())
         Options._default.instrumentation_key = instrumentation_key
 
     def test_init_exporter_with_proxies(self):
         exporter = trace_exporter.AzureExporter(
-            enable_stats_metrics=False,
             instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
             proxies='{"https":"https://test-proxy.com"}',
         )
@@ -64,7 +69,6 @@ class TestAzureExporter(unittest.TestCase):
 
     def test_init_exporter_with_queue_capacity(self):
         exporter = trace_exporter.AzureExporter(
-            enable_stats_metrics=False,
             instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
             queue_capacity=500,
         )
@@ -82,7 +86,6 @@ class TestAzureExporter(unittest.TestCase):
     @mock.patch('requests.post', return_value=mock.Mock())
     def test_emit_empty(self, request_mock):
         exporter = trace_exporter.AzureExporter(
-            enable_stats_metrics=False,
             instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
             storage_path=os.path.join(TEST_FOLDER, self.id()),
         )
@@ -93,7 +96,6 @@ class TestAzureExporter(unittest.TestCase):
     @mock.patch('opencensus.ext.azure.trace_exporter.logger')
     def test_emit_exception(self, mock_logger):
         exporter = trace_exporter.AzureExporter(
-            enable_stats_metrics=False,
             instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
             storage_path=os.path.join(TEST_FOLDER, self.id()),
         )
@@ -105,7 +107,6 @@ class TestAzureExporter(unittest.TestCase):
     def test_emit_failure(self, span_data_to_envelope_mock):
         span_data_to_envelope_mock.return_value = ['bar']
         exporter = trace_exporter.AzureExporter(
-            enable_stats_metrics=False,
             instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
             storage_path=os.path.join(TEST_FOLDER, self.id()),
         )
@@ -120,7 +121,6 @@ class TestAzureExporter(unittest.TestCase):
     def test_emit_success(self, span_data_to_envelope_mock):
         span_data_to_envelope_mock.return_value = ['bar']
         exporter = trace_exporter.AzureExporter(
-            enable_stats_metrics=False,
             instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
             max_batch_size=1,
             storage_path=os.path.join(TEST_FOLDER, self.id()),
@@ -143,7 +143,6 @@ class TestAzureExporter(unittest.TestCase):
         from opencensus.trace.tracestate import Tracestate
 
         exporter = trace_exporter.AzureExporter(
-            enable_stats_metrics=False,
             instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
             storage_path=os.path.join(TEST_FOLDER, self.id()),
         )

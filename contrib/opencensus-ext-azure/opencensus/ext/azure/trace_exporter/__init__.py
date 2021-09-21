@@ -15,6 +15,7 @@
 import atexit
 import json
 import logging
+import os
 
 from opencensus.common.schedule import QueueExitEvent
 from opencensus.ext.azure.common import Options, utils
@@ -74,10 +75,8 @@ class AzureExporter(BaseExporter, ProcessorMixin, TransportMixin):
         super(AzureExporter, self).__init__(**options)
         atexit.register(self._stop, self.options.grace_period)
         # start statsbeat on exporter instantiation
-        if self.options.enable_stats_metrics:
-            statsbeat_metrics.collect_statsbeat_metrics(
-                self.options.instrumentation_key
-            )
+        if not os.environ.get("APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL"):
+            statsbeat_metrics.collect_statsbeat_metrics(self.options)
 
     def span_data_to_envelope(self, sd):
         envelope = Envelope(
