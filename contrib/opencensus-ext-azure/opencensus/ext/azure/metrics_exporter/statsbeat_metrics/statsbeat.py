@@ -54,6 +54,7 @@ _RP_NAMES = ["appsvc", "functions", "vm", "unknown"]
 
 _logger = logging.getLogger(__name__)
 
+
 class _FEATURE_TYPES:
     FEATURE = 0
     INSTRUMENTATION = 1
@@ -321,7 +322,7 @@ class _StatsbeatMetrics:
     def _get_instrumentation_metric(self):
         properties = self._get_common_properties()
         properties.insert(4, LabelValue(get_integrations()))  # instr long
-        properties.insert(4, LabelValue(_FEATURE_TYPES.INSTRUMENTATION))  # type
+        properties.insert(4, LabelValue(_FEATURE_TYPES.INSTRUMENTATION))  # type  # noqa: E501
         self._instrumentation_metric.get_or_create_time_series(properties)
         return self._instrumentation_metric.get_metric(datetime.datetime.utcnow())  # noqa: E501
 

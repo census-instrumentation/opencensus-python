@@ -52,14 +52,14 @@ class CustomLogHandler(log_exporter.BaseLogHandler):
 
 
 class TestBaseLogHandler(unittest.TestCase):
-    
+
     def setUp(self):
         os.environ["APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL"] = "True"
-        return super().setUp()
+        return super(TestBaseLogHandler, self).setUp()
 
     def tearDown(self):
         del os.environ["APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL"]
-        return super().tearDown()
+        return super(TestBaseLogHandler, ).tearDown()
 
     def test_basic(self):
         logger = logging.getLogger(self.id())
