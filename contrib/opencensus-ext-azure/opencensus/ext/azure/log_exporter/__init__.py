@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import logging
+import os
 import random
 import threading
 import time
@@ -63,7 +64,7 @@ class BaseLogHandler(logging.Handler):
         self._worker = Worker(self._queue, self)
         self._worker.start()
         # start statsbeat on exporter instantiation
-        if self.options.enable_stats_metrics:
+        if not os.environ.get("APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL"):
             statsbeat_metrics.collect_statsbeat_metrics(self.options)
 
     def _export(self, batch, event=None):  # pragma: NO COVER
