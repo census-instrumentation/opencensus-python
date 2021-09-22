@@ -163,7 +163,7 @@ def new_metrics_exporter(**options):
                                     producers,
                                     exporter,
                                     interval=exporter.options.export_interval)
-    if not os.environ.get("APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL"):
+    if os.environ.get("APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL") != "True":
         from opencensus.ext.azure.metrics_exporter import statsbeat_metrics
         # Stats will track the user's ikey
         statsbeat_metrics.collect_statsbeat_metrics(exporter.options)
