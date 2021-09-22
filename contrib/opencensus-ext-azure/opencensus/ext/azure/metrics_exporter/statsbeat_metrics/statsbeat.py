@@ -36,7 +36,7 @@ _AIMS_URI = "http://169.254.169.254/metadata/instance/compute"
 _AIMS_API_VERSION = "api-version=2017-12-01"
 _AIMS_FORMAT = "format=json"
 
-_DEFAULT_STATS_CONNECTION_STRING = "InstrumentationKey=c4a29126-a7cb-47e5-b348-11414998b11e;IngestionEndpoint=https://dc.services.visualstudio.com/"  # noqa: E501
+_DEFAULT_STATS_CONNECTION_STRING = "InstrumentationKey=c4a29126-a7cb-47e5-b348-11414998b11e;IngestionEndpoint=https://westus-0.in.applicationinsights.azure.com/"  # noqa: E501
 _DEFAULT_STATS_SHORT_EXPORT_INTERVAL = 900  # 15 minutes
 _DEFAULT_STATS_LONG_EXPORT_INTERVAL = 86400  # 24 hours
 
@@ -111,7 +111,7 @@ def _get_common_properties():
 
 def _get_attach_properties():
     properties = _get_common_properties()
-    properties.insert(1, LabelKey("rpid", 'unique id of rp'))
+    properties.insert(1, LabelKey("rpId", 'unique id of rp'))
     return properties
 
 
@@ -345,7 +345,7 @@ class _StatsbeatMetrics:
         elif self._vm_retry and self._get_azure_compute_metadata():
             # VM
             rp = _RP_NAMES[2]
-            rpId = '{}//{}'.format(
+            rpId = '{}/{}'.format(
                         self._vm_data.get("vmId", ''),
                         self._vm_data.get("subscriptionId", ''))
             self._os_type = self._vm_data.get("osType", '')

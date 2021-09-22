@@ -19,7 +19,6 @@ from datetime import datetime
 import mock
 
 from opencensus.common import utils
-from opencensus.ext.azure.common import Options
 from opencensus.ext.azure.common.protocol import DataPoint
 from opencensus.ext.azure.metrics_exporter import (
     MetricsExporter,
@@ -63,7 +62,7 @@ def create_metric():
 class TestAzureMetricsExporter(unittest.TestCase):
 
     def setUp(self):
-        os.environ["APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL"] = "True"
+        os.environ["APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL"] = "true"
         return super(TestAzureMetricsExporter, self).setUp()
 
     def tearDown(self):
@@ -71,10 +70,7 @@ class TestAzureMetricsExporter(unittest.TestCase):
         return super(TestAzureMetricsExporter, self).tearDown()
 
     def test_constructor_missing_key(self):
-        instrumentation_key = Options._default.instrumentation_key
-        Options._default.instrumentation_key = None
-        self.assertRaises(ValueError, lambda: MetricsExporter())
-        Options._default.instrumentation_key = instrumentation_key
+        self.assertRaises(ValueError, lambda: MetricsExporter(connection_string="", instrumentation_key=""))  # noqa: E501
 
     def test_constructor_invalid_batch_size(self):
         self.assertRaises(

@@ -54,7 +54,7 @@ class CustomLogHandler(log_exporter.BaseLogHandler):
 class TestBaseLogHandler(unittest.TestCase):
 
     def setUp(self):
-        os.environ["APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL"] = "True"
+        os.environ["APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL"] = "true"
         return super(TestBaseLogHandler, self).setUp()
 
     def tearDown(self):
@@ -84,7 +84,7 @@ class TestBaseLogHandler(unittest.TestCase):
 class TestAzureLogHandler(unittest.TestCase):
 
     def setUp(self):
-        os.environ["APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL"] = "True"
+        os.environ["APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL"] = "true"
         return super(TestAzureLogHandler, self).setUp()
 
     def tearDown(self):
@@ -92,11 +92,7 @@ class TestAzureLogHandler(unittest.TestCase):
         return super(TestAzureLogHandler, self).tearDown()
 
     def test_ctor(self):
-        from opencensus.ext.azure.common import Options
-        instrumentation_key = Options._default.instrumentation_key
-        Options._default.instrumentation_key = None
-        self.assertRaises(ValueError, lambda: log_exporter.AzureLogHandler())
-        Options._default.instrumentation_key = instrumentation_key
+        self.assertRaises(ValueError, lambda: log_exporter.AzureLogHandler(connection_string="", instrumentation_key=""))  # noqa: E501
 
     def test_invalid_sampling_rate(self):
         with self.assertRaises(ValueError):
@@ -300,7 +296,7 @@ class TestAzureLogHandler(unittest.TestCase):
 
 class TestAzureEventHandler(unittest.TestCase):
     def setUp(self):
-        os.environ["APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL"] = "True"
+        os.environ["APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL"] = "true"
         return super(TestAzureEventHandler, self).setUp()
 
     def tearDown(self):
@@ -308,12 +304,7 @@ class TestAzureEventHandler(unittest.TestCase):
         return super(TestAzureEventHandler, self).setUp()
 
     def test_ctor(self):
-        from opencensus.ext.azure.common import Options
-        instrumentation_key = Options._default.instrumentation_key
-        Options._default.instrumentation_key = None
-        self.assertRaises(ValueError, lambda: log_exporter.AzureEventHandler(
-        ))
-        Options._default.instrumentation_key = instrumentation_key
+        self.assertRaises(ValueError, lambda: log_exporter.AzureEventHandler(connection_string="", instrumentation_key=""))  # noqa: E501
 
     def test_invalid_sampling_rate(self):
         with self.assertRaises(ValueError):
