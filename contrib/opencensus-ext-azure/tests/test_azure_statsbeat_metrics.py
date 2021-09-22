@@ -206,7 +206,7 @@ class TestStatsbeatMetrics(unittest.TestCase):
     def test_get_attach_properties(self):
         properties = _get_attach_properties()
         self.assertEqual(properties[0].key, "rp")
-        self.assertEqual(properties[1].key, "rpid")
+        self.assertEqual(properties[1].key, "rpId")
         self.assertEqual(properties[2].key, "attach")
         self.assertEqual(properties[3].key, "cikey")
         self.assertEqual(properties[4].key, "runtimeVersion")
@@ -462,7 +462,7 @@ class TestStatsbeatMetrics(unittest.TestCase):
         properties = metric._time_series[0]._label_values
         self.assertEqual(len(properties), 8)
         self.assertEqual(properties[0].value, _RP_NAMES[2])
-        self.assertEqual(properties[1].value, "123//sub123")
+        self.assertEqual(properties[1].value, "123/sub123")
         self.assertEqual(properties[2].value, "sdk")
         self.assertEqual(properties[3].value, "ikey")
         self.assertEqual(properties[4].value, platform.python_version())
