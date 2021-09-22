@@ -64,7 +64,7 @@ class BaseLogHandler(logging.Handler):
         self._worker = Worker(self._queue, self)
         self._worker.start()
         # start statsbeat on exporter instantiation
-        if os.environ.get("APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL") != "True":
+        if not os.environ.get("APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL"):
             statsbeat_metrics.collect_statsbeat_metrics(self.options)
 
     def _export(self, batch, event=None):  # pragma: NO COVER

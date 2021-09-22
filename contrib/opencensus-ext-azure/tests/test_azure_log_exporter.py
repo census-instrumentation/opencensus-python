@@ -54,7 +54,7 @@ class CustomLogHandler(log_exporter.BaseLogHandler):
 class TestBaseLogHandler(unittest.TestCase):
 
     def setUp(self):
-        os.environ["APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL"] = "True"
+        os.environ["APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL"] = "true"
         return super(TestBaseLogHandler, self).setUp()
 
     def tearDown(self):
@@ -84,7 +84,7 @@ class TestBaseLogHandler(unittest.TestCase):
 class TestAzureLogHandler(unittest.TestCase):
 
     def setUp(self):
-        os.environ["APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL"] = "True"
+        os.environ["APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL"] = "true"
         return super(TestAzureLogHandler, self).setUp()
 
     def tearDown(self):
@@ -296,7 +296,7 @@ class TestAzureLogHandler(unittest.TestCase):
 
 class TestAzureEventHandler(unittest.TestCase):
     def setUp(self):
-        os.environ["APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL"] = "True"
+        os.environ["APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL"] = "true"
         return super(TestAzureEventHandler, self).setUp()
 
     def tearDown(self):

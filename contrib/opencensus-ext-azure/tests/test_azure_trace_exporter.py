@@ -42,7 +42,7 @@ def throw(exc_type, *args, **kwargs):
 class TestAzureExporter(unittest.TestCase):
 
     def setUp(self):
-        os.environ["APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL"] = "True"
+        os.environ["APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL"] = "true"
         return super(TestAzureExporter, self).setUp()
 
     def tearDown(self):

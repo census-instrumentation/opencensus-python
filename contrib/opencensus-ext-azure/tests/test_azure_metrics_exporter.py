@@ -19,7 +19,6 @@ from datetime import datetime
 import mock
 
 from opencensus.common import utils
-from opencensus.ext.azure.common import Options
 from opencensus.ext.azure.common.protocol import DataPoint
 from opencensus.ext.azure.metrics_exporter import (
     MetricsExporter,
@@ -63,7 +62,7 @@ def create_metric():
 class TestAzureMetricsExporter(unittest.TestCase):
 
     def setUp(self):
-        os.environ["APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL"] = "True"
+        os.environ["APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL"] = "true"
         return super(TestAzureMetricsExporter, self).setUp()
 
     def tearDown(self):
