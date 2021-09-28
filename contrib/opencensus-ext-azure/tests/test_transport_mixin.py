@@ -25,6 +25,7 @@ from azure.identity._exceptions import CredentialUnavailableError
 from opencensus.ext.azure.common import Options
 from opencensus.ext.azure.common.storage import LocalFileStorage
 from opencensus.ext.azure.common.transport import (
+    _MAX_CONSECUTIVE_REDIRECTS,
     _MONITOR_OAUTH_SCOPE,
     TransportMixin,
 )
@@ -47,24 +48,25 @@ def throw(exc_type, *args, **kwargs):
 
 
 class MockResponse(object):
-    def __init__(self, status_code, text):
+    def __init__(self, status_code, text, headers=None):
         self.status_code = status_code
         self.text = text
+        self.headers = headers
 
 
 # pylint: disable=W0212
 class TestTransportMixin(unittest.TestCase):
-    def test_check_stats_collection(self):
-        mixin = TransportMixin()
-        mixin.options = Options()
-        mixin.options.enable_stats_metrics = True
-        self.assertTrue(mixin._check_stats_collection())
-        mixin._is_stats = False
-        self.assertTrue(mixin._check_stats_collection())
-        mixin._is_stats = True
-        self.assertFalse(mixin._check_stats_collection())
-        mixin.options.enable_stats_metrics = False
-        self.assertFalse(mixin._check_stats_collection())
+    # def test_check_stats_collection(self):
+    #     mixin = TransportMixin()
+    #     mixin.options = Options()
+    #     mixin.options.enable_stats_metrics = True
+    #     self.assertTrue(mixin._check_stats_collection())
+    #     mixin._is_stats = False
+    #     self.assertTrue(mixin._check_stats_collection())
+    #     mixin._is_stats = True
+    #     self.assertFalse(mixin._check_stats_collection())
+    #     mixin.options.enable_stats_metrics = False
+    #     self.assertFalse(mixin._check_stats_collection())
 
     def test_transmission_nothing(self):
         mixin = TransportMixin()
@@ -197,7 +199,8 @@ class TestTransportMixin(unittest.TestCase):
                     data=data,
                     headers=headers,
                     timeout=10.0,
-                    proxies={}
+                    proxies={},
+                    allow_redirects=False,
                 )
             credential.get_token.assert_called_with(_MONITOR_OAUTH_SCOPE)
             self.assertIsNone(mixin.storage.get())
@@ -318,3 +321,18 @@ class TestTransportMixin(unittest.TestCase):
                 post.return_value = MockResponse(400, '{}')
                 mixin._transmit_from_storage()
             self.assertEqual(len(os.listdir(mixin.storage.path)), 0)
+
+    def test_transmission_307(self):
+        mixin = TransportMixin()
+        mixin.options = Options()
+        mixin._consecutive_redirects = 0
+        mixin.options.endpoint = "test.endpoint"
+        with LocalFileStorage(os.path.join(TEST_FOLDER, self.id())) as stor:
+            mixin.storage = stor
+            mixin.storage.put([1, 2, 3])
+            with mock.patch('requests.post') as post:
+                post.return_value = MockResponse(307, '{}', {"location":"https://example.com"})
+                mixin._transmit_from_storage()
+            self.assertEqual(post.call_count, _MAX_CONSECUTIVE_REDIRECTS)
+            self.assertEqual(len(os.listdir(mixin.storage.path)), 0)
+            self.assertEqual(mixin.options.endpoint, "https://example.com")

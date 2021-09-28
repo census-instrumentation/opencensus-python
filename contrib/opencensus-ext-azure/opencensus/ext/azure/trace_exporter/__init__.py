@@ -77,6 +77,8 @@ class AzureExporter(BaseExporter, ProcessorMixin, TransportMixin):
         # start statsbeat on exporter instantiation
         if not os.environ.get("APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL"):
             statsbeat_metrics.collect_statsbeat_metrics(self.options)
+        # For redirects
+        self._consecutive_redirects = 0  # To prevent circular redirects
 
     def span_data_to_envelope(self, sd):
         envelope = Envelope(
