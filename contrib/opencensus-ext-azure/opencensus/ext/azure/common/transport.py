@@ -30,7 +30,7 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
-_MAX_CONSECUTIVE_REDIRECTS = 30
+_MAX_CONSECUTIVE_REDIRECTS = 10
 _MONITOR_OAUTH_SCOPE = "https://monitor.azure.com//.default"
 _requests_lock = threading.Lock()
 _requests_map = {}
@@ -217,6 +217,7 @@ class TransportMixin(object):
                 with _requests_lock:
                     _requests_map['retry'] = _requests_map.get('retry', 0) + 1  # noqa: E501
             return self.options.minimum_retry_interval
+        # Redirect
         if response.status_code in (307, 308):
             self._consecutive_redirects += 1
             if self._consecutive_redirects < _MAX_CONSECUTIVE_REDIRECTS:
@@ -226,14 +227,14 @@ class TransportMixin(object):
                         url = urlparse(location)
                         if url.scheme and url.netloc:
                             # Change the host to the new redirected host
-                            self.options.endpoint = "{}://{}".format(url.scheme, url.netloc)  # pylint: disable=W0212
+                            self.options.endpoint = "{}://{}".format(url.scheme, url.netloc)  # noqa: E501
                             # Attempt to export again
                             return self._transmit(envelopes)
                 logger.error(
                     "Error parsing redirect information."
                 )
             logger.error(
-                "Error sending telemetry because of circular redirects." \
+                "Error sending telemetry because of circular redirects."
                 "Please check the integrity of your connection string."
             )
         logger.error(

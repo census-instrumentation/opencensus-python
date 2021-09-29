@@ -13,7 +13,7 @@
 - Implement feature and instrumentation metrics via Statsbeat
 ([#1076](https://github.com/census-instrumentation/opencensus-python/pull/1076))
 - Support stamp specific redirect in exporters
-([#1076](https://github.com/census-instrumentation/opencensus-python/pull/1076))
+([#1078](https://github.com/census-instrumentation/opencensus-python/pull/1078))
 
 ## 1.0.8
 Released 2021-05-13
