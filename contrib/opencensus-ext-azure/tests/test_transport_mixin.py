@@ -344,7 +344,7 @@ class TestTransportMixin(unittest.TestCase):
         mixin.options.endpoint = "https://example.com"
         with mock.patch('requests.post') as post:
             post.return_value = MockResponse(307, '{}', {"location": "https://example.com"})  # noqa: E501
-            result = mixin._transmit([1,2,3])
+            result = mixin._transmit([1, 2, 3])
             self.assertEqual(result, -307)
         self.assertEqual(post.call_count, _MAX_CONSECUTIVE_REDIRECTS)
         self.assertEqual(mixin.options.endpoint, "https://example.com")
