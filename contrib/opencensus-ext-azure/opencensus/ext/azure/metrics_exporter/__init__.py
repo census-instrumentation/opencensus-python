@@ -60,6 +60,8 @@ class MetricsExporter(TransportMixin, ProcessorMixin):
             )
         self._atexit_handler = atexit.register(self.shutdown)
         self.exporter_thread = None
+        # For redirects
+        self._consecutive_redirects = 0  # To prevent circular redirects
         super(MetricsExporter, self).__init__()
 
     def export_metrics(self, metrics):

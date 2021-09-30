@@ -22,13 +22,22 @@ import requests
 from azure.core.exceptions import ClientAuthenticationError
 from azure.identity._exceptions import CredentialUnavailableError
 
+try:
+    from urllib.parse import urlparse
+except ImportError:
+    from urlparse import urlparse
+
+
 logger = logging.getLogger(__name__)
+
+_MAX_CONSECUTIVE_REDIRECTS = 10
 _MONITOR_OAUTH_SCOPE = "https://monitor.azure.com//.default"
 _requests_lock = threading.Lock()
 _requests_map = {}
 
 
 class TransportMixin(object):
+
     def _check_stats_collection(self):
         return not os.environ.get("APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL") and (not hasattr(self, '_is_stats') or not self._is_stats)  # noqa: E501
 
@@ -66,10 +75,7 @@ class TransportMixin(object):
             if self.options.credential:
                 token = self.options.credential.get_token(_MONITOR_OAUTH_SCOPE)
                 headers["Authorization"] = "Bearer {}".format(token.token)
-                # Use new api for aad scenario
-                endpoint += '/v2.1/track'
-            else:
-                endpoint += '/v2/track'
+            endpoint += '/v2.1/track'
             if self._check_stats_collection():
                 with _requests_lock:
                     _requests_map['count'] = _requests_map.get('count', 0) + 1  # noqa: E501
@@ -79,6 +85,7 @@ class TransportMixin(object):
                 headers=headers,
                 timeout=self.options.timeout,
                 proxies=json.loads(self.options.proxies),
+                allow_redirects=False,
             )
         except requests.Timeout:
             logger.warning(
@@ -127,6 +134,7 @@ class TransportMixin(object):
             except Exception:
                 pass
         if response.status_code == 200:
+            self._consecutive_redirects = 0
             if self._check_stats_collection():
                 with _requests_lock:
                     _requests_map['success'] = _requests_map.get('success', 0) + 1  # noqa: E501
@@ -209,6 +217,26 @@ class TransportMixin(object):
                 with _requests_lock:
                     _requests_map['retry'] = _requests_map.get('retry', 0) + 1  # noqa: E501
             return self.options.minimum_retry_interval
+        # Redirect
+        if response.status_code in (307, 308):
+            self._consecutive_redirects += 1
+            if self._consecutive_redirects < _MAX_CONSECUTIVE_REDIRECTS:
+                if response.headers:
+                    location = response.headers.get("location")
+                    if location:
+                        url = urlparse(location)
+                        if url.scheme and url.netloc:
+                            # Change the host to the new redirected host
+                            self.options.endpoint = "{}://{}".format(url.scheme, url.netloc)  # noqa: E501
+                            # Attempt to export again
+                            return self._transmit(envelopes)
+                logger.error(
+                    "Error parsing redirect information."
+                )
+            logger.error(
+                "Error sending telemetry because of circular redirects."
+                " Please check the integrity of your connection string."
+            )
         logger.error(
             'Non-retryable server side error %s: %s.',
             response.status_code,
