@@ -235,7 +235,7 @@ class TransportMixin(object):
                 )
             logger.error(
                 "Error sending telemetry because of circular redirects."
-                "Please check the integrity of your connection string."
+                " Please check the integrity of your connection string."
             )
         logger.error(
             'Non-retryable server side error %s: %s.',

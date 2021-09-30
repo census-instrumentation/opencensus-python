@@ -56,17 +56,17 @@ class MockResponse(object):
 
 # pylint: disable=W0212
 class TestTransportMixin(unittest.TestCase):
-    # def test_check_stats_collection(self):
-    #     mixin = TransportMixin()
-    #     mixin.options = Options()
-    #     mixin.options.enable_stats_metrics = True
-    #     self.assertTrue(mixin._check_stats_collection())
-    #     mixin._is_stats = False
-    #     self.assertTrue(mixin._check_stats_collection())
-    #     mixin._is_stats = True
-    #     self.assertFalse(mixin._check_stats_collection())
-    #     mixin.options.enable_stats_metrics = False
-    #     self.assertFalse(mixin._check_stats_collection())
+    def test_check_stats_collection(self):
+        mixin = TransportMixin()
+        mixin.options = Options()
+        mixin.options.enable_stats_metrics = True
+        self.assertTrue(mixin._check_stats_collection())
+        mixin._is_stats = False
+        self.assertTrue(mixin._check_stats_collection())
+        mixin._is_stats = True
+        self.assertFalse(mixin._check_stats_collection())
+        mixin.options.enable_stats_metrics = False
+        self.assertFalse(mixin._check_stats_collection())
 
     def test_transmission_nothing(self):
         mixin = TransportMixin()
@@ -336,3 +336,15 @@ class TestTransportMixin(unittest.TestCase):
             self.assertEqual(post.call_count, _MAX_CONSECUTIVE_REDIRECTS)
             self.assertEqual(len(os.listdir(mixin.storage.path)), 0)
             self.assertEqual(mixin.options.endpoint, "https://example.com")
+
+    def test_transmission_307_circular_reference(self):
+        mixin = TransportMixin()
+        mixin.options = Options()
+        mixin._consecutive_redirects = 0
+        mixin.options.endpoint = "https://example.com"
+        with mock.patch('requests.post') as post:
+            post.return_value = MockResponse(307, '{}', {"location": "https://example.com"})  # noqa: E501
+            result = mixin._transmit([1,2,3])
+            self.assertEqual(result, -307)
+        self.assertEqual(post.call_count, _MAX_CONSECUTIVE_REDIRECTS)
+        self.assertEqual(mixin.options.endpoint, "https://example.com")
