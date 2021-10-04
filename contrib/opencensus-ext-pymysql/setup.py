@@ -42,7 +42,7 @@ setup(
     long_description=open('README.rst').read(),
     install_requires=[
         'PyMySQL >= 0.7.11, < 1.0.0',
-        'opencensus >= 0.7.13, < 1.0.0',
+        'opencensus >= 0.8.0, < 1.0.0',
         'opencensus-ext-dbapi >= 0.1.2, < 1.0.0',
     ],
     extras_require={},

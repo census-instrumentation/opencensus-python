@@ -41,7 +41,7 @@ setup(
     include_package_data=True,
     long_description=open('README.rst').read(),
     install_requires=[
-        'opencensus >= 0.7.13, < 1.0.0',
+        'opencensus >= 0.8.0, < 1.0.0',
         'SQLAlchemy >= 1.1.14, < 1.3.24',  # https://github.com/sqlalchemy/sqlalchemy/issues/6168 # noqa: E501
     ],
     extras_require={},
