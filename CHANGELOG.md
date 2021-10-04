@@ -3,7 +3,7 @@
 ## Unreleased
 
 # 0.8.0
-Released 2021-10-05
+Released 2021-10-04
 
 - Added integration tracking functionality, includes `django`, `flask`, `http-lib`, `logging`, `mysql`, `postgresql`, `pymongo`, `pymysql`, `pyramid`, `requests`, `sqlalchemy` modules
 ([#1065](https://github.com/census-instrumentation/opencensus-python/pull/1065))
