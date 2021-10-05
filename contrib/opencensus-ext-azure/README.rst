@@ -1,5 +1,5 @@
 OpenCensus Azure Monitor Exporters
-============================================================================
+==================================
 
 |pypi|
 
@@ -13,6 +13,13 @@ Installation
 
     pip install opencensus-ext-azure
 
+Prerequisites
+-------------
+
+* Create an Azure Monitor resource and get the instrumentation key, more information can be found in the official `docs <https://docs.microsoft.com/azure/azure-monitor/app/create-new-resource>`_.
+* Place your instrumentation key in a `connection string` and directly into your code.
+* Alternatively, you can specify your `connection string` in an environment variable ``APPLICATIONINSIGHTS_CONNECTION_STRING``.
+  
 Usage
 -----
 
@@ -22,10 +29,6 @@ Log
 The **Azure Monitor Log Handler** allows you to export Python logs to `Azure Monitor`_.
 
 This example shows how to send a warning level log to Azure Monitor.
-
-* Create an Azure Monitor resource and get the instrumentation key, more information can be found `here <https://docs.microsoft.com/azure/azure-monitor/app/create-new-resource>`_.
-* Place your instrumentation key in a `connection string` and directly into your code.
-* Alternatively, you can specify your `connection string` in an environment variable ``APPLICATIONINSIGHTS_CONNECTION_STRING``.
 
 .. code:: python
 
@@ -42,10 +45,7 @@ Correlation
 
 You can enrich the logs with trace IDs and span IDs by using the `logging integration <../opencensus-ext-logging>`_.
 
-* Create an Azure Monitor resource and get the instrumentation key, more information can be found `here <https://docs.microsoft.com/azure/azure-monitor/app/create-new-resource>`_.
 * Install the `logging integration package <../opencensus-ext-logging>`_ using ``pip install opencensus-ext-logging``.
-* Place your instrumentation key in a `connection string` and directly into your code.
-* Alternatively, you can specify your `connection string` in an environment variable ``APPLICATIONINSIGHTS_CONNECTION_STRING``.
 
 .. code:: python
 
@@ -141,10 +141,6 @@ Metrics
 ~~~~~~~
 
 The **Azure Monitor Metrics Exporter** allows you to export metrics to `Azure Monitor`_.
-
-* Create an Azure Monitor resource and get the instrumentation key, more information can be found `here <https://docs.microsoft.com/azure/azure-monitor/app/create-new-resource>`_.
-* Place your instrumentation key in a `connection string` and directly into your code.
-* Alternatively, you can specify your `connection string` in an environment variable ``APPLICATIONINSIGHTS_CONNECTION_STRING``.
 
 .. code:: python
 
@@ -297,10 +293,6 @@ The **Azure Monitor Trace Exporter** allows you to export `OpenCensus`_ traces t
 
 This example shows how to send a span "hello" to Azure Monitor.
 
-* Create an Azure Monitor resource and get the instrumentation key, more information can be found `here <https://docs.microsoft.com/azure/azure-monitor/app/create-new-resource>`_.
-* Place your instrumentation key in a `connection string` and directly into your code.
-* Alternatively, you can specify your `connection string` in an environment variable ``APPLICATIONINSIGHTS_CONNECTION_STRING``.
-
  .. code:: python
 
     from opencensus.ext.azure.trace_exporter import AzureExporter
@@ -324,10 +316,7 @@ OpenCensus also supports several `integrations <https://github.com/census-instru
 
 This example shows how to integrate with the `requests <https://2.python-requests.org/en/master/>`_ library.
 
-* Create an Azure Monitor resource and get the instrumentation key, more information can be found `here <https://docs.microsoft.com/azure/azure-monitor/app/create-new-resource>`_.
 * Install the `requests integration package <../opencensus-ext-requests>`_ using ``pip install opencensus-ext-requests``.
-* Place your instrumentation key in a `connection string` and directly into your code.
-* Alternatively, you can specify your `connection string` in an environment variable ``APPLICATIONINSIGHTS_CONNECTION_STRING``.
 
 .. code:: python
 
@@ -384,7 +373,7 @@ Modifying Traces
 Integrate with Azure Functions
 ##############################
 
-Users who want to capture custom telemetry in Azure Functions environments are encouraged to used the OpenCensus Python Azure Functions `extension <https://github.com/census-ecosystem/opencensus-python-extensions-azure/tree/main/extensions/functions#opencensus-python-azure-functions-extension>`_. More details can be found `here <https://docs.microsoft.com/azure/azure-functions/functions-reference-python?tabs=application-level#log-custom-telemetry>`_.
+Users who want to capture custom telemetry in Azure Functions environments are encouraged to used the OpenCensus Python Azure Functions `extension <https://github.com/census-ecosystem/opencensus-python-extensions-azure/tree/main/extensions/functions#opencensus-python-azure-functions-extension>`_. More details can be found in this `document <https://docs.microsoft.com/azure/azure-functions/functions-reference-python?tabs=application-level#log-custom-telemetry>`_.
 
 References
 ----------
