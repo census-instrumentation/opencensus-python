@@ -41,7 +41,7 @@ setup(
     include_package_data=True,
     long_description=open('README.rst').read(),
     install_requires=[
-        'opencensus >= 0.7.13, < 1.0.0',
+        'opencensus >= 0.9.dev0, < 1.0.0',
         'pymongo >= 3.1.0',
     ],
     extras_require={},
