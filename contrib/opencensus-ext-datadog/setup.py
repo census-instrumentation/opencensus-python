@@ -41,7 +41,7 @@ setup(
     include_package_data=True,
     install_requires=[
         'bitarray >= 1.0.1, < 2.0.0',
-        'opencensus >= 0.8.dev0, < 1.0.0',
+        'opencensus >= 0.9.dev0, < 1.0.0',
         'requests >= 2.19.0',
     ],
     extras_require={},
