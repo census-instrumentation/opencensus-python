@@ -14,17 +14,20 @@
 
 import logging
 
-from opencensus.log import TraceLogger
+from opencensus.log import decorate_log_record_factory
 from opencensus.trace import integrations
 
 
 def trace_integration(tracer=None):
-    """Replace the global default logging class with `TraceLogger`.
+    """Customize LogRecord with opencensus trace data.
+    https://docs.python.org/3/howto/logging-cookbook.html#customizing-logrecord
 
-    Loggers created after the integration will produce `LogRecord`s
+    LogRecordFactory created after the integration will produce `LogRecord`s
     with extra traceId, spanId, and traceSampled attributes from the opencensus
     context.
     """
-    logging.setLoggerClass(TraceLogger)
+    logging.setLogRecordFactory(
+        decorate_log_record_factory(logging.getLogRecordFactory()),
+    )
     # pylint: disable=protected-access
     integrations.add_integration(integrations._Integrations.LOGGING)

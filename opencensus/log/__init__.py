@@ -113,3 +113,20 @@ class TraceLogger(logging.getLoggerClass()):
                 kwargs['extra'] = extra
         _set_extra_attrs(extra)
         return super(TraceLogger, self).makeRecord(*args, **kwargs)
+
+
+def set_default_attr(obj, attr, def_value):
+    if not hasattr(obj, attr):
+        setattr(obj, attr, def_value)
+
+
+def decorate_log_record_factory(old_factory):
+    def _new_factory(*args, **kwargs):
+        record = old_factory(*args, **kwargs)
+        trace_id, span_id, sampling_decision = get_log_attrs()
+        set_default_attr(record, TRACE_ID_KEY, trace_id)
+        set_default_attr(record, SPAN_ID_KEY, span_id)
+        set_default_attr(record, SAMPLING_DECISION_KEY, sampling_decision)
+        return record
+
+    return _new_factory
