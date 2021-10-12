@@ -14,6 +14,10 @@
 
 import logging
 import unittest
+try:
+    from io import StringIO
+except ImportError:
+    from StringIO import StringIO
 
 from opencensus.trace import config_integration
 
@@ -21,13 +25,35 @@ from opencensus.trace import config_integration
 class TestLoggingIntegration(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls._old_logger_class = logging.getLoggerClass()
+        cls.log_stream = StringIO()
+        logging.basicConfig(
+            format="%(message)s traceId=%(traceId)s",
+            stream=cls.log_stream,
+            level=logging.INFO,
+        )
+        cls._old_logger_factory = logging.getLogRecordFactory()
 
     @classmethod
     def tearDownClass(cls):
-        logging.setLoggerClass(cls._old_logger_class)
+        logging.setLogRecordFactory(cls._old_logger_factory)
 
     def test_integration(self):
-        self.assertEqual(self._old_logger_class, logging.getLoggerClass())
+        self.assertEqual(self._old_logger_factory, logging.getLogRecordFactory())
         config_integration.trace_integrations(['logging'])
-        self.assertNotEqual(self._old_logger_class, logging.getLoggerClass())
+        self.assertNotEqual(self._old_logger_factory, logging.getLogRecordFactory())
+
+    def test_logger(self):
+        log_msg_before_integration = "catch logger_before_integration"
+        log1 = logging.getLogger("log1")
+
+        config_integration.trace_integrations(['logging'])
+
+        log_after_integration = "catch logger_after_integration"
+        log2 = logging.getLogger("log2")
+
+        log1.info(log_msg_before_integration)
+        log2.info(log_after_integration)
+
+        all_logs = self.log_stream.getvalue()
+        assert "{} traceId=".format(log_msg_before_integration) in all_logs
+        assert "{} traceId=".format(log_after_integration) in all_logs
