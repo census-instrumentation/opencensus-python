@@ -15,7 +15,10 @@
 import unittest
 from datetime import datetime
 
-import mock
+try:
+    from unittest import mock
+except ImportError:
+    import mock
 
 from opencensus.common import utils
 from opencensus.stats import aggregation as aggregation_module

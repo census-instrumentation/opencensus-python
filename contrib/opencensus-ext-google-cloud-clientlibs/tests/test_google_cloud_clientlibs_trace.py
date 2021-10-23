@@ -15,7 +15,10 @@
 import unittest
 
 import grpc
-import mock
+try:
+    from unittest import mock
+except ImportError:
+    import mock
 
 from opencensus.ext.google_cloud_clientlibs import trace
 

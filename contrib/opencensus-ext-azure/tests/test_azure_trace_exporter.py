@@ -17,7 +17,10 @@ import os
 import shutil
 import unittest
 
-import mock
+try:
+    from unittest import mock
+except ImportError:
+    import mock
 
 from opencensus.ext.azure import trace_exporter
 from opencensus.trace.link import Link

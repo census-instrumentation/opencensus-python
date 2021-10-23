@@ -15,7 +15,10 @@
 import gc
 import unittest
 
-from mock import Mock
+try:
+    from unittest.mock import Mock
+except ImportError:
+    from mock import Mock
 
 from opencensus.metrics.export import gauge, metric_descriptor
 from opencensus.metrics.export import value as value_module

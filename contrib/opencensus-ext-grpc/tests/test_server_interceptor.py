@@ -14,7 +14,10 @@
 
 import unittest
 
-import mock
+try:
+    from unittest import mock
+except ImportError:
+    import mock
 from google.rpc import code_pb2
 
 from opencensus.ext.grpc import server_interceptor

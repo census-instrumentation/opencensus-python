@@ -14,7 +14,10 @@
 
 import unittest
 
-import mock
+try:
+    from unittest import mock
+except ImportError:
+    import mock
 
 from opencensus.stats import measurement_map as measurement_map_module
 from opencensus.tags import Tag, TagContext, TagMap

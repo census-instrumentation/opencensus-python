@@ -15,7 +15,10 @@
 import unittest
 from datetime import datetime
 
-import mock
+try:
+    from unittest import mock
+except ImportError:
+    import mock
 
 from opencensus.ext.zipkin import trace_exporter
 from opencensus.trace import span_context

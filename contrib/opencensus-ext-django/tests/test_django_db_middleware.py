@@ -16,7 +16,10 @@ import unittest
 from collections import namedtuple
 
 import django
-import mock
+try:
+    from unittest import mock
+except ImportError:
+    import mock
 import pytest
 from django.test.utils import teardown_test_environment
 

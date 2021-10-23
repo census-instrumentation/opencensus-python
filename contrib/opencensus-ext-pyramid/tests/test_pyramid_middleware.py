@@ -17,7 +17,10 @@
 
 import unittest
 
-import mock
+try:
+    from unittest import mock
+except ImportError:
+    import mock
 from pyramid.registry import Registry
 from pyramid.response import Response
 from pyramid.testing import DummyRequest

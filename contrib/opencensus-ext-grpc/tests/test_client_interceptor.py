@@ -17,7 +17,10 @@ import threading
 import unittest
 
 import grpc
-import mock
+try:
+    from unittest import mock
+except ImportError:
+    import mock
 from google.api_core import bidi
 from google.protobuf import proto_builder
 from grpc.framework.foundation import logging_pool

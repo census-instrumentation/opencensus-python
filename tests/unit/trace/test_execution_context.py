@@ -15,7 +15,10 @@
 import threading
 import unittest
 
-import mock
+try:
+    from unittest import mock
+except ImportError:
+    import mock
 
 from opencensus.trace import execution_context
 

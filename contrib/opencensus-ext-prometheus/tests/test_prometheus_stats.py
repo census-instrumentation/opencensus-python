@@ -15,7 +15,10 @@
 import unittest
 from datetime import datetime
 
-import mock
+try:
+    from unittest import mock
+except ImportError:
+    import mock
 from prometheus_client.core import Sample
 
 from opencensus.ext.prometheus import stats_exporter as prometheus

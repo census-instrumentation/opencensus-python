@@ -14,7 +14,10 @@
 
 import unittest
 
-import mock
+try:
+    from unittest import mock
+except ImportError:
+    import mock
 
 from opencensus.ext.sqlalchemy import trace
 from opencensus.trace import span as span_module

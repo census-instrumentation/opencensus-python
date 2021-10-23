@@ -16,7 +16,10 @@ import os
 import sys
 from contextlib import contextmanager
 
-import mock
+try:
+    from unittest import mock
+except ImportError:
+    import mock
 
 from opencensus.common.monitored_resource import monitored_resource
 

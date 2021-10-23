@@ -15,7 +15,10 @@
 import json
 import unittest
 
-import mock
+try:
+    from unittest import mock
+except ImportError:
+    import mock
 
 from opencensus.common.monitored_resource import aws_identity_doc_utils
 

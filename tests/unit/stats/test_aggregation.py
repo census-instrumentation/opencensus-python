@@ -14,7 +14,10 @@
 
 import unittest
 
-import mock
+try:
+    from unittest import mock
+except ImportError:
+    import mock
 
 from opencensus.metrics.export import value
 from opencensus.stats import aggregation as aggregation_module

@@ -14,7 +14,10 @@
 
 import unittest
 
-import mock
+try:
+    from unittest import mock
+except ImportError:
+    import mock
 
 from opencensus.stats import measure_to_view_map as measure_to_view_map_module
 from opencensus.stats.aggregation import CountAggregation

@@ -16,7 +16,10 @@ import datetime
 import unittest
 from collections import OrderedDict
 
-import mock
+try:
+    from unittest import mock
+except ImportError:
+    import mock
 from google.rpc import code_pb2
 
 from opencensus.common import utils

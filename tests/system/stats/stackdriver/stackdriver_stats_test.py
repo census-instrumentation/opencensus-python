@@ -17,7 +17,10 @@ import random
 import sys
 import time
 
-import mock
+try:
+    from unittest import mock
+except ImportError:
+    import mock
 from google.cloud import monitoring_v3
 
 from opencensus.ext.stackdriver import stats_exporter as stackdriver

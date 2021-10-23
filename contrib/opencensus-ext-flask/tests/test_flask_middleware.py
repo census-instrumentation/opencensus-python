@@ -18,7 +18,10 @@
 import unittest
 
 import flask
-import mock
+try:
+    from unittest import mock
+except ImportError:
+    import mock
 from google.rpc import code_pb2
 from werkzeug.exceptions import NotFound
 

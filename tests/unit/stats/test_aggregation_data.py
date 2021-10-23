@@ -16,7 +16,10 @@ import time
 import unittest
 from datetime import datetime
 
-import mock
+try:
+    from unittest import mock
+except ImportError:
+    import mock
 
 from opencensus.metrics.export import point
 from opencensus.metrics.export import value as value_module

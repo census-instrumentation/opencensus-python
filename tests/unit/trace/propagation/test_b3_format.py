@@ -14,7 +14,10 @@
 
 import unittest
 
-import mock
+try:
+    from unittest import mock
+except ImportError:
+    import mock
 
 from opencensus.trace.propagation import b3_format
 from opencensus.trace.span_context import INVALID_SPAN_ID

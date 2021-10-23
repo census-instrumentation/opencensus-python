@@ -21,7 +21,10 @@ from concurrent import futures
 from datetime import datetime
 
 import grpc
-import mock
+try:
+    from unittest import mock
+except ImportError:
+    import mock
 from google.protobuf import timestamp_pb2
 
 from opencensus.common import resource, utils

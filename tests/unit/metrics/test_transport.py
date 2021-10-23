@@ -16,7 +16,10 @@ import gc
 import sys
 import time
 
-import mock
+try:
+    from unittest import mock
+except ImportError:
+    import mock
 
 from opencensus.metrics import transport
 

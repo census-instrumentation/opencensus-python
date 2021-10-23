@@ -16,7 +16,10 @@ import unittest
 from datetime import datetime, timedelta
 
 import google.auth
-import mock
+try:
+    from unittest import mock
+except ImportError:
+    import mock
 from google.api import metric_pb2
 from google.cloud import monitoring_v3
 

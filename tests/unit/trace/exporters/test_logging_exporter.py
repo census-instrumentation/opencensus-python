@@ -15,7 +15,10 @@
 import logging
 import unittest
 
-import mock
+try:
+    from unittest import mock
+except ImportError:
+    import mock
 
 from opencensus.trace import logging_exporter, span_context
 from opencensus.trace import span_data as span_data_module

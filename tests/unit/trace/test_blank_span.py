@@ -15,7 +15,10 @@
 import datetime
 import unittest
 
-import mock
+try:
+    from unittest import mock
+except ImportError:
+    import mock
 
 from opencensus.common import utils
 from opencensus.trace.link import Link

@@ -14,7 +14,10 @@
 
 import unittest
 
-import mock
+try:
+    from unittest import mock
+except ImportError:
+    import mock
 
 from opencensus.stats import execution_context
 from opencensus.stats import stats_recorder as stats_recorder_module

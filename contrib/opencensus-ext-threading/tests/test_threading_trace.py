@@ -17,7 +17,10 @@ import unittest
 from concurrent.futures import ThreadPoolExecutor
 from multiprocessing.pool import Pool
 
-import mock
+try:
+    from unittest import mock
+except ImportError:
+    import mock
 
 from opencensus.ext.threading import trace
 from opencensus.trace import execution_context, tracer

@@ -29,7 +29,10 @@ import gc
 import unittest
 import weakref
 
-import mock
+try:
+    from unittest import mock
+except ImportError:
+    import mock
 
 from opencensus.common import utils
 

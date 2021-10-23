@@ -14,7 +14,10 @@
 
 import unittest
 
-import mock
+try:
+    from unittest import mock
+except ImportError:
+    import mock
 
 from opencensus.ext.jaeger import trace_exporter
 from opencensus.ext.jaeger.trace_exporter.gen.jaeger import jaeger

@@ -18,7 +18,10 @@ import socket
 import unittest
 
 import grpc
-import mock
+try:
+    from unittest import mock
+except ImportError:
+    import mock
 
 from opencensus.common.version import __version__
 from opencensus.ext.ocagent.trace_exporter import TraceExporter

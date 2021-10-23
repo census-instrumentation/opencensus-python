@@ -17,7 +17,10 @@ import os
 import shutil
 import unittest
 
-import mock
+try:
+    from unittest import mock
+except ImportError:
+    import mock
 import requests
 from azure.core.exceptions import ClientAuthenticationError
 from azure.identity._exceptions import CredentialUnavailableError
