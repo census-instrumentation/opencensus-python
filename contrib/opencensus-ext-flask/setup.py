@@ -41,7 +41,7 @@ setup(
     include_package_data=True,
     long_description=open('README.rst').read(),
     install_requires=[
-        'flask >= 0.12.3, < 2.0.0, != 1.1.3',
+        'flask >= 0.12.3, < 3.0.0, != 1.1.3',
         'opencensus >= 0.7.13, < 1.0.0',
     ],
     extras_require={},
