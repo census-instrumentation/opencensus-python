@@ -30,16 +30,18 @@ from opencensus.metrics.export.gauge import (
 )
 from opencensus.metrics.label_key import LabelKey
 from opencensus.metrics.label_value import LabelValue
+from opencensus.trace.integrations import get_integrations
 
 _AIMS_URI = "http://169.254.169.254/metadata/instance/compute"
 _AIMS_API_VERSION = "api-version=2017-12-01"
 _AIMS_FORMAT = "format=json"
 
-_DEFAULT_STATS_CONNECTION_STRING = "InstrumentationKey=c4a29126-a7cb-47e5-b348-11414998b11e;IngestionEndpoint=https://dc.services.visualstudio.com/"  # noqa: E501
+_DEFAULT_STATS_CONNECTION_STRING = "InstrumentationKey=c4a29126-a7cb-47e5-b348-11414998b11e;IngestionEndpoint=https://westus-0.in.applicationinsights.azure.com/"  # noqa: E501
 _DEFAULT_STATS_SHORT_EXPORT_INTERVAL = 900  # 15 minutes
 _DEFAULT_STATS_LONG_EXPORT_INTERVAL = 86400  # 24 hours
 
 _ATTACH_METRIC_NAME = "Attach"
+_FEATURE_METRIC_NAME = "Feature"
 _REQ_SUC_COUNT_NAME = "Request Success Count"
 _REQ_FAIL_COUNT_NAME = "Request Failure Count"
 _REQ_DURATION_NAME = "Request Duration"
@@ -47,9 +49,21 @@ _REQ_RETRY_NAME = "Request Retry Count"
 _REQ_THROTTLE_NAME = "Request Throttle Count"
 _REQ_EXCEPTION_NAME = "Request Exception Count"
 
-_RP_NAMES = ["appsvc", "function", "vm", "unknown"]
+_ENDPOINT_TYPES = ["breeze"]
+_RP_NAMES = ["appsvc", "functions", "vm", "unknown"]
 
 _logger = logging.getLogger(__name__)
+
+
+class _FEATURE_TYPES:
+    FEATURE = 0
+    INSTRUMENTATION = 1
+
+
+class _StatsbeatFeature:
+    NONE = 0
+    DISK_RETRY = 1
+    AAD_HANDLING = 2
 
 
 def _get_stats_connection_string():
@@ -97,12 +111,21 @@ def _get_common_properties():
 
 def _get_attach_properties():
     properties = _get_common_properties()
-    properties.insert(1, LabelKey("rpid", 'unique id of rp'))
+    properties.insert(1, LabelKey("rpId", 'unique id of rp'))
     return properties
 
 
 def _get_network_properties():
     properties = _get_common_properties()
+    properties.append(LabelKey("endpoint", "ingestion endpoint type"))
+    properties.append(LabelKey("host", "destination of ingestion endpoint"))
+    return properties
+
+
+def _get_feature_properties():
+    properties = _get_common_properties()
+    properties.insert(4, LabelKey("feature", 'represents enabled features'))
+    properties.insert(4, LabelKey("type", 'type, either feature or instrumentation'))  # noqa: E501
     return properties
 
 
@@ -162,8 +185,12 @@ def _get_exception_count_value():
 
 class _StatsbeatMetrics:
 
-    def __init__(self, instrumentation_key):
-        self._instrumentation_key = instrumentation_key
+    def __init__(self, options):
+        self._options = options
+        self._instrumentation_key = options.instrumentation_key
+        self._feature = _StatsbeatFeature.NONE
+        if options.enable_local_storage:
+            self._feature |= _StatsbeatFeature.DISK_RETRY
         self._stats_lock = threading.Lock()
         self._vm_data = {}
         self._vm_retry = True
@@ -218,6 +245,21 @@ class _StatsbeatMetrics:
             'count',
             _get_network_properties(),
         )
+        # feature/instrumentation metrics
+        # metrics related to what features and instrumentations are enabled
+        self._feature_metric = LongGauge(
+            _FEATURE_METRIC_NAME,
+            'Statsbeat metric related to features enabled',  # noqa: E501
+            'count',
+            _get_feature_properties(),
+        )
+        # Instrumentation metric uses same name/properties as feature
+        self._instrumentation_metric = LongGauge(
+            _FEATURE_METRIC_NAME,
+            'Statsbeat metric related to instrumentations enabled',  # noqa: E501
+            'count',
+            _get_feature_properties(),
+        )
 
     # Metrics that are sent on application start
     def get_initial_metrics(self):
@@ -226,6 +268,14 @@ class _StatsbeatMetrics:
             attach_metric = self._get_attach_metric()
             if attach_metric:
                 stats_metrics.append(attach_metric)
+        if self._feature_metric:
+            feature_metric = self._get_feature_metric()
+            if feature_metric:
+                stats_metrics.append(feature_metric)
+        if self._instrumentation_metric:
+            instr_metric = self._get_instrumentation_metric()
+            if instr_metric:
+                stats_metrics.append(instr_metric)
         return stats_metrics
 
     # Metrics sent every statsbeat interval
@@ -248,6 +298,8 @@ class _StatsbeatMetrics:
 
     def _get_network_metrics(self):
         properties = self._get_common_properties()
+        properties.append(LabelValue(_ENDPOINT_TYPES[0]))  # endpoint
+        properties.append(LabelValue(self._options.endpoint))  # host
         metrics = []
         for fn, metric in self._network_metrics.items():
             # NOTE: A time series is a set of unique label values
@@ -259,6 +311,20 @@ class _StatsbeatMetrics:
             if stats_metric.time_series[0].points[0].value.value != 0:
                 metrics.append(stats_metric)
         return metrics
+
+    def _get_feature_metric(self):
+        properties = self._get_common_properties()
+        properties.insert(4, LabelValue(self._feature))  # feature long
+        properties.insert(4, LabelValue(_FEATURE_TYPES.FEATURE))  # type
+        self._feature_metric.get_or_create_time_series(properties)
+        return self._feature_metric.get_metric(datetime.datetime.utcnow())
+
+    def _get_instrumentation_metric(self):
+        properties = self._get_common_properties()
+        properties.insert(4, LabelValue(get_integrations()))  # instr long
+        properties.insert(4, LabelValue(_FEATURE_TYPES.INSTRUMENTATION))  # type  # noqa: E501
+        self._instrumentation_metric.get_or_create_time_series(properties)
+        return self._instrumentation_metric.get_metric(datetime.datetime.utcnow())  # noqa: E501
 
     def _get_attach_metric(self):
         properties = []
@@ -279,7 +345,7 @@ class _StatsbeatMetrics:
         elif self._vm_retry and self._get_azure_compute_metadata():
             # VM
             rp = _RP_NAMES[2]
-            rpId = '{}//{}'.format(
+            rpId = '{}/{}'.format(
                         self._vm_data.get("vmId", ''),
                         self._vm_data.get("subscriptionId", ''))
             self._os_type = self._vm_data.get("osType", '')
@@ -303,9 +369,7 @@ class _StatsbeatMetrics:
         properties.append(LabelValue(platform.python_version()))
         properties.append(LabelValue(self._os_type or platform.system()))  # os
         properties.append(LabelValue("python"))  # language
-        # version
-        properties.append(
-            LabelValue(ext_version))
+        properties.append(LabelValue(ext_version))  # version
         return properties
 
     def _get_azure_compute_metadata(self):

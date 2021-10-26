@@ -27,7 +27,7 @@ _STATSBEAT_METRICS = None
 _STATSBEAT_LOCK = threading.Lock()
 
 
-def collect_statsbeat_metrics(ikey):
+def collect_statsbeat_metrics(options):
     with _STATSBEAT_LOCK:
         # Only start statsbeat if did not exist before
         global _STATSBEAT_METRICS  # pylint: disable=global-statement
@@ -39,9 +39,7 @@ def collect_statsbeat_metrics(ikey):
                 export_interval=_STATS_SHORT_EXPORT_INTERVAL,  # 15m by default
             )
             # The user's ikey is the one being tracked
-            producer = _AzureStatsbeatMetricsProducer(
-                instrumentation_key=ikey
-            )
+            producer = _AzureStatsbeatMetricsProducer(options)
             _STATSBEAT_METRICS = producer
             # Export some initial stats on program start
             exporter.export_metrics(_STATSBEAT_METRICS.get_initial_metrics())
@@ -54,10 +52,11 @@ def collect_statsbeat_metrics(ikey):
 class _AzureStatsbeatMetricsProducer(MetricProducer):
     """Implementation of the producer of statsbeat metrics.
 
-    Includes Azure attach rate metrics, implemented using gauges.
+    Includes Azure attach rate, network and feature metrics,
+    implemented using gauges.
     """
-    def __init__(self, instrumentation_key):
-        self._statsbeat = _StatsbeatMetrics(instrumentation_key)
+    def __init__(self, options):
+        self._statsbeat = _StatsbeatMetrics(options)
 
     def get_metrics(self):
         return self._statsbeat.get_metrics()
