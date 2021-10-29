@@ -58,7 +58,7 @@ class MetricsExporter(TransportMixin, ProcessorMixin):
                 retention_period=self.options.storage_retention_period,
                 source=self.__class__.__name__,
             )
-        self._atexit_handler = atexit.register(self.shutdown)
+        self._atexit_handler = atexit.register(self.shutdown, self.options.grace_period)
         self.exporter_thread = None
         # For redirects
         self._consecutive_redirects = 0  # To prevent circular redirects

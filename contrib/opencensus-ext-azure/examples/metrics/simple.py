@@ -50,7 +50,6 @@ def main():
 
     mmap.measure_int_put(CARROTS_MEASURE, 1000)
     mmap.record(tmap)
-    time.sleep(60)
 
     print("Done recording metrics")
 

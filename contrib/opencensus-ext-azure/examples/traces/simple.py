@@ -23,4 +23,3 @@ tracer = Tracer(exporter=AzureExporter(), sampler=ProbabilitySampler(1.0))
 
 with tracer.span(name='foo'):
     print('Hello, World!')
-input(...)

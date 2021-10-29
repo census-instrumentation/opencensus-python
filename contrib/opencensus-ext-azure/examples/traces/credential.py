@@ -35,4 +35,3 @@ tracer = Tracer(
 
 with tracer.span(name='foo'):
     print('Hello, World!')
-input(...)
