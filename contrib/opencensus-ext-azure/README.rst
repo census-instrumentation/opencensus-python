@@ -144,8 +144,6 @@ The **Azure Monitor Metrics Exporter** allows you to export metrics to `Azure Mo
 
 .. code:: python
 
-    import time
-
     from opencensus.ext.azure import metrics_exporter
     from opencensus.stats import aggregation as aggregation_module
     from opencensus.stats import measure as measure_module
@@ -179,10 +177,6 @@ The **Azure Monitor Metrics Exporter** allows you to export metrics to `Azure Mo
         mmap.measure_int_put(CARROTS_MEASURE, 1000)
         mmap.record(tmap)
         # Default export interval is every 15.0s
-        # Your application should run for at least this amount
-        # of time so the exporter will meet this interval
-        # Sleep can fulfill this
-        time.sleep(60)
 
         print("Done recording metrics")
 
@@ -236,8 +230,6 @@ Modifying Metrics
 
 .. code:: python
 
-    import time
-
     from opencensus.ext.azure import metrics_exporter
     from opencensus.stats import aggregation as aggregation_module
     from opencensus.stats import measure as measure_module
@@ -276,10 +268,6 @@ Modifying Metrics
         mmap.measure_int_put(CARROTS_MEASURE, 1000)
         mmap.record(tmap)
         # Default export interval is every 15.0s
-        # Your application should run for at least this amount
-        # of time so the exporter will meet this interval
-        # Sleep can fulfill this
-        time.sleep(60)
 
         print("Done recording metrics")
 
