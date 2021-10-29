@@ -64,7 +64,7 @@ class BaseLogHandler(logging.Handler):
         self._queue = Queue(capacity=self.options.queue_capacity)
         self._worker = Worker(self._queue, self)
         self._worker.start()
-        # atexit.register(self.close, self.options.grace_period)
+        atexit.register(self.close, self.options.grace_period)
         # start statsbeat on exporter instantiation
         if not os.environ.get("APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL"):
             statsbeat_metrics.collect_statsbeat_metrics(self.options)
