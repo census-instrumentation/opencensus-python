@@ -34,14 +34,18 @@ setup(
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
     ],
     description='OpenCensus Google Cloud Client Libraries Integration',
     include_package_data=True,
     long_description=open('README.rst').read(),
     install_requires=[
-        'opencensus >= 0.8.dev0, < 1.0.0',
+        'opencensus >= 0.9.dev0, < 1.0.0',
         'opencensus-ext-grpc >= 0.3.0, < 1.0.0',
         'opencensus-ext-requests >= 0.1.2, < 1.0.0',
+        'google-cloud-core ~= 1.7; python_version == "2.7" or python_version >= "3.6"',  # noqa: E501
+        'google-cloud-core ~= 1.4; python_version == "3.4" or python_version == "3.5"',  # noqa: E501
     ],
     extras_require={},
     license='Apache-2.0',

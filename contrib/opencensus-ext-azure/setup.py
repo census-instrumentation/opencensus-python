@@ -34,6 +34,8 @@ setup(
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
     ],
     description='OpenCensus Azure Monitor Exporter',
     include_package_data=True,
@@ -41,7 +43,7 @@ setup(
     install_requires=[
         'azure-core >= 1.12.0, < 2.0.0',
         'azure-identity >= 1.5.0, < 2.0.0',
-        'opencensus >= 0.8.dev0, < 1.0.0',
+        'opencensus >= 0.9.dev0, < 1.0.0',
         'psutil >= 5.6.3',
         'requests >= 2.19.0',
     ],

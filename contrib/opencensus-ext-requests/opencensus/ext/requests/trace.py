@@ -21,6 +21,7 @@ from opencensus.trace import (
     attributes_helper,
     exceptions_status,
     execution_context,
+    integrations,
 )
 from opencensus.trace import span as span_module
 from opencensus.trace import utils
@@ -62,6 +63,8 @@ def trace_integration(tracer=None):
     # https://github.com/psf/requests/commit/4e5c4a6ab7bb0195dececdd19bb8505b872fe120)
     wrapt.wrap_function_wrapper(
         MODULE_NAME, 'Session.request', wrap_session_request)
+    # pylint: disable=protected-access
+    integrations.add_integration(integrations._Integrations.REQUESTS)
 
 
 def wrap_session_request(wrapped, instance, args, kwargs):

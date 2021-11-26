@@ -12,7 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import atexit
 import logging
+import os
 import random
 import threading
 import time
@@ -30,6 +32,7 @@ from opencensus.ext.azure.common.protocol import (
 )
 from opencensus.ext.azure.common.storage import LocalFileStorage
 from opencensus.ext.azure.common.transport import TransportMixin
+from opencensus.ext.azure.metrics_exporter import statsbeat_metrics
 from opencensus.trace import execution_context
 
 logger = logging.getLogger(__name__)
@@ -61,6 +64,12 @@ class BaseLogHandler(logging.Handler):
         self._queue = Queue(capacity=self.options.queue_capacity)
         self._worker = Worker(self._queue, self)
         self._worker.start()
+        atexit.register(self.close, self.options.grace_period)
+        # start statsbeat on exporter instantiation
+        if not os.environ.get("APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL"):
+            statsbeat_metrics.collect_statsbeat_metrics(self.options)
+        # For redirects
+        self._consecutive_redirects = 0  # To prevent circular redirects
 
     def _export(self, batch, event=None):  # pragma: NO COVER
         try:
@@ -81,11 +90,11 @@ class BaseLogHandler(logging.Handler):
             if event:
                 event.set()
 
-    def close(self):
+    def close(self, timeout=None):
         if self.storage:
             self.storage.close()
         if self._worker:
-            self._worker.stop()
+            self._worker.stop(timeout)
 
     def createLock(self):
         self.lock = None

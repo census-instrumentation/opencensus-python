@@ -23,5 +23,3 @@ logger = logging.getLogger(__name__)
 logger.addHandler(AzureEventHandler())
 logger.setLevel(logging.INFO)
 logger.info('Hello, World!')
-
-input("...")

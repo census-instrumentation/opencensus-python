@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import time
-
 from opencensus.ext.azure import metrics_exporter
 from opencensus.stats import aggregation as aggregation_module
 from opencensus.stats import measure as measure_module
@@ -50,7 +48,6 @@ def main():
 
     mmap.measure_int_put(CARROTS_MEASURE, 1000)
     mmap.record(tmap)
-    time.sleep(60)
 
     print("Done recording metrics")
 

@@ -1,5 +1,5 @@
 OpenCensus Azure Monitor Exporters
-============================================================================
+==================================
 
 |pypi|
 
@@ -13,6 +13,13 @@ Installation
 
     pip install opencensus-ext-azure
 
+Prerequisites
+-------------
+
+* Create an Azure Monitor resource and get the instrumentation key, more information can be found in the official `docs <https://docs.microsoft.com/azure/azure-monitor/app/create-new-resource>`_.
+* Place your instrumentation key in a `connection string` and directly into your code.
+* Alternatively, you can specify your `connection string` in an environment variable ``APPLICATIONINSIGHTS_CONNECTION_STRING``.
+  
 Usage
 -----
 
@@ -22,10 +29,6 @@ Log
 The **Azure Monitor Log Handler** allows you to export Python logs to `Azure Monitor`_.
 
 This example shows how to send a warning level log to Azure Monitor.
-
-* Create an Azure Monitor resource and get the instrumentation key, more information can be found `here <https://docs.microsoft.com/azure/azure-monitor/app/create-new-resource>`_.
-* Place your instrumentation key in a `connection string` and directly into your code.
-* Alternatively, you can specify your `connection string` in an environment variable ``APPLICATIONINSIGHTS_CONNECTION_STRING``.
 
 .. code:: python
 
@@ -42,10 +45,7 @@ Correlation
 
 You can enrich the logs with trace IDs and span IDs by using the `logging integration <../opencensus-ext-logging>`_.
 
-* Create an Azure Monitor resource and get the instrumentation key, more information can be found `here <https://docs.microsoft.com/azure/azure-monitor/app/create-new-resource>`_.
 * Install the `logging integration package <../opencensus-ext-logging>`_ using ``pip install opencensus-ext-logging``.
-* Place your instrumentation key in a `connection string` and directly into your code.
-* Alternatively, you can specify your `connection string` in an environment variable ``APPLICATIONINSIGHTS_CONNECTION_STRING``.
 
 .. code:: python
 
@@ -99,8 +99,8 @@ Modifying Logs
 
 * You can pass a callback function to the exporter to process telemetry before it is exported.
 * Your callback function can return `False` if you do not want this envelope exported.
-* Your callback function must accept an [envelope](https://github.com/census-instrumentation/opencensus-python/blob/master/contrib/opencensus-ext-azure/opencensus/ext/azure/common/protocol.py#L86) data type as its parameter.
-* You can see the schema for Azure Monitor data types in the envelopes [here](https://github.com/census-instrumentation/opencensus-python/blob/master/contrib/opencensus-ext-azure/opencensus/ext/azure/common/protocol.py).
+* Your callback function must accept an `envelope <https://github.com/census-instrumentation/opencensus-python/blob/master/contrib/opencensus-ext-azure/opencensus/ext/azure/common/protocol.py#L86>`_ data type as its parameter.
+* You can see the schema for Azure Monitor data types in the envelopes `here <https://github.com/census-instrumentation/opencensus-python/blob/master/contrib/opencensus-ext-azure/opencensus/ext/azure/common/protocol.py>`_.
 * The `AzureLogHandler` handles `ExceptionData` and `MessageData` data types.
 
 .. code:: python
@@ -142,13 +142,7 @@ Metrics
 
 The **Azure Monitor Metrics Exporter** allows you to export metrics to `Azure Monitor`_.
 
-* Create an Azure Monitor resource and get the instrumentation key, more information can be found `here <https://docs.microsoft.com/azure/azure-monitor/app/create-new-resource>`_.
-* Place your instrumentation key in a `connection string` and directly into your code.
-* Alternatively, you can specify your `connection string` in an environment variable ``APPLICATIONINSIGHTS_CONNECTION_STRING``.
-
 .. code:: python
-
-    import time
 
     from opencensus.ext.azure import metrics_exporter
     from opencensus.stats import aggregation as aggregation_module
@@ -183,10 +177,6 @@ The **Azure Monitor Metrics Exporter** allows you to export metrics to `Azure Mo
         mmap.measure_int_put(CARROTS_MEASURE, 1000)
         mmap.record(tmap)
         # Default export interval is every 15.0s
-        # Your application should run for at least this amount
-        # of time so the exporter will meet this interval
-        # Sleep can fulfill this
-        time.sleep(60)
 
         print("Done recording metrics")
 
@@ -234,13 +224,11 @@ Modifying Metrics
 
 * You can pass a callback function to the exporter to process telemetry before it is exported.
 * Your callback function can return `False` if you do not want this envelope exported.
-* Your callback function must accept an [envelope](https://github.com/census-instrumentation/opencensus-python/blob/master/contrib/opencensus-ext-azure/opencensus/ext/azure/common/protocol.py#L86) data type as its parameter.
-* You can see the schema for Azure Monitor data types in the envelopes [here](https://github.com/census-instrumentation/opencensus-python/blob/master/contrib/opencensus-ext-azure/opencensus/ext/azure/common/protocol.py).
+* Your callback function must accept an `envelope <https://github.com/census-instrumentation/opencensus-python/blob/master/contrib/opencensus-ext-azure/opencensus/ext/azure/common/protocol.py#L86>`_ data type as its parameter.
+* You can see the schema for Azure Monitor data types in the envelopes `here <https://github.com/census-instrumentation/opencensus-python/blob/master/contrib/opencensus-ext-azure/opencensus/ext/azure/common/protocol.py>`_.
 * The `MetricsExporter` handles `MetricData` data types.
 
 .. code:: python
-
-    import time
 
     from opencensus.ext.azure import metrics_exporter
     from opencensus.stats import aggregation as aggregation_module
@@ -280,10 +268,6 @@ Modifying Metrics
         mmap.measure_int_put(CARROTS_MEASURE, 1000)
         mmap.record(tmap)
         # Default export interval is every 15.0s
-        # Your application should run for at least this amount
-        # of time so the exporter will meet this interval
-        # Sleep can fulfill this
-        time.sleep(60)
 
         print("Done recording metrics")
 
@@ -296,10 +280,6 @@ Trace
 The **Azure Monitor Trace Exporter** allows you to export `OpenCensus`_ traces to `Azure Monitor`_.
 
 This example shows how to send a span "hello" to Azure Monitor.
-
-* Create an Azure Monitor resource and get the instrumentation key, more information can be found `here <https://docs.microsoft.com/azure/azure-monitor/app/create-new-resource>`_.
-* Place your instrumentation key in a `connection string` and directly into your code.
-* Alternatively, you can specify your `connection string` in an environment variable ``APPLICATIONINSIGHTS_CONNECTION_STRING``.
 
  .. code:: python
 
@@ -324,10 +304,7 @@ OpenCensus also supports several `integrations <https://github.com/census-instru
 
 This example shows how to integrate with the `requests <https://2.python-requests.org/en/master/>`_ library.
 
-* Create an Azure Monitor resource and get the instrumentation key, more information can be found `here <https://docs.microsoft.com/azure/azure-monitor/app/create-new-resource>`_.
 * Install the `requests integration package <../opencensus-ext-requests>`_ using ``pip install opencensus-ext-requests``.
-* Place your instrumentation key in a `connection string` and directly into your code.
-* Alternatively, you can specify your `connection string` in an environment variable ``APPLICATIONINSIGHTS_CONNECTION_STRING``.
 
 .. code:: python
 
@@ -353,8 +330,8 @@ Modifying Traces
 
 * You can pass a callback function to the exporter to process telemetry before it is exported.
 * Your callback function can return `False` if you do not want this envelope exported.
-* Your callback function must accept an [envelope](https://github.com/census-instrumentation/opencensus-python/blob/master/contrib/opencensus-ext-azure/opencensus/ext/azure/common/protocol.py#L86) data type as its parameter.
-* You can see the schema for Azure Monitor data types in the envelopes [here](https://github.com/census-instrumentation/opencensus-python/blob/master/contrib/opencensus-ext-azure/opencensus/ext/azure/common/protocol.py).
+* Your callback function must accept an `envelope <https://github.com/census-instrumentation/opencensus-python/blob/master/contrib/opencensus-ext-azure/opencensus/ext/azure/common/protocol.py#L86>`_ data type as its parameter.
+* You can see the schema for Azure Monitor data types in the envelopes `here <https://github.com/census-instrumentation/opencensus-python/blob/master/contrib/opencensus-ext-azure/opencensus/ext/azure/common/protocol.py>`_.
 * The `AzureExporter` handles `Data` data types.
 
 .. code:: python
@@ -380,6 +357,11 @@ Modifying Traces
     tracer = Tracer(exporter=exporter, sampler=ProbabilitySampler(1.0))
     with tracer.span(name='parent'):
         response = requests.get(url='https://www.wikipedia.org/wiki/Rabbit')
+        
+Integrate with Azure Functions
+##############################
+
+Users who want to capture custom telemetry in Azure Functions environments are encouraged to used the OpenCensus Python Azure Functions `extension <https://github.com/census-ecosystem/opencensus-python-extensions-azure/tree/main/extensions/functions#opencensus-python-azure-functions-extension>`_. More details can be found in this `document <https://docs.microsoft.com/azure/azure-functions/functions-reference-python?tabs=application-level#log-custom-telemetry>`_.
 
 References
 ----------

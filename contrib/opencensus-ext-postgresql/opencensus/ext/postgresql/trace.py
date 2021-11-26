@@ -19,7 +19,7 @@ import psycopg2
 from psycopg2 import connect as pg_connect
 from psycopg2.extensions import cursor as pgcursor
 
-from opencensus.trace import execution_context
+from opencensus.trace import execution_context, integrations
 from opencensus.trace import span as span_module
 
 log = logging.getLogger(__name__)
@@ -37,6 +37,8 @@ def trace_integration(tracer=None):
     conn_func = getattr(psycopg2, CONN_WRAP_METHOD)
     conn_module = inspect.getmodule(conn_func)
     setattr(conn_module, conn_func.__name__, connect)
+    # pylint: disable=protected-access
+    integrations.add_integration(integrations._Integrations.POSTGRESQL)
 
 
 def connect(*args, **kwargs):

@@ -40,12 +40,17 @@ def throw(exc_type, *args, **kwargs):
 
 
 class TestAzureExporter(unittest.TestCase):
+
+    def setUp(self):
+        os.environ["APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL"] = "true"
+        return super(TestAzureExporter, self).setUp()
+
+    def tearDown(self):
+        del os.environ["APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL"]
+        return super(TestAzureExporter, self).tearDown()
+
     def test_ctor(self):
-        from opencensus.ext.azure.common import Options
-        instrumentation_key = Options._default.instrumentation_key
-        Options._default.instrumentation_key = None
-        self.assertRaises(ValueError, lambda: trace_exporter.AzureExporter())
-        Options._default.instrumentation_key = instrumentation_key
+        self.assertRaises(ValueError, lambda: trace_exporter.AzureExporter(connection_string="", instrumentation_key=""))  # noqa: E501
 
     def test_init_exporter_with_proxies(self):
         exporter = trace_exporter.AzureExporter(

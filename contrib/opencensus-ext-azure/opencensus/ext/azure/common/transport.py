@@ -14,16 +14,33 @@
 
 import json
 import logging
+import os
+import threading
+import time
 
 import requests
 from azure.core.exceptions import ClientAuthenticationError
 from azure.identity._exceptions import CredentialUnavailableError
 
+try:
+    from urllib.parse import urlparse
+except ImportError:
+    from urlparse import urlparse
+
+
 logger = logging.getLogger(__name__)
+
+_MAX_CONSECUTIVE_REDIRECTS = 10
 _MONITOR_OAUTH_SCOPE = "https://monitor.azure.com//.default"
+_requests_lock = threading.Lock()
+_requests_map = {}
 
 
 class TransportMixin(object):
+
+    def _check_stats_collection(self):
+        return not os.environ.get("APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL") and (not hasattr(self, '_is_stats') or not self._is_stats)  # noqa: E501
+
     def _transmit_from_storage(self):
         if self.storage:
             for blob in self.storage.gets():
@@ -47,7 +64,9 @@ class TransportMixin(object):
         """
         if not envelopes:
             return 0
+        exception = None
         try:
+            start_time = time.time()
             headers = {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json; charset=utf-8',
@@ -56,37 +75,52 @@ class TransportMixin(object):
             if self.options.credential:
                 token = self.options.credential.get_token(_MONITOR_OAUTH_SCOPE)
                 headers["Authorization"] = "Bearer {}".format(token.token)
-                # Use new api for aad scenario
-                endpoint += '/v2.1/track'
-            else:
-                endpoint += '/v2/track'
+            endpoint += '/v2.1/track'
+            if self._check_stats_collection():
+                with _requests_lock:
+                    _requests_map['count'] = _requests_map.get('count', 0) + 1  # noqa: E501
             response = requests.post(
                 url=endpoint,
                 data=json.dumps(envelopes),
                 headers=headers,
                 timeout=self.options.timeout,
                 proxies=json.loads(self.options.proxies),
+                allow_redirects=False,
             )
         except requests.Timeout:
             logger.warning(
                 'Request time out. Ingestion may be backed up. Retrying.')
-            return self.options.minimum_retry_interval
+            exception = self.options.minimum_retry_interval
         except requests.RequestException as ex:
             logger.warning(
                 'Retrying due to transient client side error %s.', ex)
+            if self._check_stats_collection():
+                with _requests_lock:
+                    _requests_map['exception'] = _requests_map.get('exception', 0) + 1  # noqa: E501
             # client side error (retryable)
-            return self.options.minimum_retry_interval
+            exception = self.options.minimum_retry_interval
         except CredentialUnavailableError as ex:
             logger.warning('Credential error. %s. Dropping telemetry.', ex)
-            return -1
+            exception = -1
         except ClientAuthenticationError as ex:
             logger.warning('Authentication error %s', ex)
-            return self.options.minimum_retry_interval
+            exception = self.options.minimum_retry_interval
         except Exception as ex:
             logger.warning(
                 'Error when sending request %s. Dropping telemetry.', ex)
+            if self._check_stats_collection():
+                with _requests_lock:
+                    _requests_map['exception'] = _requests_map.get('exception', 0) + 1  # noqa: E501
             # Extraneous error (non-retryable)
-            return -1
+            exception = -1
+        finally:
+            end_time = time.time()
+            if self._check_stats_collection():
+                with _requests_lock:
+                    duration = _requests_map.get('duration', 0)
+                    _requests_map['duration'] = duration + (end_time - start_time)  # noqa: E501
+            if exception is not None:
+                return exception
 
         text = 'N/A'
         data = None
@@ -100,7 +134,15 @@ class TransportMixin(object):
             except Exception:
                 pass
         if response.status_code == 200:
+            self._consecutive_redirects = 0
+            if self._check_stats_collection():
+                with _requests_lock:
+                    _requests_map['success'] = _requests_map.get('success', 0) + 1  # noqa: E501
             return 0
+        # Status code not 200 counts as failure
+        if self._check_stats_collection():
+            with _requests_lock:
+                _requests_map['failure'] = _requests_map.get('failure', 0) + 1  # noqa: E501
         if response.status_code == 206:  # Partial Content
             if data:
                 try:
@@ -128,6 +170,9 @@ class TransportMixin(object):
                         text,
                         ex,
                     )
+                if self._check_stats_collection():
+                    with _requests_lock:
+                        _requests_map['retry'] = _requests_map.get('retry', 0) + 1  # noqa: E501
                 return -response.status_code
             # cannot parse response body, fallback to retry
         if response.status_code in (
@@ -142,6 +187,11 @@ class TransportMixin(object):
                 text,
             )
             # server side error (retryable)
+            if self._check_stats_collection():
+                with _requests_lock:
+                    _requests_map['retry'] = _requests_map.get('retry', 0) + 1  # noqa: E501
+                    if response.status_code == 429:
+                        _requests_map['throttle'] = _requests_map.get('throttle', 0) + 1  # noqa: E501
             return self.options.minimum_retry_interval
         # Authentication error
         if response.status_code == 401:
@@ -150,6 +200,9 @@ class TransportMixin(object):
                 response.status_code,
                 text,
             )
+            if self._check_stats_collection():
+                with _requests_lock:
+                    _requests_map['retry'] = _requests_map.get('retry', 0) + 1  # noqa: E501
             return self.options.minimum_retry_interval
         # Forbidden error
         # Can occur when v2 endpoint is used while AI resource is configured
@@ -160,7 +213,30 @@ class TransportMixin(object):
                 response.status_code,
                 text,
             )
+            if self._check_stats_collection():
+                with _requests_lock:
+                    _requests_map['retry'] = _requests_map.get('retry', 0) + 1  # noqa: E501
             return self.options.minimum_retry_interval
+        # Redirect
+        if response.status_code in (307, 308):
+            self._consecutive_redirects += 1
+            if self._consecutive_redirects < _MAX_CONSECUTIVE_REDIRECTS:
+                if response.headers:
+                    location = response.headers.get("location")
+                    if location:
+                        url = urlparse(location)
+                        if url.scheme and url.netloc:
+                            # Change the host to the new redirected host
+                            self.options.endpoint = "{}://{}".format(url.scheme, url.netloc)  # noqa: E501
+                            # Attempt to export again
+                            return self._transmit(envelopes)
+                logger.error(
+                    "Error parsing redirect information."
+                )
+            logger.error(
+                "Error sending telemetry because of circular redirects."
+                " Please check the integrity of your connection string."
+            )
         logger.error(
             'Non-retryable server side error %s: %s.',
             response.status_code,

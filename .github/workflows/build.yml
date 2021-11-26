@@ -18,11 +18,13 @@ jobs:
       py35: 3.5
       py36: 3.6
       py37: 3.7
+      py38: 3.8
+      py39: 3.9
     strategy:
       # ensures the entire test matrix is run, even if one permutation fails
       fail-fast: false
       matrix:
-        python-version: [py27, py35, py36, py37]
+        python-version: [py27, py35, py36, py37, py38, py39]
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -37,6 +39,6 @@ jobs:
         with:
           path: .tox
           # bump version prefix to fully reset caches
-          key: v1-tox-${{ matrix.python-version }}-${{ hashFiles('tox.ini') }}
+          key: v1-tox-${{ matrix.python-version }}-${{ hashFiles('tox.ini', '**/setup.py') }}
       - name: run tox
         run: tox -f ${{ matrix.python-version }}

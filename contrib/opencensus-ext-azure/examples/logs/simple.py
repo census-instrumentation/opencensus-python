@@ -21,6 +21,3 @@ logger = logging.getLogger(__name__)
 # and place it in the APPLICATIONINSIGHTS_CONNECTION_STRING
 # environment variable.
 logger.addHandler(AzureLogHandler())
-logger.warning('Hello, World!')
-
-input("...")

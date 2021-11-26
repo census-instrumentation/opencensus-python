@@ -52,6 +52,15 @@ class CustomLogHandler(log_exporter.BaseLogHandler):
 
 
 class TestBaseLogHandler(unittest.TestCase):
+
+    def setUp(self):
+        os.environ["APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL"] = "true"
+        return super(TestBaseLogHandler, self).setUp()
+
+    def tearDown(self):
+        del os.environ["APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL"]
+        return super(TestBaseLogHandler, self).tearDown()
+
     def test_basic(self):
         logger = logging.getLogger(self.id())
         handler = CustomLogHandler(10, lambda batch: None)
@@ -73,16 +82,22 @@ class TestBaseLogHandler(unittest.TestCase):
 
 
 class TestAzureLogHandler(unittest.TestCase):
+
+    def setUp(self):
+        os.environ["APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL"] = "true"
+        return super(TestAzureLogHandler, self).setUp()
+
+    def tearDown(self):
+        del os.environ["APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL"]
+        return super(TestAzureLogHandler, self).tearDown()
+
     def test_ctor(self):
-        from opencensus.ext.azure.common import Options
-        instrumentation_key = Options._default.instrumentation_key
-        Options._default.instrumentation_key = None
-        self.assertRaises(ValueError, lambda: log_exporter.AzureLogHandler())
-        Options._default.instrumentation_key = instrumentation_key
+        self.assertRaises(ValueError, lambda: log_exporter.AzureLogHandler(connection_string="", instrumentation_key=""))  # noqa: E501
 
     def test_invalid_sampling_rate(self):
         with self.assertRaises(ValueError):
             log_exporter.AzureLogHandler(
+                enable_stats_metrics=False,
                 instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
                 logging_sampling_rate=4.0,
             )
@@ -280,12 +295,16 @@ class TestAzureLogHandler(unittest.TestCase):
 
 
 class TestAzureEventHandler(unittest.TestCase):
+    def setUp(self):
+        os.environ["APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL"] = "true"
+        return super(TestAzureEventHandler, self).setUp()
+
+    def tearDown(self):
+        del os.environ["APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL"]
+        return super(TestAzureEventHandler, self).setUp()
+
     def test_ctor(self):
-        from opencensus.ext.azure.common import Options
-        instrumentation_key = Options._default.instrumentation_key
-        Options._default.instrumentation_key = None
-        self.assertRaises(ValueError, lambda: log_exporter.AzureEventHandler())
-        Options._default.instrumentation_key = instrumentation_key
+        self.assertRaises(ValueError, lambda: log_exporter.AzureEventHandler(connection_string="", instrumentation_key=""))  # noqa: E501
 
     def test_invalid_sampling_rate(self):
         with self.assertRaises(ValueError):

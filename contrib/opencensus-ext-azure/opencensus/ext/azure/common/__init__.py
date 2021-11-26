@@ -108,14 +108,14 @@ class Options(BaseObject):
 
     _default = BaseObject(
         connection_string=None,
-        credential=None,
+        credential=None,  # Credential class used by AAD auth
         enable_local_storage=True,
-        enable_standard_metrics=True,
+        enable_standard_metrics=True,  # Used by metrics exporter, True to send standard metrics  # noqa: E501
         endpoint='https://dc.services.visualstudio.com/v2/track',
         export_interval=15.0,
         grace_period=5.0,
         instrumentation_key=None,
-        logging_sampling_rate=1.0,
+        logging_sampling_rate=1.0,  # Used by log exporter, controls sampling
         max_batch_size=100,
         minimum_retry_interval=60,  # minimum retry interval in seconds
         proxies=None,  # string maps url schemes to the url of the proxies

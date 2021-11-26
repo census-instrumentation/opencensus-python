@@ -24,6 +24,7 @@ from opencensus.common import configuration
 from opencensus.trace import (
     attributes_helper,
     execution_context,
+    integrations,
     print_exporter,
     samplers,
 )
@@ -118,6 +119,9 @@ class FlaskMiddleware(object):
         self.excludelist_hostnames = settings.get(EXCLUDELIST_HOSTNAMES, None)
 
         self.setup_trace()
+
+        # pylint: disable=protected-access
+        integrations.add_integration(integrations._Integrations.FLASK)
 
     def setup_trace(self):
         self.app.before_request(self._before_request)
