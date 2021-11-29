@@ -3,7 +3,7 @@
 ## Unreleased
 
 - Fix statsbeats metric names
-([#1021](https://github.com/census-instrumentation/opencensus-python/pull/1021))
+([#1089](https://github.com/census-instrumentation/opencensus-python/pull/1089))
 
 ## 1.1.0
 Released 2021-10-05
