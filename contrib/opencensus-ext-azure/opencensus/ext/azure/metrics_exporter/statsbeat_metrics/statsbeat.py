@@ -45,9 +45,9 @@ _FEATURE_METRIC_NAME = "Feature"
 _REQ_SUC_COUNT_NAME = "Request Success Count"
 _REQ_FAIL_COUNT_NAME = "Request Failure Count"
 _REQ_DURATION_NAME = "Request Duration"
-_REQ_RETRY_NAME = "Request Retry Count"
-_REQ_THROTTLE_NAME = "Request Throttle Count"
-_REQ_EXCEPTION_NAME = "Request Exception Count"
+_REQ_RETRY_NAME = "Retry Count"
+_REQ_THROTTLE_NAME = "Throttle Count"
+_REQ_EXCEPTION_NAME = "Exception Count"
 
 _ENDPOINT_TYPES = ["breeze"]
 _RP_NAMES = ["appsvc", "functions", "vm", "unknown"]
