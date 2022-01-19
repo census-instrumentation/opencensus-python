@@ -5,7 +5,7 @@
 - Fix statsbeats metric names
 ([#1089](https://github.com/census-instrumentation/opencensus-python/pull/1089))
 - Add AAD statsbeat feature, fix incorrect counting of retry
-([#1089](https://github.com/census-instrumentation/opencensus-python/pull/1089))
+([#1093](https://github.com/census-instrumentation/opencensus-python/pull/1093))
 
 ## 1.1.0
 Released 2021-10-05

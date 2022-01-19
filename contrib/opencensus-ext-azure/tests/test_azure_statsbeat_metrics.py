@@ -61,9 +61,11 @@ class MockResponse(object):
         self.status_code = status_code
         self.text = text
 
+
 class MockCredential(object):
     def get_token():
         pass
+
 
 def throw(exc_type, *args, **kwargs):
     def func(*_args, **_kwargs):
