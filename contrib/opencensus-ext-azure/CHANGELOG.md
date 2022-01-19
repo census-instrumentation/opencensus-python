@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+## 1.1.1
+Released 2022-01-19
+
 - Fix statsbeats metric names
 ([#1089](https://github.com/census-instrumentation/opencensus-python/pull/1089))
 - Add AAD statsbeat feature, fix incorrect counting of retry
