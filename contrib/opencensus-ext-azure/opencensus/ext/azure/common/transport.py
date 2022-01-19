@@ -96,7 +96,7 @@ class TransportMixin(object):
                 'Retrying due to transient client side error %s.', ex)
             if self._check_stats_collection():
                 with _requests_lock:
-                    _requests_map['exception'] = _requests_map.get('exception', 0) + 1  # noqa: E501
+                    _requests_map['retry'] = _requests_map.get('retry', 0) + 1  # noqa: E501
             # client side error (retryable)
             exception = self.options.minimum_retry_interval
         except CredentialUnavailableError as ex:
