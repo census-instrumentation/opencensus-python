@@ -63,7 +63,7 @@ class _FEATURE_TYPES:
 class _StatsbeatFeature:
     NONE = 0
     DISK_RETRY = 1
-    AAD_HANDLING = 2
+    AAD = 2
 
 
 def _get_stats_connection_string():
@@ -191,6 +191,8 @@ class _StatsbeatMetrics:
         self._feature = _StatsbeatFeature.NONE
         if options.enable_local_storage:
             self._feature |= _StatsbeatFeature.DISK_RETRY
+        if options.credential:
+            self._feature |= _StatsbeatFeature.AAD
         self._stats_lock = threading.Lock()
         self._vm_data = {}
         self._vm_retry = True

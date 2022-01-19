@@ -52,6 +52,7 @@ _OPTIONS = Options(
     instrumentation_key="ikey",
     enable_local_storage=True,
     endpoint="test-endpoint",
+    credential=None,
 )
 
 
@@ -60,6 +61,9 @@ class MockResponse(object):
         self.status_code = status_code
         self.text = text
 
+class MockCredential(object):
+    def get_token():
+        pass
 
 def throw(exc_type, *args, **kwargs):
     def func(*_args, **_kwargs):
@@ -315,6 +319,28 @@ class TestStatsbeatMetrics(unittest.TestCase):
         self.assertEqual(properties[3].value, platform.python_version())
         self.assertEqual(properties[4].value, _FEATURE_TYPES.FEATURE)
         self.assertEqual(properties[5].value, 1)
+        self.assertEqual(properties[6].value, platform.system())
+        self.assertEqual(properties[7].value, "python")
+        self.assertEqual(
+            properties[8].value, ext_version)  # noqa: E501
+
+    def test_get_feature_metric_wtih_aad(self):
+        aad_options = Options(
+            instrumentation_key="ikey",
+            enable_local_storage=True,
+            endpoint="test-endpoint",
+            credential=MockCredential(),
+        )
+        stats = _StatsbeatMetrics(aad_options)
+        metric = stats._get_feature_metric()
+        properties = metric._time_series[0]._label_values
+        self.assertEqual(len(properties), 9)
+        self.assertEqual(properties[0].value, _RP_NAMES[3])
+        self.assertEqual(properties[1].value, "sdk")
+        self.assertEqual(properties[2].value, "ikey")
+        self.assertEqual(properties[3].value, platform.python_version())
+        self.assertEqual(properties[4].value, _FEATURE_TYPES.FEATURE)
+        self.assertEqual(properties[5].value, 3)
         self.assertEqual(properties[6].value, platform.system())
         self.assertEqual(properties[7].value, "python")
         self.assertEqual(
