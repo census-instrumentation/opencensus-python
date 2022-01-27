@@ -199,7 +199,7 @@ class LocalFileStorage(object):
                             "reached. Currently at %fKB. Telemetry will be "
                             "lost. Please consider increasing the value of "
                             "'storage_max_size' in exporter config.",
-                            format(size/1024)
+                            size/1024
                         )
                         return False
         return True
