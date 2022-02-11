@@ -189,7 +189,6 @@ class TransportMixin(object):
             # server side error (retryable)
             if self._check_stats_collection():
                 with _requests_lock:
-                    _requests_map['retry'] = _requests_map.get('retry', 0) + 1  # noqa: E501
                     if response.status_code == 429:
                         _requests_map['throttle'] = _requests_map.get('throttle', 0) + 1  # noqa: E501
             return self.options.minimum_retry_interval
