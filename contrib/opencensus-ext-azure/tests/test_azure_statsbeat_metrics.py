@@ -348,6 +348,17 @@ class TestStatsbeatMetrics(unittest.TestCase):
         self.assertEqual(
             properties[8].value, ext_version)  # noqa: E501
 
+    def test_get_feature_metric_zero(self):
+        # pylint: disable=protected-access
+        options = Options(
+            instrumentation_key="ikey",
+            enable_local_storage=False,
+            credential=None,
+        )
+        stats = _StatsbeatMetrics(options)
+        metric = stats._get_feature_metric()
+        self.assertIsNone(metric)
+
     def test_get_instrumentation_metric(self):
         original_integrations = integrations._INTEGRATIONS_BIT_MASK
         integrations._INTEGRATIONS_BIT_MASK = 1024
@@ -365,6 +376,15 @@ class TestStatsbeatMetrics(unittest.TestCase):
         self.assertEqual(properties[7].value, "python")
         self.assertEqual(
             properties[8].value, ext_version)  # noqa: E501
+        integrations._INTEGRATIONS_BIT_MASK = original_integrations
+
+    def test_get_instrumentation_metrics_zero(self):
+        # pylint: disable=protected-access
+        original_integrations = integrations._INTEGRATIONS_BIT_MASK
+        integrations._INTEGRATIONS_BIT_MASK = 0
+        stats = _StatsbeatMetrics(_OPTIONS)
+        metric = stats._get_instrumentation_metric()
+        self.assertIsNone(metric)
         integrations._INTEGRATIONS_BIT_MASK = original_integrations
 
     @mock.patch(
@@ -417,17 +437,6 @@ class TestStatsbeatMetrics(unittest.TestCase):
         suc_mock.return_value = 0
         metrics = stats._get_network_metrics()
         self.assertEqual(len(metrics), 0)
-        for metric in metrics:
-            properties = metric._time_series[0]._label_values
-            self.assertEqual(len(properties), 7)
-            self.assertEqual(properties[0].value, _RP_NAMES[3])
-            self.assertEqual(properties[1].value, "sdk")
-            self.assertEqual(properties[2].value, "ikey")
-            self.assertEqual(properties[3].value, platform.python_version())
-            self.assertEqual(properties[4].value, platform.system())
-            self.assertEqual(properties[5].value, "python")
-            self.assertEqual(
-                properties[6].value, ext_version)
 
     @mock.patch.dict(
         os.environ,

@@ -30,7 +30,7 @@ from opencensus.metrics.export.gauge import (
 )
 from opencensus.metrics.label_key import LabelKey
 from opencensus.metrics.label_value import LabelValue
-from opencensus.trace.integrations import get_integrations
+from opencensus.trace.integrations import get_integrations, _Integrations
 
 _AIMS_URI = "http://169.254.169.254/metadata/instance/compute"
 _AIMS_API_VERSION = "api-version=2017-12-01"
@@ -315,6 +315,9 @@ class _StatsbeatMetrics:
         return metrics
 
     def _get_feature_metric(self):
+        # Don't export if value is 0
+        if self._feature is _StatsbeatFeature.NONE:
+            return None
         properties = self._get_common_properties()
         properties.insert(4, LabelValue(self._feature))  # feature long
         properties.insert(4, LabelValue(_FEATURE_TYPES.FEATURE))  # type
@@ -322,6 +325,10 @@ class _StatsbeatMetrics:
         return self._feature_metric.get_metric(datetime.datetime.utcnow())
 
     def _get_instrumentation_metric(self):
+        integrations = get_integrations()
+        # Don't export if value is 0
+        if integrations is _Integrations.NONE:
+            return None
         properties = self._get_common_properties()
         properties.insert(4, LabelValue(get_integrations()))  # instr long
         properties.insert(4, LabelValue(_FEATURE_TYPES.INSTRUMENTATION))  # type  # noqa: E501
