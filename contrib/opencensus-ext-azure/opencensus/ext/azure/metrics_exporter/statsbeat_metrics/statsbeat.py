@@ -30,7 +30,7 @@ from opencensus.metrics.export.gauge import (
 )
 from opencensus.metrics.label_key import LabelKey
 from opencensus.metrics.label_value import LabelValue
-from opencensus.trace.integrations import get_integrations, _Integrations
+from opencensus.trace.integrations import _Integrations, get_integrations
 
 _AIMS_URI = "http://169.254.169.254/metadata/instance/compute"
 _AIMS_API_VERSION = "api-version=2017-12-01"
