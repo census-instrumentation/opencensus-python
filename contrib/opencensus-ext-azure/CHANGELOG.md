@@ -2,9 +2,7 @@
 
 ## Unreleased
 
-- Statsbeat bug fixes
-([#1100](https://github.com/census-instrumentation/opencensus-python/pull/1100))
-- Statsbeat shorten host in network stats
+- Statsbeat bug fixes, shorten host in network stats
 ([#1100](https://github.com/census-instrumentation/opencensus-python/pull/1100))
 
 ## 1.1.1

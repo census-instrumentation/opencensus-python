@@ -185,6 +185,7 @@ def _get_exception_count_value():
         _requests_map['last_exception'] = _requests_map.get('exception', 0)
         return interval_count
 
+
 def _shorten_host(host):
     if not host:
         host = ""
@@ -192,6 +193,7 @@ def _shorten_host(host):
     if match:
         host = match.group(1)
     return host
+
 
 class _StatsbeatMetrics:
 
