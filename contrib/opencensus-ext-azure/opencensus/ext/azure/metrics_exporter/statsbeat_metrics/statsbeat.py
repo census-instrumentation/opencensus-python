@@ -17,6 +17,7 @@ import json
 import logging
 import os
 import platform
+import re
 import threading
 
 import requests
@@ -51,6 +52,8 @@ _REQ_EXCEPTION_NAME = "Exception Count"
 
 _ENDPOINT_TYPES = ["breeze"]
 _RP_NAMES = ["appsvc", "functions", "vm", "unknown"]
+
+_HOST_PATTERN = re.compile('^https?://(?:www\\.)?([^/.]+)')
 
 _logger = logging.getLogger(__name__)
 
@@ -182,6 +185,13 @@ def _get_exception_count_value():
         _requests_map['last_exception'] = _requests_map.get('exception', 0)
         return interval_count
 
+def _shorten_host(host):
+    if not host:
+        host = ""
+    match = _HOST_PATTERN.match(host)
+    if match:
+        host = match.group(1)
+    return host
 
 class _StatsbeatMetrics:
 
@@ -301,7 +311,8 @@ class _StatsbeatMetrics:
     def _get_network_metrics(self):
         properties = self._get_common_properties()
         properties.append(LabelValue(_ENDPOINT_TYPES[0]))  # endpoint
-        properties.append(LabelValue(self._options.endpoint))  # host
+        host = _shorten_host(self._options.endpoint)
+        properties.append(LabelValue(host))  # host
         metrics = []
         for fn, metric in self._network_metrics.items():
             # NOTE: A time series is a set of unique label values

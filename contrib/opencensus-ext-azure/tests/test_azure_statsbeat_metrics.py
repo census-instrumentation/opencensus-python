@@ -39,6 +39,7 @@ from opencensus.ext.azure.metrics_exporter.statsbeat_metrics.statsbeat import (
     _get_retry_count_value,
     _get_success_count_value,
     _get_throttle_count_value,
+    _shorten_host,
     _StatsbeatMetrics,
 )
 from opencensus.metrics.export.gauge import (
@@ -51,7 +52,7 @@ from opencensus.trace import integrations
 _OPTIONS = Options(
     instrumentation_key="ikey",
     enable_local_storage=True,
-    endpoint="test-endpoint",
+    endpoint="https://eastus-1.in.applicationinsights.azure.com/",
     credential=None,
 )
 
@@ -427,7 +428,8 @@ class TestStatsbeatMetrics(unittest.TestCase):
             self.assertEqual(properties[5].value, "python")
             self.assertEqual(properties[6].value, ext_version)
             self.assertEqual(properties[7].value, _ENDPOINT_TYPES[0])
-            self.assertEqual(properties[8].value, _OPTIONS.endpoint)
+            short_host = _shorten_host(_OPTIONS.endpoint)
+            self.assertEqual(properties[8].value, short_host)
 
     @mock.patch(
         'opencensus.ext.azure.metrics_exporter.statsbeat_metrics.statsbeat._get_success_count_value')  # noqa: E501
@@ -592,3 +594,21 @@ class TestStatsbeatMetrics(unittest.TestCase):
             self.assertFalse(vm_result)
             self.assertEqual(len(stats._vm_data), 0)
             self.assertTrue(stats._vm_retry)
+
+    def test_shorten_host(self):
+        url = "https://fakehost-1.example.com/"
+        self.assertEqual(_shorten_host(url), "fakehost-1")
+        url = "https://fakehost-2.example.com/"
+        self.assertEqual(_shorten_host(url), "fakehost-2")
+        url = "http://www.fakehost-3.example.com/"
+        self.assertEqual(_shorten_host(url), "fakehost-3")
+        url = "http://www.fakehost.com/v2/track"
+        self.assertEqual(_shorten_host(url), "fakehost")
+        url = "https://www.fakehost0-4.com/"
+        self.assertEqual(_shorten_host(url), "fakehost0-4")
+        url = "https://www.fakehost-5.com"
+        self.assertEqual(_shorten_host(url), "fakehost-5")
+        url = "https://fakehost.com"
+        self.assertEqual(_shorten_host(url), "fakehost")
+        url = "http://fakehost-5/"
+        self.assertEqual(_shorten_host(url), "fakehost-5")
