@@ -39,6 +39,7 @@ from opencensus.ext.azure.metrics_exporter.statsbeat_metrics.statsbeat import (
     _get_retry_count_value,
     _get_success_count_value,
     _get_throttle_count_value,
+    _shorten_host,
     _StatsbeatMetrics,
 )
 from opencensus.metrics.export.gauge import (
@@ -51,7 +52,7 @@ from opencensus.trace import integrations
 _OPTIONS = Options(
     instrumentation_key="ikey",
     enable_local_storage=True,
-    endpoint="test-endpoint",
+    endpoint="https://eastus-1.in.applicationinsights.azure.com/",
     credential=None,
 )
 
@@ -348,6 +349,17 @@ class TestStatsbeatMetrics(unittest.TestCase):
         self.assertEqual(
             properties[8].value, ext_version)  # noqa: E501
 
+    def test_get_feature_metric_zero(self):
+        # pylint: disable=protected-access
+        options = Options(
+            instrumentation_key="ikey",
+            enable_local_storage=False,
+            credential=None,
+        )
+        stats = _StatsbeatMetrics(options)
+        metric = stats._get_feature_metric()
+        self.assertIsNone(metric)
+
     def test_get_instrumentation_metric(self):
         original_integrations = integrations._INTEGRATIONS_BIT_MASK
         integrations._INTEGRATIONS_BIT_MASK = 1024
@@ -365,6 +377,15 @@ class TestStatsbeatMetrics(unittest.TestCase):
         self.assertEqual(properties[7].value, "python")
         self.assertEqual(
             properties[8].value, ext_version)  # noqa: E501
+        integrations._INTEGRATIONS_BIT_MASK = original_integrations
+
+    def test_get_instrumentation_metrics_zero(self):
+        # pylint: disable=protected-access
+        original_integrations = integrations._INTEGRATIONS_BIT_MASK
+        integrations._INTEGRATIONS_BIT_MASK = 0
+        stats = _StatsbeatMetrics(_OPTIONS)
+        metric = stats._get_instrumentation_metric()
+        self.assertIsNone(metric)
         integrations._INTEGRATIONS_BIT_MASK = original_integrations
 
     @mock.patch(
@@ -407,7 +428,8 @@ class TestStatsbeatMetrics(unittest.TestCase):
             self.assertEqual(properties[5].value, "python")
             self.assertEqual(properties[6].value, ext_version)
             self.assertEqual(properties[7].value, _ENDPOINT_TYPES[0])
-            self.assertEqual(properties[8].value, _OPTIONS.endpoint)
+            short_host = _shorten_host(_OPTIONS.endpoint)
+            self.assertEqual(properties[8].value, short_host)
 
     @mock.patch(
         'opencensus.ext.azure.metrics_exporter.statsbeat_metrics.statsbeat._get_success_count_value')  # noqa: E501
@@ -417,17 +439,6 @@ class TestStatsbeatMetrics(unittest.TestCase):
         suc_mock.return_value = 0
         metrics = stats._get_network_metrics()
         self.assertEqual(len(metrics), 0)
-        for metric in metrics:
-            properties = metric._time_series[0]._label_values
-            self.assertEqual(len(properties), 7)
-            self.assertEqual(properties[0].value, _RP_NAMES[3])
-            self.assertEqual(properties[1].value, "sdk")
-            self.assertEqual(properties[2].value, "ikey")
-            self.assertEqual(properties[3].value, platform.python_version())
-            self.assertEqual(properties[4].value, platform.system())
-            self.assertEqual(properties[5].value, "python")
-            self.assertEqual(
-                properties[6].value, ext_version)
 
     @mock.patch.dict(
         os.environ,
@@ -583,3 +594,21 @@ class TestStatsbeatMetrics(unittest.TestCase):
             self.assertFalse(vm_result)
             self.assertEqual(len(stats._vm_data), 0)
             self.assertTrue(stats._vm_retry)
+
+    def test_shorten_host(self):
+        url = "https://fakehost-1.example.com/"
+        self.assertEqual(_shorten_host(url), "fakehost-1")
+        url = "https://fakehost-2.example.com/"
+        self.assertEqual(_shorten_host(url), "fakehost-2")
+        url = "http://www.fakehost-3.example.com/"
+        self.assertEqual(_shorten_host(url), "fakehost-3")
+        url = "http://www.fakehost.com/v2/track"
+        self.assertEqual(_shorten_host(url), "fakehost")
+        url = "https://www.fakehost0-4.com/"
+        self.assertEqual(_shorten_host(url), "fakehost0-4")
+        url = "https://www.fakehost-5.com"
+        self.assertEqual(_shorten_host(url), "fakehost-5")
+        url = "https://fakehost.com"
+        self.assertEqual(_shorten_host(url), "fakehost")
+        url = "http://fakehost-5/"
+        self.assertEqual(_shorten_host(url), "fakehost-5")

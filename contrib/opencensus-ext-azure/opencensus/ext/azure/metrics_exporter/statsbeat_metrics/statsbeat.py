@@ -17,6 +17,7 @@ import json
 import logging
 import os
 import platform
+import re
 import threading
 
 import requests
@@ -30,7 +31,7 @@ from opencensus.metrics.export.gauge import (
 )
 from opencensus.metrics.label_key import LabelKey
 from opencensus.metrics.label_value import LabelValue
-from opencensus.trace.integrations import get_integrations
+from opencensus.trace.integrations import _Integrations, get_integrations
 
 _AIMS_URI = "http://169.254.169.254/metadata/instance/compute"
 _AIMS_API_VERSION = "api-version=2017-12-01"
@@ -51,6 +52,8 @@ _REQ_EXCEPTION_NAME = "Exception Count"
 
 _ENDPOINT_TYPES = ["breeze"]
 _RP_NAMES = ["appsvc", "functions", "vm", "unknown"]
+
+_HOST_PATTERN = re.compile('^https?://(?:www\\.)?([^/.]+)')
 
 _logger = logging.getLogger(__name__)
 
@@ -183,6 +186,15 @@ def _get_exception_count_value():
         return interval_count
 
 
+def _shorten_host(host):
+    if not host:
+        host = ""
+    match = _HOST_PATTERN.match(host)
+    if match:
+        host = match.group(1)
+    return host
+
+
 class _StatsbeatMetrics:
 
     def __init__(self, options):
@@ -301,7 +313,8 @@ class _StatsbeatMetrics:
     def _get_network_metrics(self):
         properties = self._get_common_properties()
         properties.append(LabelValue(_ENDPOINT_TYPES[0]))  # endpoint
-        properties.append(LabelValue(self._options.endpoint))  # host
+        host = _shorten_host(self._options.endpoint)
+        properties.append(LabelValue(host))  # host
         metrics = []
         for fn, metric in self._network_metrics.items():
             # NOTE: A time series is a set of unique label values
@@ -315,6 +328,9 @@ class _StatsbeatMetrics:
         return metrics
 
     def _get_feature_metric(self):
+        # Don't export if value is 0
+        if self._feature is _StatsbeatFeature.NONE:
+            return None
         properties = self._get_common_properties()
         properties.insert(4, LabelValue(self._feature))  # feature long
         properties.insert(4, LabelValue(_FEATURE_TYPES.FEATURE))  # type
@@ -322,6 +338,10 @@ class _StatsbeatMetrics:
         return self._feature_metric.get_metric(datetime.datetime.utcnow())
 
     def _get_instrumentation_metric(self):
+        integrations = get_integrations()
+        # Don't export if value is 0
+        if integrations is _Integrations.NONE:
+            return None
         properties = self._get_common_properties()
         properties.insert(4, LabelValue(get_integrations()))  # instr long
         properties.insert(4, LabelValue(_FEATURE_TYPES.INSTRUMENTATION))  # type  # noqa: E501
