@@ -700,7 +700,8 @@ class TestStatsbeatMetrics(unittest.TestCase):
         with mock.patch.dict(
             os.environ, {
                 "APPLICATION_INSIGHTS_STATS_CONNECTION_STRING": cs
-            }):
+            }
+        ):
             stats_cs = _get_stats_connection_string(_OPTIONS.endpoint)
             self.assertEqual(stats_cs, cs)
 
@@ -708,7 +709,8 @@ class TestStatsbeatMetrics(unittest.TestCase):
         with mock.patch.dict(
             os.environ, {
                 "APPLICATION_INSIGHTS_STATS_CONNECTION_STRING": ""
-            }):
+            }
+        ):
             cs = "InstrumentationKey=1aa11111-bbbb-1ccc-8ddd-eeeeffff3333;IngestionEndpoint=https://westus-0.in.applicationinsights.azure.com/"  # noqa: E501
             non_eu = Options(
                 connection_string=cs,
@@ -720,7 +722,8 @@ class TestStatsbeatMetrics(unittest.TestCase):
         with mock.patch.dict(
             os.environ, {
                 "APPLICATION_INSIGHTS_STATS_CONNECTION_STRING": ""
-            }):
+            }
+        ):
             cs = "InstrumentationKey=1aa11111-bbbb-1ccc-8ddd-eeeeffff3333;IngestionEndpoint=https://northeurope-0.in.applicationinsights.azure.com/"  # noqa: E501
             eu = Options(
                 connection_string=cs,
