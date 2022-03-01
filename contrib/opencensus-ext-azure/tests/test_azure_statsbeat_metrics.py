@@ -23,8 +23,10 @@ import requests
 from opencensus.ext.azure.common import Options
 from opencensus.ext.azure.common.transport import _requests_map
 from opencensus.ext.azure.common.version import __version__ as ext_version
-from opencensus.ext.azure.metrics_exporter import statsbeat_metrics
+from opencensus.ext.azure.metrics_exporter import statsbeat_metrics, MetricsExporter
 from opencensus.ext.azure.metrics_exporter.statsbeat_metrics.statsbeat import (
+    _DEFAULT_NON_EU_STATS_CONNECTION_STRING,
+    _DEFAULT_EU_STATS_CONNECTION_STRING,
     _ENDPOINT_TYPES,
     _FEATURE_TYPES,
     _RP_NAMES,
@@ -37,11 +39,13 @@ from opencensus.ext.azure.metrics_exporter.statsbeat_metrics.statsbeat import (
     _get_feature_properties,
     _get_network_properties,
     _get_retry_count_value,
+    _get_stats_connection_string,
     _get_success_count_value,
     _get_throttle_count_value,
     _shorten_host,
     _StatsbeatMetrics,
 )
+from opencensus import metrics
 from opencensus.metrics.export.gauge import (
     DerivedDoubleGauge,
     DerivedLongGauge,
@@ -78,6 +82,7 @@ class TestStatsbeatMetrics(unittest.TestCase):
     def setUp(self):
         # pylint: disable=protected-access
         statsbeat_metrics._STATSBEAT_METRICS = None
+        statsbeat_metrics._STATSBEAT_EXPORTER = None
 
     def test_producer_ctor(self):
         # pylint: disable=protected-access
@@ -121,6 +126,12 @@ class TestStatsbeatMetrics(unittest.TestCase):
                 statsbeat_metrics._AzureStatsbeatMetricsProducer
             )
         )
+        self.assertTrue(
+            isinstance(
+                statsbeat_metrics._STATSBEAT_EXPORTER,
+                MetricsExporter,
+            )
+        )
         self.assertEqual(
             statsbeat_metrics._STATSBEAT_METRICS._statsbeat._instrumentation_key, "ikey")  # noqa: E501
         thread_mock.assert_called_once()
@@ -136,6 +147,74 @@ class TestStatsbeatMetrics(unittest.TestCase):
         self.assertEqual(statsbeat_metrics._STATSBEAT_METRICS, producer)
         thread_mock.assert_not_called()
         stats_mock.assert_not_called()
+
+    @mock.patch.object(_StatsbeatMetrics, 'get_initial_metrics')
+    @mock.patch('opencensus.metrics.transport.get_exporter_thread')
+    def test_collect_statsbeat_metrics_non_eu(self, thread_mock, stats_mock):
+        # pylint: disable=protected-access
+        cs = "InstrumentationKey=1aa11111-bbbb-1ccc-8ddd-eeeeffff3333;IngestionEndpoint=https://westus-0.in.applicationinsights.azure.com/"  # noqa: E501
+        non_eu = Options(
+            connection_string=cs
+        )
+        with mock.patch.dict(
+                os.environ, {
+                    "APPLICATION_INSIGHTS_STATS_CONNECTION_STRING": "",
+                }):
+            statsbeat_metrics.collect_statsbeat_metrics(non_eu)
+            self.assertTrue(
+                isinstance(
+                    statsbeat_metrics._STATSBEAT_METRICS,
+                    statsbeat_metrics._AzureStatsbeatMetricsProducer
+                )
+            )
+            self.assertTrue(
+                isinstance(
+                    statsbeat_metrics._STATSBEAT_EXPORTER,
+                    MetricsExporter,
+                )
+            )
+            self.assertEqual(
+                statsbeat_metrics._STATSBEAT_EXPORTER.options.instrumentation_key,
+                _DEFAULT_NON_EU_STATS_CONNECTION_STRING.split(";")[0].split("=")[1]   # noqa: E501
+            )
+            self.assertEqual(
+                statsbeat_metrics._STATSBEAT_EXPORTER.options.endpoint,
+                _DEFAULT_NON_EU_STATS_CONNECTION_STRING.split(";")[1].split("=")[1]   # noqa: E501
+            )
+
+    @mock.patch.object(_StatsbeatMetrics, 'get_initial_metrics')
+    @mock.patch('opencensus.metrics.transport.get_exporter_thread')
+    def test_collect_statsbeat_metrics_eu(self, thread_mock, stats_mock):
+        # pylint: disable=protected-access
+        cs = "InstrumentationKey=1aa11111-bbbb-1ccc-8ddd-eeeeffff3333;IngestionEndpoint=https://northeurope-0.in.applicationinsights.azure.com/"  # noqa: E501
+        eu = Options(
+            connection_string=cs
+        )
+        with mock.patch.dict(
+                os.environ, {
+                    "APPLICATION_INSIGHTS_STATS_CONNECTION_STRING": "",
+                }):
+            statsbeat_metrics.collect_statsbeat_metrics(eu)
+            self.assertTrue(
+                isinstance(
+                    statsbeat_metrics._STATSBEAT_METRICS,
+                    statsbeat_metrics._AzureStatsbeatMetricsProducer
+                )
+            )
+            self.assertTrue(
+                isinstance(
+                    statsbeat_metrics._STATSBEAT_EXPORTER,
+                    MetricsExporter,
+                )
+            )
+            self.assertEqual(
+                statsbeat_metrics._STATSBEAT_EXPORTER.options.instrumentation_key,
+                _DEFAULT_EU_STATS_CONNECTION_STRING.split(";")[0].split("=")[1]   # noqa: E501
+            )
+            self.assertEqual(
+                statsbeat_metrics._STATSBEAT_EXPORTER.options.endpoint,
+                _DEFAULT_EU_STATS_CONNECTION_STRING.split(";")[1].split("=")[1]   # noqa: E501
+            )
 
     @mock.patch(
         'opencensus.ext.azure.metrics_exporter.statsbeat_metrics.statsbeat._get_feature_properties')  # noqa: E501
@@ -584,7 +663,7 @@ class TestStatsbeatMetrics(unittest.TestCase):
             self.assertEqual(len(stats._vm_data), 0)
             self.assertFalse(stats._vm_retry)
 
-    def test_get_azure_compute_metadata__vm_retry(self):
+    def test_get_azure_compute_metadata_vm_retry(self):
         with mock.patch(
             'requests.get',
             throw(requests.exceptions.RequestException)
@@ -612,3 +691,36 @@ class TestStatsbeatMetrics(unittest.TestCase):
         self.assertEqual(_shorten_host(url), "fakehost")
         url = "http://fakehost-5/"
         self.assertEqual(_shorten_host(url), "fakehost-5")
+
+    def test_get_stats_connection_string_env(self):
+        cs = "InstrumentationKey=1aa11111-bbbb-1ccc-8ddd-eeeeffff3333;IngestionEndpoint=https://westus-0.in.applicationinsights.azure.com/"  # noqa: E501
+        with mock.patch.dict(
+        os.environ, {
+            "APPLICATION_INSIGHTS_STATS_CONNECTION_STRING": cs
+        }):
+            stats_cs = _get_stats_connection_string(_OPTIONS.endpoint)
+            self.assertEqual(stats_cs, cs)
+
+    def test_get_stats_connection_string_non_eu(self):
+        with mock.patch.dict(
+        os.environ, {
+            "APPLICATION_INSIGHTS_STATS_CONNECTION_STRING": ""
+        }):
+            cs = "InstrumentationKey=1aa11111-bbbb-1ccc-8ddd-eeeeffff3333;IngestionEndpoint=https://westus-0.in.applicationinsights.azure.com/"  # noqa: E501
+            non_eu = Options(
+                connection_string=cs,
+            )
+            stats_cs = _get_stats_connection_string(non_eu.endpoint)
+            self.assertEqual(stats_cs, _DEFAULT_NON_EU_STATS_CONNECTION_STRING)
+
+    def test_get_stats_connection_string_eu(self):
+        with mock.patch.dict(
+        os.environ, {
+            "APPLICATION_INSIGHTS_STATS_CONNECTION_STRING": ""
+        }):
+            cs = "InstrumentationKey=1aa11111-bbbb-1ccc-8ddd-eeeeffff3333;IngestionEndpoint=https://northeurope-0.in.applicationinsights.azure.com/"  # noqa: E501
+            eu = Options(
+                connection_string=cs,
+            )
+            stats_cs = _get_stats_connection_string(eu.endpoint)
+            self.assertEqual(stats_cs, _DEFAULT_EU_STATS_CONNECTION_STRING)
