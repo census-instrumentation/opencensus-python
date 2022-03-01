@@ -38,7 +38,7 @@ def collect_statsbeat_metrics(options):
             # Only start statsbeat if did not exist before
             exporter = MetricsExporter(
                 is_stats=True,
-                connection_string=_get_stats_connection_string(options.endpoint),
+                connection_string=_get_stats_connection_string(options.endpoint),  # noqa: E501
                 enable_standard_metrics=False,
                 export_interval=_STATS_SHORT_EXPORT_INTERVAL,  # 15m by default
             )
@@ -49,8 +49,8 @@ def collect_statsbeat_metrics(options):
             exporter.export_metrics(_STATSBEAT_METRICS.get_initial_metrics())
             exporter.exporter_thread = \
                 transport.get_exporter_thread([_STATSBEAT_METRICS],
-                                            exporter,
-                                            exporter.options.export_interval)
+                                              exporter,
+                                              exporter.options.export_interval)
             _STATSBEAT_EXPORTER = exporter
 
 
