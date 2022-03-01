@@ -228,6 +228,7 @@ class TestStatsbeatMetrics(unittest.TestCase):
         self.assertEqual(len(metric._vm_data), 0)
         self.assertTrue(metric._vm_retry)
         self.assertEqual(metric._instrumentation_key, "ikey")
+        self.assertEqual(metric._feature, 1)
         self.assertTrue(
             isinstance(
                 metric._attach_metric,
@@ -406,7 +407,7 @@ class TestStatsbeatMetrics(unittest.TestCase):
         self.assertEqual(
             properties[8].value, ext_version)  # noqa: E501
 
-    def test_get_feature_metric_wtih_aad(self):
+    def test_get_feature_metric_with_aad(self):
         aad_options = Options(
             instrumentation_key="ikey",
             enable_local_storage=True,
