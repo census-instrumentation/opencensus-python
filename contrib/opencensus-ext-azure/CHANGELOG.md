@@ -5,7 +5,7 @@
 - Statsbeat bug fixes, shorten host in network stats
 ([#1100](https://github.com/census-instrumentation/opencensus-python/pull/1100))
 - Support statsbeat in EU regions
-([#1100](https://github.com/census-instrumentation/opencensus-python/pull/1100))
+([#1105](https://github.com/census-instrumentation/opencensus-python/pull/1105))
 
 ## 1.1.1
 Released 2022-01-19

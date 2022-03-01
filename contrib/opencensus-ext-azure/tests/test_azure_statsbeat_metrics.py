@@ -23,10 +23,13 @@ import requests
 from opencensus.ext.azure.common import Options
 from opencensus.ext.azure.common.transport import _requests_map
 from opencensus.ext.azure.common.version import __version__ as ext_version
-from opencensus.ext.azure.metrics_exporter import statsbeat_metrics, MetricsExporter
+from opencensus.ext.azure.metrics_exporter import (
+    MetricsExporter,
+    statsbeat_metrics,
+)
 from opencensus.ext.azure.metrics_exporter.statsbeat_metrics.statsbeat import (
-    _DEFAULT_NON_EU_STATS_CONNECTION_STRING,
     _DEFAULT_EU_STATS_CONNECTION_STRING,
+    _DEFAULT_NON_EU_STATS_CONNECTION_STRING,
     _ENDPOINT_TYPES,
     _FEATURE_TYPES,
     _RP_NAMES,
@@ -45,7 +48,6 @@ from opencensus.ext.azure.metrics_exporter.statsbeat_metrics.statsbeat import (
     _shorten_host,
     _StatsbeatMetrics,
 )
-from opencensus import metrics
 from opencensus.metrics.export.gauge import (
     DerivedDoubleGauge,
     DerivedLongGauge,

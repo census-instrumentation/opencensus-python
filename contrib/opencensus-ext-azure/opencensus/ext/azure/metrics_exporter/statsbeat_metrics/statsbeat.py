@@ -89,6 +89,7 @@ def _get_stats_connection_string(endpoint):
     else:
         for ep in _EU_ENDPOINTS:
             if ep in endpoint:
+                # Use statsbeat EU endpoint if user is in EU region
                 return _DEFAULT_EU_STATS_CONNECTION_STRING
         return _DEFAULT_NON_EU_STATS_CONNECTION_STRING
 
