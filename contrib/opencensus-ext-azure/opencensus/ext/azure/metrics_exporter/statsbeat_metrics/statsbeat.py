@@ -37,9 +37,22 @@ _AIMS_URI = "http://169.254.169.254/metadata/instance/compute"
 _AIMS_API_VERSION = "api-version=2017-12-01"
 _AIMS_FORMAT = "format=json"
 
-_DEFAULT_STATS_CONNECTION_STRING = "InstrumentationKey=c4a29126-a7cb-47e5-b348-11414998b11e;IngestionEndpoint=https://westus-0.in.applicationinsights.azure.com/"  # noqa: E501
+_DEFAULT_NON_EU_STATS_CONNECTION_STRING = "InstrumentationKey=c4a29126-a7cb-47e5-b348-11414998b11e;IngestionEndpoint=https://westus-0.in.applicationinsights.azure.com/"  # noqa: E501
+_DEFAULT_EU_STATS_CONNECTION_STRING = "InstrumentationKey=7dc56bab-3c0c-4e9f-9ebb-d1acadee8d0f;IngestionEndpoint=https://westeurope-5.in.applicationinsights.azure.com/"  # noqa: E501
 _DEFAULT_STATS_SHORT_EXPORT_INTERVAL = 900  # 15 minutes
 _DEFAULT_STATS_LONG_EXPORT_INTERVAL = 86400  # 24 hours
+_EU_ENDPOINTS = [
+    "westeurope",
+    "northeurope",
+    "francecentral",
+    "francesouth",
+    "germanywestcentral",
+    "norwayeast",
+    "norwaywest",
+    "swedencentral",
+    "switzerlandnorth",
+    "switzerlandwest",
+]
 
 _ATTACH_METRIC_NAME = "Attach"
 _FEATURE_METRIC_NAME = "Feature"
@@ -69,12 +82,16 @@ class _StatsbeatFeature:
     AAD = 2
 
 
-def _get_stats_connection_string():
+def _get_stats_connection_string(endpoint):
     cs_env = os.environ.get("APPLICATION_INSIGHTS_STATS_CONNECTION_STRING")
     if cs_env:
         return cs_env
     else:
-        return _DEFAULT_STATS_CONNECTION_STRING
+        for ep in _EU_ENDPOINTS:
+            if ep in endpoint:
+                # Use statsbeat EU endpoint if user is in EU region
+                return _DEFAULT_EU_STATS_CONNECTION_STRING
+        return _DEFAULT_NON_EU_STATS_CONNECTION_STRING
 
 
 def _get_stats_short_export_interval():
@@ -93,7 +110,6 @@ def _get_stats_long_export_interval():
         return _DEFAULT_STATS_LONG_EXPORT_INTERVAL
 
 
-_STATS_CONNECTION_STRING = _get_stats_connection_string()
 _STATS_SHORT_EXPORT_INTERVAL = _get_stats_short_export_interval()
 _STATS_LONG_EXPORT_INTERVAL = _get_stats_long_export_interval()
 _STATS_LONG_INTERVAL_THRESHOLD = _STATS_LONG_EXPORT_INTERVAL / _STATS_SHORT_EXPORT_INTERVAL  # noqa: E501
