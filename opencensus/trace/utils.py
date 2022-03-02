@@ -64,7 +64,7 @@ def disable_tracing_url(url, excludelist_paths=None):
     url_path = url.split('/', 1)[1]
 
     for path in excludelist_paths:
-        if url_path.startswith(path):
+        if re.match(path, url_path):
             return True
 
     return False
