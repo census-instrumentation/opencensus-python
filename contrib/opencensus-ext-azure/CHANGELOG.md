@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## 1.1.3
+Released 2022-03-03
+
+- Hotfix for version number
+([#1100](https://github.com/census-instrumentation/opencensus-python/pull/1100))
+
 ## 1.1.2
 Released 2022-03-03
 
