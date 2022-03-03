@@ -3,7 +3,7 @@
 ## Unreleased
 
 ## 1.1.2
-Released 2022-03-02
+Released 2022-03-03
 
 - Statsbeat bug fixes, shorten host in network stats
 ([#1100](https://github.com/census-instrumentation/opencensus-python/pull/1100))
