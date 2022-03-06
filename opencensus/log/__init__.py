@@ -80,6 +80,19 @@ def _set_extra_attrs(extra):
 
 
 # See
+# https://docs.python.org/3.7/library/logging.html#filter-objects
+# https://docs.python.org/3.7/howto/logging-cookbook.html#using-filters-to-impart-contextual-information
+class TraceLoggingFilter(logging.Filter):
+    """Filter to add opencensus context attrs to records."""
+    def filter(self, record):
+        attrs = {}
+        _set_extra_attrs(attrs)
+        for attr_name, attr_value in attrs.items():
+            if not hasattr(record, attr_name):
+                setattr(record, attr_name, attr_value)
+        return True
+
+# See
 # https://docs.python.org/3.7/library/logging.html#loggeradapter-objects,
 # https://docs.python.org/3.7/howto/logging-cookbook.html#context-info
 class TraceLoggingAdapter(logging.LoggerAdapter):
