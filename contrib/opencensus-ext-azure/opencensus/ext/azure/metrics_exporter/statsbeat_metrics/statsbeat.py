@@ -150,27 +150,24 @@ def _get_feature_properties():
 
 def _get_success_count_value():
     with _requests_lock:
-        interval_count = _requests_map.get('success', 0) \
-                    - _requests_map.get('last_success', 0)
-        _requests_map['last_success'] = _requests_map.get('success', 0)
+        interval_count = _requests_map.get('success', 0)
+        _requests_map['success'] = 0
         return interval_count
 
 
 def _get_failure_count_value():
     with _requests_lock:
-        interval_count = _requests_map.get('failure', 0) \
-                    - _requests_map.get('last_failure', 0)
-        _requests_map['last_failure'] = _requests_map.get('failure', 0)
+        interval_count = _requests_map.get('failure', 0)
+        _requests_map['failure'] = 0
         return interval_count
 
 
 def _get_average_duration_value():
     with _requests_lock:
-        interval_duration = _requests_map.get('duration', 0) \
-            - _requests_map.get('last_duration', 0)
-        interval_count = _requests_map.get('count', 0) \
-            - _requests_map.get('last_count', 0)
-        _requests_map['last_duration'] = _requests_map.get('duration', 0)
+        interval_duration = _requests_map.get('duration', 0)
+        interval_count = _requests_map.get('count', 0)
+        _requests_map['duration'] = 0
+        _requests_map['count'] = 0
         if interval_duration > 0 and interval_count > 0:
             result = interval_duration / interval_count
             # Convert to milliseconds
@@ -180,25 +177,22 @@ def _get_average_duration_value():
 
 def _get_retry_count_value():
     with _requests_lock:
-        interval_count = _requests_map.get('retry', 0) \
-                    - _requests_map.get('last_retry', 0)
-        _requests_map['last_retry'] = _requests_map.get('retry', 0)
+        interval_count = _requests_map.get('retry', 0)
+        _requests_map['retry'] = 0
         return interval_count
 
 
 def _get_throttle_count_value():
     with _requests_lock:
-        interval_count = _requests_map.get('throttle', 0) \
-                    - _requests_map.get('last_throttle', 0)
-        _requests_map['last_throttle'] = _requests_map.get('throttle', 0)
+        interval_count = _requests_map.get('throttle', 0)
+        _requests_map['throttle'] = 0
         return interval_count
 
 
 def _get_exception_count_value():
     with _requests_lock:
-        interval_count = _requests_map.get('exception', 0) \
-                    - _requests_map.get('last_exception', 0)
-        _requests_map['last_exception'] = _requests_map.get('exception', 0)
+        interval_count = _requests_map.get('exception', 0)
+        _requests_map['exception'] = 0
         return interval_count
 
 

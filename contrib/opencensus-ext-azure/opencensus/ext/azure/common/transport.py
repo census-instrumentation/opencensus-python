@@ -94,9 +94,6 @@ class TransportMixin(object):
         except requests.RequestException as ex:
             logger.warning(
                 'Retrying due to transient client side error %s.', ex)
-            if self._check_stats_collection():
-                with _requests_lock:
-                    _requests_map['retry'] = _requests_map.get('retry', 0) + 1  # noqa: E501
             # client side error (retryable)
             exception = self.options.minimum_retry_interval
         except CredentialUnavailableError as ex:
@@ -108,9 +105,6 @@ class TransportMixin(object):
         except Exception as ex:
             logger.warning(
                 'Error when sending request %s. Dropping telemetry.', ex)
-            if self._check_stats_collection():
-                with _requests_lock:
-                    _requests_map['exception'] = _requests_map.get('exception', 0) + 1  # noqa: E501
             # Extraneous error (non-retryable)
             exception = -1
         finally:
@@ -120,6 +114,13 @@ class TransportMixin(object):
                     duration = _requests_map.get('duration', 0)
                     _requests_map['duration'] = duration + (end_time - start_time)  # noqa: E501
             if exception is not None:
+                if self._check_stats_collection():
+                    with _requests_lock:
+                        if exception >= 0:
+                            _requests_map['retry'] = _requests_map.get('retry', 0) + 1  # noqa: E501
+                        else:
+                            _requests_map['exception'] = _requests_map.get('exception', 0) + 1  # noqa: E501
+
                 return exception
 
         text = 'N/A'
@@ -139,10 +140,11 @@ class TransportMixin(object):
                 with _requests_lock:
                     _requests_map['success'] = _requests_map.get('success', 0) + 1  # noqa: E501
             return 0
-        # Status code not 200 counts as failure
+        # Status code not 200, 439 or 402 counts as failures
         if self._check_stats_collection():
-            with _requests_lock:
-                _requests_map['failure'] = _requests_map.get('failure', 0) + 1  # noqa: E501
+            if response.status_code != 439 and response.status_code != 402:
+                with _requests_lock:
+                    _requests_map['failure'] = _requests_map.get('failure', 0) + 1  # noqa: E501
         if response.status_code == 206:  # Partial Content
             if data:
                 try:
@@ -162,6 +164,9 @@ class TransportMixin(object):
                                 envelopes[error['index']],
                             )
                     if resend_envelopes:
+                        if self._check_stats_collection():
+                            with _requests_lock:
+                                _requests_map['retry'] = _requests_map.get('retry', 0) + 1  # noqa: E501
                         self.storage.put(resend_envelopes)
                 except Exception as ex:
                     logger.error(
@@ -170,9 +175,6 @@ class TransportMixin(object):
                         text,
                         ex,
                     )
-                if self._check_stats_collection():
-                    with _requests_lock:
-                        _requests_map['retry'] = _requests_map.get('retry', 0) + 1  # noqa: E501
                 return -response.status_code
             # cannot parse response body, fallback to retry
         if response.status_code in (
@@ -189,11 +191,7 @@ class TransportMixin(object):
             # server side error (retryable)
             if self._check_stats_collection():
                 with _requests_lock:
-                    # 429 counts as throttle instead of retry
-                    if response.status_code == 429:
-                        _requests_map['throttle'] = _requests_map.get('throttle', 0) + 1  # noqa: E501
-                    else:
-                        _requests_map['retry'] = _requests_map.get('retry', 0) + 1  # noqa: E501
+                    _requests_map['retry'] = _requests_map.get('retry', 0) + 1  # noqa: E501
             return self.options.minimum_retry_interval
         # Authentication error
         if response.status_code == 401:
@@ -235,14 +233,25 @@ class TransportMixin(object):
                 logger.error(
                     "Error parsing redirect information."
                 )
-            logger.error(
-                "Error sending telemetry because of circular redirects."
-                " Please check the integrity of your connection string."
-            )
+            else:
+                logger.error(
+                    "Error sending telemetry because of circular redirects."
+                    " Please check the integrity of your connection string."
+                )
+            # If redirect but did not return, exception occured
+            if self._check_stats_collection():
+                with _requests_lock:
+                    _requests_map['exception'] = _requests_map.get('exception', 0) + 1  # noqa: E501
+        # Other, server side error (non-retryable)
         logger.error(
             'Non-retryable server side error %s: %s.',
             response.status_code,
             text,
         )
-        # server side error (non-retryable)
+        if self._check_stats_collection():
+            if response.status_code == 402 or response.status_code == 439:
+                # 402: Monthly Quota Exceeded (new SDK)
+                # 439: Monthly Quota Exceeded (old SDK) <- Currently OC SDK
+                with _requests_lock:
+                    _requests_map['throttle'] = _requests_map.get('throttle', 0) + 1  # noqa: E501
         return -response.status_code
