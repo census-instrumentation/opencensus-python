@@ -337,10 +337,46 @@ class TestStatsbeatMetrics(unittest.TestCase):
 
     def test_get_success_count_value(self):
         _requests_map.clear()
-        _requests_map['last_success'] = 5
         _requests_map['success'] = 10
-        self.assertEqual(_get_success_count_value(), 5)
-        self.assertEqual(_requests_map['last_success'], 10)
+        self.assertEqual(_get_success_count_value(), 10)
+        self.assertEqual(_requests_map['success'], 0)
+        _requests_map.clear()
+
+    def test_get_failure_count_value(self):
+        _requests_map.clear()
+        _requests_map['failure'] = 10
+        self.assertEqual(_get_failure_count_value(), 10)
+        self.assertEqual(_requests_map['failure'], 0)
+        _requests_map.clear()
+
+    def test_get_average_duration_value(self):
+        _requests_map.clear()
+        _requests_map['duration'] = 10
+        _requests_map['count'] = 2
+        self.assertEqual(_get_average_duration_value(), 5000.0)
+        self.assertEqual(_requests_map['duration'], 0)
+        self.assertEqual(_requests_map['count'], 0)
+        _requests_map.clear()
+
+    def test_get_retry_count_value(self):
+        _requests_map.clear()
+        _requests_map['retry'] = 10
+        self.assertEqual(_get_retry_count_value(), 10)
+        self.assertEqual(_requests_map['retry'], 0)
+        _requests_map.clear()
+
+    def test_get_throttle_count_value(self):
+        _requests_map.clear()
+        _requests_map['throttle'] = 10
+        self.assertEqual(_get_throttle_count_value(), 10)
+        self.assertEqual(_requests_map['throttle'], 0)
+        _requests_map.clear()
+
+    def test_get_exception_count_value(self):
+        _requests_map.clear()
+        _requests_map['exception'] = 10
+        self.assertEqual(_get_exception_count_value(), 10)
+        self.assertEqual(_requests_map['exception'], 0)
         _requests_map.clear()
 
     def test_statsbeat_metric_get_initial_metrics(self):
