@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Statsbeat bug fixes
+([#1113](https://github.com/census-instrumentation/opencensus-python/pull/1113))
+
 ## 1.1.3
 Released 2022-03-03
 
