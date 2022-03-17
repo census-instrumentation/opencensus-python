@@ -93,7 +93,7 @@ class TestTransportMixin(unittest.TestCase):
         mixin = TransportMixin()
         mixin.options = Options()
         with mock.patch('requests.post', throw(requests.Timeout)):
-            result = mixin._transmit([1,2,3])
+            result = mixin._transmit([1, 2, 3])
             self.assertEqual(len(_requests_map), 3)
             self.assertIsNotNone(_requests_map['duration'])
             self.assertEqual(_requests_map['count'], 1)
@@ -111,13 +111,13 @@ class TestTransportMixin(unittest.TestCase):
                 mixin._transmit_from_storage()
             self.assertIsNone(mixin.storage.get())
             self.assertEqual(len(os.listdir(mixin.storage.path)), 1)
-    
+
     def test_statsbeat_req_exception(self):
         _requests_map.clear()
         mixin = TransportMixin()
         mixin.options = Options()
         with mock.patch('requests.post', throw(requests.RequestException)):
-            result = mixin._transmit([1,2,3])
+            result = mixin._transmit([1, 2, 3])
             self.assertEqual(len(_requests_map), 3)
             self.assertIsNotNone(_requests_map['duration'])
             self.assertEqual(_requests_map['count'], 1)
@@ -141,7 +141,7 @@ class TestTransportMixin(unittest.TestCase):
         mixin = TransportMixin()
         mixin.options = Options()
         with mock.patch('requests.post', throw(CredentialUnavailableError)):
-            result = mixin._transmit([1,2,3])
+            result = mixin._transmit([1, 2, 3])
             self.assertEqual(len(_requests_map), 3)
             self.assertIsNotNone(_requests_map['duration'])
             self.assertEqual(_requests_map['exception'], 1)
@@ -165,7 +165,7 @@ class TestTransportMixin(unittest.TestCase):
         mixin = TransportMixin()
         mixin.options = Options()
         with mock.patch('requests.post', throw(ClientAuthenticationError)):
-            result = mixin._transmit([1,2,3])
+            result = mixin._transmit([1, 2, 3])
             self.assertEqual(len(_requests_map), 3)
             self.assertIsNotNone(_requests_map['duration'])
             self.assertEqual(_requests_map['retry'], 1)
@@ -189,7 +189,7 @@ class TestTransportMixin(unittest.TestCase):
         mixin = TransportMixin()
         mixin.options = Options()
         with mock.patch('requests.post', throw(Exception)):
-            result = mixin._transmit([1,2,3])
+            result = mixin._transmit([1, 2, 3])
             self.assertEqual(len(_requests_map), 3)
             self.assertIsNotNone(_requests_map['duration'])
             self.assertEqual(_requests_map['exception'], 1)
@@ -244,7 +244,7 @@ class TestTransportMixin(unittest.TestCase):
         mixin.options = Options()
         with mock.patch('requests.post') as post:
             post.return_value = MockResponse(200, 'unknown')
-            result = mixin._transmit([1,2,3])
+            result = mixin._transmit([1, 2, 3])
             self.assertEqual(len(_requests_map), 3)
             self.assertIsNotNone(_requests_map['duration'])
             self.assertEqual(_requests_map['success'], 1)
@@ -305,7 +305,7 @@ class TestTransportMixin(unittest.TestCase):
         mixin.options = Options()
         with mock.patch('requests.post') as post:
             post.return_value = MockResponse(206, 'unknown')
-            result = mixin._transmit([1,2,3])
+            result = mixin._transmit([1, 2, 3])
             self.assertEqual(len(_requests_map), 4)
             self.assertIsNotNone(_requests_map['duration'])
             self.assertEqual(_requests_map['retry'], 1)
@@ -362,7 +362,7 @@ class TestTransportMixin(unittest.TestCase):
                         },
                     ],
                 }))
-            result = mixin._transmit([1,2,3])
+            result = mixin._transmit([1, 2, 3])
             self.assertEqual(len(_requests_map), 4)
             self.assertIsNotNone(_requests_map['duration'])
             self.assertEqual(_requests_map['retry'], 1)
@@ -408,7 +408,7 @@ class TestTransportMixin(unittest.TestCase):
                         },
                     ],
                 }))
-            result = mixin._transmit([1,2,3])
+            result = mixin._transmit([1, 2, 3])
             self.assertEqual(len(_requests_map), 3)
             self.assertIsNotNone(_requests_map['duration'])
             self.assertEqual(_requests_map['count'], 1)
@@ -455,7 +455,7 @@ class TestTransportMixin(unittest.TestCase):
         mixin.options = Options()
         with mock.patch('requests.post') as post:
             post.return_value = MockResponse(429, 'unknown')
-            result = mixin._transmit([1,2,3])
+            result = mixin._transmit([1, 2, 3])
             self.assertEqual(len(_requests_map), 4)
             self.assertIsNotNone(_requests_map['duration'])
             self.assertEqual(_requests_map['retry'], 1)
@@ -482,7 +482,7 @@ class TestTransportMixin(unittest.TestCase):
         mixin.options = Options()
         with mock.patch('requests.post') as post:
             post.return_value = MockResponse(500, 'unknown')
-            result = mixin._transmit([1,2,3])
+            result = mixin._transmit([1, 2, 3])
             self.assertEqual(len(_requests_map), 4)
             self.assertIsNotNone(_requests_map['duration'])
             self.assertEqual(_requests_map['retry'], 1)
@@ -509,7 +509,7 @@ class TestTransportMixin(unittest.TestCase):
         mixin.options = Options()
         with mock.patch('requests.post') as post:
             post.return_value = MockResponse(503, 'unknown')
-            result = mixin._transmit([1,2,3])
+            result = mixin._transmit([1, 2, 3])
             self.assertEqual(len(_requests_map), 4)
             self.assertIsNotNone(_requests_map['duration'])
             self.assertEqual(_requests_map['retry'], 1)
@@ -535,7 +535,7 @@ class TestTransportMixin(unittest.TestCase):
         mixin.options = Options()
         with mock.patch('requests.post') as post:
             post.return_value = MockResponse(401, 'unknown')
-            result = mixin._transmit([1,2,3])
+            result = mixin._transmit([1, 2, 3])
             self.assertEqual(len(_requests_map), 4)
             self.assertIsNotNone(_requests_map['duration'])
             self.assertEqual(_requests_map['retry'], 1)
@@ -561,7 +561,7 @@ class TestTransportMixin(unittest.TestCase):
         mixin.options = Options()
         with mock.patch('requests.post') as post:
             post.return_value = MockResponse(403, 'unknown')
-            result = mixin._transmit([1,2,3])
+            result = mixin._transmit([1, 2, 3])
             self.assertEqual(len(_requests_map), 4)
             self.assertIsNotNone(_requests_map['duration'])
             self.assertEqual(_requests_map['retry'], 1)
@@ -605,7 +605,7 @@ class TestTransportMixin(unittest.TestCase):
         mixin.options.endpoint = "test.endpoint"
         with mock.patch('requests.post') as post:
             post.return_value = MockResponse(307, '{}', {"location": "https://example.com"})  # noqa: E501
-            result = mixin._transmit([1,2,3])
+            result = mixin._transmit([1, 2, 3])
             self.assertEqual(len(_requests_map), 4)
             self.assertIsNotNone(_requests_map['duration'])
             self.assertEqual(_requests_map['exception'], 1)
@@ -631,7 +631,7 @@ class TestTransportMixin(unittest.TestCase):
         mixin.options = Options()
         with mock.patch('requests.post') as post:
             post.return_value = MockResponse(439, 'unknown')
-            result = mixin._transmit([1,2,3])
+            result = mixin._transmit([1, 2, 3])
             self.assertEqual(len(_requests_map), 3)
             self.assertIsNotNone(_requests_map['duration'])
             self.assertEqual(_requests_map['throttle'], 1)
