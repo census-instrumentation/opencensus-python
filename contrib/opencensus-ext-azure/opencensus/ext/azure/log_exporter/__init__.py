@@ -106,6 +106,20 @@ class BaseLogHandler(logging.Handler):
         raise NotImplementedError  # pragma: NO COVER
 
     def flush(self, timeout=None):
+        if self._queue.is_empty():
+            return
+
+        # We must check the worker thread is alive, because otherwise flush
+        # is useless. Also, it would deadlock if no timeout is given, and the
+        # queue isn't empty.
+        # This is a very possible scenario during process termination, when
+        # atexit first calls handler.close() and then logging.shutdown(),
+        # that in turn calls handler.flush() without arguments.
+        if not self._worker.is_alive():
+            logger.warning("Can't flush %s, worker thread is dead. "
+                           "Any pending messages will be lost.", self)
+            return
+
         self._queue.flush(timeout=timeout)
 
 
