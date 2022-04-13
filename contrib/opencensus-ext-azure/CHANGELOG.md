@@ -5,7 +5,7 @@
 - Statsbeat bug fixes - status codes
 ([#1113](https://github.com/census-instrumentation/opencensus-python/pull/1113))
 - Statsbeat bug fixes - do not log if statsbeat
-([#1113](https://github.com/census-instrumentation/opencensus-python/pull/1113))
+([#1116](https://github.com/census-instrumentation/opencensus-python/pull/1116))
 
 ## 1.1.3
 Released 2022-03-03

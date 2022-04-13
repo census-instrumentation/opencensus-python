@@ -14,7 +14,6 @@
 
 import datetime
 import json
-import logging
 import os
 import platform
 import re
@@ -31,7 +30,6 @@ from opencensus.metrics.export.gauge import (
 )
 from opencensus.metrics.label_key import LabelKey
 from opencensus.metrics.label_value import LabelValue
-from opencensus.trace import execution_context
 from opencensus.trace.integrations import _Integrations, get_integrations
 
 _AIMS_URI = "http://169.254.169.254/metadata/instance/compute"
@@ -373,7 +371,7 @@ class _StatsbeatMetrics:
             # Function apps
             rp = _RP_NAMES[1]
             rpId = os.environ.get("WEBSITE_HOSTNAME")
-        elif self._get_azure_compute_metadata():
+        elif self._vm_retry and self._get_azure_compute_metadata():
             # VM
             rp = _RP_NAMES[2]
             rpId = '{}/{}'.format(
