@@ -312,7 +312,7 @@ class _StatsbeatMetrics:
                     self._long_threshold_count = 0
             network_metrics = self._get_network_metrics()
             metrics.extend(network_metrics)
-        except Exception as ex:
+        except Exception:
             pass
 
         return metrics

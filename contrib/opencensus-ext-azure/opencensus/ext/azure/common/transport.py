@@ -250,8 +250,8 @@ class TransportMixin(object):
             else:
                 if not self._is_stats_exporter():
                     logger.error(
-                        "Error sending telemetry because of circular redirects."
-                        " Please check the integrity of your connection string."
+                        "Error sending telemetry because of circular redirects."  # noqa: E501
+                        " Please check the integrity of your connection string."  # noqa: E501
                     )
             # If redirect but did not return, exception occured
             if self._check_stats_collection():

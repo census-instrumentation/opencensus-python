@@ -33,6 +33,7 @@ from opencensus.stats import stats as stats_module
 
 __all__ = ['MetricsExporter', 'new_metrics_exporter']
 
+
 class MetricsExporter(TransportMixin, ProcessorMixin):
     """Metrics exporter for Microsoft Azure Monitor."""
 
