@@ -1,6 +1,8 @@
 # Changelog
 
 ## Unreleased
+- Allow specifying metrics (custom_measurements) for Azure custom events
+([#1117](https://github.com/census-instrumentation/opencensus-python/pull/1117))
 
 # 0.9.0
 Released 2022-04-20

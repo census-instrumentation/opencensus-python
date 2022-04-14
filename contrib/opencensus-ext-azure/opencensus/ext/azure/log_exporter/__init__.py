@@ -255,10 +255,16 @@ class AzureEventHandler(TransportMixin, ProcessorMixin, BaseLogHandler):
                 isinstance(record.custom_dimensions, dict)):
             properties.update(record.custom_dimensions)
 
+        measurements = {}
+        if (hasattr(record, 'custom_measurements') and
+                isinstance(record.custom_measurements, dict)):
+            measurements.update(record.custom_measurements)
+
         envelope.name = 'Microsoft.ApplicationInsights.Event'
         data = Event(
             name=self.format(record),
             properties=properties,
+            measurements=measurements,
         )
         envelope.data = Data(baseData=data, baseType='EventData')
 
