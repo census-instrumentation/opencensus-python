@@ -41,6 +41,9 @@ class TransportMixin(object):
     def _check_stats_collection(self):
         return not os.environ.get("APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL") and (not hasattr(self, '_is_stats') or not self._is_stats)  # noqa: E501
 
+    def _is_stats_exporter(self):
+        return hasattr(self, '_is_stats') and self._is_stats
+
     def _transmit_from_storage(self):
         if self.storage:
             for blob in self.storage.gets():
@@ -88,23 +91,28 @@ class TransportMixin(object):
                 allow_redirects=False,
             )
         except requests.Timeout:
-            logger.warning(
-                'Request time out. Ingestion may be backed up. Retrying.')
+            if not self._is_stats_exporter():
+                logger.warning(
+                    'Request time out. Ingestion may be backed up. Retrying.')
             exception = self.options.minimum_retry_interval
         except requests.RequestException as ex:
-            logger.warning(
-                'Retrying due to transient client side error %s.', ex)
+            if not self._is_stats_exporter():
+                logger.warning(
+                    'Retrying due to transient client side error %s.', ex)
             # client side error (retryable)
             exception = self.options.minimum_retry_interval
         except CredentialUnavailableError as ex:
-            logger.warning('Credential error. %s. Dropping telemetry.', ex)
+            if not self._is_stats_exporter():
+                logger.warning('Credential error. %s. Dropping telemetry.', ex)
             exception = -1
         except ClientAuthenticationError as ex:
-            logger.warning('Authentication error %s', ex)
+            if not self._is_stats_exporter():
+                logger.warning('Authentication error %s', ex)
             exception = self.options.minimum_retry_interval
         except Exception as ex:
-            logger.warning(
-                'Error when sending request %s. Dropping telemetry.', ex)
+            if not self._is_stats_exporter():
+                logger.warning(
+                    'Error when sending request %s. Dropping telemetry.', ex)
             # Extraneous error (non-retryable)
             exception = -1
         finally:
@@ -128,7 +136,8 @@ class TransportMixin(object):
         try:
             text = response.text
         except Exception as ex:
-            logger.warning('Error while reading response body %s.', ex)
+            if not self._is_stats_exporter():
+                logger.warning('Error while reading response body %s.', ex)
         else:
             try:
                 data = json.loads(text)
@@ -169,12 +178,13 @@ class TransportMixin(object):
                                 _requests_map['retry'] = _requests_map.get('retry', 0) + 1  # noqa: E501
                         self.storage.put(resend_envelopes)
                 except Exception as ex:
-                    logger.error(
-                        'Error while processing %s: %s %s.',
-                        response.status_code,
-                        text,
-                        ex,
-                    )
+                    if not self._is_stats_exporter():
+                        logger.error(
+                            'Error while processing %s: %s %s.',
+                            response.status_code,
+                            text,
+                            ex,
+                        )
                 return -response.status_code
             # cannot parse response body, fallback to retry
         if response.status_code in (
@@ -183,11 +193,12 @@ class TransportMixin(object):
                 500,  # Internal Server Error
                 503,  # Service Unavailable
         ):
-            logger.warning(
-                'Transient server side error %s: %s.',
-                response.status_code,
-                text,
-            )
+            if not self._is_stats_exporter():
+                logger.warning(
+                    'Transient server side error %s: %s.',
+                    response.status_code,
+                    text,
+                )
             # server side error (retryable)
             if self._check_stats_collection():
                 with _requests_lock:
@@ -195,11 +206,12 @@ class TransportMixin(object):
             return self.options.minimum_retry_interval
         # Authentication error
         if response.status_code == 401:
-            logger.warning(
-                'Authentication error %s: %s.',
-                response.status_code,
-                text,
-            )
+            if not self._is_stats_exporter():
+                logger.warning(
+                    'Authentication error %s: %s.',
+                    response.status_code,
+                    text,
+                )
             if self._check_stats_collection():
                 with _requests_lock:
                     _requests_map['retry'] = _requests_map.get('retry', 0) + 1  # noqa: E501
@@ -208,11 +220,12 @@ class TransportMixin(object):
         # Can occur when v2 endpoint is used while AI resource is configured
         # with disableLocalAuth
         if response.status_code == 403:
-            logger.warning(
-                'Forbidden error %s: %s.',
-                response.status_code,
-                text,
-            )
+            if not self._is_stats_exporter():
+                logger.warning(
+                    'Forbidden error %s: %s.',
+                    response.status_code,
+                    text,
+                )
             if self._check_stats_collection():
                 with _requests_lock:
                     _requests_map['retry'] = _requests_map.get('retry', 0) + 1  # noqa: E501
@@ -230,24 +243,27 @@ class TransportMixin(object):
                             self.options.endpoint = "{}://{}".format(url.scheme, url.netloc)  # noqa: E501
                             # Attempt to export again
                             return self._transmit(envelopes)
-                logger.error(
-                    "Error parsing redirect information."
-                )
+                if not self._is_stats_exporter():
+                    logger.error(
+                        "Error parsing redirect information."
+                    )
             else:
-                logger.error(
-                    "Error sending telemetry because of circular redirects."
-                    " Please check the integrity of your connection string."
-                )
+                if not self._is_stats_exporter():
+                    logger.error(
+                        "Error sending telemetry because of circular redirects."  # noqa: E501
+                        " Please check the integrity of your connection string."  # noqa: E501
+                    )
             # If redirect but did not return, exception occured
             if self._check_stats_collection():
                 with _requests_lock:
                     _requests_map['exception'] = _requests_map.get('exception', 0) + 1  # noqa: E501
         # Other, server side error (non-retryable)
-        logger.error(
-            'Non-retryable server side error %s: %s.',
-            response.status_code,
-            text,
-        )
+        if not self._is_stats_exporter():
+            logger.error(
+                'Non-retryable server side error %s: %s.',
+                response.status_code,
+                text,
+            )
         if self._check_stats_collection():
             if response.status_code == 402 or response.status_code == 439:
                 # 402: Monthly Quota Exceeded (new SDK)

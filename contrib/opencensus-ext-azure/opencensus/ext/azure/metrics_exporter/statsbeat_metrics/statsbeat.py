@@ -14,7 +14,6 @@
 
 import datetime
 import json
-import logging
 import os
 import platform
 import re
@@ -67,8 +66,6 @@ _ENDPOINT_TYPES = ["breeze"]
 _RP_NAMES = ["appsvc", "functions", "vm", "unknown"]
 
 _HOST_PATTERN = re.compile('^https?://(?:www\\.)?([^/.]+)')
-
-_logger = logging.getLogger(__name__)
 
 
 class _FEATURE_TYPES:
@@ -315,8 +312,8 @@ class _StatsbeatMetrics:
                     self._long_threshold_count = 0
             network_metrics = self._get_network_metrics()
             metrics.extend(network_metrics)
-        except Exception as ex:
-            _logger.warning('Error while exporting stats metrics %s.', ex)
+        except Exception:
+            pass
 
         return metrics
 

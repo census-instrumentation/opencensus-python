@@ -22,6 +22,7 @@ from opencensus.ext.azure.metrics_exporter.statsbeat_metrics.statsbeat import (
 )
 from opencensus.metrics import transport
 from opencensus.metrics.export.metric_producer import MetricProducer
+from opencensus.trace import execution_context
 
 _STATSBEAT_METRICS = None
 _STATSBEAT_EXPORTER = None
@@ -46,7 +47,9 @@ def collect_statsbeat_metrics(options):
             producer = _AzureStatsbeatMetricsProducer(options)
             _STATSBEAT_METRICS = producer
             # Export some initial stats on program start
+            execution_context.set_is_exporter(True)
             exporter.export_metrics(_STATSBEAT_METRICS.get_initial_metrics())
+            execution_context.set_is_exporter(False)
             exporter.exporter_thread = \
                 transport.get_exporter_thread([_STATSBEAT_METRICS],
                                               exporter,

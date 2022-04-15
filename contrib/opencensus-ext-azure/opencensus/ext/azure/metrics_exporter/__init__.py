@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import atexit
-import logging
 import os
 
 from opencensus.common import utils as common_utils
@@ -33,8 +32,6 @@ from opencensus.metrics.export.metric_descriptor import MetricDescriptorType
 from opencensus.stats import stats as stats_module
 
 __all__ = ['MetricsExporter', 'new_metrics_exporter']
-
-logger = logging.getLogger(__name__)
 
 
 class MetricsExporter(TransportMixin, ProcessorMixin):
