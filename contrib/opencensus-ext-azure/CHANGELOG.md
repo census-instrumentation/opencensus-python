@@ -7,7 +7,7 @@
 - Statsbeat bug fixes - do not log if statsbeat
 ([#1116](https://github.com/census-instrumentation/opencensus-python/pull/1116))
 - Add deprecation warning for explicitly using instrumentation key
-([#1116](https://github.com/census-instrumentation/opencensus-python/pull/1116))
+([#1118](https://github.com/census-instrumentation/opencensus-python/pull/1118))
 
 ## 1.1.3
 Released 2022-03-03

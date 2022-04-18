@@ -36,7 +36,7 @@ def process_options(options):
     # Deprecation note about explicit instrumentation key usage
     if code_ikey or env_ikey:
         _logger.warning(
-            "DeprecationWarning: Explicitly using instrumentation key is" \
+            "DeprecationWarning: Explicitly using instrumentation key is"
             "deprecated. Please use a connection string instead."
         )
 
