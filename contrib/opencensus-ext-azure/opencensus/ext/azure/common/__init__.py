@@ -34,7 +34,7 @@ def process_options(options):
     env_ikey = os.getenv('APPINSIGHTS_INSTRUMENTATIONKEY')
 
     # Deprecation note about explicit instrumentation key usage
-    if code_ikey or env_ikey:
+    if (not code_cs and code_ikey) or (not env_cs and env_ikey):
         _logger.warning(
             "DeprecationWarning: Explicitly using instrumentation key is"
             "deprecated. Please use a connection string instead."
