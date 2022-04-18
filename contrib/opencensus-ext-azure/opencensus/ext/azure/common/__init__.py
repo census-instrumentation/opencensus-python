@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
 import os
 import tempfile
 
@@ -21,6 +22,8 @@ INGESTION_ENDPOINT = 'ingestionendpoint'
 INSTRUMENTATION_KEY = 'instrumentationkey'
 TEMPDIR_PREFIX = "opencensus-python-"
 
+_logger = logging.getLogger(__name__)
+
 
 def process_options(options):
     # Connection string/ikey
@@ -29,6 +32,13 @@ def process_options(options):
     env_cs = parse_connection_string(
         os.getenv('APPLICATIONINSIGHTS_CONNECTION_STRING'))
     env_ikey = os.getenv('APPINSIGHTS_INSTRUMENTATIONKEY')
+
+    # Deprecation note about explicit instrumentation key usage
+    if code_ikey or env_ikey:
+        _logger.warning(
+            "DeprecationWarning: Explicitly using instrumentation key is" \
+            "deprecated. Please use a connection string instead."
+        )
 
     # The priority of which value takes on the instrumentation key is:
     # 1. Key from explicitly passed in connection string
