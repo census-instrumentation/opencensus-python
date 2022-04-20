@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+# 0.9.0
+Released 2022-04-20
+- Make sure handler.flush() doesn't deadlock. 
+([#1112](https://github.com/census-instrumentation/opencensus-python/pull/1112))
+
 # 0.8.0
 Released 2021-10-05
 

@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+## 0.8.0
+Released 2022-04-20
+
 - Add support for Flask 2
 ([#1032](https://github.com/census-instrumentation/opencensus-python/pull/1032))
 
