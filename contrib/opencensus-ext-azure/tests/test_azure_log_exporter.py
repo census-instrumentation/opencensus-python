@@ -373,6 +373,11 @@ class TestAzureEventHandler(unittest.TestCase):
                 {
                         'key_1': 'value_1',
                         'key_2': 'value_2'
+                },
+                'custom_measurements':
+                {
+                    'measure_1': 1,
+                    'measure_2': 2
                 }
             }
             logger.exception('Captured an exception.', extra=properties)
@@ -382,6 +387,8 @@ class TestAzureEventHandler(unittest.TestCase):
         self.assertTrue('ZeroDivisionError' in post_body)
         self.assertTrue('key_1' in post_body)
         self.assertTrue('key_2' in post_body)
+        self.assertTrue('measure_1' in post_body)
+        self.assertTrue('measure_2' in post_body)
 
     @mock.patch('requests.post', return_value=mock.Mock())
     def test_export_empty(self, request_mock):
@@ -436,6 +443,11 @@ class TestAzureEventHandler(unittest.TestCase):
                 {
                     'key_1': 'value_1',
                     'key_2': 'value_2'
+                },
+            'custom_measurements':
+                {
+                    'measure_1': 1,
+                    'measure_2': 2
                 }
             })
         handler.close()
@@ -443,6 +455,8 @@ class TestAzureEventHandler(unittest.TestCase):
         self.assertTrue('action' in post_body)
         self.assertTrue('key_1' in post_body)
         self.assertTrue('key_2' in post_body)
+        self.assertTrue('measure_1' in post_body)
+        self.assertTrue('measure_2' in post_body)
 
     @mock.patch('requests.post', return_value=mock.Mock())
     def test_log_with_invalid_custom_properties(self, requests_mock):
@@ -454,7 +468,8 @@ class TestAzureEventHandler(unittest.TestCase):
         logger.addHandler(handler)
         logger.warning('action_1_%s', None)
         logger.warning('action_2_%s', 'arg', extra={
-            'custom_dimensions': 'not_a_dict'
+            'custom_dimensions': 'not_a_dict',
+            'custom_measurements': 'also_not'
         })
         logger.warning('action_3_%s', 'arg', extra={
             'notcustom_dimensions': {'key_1': 'value_1'}
@@ -468,6 +483,7 @@ class TestAzureEventHandler(unittest.TestCase):
         self.assertTrue('action_3_arg' in post_body)
 
         self.assertFalse('not_a_dict' in post_body)
+        self.assertFalse('also_not' in post_body)
         self.assertFalse('key_1' in post_body)
 
     @mock.patch('requests.post', return_value=mock.Mock())
