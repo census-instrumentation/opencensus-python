@@ -15,12 +15,13 @@
 import json
 import logging
 import os
+import requests
 import threading
 import time
 
-import requests
 from azure.core.exceptions import ClientAuthenticationError
 from azure.identity._exceptions import CredentialUnavailableError
+from opencensus.ext.azure.statsbeat import state
 
 try:
     from urllib.parse import urlparse
@@ -37,10 +38,15 @@ _requests_map = {}
 
 
 class TransportMixin(object):
-
+    
+    # check to see if collecting requests information related to statsbeats
     def _check_stats_collection(self):
-        return not os.environ.get("APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL") and (not hasattr(self, '_is_stats') or not self._is_stats)  # noqa: E501
+        return state.is_statsbeat_enabled() and \
+            not state.get_statsbeat_shutdown() and \
+            not self._is_stats_exporter()
 
+    # check if the current exporter is a statsbeat metric exporter
+    # only applies to metrics exporter
     def _is_stats_exporter(self):
         return hasattr(self, '_is_stats') and self._is_stats
 

@@ -23,11 +23,9 @@ import requests
 from opencensus.ext.azure.common import Options
 from opencensus.ext.azure.common.transport import _requests_map
 from opencensus.ext.azure.common.version import __version__ as ext_version
-from opencensus.ext.azure.metrics_exporter import (
-    MetricsExporter,
-    statsbeat_metrics,
-)
-from opencensus.ext.azure.metrics_exporter.statsbeat_metrics.statsbeat import (
+from opencensus.ext.azure.metrics_exporter import MetricsExporter
+from opencensus.ext.azure.statsbeat import state, statsbeat
+from opencensus.ext.azure.statsbeat.statsbeat_metrics import (
     _DEFAULT_EU_STATS_CONNECTION_STRING,
     _DEFAULT_NON_EU_STATS_CONNECTION_STRING,
     _ENDPOINT_TYPES,
@@ -83,12 +81,12 @@ def throw(exc_type, *args, **kwargs):
 class TestStatsbeatMetrics(unittest.TestCase):
     def setUp(self):
         # pylint: disable=protected-access
-        statsbeat_metrics._STATSBEAT_METRICS = None
-        statsbeat_metrics._STATSBEAT_EXPORTER = None
+        statsbeat._STATSBEAT_METRICS = None
+        statsbeat._STATSBEAT_EXPORTER = None
 
     def test_producer_ctor(self):
         # pylint: disable=protected-access
-        producer = statsbeat_metrics._AzureStatsbeatMetricsProducer(_OPTIONS)
+        producer = statsbeat._AzureStatsbeatMetricsProducer(_OPTIONS)
         metrics = producer._statsbeat
         self.assertTrue(
             isinstance(
@@ -100,7 +98,7 @@ class TestStatsbeatMetrics(unittest.TestCase):
 
     def test_producer_get_metrics(self):
         # pylint: disable=protected-access
-        producer = statsbeat_metrics._AzureStatsbeatMetricsProducer(_OPTIONS)
+        producer = statsbeat._AzureStatsbeatMetricsProducer(_OPTIONS)
         mock_stats = mock.Mock()
         producer._statsbeat = mock_stats
         producer.get_metrics()
@@ -109,7 +107,7 @@ class TestStatsbeatMetrics(unittest.TestCase):
 
     def test_producer_get_initial_metrics(self):
         # pylint: disable=protected-access
-        producer = statsbeat_metrics._AzureStatsbeatMetricsProducer(_OPTIONS)
+        producer = statsbeat._AzureStatsbeatMetricsProducer(_OPTIONS)
         mock_stats = mock.Mock()
         producer._statsbeat = mock_stats
         producer.get_initial_metrics()
@@ -120,22 +118,22 @@ class TestStatsbeatMetrics(unittest.TestCase):
     @mock.patch('opencensus.metrics.transport.get_exporter_thread')
     def test_collect_statsbeat_metrics(self, thread_mock, stats_mock):
         # pylint: disable=protected-access
-        self.assertIsNone(statsbeat_metrics._STATSBEAT_METRICS)
-        statsbeat_metrics.collect_statsbeat_metrics(_OPTIONS)
+        self.assertIsNone(statsbeat._STATSBEAT_METRICS)
+        statsbeat.collect_statsbeat_metrics(_OPTIONS)
         self.assertTrue(
             isinstance(
-                statsbeat_metrics._STATSBEAT_METRICS,
-                statsbeat_metrics._AzureStatsbeatMetricsProducer
+                statsbeat._STATSBEAT_METRICS,
+                statsbeat._AzureStatsbeatMetricsProducer
             )
         )
         self.assertTrue(
             isinstance(
-                statsbeat_metrics._STATSBEAT_EXPORTER,
+                statsbeat._STATSBEAT_EXPORTER,
                 MetricsExporter,
             )
         )
         self.assertEqual(
-            statsbeat_metrics._STATSBEAT_METRICS._statsbeat._instrumentation_key, "ikey")  # noqa: E501
+            statsbeat._STATSBEAT_METRICS._statsbeat._instrumentation_key, "ikey")  # noqa: E501
         thread_mock.assert_called_once()
         stats_mock.assert_called_once()
 
@@ -143,10 +141,11 @@ class TestStatsbeatMetrics(unittest.TestCase):
     @mock.patch('opencensus.metrics.transport.get_exporter_thread')
     def test_collect_statsbeat_metrics_exists(self, thread_mock, stats_mock):
         # pylint: disable=protected-access
-        producer = statsbeat_metrics._AzureStatsbeatMetricsProducer(_OPTIONS)
-        statsbeat_metrics._STATSBEAT_METRICS = producer
-        statsbeat_metrics.collect_statsbeat_metrics(None)
-        self.assertEqual(statsbeat_metrics._STATSBEAT_METRICS, producer)
+        self.assertIsNone(statsbeat._STATSBEAT_METRICS)
+        producer = statsbeat._AzureStatsbeatMetricsProducer(_OPTIONS)
+        statsbeat._STATSBEAT_METRICS = producer
+        statsbeat.collect_statsbeat_metrics(None)
+        self.assertEqual(statsbeat._STATSBEAT_METRICS, producer)
         thread_mock.assert_not_called()
         stats_mock.assert_not_called()
 
@@ -158,29 +157,30 @@ class TestStatsbeatMetrics(unittest.TestCase):
         non_eu = Options(
             connection_string=cs
         )
+        self.assertIsNone(statsbeat._STATSBEAT_METRICS)
         with mock.patch.dict(
                 os.environ, {
                     "APPLICATION_INSIGHTS_STATS_CONNECTION_STRING": "",
                 }):
-            statsbeat_metrics.collect_statsbeat_metrics(non_eu)
+            statsbeat.collect_statsbeat_metrics(non_eu)
             self.assertTrue(
                 isinstance(
-                    statsbeat_metrics._STATSBEAT_METRICS,
-                    statsbeat_metrics._AzureStatsbeatMetricsProducer
+                    statsbeat._STATSBEAT_METRICS,
+                    statsbeat._AzureStatsbeatMetricsProducer
                 )
             )
             self.assertTrue(
                 isinstance(
-                    statsbeat_metrics._STATSBEAT_EXPORTER,
+                    statsbeat._STATSBEAT_EXPORTER,
                     MetricsExporter,
                 )
             )
             self.assertEqual(
-                statsbeat_metrics._STATSBEAT_EXPORTER.options.instrumentation_key,  # noqa: E501
+                statsbeat._STATSBEAT_EXPORTER.options.instrumentation_key,  # noqa: E501
                 _DEFAULT_NON_EU_STATS_CONNECTION_STRING.split(";")[0].split("=")[1]   # noqa: E501
             )
             self.assertEqual(
-                statsbeat_metrics._STATSBEAT_EXPORTER.options.endpoint,
+                statsbeat._STATSBEAT_EXPORTER.options.endpoint,
                 _DEFAULT_NON_EU_STATS_CONNECTION_STRING.split(";")[1].split("=")[1]   # noqa: E501
             )
 
@@ -196,34 +196,34 @@ class TestStatsbeatMetrics(unittest.TestCase):
                 os.environ, {
                     "APPLICATION_INSIGHTS_STATS_CONNECTION_STRING": "",
                 }):
-            statsbeat_metrics.collect_statsbeat_metrics(eu)
+            statsbeat.collect_statsbeat_metrics(eu)
             self.assertTrue(
                 isinstance(
-                    statsbeat_metrics._STATSBEAT_METRICS,
-                    statsbeat_metrics._AzureStatsbeatMetricsProducer
+                    statsbeat._STATSBEAT_METRICS,
+                    statsbeat._AzureStatsbeatMetricsProducer
                 )
             )
             self.assertTrue(
                 isinstance(
-                    statsbeat_metrics._STATSBEAT_EXPORTER,
+                    statsbeat._STATSBEAT_EXPORTER,
                     MetricsExporter,
                 )
             )
             self.assertEqual(
-                statsbeat_metrics._STATSBEAT_EXPORTER.options.instrumentation_key,  # noqa: E501
+                statsbeat._STATSBEAT_EXPORTER.options.instrumentation_key,  # noqa: E501
                 _DEFAULT_EU_STATS_CONNECTION_STRING.split(";")[0].split("=")[1]   # noqa: E501
             )
             self.assertEqual(
-                statsbeat_metrics._STATSBEAT_EXPORTER.options.endpoint,
+                statsbeat._STATSBEAT_EXPORTER.options.endpoint,
                 _DEFAULT_EU_STATS_CONNECTION_STRING.split(";")[1].split("=")[1]   # noqa: E501
             )
 
     @mock.patch(
-        'opencensus.ext.azure.metrics_exporter.statsbeat_metrics.statsbeat._get_feature_properties')  # noqa: E501
+        'opencensus.ext.azure.statsbeat.statsbeat_metrics._get_feature_properties')  # noqa: E501
     @mock.patch(
-        'opencensus.ext.azure.metrics_exporter.statsbeat_metrics.statsbeat._get_network_properties')  # noqa: E501
+        'opencensus.ext.azure.statsbeat.statsbeat_metrics._get_network_properties')  # noqa: E501
     @mock.patch(
-        'opencensus.ext.azure.metrics_exporter.statsbeat_metrics.statsbeat._get_attach_properties')  # noqa: E501
+        'opencensus.ext.azure.statsbeat.statsbeat_metrics._get_attach_properties')  # noqa: E501
     def test_statsbeat_metric_init(self, attach_mock, network_mock, feature_mock):  # noqa: E501
         # pylint: disable=protected-access
         metric = _StatsbeatMetrics(_OPTIONS)
@@ -381,7 +381,7 @@ class TestStatsbeatMetrics(unittest.TestCase):
 
     def test_statsbeat_metric_get_initial_metrics(self):
         # pylint: disable=protected-access
-        metric = statsbeat_metrics._StatsbeatMetrics(_OPTIONS)
+        metric = _StatsbeatMetrics(_OPTIONS)
         attach_metric_mock = mock.Mock()
         attach_metric_mock.return_value = "attach"
         feature_metric_mock = mock.Mock()
@@ -399,7 +399,7 @@ class TestStatsbeatMetrics(unittest.TestCase):
 
     def test_statsbeat_metric_get_metrics(self):
         # pylint: disable=protected-access
-        metric = statsbeat_metrics._StatsbeatMetrics(_OPTIONS)
+        metric = _StatsbeatMetrics(_OPTIONS)
         metric._long_threshold_count = _STATS_LONG_INTERVAL_THRESHOLD
         initial_metric_mock = mock.Mock()
         network_metric_mock = mock.Mock()
@@ -415,7 +415,7 @@ class TestStatsbeatMetrics(unittest.TestCase):
 
     def test_statsbeat_metric_get_metrics_short(self):
         # pylint: disable=protected-access
-        metric = statsbeat_metrics._StatsbeatMetrics(_OPTIONS)
+        metric = _StatsbeatMetrics(_OPTIONS)
         metric._long_threshold_count = 1
         initial_metric_mock = mock.Mock()
         network_metric_mock = mock.Mock()
@@ -507,17 +507,17 @@ class TestStatsbeatMetrics(unittest.TestCase):
         integrations._INTEGRATIONS_BIT_MASK = original_integrations
 
     @mock.patch(
-        'opencensus.ext.azure.metrics_exporter.statsbeat_metrics.statsbeat._get_exception_count_value')  # noqa: E501
+        'opencensus.ext.azure.statsbeat.statsbeat_metrics._get_exception_count_value')  # noqa: E501
     @mock.patch(
-        'opencensus.ext.azure.metrics_exporter.statsbeat_metrics.statsbeat._get_throttle_count_value')  # noqa: E501
+        'opencensus.ext.azure.statsbeat.statsbeat_metrics._get_throttle_count_value')  # noqa: E501
     @mock.patch(
-        'opencensus.ext.azure.metrics_exporter.statsbeat_metrics.statsbeat._get_retry_count_value')  # noqa: E501
+        'opencensus.ext.azure.statsbeat.statsbeat_metrics._get_retry_count_value')  # noqa: E501
     @mock.patch(
-        'opencensus.ext.azure.metrics_exporter.statsbeat_metrics.statsbeat._get_average_duration_value')  # noqa: E501
+        'opencensus.ext.azure.statsbeat.statsbeat_metrics._get_average_duration_value')  # noqa: E501
     @mock.patch(
-        'opencensus.ext.azure.metrics_exporter.statsbeat_metrics.statsbeat._get_failure_count_value')  # noqa: E501
+        'opencensus.ext.azure.statsbeat.statsbeat_metrics._get_failure_count_value')  # noqa: E501
     @mock.patch(
-        'opencensus.ext.azure.metrics_exporter.statsbeat_metrics.statsbeat._get_success_count_value')  # noqa: E501
+        'opencensus.ext.azure.statsbeat.statsbeat_metrics._get_success_count_value')  # noqa: E501
     def test_get_network_metrics(self, mock1, mock2, mock3, mock4, mock5, mock6):  # noqa: E501
         # pylint: disable=protected-access
         stats = _StatsbeatMetrics(_OPTIONS)
@@ -550,7 +550,7 @@ class TestStatsbeatMetrics(unittest.TestCase):
             self.assertEqual(properties[8].value, short_host)
 
     @mock.patch(
-        'opencensus.ext.azure.metrics_exporter.statsbeat_metrics.statsbeat._get_success_count_value')  # noqa: E501
+        'opencensus.ext.azure.statsbeat.statsbeat_metrics._get_success_count_value')  # noqa: E501
     def test_get_network_metrics_zero(self, suc_mock):
         # pylint: disable=protected-access
         stats = _StatsbeatMetrics(_OPTIONS)

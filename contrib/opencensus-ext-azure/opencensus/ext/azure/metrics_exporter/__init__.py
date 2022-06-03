@@ -144,10 +144,12 @@ class MetricsExporter(TransportMixin, ProcessorMixin):
         return envelope
 
     def shutdown(self):
-        # Flush the exporter thread
-        # Do not flush if metrics exporter for stats
-        if self.exporter_thread and not self._is_stats:
-            self.exporter_thread.close()
+        if self.exporter_thread:
+            # flush if metrics exporter is not for stats
+            if not self._is_stats:
+                self.exporter_thread.close()
+            else:
+                self.exporter_thread.cancel()
         # Shutsdown storage worker
         if self.storage:
             self.storage.close()
@@ -163,7 +165,7 @@ def new_metrics_exporter(**options):
                                     exporter,
                                     interval=exporter.options.export_interval)
     if not os.environ.get("APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL"):
-        from opencensus.ext.azure.metrics_exporter import statsbeat_metrics
+        from opencensus.ext.azure.statsbeat import statsbeat
         # Stats will track the user's ikey
-        statsbeat_metrics.collect_statsbeat_metrics(exporter.options)
+        statsbeat.collect_statsbeat_metrics(exporter.options)
     return exporter

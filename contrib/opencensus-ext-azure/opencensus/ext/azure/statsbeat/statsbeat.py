@@ -11,18 +11,22 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 import threading
 
 from opencensus.ext.azure.metrics_exporter import MetricsExporter
-from opencensus.ext.azure.metrics_exporter.statsbeat_metrics.statsbeat import (
+from opencensus.ext.azure.statsbeat.statsbeat_metrics import (
     _STATS_SHORT_EXPORT_INTERVAL,
     _get_stats_connection_string,
     _StatsbeatMetrics,
 )
+from opencensus.ext.azure.statsbeat.state import (
+    _STATSBEAT_STATE,
+    _STATSBEAT_STATE_LOCK,
+)
 from opencensus.metrics import transport
 from opencensus.metrics.export.metric_producer import MetricProducer
 from opencensus.trace import execution_context
+
 
 _STATSBEAT_METRICS = None
 _STATSBEAT_EXPORTER = None
@@ -55,6 +59,24 @@ def collect_statsbeat_metrics(options):
                                               exporter,
                                               exporter.options.export_interval)
             _STATSBEAT_EXPORTER = exporter
+        with _STATSBEAT_STATE_LOCK:
+            _STATSBEAT_STATE["INITIAL_FAILURE_COUNT"] = 0
+            _STATSBEAT_STATE["INITIAL_SUCCESS"] = 0
+            _STATSBEAT_STATE["SHUTDOWN"] = False
+
+
+def _shutdown_statsbeat_metrics():
+    # pylint: disable=global-statement
+    global _STATSBEAT_METRICS
+    global _STATSBEAT_EXPORTER
+    if _STATSBEAT_METRICS is not None and _STATSBEAT_EXPORTER is not None:
+        with _STATSBEAT_LOCK:
+            try:
+                _STATSBEAT_EXPORTER.shutdown()
+                _STATSBEAT_EXPORTER = None
+                _STATSBEAT_METRICS = None
+            except:  # pylint: disable=broad-except
+                pass
 
 
 class _AzureStatsbeatMetricsProducer(MetricProducer):
