@@ -65,11 +65,11 @@ def collect_statsbeat_metrics(options):
             _STATSBEAT_STATE["SHUTDOWN"] = False
 
 
-def _shutdown_statsbeat_metrics():
+def shutdown_statsbeat_metrics():
     # pylint: disable=global-statement
     global _STATSBEAT_METRICS
     global _STATSBEAT_EXPORTER
-    if _STATSBEAT_METRICS is not None and _STATSBEAT_EXPORTER is not None:
+    if _STATSBEAT_METRICS is not None and _STATSBEAT_EXPORTER is not None and not _STATSBEAT_STATE["SHUTDOWN"]:
         with _STATSBEAT_LOCK:
             try:
                 _STATSBEAT_EXPORTER.shutdown()

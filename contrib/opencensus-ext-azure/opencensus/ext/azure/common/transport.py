@@ -35,6 +35,7 @@ _MAX_CONSECUTIVE_REDIRECTS = 10
 _MONITOR_OAUTH_SCOPE = "https://monitor.azure.com//.default"
 _requests_lock = threading.Lock()
 _requests_map = {}
+_REACHED_INGESTION_STATUS_CODES = (200, 206, 402, 408, 429, 439, 500)
 
 
 class TransportMixin(object):
@@ -128,13 +129,16 @@ class TransportMixin(object):
                     duration = _requests_map.get('duration', 0)
                     _requests_map['duration'] = duration + (end_time - start_time)  # noqa: E501
             if exception is not None:
+                if self._is_stats_exporter() and not state.get_statsbeat_initial_success():
+                    # If ingestion threshold during statsbeat initialization is reached, return back code to shut it down
+                    if _statsbeat_failed_to_ingest():
+                        return -2
                 if self._check_stats_collection():
                     with _requests_lock:
                         if exception >= 0:
                             _requests_map['retry'] = _requests_map.get('retry', 0) + 1  # noqa: E501
                         else:
                             _requests_map['exception'] = _requests_map.get('exception', 0) + 1  # noqa: E501
-
                 return exception
 
         text = 'N/A'
@@ -149,6 +153,15 @@ class TransportMixin(object):
                 data = json.loads(text)
             except Exception:
                 pass
+
+        if self._is_stats_exporter() and not state.get_statsbeat_initial_success():
+            # If statsbeat exporter, record initialization as success if appropriate status code is returned
+            if _reached_ingestion_status_code(response.status_code):
+                state.set_statsbeat_initial_success(True)
+            elif _statsbeat_failed_to_ingest():
+                # If ingestion threshold during statsbeat initialization is reached, return back code to shut it down
+                return -2
+
         if response.status_code == 200:
             self._consecutive_redirects = 0
             if self._check_stats_collection():
@@ -277,3 +290,13 @@ class TransportMixin(object):
                 with _requests_lock:
                     _requests_map['throttle'] = _requests_map.get('throttle', 0) + 1  # noqa: E501
         return -response.status_code
+
+
+def _reached_ingestion_status_code(status_code):
+    return status_code in _REACHED_INGESTION_STATUS_CODES
+
+
+def _statsbeat_failed_to_ingest():
+    # increment failure counter for sending statsbeat if still in initialization
+    state.increment_statsbeats_initial_failure_count()
+    return state.get_statsbeat_initial_failure_count() >= 3

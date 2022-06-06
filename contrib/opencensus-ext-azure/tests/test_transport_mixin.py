@@ -27,9 +27,11 @@ from opencensus.ext.azure.common.storage import LocalFileStorage
 from opencensus.ext.azure.common.transport import (
     _MAX_CONSECUTIVE_REDIRECTS,
     _MONITOR_OAUTH_SCOPE,
+    _REACHED_INGESTION_STATUS_CODES,
     TransportMixin,
     _requests_map,
 )
+from opencensus.ext.azure.statsbeat import state
 
 TEST_FOLDER = os.path.abspath('.test.transport')
 
@@ -57,17 +59,47 @@ class MockResponse(object):
 
 # pylint: disable=W0212
 class TestTransportMixin(unittest.TestCase):
+    def setUp(self):
+        # pylint: disable=protected-access
+        state._STATSBEAT_STATE = {
+            "INITIAL_FAILURE_COUNT": 0,
+            "INITIAL_SUCCESS": False,
+            "SHUTDOWN": False,
+        }
+
     def test_check_stats_collection(self):
         mixin = TransportMixin()
-        mixin.options = Options()
-        mixin.options.enable_stats_metrics = True
-        self.assertTrue(mixin._check_stats_collection())
+        with mock.patch.dict(
+            os.environ, {
+                "APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL": "",
+            }):
+                self.assertTrue(mixin._check_stats_collection())
+        with mock.patch.dict(
+            os.environ, {
+                "APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL": "True",
+            }):
+                self.assertFalse(mixin._check_stats_collection())
         mixin._is_stats = False
         self.assertTrue(mixin._check_stats_collection())
         mixin._is_stats = True
         self.assertFalse(mixin._check_stats_collection())
-        mixin.options.enable_stats_metrics = False
+        mixin._is_stats = False
+        state._STATSBEAT_STATE["SHUTDOWN"] = False
+        self.assertTrue(mixin._check_stats_collection())
+        state._STATSBEAT_STATE["SHUTDOWN"] = True
         self.assertFalse(mixin._check_stats_collection())
+
+    def test_initial_statsbeat_success(self):
+        self.assertFalse(state._STATSBEAT_STATE["INITIAL_SUCCESS"])
+        mixin = TransportMixin()
+        mixin.options = Options()
+        mixin._is_stats = True
+        with mock.patch('requests.post') as post:
+            for code in _REACHED_INGESTION_STATUS_CODES:
+                post.return_value = MockResponse(code, 'unknown')
+                mixin._transmit([1])
+                self.assertTrue(state._STATSBEAT_STATE["INITIAL_SUCCESS"])
+                state._STATSBEAT_STATE["INITIAL_SUCCESS"] = False
 
     def test_transmission_nothing(self):
         mixin = TransportMixin()

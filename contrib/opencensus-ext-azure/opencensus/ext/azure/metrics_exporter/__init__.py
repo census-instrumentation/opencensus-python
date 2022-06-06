@@ -71,6 +71,11 @@ class MetricsExporter(TransportMixin, ProcessorMixin):
         for batch in batched_envelopes:
             batch = self.apply_telemetry_processors(batch)
             result = self._transmit(batch)
+            # If statsbeat exporter and received signal to shutdown
+            if self._is_stats_exporter() and result == -2:
+                from opencensus.ext.azure.statsbeat import statsbeat
+                statsbeat.shutdown_statsbeat_metrics()
+                return
             # Only store files if local storage enabled
             if self.storage and result > 0:
                 self.storage.put(batch, result)

@@ -83,6 +83,11 @@ class TestStatsbeatMetrics(unittest.TestCase):
         # pylint: disable=protected-access
         statsbeat._STATSBEAT_METRICS = None
         statsbeat._STATSBEAT_EXPORTER = None
+        _STATSBEAT_STATE = {
+            "INITIAL_FAILURE_COUNT": 0,
+            "INITIAL_SUCCESS": False,
+            "SHUTDOWN": False,
+        }
 
     def test_producer_ctor(self):
         # pylint: disable=protected-access
@@ -217,6 +222,29 @@ class TestStatsbeatMetrics(unittest.TestCase):
                 statsbeat._STATSBEAT_EXPORTER.options.endpoint,
                 _DEFAULT_EU_STATS_CONNECTION_STRING.split(";")[1].split("=")[1]   # noqa: E501
             )
+
+    def test_shutdown_statsbeat_metrics(self):
+        # pylint: disable=protected-access
+        producer_mock = mock.Mock()
+        exporter_mock = mock.Mock()
+        statsbeat._STATSBEAT_METRICS = producer_mock
+        statsbeat._STATSBEAT_EXPORTER = exporter_mock
+        statsbeat.shutdown_statsbeat_metrics()
+        exporter_mock.shutdown.assert_called_once()
+        self.assertIsNone(statsbeat._STATSBEAT_METRICS)
+        self.assertIsNone(statsbeat._STATSBEAT_EXPORTER)
+
+    def test_shutdown_statsbeat_metrics_already_shutdown(self):
+        # pylint: disable=protected-access
+        producer_mock = mock.Mock()
+        exporter_mock = mock.Mock()
+        statsbeat._STATSBEAT_METRICS = producer_mock
+        statsbeat._STATSBEAT_EXPORTER = exporter_mock
+        statsbeat._STATSBEAT_STATE["SHUTDOWN"] = True
+        statsbeat.shutdown_statsbeat_metrics()
+        exporter_mock.shutdown.assert_not_called()
+        self.assertIsNotNone(statsbeat._STATSBEAT_METRICS)
+        self.assertIsNotNone(statsbeat._STATSBEAT_EXPORTER)
 
     @mock.patch(
         'opencensus.ext.azure.statsbeat.statsbeat_metrics._get_feature_properties')  # noqa: E501

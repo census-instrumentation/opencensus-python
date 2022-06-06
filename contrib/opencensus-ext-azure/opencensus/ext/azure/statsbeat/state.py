@@ -26,15 +26,16 @@ _STATSBEAT_STATE_LOCK = threading.Lock()
 def is_statsbeat_enabled():
     return not os.environ.get("APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL")
 
-def _set_statsbeats_initial_failure_count(count):
+def increment_statsbeat_initial_failure_count():
     with _STATSBEAT_STATE_LOCK:
-        _STATSBEAT_STATE["INITIAL_FAILURE_COUNT"] = count
+        _STATSBEAT_STATE["INITIAL_FAILURE_COUNT"] += 1
 
+def get_statsbeat_initial_failure_count():
+    return _STATSBEAT_STATE["INITIAL_FAILURE_COUNT"]
 
-def _set_statsbeat_initial_success(success):
+def set_statsbeat_initial_success(success):
     with _STATSBEAT_STATE_LOCK:
         _STATSBEAT_STATE["INITIAL_SUCCESS"] = success
 
-
-def get_statsbeat_shutdown():
-    return _STATSBEAT_STATE["SHUTDOWN"]
+def get_statsbeat_initial_success():
+    return _STATSBEAT_STATE["INITIAL_SUCCESS"]
