@@ -39,3 +39,6 @@ def set_statsbeat_initial_success(success):
 
 def get_statsbeat_initial_success():
     return _STATSBEAT_STATE["INITIAL_SUCCESS"]
+
+def get_statsbeat_shutdown():
+    return _STATSBEAT_STATE["SHUTDOWN"]

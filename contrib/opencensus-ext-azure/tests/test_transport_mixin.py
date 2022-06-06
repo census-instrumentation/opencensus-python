@@ -61,6 +61,7 @@ class MockResponse(object):
 class TestTransportMixin(unittest.TestCase):
     def setUp(self):
         # pylint: disable=protected-access
+        _requests_map.clear()
         state._STATSBEAT_STATE = {
             "INITIAL_FAILURE_COUNT": 0,
             "INITIAL_SUCCESS": False,
@@ -101,6 +102,78 @@ class TestTransportMixin(unittest.TestCase):
                 self.assertTrue(state._STATSBEAT_STATE["INITIAL_SUCCESS"])
                 state._STATSBEAT_STATE["INITIAL_SUCCESS"] = False
 
+    def test_exception_statsbeat_shutdown_increment(self):
+        mixin = TransportMixin()
+        mixin.options = Options()
+        mixin._is_stats = True
+        state._STATSBEAT_STATE["INITIAL_SUCCESS"] = False
+        state._STATSBEAT_STATE["INITIAL_FAILURE_COUNT"] = 0
+        state._STATSBEAT_STATE["SHUTDOWN"] = False
+        with mock.patch.dict(
+            os.environ, {
+                "APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL": "",
+            }):
+                with mock.patch('requests.post', throw(Exception)):
+                    result = mixin._transmit([1, 2, 3])
+                    self.assertEqual(state._STATSBEAT_STATE["INITIAL_FAILURE_COUNT"], 1)
+                    self.assertEqual(result, -1)
+
+    def test_exception_statsbeat_shutdown(self):
+        mixin = TransportMixin()
+        mixin.options = Options()
+        mixin._is_stats = True
+        state._STATSBEAT_STATE["INITIAL_SUCCESS"] = False
+        state._STATSBEAT_STATE["INITIAL_FAILURE_COUNT"] = 2
+        state._STATSBEAT_STATE["SHUTDOWN"] = False
+        with mock.patch.dict(
+            os.environ, {
+                "APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL": "",
+            }):
+                with mock.patch('requests.post', throw(Exception)):
+                    result = mixin._transmit([1, 2, 3])
+                    self.assertEqual(state._STATSBEAT_STATE["INITIAL_FAILURE_COUNT"], 3)
+                    self.assertEqual(result, -2)
+
+    def test_status_code_statsbeat_shutdown_increment(self):
+        mixin = TransportMixin()
+        mixin.options = Options()
+        mixin._is_stats = True
+        state._STATSBEAT_STATE["INITIAL_SUCCESS"] = False
+        state._STATSBEAT_STATE["INITIAL_FAILURE_COUNT"] = 0
+        state._STATSBEAT_STATE["SHUTDOWN"] = False
+        with mock.patch.dict(
+            os.environ, {
+                "APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL": "",
+            }):
+                with mock.patch('requests.post') as post:
+                    post.return_value = MockResponse(403, 'unknown')
+                    mixin._transmit([1, 2, 3])
+                    self.assertEqual(state._STATSBEAT_STATE["INITIAL_FAILURE_COUNT"], 1)
+                    self.assertFalse(state._STATSBEAT_STATE["INITIAL_SUCCESS"])
+                with mock.patch('requests.post') as post:
+                    post.return_value = MockResponse(200, 'unknown')
+                    mixin._transmit([1, 2, 3])
+                    self.assertEqual(state._STATSBEAT_STATE["INITIAL_FAILURE_COUNT"], 1)
+                    self.assertTrue(state._STATSBEAT_STATE["INITIAL_SUCCESS"])
+
+    def test_status_code_statsbeat_shutdown(self):
+        mixin = TransportMixin()
+        mixin.options = Options()
+        mixin._is_stats = True
+        state._STATSBEAT_STATE["INITIAL_SUCCESS"] = False
+        state._STATSBEAT_STATE["INITIAL_FAILURE_COUNT"] = 2
+        state._STATSBEAT_STATE["SHUTDOWN"] = False
+        with mock.patch.dict(
+            os.environ, {
+                "APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL": "",
+            }):
+                with mock.patch('requests.post') as post:
+                    post.return_value = MockResponse(403, 'unknown')
+                    result = mixin._transmit([1, 2, 3])
+                    self.assertEqual(state._STATSBEAT_STATE["INITIAL_FAILURE_COUNT"], 3)
+                    self.assertFalse(state._STATSBEAT_STATE["INITIAL_SUCCESS"])
+                    self.assertEqual(result, -2)
+
     def test_transmission_nothing(self):
         mixin = TransportMixin()
         with LocalFileStorage(os.path.join(TEST_FOLDER, self.id())) as stor:
@@ -120,8 +193,7 @@ class TestTransportMixin(unittest.TestCase):
             self.assertIsNone(mixin.storage.get())
             self.assertEqual(len(os.listdir(mixin.storage.path)), 1)
 
-    def test_statsbeat_timeout(self):
-        _requests_map.clear()
+    def test_transmision_timeout(self):
         mixin = TransportMixin()
         mixin.options = Options()
         with mock.patch('requests.post', throw(requests.Timeout)):
@@ -131,7 +203,6 @@ class TestTransportMixin(unittest.TestCase):
             self.assertEqual(_requests_map['count'], 1)
             self.assertEqual(_requests_map['retry'], 1)
             self.assertEqual(result, mixin.options.minimum_retry_interval)
-        _requests_map.clear()
 
     def test_transmission_pre_req_exception(self):
         mixin = TransportMixin()
@@ -145,7 +216,6 @@ class TestTransportMixin(unittest.TestCase):
             self.assertEqual(len(os.listdir(mixin.storage.path)), 1)
 
     def test_statsbeat_req_exception(self):
-        _requests_map.clear()
         mixin = TransportMixin()
         mixin.options = Options()
         with mock.patch('requests.post', throw(requests.RequestException)):
@@ -155,7 +225,6 @@ class TestTransportMixin(unittest.TestCase):
             self.assertEqual(_requests_map['count'], 1)
             self.assertEqual(_requests_map['retry'], 1)
             self.assertEqual(result, mixin.options.minimum_retry_interval)
-        _requests_map.clear()
 
     def test_transmission_cred_exception(self):
         mixin = TransportMixin()
@@ -169,7 +238,6 @@ class TestTransportMixin(unittest.TestCase):
             self.assertEqual(len(os.listdir(mixin.storage.path)), 0)
 
     def test_statsbeat_cred_exception(self):
-        _requests_map.clear()
         mixin = TransportMixin()
         mixin.options = Options()
         with mock.patch('requests.post', throw(CredentialUnavailableError)):
@@ -179,7 +247,6 @@ class TestTransportMixin(unittest.TestCase):
             self.assertEqual(_requests_map['exception'], 1)
             self.assertEqual(_requests_map['count'], 1)
             self.assertEqual(result, -1)
-        _requests_map.clear()
 
     def test_transmission_client_exception(self):
         mixin = TransportMixin()
@@ -193,7 +260,6 @@ class TestTransportMixin(unittest.TestCase):
             self.assertEqual(len(os.listdir(mixin.storage.path)), 1)
 
     def test_statsbeat_client_exception(self):
-        _requests_map.clear()
         mixin = TransportMixin()
         mixin.options = Options()
         with mock.patch('requests.post', throw(ClientAuthenticationError)):
@@ -203,7 +269,6 @@ class TestTransportMixin(unittest.TestCase):
             self.assertEqual(_requests_map['retry'], 1)
             self.assertEqual(_requests_map['count'], 1)
             self.assertEqual(result, mixin.options.minimum_retry_interval)
-        _requests_map.clear()
 
     def test_transmission_pre_exception(self):
         mixin = TransportMixin()
@@ -217,7 +282,6 @@ class TestTransportMixin(unittest.TestCase):
             self.assertEqual(len(os.listdir(mixin.storage.path)), 0)
 
     def test_statsbeat_exception(self):
-        _requests_map.clear()
         mixin = TransportMixin()
         mixin.options = Options()
         with mock.patch('requests.post', throw(Exception)):
@@ -227,7 +291,6 @@ class TestTransportMixin(unittest.TestCase):
             self.assertEqual(_requests_map['exception'], 1)
             self.assertEqual(_requests_map['count'], 1)
             self.assertEqual(result, -1)
-        _requests_map.clear()
 
     @mock.patch('requests.post', return_value=mock.Mock())
     def test_transmission_lease_failure(self, requests_mock):
@@ -271,7 +334,6 @@ class TestTransportMixin(unittest.TestCase):
             self.assertEqual(len(os.listdir(mixin.storage.path)), 0)
 
     def test_statsbeat_success(self):
-        _requests_map.clear()
         mixin = TransportMixin()
         mixin.options = Options()
         with mock.patch('requests.post') as post:
@@ -282,7 +344,6 @@ class TestTransportMixin(unittest.TestCase):
             self.assertEqual(_requests_map['success'], 1)
             self.assertEqual(_requests_map['count'], 1)
             self.assertEqual(result, 0)
-        _requests_map.clear()
 
     def test_transmission_auth(self):
         mixin = TransportMixin()
@@ -332,7 +393,6 @@ class TestTransportMixin(unittest.TestCase):
             self.assertEqual(len(os.listdir(mixin.storage.path)), 1)
 
     def test_statsbeat_206(self):
-        _requests_map.clear()
         mixin = TransportMixin()
         mixin.options = Options()
         with mock.patch('requests.post') as post:
@@ -344,7 +404,6 @@ class TestTransportMixin(unittest.TestCase):
             self.assertEqual(_requests_map['count'], 1)
             self.assertEqual(_requests_map['failure'], 1)
             self.assertEqual(result, mixin.options.minimum_retry_interval)
-        _requests_map.clear()
 
     def test_transmission_206_partial_retry(self):
         mixin = TransportMixin()
@@ -374,7 +433,6 @@ class TestTransportMixin(unittest.TestCase):
             self.assertEqual(mixin.storage.get().get(), (3,))
 
     def test_statsbeat_206_partial_retry(self):
-        _requests_map.clear()
         mixin = TransportMixin()
         mixin.options = Options()
         with mock.patch('requests.post') as post:
@@ -401,7 +459,6 @@ class TestTransportMixin(unittest.TestCase):
             self.assertEqual(_requests_map['count'], 1)
             self.assertEqual(_requests_map['failure'], 1)
             self.assertEqual(result, -206)
-        _requests_map.clear()
 
     def test_transmission_206_no_retry(self):
         mixin = TransportMixin()
@@ -425,7 +482,6 @@ class TestTransportMixin(unittest.TestCase):
             self.assertEqual(len(os.listdir(mixin.storage.path)), 0)
 
     def test_statsbeat_206_no_retry(self):
-        _requests_map.clear()
         mixin = TransportMixin()
         mixin.options = Options()
         with mock.patch('requests.post') as post:
@@ -446,7 +502,6 @@ class TestTransportMixin(unittest.TestCase):
             self.assertEqual(_requests_map['count'], 1)
             self.assertEqual(_requests_map['failure'], 1)
             self.assertEqual(result, -206)
-        _requests_map.clear()
 
     def test_transmission_206_bogus(self):
         mixin = TransportMixin()
@@ -482,7 +537,6 @@ class TestTransportMixin(unittest.TestCase):
             self.assertEqual(len(os.listdir(mixin.storage.path)), 1)
 
     def test_statsbeat_429(self):
-        _requests_map.clear()
         mixin = TransportMixin()
         mixin.options = Options()
         with mock.patch('requests.post') as post:
@@ -494,7 +548,6 @@ class TestTransportMixin(unittest.TestCase):
             self.assertEqual(_requests_map['count'], 1)
             self.assertEqual(_requests_map['failure'], 1)
             self.assertEqual(result, mixin.options.minimum_retry_interval)
-        _requests_map.clear()
 
     def test_transmission_500(self):
         mixin = TransportMixin()
@@ -509,7 +562,6 @@ class TestTransportMixin(unittest.TestCase):
             self.assertEqual(len(os.listdir(mixin.storage.path)), 1)
 
     def test_statsbeat_500(self):
-        _requests_map.clear()
         mixin = TransportMixin()
         mixin.options = Options()
         with mock.patch('requests.post') as post:
@@ -521,7 +573,6 @@ class TestTransportMixin(unittest.TestCase):
             self.assertEqual(_requests_map['count'], 1)
             self.assertEqual(_requests_map['failure'], 1)
             self.assertEqual(result, mixin.options.minimum_retry_interval)
-        _requests_map.clear()
 
     def test_transmission_503(self):
         mixin = TransportMixin()
@@ -536,7 +587,6 @@ class TestTransportMixin(unittest.TestCase):
             self.assertEqual(len(os.listdir(mixin.storage.path)), 1)
 
     def test_statsbeat_503(self):
-        _requests_map.clear()
         mixin = TransportMixin()
         mixin.options = Options()
         with mock.patch('requests.post') as post:
@@ -548,7 +598,6 @@ class TestTransportMixin(unittest.TestCase):
             self.assertEqual(_requests_map['count'], 1)
             self.assertEqual(_requests_map['failure'], 1)
             self.assertEqual(result, mixin.options.minimum_retry_interval)
-        _requests_map.clear()
 
     def test_transmission_401(self):
         mixin = TransportMixin()
@@ -562,7 +611,6 @@ class TestTransportMixin(unittest.TestCase):
             self.assertEqual(len(os.listdir(mixin.storage.path)), 1)
 
     def test_statsbeat_401(self):
-        _requests_map.clear()
         mixin = TransportMixin()
         mixin.options = Options()
         with mock.patch('requests.post') as post:
@@ -574,7 +622,6 @@ class TestTransportMixin(unittest.TestCase):
             self.assertEqual(_requests_map['count'], 1)
             self.assertEqual(_requests_map['failure'], 1)
             self.assertEqual(result, mixin.options.minimum_retry_interval)
-        _requests_map.clear()
 
     def test_transmission_403(self):
         mixin = TransportMixin()
@@ -588,7 +635,6 @@ class TestTransportMixin(unittest.TestCase):
             self.assertEqual(len(os.listdir(mixin.storage.path)), 1)
 
     def test_statsbeat_403(self):
-        _requests_map.clear()
         mixin = TransportMixin()
         mixin.options = Options()
         with mock.patch('requests.post') as post:
@@ -600,7 +646,6 @@ class TestTransportMixin(unittest.TestCase):
             self.assertEqual(_requests_map['count'], 1)
             self.assertEqual(_requests_map['failure'], 1)
             self.assertEqual(result, mixin.options.minimum_retry_interval)
-        _requests_map.clear()
 
     def test_transmission_307(self):
         mixin = TransportMixin()
@@ -630,7 +675,6 @@ class TestTransportMixin(unittest.TestCase):
         self.assertEqual(mixin.options.endpoint, "https://example.com")
 
     def test_statsbeat_307(self):
-        _requests_map.clear()
         mixin = TransportMixin()
         mixin.options = Options()
         mixin._consecutive_redirects = 0
@@ -644,7 +688,6 @@ class TestTransportMixin(unittest.TestCase):
             self.assertEqual(_requests_map['count'], 10)
             self.assertEqual(_requests_map['failure'], 10)
             self.assertEqual(result, -307)
-        _requests_map.clear()
 
     def test_transmission_439(self):
         mixin = TransportMixin()
@@ -658,7 +701,6 @@ class TestTransportMixin(unittest.TestCase):
             self.assertEqual(len(os.listdir(mixin.storage.path)), 0)
 
     def test_statsbeat_439(self):
-        _requests_map.clear()
         mixin = TransportMixin()
         mixin.options = Options()
         with mock.patch('requests.post') as post:
@@ -669,4 +711,3 @@ class TestTransportMixin(unittest.TestCase):
             self.assertEqual(_requests_map['throttle'], 1)
             self.assertEqual(_requests_map['count'], 1)
             self.assertEqual(result, -439)
-        _requests_map.clear()

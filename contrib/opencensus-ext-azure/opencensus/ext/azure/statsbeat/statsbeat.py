@@ -69,14 +69,19 @@ def shutdown_statsbeat_metrics():
     # pylint: disable=global-statement
     global _STATSBEAT_METRICS
     global _STATSBEAT_EXPORTER
+    shutdown_success = False
     if _STATSBEAT_METRICS is not None and _STATSBEAT_EXPORTER is not None and not _STATSBEAT_STATE["SHUTDOWN"]:
         with _STATSBEAT_LOCK:
             try:
                 _STATSBEAT_EXPORTER.shutdown()
                 _STATSBEAT_EXPORTER = None
                 _STATSBEAT_METRICS = None
+                shutdown_success = True
             except:  # pylint: disable=broad-except
                 pass
+        if shutdown_success:
+            with _STATSBEAT_STATE_LOCK:
+                    _STATSBEAT_STATE["SHUTDOWN"] = True
 
 
 class _AzureStatsbeatMetricsProducer(MetricProducer):
