@@ -14,19 +14,18 @@
 import threading
 
 from opencensus.ext.azure.metrics_exporter import MetricsExporter
+from opencensus.ext.azure.statsbeat.state import (
+    _STATSBEAT_STATE,
+    _STATSBEAT_STATE_LOCK,
+)
 from opencensus.ext.azure.statsbeat.statsbeat_metrics import (
     _STATS_SHORT_EXPORT_INTERVAL,
     _get_stats_connection_string,
     _StatsbeatMetrics,
 )
-from opencensus.ext.azure.statsbeat.state import (
-    _STATSBEAT_STATE,
-    _STATSBEAT_STATE_LOCK,
-)
 from opencensus.metrics import transport
 from opencensus.metrics.export.metric_producer import MetricProducer
 from opencensus.trace import execution_context
-
 
 _STATSBEAT_METRICS = None
 _STATSBEAT_EXPORTER = None

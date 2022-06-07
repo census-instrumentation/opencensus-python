@@ -14,11 +14,11 @@
 
 import json
 import logging
-import os
-import requests
+
 import threading
 import time
 
+import requests
 from azure.core.exceptions import ClientAuthenticationError
 from azure.identity._exceptions import CredentialUnavailableError
 from opencensus.ext.azure.statsbeat import state
