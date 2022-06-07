@@ -32,7 +32,7 @@ from opencensus.ext.azure.common.protocol import (
 )
 from opencensus.ext.azure.common.storage import LocalFileStorage
 from opencensus.ext.azure.common.transport import TransportMixin
-from opencensus.ext.azure.metrics_exporter import statsbeat_metrics
+from opencensus.ext.azure.statsbeat import statsbeat
 from opencensus.trace import execution_context
 
 logger = logging.getLogger(__name__)
@@ -67,7 +67,7 @@ class BaseLogHandler(logging.Handler):
         atexit.register(self.close, self.options.grace_period)
         # start statsbeat on exporter instantiation
         if not os.environ.get("APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL"):
-            statsbeat_metrics.collect_statsbeat_metrics(self.options)
+            statsbeat.collect_statsbeat_metrics(self.options)
         # For redirects
         self._consecutive_redirects = 0  # To prevent circular redirects
 
