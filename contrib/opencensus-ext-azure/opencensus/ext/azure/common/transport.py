@@ -140,7 +140,7 @@ class TransportMixin(object):
                         not state.get_statsbeat_initial_success():
                     # If ingestion threshold during statsbeat initialization is
                     # reached, return back code to shut it down
-                    if _statsbeat_failed_to_ingest():
+                    if _statsbeat_failure_reached_threshold():
                         return -2
                 return exception
 
@@ -164,7 +164,7 @@ class TransportMixin(object):
             # appropriate status code is returned
             if _reached_ingestion_status_code(response.status_code):
                 state.set_statsbeat_initial_success(True)
-            elif _statsbeat_failed_to_ingest():
+            elif _statsbeat_failure_reached_threshold():
                 # If ingestion threshold during statsbeat initialization is
                 # reached, return back code to shut it down
                 return -2
@@ -303,7 +303,7 @@ def _reached_ingestion_status_code(status_code):
     return status_code in _REACHED_INGESTION_STATUS_CODES
 
 
-def _statsbeat_failed_to_ingest():
+def _statsbeat_failure_reached_threshold():
     # increment failure counter for sending statsbeat if in initialization
     state.increment_statsbeat_initial_failure_count()
     return state.get_statsbeat_initial_failure_count() >= 3

@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Statsbeat - shutdown stats when hit error/exception threshold
+- Shutdown Statsbeat when hitting error/exception threshold
 ([#1127](https://github.com/census-instrumentation/opencensus-python/pull/1127))
 
 ## 1.1.4
