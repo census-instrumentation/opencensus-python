@@ -39,7 +39,7 @@ _REACHED_INGESTION_STATUS_CODES = (200, 206, 402, 408, 429, 439, 500)
 
 
 class TransportMixin(object):
-    
+
     # check to see if collecting requests information related to statsbeats
     def _check_stats_collection(self):
         return state.is_statsbeat_enabled() and \
@@ -138,7 +138,8 @@ class TransportMixin(object):
                 if self._is_stats_exporter() and \
                     not state.get_statsbeat_shutdown() and \
                         not state.get_statsbeat_initial_success():
-                    # If ingestion threshold during statsbeat initialization is reached, return back code to shut it down
+                    # If ingestion threshold during statsbeat initialization is
+                    # reached, return back code to shut it down
                     if _statsbeat_failed_to_ingest():
                         return -2
                 return exception
@@ -159,11 +160,13 @@ class TransportMixin(object):
         if self._is_stats_exporter() and \
             not state.get_statsbeat_shutdown() and \
                 not state.get_statsbeat_initial_success():
-            # If statsbeat exporter, record initialization as success if appropriate status code is returned
+            # If statsbeat exporter, record initialization as success if
+            # appropriate status code is returned
             if _reached_ingestion_status_code(response.status_code):
                 state.set_statsbeat_initial_success(True)
             elif _statsbeat_failed_to_ingest():
-                # If ingestion threshold during statsbeat initialization is reached, return back code to shut it down
+                # If ingestion threshold during statsbeat initialization is
+                # reached, return back code to shut it down
                 return -2
 
         if response.status_code == 200:
@@ -301,6 +304,6 @@ def _reached_ingestion_status_code(status_code):
 
 
 def _statsbeat_failed_to_ingest():
-    # increment failure counter for sending statsbeat if still in initialization
+    # increment failure counter for sending statsbeat if in initialization
     state.increment_statsbeat_initial_failure_count()
     return state.get_statsbeat_initial_failure_count() >= 3

@@ -24,7 +24,7 @@ from opencensus.ext.azure.common import Options
 from opencensus.ext.azure.common.transport import _requests_map
 from opencensus.ext.azure.common.version import __version__ as ext_version
 from opencensus.ext.azure.metrics_exporter import MetricsExporter
-from opencensus.ext.azure.statsbeat import state, statsbeat
+from opencensus.ext.azure.statsbeat import statsbeat
 from opencensus.ext.azure.statsbeat.statsbeat_metrics import (
     _DEFAULT_EU_STATS_CONNECTION_STRING,
     _DEFAULT_NON_EU_STATS_CONNECTION_STRING,
@@ -83,7 +83,7 @@ class TestStatsbeatMetrics(unittest.TestCase):
         # pylint: disable=protected-access
         statsbeat._STATSBEAT_METRICS = None
         statsbeat._STATSBEAT_EXPORTER = None
-        _STATSBEAT_STATE = {
+        _STATSBEAT_STATE = {  # noqa: F841
             "INITIAL_FAILURE_COUNT": 0,
             "INITIAL_SUCCESS": False,
             "SHUTDOWN": False,

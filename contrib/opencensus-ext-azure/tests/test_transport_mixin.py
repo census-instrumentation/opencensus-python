@@ -71,15 +71,15 @@ class TestTransportMixin(unittest.TestCase):
     def test_check_stats_collection(self):
         mixin = TransportMixin()
         with mock.patch.dict(
-            os.environ, {
-                "APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL": "",
-            }):
-                self.assertTrue(mixin._check_stats_collection())
+                os.environ, {
+                    "APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL": "",
+                }):
+            self.assertTrue(mixin._check_stats_collection())
         with mock.patch.dict(
-            os.environ, {
-                "APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL": "True",
-            }):
-                self.assertFalse(mixin._check_stats_collection())
+                os.environ, {
+                    "APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL": "True",
+                }):
+            self.assertFalse(mixin._check_stats_collection())
         mixin._is_stats = False
         self.assertTrue(mixin._check_stats_collection())
         mixin._is_stats = True
@@ -110,13 +110,13 @@ class TestTransportMixin(unittest.TestCase):
         state._STATSBEAT_STATE["INITIAL_FAILURE_COUNT"] = 0
         state._STATSBEAT_STATE["SHUTDOWN"] = False
         with mock.patch.dict(
-            os.environ, {
-                "APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL": "",
-            }):
-                with mock.patch('requests.post', throw(Exception)):
-                    result = mixin._transmit([1, 2, 3])
-                    self.assertEqual(state._STATSBEAT_STATE["INITIAL_FAILURE_COUNT"], 1)
-                    self.assertEqual(result, -1)
+                os.environ, {
+                    "APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL": "",
+                }):
+            with mock.patch('requests.post', throw(Exception)):
+                result = mixin._transmit([1, 2, 3])
+                self.assertEqual(state._STATSBEAT_STATE["INITIAL_FAILURE_COUNT"], 1)  # noqa: E501
+                self.assertEqual(result, -1)
 
     def test_exception_statsbeat_shutdown(self):
         mixin = TransportMixin()
@@ -126,13 +126,13 @@ class TestTransportMixin(unittest.TestCase):
         state._STATSBEAT_STATE["INITIAL_FAILURE_COUNT"] = 2
         state._STATSBEAT_STATE["SHUTDOWN"] = False
         with mock.patch.dict(
-            os.environ, {
-                "APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL": "",
-            }):
-                with mock.patch('requests.post', throw(Exception)):
-                    result = mixin._transmit([1, 2, 3])
-                    self.assertEqual(state._STATSBEAT_STATE["INITIAL_FAILURE_COUNT"], 3)
-                    self.assertEqual(result, -2)
+                os.environ, {
+                    "APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL": "",
+                }):
+            with mock.patch('requests.post', throw(Exception)):
+                result = mixin._transmit([1, 2, 3])
+                self.assertEqual(state._STATSBEAT_STATE["INITIAL_FAILURE_COUNT"], 3)  # noqa: E501
+                self.assertEqual(result, -2)
 
     def test_status_code_statsbeat_shutdown_increment(self):
         mixin = TransportMixin()
@@ -142,19 +142,19 @@ class TestTransportMixin(unittest.TestCase):
         state._STATSBEAT_STATE["INITIAL_FAILURE_COUNT"] = 0
         state._STATSBEAT_STATE["SHUTDOWN"] = False
         with mock.patch.dict(
-            os.environ, {
-                "APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL": "",
-            }):
-                with mock.patch('requests.post') as post:
-                    post.return_value = MockResponse(403, 'unknown')
-                    mixin._transmit([1, 2, 3])
-                    self.assertEqual(state._STATSBEAT_STATE["INITIAL_FAILURE_COUNT"], 1)
-                    self.assertFalse(state._STATSBEAT_STATE["INITIAL_SUCCESS"])
-                with mock.patch('requests.post') as post:
-                    post.return_value = MockResponse(200, 'unknown')
-                    mixin._transmit([1, 2, 3])
-                    self.assertEqual(state._STATSBEAT_STATE["INITIAL_FAILURE_COUNT"], 1)
-                    self.assertTrue(state._STATSBEAT_STATE["INITIAL_SUCCESS"])
+                os.environ, {
+                    "APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL": "",
+                }):
+            with mock.patch('requests.post') as post:
+                post.return_value = MockResponse(403, 'unknown')
+                mixin._transmit([1, 2, 3])
+                self.assertEqual(state._STATSBEAT_STATE["INITIAL_FAILURE_COUNT"], 1)  # noqa: E501
+                self.assertFalse(state._STATSBEAT_STATE["INITIAL_SUCCESS"])
+            with mock.patch('requests.post') as post:
+                post.return_value = MockResponse(200, 'unknown')
+                mixin._transmit([1, 2, 3])
+                self.assertEqual(state._STATSBEAT_STATE["INITIAL_FAILURE_COUNT"], 1)  # noqa: E501
+                self.assertTrue(state._STATSBEAT_STATE["INITIAL_SUCCESS"])
 
     def test_status_code_statsbeat_shutdown(self):
         mixin = TransportMixin()
@@ -164,15 +164,15 @@ class TestTransportMixin(unittest.TestCase):
         state._STATSBEAT_STATE["INITIAL_FAILURE_COUNT"] = 2
         state._STATSBEAT_STATE["SHUTDOWN"] = False
         with mock.patch.dict(
-            os.environ, {
-                "APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL": "",
-            }):
-                with mock.patch('requests.post') as post:
-                    post.return_value = MockResponse(403, 'unknown')
-                    result = mixin._transmit([1, 2, 3])
-                    self.assertEqual(state._STATSBEAT_STATE["INITIAL_FAILURE_COUNT"], 3)
-                    self.assertFalse(state._STATSBEAT_STATE["INITIAL_SUCCESS"])
-                    self.assertEqual(result, -2)
+                os.environ, {
+                    "APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL": "",
+                }):
+            with mock.patch('requests.post') as post:
+                post.return_value = MockResponse(403, 'unknown')
+                result = mixin._transmit([1, 2, 3])
+                self.assertEqual(state._STATSBEAT_STATE["INITIAL_FAILURE_COUNT"], 3)  # noqa: E501
+                self.assertFalse(state._STATSBEAT_STATE["INITIAL_SUCCESS"])
+                self.assertEqual(result, -2)
 
     def test_transmission_nothing(self):
         mixin = TransportMixin()
