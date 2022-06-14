@@ -14,13 +14,14 @@
 
 import json
 import logging
-import os
 import threading
 import time
 
 import requests
 from azure.core.exceptions import ClientAuthenticationError
 from azure.identity._exceptions import CredentialUnavailableError
+
+from opencensus.ext.azure.statsbeat import state
 
 try:
     from urllib.parse import urlparse
@@ -34,13 +35,19 @@ _MAX_CONSECUTIVE_REDIRECTS = 10
 _MONITOR_OAUTH_SCOPE = "https://monitor.azure.com//.default"
 _requests_lock = threading.Lock()
 _requests_map = {}
+_REACHED_INGESTION_STATUS_CODES = (200, 206, 402, 408, 429, 439, 500)
 
 
 class TransportMixin(object):
 
+    # check to see if collecting requests information related to statsbeats
     def _check_stats_collection(self):
-        return not os.environ.get("APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL") and (not hasattr(self, '_is_stats') or not self._is_stats)  # noqa: E501
+        return state.is_statsbeat_enabled() and \
+            not state.get_statsbeat_shutdown() and \
+            not self._is_stats_exporter()
 
+    # check if the current exporter is a statsbeat metric exporter
+    # only applies to metrics exporter
     def _is_stats_exporter(self):
         return hasattr(self, '_is_stats') and self._is_stats
 
@@ -128,7 +135,13 @@ class TransportMixin(object):
                             _requests_map['retry'] = _requests_map.get('retry', 0) + 1  # noqa: E501
                         else:
                             _requests_map['exception'] = _requests_map.get('exception', 0) + 1  # noqa: E501
-
+                if self._is_stats_exporter() and \
+                    not state.get_statsbeat_shutdown() and \
+                        not state.get_statsbeat_initial_success():
+                    # If ingestion threshold during statsbeat initialization is
+                    # reached, return back code to shut it down
+                    if _statsbeat_failure_reached_threshold():
+                        return -2
                 return exception
 
         text = 'N/A'
@@ -143,6 +156,19 @@ class TransportMixin(object):
                 data = json.loads(text)
             except Exception:
                 pass
+
+        if self._is_stats_exporter() and \
+            not state.get_statsbeat_shutdown() and \
+                not state.get_statsbeat_initial_success():
+            # If statsbeat exporter, record initialization as success if
+            # appropriate status code is returned
+            if _reached_ingestion_status_code(response.status_code):
+                state.set_statsbeat_initial_success(True)
+            elif _statsbeat_failure_reached_threshold():
+                # If ingestion threshold during statsbeat initialization is
+                # reached, return back code to shut it down
+                return -2
+
         if response.status_code == 200:
             self._consecutive_redirects = 0
             if self._check_stats_collection():
@@ -271,3 +297,13 @@ class TransportMixin(object):
                 with _requests_lock:
                     _requests_map['throttle'] = _requests_map.get('throttle', 0) + 1  # noqa: E501
         return -response.status_code
+
+
+def _reached_ingestion_status_code(status_code):
+    return status_code in _REACHED_INGESTION_STATUS_CODES
+
+
+def _statsbeat_failure_reached_threshold():
+    # increment failure counter for sending statsbeat if in initialization
+    state.increment_statsbeat_initial_failure_count()
+    return state.get_statsbeat_initial_failure_count() >= 3

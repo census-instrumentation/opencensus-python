@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Shutdown Statsbeat when hitting error/exception threshold
+([#1127](https://github.com/census-instrumentation/opencensus-python/pull/1127))
+
 ## 1.1.4
 Released 2022-04-20
 

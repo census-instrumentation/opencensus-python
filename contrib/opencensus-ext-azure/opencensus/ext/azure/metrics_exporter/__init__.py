@@ -71,6 +71,11 @@ class MetricsExporter(TransportMixin, ProcessorMixin):
         for batch in batched_envelopes:
             batch = self.apply_telemetry_processors(batch)
             result = self._transmit(batch)
+            # If statsbeat exporter and received signal to shutdown
+            if self._is_stats_exporter() and result == -2:
+                from opencensus.ext.azure.statsbeat import statsbeat
+                statsbeat.shutdown_statsbeat_metrics()
+                return
             # Only store files if local storage enabled
             if self.storage and result > 0:
                 self.storage.put(batch, result)
@@ -144,10 +149,12 @@ class MetricsExporter(TransportMixin, ProcessorMixin):
         return envelope
 
     def shutdown(self):
-        # Flush the exporter thread
-        # Do not flush if metrics exporter for stats
-        if self.exporter_thread and not self._is_stats:
-            self.exporter_thread.close()
+        if self.exporter_thread:
+            # flush if metrics exporter is not for stats
+            if not self._is_stats:
+                self.exporter_thread.close()
+            else:
+                self.exporter_thread.cancel()
         # Shutsdown storage worker
         if self.storage:
             self.storage.close()
@@ -163,7 +170,7 @@ def new_metrics_exporter(**options):
                                     exporter,
                                     interval=exporter.options.export_interval)
     if not os.environ.get("APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL"):
-        from opencensus.ext.azure.metrics_exporter import statsbeat_metrics
+        from opencensus.ext.azure.statsbeat import statsbeat
         # Stats will track the user's ikey
-        statsbeat_metrics.collect_statsbeat_metrics(exporter.options)
+        statsbeat.collect_statsbeat_metrics(exporter.options)
     return exporter

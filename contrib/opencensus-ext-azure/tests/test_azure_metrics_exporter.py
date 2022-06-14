@@ -206,11 +206,24 @@ class TestAzureMetricsExporter(unittest.TestCase):
         mock_thread.close.assert_called_once()
         mock_storage.close.assert_called_once()
 
+    def test_shutdown_statsbeat(self):
+        mock_thread = mock.Mock()
+        mock_storage = mock.Mock()
+        exporter = MetricsExporter(
+            instrumentation_key='12345678-1234-5678-abcd-12345678abcd'
+        )
+        exporter.exporter_thread = mock_thread
+        exporter._is_stats = True
+        exporter.storage = mock_storage
+        exporter.shutdown()
+        mock_thread.cancel.assert_called_once()
+        mock_storage.close.assert_called_once()
+
     @mock.patch('opencensus.ext.azure.metrics_exporter'
                 '.transport.get_exporter_thread')
     def test_new_metrics_exporter(self, exporter_mock):
-        with mock.patch('opencensus.ext.azure.metrics_exporter'
-                        '.statsbeat_metrics.collect_statsbeat_metrics') as hb:
+        with mock.patch('opencensus.ext.azure.statsbeat'
+                        '.statsbeat.collect_statsbeat_metrics') as hb:
             hb.return_value = None
             iKey = '12345678-1234-5678-abcd-12345678abcd'
             exporter = new_metrics_exporter(instrumentation_key=iKey)
@@ -227,8 +240,8 @@ class TestAzureMetricsExporter(unittest.TestCase):
     @mock.patch('opencensus.ext.azure.metrics_exporter'
                 '.transport.get_exporter_thread')
     def test_new_metrics_exporter_no_standard_metrics(self, exporter_mock):
-        with mock.patch('opencensus.ext.azure.metrics_exporter'
-                        '.statsbeat_metrics.collect_statsbeat_metrics') as hb:
+        with mock.patch('opencensus.ext.azure.statsbeat'
+                        '.statsbeat.collect_statsbeat_metrics') as hb:
             hb.return_value = None
             iKey = '12345678-1234-5678-abcd-12345678abcd'
             exporter = new_metrics_exporter(
@@ -240,18 +253,3 @@ class TestAzureMetricsExporter(unittest.TestCase):
             producer_class = standard_metrics.AzureStandardMetricsProducer
             self.assertFalse(isinstance(exporter_mock.call_args[0][0][0],
                                         producer_class))
-
-    @unittest.skip("Skip because disabling heartbeat metrics")
-    @mock.patch('opencensus.ext.azure.metrics_exporter'
-                '.transport.get_exporter_thread')
-    def test_new_metrics_exporter_heartbeat(self, exporter_mock):
-        with mock.patch('opencensus.ext.azure.metrics_exporter'
-                        '.statsbeat_metrics.collect_statsbeat_metrics') as hb:
-            iKey = '12345678-1234-5678-abcd-12345678abcd'
-            exporter = new_metrics_exporter(instrumentation_key=iKey)
-
-            self.assertEqual(exporter.options.instrumentation_key, iKey)
-            self.assertEqual(len(hb.call_args_list), 1)
-            self.assertEqual(len(hb.call_args[0]), 2)
-            self.assertEqual(hb.call_args[0][0], None)
-            self.assertEqual(hb.call_args[0][1], iKey)
