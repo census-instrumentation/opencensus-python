@@ -77,9 +77,9 @@ class MetricsExporter(TransportMixin, ProcessorMixin):
             # If statsbeat exporter and received signal to shutdown
             if self._is_stats_exporter() and result is \
                 TransportStatusCode.STATSBEAT_SHUTDOWN:
-                from opencensus.ext.azure.statsbeat import statsbeat
-                statsbeat.shutdown_statsbeat_metrics()
-                return
+                    from opencensus.ext.azure.statsbeat import statsbeat
+                    statsbeat.shutdown_statsbeat_metrics()
+                    return
             # Only store files if local storage enabled
             if self.storage and result is TransportStatusCode.RETRY:
                 self.storage.put(batch, self.options.minimum_retry_interval)

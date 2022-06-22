@@ -20,8 +20,9 @@ import unittest
 import mock
 
 from opencensus.ext.azure import log_exporter
+from opencensus.ext.azure.common.transport import TransportStatusCode
 
-TEST_FOLDER = os.path.abspath('.test.logs')
+TEST_FOLDER = os.path.abspath('.test.log.exporter')
 
 
 def setUpModule():
@@ -191,7 +192,7 @@ class TestAzureLogHandler(unittest.TestCase):
 
     @mock.patch('opencensus.ext.azure.log_exporter'
                 '.AzureLogHandler.log_record_to_envelope')
-    def test_export_failure(self, log_record_to_envelope_mock):
+    def test_export_retry(self, log_record_to_envelope_mock):
         log_record_to_envelope_mock.return_value = ['bar']
         handler = log_exporter.AzureLogHandler(
             instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
@@ -199,9 +200,25 @@ class TestAzureLogHandler(unittest.TestCase):
         )
         with mock.patch('opencensus.ext.azure.log_exporter'
                         '.AzureLogHandler._transmit') as transmit:
-            transmit.return_value = 10
+            transmit.return_value = TransportStatusCode.RETRY
             handler._export(['foo'])
         self.assertEqual(len(os.listdir(handler.storage.path)), 1)
+        self.assertIsNone(handler.storage.get())
+        handler.close()
+
+    @mock.patch('opencensus.ext.azure.log_exporter'
+                '.AzureLogHandler.log_record_to_envelope')
+    def test_export_success(self, log_record_to_envelope_mock):
+        log_record_to_envelope_mock.return_value = ['bar']
+        handler = log_exporter.AzureLogHandler(
+            instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
+            storage_path=os.path.join(TEST_FOLDER, self.id()),
+        )
+        with mock.patch('opencensus.ext.azure.log_exporter'
+                        '.AzureLogHandler._transmit') as transmit:
+            transmit.return_value = TransportStatusCode.SUCCESS
+            handler._export(['foo'])
+        self.assertEqual(len(os.listdir(handler.storage.path)), 0)
         self.assertIsNone(handler.storage.get())
         handler.close()
 
@@ -408,7 +425,7 @@ class TestAzureEventHandler(unittest.TestCase):
 
     @mock.patch('opencensus.ext.azure.log_exporter'
                 '.AzureEventHandler.log_record_to_envelope')
-    def test_export_failure(self, log_record_to_envelope_mock):
+    def test_export_retry(self, log_record_to_envelope_mock):
         log_record_to_envelope_mock.return_value = ['bar']
         handler = log_exporter.AzureEventHandler(
             instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
@@ -416,9 +433,25 @@ class TestAzureEventHandler(unittest.TestCase):
         )
         with mock.patch('opencensus.ext.azure.log_exporter'
                         '.AzureEventHandler._transmit') as transmit:
-            transmit.return_value = 10
+            transmit.return_value = TransportStatusCode.RETRY
             handler._export(['foo'])
         self.assertEqual(len(os.listdir(handler.storage.path)), 1)
+        self.assertIsNone(handler.storage.get())
+        handler.close()
+
+    @mock.patch('opencensus.ext.azure.log_exporter'
+                '.AzureEventHandler.log_record_to_envelope')
+    def test_export_success(self, log_record_to_envelope_mock):
+        log_record_to_envelope_mock.return_value = ['bar']
+        handler = log_exporter.AzureEventHandler(
+            instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
+            storage_path=os.path.join(TEST_FOLDER, self.id()),
+        )
+        with mock.patch('opencensus.ext.azure.log_exporter'
+                        '.AzureEventHandler._transmit') as transmit:
+            transmit.return_value = TransportStatusCode.SUCCESS
+            handler._export(['foo'])
+        self.assertEqual(len(os.listdir(handler.storage.path)), 0)
         self.assertIsNone(handler.storage.get())
         handler.close()
 

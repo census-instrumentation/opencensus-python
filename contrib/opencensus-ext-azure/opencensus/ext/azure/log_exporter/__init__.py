@@ -81,7 +81,7 @@ class BaseLogHandler(logging.Handler):
                 envelopes = self.apply_telemetry_processors(envelopes)
                 result = self._transmit(envelopes)
                 # Only store files if local storage enabled
-                if self.storage and result > TransportStatusCode.RETRY:
+                if self.storage and result is TransportStatusCode.RETRY:
                     self.storage.put(
                         envelopes,
                         self.options.minimum_retry_interval,

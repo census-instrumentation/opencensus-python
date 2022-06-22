@@ -23,7 +23,7 @@ from opencensus.ext.azure import trace_exporter
 from opencensus.ext.azure.common.transport import TransportStatusCode
 from opencensus.trace.link import Link
 
-TEST_FOLDER = os.path.abspath('.test.exporter')
+TEST_FOLDER = os.path.abspath('.test.trace.exporter')
 
 
 def setUpModule():
