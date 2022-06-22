@@ -133,7 +133,7 @@ class TestTransportMixin(unittest.TestCase):
             with mock.patch('requests.post', throw(Exception)):
                 result = mixin._transmit([1, 2, 3])
                 self.assertEqual(state._STATSBEAT_STATE["INITIAL_FAILURE_COUNT"], 3)  # noqa: E501
-                self.assertEqual(result, TransportStatusCode.STATSBEAT_SHUTDOWN)
+                self.assertEqual(result, TransportStatusCode.STATSBEAT_SHUTDOWN)  # noqa: E501
 
     def test_status_code_statsbeat_shutdown_increment(self):
         mixin = TransportMixin()
@@ -173,7 +173,7 @@ class TestTransportMixin(unittest.TestCase):
                 result = mixin._transmit([1, 2, 3])
                 self.assertEqual(state._STATSBEAT_STATE["INITIAL_FAILURE_COUNT"], 3)  # noqa: E501
                 self.assertFalse(state._STATSBEAT_STATE["INITIAL_SUCCESS"])
-                self.assertEqual(result, TransportStatusCode.STATSBEAT_SHUTDOWN)
+                self.assertEqual(result, TransportStatusCode.STATSBEAT_SHUTDOWN)  # noqa: E501
 
     def test_transmission_nothing(self):
         mixin = TransportMixin()
