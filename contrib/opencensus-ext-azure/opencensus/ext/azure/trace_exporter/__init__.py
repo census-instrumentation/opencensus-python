@@ -29,7 +29,10 @@ from opencensus.ext.azure.common.protocol import (
     Request,
 )
 from opencensus.ext.azure.common.storage import LocalFileStorage
-from opencensus.ext.azure.common.transport import TransportMixin
+from opencensus.ext.azure.common.transport import (
+    TransportMixin,
+    TransportStatusCode,
+)
 from opencensus.ext.azure.statsbeat import statsbeat
 from opencensus.trace import attributes_helper
 from opencensus.trace.span import SpanKind
@@ -204,8 +207,11 @@ class AzureExporter(BaseExporter, ProcessorMixin, TransportMixin):
                 envelopes = self.apply_telemetry_processors(envelopes)
                 result = self._transmit(envelopes)
                 # Only store files if local storage enabled
-                if self.storage and result > 0:
-                    self.storage.put(envelopes, result)
+                if self.storage and result is TransportStatusCode.RETRY:
+                    self.storage.put(
+                        envelopes,
+                        self.options.minimum_retry_interval
+                    )
             if event:
                 if isinstance(event, QueueExitEvent):
                     self._transmit_from_storage()  # send files before exit
