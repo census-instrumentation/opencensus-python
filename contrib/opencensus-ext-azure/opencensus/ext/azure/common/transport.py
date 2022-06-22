@@ -42,8 +42,7 @@ class TransportStatusCode:
     SUCCESS = 0
     RETRY = 1
     DROP = 2
-    REDIRECT = 3
-    STATSBEAT_SHUTDOWN = 4
+    STATSBEAT_SHUTDOWN = 3
 
 
 class TransportMixin(object):
