@@ -25,7 +25,10 @@ from opencensus.ext.azure.common.protocol import (
     MetricData,
 )
 from opencensus.ext.azure.common.storage import LocalFileStorage
-from opencensus.ext.azure.common.transport import TransportMixin
+from opencensus.ext.azure.common.transport import (
+    TransportMixin,
+    TransportStatusCode,
+)
 from opencensus.ext.azure.metrics_exporter import standard_metrics
 from opencensus.metrics import transport
 from opencensus.metrics.export.metric_descriptor import MetricDescriptorType
@@ -72,13 +75,14 @@ class MetricsExporter(TransportMixin, ProcessorMixin):
             batch = self.apply_telemetry_processors(batch)
             result = self._transmit(batch)
             # If statsbeat exporter and received signal to shutdown
-            if self._is_stats_exporter() and result == -2:
+            if self._is_stats_exporter() and result is \
+                    TransportStatusCode.STATSBEAT_SHUTDOWN:
                 from opencensus.ext.azure.statsbeat import statsbeat
                 statsbeat.shutdown_statsbeat_metrics()
                 return
             # Only store files if local storage enabled
-            if self.storage and result > 0:
-                self.storage.put(batch, result)
+            if self.storage and result is TransportStatusCode.RETRY:
+                self.storage.put(batch, self.options.minimum_retry_interval)
 
         # If there is still room to transmit envelopes, transmit from storage
         # if available

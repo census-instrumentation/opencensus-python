@@ -38,6 +38,13 @@ _requests_map = {}
 _REACHED_INGESTION_STATUS_CODES = (200, 206, 402, 408, 429, 439, 500)
 
 
+class TransportStatusCode:
+    SUCCESS = 0
+    RETRY = 1
+    DROP = 2
+    STATSBEAT_SHUTDOWN = 3
+
+
 class TransportMixin(object):
 
     # check to see if collecting requests information related to statsbeats
@@ -59,7 +66,7 @@ class TransportMixin(object):
                 if blob.lease(self.options.timeout + 5):
                     envelopes = blob.get()
                     result = self._transmit(envelopes)
-                    if result > 0:
+                    if result is TransportStatusCode.RETRY:
                         blob.lease(result)
                     else:
                         blob.delete()
@@ -74,7 +81,7 @@ class TransportMixin(object):
         """
         if not envelopes:
             return 0
-        exception = None
+        status = None
         try:
             start_time = time.time()
             headers = {
@@ -101,37 +108,37 @@ class TransportMixin(object):
             if not self._is_stats_exporter():
                 logger.warning(
                     'Request time out. Ingestion may be backed up. Retrying.')
-            exception = self.options.minimum_retry_interval
+            status = TransportStatusCode.RETRY
         except requests.RequestException as ex:
             if not self._is_stats_exporter():
                 logger.warning(
                     'Retrying due to transient client side error %s.', ex)
             # client side error (retryable)
-            exception = self.options.minimum_retry_interval
+            status = TransportStatusCode.RETRY
         except CredentialUnavailableError as ex:
             if not self._is_stats_exporter():
                 logger.warning('Credential error. %s. Dropping telemetry.', ex)
-            exception = -1
+            status = TransportStatusCode.DROP
         except ClientAuthenticationError as ex:
             if not self._is_stats_exporter():
                 logger.warning('Authentication error %s', ex)
-            exception = self.options.minimum_retry_interval
+            status = TransportStatusCode.RETRY
         except Exception as ex:
             if not self._is_stats_exporter():
                 logger.warning(
                     'Error when sending request %s. Dropping telemetry.', ex)
             # Extraneous error (non-retryable)
-            exception = -1
+            status = TransportStatusCode.DROP
         finally:
             end_time = time.time()
             if self._check_stats_collection():
                 with _requests_lock:
                     duration = _requests_map.get('duration', 0)
                     _requests_map['duration'] = duration + (end_time - start_time)  # noqa: E501
-            if exception is not None:
+            if status is not None:
                 if self._check_stats_collection():
                     with _requests_lock:
-                        if exception >= 0:
+                        if status is TransportStatusCode.RETRY:
                             _requests_map['retry'] = _requests_map.get('retry', 0) + 1  # noqa: E501
                         else:
                             _requests_map['exception'] = _requests_map.get('exception', 0) + 1  # noqa: E501
@@ -141,8 +148,8 @@ class TransportMixin(object):
                     # If ingestion threshold during statsbeat initialization is
                     # reached, return back code to shut it down
                     if _statsbeat_failure_reached_threshold():
-                        return -2
-                return exception
+                        return TransportStatusCode.STATSBEAT_SHUTDOWN
+                return status
 
         text = 'N/A'
         data = None
@@ -167,14 +174,14 @@ class TransportMixin(object):
             elif _statsbeat_failure_reached_threshold():
                 # If ingestion threshold during statsbeat initialization is
                 # reached, return back code to shut it down
-                return -2
+                return TransportStatusCode.STATSBEAT_SHUTDOWN
 
         if response.status_code == 200:
             self._consecutive_redirects = 0
             if self._check_stats_collection():
                 with _requests_lock:
                     _requests_map['success'] = _requests_map.get('success', 0) + 1  # noqa: E501
-            return 0
+            return TransportStatusCode.SUCCESS
         # Status code not 200, 439 or 402 counts as failures
         if self._check_stats_collection():
             if response.status_code != 439 and response.status_code != 402:
@@ -211,7 +218,7 @@ class TransportMixin(object):
                             text,
                             ex,
                         )
-                return -response.status_code
+                return TransportStatusCode.DROP
             # cannot parse response body, fallback to retry
         if response.status_code in (
                 206,  # Partial Content
@@ -229,7 +236,7 @@ class TransportMixin(object):
             if self._check_stats_collection():
                 with _requests_lock:
                     _requests_map['retry'] = _requests_map.get('retry', 0) + 1  # noqa: E501
-            return self.options.minimum_retry_interval
+            return TransportStatusCode.RETRY
         # Authentication error
         if response.status_code == 401:
             if not self._is_stats_exporter():
@@ -241,7 +248,7 @@ class TransportMixin(object):
             if self._check_stats_collection():
                 with _requests_lock:
                     _requests_map['retry'] = _requests_map.get('retry', 0) + 1  # noqa: E501
-            return self.options.minimum_retry_interval
+            return TransportStatusCode.RETRY
         # Forbidden error
         # Can occur when v2 endpoint is used while AI resource is configured
         # with disableLocalAuth
@@ -255,7 +262,7 @@ class TransportMixin(object):
             if self._check_stats_collection():
                 with _requests_lock:
                     _requests_map['retry'] = _requests_map.get('retry', 0) + 1  # noqa: E501
-            return self.options.minimum_retry_interval
+            return TransportStatusCode.RETRY
         # Redirect
         if response.status_code in (307, 308):
             self._consecutive_redirects += 1
@@ -296,7 +303,7 @@ class TransportMixin(object):
                 # 439: Monthly Quota Exceeded (old SDK) <- Currently OC SDK
                 with _requests_lock:
                     _requests_map['throttle'] = _requests_map.get('throttle', 0) + 1  # noqa: E501
-        return -response.status_code
+        return TransportStatusCode.DROP
 
 
 def _reached_ingestion_status_code(status_code):

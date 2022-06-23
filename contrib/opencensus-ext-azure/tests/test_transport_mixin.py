@@ -29,6 +29,7 @@ from opencensus.ext.azure.common.transport import (
     _MONITOR_OAUTH_SCOPE,
     _REACHED_INGESTION_STATUS_CODES,
     TransportMixin,
+    TransportStatusCode,
     _requests_map,
 )
 from opencensus.ext.azure.statsbeat import state
@@ -116,7 +117,7 @@ class TestTransportMixin(unittest.TestCase):
             with mock.patch('requests.post', throw(Exception)):
                 result = mixin._transmit([1, 2, 3])
                 self.assertEqual(state._STATSBEAT_STATE["INITIAL_FAILURE_COUNT"], 1)  # noqa: E501
-                self.assertEqual(result, -1)
+                self.assertEqual(result, TransportStatusCode.DROP)
 
     def test_exception_statsbeat_shutdown(self):
         mixin = TransportMixin()
@@ -132,7 +133,7 @@ class TestTransportMixin(unittest.TestCase):
             with mock.patch('requests.post', throw(Exception)):
                 result = mixin._transmit([1, 2, 3])
                 self.assertEqual(state._STATSBEAT_STATE["INITIAL_FAILURE_COUNT"], 3)  # noqa: E501
-                self.assertEqual(result, -2)
+                self.assertEqual(result, TransportStatusCode.STATSBEAT_SHUTDOWN)  # noqa: E501
 
     def test_status_code_statsbeat_shutdown_increment(self):
         mixin = TransportMixin()
@@ -172,7 +173,7 @@ class TestTransportMixin(unittest.TestCase):
                 result = mixin._transmit([1, 2, 3])
                 self.assertEqual(state._STATSBEAT_STATE["INITIAL_FAILURE_COUNT"], 3)  # noqa: E501
                 self.assertFalse(state._STATSBEAT_STATE["INITIAL_SUCCESS"])
-                self.assertEqual(result, -2)
+                self.assertEqual(result, TransportStatusCode.STATSBEAT_SHUTDOWN)  # noqa: E501
 
     def test_transmission_nothing(self):
         mixin = TransportMixin()
@@ -182,7 +183,7 @@ class TestTransportMixin(unittest.TestCase):
                 post.return_value = None
                 mixin._transmit_from_storage()
 
-    def test_transmission_pre_timeout(self):
+    def test_transmission_timeout(self):
         mixin = TransportMixin()
         mixin.options = Options()
         with LocalFileStorage(os.path.join(TEST_FOLDER, self.id())) as stor:
@@ -193,7 +194,7 @@ class TestTransportMixin(unittest.TestCase):
             self.assertIsNone(mixin.storage.get())
             self.assertEqual(len(os.listdir(mixin.storage.path)), 1)
 
-    def test_transmision_timeout(self):
+    def test_statsbeat_timeout(self):
         mixin = TransportMixin()
         mixin.options = Options()
         with mock.patch('requests.post', throw(requests.Timeout)):
@@ -202,9 +203,9 @@ class TestTransportMixin(unittest.TestCase):
             self.assertIsNotNone(_requests_map['duration'])
             self.assertEqual(_requests_map['count'], 1)
             self.assertEqual(_requests_map['retry'], 1)
-            self.assertEqual(result, mixin.options.minimum_retry_interval)
+            self.assertEqual(result, TransportStatusCode.RETRY)
 
-    def test_transmission_pre_req_exception(self):
+    def test_transmission_req_exception(self):
         mixin = TransportMixin()
         mixin.options = Options()
         with LocalFileStorage(os.path.join(TEST_FOLDER, self.id())) as stor:
@@ -224,7 +225,7 @@ class TestTransportMixin(unittest.TestCase):
             self.assertIsNotNone(_requests_map['duration'])
             self.assertEqual(_requests_map['count'], 1)
             self.assertEqual(_requests_map['retry'], 1)
-            self.assertEqual(result, mixin.options.minimum_retry_interval)
+            self.assertEqual(result, TransportStatusCode.RETRY)
 
     def test_transmission_cred_exception(self):
         mixin = TransportMixin()
@@ -246,7 +247,7 @@ class TestTransportMixin(unittest.TestCase):
             self.assertIsNotNone(_requests_map['duration'])
             self.assertEqual(_requests_map['exception'], 1)
             self.assertEqual(_requests_map['count'], 1)
-            self.assertEqual(result, -1)
+            self.assertEqual(result, TransportStatusCode.DROP)
 
     def test_transmission_client_exception(self):
         mixin = TransportMixin()
@@ -268,9 +269,9 @@ class TestTransportMixin(unittest.TestCase):
             self.assertIsNotNone(_requests_map['duration'])
             self.assertEqual(_requests_map['retry'], 1)
             self.assertEqual(_requests_map['count'], 1)
-            self.assertEqual(result, mixin.options.minimum_retry_interval)
+            self.assertEqual(result, TransportStatusCode.RETRY)
 
-    def test_transmission_pre_exception(self):
+    def test_transmission_exception(self):
         mixin = TransportMixin()
         mixin.options = Options()
         with LocalFileStorage(os.path.join(TEST_FOLDER, self.id())) as stor:
@@ -290,7 +291,7 @@ class TestTransportMixin(unittest.TestCase):
             self.assertIsNotNone(_requests_map['duration'])
             self.assertEqual(_requests_map['exception'], 1)
             self.assertEqual(_requests_map['count'], 1)
-            self.assertEqual(result, -1)
+            self.assertEqual(result, TransportStatusCode.DROP)
 
     @mock.patch('requests.post', return_value=mock.Mock())
     def test_transmission_lease_failure(self, requests_mock):
@@ -333,7 +334,7 @@ class TestTransportMixin(unittest.TestCase):
             self.assertIsNone(mixin.storage.get())
             self.assertEqual(len(os.listdir(mixin.storage.path)), 0)
 
-    def test_statsbeat_success(self):
+    def test_statsbeat_200(self):
         mixin = TransportMixin()
         mixin.options = Options()
         with mock.patch('requests.post') as post:
@@ -343,7 +344,7 @@ class TestTransportMixin(unittest.TestCase):
             self.assertIsNotNone(_requests_map['duration'])
             self.assertEqual(_requests_map['success'], 1)
             self.assertEqual(_requests_map['count'], 1)
-            self.assertEqual(result, 0)
+            self.assertEqual(result, TransportStatusCode.SUCCESS)
 
     def test_transmission_auth(self):
         mixin = TransportMixin()
@@ -403,7 +404,7 @@ class TestTransportMixin(unittest.TestCase):
             self.assertEqual(_requests_map['retry'], 1)
             self.assertEqual(_requests_map['count'], 1)
             self.assertEqual(_requests_map['failure'], 1)
-            self.assertEqual(result, mixin.options.minimum_retry_interval)
+            self.assertEqual(result, TransportStatusCode.RETRY)
 
     def test_transmission_206_partial_retry(self):
         mixin = TransportMixin()
@@ -458,7 +459,7 @@ class TestTransportMixin(unittest.TestCase):
             self.assertEqual(_requests_map['retry'], 1)
             self.assertEqual(_requests_map['count'], 1)
             self.assertEqual(_requests_map['failure'], 1)
-            self.assertEqual(result, -206)
+            self.assertEqual(result, TransportStatusCode.DROP)
 
     def test_transmission_206_no_retry(self):
         mixin = TransportMixin()
@@ -501,7 +502,7 @@ class TestTransportMixin(unittest.TestCase):
             self.assertIsNotNone(_requests_map['duration'])
             self.assertEqual(_requests_map['count'], 1)
             self.assertEqual(_requests_map['failure'], 1)
-            self.assertEqual(result, -206)
+            self.assertEqual(result, TransportStatusCode.DROP)
 
     def test_transmission_206_bogus(self):
         mixin = TransportMixin()
@@ -547,7 +548,7 @@ class TestTransportMixin(unittest.TestCase):
             self.assertEqual(_requests_map['retry'], 1)
             self.assertEqual(_requests_map['count'], 1)
             self.assertEqual(_requests_map['failure'], 1)
-            self.assertEqual(result, mixin.options.minimum_retry_interval)
+            self.assertEqual(result, TransportStatusCode.RETRY)
 
     def test_transmission_500(self):
         mixin = TransportMixin()
@@ -572,7 +573,7 @@ class TestTransportMixin(unittest.TestCase):
             self.assertEqual(_requests_map['retry'], 1)
             self.assertEqual(_requests_map['count'], 1)
             self.assertEqual(_requests_map['failure'], 1)
-            self.assertEqual(result, mixin.options.minimum_retry_interval)
+            self.assertEqual(result, TransportStatusCode.RETRY)
 
     def test_transmission_503(self):
         mixin = TransportMixin()
@@ -597,7 +598,7 @@ class TestTransportMixin(unittest.TestCase):
             self.assertEqual(_requests_map['retry'], 1)
             self.assertEqual(_requests_map['count'], 1)
             self.assertEqual(_requests_map['failure'], 1)
-            self.assertEqual(result, mixin.options.minimum_retry_interval)
+            self.assertEqual(result, TransportStatusCode.RETRY)
 
     def test_transmission_401(self):
         mixin = TransportMixin()
@@ -621,7 +622,7 @@ class TestTransportMixin(unittest.TestCase):
             self.assertEqual(_requests_map['retry'], 1)
             self.assertEqual(_requests_map['count'], 1)
             self.assertEqual(_requests_map['failure'], 1)
-            self.assertEqual(result, mixin.options.minimum_retry_interval)
+            self.assertEqual(result, TransportStatusCode.RETRY)
 
     def test_transmission_403(self):
         mixin = TransportMixin()
@@ -645,7 +646,7 @@ class TestTransportMixin(unittest.TestCase):
             self.assertEqual(_requests_map['retry'], 1)
             self.assertEqual(_requests_map['count'], 1)
             self.assertEqual(_requests_map['failure'], 1)
-            self.assertEqual(result, mixin.options.minimum_retry_interval)
+            self.assertEqual(result, TransportStatusCode.RETRY)
 
     def test_transmission_307(self):
         mixin = TransportMixin()
@@ -670,7 +671,7 @@ class TestTransportMixin(unittest.TestCase):
         with mock.patch('requests.post') as post:
             post.return_value = MockResponse(307, '{}', {"location": "https://example.com"})  # noqa: E501
             result = mixin._transmit([1, 2, 3])
-            self.assertEqual(result, -307)
+            self.assertEqual(result, TransportStatusCode.DROP)
         self.assertEqual(post.call_count, _MAX_CONSECUTIVE_REDIRECTS)
         self.assertEqual(mixin.options.endpoint, "https://example.com")
 
@@ -687,7 +688,7 @@ class TestTransportMixin(unittest.TestCase):
             self.assertEqual(_requests_map['exception'], 1)
             self.assertEqual(_requests_map['count'], 10)
             self.assertEqual(_requests_map['failure'], 10)
-            self.assertEqual(result, -307)
+            self.assertEqual(result, TransportStatusCode.DROP)
 
     def test_transmission_439(self):
         mixin = TransportMixin()
@@ -710,4 +711,4 @@ class TestTransportMixin(unittest.TestCase):
             self.assertIsNotNone(_requests_map['duration'])
             self.assertEqual(_requests_map['throttle'], 1)
             self.assertEqual(_requests_map['count'], 1)
-            self.assertEqual(result, -439)
+            self.assertEqual(result, TransportStatusCode.DROP)
