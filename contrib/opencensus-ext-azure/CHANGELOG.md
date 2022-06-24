@@ -4,6 +4,8 @@
 
 - Shutdown Statsbeat when hitting error/exception threshold
 ([#1127](https://github.com/census-instrumentation/opencensus-python/pull/1127))
+- Fix failure counting statsbeat - refactor status code logic in transport
+([#1132](https://github.com/census-instrumentation/opencensus-python/pull/1132))
 
 ## 1.1.4
 Released 2022-04-20
