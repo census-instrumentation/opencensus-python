@@ -249,7 +249,7 @@ class TransportMixin(object):
                 data = json.loads(text)
             except Exception as ex:
                 if not self._is_stats_exporter():
-                    logger.warning('Error while reading response body %s for partial content.', ex)
+                    logger.warning('Error while reading response body %s for partial content.', ex)  # noqa: E501
                 if self._check_stats_collection():
                     _requests_map['exception'] = _requests_map.get('exception', 0) + 1  # noqa: E501
                 return TransportStatusCode.DROP

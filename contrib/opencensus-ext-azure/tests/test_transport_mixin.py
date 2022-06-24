@@ -22,7 +22,7 @@ import requests
 from azure.core.exceptions import ClientAuthenticationError
 from azure.identity._exceptions import CredentialUnavailableError
 
-from opencensus.ext.azure.common import Options, storage
+from opencensus.ext.azure.common import Options
 from opencensus.ext.azure.common.storage import LocalFileStorage
 from opencensus.ext.azure.common.transport import (
     _MAX_CONSECUTIVE_REDIRECTS,
