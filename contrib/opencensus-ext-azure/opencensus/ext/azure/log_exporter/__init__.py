@@ -102,7 +102,7 @@ class BaseLogHandler(logging.Handler):
             self.storage.close()
         if self._worker:
             self._worker.stop(timeout)
-        super().close()
+        super(BaseLogHandler, self).close()
 
     def createLock(self):
         self.lock = None
