@@ -16,6 +16,7 @@ import json
 import logging
 import threading
 import time
+from tracemalloc import start
 
 import requests
 from azure.core.exceptions import ClientAuthenticationError
@@ -36,6 +37,15 @@ _MONITOR_OAUTH_SCOPE = "https://monitor.azure.com//.default"
 _requests_lock = threading.Lock()
 _requests_map = {}
 _REACHED_INGESTION_STATUS_CODES = (200, 206, 402, 408, 429, 439, 500)
+REDIRECT_STATUS_CODES = (307, 308)
+RETRYABLE_STATUS_CODES = (
+    401,  # Unauthorized
+    403,  # Forbidden
+    429,  # Too many requests
+    500,  # Internal server error
+    503,  # Service unavailable
+)
+THROTTLE_STATUS_CODES = (402, 439)
 
 
 class TransportStatusCode:
@@ -94,8 +104,10 @@ class TransportMixin(object):
                 headers["Authorization"] = "Bearer {}".format(token.token)
             endpoint += '/v2.1/track'
             if self._check_stats_collection():
-                with _requests_lock:
-                    _requests_map['count'] = _requests_map.get('count', 0) + 1  # noqa: E501
+                _update_requests_map('count')
+            # if not self._is_stats_exporter():
+            #     response = requests.get("http://httpstat.us/500")
+            # else:
             response = requests.post(
                 url=endpoint,
                 data=json.dumps(envelopes),
@@ -132,16 +144,12 @@ class TransportMixin(object):
         finally:
             end_time = time.time()
             if self._check_stats_collection():
-                with _requests_lock:
-                    duration = _requests_map.get('duration', 0)
-                    _requests_map['duration'] = duration + (end_time - start_time)  # noqa: E501
+                _update_requests_map('duration', value=end_time-start_time)
+
             if status is not None:
                 if self._check_stats_collection():
-                    with _requests_lock:
-                        if status is TransportStatusCode.RETRY:
-                            _requests_map['retry'] = _requests_map.get('retry', 0) + 1  # noqa: E501
-                        else:
-                            _requests_map['exception'] = _requests_map.get('exception', 0) + 1  # noqa: E501
+                    _update_requests_map('exception')
+                    return status
                 if self._is_stats_exporter() and \
                     not state.get_statsbeat_shutdown() and \
                         not state.get_statsbeat_initial_success():
@@ -149,7 +157,6 @@ class TransportMixin(object):
                     # reached, return back code to shut it down
                     if _statsbeat_failure_reached_threshold():
                         return TransportStatusCode.STATSBEAT_SHUTDOWN
-                return status
 
         text = 'N/A'
         status_code = 0
@@ -160,7 +167,7 @@ class TransportMixin(object):
             if not self._is_stats_exporter():
                 logger.warning('Error while reading response body %s.', ex)
             if self._check_stats_collection():
-                _requests_map['exception'] = _requests_map.get('exception', 0) + 1  # noqa: E501
+                _update_requests_map('exception')
             return TransportStatusCode.DROP
 
         if self._is_stats_exporter() and \
@@ -178,8 +185,7 @@ class TransportMixin(object):
         if status_code == 200:  # Success
             self._consecutive_redirects = 0
             if self._check_stats_collection():
-                with _requests_lock:
-                    _requests_map['success'] = _requests_map.get('success', 0) + 1  # noqa: E501
+                _update_requests_map('success')
             return TransportStatusCode.SUCCESS
         elif _status_code_is_redirect(status_code):  # Redirect
             # for statsbeat, these are not tracked as success nor failures
@@ -206,15 +212,13 @@ class TransportMixin(object):
                     )
             # If redirect but did not return, exception occured
             if self._check_stats_collection():
-                with _requests_lock:
-                    _requests_map['exception'] = _requests_map.get('exception', 0) + 1  # noqa: E501
+                _update_requests_map('exception')
             return TransportStatusCode.DROP
         elif _status_code_is_throttle(status_code):  # Throttle
             if self._check_stats_collection():
                 # 402: Monthly Quota Exceeded (new SDK)
                 # 439: Monthly Quota Exceeded (old SDK) <- Currently OC SDK
-                with _requests_lock:
-                    _requests_map['throttle'] = _requests_map.get('throttle', 0) + 1  # noqa: E501
+                _update_requests_map('throttle')
             return TransportStatusCode.DROP
         elif _status_code_is_retryable(status_code):  # Retry
             if not self._is_stats_exporter():
@@ -240,8 +244,7 @@ class TransportMixin(object):
                         text,
                     )
             if self._check_stats_collection():
-                with _requests_lock:
-                    _requests_map['retry'] = _requests_map.get('retry', 0) + 1  # noqa: E501
+                _update_requests_map('retry', value=status_code)
             return TransportStatusCode.RETRY
         elif status_code == 206:  # Partial Content
             data = None
@@ -251,7 +254,7 @@ class TransportMixin(object):
                 if not self._is_stats_exporter():
                     logger.warning('Error while reading response body %s for partial content.', ex)  # noqa: E501
                 if self._check_stats_collection():
-                    _requests_map['exception'] = _requests_map.get('exception', 0) + 1  # noqa: E501
+                    _update_requests_map('exception')
                 return TransportStatusCode.DROP
             if data:
                 try:
@@ -260,8 +263,7 @@ class TransportMixin(object):
                         if _status_code_is_retryable(error['statusCode']):
                             resend_envelopes.append(envelopes[error['index']])
                             if self._check_stats_collection():
-                                with _requests_lock:
-                                    _requests_map['retry'] = _requests_map.get('retry', 0) + 1  # noqa: E501
+                                _update_requests_map('retry', value=error['statusCode'])
                         else:
                             logger.error(
                                 'Data drop %s: %s %s.',
@@ -280,7 +282,7 @@ class TransportMixin(object):
                             ex,
                         )
                     if self._check_stats_collection():
-                        _requests_map['exception'] = _requests_map.get('exception', 0) + 1  # noqa: E501
+                        _update_requests_map('exception')
             return TransportStatusCode.DROP
             # cannot parse response body, fallback to retry
         else:
@@ -289,7 +291,7 @@ class TransportMixin(object):
             # 404 - Ingestion is allowed only from stamp specific endpoint - must update connection string  # noqa: E501
             if self._check_stats_collection():
                 with _requests_lock:
-                    _requests_map['failure'] = _requests_map.get('failure', 0) + 1  # noqa: E501
+                    _update_requests_map('failure')
             # Other, server side error (non-retryable)
             if not self._is_stats_exporter():
                 logger.error(
@@ -301,21 +303,15 @@ class TransportMixin(object):
 
 
 def _status_code_is_redirect(status_code):
-    return status_code in (307, 308)
+    return status_code in REDIRECT_STATUS_CODES
 
 
 def _status_code_is_throttle(status_code):
-    return status_code in (402, 439)
+    return status_code in THROTTLE_STATUS_CODES
 
 
 def _status_code_is_retryable(status_code):
-    return status_code in (
-        401,  # Unauthorized
-        403,  # Forbidden
-        429,  # Too many requests
-        500,  # Internal server error
-        503,  # Service unavailable
-    )
+    return status_code in RETRYABLE_STATUS_CODES
 
 
 def _reached_ingestion_status_code(status_code):
@@ -326,3 +322,27 @@ def _statsbeat_failure_reached_threshold():
     # increment failure counter for sending statsbeat if in initialization
     state.increment_statsbeat_initial_failure_count()
     return state.get_statsbeat_initial_failure_count() >= 3
+
+
+def _update_requests_map(type, value=None):
+    with _requests_lock:
+        if type == "count":
+            _requests_map['count'] = _requests_map.get('count', 0) + 1  # noqa: E501
+        elif type == "duration":
+            _requests_map['duration'] = _requests_map.get('duration', 0) + value  # noqa: E501
+        elif type == "exception":
+            _requests_map['exception'] = _requests_map.get('exception', 0) + 1  # noqa: E501
+        elif type == "success":
+            _requests_map['success'] = _requests_map.get('success', 0) + 1  # noqa: E501
+        elif type == "throttle":
+            _requests_map['throttle'] = _requests_map.get('throttle', 0) + 1  # noqa: E501
+        elif type == "retry":
+            # prev = 0
+            # if _requests_map.get('retry'):
+            #     prev = _requests_map.get('retry').get(value, 0)
+            # else:
+            #     _requests_map['retry'] = {}
+            # _requests_map['retry'][value] = prev + 1
+            _requests_map['retry'] = _requests_map.get('retry', 0) + 1  # noqa: E501
+        elif type == "failure":
+            _requests_map['failure'] = _requests_map.get('failure', 0) + 1  # noqa: E501

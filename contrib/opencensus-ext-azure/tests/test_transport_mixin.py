@@ -202,7 +202,7 @@ class TestTransportMixin(unittest.TestCase):
             self.assertEqual(len(_requests_map), 3)
             self.assertIsNotNone(_requests_map['duration'])
             self.assertEqual(_requests_map['count'], 1)
-            self.assertEqual(_requests_map['retry'], 1)
+            self.assertEqual(_requests_map['exception'], 1)
             self.assertEqual(result, TransportStatusCode.RETRY)
 
     def test_transmission_req_exception(self):
@@ -224,7 +224,7 @@ class TestTransportMixin(unittest.TestCase):
             self.assertEqual(len(_requests_map), 3)
             self.assertIsNotNone(_requests_map['duration'])
             self.assertEqual(_requests_map['count'], 1)
-            self.assertEqual(_requests_map['retry'], 1)
+            self.assertEqual(_requests_map['exception'], 1)
             self.assertEqual(result, TransportStatusCode.RETRY)
 
     def test_transmission_cred_exception(self):
@@ -267,7 +267,7 @@ class TestTransportMixin(unittest.TestCase):
             result = mixin._transmit([1, 2, 3])
             self.assertEqual(len(_requests_map), 3)
             self.assertIsNotNone(_requests_map['duration'])
-            self.assertEqual(_requests_map['retry'], 1)
+            self.assertEqual(_requests_map['exception'], 1)
             self.assertEqual(_requests_map['count'], 1)
             self.assertEqual(result, TransportStatusCode.RETRY)
 
