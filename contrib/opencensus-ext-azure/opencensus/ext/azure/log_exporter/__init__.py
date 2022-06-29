@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import atexit
 import logging
 import os
 import random
@@ -67,7 +66,6 @@ class BaseLogHandler(logging.Handler):
         self._queue = Queue(capacity=self.options.queue_capacity)
         self._worker = Worker(self._queue, self)
         self._worker.start()
-        atexit.register(self.close, self.options.grace_period)
         # start statsbeat on exporter instantiation
         if not os.environ.get("APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL"):
             statsbeat.collect_statsbeat_metrics(self.options)
@@ -96,11 +94,15 @@ class BaseLogHandler(logging.Handler):
             if event:
                 event.set()
 
+    # Close is automatically called as part of logging shutdown
     def close(self, timeout=None):
+        if not timeout:
+            timeout = self.options.grace_period
         if self.storage:
             self.storage.close()
         if self._worker:
             self._worker.stop(timeout)
+        super(BaseLogHandler, self).close()
 
     def createLock(self):
         self.lock = None
