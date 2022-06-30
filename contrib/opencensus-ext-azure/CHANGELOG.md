@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Allow specifying metrics (custom_measurements) for Azure custom events
+([#1117](https://github.com/census-instrumentation/opencensus-python/pull/1117))
 - Shutdown Statsbeat when hitting error/exception threshold
 ([#1127](https://github.com/census-instrumentation/opencensus-python/pull/1127))
 - Fix failure counting statsbeat - refactor status code logic in transport
