@@ -3,7 +3,7 @@
 ## Unreleased
 
 - Add kwargs to derived gauge
-([#1112](https://github.com/census-instrumentation/opencensus-python/pull/1112))
+([#1135](https://github.com/census-instrumentation/opencensus-python/pull/1135))
 
 # 0.9.0
 Released 2022-04-20

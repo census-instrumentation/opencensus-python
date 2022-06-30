@@ -398,8 +398,8 @@ class TestDerivedGauge(unittest.TestCase):
             if value:
                 return value
             return 0
-        label_values2 = [1,2]
-        point3 = derived_gauge.create_time_series(label_values2, fn_with_args, value=5)
+        label_values2 = [1, 2]
+        point3 = derived_gauge.create_time_series(label_values2, fn_with_args, value=5)  # noqa: E501
         self.assertEqual(point3.get_value(), 5)
 
     def test_create_default_time_series(self):
