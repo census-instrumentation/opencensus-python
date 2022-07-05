@@ -368,7 +368,7 @@ class _StatsbeatMetrics:
                     properties.pop()
 
             stats_metric = metric.get_metric(datetime.datetime.utcnow())
-            # Only export metric if status was present
+            # Only export metric if status/exc_type was present
             if stats_metric is not None:
                 metrics.append(stats_metric)
         return metrics
