@@ -3,7 +3,7 @@
 ## Unreleased
 
 - Add statusCode and exceptionType to network statsbeat
-([#1132](https://github.com/census-instrumentation/opencensus-python/pull/1132))
+([#1138](https://github.com/census-instrumentation/opencensus-python/pull/1138))
 
 ## 1.1.5
 Released 2022-07-05
