@@ -261,7 +261,7 @@ class TransportMixin(object):
                 if not self._is_stats_exporter():
                     logger.warning('Error while reading response body %s for partial content.', ex)  # noqa: E501
                 if self._check_stats_collection():
-                    _update_requests_map('exception', value=ex.__class__.__name__)
+                    _update_requests_map('exception', value=ex.__class__.__name__)  # noqa: E501
                 return TransportStatusCode.DROP
             if data:
                 try:
@@ -270,7 +270,7 @@ class TransportMixin(object):
                         if _status_code_is_retryable(error['statusCode']):
                             resend_envelopes.append(envelopes[error['index']])
                             if self._check_stats_collection():
-                                _update_requests_map('retry', value=error['statusCode'])
+                                _update_requests_map('retry', value=error['statusCode'])  # noqa: E501
                         else:
                             logger.error(
                                 'Data drop %s: %s %s.',
@@ -289,7 +289,7 @@ class TransportMixin(object):
                             ex,
                         )
                     if self._check_stats_collection():
-                        _update_requests_map('exception', value=ex.__class__.__name__)
+                        _update_requests_map('exception', value=ex.__class__.__name__)  # noqa: E501
             return TransportStatusCode.DROP
             # cannot parse response body, fallback to retry
         else:

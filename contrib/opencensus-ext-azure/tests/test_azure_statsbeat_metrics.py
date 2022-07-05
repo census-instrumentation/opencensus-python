@@ -609,11 +609,11 @@ class TestStatsbeatMetrics(unittest.TestCase):
                     self.assertTrue(properties[9].value in (402, 439))
                 if metric.descriptor.name == _REQ_EXCEPTION_NAME:
                     self.assertEqual(ts.points[0].value.value, 5)
-                    self.assertTrue(properties[9].value in ('Timeout', 'RequestException'))
+                    self.assertTrue(properties[9].value in ('Timeout', 'RequestException'))  # noqa: E501
                 self.assertEqual(properties[0].value, _RP_NAMES[3])
                 self.assertEqual(properties[1].value, "sdk")
                 self.assertEqual(properties[2].value, "ikey")
-                self.assertEqual(properties[3].value, platform.python_version())
+                self.assertEqual(properties[3].value, platform.python_version())  # noqa: E501
                 self.assertEqual(properties[4].value, platform.system())
                 self.assertEqual(properties[5].value, "python")
                 self.assertEqual(properties[6].value, ext_version)
