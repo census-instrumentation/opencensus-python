@@ -16,7 +16,6 @@ import json
 import logging
 import threading
 import time
-from tracemalloc import start
 
 import requests
 from azure.core.exceptions import ClientAuthenticationError
