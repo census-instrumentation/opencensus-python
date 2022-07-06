@@ -212,7 +212,7 @@ class OpencensusMiddleware(MiddlewareMixin):
             span.span_kind = span_module.SpanKind.SERVER
             tracer.add_attribute_to_current_span(
                 attribute_key=HTTP_HOST,
-                attribute_value=request.get_host())
+                attribute_value=request._get_raw_host())
             tracer.add_attribute_to_current_span(
                 attribute_key=HTTP_METHOD,
                 attribute_value=request.method)
@@ -224,7 +224,7 @@ class OpencensusMiddleware(MiddlewareMixin):
                 attribute_value=str(request.path))
             tracer.add_attribute_to_current_span(
                 attribute_key=HTTP_URL,
-                attribute_value=str(request.build_absolute_uri()))
+                attribute_value=str(request.get_raw_uri()))
 
             # Add the span to thread local
             # in some cases (exceptions, timeouts) currentspan in
