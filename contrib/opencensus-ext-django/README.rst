@@ -26,9 +26,7 @@ the ``MIDDLEWARE`` section in the Django ``settings.py`` file.
         'opencensus.ext.django.middleware.OpencensusMiddleware',
     ]
 
-Additional configuration can be provided, please read
-`Customization <https://github.com/census-instrumentation/opencensus-python#customization>`_
-for a complete reference.
+And add the ``OPENCENSUS`` section:
 
 .. code:: python
 
@@ -40,6 +38,28 @@ for a complete reference.
             )''',
         }
     }
+    
+For customization of the exporter:
+
+.. code:: python
+
+    from opencensus.ext.azure.trace_exporter import AzureExporter
+    exporter = AzureExporter(service_name='mysite')
+    exporter.add_telemetry_processor(callback)
+
+    OPENCENSUS = {
+        'TRACE': {
+            'SAMPLER': 'opencensus.trace.samplers.ProbabilitySampler(rate=1)',
+            'EXPORTER': exporter
+        }
+    }
+    
+    def callback(envelope):
+        return False
+
+Additional configuration can be provided, please read
+`Customization <https://github.com/census-instrumentation/opencensus-python#customization>`_
+for a complete reference.
 
 References
 ----------
