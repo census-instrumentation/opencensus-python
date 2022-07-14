@@ -75,7 +75,7 @@ class MetricsExporter(TransportMixin, ProcessorMixin):
             batch = self.apply_telemetry_processors(batch)
             result = self._transmit(batch)
             # If statsbeat exporter and received signal to shutdown
-            if self._is_stats_exporter() and result is \
+            if self._is_stats and result is \
                     TransportStatusCode.STATSBEAT_SHUTDOWN:
                 from opencensus.ext.azure.statsbeat import statsbeat
                 statsbeat.shutdown_statsbeat_metrics()
@@ -102,6 +102,9 @@ class MetricsExporter(TransportMixin, ProcessorMixin):
                 # point which contains the aggregated value
                 data_point = self._create_data_points(
                     time_series, md)[0]
+                # if statsbeat exporter, ignore points with 0 value
+                if self._is_stats and data_point.value == 0:
+                    continue
                 # The timestamp is when the metric was recorded
                 timestamp = time_series.points[0].timestamp
                 # Get the properties using label keys from metric

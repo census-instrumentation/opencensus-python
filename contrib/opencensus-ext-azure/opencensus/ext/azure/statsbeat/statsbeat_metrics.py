@@ -55,8 +55,8 @@ _EU_ENDPOINTS = [
 
 _ATTACH_METRIC_NAME = "Attach"
 _FEATURE_METRIC_NAME = "Feature"
-_REQ_SUC_COUNT_NAME = "Request Success Count"
-_REQ_FAIL_COUNT_NAME = "Request Failure Count"
+_REQ_SUCCESS_NAME = "Request Success Count"
+_REQ_FAILURE_NAME = "Request Failure Count"
 _REQ_DURATION_NAME = "Request Duration"
 _REQ_RETRY_NAME = "Retry Count"
 _REQ_THROTTLE_NAME = "Throttle Count"
@@ -131,10 +131,14 @@ def _get_attach_properties():
     return properties
 
 
-def _get_network_properties():
+def _get_network_properties(value=None):
     properties = _get_common_properties()
     properties.append(LabelKey("endpoint", "ingestion endpoint type"))
     properties.append(LabelKey("host", "destination of ingestion endpoint"))
+    if value is None:
+        properties.append(LabelKey("statusCode", "ingestion service response code"))  # noqa: E501
+    elif value == "Exception":
+        properties.append(LabelKey("exceptionType", "language specific exception type"))  # noqa: E501
     return properties
 
 
@@ -152,11 +156,14 @@ def _get_success_count_value():
         return interval_count
 
 
-def _get_failure_count_value():
-    with _requests_lock:
-        interval_count = _requests_map.get('failure', 0)
-        _requests_map['failure'] = 0
-        return interval_count
+def _get_failure_count_value(status_code):
+    interval_count = 0
+    if status_code:
+        with _requests_lock:
+            if _requests_map.get('failure'):
+                interval_count = _requests_map.get('failure').get(status_code, 0)  # noqa: E501
+                _requests_map['failure'][status_code] = 0
+    return interval_count
 
 
 def _get_average_duration_value():
@@ -172,25 +179,34 @@ def _get_average_duration_value():
         return 0
 
 
-def _get_retry_count_value():
-    with _requests_lock:
-        interval_count = _requests_map.get('retry', 0)
-        _requests_map['retry'] = 0
-        return interval_count
+def _get_retry_count_value(status_code):
+    interval_count = 0
+    if status_code:
+        with _requests_lock:
+            if _requests_map.get('retry'):
+                interval_count = _requests_map.get('retry').get(status_code, 0)
+                _requests_map['retry'][status_code] = 0
+    return interval_count
 
 
-def _get_throttle_count_value():
-    with _requests_lock:
-        interval_count = _requests_map.get('throttle', 0)
-        _requests_map['throttle'] = 0
-        return interval_count
+def _get_throttle_count_value(status_code):
+    interval_count = 0
+    if status_code:
+        with _requests_lock:
+            if _requests_map.get('throttle'):
+                interval_count = _requests_map.get('throttle').get(status_code, 0)  # noqa: E501
+                _requests_map['throttle'][status_code] = 0
+    return interval_count
 
 
-def _get_exception_count_value():
-    with _requests_lock:
-        interval_count = _requests_map.get('exception', 0)
-        _requests_map['exception'] = 0
-        return interval_count
+def _get_exception_count_value(exc_type):
+    interval_count = 0
+    if exc_type:
+        with _requests_lock:
+            if _requests_map.get('exception'):
+                interval_count = _requests_map.get('exception').get(exc_type, 0)  # noqa: E501
+                _requests_map['exception'][exc_type] = 0
+    return interval_count
 
 
 def _shorten_host(host):
@@ -231,13 +247,13 @@ class _StatsbeatMetrics:
         # Map of gauge function -> metric
         # Gauge function is the callback used to populate the metric value
         self._network_metrics[_get_success_count_value] = DerivedLongGauge(
-            _REQ_SUC_COUNT_NAME,
+            _REQ_SUCCESS_NAME,
             'Statsbeat metric tracking request success count',
             'count',
             _get_network_properties(),
         )
         self._network_metrics[_get_failure_count_value] = DerivedLongGauge(
-            _REQ_FAIL_COUNT_NAME,
+            _REQ_FAILURE_NAME,
             'Statsbeat metric tracking request failure count',
             'count',
             _get_network_properties(),
@@ -246,7 +262,7 @@ class _StatsbeatMetrics:
             _REQ_DURATION_NAME,
             'Statsbeat metric tracking average request duration',
             'count',
-            _get_network_properties(),
+            _get_network_properties(value="Duration"),
         )
         self._network_metrics[_get_retry_count_value] = DerivedLongGauge(
             _REQ_RETRY_NAME,
@@ -264,7 +280,7 @@ class _StatsbeatMetrics:
             _REQ_EXCEPTION_NAME,
             'Statsbeat metric tracking request exception count',
             'count',
-            _get_network_properties(),
+            _get_network_properties(value="Exception"),
         )
         # feature/instrumentation metrics
         # metrics related to what features and instrumentations are enabled
@@ -324,13 +340,36 @@ class _StatsbeatMetrics:
         properties.append(LabelValue(host))  # host
         metrics = []
         for fn, metric in self._network_metrics.items():
-            # NOTE: A time series is a set of unique label values
-            # If the label values ever change, a separate time series will be
-            # created, however, `_get_properties()` should never change
-            metric.create_time_series(properties, fn)
+            if metric.descriptor.name == _REQ_SUCCESS_NAME:
+                properties.append(LabelValue(200))
+                metric.create_time_series(properties, fn)
+                properties.pop()
+            elif metric.descriptor.name == _REQ_FAILURE_NAME:
+                for code in _requests_map.get('failure', {}).keys():
+                    properties.append(LabelValue(code))
+                    metric.create_time_series(properties, fn, status_code=code)
+                    properties.pop()
+            elif metric.descriptor.name == _REQ_DURATION_NAME:
+                metric.create_time_series(properties, fn)
+            elif metric.descriptor.name == _REQ_RETRY_NAME:
+                for code in _requests_map.get('retry', {}).keys():
+                    properties.append(LabelValue(code))
+                    metric.create_time_series(properties, fn, status_code=code)
+                    properties.pop()
+            elif metric.descriptor.name == _REQ_THROTTLE_NAME:
+                for code in _requests_map.get('throttle', {}).keys():
+                    properties.append(LabelValue(code))
+                    metric.create_time_series(properties, fn, status_code=code)
+                    properties.pop()
+            elif metric.descriptor.name == _REQ_EXCEPTION_NAME:
+                for exc_type in _requests_map.get('exception', {}).keys():
+                    properties.append(LabelValue(exc_type))
+                    metric.create_time_series(properties, fn, exc_type=exc_type)  # noqa: E501
+                    properties.pop()
+
             stats_metric = metric.get_metric(datetime.datetime.utcnow())
-            # Don't export if value is 0
-            if stats_metric.time_series[0].points[0].value.value != 0:
+            # Only export metric if status/exc_type was present
+            if stats_metric is not None:
                 metrics.append(stats_metric)
         return metrics
 

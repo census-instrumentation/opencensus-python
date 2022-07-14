@@ -30,6 +30,12 @@ from opencensus.ext.azure.statsbeat.statsbeat_metrics import (
     _DEFAULT_NON_EU_STATS_CONNECTION_STRING,
     _ENDPOINT_TYPES,
     _FEATURE_TYPES,
+    _REQ_DURATION_NAME,
+    _REQ_EXCEPTION_NAME,
+    _REQ_FAILURE_NAME,
+    _REQ_RETRY_NAME,
+    _REQ_SUCCESS_NAME,
+    _REQ_THROTTLE_NAME,
     _RP_NAMES,
     _STATS_LONG_INTERVAL_THRESHOLD,
     _get_attach_properties,
@@ -372,9 +378,10 @@ class TestStatsbeatMetrics(unittest.TestCase):
 
     def test_get_failure_count_value(self):
         _requests_map.clear()
-        _requests_map['failure'] = 10
-        self.assertEqual(_get_failure_count_value(), 10)
-        self.assertEqual(_requests_map['failure'], 0)
+        _requests_map['failure'] = {}
+        _requests_map['failure'][400] = 10
+        self.assertEqual(_get_failure_count_value(400), 10)
+        self.assertEqual(_requests_map['failure'][400], 0)
         _requests_map.clear()
 
     def test_get_average_duration_value(self):
@@ -388,23 +395,26 @@ class TestStatsbeatMetrics(unittest.TestCase):
 
     def test_get_retry_count_value(self):
         _requests_map.clear()
-        _requests_map['retry'] = 10
-        self.assertEqual(_get_retry_count_value(), 10)
-        self.assertEqual(_requests_map['retry'], 0)
+        _requests_map['retry'] = {}
+        _requests_map['retry'][401] = 10
+        self.assertEqual(_get_retry_count_value(401), 10)
+        self.assertEqual(_requests_map['retry'][401], 0)
         _requests_map.clear()
 
     def test_get_throttle_count_value(self):
         _requests_map.clear()
-        _requests_map['throttle'] = 10
-        self.assertEqual(_get_throttle_count_value(), 10)
-        self.assertEqual(_requests_map['throttle'], 0)
+        _requests_map['throttle'] = {}
+        _requests_map['throttle'][402] = 10
+        self.assertEqual(_get_throttle_count_value(402), 10)
+        self.assertEqual(_requests_map['throttle'][402], 0)
         _requests_map.clear()
 
     def test_get_exception_count_value(self):
         _requests_map.clear()
-        _requests_map['exception'] = 10
-        self.assertEqual(_get_exception_count_value(), 10)
-        self.assertEqual(_requests_map['exception'], 0)
+        _requests_map['exception'] = {}
+        _requests_map['exception']['Timeout'] = 10
+        self.assertEqual(_get_exception_count_value('Timeout'), 10)
+        self.assertEqual(_requests_map['exception']['Timeout'], 0)
         _requests_map.clear()
 
     def test_statsbeat_metric_get_initial_metrics(self):
@@ -548,6 +558,19 @@ class TestStatsbeatMetrics(unittest.TestCase):
         'opencensus.ext.azure.statsbeat.statsbeat_metrics._get_success_count_value')  # noqa: E501
     def test_get_network_metrics(self, mock1, mock2, mock3, mock4, mock5, mock6):  # noqa: E501
         # pylint: disable=protected-access
+        _requests_map.clear()
+        _requests_map['exception'] = {}
+        _requests_map['throttle'] = {}
+        _requests_map['retry'] = {}
+        _requests_map['failure'] = {}
+        _requests_map['exception']['Timeout'] = 5
+        _requests_map['exception']['RequestException'] = 5
+        _requests_map['throttle'][402] = 5
+        _requests_map['throttle'][439] = 5
+        _requests_map['retry'][401] = 5
+        _requests_map['retry'][403] = 5
+        _requests_map['failure'][400] = 5
+        _requests_map['failure'][404] = 5
         stats = _StatsbeatMetrics(_OPTIONS)
         mock1.return_value = 5
         mock2.return_value = 5
@@ -556,35 +579,63 @@ class TestStatsbeatMetrics(unittest.TestCase):
         mock5.return_value = 5
         mock6.return_value = 5
         metrics = stats._get_network_metrics()
+        mock1.assert_called_once()
+        self.assertEqual(mock2.call_count, 2)
+        mock3.assert_called_once()
+        self.assertEqual(mock4.call_count, 2)
+        self.assertEqual(mock5.call_count, 2)
+        self.assertEqual(mock6.call_count, 2)
         self.assertEqual(len(metrics), 6)
-        self.assertEqual(metrics[0]._time_series[0].points[0].value.value, 5)
-        self.assertEqual(metrics[1]._time_series[0].points[0].value.value, 5)
-        self.assertEqual(metrics[2]._time_series[0].points[0].value.value, 5)
-        self.assertEqual(metrics[3]._time_series[0].points[0].value.value, 5)
-        self.assertEqual(metrics[4]._time_series[0].points[0].value.value, 5)
-        self.assertEqual(metrics[5]._time_series[0].points[0].value.value, 5)
         for metric in metrics:
-            properties = metric._time_series[0]._label_values
-            self.assertEqual(len(properties), 9)
-            self.assertEqual(properties[0].value, _RP_NAMES[3])
-            self.assertEqual(properties[1].value, "sdk")
-            self.assertEqual(properties[2].value, "ikey")
-            self.assertEqual(properties[3].value, platform.python_version())
-            self.assertEqual(properties[4].value, platform.system())
-            self.assertEqual(properties[5].value, "python")
-            self.assertEqual(properties[6].value, ext_version)
-            self.assertEqual(properties[7].value, _ENDPOINT_TYPES[0])
-            short_host = _shorten_host(_OPTIONS.endpoint)
-            self.assertEqual(properties[8].value, short_host)
+            for ts in metric._time_series:
+                properties = ts._label_values
+                if metric.descriptor.name == _REQ_DURATION_NAME:
+                    self.assertEqual(len(properties), 9)
+                else:
+                    self.assertEqual(len(properties), 10)
+                if metric.descriptor.name == _REQ_SUCCESS_NAME:
+                    self.assertEqual(ts.points[0].value.value, 5)
+                    self.assertEqual(properties[9].value, 200)
+                if metric.descriptor.name == _REQ_DURATION_NAME:
+                    self.assertEqual(ts.points[0].value.value, 5)
+                if metric.descriptor.name == _REQ_FAILURE_NAME:
+                    self.assertEqual(ts.points[0].value.value, 5)
+                    self.assertTrue(properties[9].value in (400, 404))
+                if metric.descriptor.name == _REQ_RETRY_NAME:
+                    self.assertEqual(ts.points[0].value.value, 5)
+                    self.assertTrue(properties[9].value in (401, 403))
+                if metric.descriptor.name == _REQ_THROTTLE_NAME:
+                    self.assertEqual(ts.points[0].value.value, 5)
+                    self.assertTrue(properties[9].value in (402, 439))
+                if metric.descriptor.name == _REQ_EXCEPTION_NAME:
+                    self.assertEqual(ts.points[0].value.value, 5)
+                    self.assertTrue(properties[9].value in ('Timeout', 'RequestException'))  # noqa: E501
+                self.assertEqual(properties[0].value, _RP_NAMES[3])
+                self.assertEqual(properties[1].value, "sdk")
+                self.assertEqual(properties[2].value, "ikey")
+                self.assertEqual(properties[3].value, platform.python_version())  # noqa: E501
+                self.assertEqual(properties[4].value, platform.system())
+                self.assertEqual(properties[5].value, "python")
+                self.assertEqual(properties[6].value, ext_version)
+                self.assertEqual(properties[7].value, _ENDPOINT_TYPES[0])
+                short_host = _shorten_host(_OPTIONS.endpoint)
+                self.assertEqual(properties[8].value, short_host)
+        _requests_map.clear()
 
     @mock.patch(
         'opencensus.ext.azure.statsbeat.statsbeat_metrics._get_success_count_value')  # noqa: E501
-    def test_get_network_metrics_zero(self, suc_mock):
+    @mock.patch(
+        'opencensus.ext.azure.statsbeat.statsbeat_metrics._get_average_duration_value')  # noqa: E501
+    def test_get_network_metrics_zero(self, suc_mock, dur_mock):
         # pylint: disable=protected-access
+        _requests_map.clear()
         stats = _StatsbeatMetrics(_OPTIONS)
         suc_mock.return_value = 0
+        dur_mock.return_value = 0
         metrics = stats._get_network_metrics()
-        self.assertEqual(len(metrics), 0)
+        self.assertEqual(len(metrics), 2)
+        self.assertEqual(metrics[0]._time_series[0].points[0].value.value, 0)
+        self.assertEqual(metrics[1]._time_series[0].points[0].value.value, 0)
 
     @mock.patch.dict(
         os.environ,
