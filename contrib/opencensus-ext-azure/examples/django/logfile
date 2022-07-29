@@ -1,4 +1,0 @@
-2022-07-10 21:52:14,757 INFO Watching for file changes with StatReloader
-2022-07-10 21:52:27,937 INFO C:\Users\lechen\Documents\Projects\Microsoft\opencensus-python\contrib\opencensus-ext-azure\examples\django\mysite\mysite\settings.py changed, reloading.
-2022-07-10 21:52:36,204 INFO Watching for file changes with StatReloader
-2022-07-10 21:52:40,890 INFO C:\Users\lechen\Documents\Projects\Microsoft\opencensus-python\contrib\opencensus-ext-azure\examples\django\mysite\mysite\settings.py changed, reloading.
