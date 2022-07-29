@@ -16,19 +16,10 @@ from opencensus.ext.azure.trace_exporter import AzureExporter
 from opencensus.trace.samplers import ProbabilitySampler
 from opencensus.trace.tracer import Tracer
 
-def callback(envelopes):
-    print(envelopes)
-    return True
-
 # TODO: you need to specify the instrumentation key in a connection string
 # and place it in the APPLICATIONINSIGHTS_CONNECTION_STRING
 # environment variable.
-exporter = AzureExporter()
-exporter.add_telemetry_processor(callback)
-tracer = Tracer(exporter=exporter, sampler=ProbabilitySampler(1.0))
+tracer = Tracer(exporter=AzureExporter(), sampler=ProbabilitySampler(1.0))
 
 with tracer.span(name='foo'):
-    with tracer.span("quark") as span:
-        print('Hello, World!')
-
-input(...)
+    print('Hello, World!')
