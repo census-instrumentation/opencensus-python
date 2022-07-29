@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Move `version.py` file into common folder
+
 ## 0.7.5
 Released 2021-05-13
 

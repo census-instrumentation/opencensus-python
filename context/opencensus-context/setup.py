@@ -14,7 +14,7 @@
 
 from setuptools import find_packages, setup
 
-from version import __version__
+from opencensus.common.version import __version__
 
 setup(
     name='opencensus-context',

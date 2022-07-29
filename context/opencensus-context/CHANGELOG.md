@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Move `version.py` file into common folder
+
 ## 0.1.2
 Released 2020-06-29
 

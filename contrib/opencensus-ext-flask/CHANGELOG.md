@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Move `version.py` file into common folder
+
 ## 0.8.0
 Released 2022-04-20
 
