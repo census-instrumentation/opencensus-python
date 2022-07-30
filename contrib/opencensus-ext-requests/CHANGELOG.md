@@ -3,7 +3,7 @@
 ## Unreleased
 
 - Add `requests` library as a hard dependency
-([#1014](https://github.com/census-instrumentation/opencensus-python/pull/1014))
+([#1146](https://github.com/census-instrumentation/opencensus-python/pull/1146))
 
 ## 0.7.5
 Released 2021-05-13
