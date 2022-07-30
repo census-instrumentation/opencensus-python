@@ -42,6 +42,7 @@ setup(
     long_description=open('README.rst').read(),
     install_requires=[
         'opencensus >= 0.9.dev0, < 1.0.0',
+        'requests >= 2.19.0, 3.0.0',
         'wrapt >= 1.0.0, < 2.0.0',
     ],
     extras_require={},
