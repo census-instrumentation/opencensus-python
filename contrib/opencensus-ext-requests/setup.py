@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import os
+
 from setuptools import find_packages, setup
 
 BASE_DIR = os.path.dirname(__file__)
@@ -20,7 +21,7 @@ VERSION_FILENAME = os.path.join(
     BASE_DIR, "opencensus", "ext", "requests", "common", "version.py"
 )
 PACKAGE_INFO = {}
-with open(VERSION_FILENAME, encoding="utf-8") as f:
+with open(VERSION_FILENAME) as f:
     exec(f.read(), PACKAGE_INFO)
 
 setup(
