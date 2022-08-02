@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Move `version.py` file into common folder
+- Move `version.py` file into `runtime_context` folder
 ([#1143](https://github.com/census-instrumentation/opencensus-python/pull/1143))
 
 ## 0.1.2

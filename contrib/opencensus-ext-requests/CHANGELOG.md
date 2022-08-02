@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Move `version.py` file into common folder
+- Move `version.py` file into `common` folder
 ([#1143](https://github.com/census-instrumentation/opencensus-python/pull/1143))
 - Add `requests` library as a hard dependency
 ([#1146](https://github.com/census-instrumentation/opencensus-python/pull/1146))
