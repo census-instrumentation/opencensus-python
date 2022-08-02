@@ -12,13 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+
 from setuptools import find_packages, setup
 
-from version import __version__
+BASE_DIR = os.path.dirname(__file__)
+VERSION_FILENAME = os.path.join(
+    BASE_DIR, "opencensus", "ext", "flask", "common", "version.py"
+)
+PACKAGE_INFO = {}
+with open(VERSION_FILENAME) as f:
+    exec(f.read(), PACKAGE_INFO)
 
 setup(
     name='opencensus-ext-flask',
-    version=__version__,  # noqa
+    version=PACKAGE_INFO["__version__"],  # noqa
     author='OpenCensus Authors',
     author_email='census-developers@googlegroups.com',
     classifiers=[
