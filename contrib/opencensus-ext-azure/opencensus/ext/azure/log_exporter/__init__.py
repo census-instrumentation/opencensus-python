@@ -90,7 +90,8 @@ class BaseLogHandler(logging.Handler):
                             self._transmit_from_storage()
                     if event:
                         if isinstance(event, QueueExitEvent):
-                            self._transmit_from_storage()  # send files before exit
+                            # send files before exit
+                            self._transmit_from_storage()
         finally:
             if event:
                 event.set()
