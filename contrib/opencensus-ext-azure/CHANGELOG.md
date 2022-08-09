@@ -3,7 +3,7 @@
 ## Unreleased
 
 - Add storage existence checks to storing and transmitting in exporter
-([#1138](https://github.com/census-instrumentation/opencensus-python/pull/1138))
+([#1150](https://github.com/census-instrumentation/opencensus-python/pull/1150))
 
 ## 1.1.6
 Released 2022-08-03
