@@ -81,13 +81,14 @@ class MetricsExporter(TransportMixin, ProcessorMixin):
                 statsbeat.shutdown_statsbeat_metrics()
                 return
             # Only store files if local storage enabled
-            if self.storage and result is TransportStatusCode.RETRY:
-                self.storage.put(batch, self.options.minimum_retry_interval)
-
-        # If there is still room to transmit envelopes, transmit from storage
-        # if available
-        if len(envelopes) < self.options.max_batch_size:
-            self._transmit_from_storage()
+            if self.storage:
+                if result is TransportStatusCode.RETRY:
+                    self.storage.put(batch, self.options.minimum_retry_interval)
+                if result is TransportStatusCode.SUCCESS:
+                    # If there is still room to transmit envelopes, transmit from storage
+                    # if available
+                    if len(envelopes) < self.options.max_batch_size:
+                        self._transmit_from_storage()
 
     def metric_to_envelopes(self, metric):
         envelopes = []

@@ -79,17 +79,18 @@ class BaseLogHandler(logging.Handler):
                 envelopes = self.apply_telemetry_processors(envelopes)
                 result = self._transmit(envelopes)
                 # Only store files if local storage enabled
-                if self.storage and result is TransportStatusCode.RETRY:
-                    self.storage.put(
-                        envelopes,
-                        self.options.minimum_retry_interval,
-                    )
-            if event:
-                if isinstance(event, QueueExitEvent):
-                    self._transmit_from_storage()  # send files before exit
-                return
-            if len(batch) < self.options.max_batch_size:
-                self._transmit_from_storage()
+                if self.storage:
+                    if result is TransportStatusCode.RETRY:
+                        self.storage.put(
+                            envelopes,
+                            self.options.minimum_retry_interval,
+                        )
+                    if result is TransportStatusCode.SUCCESS:
+                        if len(batch) < self.options.max_batch_size:
+                            self._transmit_from_storage()
+                    if event:
+                        if isinstance(event, QueueExitEvent):
+                            self._transmit_from_storage()  # send files before exit
         finally:
             if event:
                 event.set()
