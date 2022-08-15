@@ -43,7 +43,9 @@ RETRYABLE_STATUS_CODES = (
     408,  # Request Timeout
     429,  # Too many requests
     500,  # Internal server error
+    502,  # Bad Gateway
     503,  # Service unavailable
+    504,  # Gateway timeout
 )
 THROTTLE_STATUS_CODES = (402, 439)
 

@@ -599,6 +599,30 @@ class TestTransportMixin(unittest.TestCase):
             self.assertEqual(_requests_map['count'], 1)
             self.assertEqual(result, TransportStatusCode.RETRY)
 
+    def test_transmission_502(self):
+        mixin = TransportMixin()
+        mixin.options = Options()
+        with LocalFileStorage(os.path.join(TEST_FOLDER, self.id())) as stor:
+            mixin.storage = stor
+            mixin.storage.put([1, 2, 3])
+            with mock.patch('requests.post') as post:
+                post.return_value = MockResponse(502, 'unknown')
+                mixin._transmit_from_storage()
+            self.assertIsNone(mixin.storage.get())
+            self.assertEqual(len(os.listdir(mixin.storage.path)), 1)
+
+    def test_statsbeat_502(self):
+        mixin = TransportMixin()
+        mixin.options = Options()
+        with mock.patch('requests.post') as post:
+            post.return_value = MockResponse(502, 'unknown')
+            result = mixin._transmit([1, 2, 3])
+            self.assertEqual(len(_requests_map), 3)
+            self.assertIsNotNone(_requests_map['duration'])
+            self.assertEqual(_requests_map['retry'][502], 1)
+            self.assertEqual(_requests_map['count'], 1)
+            self.assertEqual(result, TransportStatusCode.RETRY)
+
     def test_transmission_503(self):
         mixin = TransportMixin()
         mixin.options = Options()
@@ -620,6 +644,30 @@ class TestTransportMixin(unittest.TestCase):
             self.assertEqual(len(_requests_map), 3)
             self.assertIsNotNone(_requests_map['duration'])
             self.assertEqual(_requests_map['retry'][503], 1)
+            self.assertEqual(_requests_map['count'], 1)
+            self.assertEqual(result, TransportStatusCode.RETRY)
+
+    def test_transmission_504(self):
+        mixin = TransportMixin()
+        mixin.options = Options()
+        with LocalFileStorage(os.path.join(TEST_FOLDER, self.id())) as stor:
+            mixin.storage = stor
+            mixin.storage.put([1, 2, 3])
+            with mock.patch('requests.post') as post:
+                post.return_value = MockResponse(504, 'unknown')
+                mixin._transmit_from_storage()
+            self.assertIsNone(mixin.storage.get())
+            self.assertEqual(len(os.listdir(mixin.storage.path)), 1)
+
+    def test_statsbeat_504(self):
+        mixin = TransportMixin()
+        mixin.options = Options()
+        with mock.patch('requests.post') as post:
+            post.return_value = MockResponse(504, 'unknown')
+            result = mixin._transmit([1, 2, 3])
+            self.assertEqual(len(_requests_map), 3)
+            self.assertIsNotNone(_requests_map['duration'])
+            self.assertEqual(_requests_map['retry'][504], 1)
             self.assertEqual(_requests_map['count'], 1)
             self.assertEqual(result, TransportStatusCode.RETRY)
 
