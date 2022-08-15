@@ -213,11 +213,11 @@ class AzureExporter(BaseExporter, ProcessorMixin, TransportMixin):
                         self.options.minimum_retry_interval
                     )
             if event:
-                if isinstance(event, QueueExitEvent):
+                if self.storage and isinstance(event, QueueExitEvent):
                     self._transmit_from_storage()  # send files before exit
                 event.set()
                 return
-            if len(batch) < self.options.max_batch_size:
+            if self.storage and len(batch) < self.options.max_batch_size:
                 self._transmit_from_storage()
         except Exception:
             logger.exception('Exception occurred while exporting the data.')
