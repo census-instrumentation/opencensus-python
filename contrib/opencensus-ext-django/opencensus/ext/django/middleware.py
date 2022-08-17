@@ -146,6 +146,7 @@ def _trace_db_call(execute, sql, params, many, context):
 
 class OpencensusMiddleware(MiddlewareMixin):
     """Saves the request in thread local"""
+    _is_coroutine=False
 
     def __init__(self, get_response=None):
         self.get_response = get_response
