@@ -112,6 +112,9 @@ class Queue(object):
     def gets(self, count, timeout):
         return tuple(self._gets(count, timeout))
 
+    def is_empty(self):
+        return not self._queue.qsize()
+
     def flush(self, timeout=None):
         if self._queue.qsize() == 0:
             return 0
@@ -124,7 +127,7 @@ class Queue(object):
             return
         elapsed_time = time.time() - start_time
         wait_time = timeout and max(timeout - elapsed_time, 0)
-        if event.wait(timeout):
+        if event.wait(wait_time):
             return time.time() - start_time  # time taken to flush
 
     def put(self, item, block=True, timeout=None):

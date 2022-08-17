@@ -2,6 +2,23 @@
 
 ## Unreleased
 
+# 0.11.0
+Released 2022-08-03
+
+- Updated `azure`, `context`, `flask`, `requests` modules
+
+# 0.10.0
+Released 2022-07-05
+
+- Add kwargs to derived gauge
+([#1135](https://github.com/census-instrumentation/opencensus-python/pull/1135))
+
+# 0.9.0
+Released 2022-04-20
+
+- Make sure handler.flush() doesn't deadlock
+([#1112](https://github.com/census-instrumentation/opencensus-python/pull/1112))
+
 # 0.8.0
 Released 2021-10-05
 

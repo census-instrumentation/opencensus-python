@@ -14,9 +14,9 @@
 
 import datetime
 import json
-import logging
 import os
 import platform
+import re
 import threading
 
 import requests
@@ -30,29 +30,42 @@ from opencensus.metrics.export.gauge import (
 )
 from opencensus.metrics.label_key import LabelKey
 from opencensus.metrics.label_value import LabelValue
-from opencensus.trace.integrations import get_integrations
+from opencensus.trace.integrations import _Integrations, get_integrations
 
 _AIMS_URI = "http://169.254.169.254/metadata/instance/compute"
 _AIMS_API_VERSION = "api-version=2017-12-01"
 _AIMS_FORMAT = "format=json"
 
-_DEFAULT_STATS_CONNECTION_STRING = "InstrumentationKey=c4a29126-a7cb-47e5-b348-11414998b11e;IngestionEndpoint=https://westus-0.in.applicationinsights.azure.com/"  # noqa: E501
+_DEFAULT_NON_EU_STATS_CONNECTION_STRING = "InstrumentationKey=c4a29126-a7cb-47e5-b348-11414998b11e;IngestionEndpoint=https://westus-0.in.applicationinsights.azure.com/"  # noqa: E501
+_DEFAULT_EU_STATS_CONNECTION_STRING = "InstrumentationKey=7dc56bab-3c0c-4e9f-9ebb-d1acadee8d0f;IngestionEndpoint=https://westeurope-5.in.applicationinsights.azure.com/"  # noqa: E501
 _DEFAULT_STATS_SHORT_EXPORT_INTERVAL = 900  # 15 minutes
 _DEFAULT_STATS_LONG_EXPORT_INTERVAL = 86400  # 24 hours
+_EU_ENDPOINTS = [
+    "westeurope",
+    "northeurope",
+    "francecentral",
+    "francesouth",
+    "germanywestcentral",
+    "norwayeast",
+    "norwaywest",
+    "swedencentral",
+    "switzerlandnorth",
+    "switzerlandwest",
+]
 
 _ATTACH_METRIC_NAME = "Attach"
 _FEATURE_METRIC_NAME = "Feature"
-_REQ_SUC_COUNT_NAME = "Request Success Count"
-_REQ_FAIL_COUNT_NAME = "Request Failure Count"
+_REQ_SUCCESS_NAME = "Request Success Count"
+_REQ_FAILURE_NAME = "Request Failure Count"
 _REQ_DURATION_NAME = "Request Duration"
-_REQ_RETRY_NAME = "Request Retry Count"
-_REQ_THROTTLE_NAME = "Request Throttle Count"
-_REQ_EXCEPTION_NAME = "Request Exception Count"
+_REQ_RETRY_NAME = "Retry Count"
+_REQ_THROTTLE_NAME = "Throttle Count"
+_REQ_EXCEPTION_NAME = "Exception Count"
 
 _ENDPOINT_TYPES = ["breeze"]
 _RP_NAMES = ["appsvc", "functions", "vm", "unknown"]
 
-_logger = logging.getLogger(__name__)
+_HOST_PATTERN = re.compile('^https?://(?:www\\.)?([^/.]+)')
 
 
 class _FEATURE_TYPES:
@@ -63,15 +76,19 @@ class _FEATURE_TYPES:
 class _StatsbeatFeature:
     NONE = 0
     DISK_RETRY = 1
-    AAD_HANDLING = 2
+    AAD = 2
 
 
-def _get_stats_connection_string():
+def _get_stats_connection_string(endpoint):
     cs_env = os.environ.get("APPLICATION_INSIGHTS_STATS_CONNECTION_STRING")
     if cs_env:
         return cs_env
     else:
-        return _DEFAULT_STATS_CONNECTION_STRING
+        for ep in _EU_ENDPOINTS:
+            if ep in endpoint:
+                # Use statsbeat EU endpoint if user is in EU region
+                return _DEFAULT_EU_STATS_CONNECTION_STRING
+        return _DEFAULT_NON_EU_STATS_CONNECTION_STRING
 
 
 def _get_stats_short_export_interval():
@@ -90,7 +107,6 @@ def _get_stats_long_export_interval():
         return _DEFAULT_STATS_LONG_EXPORT_INTERVAL
 
 
-_STATS_CONNECTION_STRING = _get_stats_connection_string()
 _STATS_SHORT_EXPORT_INTERVAL = _get_stats_short_export_interval()
 _STATS_LONG_EXPORT_INTERVAL = _get_stats_long_export_interval()
 _STATS_LONG_INTERVAL_THRESHOLD = _STATS_LONG_EXPORT_INTERVAL / _STATS_SHORT_EXPORT_INTERVAL  # noqa: E501
@@ -115,10 +131,14 @@ def _get_attach_properties():
     return properties
 
 
-def _get_network_properties():
+def _get_network_properties(value=None):
     properties = _get_common_properties()
     properties.append(LabelKey("endpoint", "ingestion endpoint type"))
     properties.append(LabelKey("host", "destination of ingestion endpoint"))
+    if value is None:
+        properties.append(LabelKey("statusCode", "ingestion service response code"))  # noqa: E501
+    elif value == "Exception":
+        properties.append(LabelKey("exceptionType", "language specific exception type"))  # noqa: E501
     return properties
 
 
@@ -131,27 +151,27 @@ def _get_feature_properties():
 
 def _get_success_count_value():
     with _requests_lock:
-        interval_count = _requests_map.get('success', 0) \
-                    - _requests_map.get('last_success', 0)
-        _requests_map['last_success'] = _requests_map.get('success', 0)
+        interval_count = _requests_map.get('success', 0)
+        _requests_map['success'] = 0
         return interval_count
 
 
-def _get_failure_count_value():
-    with _requests_lock:
-        interval_count = _requests_map.get('failure', 0) \
-                    - _requests_map.get('last_failure', 0)
-        _requests_map['last_failure'] = _requests_map.get('failure', 0)
-        return interval_count
+def _get_failure_count_value(status_code):
+    interval_count = 0
+    if status_code:
+        with _requests_lock:
+            if _requests_map.get('failure'):
+                interval_count = _requests_map.get('failure').get(status_code, 0)  # noqa: E501
+                _requests_map['failure'][status_code] = 0
+    return interval_count
 
 
 def _get_average_duration_value():
     with _requests_lock:
-        interval_duration = _requests_map.get('duration', 0) \
-            - _requests_map.get('last_duration', 0)
-        interval_count = _requests_map.get('count', 0) \
-            - _requests_map.get('last_count', 0)
-        _requests_map['last_duration'] = _requests_map.get('duration', 0)
+        interval_duration = _requests_map.get('duration', 0)
+        interval_count = _requests_map.get('count', 0)
+        _requests_map['duration'] = 0
+        _requests_map['count'] = 0
         if interval_duration > 0 and interval_count > 0:
             result = interval_duration / interval_count
             # Convert to milliseconds
@@ -159,28 +179,43 @@ def _get_average_duration_value():
         return 0
 
 
-def _get_retry_count_value():
-    with _requests_lock:
-        interval_count = _requests_map.get('retry', 0) \
-                    - _requests_map.get('last_retry', 0)
-        _requests_map['last_retry'] = _requests_map.get('retry', 0)
-        return interval_count
+def _get_retry_count_value(status_code):
+    interval_count = 0
+    if status_code:
+        with _requests_lock:
+            if _requests_map.get('retry'):
+                interval_count = _requests_map.get('retry').get(status_code, 0)
+                _requests_map['retry'][status_code] = 0
+    return interval_count
 
 
-def _get_throttle_count_value():
-    with _requests_lock:
-        interval_count = _requests_map.get('throttle', 0) \
-                    - _requests_map.get('last_throttle', 0)
-        _requests_map['last_throttle'] = _requests_map.get('throttle', 0)
-        return interval_count
+def _get_throttle_count_value(status_code):
+    interval_count = 0
+    if status_code:
+        with _requests_lock:
+            if _requests_map.get('throttle'):
+                interval_count = _requests_map.get('throttle').get(status_code, 0)  # noqa: E501
+                _requests_map['throttle'][status_code] = 0
+    return interval_count
 
 
-def _get_exception_count_value():
-    with _requests_lock:
-        interval_count = _requests_map.get('exception', 0) \
-                    - _requests_map.get('last_exception', 0)
-        _requests_map['last_exception'] = _requests_map.get('exception', 0)
-        return interval_count
+def _get_exception_count_value(exc_type):
+    interval_count = 0
+    if exc_type:
+        with _requests_lock:
+            if _requests_map.get('exception'):
+                interval_count = _requests_map.get('exception').get(exc_type, 0)  # noqa: E501
+                _requests_map['exception'][exc_type] = 0
+    return interval_count
+
+
+def _shorten_host(host):
+    if not host:
+        host = ""
+    match = _HOST_PATTERN.match(host)
+    if match:
+        host = match.group(1)
+    return host
 
 
 class _StatsbeatMetrics:
@@ -191,6 +226,8 @@ class _StatsbeatMetrics:
         self._feature = _StatsbeatFeature.NONE
         if options.enable_local_storage:
             self._feature |= _StatsbeatFeature.DISK_RETRY
+        if options.credential:
+            self._feature |= _StatsbeatFeature.AAD
         self._stats_lock = threading.Lock()
         self._vm_data = {}
         self._vm_retry = True
@@ -210,13 +247,13 @@ class _StatsbeatMetrics:
         # Map of gauge function -> metric
         # Gauge function is the callback used to populate the metric value
         self._network_metrics[_get_success_count_value] = DerivedLongGauge(
-            _REQ_SUC_COUNT_NAME,
+            _REQ_SUCCESS_NAME,
             'Statsbeat metric tracking request success count',
             'count',
             _get_network_properties(),
         )
         self._network_metrics[_get_failure_count_value] = DerivedLongGauge(
-            _REQ_FAIL_COUNT_NAME,
+            _REQ_FAILURE_NAME,
             'Statsbeat metric tracking request failure count',
             'count',
             _get_network_properties(),
@@ -225,7 +262,7 @@ class _StatsbeatMetrics:
             _REQ_DURATION_NAME,
             'Statsbeat metric tracking average request duration',
             'count',
-            _get_network_properties(),
+            _get_network_properties(value="Duration"),
         )
         self._network_metrics[_get_retry_count_value] = DerivedLongGauge(
             _REQ_RETRY_NAME,
@@ -243,7 +280,7 @@ class _StatsbeatMetrics:
             _REQ_EXCEPTION_NAME,
             'Statsbeat metric tracking request exception count',
             'count',
-            _get_network_properties(),
+            _get_network_properties(value="Exception"),
         )
         # feature/instrumentation metrics
         # metrics related to what features and instrumentations are enabled
@@ -291,28 +328,55 @@ class _StatsbeatMetrics:
                     self._long_threshold_count = 0
             network_metrics = self._get_network_metrics()
             metrics.extend(network_metrics)
-        except Exception as ex:
-            _logger.warning('Error while exporting stats metrics %s.', ex)
+        except Exception:
+            pass
 
         return metrics
 
     def _get_network_metrics(self):
         properties = self._get_common_properties()
         properties.append(LabelValue(_ENDPOINT_TYPES[0]))  # endpoint
-        properties.append(LabelValue(self._options.endpoint))  # host
+        host = _shorten_host(self._options.endpoint)
+        properties.append(LabelValue(host))  # host
         metrics = []
         for fn, metric in self._network_metrics.items():
-            # NOTE: A time series is a set of unique label values
-            # If the label values ever change, a separate time series will be
-            # created, however, `_get_properties()` should never change
-            metric.create_time_series(properties, fn)
+            if metric.descriptor.name == _REQ_SUCCESS_NAME:
+                properties.append(LabelValue(200))
+                metric.create_time_series(properties, fn)
+                properties.pop()
+            elif metric.descriptor.name == _REQ_FAILURE_NAME:
+                for code in _requests_map.get('failure', {}).keys():
+                    properties.append(LabelValue(code))
+                    metric.create_time_series(properties, fn, status_code=code)
+                    properties.pop()
+            elif metric.descriptor.name == _REQ_DURATION_NAME:
+                metric.create_time_series(properties, fn)
+            elif metric.descriptor.name == _REQ_RETRY_NAME:
+                for code in _requests_map.get('retry', {}).keys():
+                    properties.append(LabelValue(code))
+                    metric.create_time_series(properties, fn, status_code=code)
+                    properties.pop()
+            elif metric.descriptor.name == _REQ_THROTTLE_NAME:
+                for code in _requests_map.get('throttle', {}).keys():
+                    properties.append(LabelValue(code))
+                    metric.create_time_series(properties, fn, status_code=code)
+                    properties.pop()
+            elif metric.descriptor.name == _REQ_EXCEPTION_NAME:
+                for exc_type in _requests_map.get('exception', {}).keys():
+                    properties.append(LabelValue(exc_type))
+                    metric.create_time_series(properties, fn, exc_type=exc_type)  # noqa: E501
+                    properties.pop()
+
             stats_metric = metric.get_metric(datetime.datetime.utcnow())
-            # Don't export if value is 0
-            if stats_metric.time_series[0].points[0].value.value != 0:
+            # Only export metric if status/exc_type was present
+            if stats_metric is not None:
                 metrics.append(stats_metric)
         return metrics
 
     def _get_feature_metric(self):
+        # Don't export if value is 0
+        if self._feature is _StatsbeatFeature.NONE:
+            return None
         properties = self._get_common_properties()
         properties.insert(4, LabelValue(self._feature))  # feature long
         properties.insert(4, LabelValue(_FEATURE_TYPES.FEATURE))  # type
@@ -320,6 +384,10 @@ class _StatsbeatMetrics:
         return self._feature_metric.get_metric(datetime.datetime.utcnow())
 
     def _get_instrumentation_metric(self):
+        integrations = get_integrations()
+        # Don't export if value is 0
+        if integrations is _Integrations.NONE:
+            return None
         properties = self._get_common_properties()
         properties.insert(4, LabelValue(get_integrations()))  # instr long
         properties.insert(4, LabelValue(_FEATURE_TYPES.INSTRUMENTATION))  # type  # noqa: E501

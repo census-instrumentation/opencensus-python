@@ -196,7 +196,7 @@ class LocalFileStorage(object):
                     if size >= self.max_size:
                         logger.warning(
                             "Persistent storage max capacity has been "
-                            "reached. Currently at %fKB. Telemetry will be "
+                            "reached. Currently at %sKB. Telemetry will be "
                             "lost. Please consider increasing the value of "
                             "'storage_max_size' in exporter config.",
                             format(size/1024)

@@ -11,30 +11,38 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 import threading
 
 from opencensus.ext.azure.metrics_exporter import MetricsExporter
-from opencensus.ext.azure.metrics_exporter.statsbeat_metrics.statsbeat import (
-    _STATS_CONNECTION_STRING,
+from opencensus.ext.azure.statsbeat.state import (
+    _STATSBEAT_STATE,
+    _STATSBEAT_STATE_LOCK,
+)
+from opencensus.ext.azure.statsbeat.statsbeat_metrics import (
     _STATS_SHORT_EXPORT_INTERVAL,
+    _get_stats_connection_string,
     _StatsbeatMetrics,
 )
 from opencensus.metrics import transport
 from opencensus.metrics.export.metric_producer import MetricProducer
+from opencensus.trace import execution_context
 
 _STATSBEAT_METRICS = None
+_STATSBEAT_EXPORTER = None
 _STATSBEAT_LOCK = threading.Lock()
 
 
 def collect_statsbeat_metrics(options):
-    with _STATSBEAT_LOCK:
-        # Only start statsbeat if did not exist before
-        global _STATSBEAT_METRICS  # pylint: disable=global-statement
-        if _STATSBEAT_METRICS is None:
+    # pylint: disable=global-statement
+    global _STATSBEAT_METRICS
+    global _STATSBEAT_EXPORTER
+    # Only start statsbeat if did not exist before
+    if _STATSBEAT_METRICS is None and _STATSBEAT_EXPORTER is None:
+        with _STATSBEAT_LOCK:
+            # Only start statsbeat if did not exist before
             exporter = MetricsExporter(
                 is_stats=True,
-                connection_string=_STATS_CONNECTION_STRING,
+                connection_string=_get_stats_connection_string(options.endpoint),  # noqa: E501
                 enable_standard_metrics=False,
                 export_interval=_STATS_SHORT_EXPORT_INTERVAL,  # 15m by default
             )
@@ -42,11 +50,37 @@ def collect_statsbeat_metrics(options):
             producer = _AzureStatsbeatMetricsProducer(options)
             _STATSBEAT_METRICS = producer
             # Export some initial stats on program start
+            execution_context.set_is_exporter(True)
             exporter.export_metrics(_STATSBEAT_METRICS.get_initial_metrics())
+            execution_context.set_is_exporter(False)
             exporter.exporter_thread = \
                 transport.get_exporter_thread([_STATSBEAT_METRICS],
                                               exporter,
                                               exporter.options.export_interval)
+            _STATSBEAT_EXPORTER = exporter
+        with _STATSBEAT_STATE_LOCK:
+            _STATSBEAT_STATE["INITIAL_FAILURE_COUNT"] = 0
+            _STATSBEAT_STATE["INITIAL_SUCCESS"] = 0
+            _STATSBEAT_STATE["SHUTDOWN"] = False
+
+
+def shutdown_statsbeat_metrics():
+    # pylint: disable=global-statement
+    global _STATSBEAT_METRICS
+    global _STATSBEAT_EXPORTER
+    shutdown_success = False
+    if _STATSBEAT_METRICS is not None and _STATSBEAT_EXPORTER is not None and not _STATSBEAT_STATE["SHUTDOWN"]:  # noqa: E501
+        with _STATSBEAT_LOCK:
+            try:
+                _STATSBEAT_EXPORTER.shutdown()
+                _STATSBEAT_EXPORTER = None
+                _STATSBEAT_METRICS = None
+                shutdown_success = True
+            except:  # pylint: disable=broad-except  # noqa: E722
+                pass
+        if shutdown_success:
+            with _STATSBEAT_STATE_LOCK:
+                _STATSBEAT_STATE["SHUTDOWN"] = True
 
 
 class _AzureStatsbeatMetricsProducer(MetricProducer):

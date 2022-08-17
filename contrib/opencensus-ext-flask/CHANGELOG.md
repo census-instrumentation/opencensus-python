@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+## 0.8.1
+Released 2022-08-03
+
+- Move `version.py` file into `common` folder
+([#1143](https://github.com/census-instrumentation/opencensus-python/pull/1143))
+
+## 0.8.0
+Released 2022-04-20
+
+- Add support for Flask 2
+([#1032](https://github.com/census-instrumentation/opencensus-python/pull/1032))
+
 ## 0.7.5
 Released 2021-05-13
 

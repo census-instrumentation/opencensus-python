@@ -2,6 +2,61 @@
 
 ## Unreleased
 
+- Add storage existence checks to storing and transmitting in exporter
+([#1150](https://github.com/census-instrumentation/opencensus-python/pull/1150))
+- Add 502 and 504 status codes as retriable
+([#1150](https://github.com/census-instrumentation/opencensus-python/pull/1150))
+
+## 1.1.6
+Released 2022-08-03
+
+- Add statusCode and exceptionType to network statsbeat
+([#1138](https://github.com/census-instrumentation/opencensus-python/pull/1138))
+
+## 1.1.5
+Released 2022-07-05
+
+- Allow specifying metrics (custom_measurements) for Azure custom events
+([#1117](https://github.com/census-instrumentation/opencensus-python/pull/1117))
+- Shutdown Statsbeat when hitting error/exception threshold
+([#1127](https://github.com/census-instrumentation/opencensus-python/pull/1127))
+- Fix failure counting statsbeat - refactor status code logic in transport
+([#1132](https://github.com/census-instrumentation/opencensus-python/pull/1132))
+- Use logging handler close instead of custom atexit hook
+([#1134](https://github.com/census-instrumentation/opencensus-python/pull/1134))
+
+## 1.1.4
+Released 2022-04-20
+
+- Statsbeat bug fixes - status codes
+([#1113](https://github.com/census-instrumentation/opencensus-python/pull/1113))
+- Statsbeat bug fixes - do not log if statsbeat
+([#1116](https://github.com/census-instrumentation/opencensus-python/pull/1116))
+- Add deprecation warning for explicitly using instrumentation key
+([#1118](https://github.com/census-instrumentation/opencensus-python/pull/1118))
+
+## 1.1.3
+Released 2022-03-03
+
+- Hotfix for version number
+([#1108](https://github.com/census-instrumentation/opencensus-python/pull/1108))
+
+## 1.1.2
+Released 2022-03-03
+
+- Statsbeat bug fixes, shorten host in network stats
+([#1100](https://github.com/census-instrumentation/opencensus-python/pull/1100))
+- Support statsbeat in EU regions
+([#1105](https://github.com/census-instrumentation/opencensus-python/pull/1105))
+
+## 1.1.1
+Released 2022-01-19
+
+- Fix statsbeats metric names
+([#1089](https://github.com/census-instrumentation/opencensus-python/pull/1089))
+- Add AAD statsbeat feature, fix incorrect counting of retry
+([#1093](https://github.com/census-instrumentation/opencensus-python/pull/1093))
+
 ## 1.1.0
 Released 2021-10-05
 

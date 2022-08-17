@@ -29,8 +29,11 @@ from opencensus.ext.azure.common.protocol import (
     Request,
 )
 from opencensus.ext.azure.common.storage import LocalFileStorage
-from opencensus.ext.azure.common.transport import TransportMixin
-from opencensus.ext.azure.metrics_exporter import statsbeat_metrics
+from opencensus.ext.azure.common.transport import (
+    TransportMixin,
+    TransportStatusCode,
+)
+from opencensus.ext.azure.statsbeat import statsbeat
 from opencensus.trace import attributes_helper
 from opencensus.trace.span import SpanKind
 
@@ -76,7 +79,7 @@ class AzureExporter(BaseExporter, ProcessorMixin, TransportMixin):
         atexit.register(self._stop, self.options.grace_period)
         # start statsbeat on exporter instantiation
         if not os.environ.get("APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL"):
-            statsbeat_metrics.collect_statsbeat_metrics(self.options)
+            statsbeat.collect_statsbeat_metrics(self.options)
         # For redirects
         self._consecutive_redirects = 0  # To prevent circular redirects
 
@@ -204,14 +207,17 @@ class AzureExporter(BaseExporter, ProcessorMixin, TransportMixin):
                 envelopes = self.apply_telemetry_processors(envelopes)
                 result = self._transmit(envelopes)
                 # Only store files if local storage enabled
-                if self.storage and result > 0:
-                    self.storage.put(envelopes, result)
+                if self.storage and result is TransportStatusCode.RETRY:
+                    self.storage.put(
+                        envelopes,
+                        self.options.minimum_retry_interval
+                    )
             if event:
-                if isinstance(event, QueueExitEvent):
+                if self.storage and isinstance(event, QueueExitEvent):
                     self._transmit_from_storage()  # send files before exit
                 event.set()
                 return
-            if len(batch) < self.options.max_batch_size:
+            if self.storage and len(batch) < self.options.max_batch_size:
                 self._transmit_from_storage()
         except Exception:
             logger.exception('Exception occurred while exporting the data.')

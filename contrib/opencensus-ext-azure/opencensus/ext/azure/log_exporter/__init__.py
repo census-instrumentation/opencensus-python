@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import atexit
 import logging
 import os
 import random
@@ -31,8 +30,11 @@ from opencensus.ext.azure.common.protocol import (
     Message,
 )
 from opencensus.ext.azure.common.storage import LocalFileStorage
-from opencensus.ext.azure.common.transport import TransportMixin
-from opencensus.ext.azure.metrics_exporter import statsbeat_metrics
+from opencensus.ext.azure.common.transport import (
+    TransportMixin,
+    TransportStatusCode,
+)
+from opencensus.ext.azure.statsbeat import statsbeat
 from opencensus.trace import execution_context
 
 logger = logging.getLogger(__name__)
@@ -64,10 +66,9 @@ class BaseLogHandler(logging.Handler):
         self._queue = Queue(capacity=self.options.queue_capacity)
         self._worker = Worker(self._queue, self)
         self._worker.start()
-        atexit.register(self.close, self.options.grace_period)
         # start statsbeat on exporter instantiation
         if not os.environ.get("APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL"):
-            statsbeat_metrics.collect_statsbeat_metrics(self.options)
+            statsbeat.collect_statsbeat_metrics(self.options)
         # For redirects
         self._consecutive_redirects = 0  # To prevent circular redirects
 
@@ -78,23 +79,32 @@ class BaseLogHandler(logging.Handler):
                 envelopes = self.apply_telemetry_processors(envelopes)
                 result = self._transmit(envelopes)
                 # Only store files if local storage enabled
-                if self.storage and result > 0:
-                    self.storage.put(envelopes, result)
-            if event:
-                if isinstance(event, QueueExitEvent):
-                    self._transmit_from_storage()  # send files before exit
-                return
-            if len(batch) < self.options.max_batch_size:
-                self._transmit_from_storage()
+                if self.storage:
+                    if result is TransportStatusCode.RETRY:
+                        self.storage.put(
+                            envelopes,
+                            self.options.minimum_retry_interval,
+                        )
+                    if result is TransportStatusCode.SUCCESS:
+                        if len(batch) < self.options.max_batch_size:
+                            self._transmit_from_storage()
+                    if event:
+                        if isinstance(event, QueueExitEvent):
+                            # send files before exit
+                            self._transmit_from_storage()
         finally:
             if event:
                 event.set()
 
+    # Close is automatically called as part of logging shutdown
     def close(self, timeout=None):
+        if not timeout:
+            timeout = self.options.grace_period
         if self.storage:
             self.storage.close()
         if self._worker:
             self._worker.stop(timeout)
+        super(BaseLogHandler, self).close()
 
     def createLock(self):
         self.lock = None
@@ -106,6 +116,20 @@ class BaseLogHandler(logging.Handler):
         raise NotImplementedError  # pragma: NO COVER
 
     def flush(self, timeout=None):
+        if self._queue.is_empty():
+            return
+
+        # We must check the worker thread is alive, because otherwise flush
+        # is useless. Also, it would deadlock if no timeout is given, and the
+        # queue isn't empty.
+        # This is a very possible scenario during process termination, when
+        # atexit first calls handler.close() and then logging.shutdown(),
+        # that in turn calls handler.flush() without arguments.
+        if not self._worker.is_alive():
+            logger.warning("Can't flush %s, worker thread is dead. "
+                           "Any pending messages will be lost.", self)
+            return
+
         self._queue.flush(timeout=timeout)
 
 
@@ -241,10 +265,16 @@ class AzureEventHandler(TransportMixin, ProcessorMixin, BaseLogHandler):
                 isinstance(record.custom_dimensions, dict)):
             properties.update(record.custom_dimensions)
 
+        measurements = {}
+        if (hasattr(record, 'custom_measurements') and
+                isinstance(record.custom_measurements, dict)):
+            measurements.update(record.custom_measurements)
+
         envelope.name = 'Microsoft.ApplicationInsights.Event'
         data = Event(
             name=self.format(record),
             properties=properties,
+            measurements=measurements,
         )
         envelope.data = Data(baseData=data, baseType='EventData')
 

@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import atexit
-import logging
 import os
 
 from opencensus.common import utils as common_utils
@@ -26,15 +25,16 @@ from opencensus.ext.azure.common.protocol import (
     MetricData,
 )
 from opencensus.ext.azure.common.storage import LocalFileStorage
-from opencensus.ext.azure.common.transport import TransportMixin
+from opencensus.ext.azure.common.transport import (
+    TransportMixin,
+    TransportStatusCode,
+)
 from opencensus.ext.azure.metrics_exporter import standard_metrics
 from opencensus.metrics import transport
 from opencensus.metrics.export.metric_descriptor import MetricDescriptorType
 from opencensus.stats import stats as stats_module
 
 __all__ = ['MetricsExporter', 'new_metrics_exporter']
-
-logger = logging.getLogger(__name__)
 
 
 class MetricsExporter(TransportMixin, ProcessorMixin):
@@ -74,14 +74,21 @@ class MetricsExporter(TransportMixin, ProcessorMixin):
         for batch in batched_envelopes:
             batch = self.apply_telemetry_processors(batch)
             result = self._transmit(batch)
+            # If statsbeat exporter and received signal to shutdown
+            if self._is_stats and result is \
+                    TransportStatusCode.STATSBEAT_SHUTDOWN:
+                from opencensus.ext.azure.statsbeat import statsbeat
+                statsbeat.shutdown_statsbeat_metrics()
+                return
             # Only store files if local storage enabled
-            if self.storage and result > 0:
-                self.storage.put(batch, result)
-
-        # If there is still room to transmit envelopes, transmit from storage
-        # if available
-        if len(envelopes) < self.options.max_batch_size:
-            self._transmit_from_storage()
+            if self.storage:
+                if result is TransportStatusCode.RETRY:
+                    self.storage.put(batch, self.options.minimum_retry_interval)  # noqa: E501
+                if result is TransportStatusCode.SUCCESS:
+                    # If there is still room to transmit envelopes,
+                    # transmit from storage if available
+                    if len(envelopes) < self.options.max_batch_size:
+                        self._transmit_from_storage()
 
     def metric_to_envelopes(self, metric):
         envelopes = []
@@ -96,6 +103,9 @@ class MetricsExporter(TransportMixin, ProcessorMixin):
                 # point which contains the aggregated value
                 data_point = self._create_data_points(
                     time_series, md)[0]
+                # if statsbeat exporter, ignore points with 0 value
+                if self._is_stats and data_point.value == 0:
+                    continue
                 # The timestamp is when the metric was recorded
                 timestamp = time_series.points[0].timestamp
                 # Get the properties using label keys from metric
@@ -147,10 +157,12 @@ class MetricsExporter(TransportMixin, ProcessorMixin):
         return envelope
 
     def shutdown(self):
-        # Flush the exporter thread
-        # Do not flush if metrics exporter for stats
-        if self.exporter_thread and not self._is_stats:
-            self.exporter_thread.close()
+        if self.exporter_thread:
+            # flush if metrics exporter is not for stats
+            if not self._is_stats:
+                self.exporter_thread.close()
+            else:
+                self.exporter_thread.cancel()
         # Shutsdown storage worker
         if self.storage:
             self.storage.close()
@@ -166,7 +178,7 @@ def new_metrics_exporter(**options):
                                     exporter,
                                     interval=exporter.options.export_interval)
     if not os.environ.get("APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL"):
-        from opencensus.ext.azure.metrics_exporter import statsbeat_metrics
+        from opencensus.ext.azure.statsbeat import statsbeat
         # Stats will track the user's ikey
-        statsbeat_metrics.collect_statsbeat_metrics(exporter.options)
+        statsbeat.collect_statsbeat_metrics(exporter.options)
     return exporter

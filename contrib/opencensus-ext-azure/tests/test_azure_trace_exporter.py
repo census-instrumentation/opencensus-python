@@ -20,9 +20,10 @@ import unittest
 import mock
 
 from opencensus.ext.azure import trace_exporter
+from opencensus.ext.azure.common.transport import TransportStatusCode
 from opencensus.trace.link import Link
 
-TEST_FOLDER = os.path.abspath('.test.exporter')
+TEST_FOLDER = os.path.abspath('.test.trace.exporter')
 
 
 def setUpModule():
@@ -100,14 +101,14 @@ class TestAzureExporter(unittest.TestCase):
         exporter._stop()
 
     @mock.patch('opencensus.ext.azure.trace_exporter.AzureExporter.span_data_to_envelope')  # noqa: E501
-    def test_emit_failure(self, span_data_to_envelope_mock):
+    def test_emit_retry(self, span_data_to_envelope_mock):
         span_data_to_envelope_mock.return_value = ['bar']
         exporter = trace_exporter.AzureExporter(
             instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
             storage_path=os.path.join(TEST_FOLDER, self.id()),
         )
         with mock.patch('opencensus.ext.azure.trace_exporter.AzureExporter._transmit') as transmit:  # noqa: E501
-            transmit.return_value = 10
+            transmit.return_value = TransportStatusCode.RETRY
             exporter.emit(['foo'])
         self.assertEqual(len(os.listdir(exporter.storage.path)), 1)
         self.assertIsNone(exporter.storage.get())
@@ -122,7 +123,7 @@ class TestAzureExporter(unittest.TestCase):
             storage_path=os.path.join(TEST_FOLDER, self.id()),
         )
         with mock.patch('opencensus.ext.azure.trace_exporter.AzureExporter._transmit') as transmit:  # noqa: E501
-            transmit.return_value = 0
+            transmit.return_value = TransportStatusCode.SUCCESS
             exporter.emit([])
             exporter.emit(['foo'])
             self.assertEqual(len(os.listdir(exporter.storage.path)), 0)

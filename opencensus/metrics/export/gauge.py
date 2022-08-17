@@ -194,15 +194,17 @@ class DerivedGaugePoint(GaugePoint):
         :class:`opencensus.metrics.export.cumulative.CumulativePointDouble`
     :param gauge_point: The underlying `GaugePoint`.
     """
-    def __init__(self, func, gauge_point):
+    def __init__(self, func, gauge_point, **kwargs):
         self.gauge_point = gauge_point
         self.func = utils.get_weakref(func)
+        self._kwargs = kwargs
 
     def __repr__(self):
-        return ("{}({})"
+        return ("{}({})({})"
                 .format(
                     type(self).__name__,
-                    self.func()
+                    self.func(),
+                    self._kwargs
                 ))
 
     def get_value(self):
@@ -216,7 +218,7 @@ class DerivedGaugePoint(GaugePoint):
             longer exists.
         """
         try:
-            val = self.func()()
+            val = self.func()(**self._kwargs)
         except TypeError:  # The underlying function has been GC'd
             return None
 
@@ -406,13 +408,13 @@ class DerivedGauge(BaseGauge):
     instead of using this class directly.
     """
 
-    def _create_time_series(self, label_values, func):
+    def _create_time_series(self, label_values, func, **kwargs):
         with self._points_lock:
             return self.points.setdefault(
                 tuple(label_values),
-                DerivedGaugePoint(func, self.point_type()))
+                DerivedGaugePoint(func, self.point_type(), **kwargs))
 
-    def create_time_series(self, label_values, func):
+    def create_time_series(self, label_values, func, **kwargs):
         """Create a derived measurement to trac `func`.
 
         :type label_values: list(:class:`LabelValue`)
@@ -432,7 +434,7 @@ class DerivedGauge(BaseGauge):
             raise ValueError
         if func is None:
             raise ValueError
-        return self._create_time_series(label_values, func)
+        return self._create_time_series(label_values, func, **kwargs)
 
     def create_default_time_series(self, func):
         """Create the default derived measurement for this gauge.

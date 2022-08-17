@@ -11,8 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 import os
+import shutil
 import unittest
 from datetime import datetime
 
@@ -20,6 +20,7 @@ import mock
 
 from opencensus.common import utils
 from opencensus.ext.azure.common.protocol import DataPoint
+from opencensus.ext.azure.common.transport import TransportStatusCode
 from opencensus.ext.azure.metrics_exporter import (
     MetricsExporter,
     new_metrics_exporter,
@@ -34,6 +35,16 @@ from opencensus.metrics.export import (
     value,
 )
 from opencensus.metrics.export.metric_descriptor import MetricDescriptorType
+
+TEST_FOLDER = os.path.abspath('.test.metrics.exporter')
+
+
+def setUpModule():
+    os.makedirs(TEST_FOLDER)
+
+
+def tearDownModule():
+    shutil.rmtree(TEST_FOLDER)
 
 
 def create_metric():
@@ -107,27 +118,44 @@ class TestAzureMetricsExporter(unittest.TestCase):
     @mock.patch('requests.post', return_value=mock.Mock())
     def test_export_metrics_empty(self, requests_mock):
         exporter = MetricsExporter(
-            instrumentation_key='12345678-1234-5678-abcd-12345678abcd')
+            instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
+            max_batch_size=1,
+            storage_path=os.path.join(TEST_FOLDER, self.id()),
+        )
         exporter.export_metrics([])
 
         self.assertEqual(len(requests_mock.call_args_list), 0)
+        self.assertEqual(len(os.listdir(exporter.storage.path)), 0)
 
-    @mock.patch('requests.post', return_value=mock.Mock())
-    def test_export_metrics_full_batch(self, requests_mock):
+    def test_export_metrics_retry(self):
         metric = create_metric()
         exporter = MetricsExporter(
             instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
-            max_batch_size=1)
-        requests_mock.return_value.status_code = 200
-        requests_mock.return_value.text = '{"itemsReceived":1,'\
-                                          '"itemsAccepted":1,'\
-                                          '"errors":[]}'
-        exporter.export_metrics([metric])
+            max_batch_size=1,
+            storage_path=os.path.join(TEST_FOLDER, self.id()),
+        )
+        with mock.patch('opencensus.ext.azure.metrics_exporter'
+                        '.MetricsExporter._transmit') as transmit:
+            transmit.return_value = TransportStatusCode.RETRY
+            exporter.export_metrics([metric])
 
-        self.assertEqual(len(requests_mock.call_args_list), 1)
-        post_body = requests_mock.call_args_list[0][1]['data']
-        self.assertTrue('metrics' in post_body)
-        self.assertTrue('properties' in post_body)
+        self.assertEqual(len(os.listdir(exporter.storage.path)), 1)
+        self.assertIsNone(exporter.storage.get())
+
+    def test_export_metrics_success(self):
+        metric = create_metric()
+        exporter = MetricsExporter(
+            instrumentation_key='12345678-1234-5678-abcd-12345678abcd',
+            max_batch_size=1,
+            storage_path=os.path.join(TEST_FOLDER, self.id()),
+        )
+        with mock.patch('opencensus.ext.azure.metrics_exporter'
+                        '.MetricsExporter._transmit') as transmit:
+            transmit.return_value = TransportStatusCode.SUCCESS
+            exporter.export_metrics([metric])
+
+        self.assertEqual(len(os.listdir(exporter.storage.path)), 0)
+        self.assertIsNone(exporter.storage.get())
 
     def test_create_data_points(self):
         metric = create_metric()
@@ -206,11 +234,24 @@ class TestAzureMetricsExporter(unittest.TestCase):
         mock_thread.close.assert_called_once()
         mock_storage.close.assert_called_once()
 
+    def test_shutdown_statsbeat(self):
+        mock_thread = mock.Mock()
+        mock_storage = mock.Mock()
+        exporter = MetricsExporter(
+            instrumentation_key='12345678-1234-5678-abcd-12345678abcd'
+        )
+        exporter.exporter_thread = mock_thread
+        exporter._is_stats = True
+        exporter.storage = mock_storage
+        exporter.shutdown()
+        mock_thread.cancel.assert_called_once()
+        mock_storage.close.assert_called_once()
+
     @mock.patch('opencensus.ext.azure.metrics_exporter'
                 '.transport.get_exporter_thread')
     def test_new_metrics_exporter(self, exporter_mock):
-        with mock.patch('opencensus.ext.azure.metrics_exporter'
-                        '.statsbeat_metrics.collect_statsbeat_metrics') as hb:
+        with mock.patch('opencensus.ext.azure.statsbeat'
+                        '.statsbeat.collect_statsbeat_metrics') as hb:
             hb.return_value = None
             iKey = '12345678-1234-5678-abcd-12345678abcd'
             exporter = new_metrics_exporter(instrumentation_key=iKey)
@@ -227,8 +268,8 @@ class TestAzureMetricsExporter(unittest.TestCase):
     @mock.patch('opencensus.ext.azure.metrics_exporter'
                 '.transport.get_exporter_thread')
     def test_new_metrics_exporter_no_standard_metrics(self, exporter_mock):
-        with mock.patch('opencensus.ext.azure.metrics_exporter'
-                        '.statsbeat_metrics.collect_statsbeat_metrics') as hb:
+        with mock.patch('opencensus.ext.azure.statsbeat'
+                        '.statsbeat.collect_statsbeat_metrics') as hb:
             hb.return_value = None
             iKey = '12345678-1234-5678-abcd-12345678abcd'
             exporter = new_metrics_exporter(
@@ -240,18 +281,3 @@ class TestAzureMetricsExporter(unittest.TestCase):
             producer_class = standard_metrics.AzureStandardMetricsProducer
             self.assertFalse(isinstance(exporter_mock.call_args[0][0][0],
                                         producer_class))
-
-    @unittest.skip("Skip because disabling heartbeat metrics")
-    @mock.patch('opencensus.ext.azure.metrics_exporter'
-                '.transport.get_exporter_thread')
-    def test_new_metrics_exporter_heartbeat(self, exporter_mock):
-        with mock.patch('opencensus.ext.azure.metrics_exporter'
-                        '.statsbeat_metrics.collect_statsbeat_metrics') as hb:
-            iKey = '12345678-1234-5678-abcd-12345678abcd'
-            exporter = new_metrics_exporter(instrumentation_key=iKey)
-
-            self.assertEqual(exporter.options.instrumentation_key, iKey)
-            self.assertEqual(len(hb.call_args_list), 1)
-            self.assertEqual(len(hb.call_args[0]), 2)
-            self.assertEqual(hb.call_args[0][0], None)
-            self.assertEqual(hb.call_args[0][1], iKey)

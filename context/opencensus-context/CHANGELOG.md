@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## 0.1.3
+Released 2022-08-03
+
+- Move `version.py` file into `runtime_context` folder
+([#1143](https://github.com/census-instrumentation/opencensus-python/pull/1143))
+
 ## 0.1.2
 Released 2020-06-29
 
