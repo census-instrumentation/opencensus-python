@@ -62,6 +62,15 @@ _REQ_RETRY_NAME = "Retry Count"
 _REQ_THROTTLE_NAME = "Throttle Count"
 _REQ_EXCEPTION_NAME = "Exception Count"
 
+_NETWORK_STATSBEAT_NAMES = (
+    _REQ_SUCCESS_NAME,
+    _REQ_FAILURE_NAME,
+    _REQ_DURATION_NAME,
+    _REQ_RETRY_NAME,
+    _REQ_THROTTLE_NAME,
+    _REQ_EXCEPTION_NAME,
+)
+
 _ENDPOINT_TYPES = ["breeze"]
 _RP_NAMES = ["appsvc", "functions", "vm", "unknown"]
 
@@ -368,13 +377,15 @@ class _StatsbeatMetrics:
                     properties.pop()
 
             stats_metric = metric.get_metric(datetime.datetime.utcnow())
-            # Only export metric if status/exc_type was present
+            # metric will be None if status_code or exc_type is invalid
+            # for success count, this will never be None
             if stats_metric is not None:
+                # we handle not exporting of None and 0 values in the exporter
                 metrics.append(stats_metric)
         return metrics
 
     def _get_feature_metric(self):
-        # Don't export if value is 0
+        # Don't export if feature list is None
         if self._feature is _StatsbeatFeature.NONE:
             return None
         properties = self._get_common_properties()
@@ -385,7 +396,7 @@ class _StatsbeatMetrics:
 
     def _get_instrumentation_metric(self):
         integrations = get_integrations()
-        # Don't export if value is 0
+        # Don't export if instrumentation list is None
         if integrations is _Integrations.NONE:
             return None
         properties = self._get_common_properties()

@@ -56,13 +56,14 @@ ERROR_NAME = attributes_helper.COMMON_ATTRIBUTES['ERROR_NAME']
 STACKTRACE = attributes_helper.COMMON_ATTRIBUTES['STACKTRACE']
 
 
-class AzureExporter(BaseExporter, ProcessorMixin, TransportMixin):
+class AzureExporter(BaseExporter, TransportMixin, ProcessorMixin):
     """An exporter that sends traces to Microsoft Azure Monitor.
 
     :param options: Options for the exporter.
     """
 
     def __init__(self, **options):
+        super(AzureExporter, self).__init__(**options)
         self.options = Options(**options)
         utils.validate_instrumentation_key(self.options.instrumentation_key)
         self.storage = None
@@ -75,10 +76,9 @@ class AzureExporter(BaseExporter, ProcessorMixin, TransportMixin):
                 source=self.__class__.__name__,
             )
         self._telemetry_processors = []
-        super(AzureExporter, self).__init__(**options)
         atexit.register(self._stop, self.options.grace_period)
         # start statsbeat on exporter instantiation
-        if not os.environ.get("APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL"):
+        if self._check_stats_collection():
             statsbeat.collect_statsbeat_metrics(self.options)
         # For redirects
         self._consecutive_redirects = 0  # To prevent circular redirects
