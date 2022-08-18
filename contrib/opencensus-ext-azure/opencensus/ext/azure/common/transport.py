@@ -59,7 +59,7 @@ class TransportStatusCode:
 
 class TransportMixin(object):
 
-    # check to see if collecting requests information related to statsbeats
+    # check to see whether its the case of stats collection
     def _check_stats_collection(self):
         return state.is_statsbeat_enabled() and \
             not state.get_statsbeat_shutdown() and \
@@ -334,15 +334,16 @@ def _statsbeat_failure_reached_threshold():
 
 def _update_requests_map(type, value=None):
     if value is None:
-        value = 0  # error state
+        value = 0
     with _requests_lock:
         if type == "count":
             _requests_map['count'] = _requests_map.get('count', 0) + 1  # noqa: E501
-        elif type == "duration":
+        elif type == "duration":  # value will be duration
             _requests_map['duration'] = _requests_map.get('duration', 0) + value  # noqa: E501
         elif type == "success":
             _requests_map['success'] = _requests_map.get('success', 0) + 1  # noqa: E501
         else:
+            # value will be a key (status_code/error message)
             prev = 0
             if _requests_map.get(type):
                 prev = _requests_map.get(type).get(value, 0)

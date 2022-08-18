@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import atexit
-import os
 
 from opencensus.common import utils as common_utils
 from opencensus.ext.azure.common import Options, utils
@@ -30,6 +29,9 @@ from opencensus.ext.azure.common.transport import (
     TransportStatusCode,
 )
 from opencensus.ext.azure.metrics_exporter import standard_metrics
+from opencensus.ext.azure.statsbeat.statsbeat_metrics import (
+    _NETWORK_STATSBEAT_NAMES,
+)
 from opencensus.metrics import transport
 from opencensus.metrics.export.metric_descriptor import MetricDescriptorType
 from opencensus.stats import stats as stats_module
@@ -99,44 +101,47 @@ class MetricsExporter(TransportMixin, ProcessorMixin):
             # Each time series will be uniquely identified by its
             # label values
             for time_series in metric.time_series:
-                # Using stats, time_series should only have one
-                # point which contains the aggregated value
-                data_point = self._create_data_points(
-                    time_series, md)[0]
-                # if statsbeat exporter, ignore points with 0 value
-                if self._is_stats and data_point.value == 0:
-                    continue
+                # time_series should only have one point which
+                # contains the aggregated value
+                # time_series point list is never empty
+                point = time_series.points[0]
+                # we ignore None and 0 values for network statsbeats
+                if self._is_stats_exporter():
+                    if md.name in _NETWORK_STATSBEAT_NAMES:
+                        if not point.value.value:
+                            continue
+                data_point = DataPoint(
+                    ns=md.name,
+                    name=md.name,
+                    value=point.value.value
+                )
                 # The timestamp is when the metric was recorded
-                timestamp = time_series.points[0].timestamp
+                timestamp = point.timestamp
                 # Get the properties using label keys from metric
                 # and label values of the time series
-                properties = self._create_properties(time_series, md)
-                envelopes.append(self._create_envelope(data_point,
-                                                       timestamp,
-                                                       properties))
+                properties = self._create_properties(
+                    time_series,
+                    md.label_keys
+                )
+                envelopes.append(
+                    self._create_envelope(
+                        data_point,
+                        timestamp,
+                        properties
+                    )
+                )
         return envelopes
 
-    def _create_data_points(self, time_series, metric_descriptor):
-        """Convert a metric's OC time series to list of Azure data points."""
-        data_points = []
-        for point in time_series.points:
-            # TODO: Possibly encode namespace in name
-            data_point = DataPoint(ns=metric_descriptor.name,
-                                   name=metric_descriptor.name,
-                                   value=point.value.value)
-            data_points.append(data_point)
-        return data_points
-
-    def _create_properties(self, time_series, metric_descriptor):
+    def _create_properties(self, time_series, label_keys):
         properties = {}
         # We construct a properties map from the label keys and values. We
         # assume the ordering is already correct
-        for i in range(len(metric_descriptor.label_keys)):
+        for i in range(len(label_keys)):
             if time_series.label_values[i].value is None:
                 value = "null"
             else:
                 value = time_series.label_values[i].value
-            properties[metric_descriptor.label_keys[i].key] = value
+            properties[label_keys[i].key] = value
         return properties
 
     def _create_envelope(self, data_point, timestamp, properties):
@@ -177,8 +182,9 @@ def new_metrics_exporter(**options):
                                     producers,
                                     exporter,
                                     interval=exporter.options.export_interval)
-    if not os.environ.get("APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL"):
+    # start statsbeat on exporter instantiation
+    if exporter._check_stats_collection():
+        # Import here to avoid circular dependencies
         from opencensus.ext.azure.statsbeat import statsbeat
-        # Stats will track the user's ikey
         statsbeat.collect_statsbeat_metrics(exporter.options)
     return exporter

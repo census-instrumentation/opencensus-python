@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import logging
-import os
 import random
 import threading
 import time
@@ -66,9 +65,6 @@ class BaseLogHandler(logging.Handler):
         self._queue = Queue(capacity=self.options.queue_capacity)
         self._worker = Worker(self._queue, self)
         self._worker.start()
-        # start statsbeat on exporter instantiation
-        if not os.environ.get("APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL"):
-            statsbeat.collect_statsbeat_metrics(self.options)
         # For redirects
         self._consecutive_redirects = 0  # To prevent circular redirects
 
@@ -187,8 +183,14 @@ class SamplingFilter(logging.Filter):
         return random.random() < self.probability
 
 
-class AzureLogHandler(TransportMixin, ProcessorMixin, BaseLogHandler):
+class AzureLogHandler(BaseLogHandler, TransportMixin, ProcessorMixin):
     """Handler for logging to Microsoft Azure Monitor."""
+
+    def __init__(self, **options):
+        super(AzureLogHandler, self).__init__(**options)
+        # start statsbeat on exporter instantiation
+        if self._check_stats_collection():
+            statsbeat.collect_statsbeat_metrics(self.options)
 
     def log_record_to_envelope(self, record):
         envelope = create_envelope(self.options.instrumentation_key, record)
@@ -256,6 +258,12 @@ class AzureLogHandler(TransportMixin, ProcessorMixin, BaseLogHandler):
 
 class AzureEventHandler(TransportMixin, ProcessorMixin, BaseLogHandler):
     """Handler for sending custom events to Microsoft Azure Monitor."""
+
+    def __init__(self, **options):
+        super(AzureEventHandler, self).__init__(**options)
+        # start statsbeat on exporter instantiation
+        if self._check_stats_collection():
+            statsbeat.collect_statsbeat_metrics(self.options)
 
     def log_record_to_envelope(self, record):
         envelope = create_envelope(self.options.instrumentation_key, record)

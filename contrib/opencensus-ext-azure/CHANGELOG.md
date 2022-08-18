@@ -5,7 +5,9 @@
 - Add storage existence checks to storing and transmitting in exporter
 ([#1150](https://github.com/census-instrumentation/opencensus-python/pull/1150))
 - Add 502 and 504 status codes as retriable
-([#1150](https://github.com/census-instrumentation/opencensus-python/pull/1150))
+([#1153](https://github.com/census-instrumentation/opencensus-python/pull/1153))
+- Fix statsbeat bug - exporting zero values for network statsbeat
+([#1155](https://github.com/census-instrumentation/opencensus-python/pull/1155))
 
 ## 1.1.6
 Released 2022-08-03

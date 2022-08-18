@@ -26,6 +26,10 @@ from opencensus.ext.azure.metrics_exporter import (
     new_metrics_exporter,
     standard_metrics,
 )
+from opencensus.ext.azure.statsbeat.statsbeat_metrics import (
+    _ATTACH_METRIC_NAME,
+    _REQ_SUCCESS_NAME,
+)
 from opencensus.metrics import label_key, label_value
 from opencensus.metrics.export import (
     metric,
@@ -66,6 +70,63 @@ def create_metric():
         label_keys=[label_key.LabelKey('key', 'description')]
     )
 
+    mm = metric.Metric(descriptor=desc, time_series=ts)
+    return mm
+
+
+def create_metric_ts():
+    lv = label_value.LabelValue('val')
+    lv2 = label_value.LabelValue('val2')
+    val = value.ValueLong(value=123)
+    dt = datetime(2019, 3, 20, 21, 34, 0, 537954)
+    pp = point.Point(value=val, timestamp=dt)
+
+    ts = [
+        time_series.TimeSeries(
+            label_values=[lv],
+            points=[pp],
+            start_timestamp=utils.to_iso_str(dt)
+        ),
+        time_series.TimeSeries(
+            label_values=[lv2],
+            points=[pp],
+            start_timestamp=utils.to_iso_str(dt)
+        ),
+    ]
+
+    desc = metric_descriptor.MetricDescriptor(
+        name='name',
+        description='description',
+        unit='unit',
+        type_=metric_descriptor.MetricDescriptorType.GAUGE_INT64,
+        label_keys=[label_key.LabelKey('key', 'description')]
+    )
+
+    mm = metric.Metric(descriptor=desc, time_series=ts)
+    return mm
+
+
+def create_stats_metric(name, num):
+    lv = label_value.LabelValue('val')
+    val = value.ValueLong(value=num)
+    dt = datetime(2019, 3, 20, 21, 34, 0, 537954)
+    pp = point.Point(value=val, timestamp=dt)
+
+    ts = [
+        time_series.TimeSeries(
+            label_values=[lv],
+            points=[pp],
+            start_timestamp=utils.to_iso_str(dt)
+        )
+    ]
+
+    desc = metric_descriptor.MetricDescriptor(
+        name=name,
+        description='description',
+        unit='unit',
+        type_=metric_descriptor.MetricDescriptorType.GAUGE_INT64,
+        label_keys=[label_key.LabelKey('key', 'description')]
+    )
     mm = metric.Metric(descriptor=desc, time_series=ts)
     return mm
 
@@ -157,20 +218,102 @@ class TestAzureMetricsExporter(unittest.TestCase):
         self.assertEqual(len(os.listdir(exporter.storage.path)), 0)
         self.assertIsNone(exporter.storage.get())
 
-    def test_create_data_points(self):
+    def test_metric_to_envelopes(self):
         metric = create_metric()
         exporter = MetricsExporter(
             instrumentation_key='12345678-1234-5678-abcd-12345678abcd'
         )
-        data_points = exporter._create_data_points(metric.time_series[0],
-                                                   metric.descriptor)
+        property_mock = mock.Mock()
+        envelope_mock = mock.Mock()
+        exporter._create_properties = property_mock
+        exporter._create_envelope = envelope_mock
+        exporter.metric_to_envelopes(metric)
+        property_mock.assert_called_once()
+        envelope_mock.assert_called_once()
 
-        self.assertEqual(len(data_points), 1)
-        data_point = data_points[0]
-        self.assertEqual(data_point.ns, metric.descriptor.name)
-        self.assertEqual(data_point.name, metric.descriptor.name)
-        self.assertEqual(data_point.value,
-                         metric.time_series[0].points[0].value.value)
+    def test_metric_to_envelopes_multi_time_series(self):
+        metric = create_metric_ts()
+        exporter = MetricsExporter(
+            instrumentation_key='12345678-1234-5678-abcd-12345678abcd'
+        )
+        property_mock = mock.Mock()
+        envelope_mock = mock.Mock()
+        exporter._create_properties = property_mock
+        exporter._create_envelope = envelope_mock
+        exporter.metric_to_envelopes(metric)
+        property_mock.assert_any_call(
+            metric.time_series[0],
+            metric.descriptor.label_keys,
+        )
+        property_mock.assert_any_call(
+            metric.time_series[1],
+            metric.descriptor.label_keys,
+        )
+        envelope_mock.assert_called()
+
+    def test_metric_to_envelopes_network_statsbeat(self):
+        metric = create_stats_metric(_REQ_SUCCESS_NAME, 10)
+        exporter = MetricsExporter(
+            instrumentation_key='12345678-1234-5678-abcd-12345678abcd'
+        )
+        statsbeat_mock = mock.Mock()
+        statsbeat_mock.return_value = True
+        property_mock = mock.Mock()
+        envelope_mock = mock.Mock()
+        exporter._create_properties = property_mock
+        exporter._create_envelope = envelope_mock
+        exporter._is_stats_exporter = statsbeat_mock
+        exporter.metric_to_envelopes(metric)
+        property_mock.assert_called_once()
+        envelope_mock.assert_called_once()
+
+    def test_metric_to_envelopes_network_statsbeat_zero(self):
+        metric = create_stats_metric(_REQ_SUCCESS_NAME, 0)
+        exporter = MetricsExporter(
+            instrumentation_key='12345678-1234-5678-abcd-12345678abcd'
+        )
+        statsbeat_mock = mock.Mock()
+        statsbeat_mock.return_value = True
+        property_mock = mock.Mock()
+        envelope_mock = mock.Mock()
+        exporter._create_properties = property_mock
+        exporter._create_envelope = envelope_mock
+        exporter._is_stats_exporter = statsbeat_mock
+        exporter.metric_to_envelopes(metric)
+        property_mock.assert_not_called()
+        envelope_mock.assert_not_called()
+
+    def test_metric_to_envelopes_not_network_statsbeat(self):
+        metric = create_stats_metric(_ATTACH_METRIC_NAME, 10)
+        exporter = MetricsExporter(
+            instrumentation_key='12345678-1234-5678-abcd-12345678abcd'
+        )
+        statsbeat_mock = mock.Mock()
+        statsbeat_mock.return_value = True
+        property_mock = mock.Mock()
+        envelope_mock = mock.Mock()
+        exporter._create_properties = property_mock
+        exporter._create_envelope = envelope_mock
+        exporter._is_stats_exporter = statsbeat_mock
+        exporter.metric_to_envelopes(metric)
+        property_mock.assert_called_once()
+        envelope_mock.assert_called_once()
+
+    def test_metric_to_envelopes_not_network_statsbeat_zero(self):
+        metric = create_stats_metric(_ATTACH_METRIC_NAME, 0)
+        exporter = MetricsExporter(
+            instrumentation_key='12345678-1234-5678-abcd-12345678abcd'
+        )
+        statsbeat_mock = mock.Mock()
+        statsbeat_mock.return_value = True
+        property_mock = mock.Mock()
+        envelope_mock = mock.Mock()
+        exporter._create_properties = property_mock
+        exporter._create_envelope = envelope_mock
+        exporter._is_stats_exporter = statsbeat_mock
+        exporter.metric_to_envelopes(metric)
+        property_mock.assert_called_once()
+        envelope_mock.assert_called_once()
 
     def test_create_properties(self):
         metric = create_metric()
@@ -178,7 +321,7 @@ class TestAzureMetricsExporter(unittest.TestCase):
             instrumentation_key='12345678-1234-5678-abcd-12345678abcd'
         )
         properties = exporter._create_properties(metric.time_series[0],
-                                                 metric.descriptor)
+                                                 metric.descriptor.label_keys)
 
         self.assertEqual(len(properties), 1)
         self.assertEqual(properties['key'], 'val')
@@ -190,7 +333,7 @@ class TestAzureMetricsExporter(unittest.TestCase):
         )
         metric.time_series[0].label_values[0]._value = None
         properties = exporter._create_properties(metric.time_series[0],
-                                                 metric.descriptor)
+                                                 metric.descriptor.label_keys)
 
         self.assertEqual(len(properties), 1)
         self.assertEqual(properties['key'], 'null')
