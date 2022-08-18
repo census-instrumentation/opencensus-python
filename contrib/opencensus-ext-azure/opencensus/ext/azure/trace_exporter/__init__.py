@@ -15,7 +15,6 @@
 import atexit
 import json
 import logging
-import os
 
 from opencensus.common.schedule import QueueExitEvent
 from opencensus.ext.azure.common import Options, utils

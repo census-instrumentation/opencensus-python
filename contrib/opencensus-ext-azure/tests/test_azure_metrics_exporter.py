@@ -73,6 +73,7 @@ def create_metric():
     mm = metric.Metric(descriptor=desc, time_series=ts)
     return mm
 
+
 def create_metric_ts():
     lv = label_value.LabelValue('val')
     lv2 = label_value.LabelValue('val2')
@@ -103,6 +104,7 @@ def create_metric_ts():
 
     mm = metric.Metric(descriptor=desc, time_series=ts)
     return mm
+
 
 def create_stats_metric(name, num):
     lv = label_value.LabelValue('val')
