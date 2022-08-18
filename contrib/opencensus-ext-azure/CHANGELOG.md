@@ -2,18 +2,26 @@
 
 ## Unreleased
 
+## 1.1.7
+
+Released 2022-08-18
+
 - Add storage existence checks to storing and transmitting in exporter
 ([#1150](https://github.com/census-instrumentation/opencensus-python/pull/1150))
 - Add 502 and 504 status codes as retriable
-([#1150](https://github.com/census-instrumentation/opencensus-python/pull/1150))
+([#1153](https://github.com/census-instrumentation/opencensus-python/pull/1153))
+- Fix statsbeat bug - exporting zero values for network statsbeat
+([#1155](https://github.com/census-instrumentation/opencensus-python/pull/1155))
 
 ## 1.1.6
+
 Released 2022-08-03
 
 - Add statusCode and exceptionType to network statsbeat
 ([#1138](https://github.com/census-instrumentation/opencensus-python/pull/1138))
 
 ## 1.1.5
+
 Released 2022-07-05
 
 - Allow specifying metrics (custom_measurements) for Azure custom events
@@ -26,6 +34,7 @@ Released 2022-07-05
 ([#1134](https://github.com/census-instrumentation/opencensus-python/pull/1134))
 
 ## 1.1.4
+
 Released 2022-04-20
 
 - Statsbeat bug fixes - status codes
@@ -36,12 +45,14 @@ Released 2022-04-20
 ([#1118](https://github.com/census-instrumentation/opencensus-python/pull/1118))
 
 ## 1.1.3
+
 Released 2022-03-03
 
 - Hotfix for version number
 ([#1108](https://github.com/census-instrumentation/opencensus-python/pull/1108))
 
 ## 1.1.2
+
 Released 2022-03-03
 
 - Statsbeat bug fixes, shorten host in network stats
@@ -50,6 +61,7 @@ Released 2022-03-03
 ([#1105](https://github.com/census-instrumentation/opencensus-python/pull/1105))
 
 ## 1.1.1
+
 Released 2022-01-19
 
 - Fix statsbeats metric names
@@ -58,6 +70,7 @@ Released 2022-01-19
 ([#1093](https://github.com/census-instrumentation/opencensus-python/pull/1093))
 
 ## 1.1.0
+
 Released 2021-10-05
 
 - Enable AAD authorization via TokenCredential
@@ -74,6 +87,7 @@ Released 2021-10-05
 ([#1078](https://github.com/census-instrumentation/opencensus-python/pull/1078))
 
 ## 1.0.8
+
 Released 2021-05-13
 
 - Fix `logger.exception` with no exception info throwing error
@@ -82,12 +96,14 @@ Released 2021-05-13
 ([#1016](https://github.com/census-instrumentation/opencensus-python/pull/1016))
 
 ## 1.0.7
+
 Released 2021-01-25
 
 - Hotfix
 ([#1004](https://github.com/census-instrumentation/opencensus-python/pull/1004))
 
 ## 1.0.6
+
 Released 2021-01-14
 
 - Disable heartbeat metrics in exporters
@@ -96,6 +112,7 @@ Released 2021-01-14
   ([#986](https://github.com/census-instrumentation/opencensus-python/pull/986))
 
 ## 1.0.5
+
 Released 2020-10-13
 
 - Attach rate metrics via Heartbeat for Web and Function apps
@@ -110,6 +127,7 @@ Released 2020-10-13
   ([#949](https://github.com/census-instrumentation/opencensus-python/pull/949))
 
 ## 1.0.4
+
 Released 2020-06-29
 
 - Remove dependency rate from standard metrics
@@ -118,6 +136,7 @@ Released 2020-06-29
   ([#925](https://github.com/census-instrumentation/opencensus-python/pull/925))
 
 ## 1.0.3
+
 Released 2020-06-17
 
 - Change default path of local storage
@@ -126,6 +145,7 @@ Released 2020-06-17
   ([#902](https://github.com/census-instrumentation/opencensus-python/pull/902))
 
 ## 1.0.2
+
 Released 2020-02-04
 
 - Add local storage and retry logic for Azure Metrics Exporter
@@ -136,6 +156,7 @@ Released 2020-02-04
   ([#851](https://github.com/census-instrumentation/opencensus-python/pull/851))
 
 ## 1.0.1
+
 Released 2019-11-26
 
 - Validate instrumentation key in Azure Exporters
@@ -144,6 +165,7 @@ Released 2019-11-26
   ([#822](https://github.com/census-instrumentation/opencensus-python/pull/822))
 
 ## 1.0.0
+
 Released 2019-09-30
 
 - Standard Metrics - Incoming requests execution time
@@ -152,12 +174,14 @@ Released 2019-09-30
   ([#767](https://github.com/census-instrumentation/opencensus-python/pull/767))
 
 ## 0.7.1
+
 Released 2019-08-26
 
 - Standard metrics incoming requests per second
   ([#758](https://github.com/census-instrumentation/opencensus-python/pull/758))
 
 ## 0.7.0
+
 Released 2019-07-31
 
 - Added standard metrics
@@ -170,18 +194,21 @@ Released 2019-07-31
   ([#735](https://github.com/census-instrumentation/opencensus-python/pull/735))
 
 ## 0.3.1
+
 Released 2019-06-30
 
 - Added metrics exporter
   ([#678](https://github.com/census-instrumentation/opencensus-python/pull/678))
 
 ## 0.2.1
+
 Released 2019-06-13
 
 - Support span attributes
   ([#682](https://github.com/census-instrumentation/opencensus-python/pull/682))
 
 ## 0.2.0
+
 Released 2019-05-31
 
 - Added log exporter
@@ -193,6 +220,7 @@ Released 2019-05-31
   ([#632](https://github.com/census-instrumentation/opencensus-python/pull/632))
 
 ## 0.1.0
+
 Released 2019-04-24
 
 - Initial release
