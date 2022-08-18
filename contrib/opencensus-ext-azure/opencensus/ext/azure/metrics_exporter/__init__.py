@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import atexit
-import os
 
 from opencensus.common import utils as common_utils
 from opencensus.ext.azure.common import Options, utils
