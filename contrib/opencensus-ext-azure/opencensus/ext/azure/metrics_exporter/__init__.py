@@ -30,7 +30,9 @@ from opencensus.ext.azure.common.transport import (
     TransportStatusCode,
 )
 from opencensus.ext.azure.metrics_exporter import standard_metrics
-from opencensus.ext.azure.statsbeat.statsbeat_metrics import _NETWORK_STATSBEAT_NAMES
+from opencensus.ext.azure.statsbeat.statsbeat_metrics import (
+    _NETWORK_STATSBEAT_NAMES,
+)
 from opencensus.metrics import transport
 from opencensus.metrics.export.metric_descriptor import MetricDescriptorType
 from opencensus.stats import stats as stats_module
