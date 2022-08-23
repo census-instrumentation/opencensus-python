@@ -75,8 +75,7 @@ class BaseLogHandler(logging.Handler):
     def _export(self, batch, event=None):  # pragma: NO COVER
         try:
             if batch:
-                envelopes = [self.log_record_to_envelope(x) for x in batch]
-                envelopes = self.apply_telemetry_processors(envelopes)
+                envelopes = self.apply_telemetry_processors(batch)
                 result = self._transmit(envelopes)
                 # Only store files if local storage enabled
                 if self.storage:
@@ -110,7 +109,11 @@ class BaseLogHandler(logging.Handler):
         self.lock = None
 
     def emit(self, record):
-        self._queue.put(record, block=False)
+        # Convert the raw LogRecord to an envelope before putting it on the
+        # queue as a LogRecord object is not serializable, while an Envelope
+        # object is.
+        envelope = self.log_record_to_envelope(record)
+        self._queue.put(envelope, block=False)
 
     def log_record_to_envelope(self, record):
         raise NotImplementedError  # pragma: NO COVER
