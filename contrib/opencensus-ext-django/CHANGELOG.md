@@ -3,7 +3,7 @@
 ## Unreleased
 
 - Fixed support for Django 4.1
-- ([#1159](https://github.com/census-instrumentation/opencensus-python/pull/1158))
+- ([#1159](https://github.com/census-instrumentation/opencensus-python/pull/1159))
 
 ## 0.7.5
 Released 2021-05-13
