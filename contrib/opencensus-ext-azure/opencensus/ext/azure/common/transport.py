@@ -31,6 +31,7 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
+
 _MAX_CONSECUTIVE_REDIRECTS = 10
 _MONITOR_OAUTH_SCOPE = "https://monitor.azure.com//.default"
 _requests_lock = threading.Lock()
@@ -52,6 +53,7 @@ THROTTLE_STATUS_CODES = (
     402,  # Quota, too Many Requests over extended time
     439,  # Quota, too Many Requests over extended time (legacy)
 )
+
 
 class TransportStatusCode:
     SUCCESS = 0
@@ -193,6 +195,46 @@ class TransportMixin(object):
             if self._check_stats_collection():
                 _update_requests_map('success')
             return TransportStatusCode.SUCCESS
+        elif status_code == 206:  # Partial Content
+            data = None
+            try:
+                data = json.loads(text)
+            except Exception as ex:
+                if not self._is_stats_exporter():
+                    logger.warning('Error while reading response body %s for partial content.', ex)  # noqa: E501
+                if self._check_stats_collection():
+                    _update_requests_map('exception', value=ex.__class__.__name__)  # noqa: E501
+                return TransportStatusCode.DROP
+            if data:
+                try:
+                    resend_envelopes = []
+                    for error in data['errors']:
+                        if _status_code_is_retryable(error['statusCode']):
+                            resend_envelopes.append(envelopes[error['index']])
+                            if self._check_stats_collection():
+                                _update_requests_map('retry', value=error['statusCode'])  # noqa: E501
+                        else:
+                            if not self._is_stats_exporter():
+                                logger.error(
+                                    'Data drop %s: %s %s.',
+                                    error['statusCode'],
+                                    error['message'],
+                                    envelopes[error['index']],
+                                )
+                    if self.storage and resend_envelopes:
+                        self.storage.put(resend_envelopes)
+                except Exception as ex:
+                    if not self._is_stats_exporter():
+                        logger.error(
+                            'Error while processing %s: %s %s.',
+                            status_code,
+                            text,
+                            ex,
+                        )
+                    if self._check_stats_collection():
+                        _update_requests_map('exception', value=ex.__class__.__name__)  # noqa: E501
+            return TransportStatusCode.DROP
+            # cannot parse response body, fallback to retry
         elif _status_code_is_redirect(status_code):  # Redirect
             # for statsbeat, these are not tracked as success nor failures
             self._consecutive_redirects += 1
@@ -258,46 +300,6 @@ class TransportMixin(object):
             if self._check_stats_collection():
                 _update_requests_map('retry', value=status_code)
             return TransportStatusCode.RETRY
-        elif status_code == 206:  # Partial Content
-            data = None
-            try:
-                data = json.loads(text)
-            except Exception as ex:
-                if not self._is_stats_exporter():
-                    logger.warning('Error while reading response body %s for partial content.', ex)  # noqa: E501
-                if self._check_stats_collection():
-                    _update_requests_map('exception', value=ex.__class__.__name__)  # noqa: E501
-                return TransportStatusCode.DROP
-            if data:
-                try:
-                    resend_envelopes = []
-                    for error in data['errors']:
-                        if _status_code_is_retryable(error['statusCode']):
-                            resend_envelopes.append(envelopes[error['index']])
-                            if self._check_stats_collection():
-                                _update_requests_map('retry', value=error['statusCode'])  # noqa: E501
-                        else:
-                            if not self._is_stats_exporter():
-                                logger.error(
-                                    'Data drop %s: %s %s.',
-                                    error['statusCode'],
-                                    error['message'],
-                                    envelopes[error['index']],
-                                )
-                    if self.storage and resend_envelopes:
-                        self.storage.put(resend_envelopes)
-                except Exception as ex:
-                    if not self._is_stats_exporter():
-                        logger.error(
-                            'Error while processing %s: %s %s.',
-                            status_code,
-                            text,
-                            ex,
-                        )
-                    if self._check_stats_collection():
-                        _update_requests_map('exception', value=ex.__class__.__name__)  # noqa: E501
-            return TransportStatusCode.DROP
-            # cannot parse response body, fallback to retry
         else:
             # 400 and 404 will be tracked as failure count
             # 400 - Invalid - The server cannot or will not process the request due to the invalid telemetry (invalid data, iKey)  # noqa: E501
@@ -336,18 +338,18 @@ def _statsbeat_failure_reached_threshold():
     return state.get_statsbeat_initial_failure_count() >= 3
 
 
-def _update_requests_map(type, value=None):
+def _update_requests_map(type_name, value=None):
     # value is either None, duration, status_code or exc_name
     with _requests_lock:
         if value is None:  # success, count
-            _requests_map[type] = _requests_map.get(type, 0) + 1
-        elif type == "duration":  # value will be duration
-            _requests_map['duration'] = _requests_map.get('duration', 0) + value  # noqa: E501
+            _requests_map[type_name] = _requests_map.get(type_name, 0) + 1
+        elif type_name == "duration":  # value will be duration
+            _requests_map[type_name] = _requests_map.get(type_name, 0) + value  # noqa: E501
         else:  # exception, failure, retry, throttle
             # value will be a key (status_code/exc_name)
             prev = 0
-            if _requests_map.get(type):
-                prev = _requests_map.get(type).get(value, 0)
+            if _requests_map.get(type_name):
+                prev = _requests_map.get(type_name).get(value, 0)
             else:
-                _requests_map[type] = {}
-            _requests_map[type][value] = prev + 1
+                _requests_map[type_name] = {}
+            _requests_map[type_name][value] = prev + 1
