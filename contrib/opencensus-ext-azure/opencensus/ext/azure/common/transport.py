@@ -341,7 +341,7 @@ def _statsbeat_failure_reached_threshold():
 def _update_requests_map(type_name, value=None):
     # value is either None, duration, status_code or exc_name
     with _requests_lock:
-        if value is None:  # success, count
+        if type_name == "success" or type_name == "count":  # success, count
             _requests_map[type_name] = _requests_map.get(type_name, 0) + 1
         elif type_name == "duration":  # value will be duration
             _requests_map[type_name] = _requests_map.get(type_name, 0) + value  # noqa: E501
