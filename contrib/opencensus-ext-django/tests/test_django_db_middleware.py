@@ -18,9 +18,14 @@ from collections import namedtuple
 import django
 import mock
 import pytest
+from django.http import HttpResponse
 from django.test.utils import teardown_test_environment
 
 from opencensus.trace import execution_context
+
+
+def get_response(request):
+    return HttpResponse()
 
 
 class TestOpencensusDatabaseMiddleware(unittest.TestCase):
@@ -50,7 +55,7 @@ class TestOpencensusDatabaseMiddleware(unittest.TestCase):
         mock_execute = mock.Mock()
         mock_execute.return_value = "Mock result"
 
-        middleware.OpencensusMiddleware()
+        middleware.OpencensusMiddleware(get_response)
 
         patch_no_tracer = mock.patch(
             'opencensus.ext.django.middleware._get_current_tracer',
