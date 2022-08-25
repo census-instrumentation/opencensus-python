@@ -38,17 +38,20 @@ _requests_map = {}
 _REACHED_INGESTION_STATUS_CODES = (200, 206, 402, 408, 429, 439, 500)
 REDIRECT_STATUS_CODES = (307, 308)
 RETRYABLE_STATUS_CODES = (
+    206,  # Partial success
     401,  # Unauthorized
     403,  # Forbidden
     408,  # Request Timeout
-    429,  # Too many requests
+    429,  # Too Many Requests - retry after
     500,  # Internal server error
     502,  # Bad Gateway
     503,  # Service unavailable
     504,  # Gateway timeout
 )
-THROTTLE_STATUS_CODES = (402, 439)
-
+THROTTLE_STATUS_CODES = (
+    402,  # Quota, too Many Requests over extended time
+    439,  # Quota, too Many Requests over extended time (legacy)
+)
 
 class TransportStatusCode:
     SUCCESS = 0
@@ -274,12 +277,13 @@ class TransportMixin(object):
                             if self._check_stats_collection():
                                 _update_requests_map('retry', value=error['statusCode'])  # noqa: E501
                         else:
-                            logger.error(
-                                'Data drop %s: %s %s.',
-                                error['statusCode'],
-                                error['message'],
-                                envelopes[error['index']],
-                            )
+                            if not self._is_stats_exporter():
+                                logger.error(
+                                    'Data drop %s: %s %s.',
+                                    error['statusCode'],
+                                    error['message'],
+                                    envelopes[error['index']],
+                                )
                     if self.storage and resend_envelopes:
                         self.storage.put(resend_envelopes)
                 except Exception as ex:
@@ -333,17 +337,14 @@ def _statsbeat_failure_reached_threshold():
 
 
 def _update_requests_map(type, value=None):
-    if value is None:
-        value = 0
+    # value is either None, duration, status_code or exc_name
     with _requests_lock:
-        if type == "count":
-            _requests_map['count'] = _requests_map.get('count', 0) + 1  # noqa: E501
+        if value is None:  # success, count
+            _requests_map[type] = _requests_map.get(type, 0) + 1
         elif type == "duration":  # value will be duration
             _requests_map['duration'] = _requests_map.get('duration', 0) + value  # noqa: E501
-        elif type == "success":
-            _requests_map['success'] = _requests_map.get('success', 0) + 1  # noqa: E501
-        else:
-            # value will be a key (status_code/error message)
+        else:  # exception, failure, retry, throttle
+            # value will be a key (status_code/exc_name)
             prev = 0
             if _requests_map.get(type):
                 prev = _requests_map.get(type).get(value, 0)
