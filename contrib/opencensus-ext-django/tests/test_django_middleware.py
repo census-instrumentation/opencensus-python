@@ -17,6 +17,7 @@ import traceback
 import unittest
 
 import mock
+from django.http import HttpResponse
 from django.test import RequestFactory
 from django.test.utils import teardown_test_environment
 
@@ -25,6 +26,10 @@ from opencensus.trace import span as span_module
 from opencensus.trace import utils
 from opencensus.trace.blank_span import BlankSpan
 from opencensus.trace.propagation import trace_context_http_header_format
+
+
+def get_response(request):
+    return HttpResponse()
 
 
 class TestOpencensusMiddleware(unittest.TestCase):
@@ -44,7 +49,7 @@ class TestOpencensusMiddleware(unittest.TestCase):
     def test_constructor_default(self):
         from opencensus.ext.django import middleware
 
-        middleware = middleware.OpencensusMiddleware()
+        middleware = middleware.OpencensusMiddleware(get_response)
 
         assert isinstance(middleware.sampler, samplers.ProbabilitySampler)
         assert isinstance(middleware.exporter, print_exporter.PrintExporter)
@@ -69,7 +74,7 @@ class TestOpencensusMiddleware(unittest.TestCase):
             settings)
 
         with patch_settings:
-            middleware = middleware.OpencensusMiddleware()
+            middleware = middleware.OpencensusMiddleware(get_response)
 
         assert isinstance(middleware.sampler, samplers.AlwaysOnSampler)
         assert isinstance(middleware.exporter, print_exporter.PrintExporter)
@@ -100,7 +105,7 @@ class TestOpencensusMiddleware(unittest.TestCase):
             settings)
 
         with patch_settings:
-            middleware_obj = middleware.OpencensusMiddleware()
+            middleware_obj = middleware.OpencensusMiddleware(get_response)
 
         # test process_request
         middleware_obj.process_request(django_request)
@@ -148,7 +153,7 @@ class TestOpencensusMiddleware(unittest.TestCase):
             settings)
 
         with patch_settings:
-            middleware_obj = middleware.OpencensusMiddleware()
+            middleware_obj = middleware.OpencensusMiddleware(get_response)
 
         django_request = RequestFactory().get('/test_excludelist_path')
         disabled = utils.disable_tracing_url(django_request.path,
@@ -204,7 +209,7 @@ class TestOpencensusMiddleware(unittest.TestCase):
             settings)
 
         with patch_settings:
-            middleware_obj = middleware.OpencensusMiddleware()
+            middleware_obj = middleware.OpencensusMiddleware(get_response)
 
         middleware_obj.process_request(django_request)
         tracer = middleware._get_current_tracer()
@@ -259,7 +264,7 @@ class TestOpencensusMiddleware(unittest.TestCase):
             settings)
 
         with patch_settings:
-            middleware_obj = middleware.OpencensusMiddleware()
+            middleware_obj = middleware.OpencensusMiddleware(get_response)
 
         middleware_obj.process_request(django_request)
         tracer = middleware._get_current_tracer()
@@ -316,7 +321,7 @@ class TestOpencensusMiddleware(unittest.TestCase):
             settings)
 
         with patch_settings:
-            middleware_obj = middleware.OpencensusMiddleware()
+            middleware_obj = middleware.OpencensusMiddleware(get_response)
 
         tb = None
         try:

@@ -146,8 +146,8 @@ def _trace_db_call(execute, sql, params, many, context):
 class OpencensusMiddleware(MiddlewareMixin):
     """Saves the request in thread local"""
 
-    def __init__(self, get_response=None):
-        self.get_response = get_response
+    def __init__(self, get_response):
+        super(OpencensusMiddleware, self).__init__(get_response)
         settings = getattr(django.conf.settings, 'OPENCENSUS', {})
         settings = settings.get('TRACE', {})
 
