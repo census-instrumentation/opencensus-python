@@ -270,7 +270,7 @@ class _StatsbeatMetrics:
         self._network_metrics[_get_average_duration_value] = DerivedDoubleGauge(  # noqa: E501
             _REQ_DURATION_NAME,
             'Statsbeat metric tracking average request duration',
-            'count',
+            'avg',
             _get_network_properties(value="Duration"),
         )
         self._network_metrics[_get_retry_count_value] = DerivedLongGauge(
