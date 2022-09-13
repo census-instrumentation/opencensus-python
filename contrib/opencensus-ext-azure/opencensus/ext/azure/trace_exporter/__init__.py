@@ -136,7 +136,7 @@ class AzureExporter(BaseExporter, TransportMixin, ProcessorMixin):
                 data.url = sd.attributes[HTTP_URL]
                 data.properties['request.url'] = sd.attributes[HTTP_URL]
             if HTTP_STATUS_CODE in sd.attributes:
-                status_code = sd.attributes[HTTP_STATUS_CODE]
+                status_code = int(sd.attributes[HTTP_STATUS_CODE])
                 data.responseCode = str(status_code)
                 data.success = (
                     status_code >= 200 and status_code <= 399
@@ -175,7 +175,7 @@ class AzureExporter(BaseExporter, TransportMixin, ProcessorMixin):
                         data.name = sd.attributes[HTTP_METHOD] \
                             + ' ' + parse_url.path
                 if HTTP_STATUS_CODE in sd.attributes:
-                    status_code = sd.attributes[HTTP_STATUS_CODE]
+                    status_code = int(sd.attributes[HTTP_STATUS_CODE])
                     data.resultCode = str(status_code)
                     data.success = 200 <= status_code < 400
                 elif sd.status.code == 0:

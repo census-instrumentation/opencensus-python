@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import http
 import json
 import os
 import shutil
@@ -21,6 +22,7 @@ import mock
 
 from opencensus.ext.azure import trace_exporter
 from opencensus.ext.azure.common.transport import TransportStatusCode
+from opencensus.trace.attributes_helper import COMMON_ATTRIBUTES
 from opencensus.trace.link import Link
 
 TEST_FOLDER = os.path.abspath('.test.trace.exporter')
@@ -874,5 +876,63 @@ class TestAzureExporter(unittest.TestCase):
             span_kind=SpanKind.CLIENT,
         )))
         self.assertFalse(envelope.data.baseData.success)
+
+        # IntEnum HTTP status code attribute
+        # span_kind=SpanKind.CLIENT
+        envelope = next(exporter.span_data_to_envelope(SpanData(
+            name='test',
+            context=SpanContext(
+                trace_id='6e0c63257de34c90bf9efcd03927272e',
+                span_id='6e0c63257de34c91',
+                trace_options=TraceOptions('1'),
+                tracestate=Tracestate(),
+                from_header=False,
+            ),
+            span_id='6e0c63257de34c92',
+            parent_span_id='6e0c63257de34c93',
+            attributes={
+                COMMON_ATTRIBUTES['HTTP_STATUS_CODE']: http.HTTPStatus.OK,
+            },
+            start_time='2010-10-24T07:28:38.123456Z',
+            end_time='2010-10-24T07:28:38.234567Z',
+            stack_trace=None,
+            links=[],
+            status=Status(0),
+            annotations=None,
+            message_events=None,
+            same_process_as_parent_span=None,
+            child_span_count=None,
+            span_kind=SpanKind.CLIENT,
+        )))
+        self.assertEqual('200', envelope.data.baseData.resultCode)
+        self.assertTrue(envelope.data.baseData.success)
+        # span_kind=SpanKind.SERVER
+        envelope = next(exporter.span_data_to_envelope(SpanData(
+            name='test',
+            context=SpanContext(
+                trace_id='6e0c63257de34c90bf9efcd03927272e',
+                span_id='6e0c63257de34c91',
+                trace_options=TraceOptions('1'),
+                tracestate=Tracestate(),
+                from_header=False,
+            ),
+            span_id='6e0c63257de34c92',
+            parent_span_id='6e0c63257de34c93',
+            attributes={
+                COMMON_ATTRIBUTES['HTTP_STATUS_CODE']: http.HTTPStatus.OK
+            },
+            start_time='2010-10-24T07:28:38.123456Z',
+            end_time='2010-10-24T07:28:38.234567Z',
+            stack_trace=None,
+            links=None,
+            status=Status(0),
+            annotations=None,
+            message_events=None,
+            same_process_as_parent_span=None,
+            child_span_count=None,
+            span_kind=SpanKind.SERVER,
+        )))
+        self.assertEqual('200', envelope.data.baseData.responseCode)
+        self.assertTrue(envelope.data.baseData.success)
 
         exporter._stop()
