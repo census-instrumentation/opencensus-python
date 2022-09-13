@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Fixed resultCode and responseCode for traces when using http.HTTPStatus
+- ([#1163](https://github.com/census-instrumentation/opencensus-python/issues/1163))
+
 ## 1.1.7
 
 Released 2022-08-18
