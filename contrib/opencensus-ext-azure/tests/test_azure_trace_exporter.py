@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import http
+from six.moves import http_client
+
 import json
 import os
 import shutil
@@ -891,7 +892,7 @@ class TestAzureExporter(unittest.TestCase):
             span_id='6e0c63257de34c92',
             parent_span_id='6e0c63257de34c93',
             attributes={
-                COMMON_ATTRIBUTES['HTTP_STATUS_CODE']: http.HTTPStatus.OK,
+                COMMON_ATTRIBUTES['HTTP_STATUS_CODE']: http_client.OK,
             },
             start_time='2010-10-24T07:28:38.123456Z',
             end_time='2010-10-24T07:28:38.234567Z',
@@ -919,7 +920,7 @@ class TestAzureExporter(unittest.TestCase):
             span_id='6e0c63257de34c92',
             parent_span_id='6e0c63257de34c93',
             attributes={
-                COMMON_ATTRIBUTES['HTTP_STATUS_CODE']: http.HTTPStatus.OK
+                COMMON_ATTRIBUTES['HTTP_STATUS_CODE']: http_client.OK,
             },
             start_time='2010-10-24T07:28:38.123456Z',
             end_time='2010-10-24T07:28:38.234567Z',
