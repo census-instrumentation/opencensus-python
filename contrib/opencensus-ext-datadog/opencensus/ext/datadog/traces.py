@@ -201,9 +201,10 @@ class DatadogTraceExporter(base_exporter.Exporter):
             if span.get("status").get("message") is not None:
                 meta["opencensus.status_description"] = span.get("status").get(
                     "message")
-
-            atts = span.get("attributes").get("attributeMap")
-            atts_to_metadata(atts, meta=meta)
+            
+            if span.get("attributes") is not None:
+                atts = span.get("attributes").get("attributeMap")
+                atts_to_metadata(atts, meta=meta)
 
             dd_span["meta"] = meta
             dd_trace.append(dd_span)
