@@ -46,7 +46,7 @@ setup(
     long_description=open('README.rst').read(),
     install_requires=[
         'Django >= 1.11',
-        'opencensus >= 0.9.0, < 1.0.0',
+        'opencensus >= 0.9.dev0, < 1.0.0',
     ],
     extras_require={},
     license='Apache-2.0',
