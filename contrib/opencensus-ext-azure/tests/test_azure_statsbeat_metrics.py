@@ -690,7 +690,7 @@ class TestStatsbeatMetrics(unittest.TestCase):
         _vm_data["subscriptionId"] = "sub123"
         _vm_data["osType"] = "linux"
         stats._vm_data = _vm_data
-        self._vm_retry = True
+        stats._vm_retry = True
         metadata_mock = mock.Mock()
         metadata_mock.return_value = True
         stats._get_azure_compute_metadata = metadata_mock
@@ -714,7 +714,7 @@ class TestStatsbeatMetrics(unittest.TestCase):
         _vm_data["subscriptionId"] = "sub123"
         _vm_data["osType"] = None
         stats._vm_data = _vm_data
-        self._vm_retry = True
+        stats._vm_retry = True
         metadata_mock = mock.Mock()
         metadata_mock.return_value = True
         stats._get_azure_compute_metadata = metadata_mock

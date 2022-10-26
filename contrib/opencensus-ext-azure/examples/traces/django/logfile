@@ -1,0 +1,8 @@
+2022-10-26 15:48:57,700 INFO This is an INFO level log entry.
+2022-10-26 15:48:57,700 WARNING This is a WARNING level log entry.
+2022-10-26 15:48:57,701 ERROR This is an ERROR level log entry.
+2022-10-26 15:48:57,702 CRITICAL This is a CRITICAL level log entry.
+2022-10-26 16:10:22,849 INFO This is an INFO level log entry.
+2022-10-26 16:10:22,850 WARNING This is a WARNING level log entry.
+2022-10-26 16:10:22,850 ERROR This is an ERROR level log entry.
+2022-10-26 16:10:22,850 CRITICAL This is a CRITICAL level log entry.
