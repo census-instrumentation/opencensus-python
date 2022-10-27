@@ -1,3 +1,16 @@
+# Copyright 2019, OpenCensus Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 """
 Django settings for mysite project.
 
@@ -51,7 +64,7 @@ MY_CONNECTION_STRING = "'<your-ikey-here>'"
 OPENCENSUS = {
     'TRACE': {
         'SAMPLER': 'opencensus.trace.samplers.ProbabilitySampler(rate=1.0)',
-        'EXPORTER': 'opencensus.ext.azure.trace_exporter.AzureExporter(connection_string=' + MY_CONNECTION_STRING + ')',
+        'EXPORTER': 'opencensus.ext.azure.trace_exporter.AzureExporter(connection_string=' + MY_CONNECTION_STRING + ')', # noqa: E501
     }
 }
 
@@ -92,16 +105,16 @@ DATABASES = {
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator', # noqa: E501
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator', # noqa: E501
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator', # noqa: E501
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator', # noqa: E501
     },
 ]
 
@@ -150,8 +163,8 @@ LOGGING = {
             'formatter': 'timestamp',
         },
         'logfile': {
-            'level':'DEBUG',
-            'class':'logging.FileHandler',
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
             'formatter': 'timestamp',
             'filename': str(BASE_DIR) + "/../logfile",
         },
@@ -165,7 +178,7 @@ LOGGING = {
     'loggers': {
         'custom': {
             'level': 'INFO',
-            'handlers': ['console', 'logfile','azure']
+            'handlers': ['console', 'logfile', 'azure']
         }
     }
 }
