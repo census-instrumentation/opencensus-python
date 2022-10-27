@@ -1,5 +1,6 @@
-from django.http import HttpResponse
 import logging
+
+from django.http import HttpResponse
 
 from opencensus.ext.azure.trace_exporter import AzureExporter
 
