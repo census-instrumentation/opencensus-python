@@ -94,11 +94,11 @@ class BaseLogHandler(logging.Handler):
 
     # Close is automatically called as part of logging shutdown
     def close(self, timeout=None):
-        if not timeout:
+        if not timeout and hasattr(self, "options"):
             timeout = self.options.grace_period
-        if self.storage:
+        if hasattr(self, "storage") and self.storage:
             self.storage.close()
-        if self._worker:
+        if hasattr(self, "_worker") and self._worker:
             self._worker.stop(timeout)
         super(BaseLogHandler, self).close()
 
@@ -111,8 +111,9 @@ class BaseLogHandler(logging.Handler):
     def log_record_to_envelope(self, record):
         raise NotImplementedError  # pragma: NO COVER
 
+    # Flush is automatically called as part of logging shutdown
     def flush(self, timeout=None):
-        if self._queue.is_empty():
+        if not hasattr(self, "_queue") or self._queue.is_empty():
             return
 
         # We must check the worker thread is alive, because otherwise flush
