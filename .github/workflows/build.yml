@@ -33,7 +33,8 @@ jobs:
         with:
           python-version: ${{ env[matrix.python-version] }}
       - name: Install tox
-        run: pip install -U tox-factor
+        # Pin tox 3 because of https://github.com/rpkilby/tox-factor/issues/18
+        run: pip install -U tox==3.27.1 tox-factor
       - name: Cache tox environment
         uses: actions/cache@v2
         with:
