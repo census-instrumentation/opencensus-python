@@ -43,6 +43,7 @@ def collect_statsbeat_metrics(options):
             exporter = MetricsExporter(
                 is_stats=True,
                 connection_string=_get_stats_connection_string(options.endpoint),  # noqa: E501
+                enable_local_storage=options.enable_local_storage,
                 enable_standard_metrics=False,
                 export_interval=_STATS_SHORT_EXPORT_INTERVAL,  # 15m by default
             )

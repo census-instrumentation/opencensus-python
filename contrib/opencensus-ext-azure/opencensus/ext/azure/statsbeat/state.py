@@ -24,7 +24,8 @@ _STATSBEAT_STATE_LOCK = threading.Lock()
 
 
 def is_statsbeat_enabled():
-    return not os.environ.get("APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL")
+    disabled = os.environ.get("APPLICATIONINSIGHTS_STATSBEAT_DISABLED_ALL")
+    return disabled is None or disabled.lower() != "true"
 
 
 def increment_statsbeat_initial_failure_count():
