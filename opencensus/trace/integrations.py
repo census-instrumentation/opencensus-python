@@ -32,6 +32,7 @@ class _Integrations:
     PYRAMID = 512
     REQUESTS = 1024
     SQLALCHEMY = 2056
+    HTTPX = 4096
 
 
 def get_integrations():
