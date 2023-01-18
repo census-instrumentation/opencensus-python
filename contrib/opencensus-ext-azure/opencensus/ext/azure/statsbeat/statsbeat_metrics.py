@@ -51,6 +51,8 @@ _EU_ENDPOINTS = [
     "swedencentral",
     "switzerlandnorth",
     "switzerlandwest",
+    "uksouth",
+    "ukwest",
 ]
 
 _ATTACH_METRIC_NAME = "Attach"

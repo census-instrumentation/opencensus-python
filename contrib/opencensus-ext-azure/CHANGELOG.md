@@ -4,6 +4,8 @@
 
 - Disable storage for statsbeat if storage is disabled for exporter
 ([#1155](https://github.com/census-instrumentation/opencensus-python/pull/1155))
+- Add UK to eu statsbeats
+([#1181](https://github.com/census-instrumentation/opencensus-python/pull/1181))
 
 ## 1.1.7
 
