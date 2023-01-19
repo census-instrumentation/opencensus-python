@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+# 0.11.1
+Released 2023-01-18
+
+- Updated `azure`, `httpx` modules
+
 # 0.11.0
 Released 2022-08-03
 

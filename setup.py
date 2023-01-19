@@ -42,7 +42,7 @@ setup(
     include_package_data=True,
     long_description=open('README.rst').read(),
     install_requires=[
-        'opencensus-context >= 0.2.dev0',
+        'opencensus-context >= 0.1.3',
         'google-api-core >= 1.0.0, < 2.0.0; python_version<"3.6"',
         'google-api-core >= 1.0.0, < 3.0.0; python_version>="3.6"',
     ],
