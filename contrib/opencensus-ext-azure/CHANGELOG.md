@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 1.1.8
+
+Released 2023-01-18
+
 - Disable storage for statsbeat if storage is disabled for exporter
 ([#1155](https://github.com/census-instrumentation/opencensus-python/pull/1155))
 - Add UK to eu statsbeats
