@@ -78,10 +78,11 @@ class Test_httpx_trace(unittest.TestCase):
         url = "http://localhost:8080/test"
         request_method = "POST"
         kwargs = {}
+        request = httpx.Request(request_method, url, **kwargs)
 
         with patch, patch_thread:
             trace.wrap_client_request(
-                wrapped, "Client.send", (request_method, url), kwargs
+                wrapped, "Client.send", (request,), {}
             )
 
         expected_attributes = {
@@ -134,10 +135,11 @@ class Test_httpx_trace(unittest.TestCase):
 
         url = "http://localhost/"
         request_method = "POST"
+        request = httpx.Request(request_method, url)
 
         with patch_tracer, patch_attr, patch_thread:
             trace.wrap_client_request(
-                wrapped, "Client.send", (request_method, url), {}
+                wrapped, "Client.send", (request,), {}
             )
 
         expected_name = "/"
@@ -167,10 +169,11 @@ class Test_httpx_trace(unittest.TestCase):
 
         url = "http://localhost:8080"
         request_method = "POST"
+        request = httpx.Request(request_method, url)
 
         with patch_tracer, patch_attr, patch_thread:
             trace.wrap_client_request(
-                wrapped, "Client.send", (request_method, url), {}
+                wrapped, "Client.send", (request,), {}
             )
 
         self.assertEqual(None, mock_tracer.current_span)
@@ -199,10 +202,11 @@ class Test_httpx_trace(unittest.TestCase):
 
         url = "http://localhost:8080"
         request_method = "POST"
+        request = httpx.Request(request_method, url)
 
         with patch_tracer, patch_attr, patch_thread:
             trace.wrap_client_request(
-                wrapped, "Client.send", (request_method, url), {}
+                wrapped, "Client.send", (request,), {}
             )
 
         self.assertEqual(None, mock_tracer.current_span)
@@ -227,10 +231,11 @@ class Test_httpx_trace(unittest.TestCase):
         url = "http://localhost:8080"
         request_method = "POST"
         kwargs = {}
+        request = httpx.Request(request_method, url, **kwargs)
 
         with patch, patch_thread:
             trace.wrap_client_request(
-                wrapped, "Client.send", (request_method, url), kwargs
+                wrapped, "Client.send", (request,), {}
             )
 
         self.assertEqual(kwargs["headers"]["x-trace"], "some-value")
@@ -255,10 +260,11 @@ class Test_httpx_trace(unittest.TestCase):
         url = "http://localhost:8080"
         request_method = "POST"
         kwargs = {"headers": {"key": "value"}}
+        request = httpx.Request(request_method, url, **kwargs)
 
         with patch, patch_thread:
             trace.wrap_client_request(
-                wrapped, "Client.send", (request_method, url), kwargs
+                wrapped, "Client.send", (request,), {}
             )
 
         self.assertEqual(kwargs["headers"]["key"], "value")
@@ -285,10 +291,11 @@ class Test_httpx_trace(unittest.TestCase):
         url = "http://localhost:8080"
         request_method = "POST"
         kwargs = {"headers": {"x-trace": "original-value"}}
+        request = httpx.Request(request_method, url, **kwargs)
 
         with patch, patch_thread:
             trace.wrap_client_request(
-                wrapped, "Client.send", (request_method, url), kwargs
+                wrapped, "Client.send", (request,), {}
             )
 
         self.assertEqual(kwargs["headers"]["x-trace"], "some-value")
@@ -315,12 +322,13 @@ class Test_httpx_trace(unittest.TestCase):
         url = "http://localhost:8080/test"
         request_method = "POST"
         kwargs = {}
+        request = httpx.Request(request_method, url, **kwargs)
 
         with patch, patch_thread:
             with self.assertRaises(httpx.TimeoutException):
                 # breakpoint()
                 trace.wrap_client_request(
-                    wrapped, "Client.send", (request_method, url), kwargs
+                    wrapped, "Client.send", (request,), {}
                 )
 
         expected_attributes = {
@@ -367,11 +375,12 @@ class Test_httpx_trace(unittest.TestCase):
         url = "http://localhost:8080/test"
         request_method = "POST"
         kwargs = {}
+        request = httpx.Request(request_method, url, **kwargs)
 
         with patch, patch_thread:
             with self.assertRaises(httpx.InvalidURL):
                 trace.wrap_client_request(
-                    wrapped, "Client.send", (request_method, url), kwargs
+                    wrapped, "Client.send", (request,), {}
                 )
 
         expected_attributes = {
@@ -418,11 +427,12 @@ class Test_httpx_trace(unittest.TestCase):
         url = "http://localhost:8080/test"
         request_method = "POST"
         kwargs = {}
+        request = httpx.Request(request_method, url, **kwargs)
 
         with patch, patch_thread:
             with self.assertRaises(httpx.TooManyRedirects):
                 trace.wrap_client_request(
-                    wrapped, "Client.send", (request_method, url), kwargs
+                    wrapped, "Client.send", (request,), {}
                 )
 
         expected_attributes = {
