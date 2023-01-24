@@ -37,7 +37,7 @@ class Test_httpx_trace(unittest.TestCase):
                 noop_tracer.NoopTracer,
             )
             mock_wrap.assert_called_once_with(
-                trace.MODULE_NAME, "Client.request", trace.wrap_client_request
+                trace.MODULE_NAME, "Client.send", trace.wrap_client_request
             )
 
     def test_trace_integration_set_tracer(self):
@@ -54,7 +54,7 @@ class Test_httpx_trace(unittest.TestCase):
                 execution_context.get_opencensus_tracer(), TmpTracer
             )
             mock_wrap.assert_called_once_with(
-                trace.MODULE_NAME, "Client.request", trace.wrap_client_request
+                trace.MODULE_NAME, "Client.send", trace.wrap_client_request
             )
 
     def test_wrap_client_request(self):
@@ -81,7 +81,7 @@ class Test_httpx_trace(unittest.TestCase):
 
         with patch, patch_thread:
             trace.wrap_client_request(
-                wrapped, "Client.request", (request_method, url), kwargs
+                wrapped, "Client.send", (request_method, url), kwargs
             )
 
         expected_attributes = {
@@ -137,7 +137,7 @@ class Test_httpx_trace(unittest.TestCase):
 
         with patch_tracer, patch_attr, patch_thread:
             trace.wrap_client_request(
-                wrapped, "Client.request", (request_method, url), {}
+                wrapped, "Client.send", (request_method, url), {}
             )
 
         expected_name = "/"
@@ -170,7 +170,7 @@ class Test_httpx_trace(unittest.TestCase):
 
         with patch_tracer, patch_attr, patch_thread:
             trace.wrap_client_request(
-                wrapped, "Client.request", (request_method, url), {}
+                wrapped, "Client.send", (request_method, url), {}
             )
 
         self.assertEqual(None, mock_tracer.current_span)
@@ -202,7 +202,7 @@ class Test_httpx_trace(unittest.TestCase):
 
         with patch_tracer, patch_attr, patch_thread:
             trace.wrap_client_request(
-                wrapped, "Client.request", (request_method, url), {}
+                wrapped, "Client.send", (request_method, url), {}
             )
 
         self.assertEqual(None, mock_tracer.current_span)
@@ -230,7 +230,7 @@ class Test_httpx_trace(unittest.TestCase):
 
         with patch, patch_thread:
             trace.wrap_client_request(
-                wrapped, "Client.request", (request_method, url), kwargs
+                wrapped, "Client.send", (request_method, url), kwargs
             )
 
         self.assertEqual(kwargs["headers"]["x-trace"], "some-value")
@@ -258,7 +258,7 @@ class Test_httpx_trace(unittest.TestCase):
 
         with patch, patch_thread:
             trace.wrap_client_request(
-                wrapped, "Client.request", (request_method, url), kwargs
+                wrapped, "Client.send", (request_method, url), kwargs
             )
 
         self.assertEqual(kwargs["headers"]["key"], "value")
@@ -288,7 +288,7 @@ class Test_httpx_trace(unittest.TestCase):
 
         with patch, patch_thread:
             trace.wrap_client_request(
-                wrapped, "Client.request", (request_method, url), kwargs
+                wrapped, "Client.send", (request_method, url), kwargs
             )
 
         self.assertEqual(kwargs["headers"]["x-trace"], "some-value")
@@ -320,7 +320,7 @@ class Test_httpx_trace(unittest.TestCase):
             with self.assertRaises(httpx.TimeoutException):
                 # breakpoint()
                 trace.wrap_client_request(
-                    wrapped, "Client.request", (request_method, url), kwargs
+                    wrapped, "Client.send", (request_method, url), kwargs
                 )
 
         expected_attributes = {
@@ -371,7 +371,7 @@ class Test_httpx_trace(unittest.TestCase):
         with patch, patch_thread:
             with self.assertRaises(httpx.InvalidURL):
                 trace.wrap_client_request(
-                    wrapped, "Client.request", (request_method, url), kwargs
+                    wrapped, "Client.send", (request_method, url), kwargs
                 )
 
         expected_attributes = {
@@ -422,7 +422,7 @@ class Test_httpx_trace(unittest.TestCase):
         with patch, patch_thread:
             with self.assertRaises(httpx.TooManyRedirects):
                 trace.wrap_client_request(
-                    wrapped, "Client.request", (request_method, url), kwargs
+                    wrapped, "Client.send", (request_method, url), kwargs
                 )
 
         expected_attributes = {
