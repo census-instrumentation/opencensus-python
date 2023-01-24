@@ -41,7 +41,7 @@ def trace_integration(tracer=None):
         execution_context.set_opencensus_tracer(tracer)
 
     wrapt.wrap_function_wrapper(
-        MODULE_NAME, "Client.request", wrap_client_request
+        MODULE_NAME, "Client.send", wrap_client_request
     )
     # pylint: disable=protected-access
     integrations.add_integration(integrations._Integrations.HTTPX)
