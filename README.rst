@@ -241,6 +241,7 @@ Trace Exporter
 .. _Datadog: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-datadog
 .. _Django: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-django
 .. _Flask: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-flask
+.. _FastAPI: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-fastapi
 .. _gevent: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-gevent
 .. _Google Cloud Client Libraries: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-google-cloud-clientlibs
 .. _gRPC: https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-grpc
