@@ -41,33 +41,33 @@ def trace_integration(tracer=None):
         execution_context.set_opencensus_tracer(tracer)
 
     wrapt.wrap_function_wrapper(
-        MODULE_NAME, "Client.send", wrap_client_request
+        MODULE_NAME, "Client.send", wrap_client_send
     )
     # pylint: disable=protected-access
     integrations.add_integration(integrations._Integrations.HTTPX)
 
 
-def wrap_client_request(wrapped, instance, args, kwargs):
+def wrap_client_send(wrapped, instance, args, kwargs):
     """Wrap the session function to trace it."""
     # Check if request was sent from an exporter. If so, do not wrap.
     if execution_context.is_exporter():
         return wrapped(*args, **kwargs)
 
-    method = kwargs.get("method") or args[0]
-    url = kwargs.get("url") or args[1]
-
+    request: httpx.Request = kwargs.get("request") or args[0]
+    method = request.method
+    url: httpx.URL = request.url
+    
     excludelist_hostnames = execution_context.get_opencensus_attr(
         "excludelist_hostnames"
     )
-    parsed_url = urlparse(url)
-    if parsed_url.port is None:
-        dest_url = parsed_url.hostname
+    if url.port is None:
+        dest_url = url.host
     else:
-        dest_url = "{}:{}".format(parsed_url.hostname, parsed_url.port)
+        dest_url = "{}:{}".format(url.host, url.port)
     if utils.disable_tracing_hostname(dest_url, excludelist_hostnames):
         return wrapped(*args, **kwargs)
 
-    path = parsed_url.path if parsed_url.path else "/"
+    path = url.path if url.path else "/"
 
     _tracer = execution_context.get_opencensus_tracer()
     _span = _tracer.start_span()
@@ -77,7 +77,7 @@ def wrap_client_request(wrapped, instance, args, kwargs):
 
     try:
         tracer_headers = _tracer.propagator.to_headers(_tracer.span_context)
-        kwargs.setdefault("headers", {}).update(tracer_headers)
+        request.headers.update(tracer_headers)
     except Exception:  # pragma: NO COVER
         pass
 
