@@ -530,6 +530,7 @@ class TestAzureExporter(unittest.TestCase):
             child_span_count=None,
             span_kind=SpanKind.SERVER,
         )))
+        self.assertEqual(len(envelopes), 2)
 
         envelope = envelopes[0]
         self.assertEqual(

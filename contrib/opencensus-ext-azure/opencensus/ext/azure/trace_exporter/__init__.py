@@ -96,7 +96,8 @@ class AzureExporter(BaseExporter, TransportMixin, ProcessorMixin):
             )
         if sd.span_kind == SpanKind.SERVER:
             if ERROR_MESSAGE in sd.attributes:
-                envelope.name = 'Microsoft.ApplicationInsights.Exception'
+                exception_envelope = Envelope(**envelope)
+                exception_envelope.name = 'Microsoft.ApplicationInsights.Exception'
                 data = ExceptionData(
                     exceptions=[{
                         'id': 1,
@@ -107,8 +108,8 @@ class AzureExporter(BaseExporter, TransportMixin, ProcessorMixin):
                         'parsedStack': sd.attributes.get(STACKTRACE, None)
                     }],
                 )
-                envelope.data = Data(baseData=data, baseType='ExceptionData')
-                yield envelope
+                exception_envelope.data = Data(baseData=data, baseType='ExceptionData')
+                yield exception_envelope
 
             envelope.name = 'Microsoft.ApplicationInsights.Request'
             data = Request(
