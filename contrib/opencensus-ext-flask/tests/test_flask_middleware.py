@@ -15,11 +15,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import sys
 import unittest
 
 import flask
 import mock
-import sys
 from google.rpc import code_pb2
 from werkzeug.exceptions import NotFound
 
