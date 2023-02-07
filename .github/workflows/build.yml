@@ -10,8 +10,7 @@ on:
 
 jobs:
   build:
-    # 18.04 needed for python3.4
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     env:
       # We use these variables to convert between tox and GHA version literals
       py27: 2.7
