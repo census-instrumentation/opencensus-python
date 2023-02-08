@@ -498,7 +498,7 @@ class TestAzureExporter(unittest.TestCase):
             'RequestData')
 
         # SpanKind.SERVER HTTP - with exceptions
-        envelopes = exporter.span_data_to_envelope(SpanData(
+        envelopes = list(exporter.span_data_to_envelope(SpanData(
             name='test',
             context=SpanContext(
                 trace_id='6e0c63257de34c90bf9efcd03927272e',
@@ -529,9 +529,10 @@ class TestAzureExporter(unittest.TestCase):
             same_process_as_parent_span=None,
             child_span_count=None,
             span_kind=SpanKind.SERVER,
-        ))
+        )))
+        self.assertEqual(len(envelopes), 2)
 
-        envelope = next(envelopes)
+        envelope = envelopes[0]
         self.assertEqual(
             envelope.iKey,
             '12345678-1234-5678-abcd-12345678abcd')
@@ -551,7 +552,7 @@ class TestAzureExporter(unittest.TestCase):
             envelope.data.baseType,
             'ExceptionData')
 
-        envelope = next(envelopes)
+        envelope = envelopes[1]
         self.assertEqual(
             envelope.iKey,
             '12345678-1234-5678-abcd-12345678abcd')
