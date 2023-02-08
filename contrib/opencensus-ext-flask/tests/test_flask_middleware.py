@@ -383,6 +383,13 @@ class TestFlaskMiddleware(unittest.TestCase):
             exported_spandata.status.canonical_code, code_pb2.UNKNOWN
         )
         self.assertEqual(exported_spandata.status.description, 'error')
+        self.assertEqual(
+            exported_spandata.attributes["error.name"], 'FlaskTestException'
+        )
+        self.assertEqual(
+            exported_spandata.attributes["error.message"], 'error'
+        )
+        self.assertIsNotNone(exported_spandata.attributes["error.message"])
 
     def test_teardown_include_exception_and_traceback(self):
         mock_exporter = mock.MagicMock()
