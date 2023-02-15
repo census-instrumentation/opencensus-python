@@ -166,8 +166,11 @@ The **Azure Monitor Metrics Exporter** allows you to export metrics to `Azure Mo
 
     def main():
         # Enable metrics
-        # Set the interval in seconds in which you want to send metrics
-        exporter = metrics_exporter.new_metrics_exporter(connection_string='InstrumentationKey=<your-instrumentation-key-here>')
+        # Set the interval in seconds to 60s, which is the time interval application insights
+        # aggregates your metrics
+        exporter = metrics_exporter.new_metrics_exporter(
+            connection_string='InstrumentationKey=<your-instrumentation-key-here>'
+        )
         view_manager.register_exporter(exporter)
 
         view_manager.register_view(CARROTS_VIEW)
@@ -176,7 +179,6 @@ The **Azure Monitor Metrics Exporter** allows you to export metrics to `Azure Mo
 
         mmap.measure_int_put(CARROTS_MEASURE, 1000)
         mmap.record(tmap)
-        # Default export interval is every 15.0s
 
         print("Done recording metrics")
 
@@ -196,10 +198,13 @@ The exporter also includes a set of performance counters that are exported to Az
     from opencensus.ext.azure import metrics_exporter
 
     def main():
-        # All you need is the next line. You can disable performance counters by
+        # Performance counters are sent by default. You can disable performance counters by
         # passing in enable_standard_metrics=False into the constructor of
         # new_metrics_exporter() 
-        _exporter = metrics_exporter.new_metrics_exporter(connection_string='InstrumentationKey=<your-instrumentation-key-here>')
+        _exporter = metrics_exporter.new_metrics_exporter(
+            connection_string='InstrumentationKey=<your-instrumentation-key-here>',
+            export_interval=60,
+        )
         
         for i in range(100):
             print(psutil.virtual_memory())
@@ -256,8 +261,12 @@ Modifying Metrics
 
     def main():
         # Enable metrics
-        # Set the interval in seconds in which you want to send metrics
-        exporter = metrics_exporter.new_metrics_exporter(connection_string='InstrumentationKey=<your-instrumentation-key-here>')
+        # Set the interval in seconds to 60s, which is the time interval application insights
+        # aggregates your metrics
+        exporter = metrics_exporter.new_metrics_exporter(
+            connection_string='InstrumentationKey=<your-instrumentation-key-here>',
+            export_interval=60,
+        )
         exporter.add_telemetry_processor(callback_function)
         view_manager.register_exporter(exporter)
 
@@ -267,7 +276,6 @@ Modifying Metrics
 
         mmap.measure_int_put(CARROTS_MEASURE, 1000)
         mmap.record(tmap)
-        # Default export interval is every 15.0s
 
         print("Done recording metrics")
 

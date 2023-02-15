@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 import time
 
 from opencensus.ext.azure import metrics_exporter
@@ -37,11 +38,12 @@ NUM_REQUESTS_VIEW = view_module.View("Number of Requests",
 
 def main():
     # Enable metrics
-    # Set the interval in seconds in which you want to send metrics
-    # TODO: you need to specify the instrumentation key in a connection string
-    # and place it in the APPLICATIONINSIGHTS_CONNECTION_STRING
-    # environment variable.
-    exporter = metrics_exporter.new_metrics_exporter()
+    # Set the interval in seconds to 60s, which is the time interval application insights
+    # aggregates your metrics
+    exporter = metrics_exporter.new_metrics_exporter(
+        connection_string=os.environ["APPLICATIONINSIGHTS_CONNECTION_STRING"],
+        export_interval=60,
+    )
     view_manager.register_exporter(exporter)
 
     view_manager.register_view(NUM_REQUESTS_VIEW)
