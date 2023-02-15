@@ -5,7 +5,7 @@
 - Fix export of exception information in traces
 ([#1187](https://github.com/census-instrumentation/opencensus-python/pull/1187))
 - Modify metrics exporter to include setting export interval to 60s
-([#1187](https://github.com/census-instrumentation/opencensus-python/pull/1187))
+([#1193](https://github.com/census-instrumentation/opencensus-python/pull/1193))
 
 ## 1.1.8
 

@@ -36,9 +36,8 @@ CARROTS_VIEW = view_module.View("carrots_view",
 
 
 def main():
-    # Enable metrics
-    # Set the interval in seconds to 60s, which is the time interval application insights
-    # aggregates your metrics
+    # Enable metricsSet the interval in seconds to 60s, which is the time
+    # interval application insights aggregates your metrics
     exporter = metrics_exporter.new_metrics_exporter(
         connection_string=os.environ["APPLICATIONINSIGHTS_CONNECTION_STRING"],
         export_interval=60,
