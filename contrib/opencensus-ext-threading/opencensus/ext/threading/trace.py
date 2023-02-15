@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 import logging
 import threading
 from concurrent import futures
@@ -88,8 +89,14 @@ def wrap_apply_async(apply_async_func):
     that will be called and wrap it then add the opencensus context."""
 
     def call(self, func, args=(), kwds={}, **kwargs):
-        wrapped_func = wrap_task_func(func)
         _tracer = execution_context.get_opencensus_tracer()
+
+        from opencensus.trace.tracers.noop_tracer import NoopTracer
+
+        if isinstance(_tracer, NoopTracer):
+            return apply_async_func(self, func, args=args, kwds={}, **kwargs)
+
+        wrapped_func = wrap_task_func(func)
         propagator = binary_format.BinaryFormatPropagator()
 
         wrapped_kwargs = {}
@@ -113,14 +120,21 @@ def wrap_submit(submit_func):
     that will be called and wrap it then add the opencensus context."""
 
     def call(self, func, *args, **kwargs):
-        wrapped_func = wrap_task_func(func)
         _tracer = execution_context.get_opencensus_tracer()
+
+        from opencensus.trace.tracers.noop_tracer import NoopTracer
+
+        if isinstance(_tracer, NoopTracer):
+            return submit_func(self, func, *args, **kwargs)
+
+        wrapped_func = wrap_task_func(func)
         propagator = binary_format.BinaryFormatPropagator()
 
         wrapped_kwargs = {}
         wrapped_kwargs["span_context_binary"] = propagator.to_header(
             _tracer.span_context
         )
+
         wrapped_kwargs["kwds"] = kwargs
         wrapped_kwargs["sampler"] = _tracer.sampler
         wrapped_kwargs["exporter"] = _tracer.exporter
