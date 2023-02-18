@@ -8,7 +8,7 @@ OpenCensus - A stats collection and distributed tracing framework
 |compat_check_pypi|
 |compat_check_github|
 
-
+  
 .. |travisci| image:: https://travis-ci.org/census-instrumentation/opencensus-python.svg?branch=master
     :target: https://travis-ci.org/census-instrumentation/opencensus-python
 .. |circleci| image:: https://circleci.com/gh/census-instrumentation/opencensus-python.svg?style=shield
