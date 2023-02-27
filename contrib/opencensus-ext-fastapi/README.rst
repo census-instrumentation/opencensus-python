@@ -36,7 +36,7 @@ for a complete reference.
 
     app.add_middleware(
         FastAPIMiddleware,
-        excludelist_paths=["pathes"],
+        excludelist_paths=["paths"],
         excludelist_hostnames=["hostnames"],
         sampler=sampler,
         exporter=exporter,
