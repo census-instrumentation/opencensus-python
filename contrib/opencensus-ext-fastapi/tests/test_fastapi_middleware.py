@@ -183,4 +183,5 @@ class TestFastAPIMiddleware(unittest.TestCase):
             mock.call("error.name", "RuntimeError"),
             mock.call("error.message", "bork bork bork"),
             mock.call("stacktrace", "\n".join(traceback.format_tb(tb))),
+            mock.call("http.status_code", 500)
         ])

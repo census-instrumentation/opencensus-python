@@ -33,6 +33,7 @@ from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoin
 from starlette.requests import Request
 from starlette.responses import Response
 from starlette.types import ASGIApp
+from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR
 
 HTTP_HOST = attributes_helper.COMMON_ATTRIBUTES["HTTP_HOST"]
 HTTP_METHOD = attributes_helper.COMMON_ATTRIBUTES["HTTP_METHOD"]
@@ -128,6 +129,7 @@ class FastAPIMiddleware(BaseHTTPMiddleware):
         span.add_attribute(ERROR_NAME, exception.__class__.__name__)
         span.add_attribute(ERROR_MESSAGE, str(exception))
         span.add_attribute(STACKTRACE, "\n".join(traceback.format_tb(exception.__traceback__)))
+        span.add_attribute(HTTP_STATUS_CODE, HTTP_500_INTERNAL_SERVER_ERROR)
 
     async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
 
