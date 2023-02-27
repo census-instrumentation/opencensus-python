@@ -19,8 +19,8 @@ from version import __version__
 setup(
     name='opencensus-ext-fastapi',
     version=__version__,  # noqa
-    author='Taishi Ikai',
-    author_email='ikai1026@gmail.com',
+    author='OpenCensus Authors',
+    author_email='census-developers@googlegroups.com',
     classifiers=[
         'Intended Audience :: Developers',
         'Development Status :: 3 - Alpha',
