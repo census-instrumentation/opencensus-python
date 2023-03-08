@@ -16,6 +16,15 @@ import logging
 import traceback
 from typing import Union
 
+from starlette.middleware.base import (
+    BaseHTTPMiddleware,
+    RequestResponseEndpoint,
+)
+from starlette.requests import Request
+from starlette.responses import Response
+from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR
+from starlette.types import ASGIApp
+
 from opencensus.trace import (
     attributes_helper,
     execution_context,
@@ -24,16 +33,11 @@ from opencensus.trace import (
     samplers,
 )
 from opencensus.trace import span as span_module
-from opencensus.trace.blank_span import BlankSpan
-from opencensus.trace.span import Span
 from opencensus.trace import tracer as tracer_module
 from opencensus.trace import utils
+from opencensus.trace.blank_span import BlankSpan
 from opencensus.trace.propagation import trace_context_http_header_format
-from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
-from starlette.requests import Request
-from starlette.responses import Response
-from starlette.types import ASGIApp
-from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR
+from opencensus.trace.span import Span
 
 HTTP_HOST = attributes_helper.COMMON_ATTRIBUTES["HTTP_HOST"]
 HTTP_METHOD = attributes_helper.COMMON_ATTRIBUTES["HTTP_METHOD"]
@@ -95,7 +99,10 @@ class FastAPIMiddleware(BaseHTTPMiddleware):
         self.excludelist_hostnames = excludelist_hostnames
         self.sampler = sampler or samplers.AlwaysOnSampler()
         self.exporter = exporter or print_exporter.PrintExporter()
-        self.propagator = propagator or trace_context_http_header_format.TraceContextPropagator()
+        self.propagator = (
+            propagator or
+            trace_context_http_header_format.TraceContextPropagator()
+        )
 
         # pylint: disable=protected-access
         integrations.add_integration(integrations._Integrations.FASTAPI)
@@ -125,13 +132,18 @@ class FastAPIMiddleware(BaseHTTPMiddleware):
     def _after_request(self, span: Union[Span, BlankSpan], response: Response):
         span.add_attribute(HTTP_STATUS_CODE, response.status_code)
 
-    def _handle_exception(self, span: Union[Span, BlankSpan], exception: Exception):
+    def _handle_exception(self,
+                          span: Union[Span, BlankSpan], exception: Exception):
         span.add_attribute(ERROR_NAME, exception.__class__.__name__)
         span.add_attribute(ERROR_MESSAGE, str(exception))
-        span.add_attribute(STACKTRACE, "\n".join(traceback.format_tb(exception.__traceback__)))
+        span.add_attribute(
+            STACKTRACE,
+            "\n".join(traceback.format_tb(exception.__traceback__)))
         span.add_attribute(HTTP_STATUS_CODE, HTTP_500_INTERNAL_SERVER_ERROR)
 
-    async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
+    async def dispatch(
+        self, request: Request, call_next: RequestResponseEndpoint
+    ) -> Response:
 
         # Do not trace if the url is in the exclude list
         if utils.disable_tracing_url(str(request.url), self.excludelist_paths):
