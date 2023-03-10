@@ -33,7 +33,7 @@ setup(
     ],
     description="OpenCensus HTTPX Integration",
     include_package_data=True,
-    long_description="",
+    long_description=open('README.rst').read(),
     install_requires=["opencensus >= 0.11.1, < 1.0.0", "httpx >= 0.22.0"],
     extras_require={},
     license="Apache-2.0",

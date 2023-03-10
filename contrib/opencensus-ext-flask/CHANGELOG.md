@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## 0.8.2
+Released 2023-03-10
+
+- Add exception information to span attributes
+([#1188](https://github.com/census-instrumentation/opencensus-python/pull/1188))
+
 ## 0.8.1
 Released 2022-08-03
 

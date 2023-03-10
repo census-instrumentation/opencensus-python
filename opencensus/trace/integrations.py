@@ -33,6 +33,7 @@ class _Integrations:
     REQUESTS = 1024
     SQLALCHEMY = 2056
     HTTPX = 4096
+    FASTAPI = 8192
 
 
 def get_integrations():
