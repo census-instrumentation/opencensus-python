@@ -1,0 +1,108 @@
+/* style for visavail.js */
+.rect_has_data {
+    /* blocks that have data */
+    fill: #fa8072;
+}
+
+.rect_has_data:hover {
+    fill: #c9302c
+}
+
+.rect_has_no_data {
+    /* blocks without data */
+    fill: #fa8072;
+}
+
+.rect_has_no_data:hover {
+    fill: #c9302c;
+}
+
+.tooltip_has_data {
+    /* color of symbol in tooltip if there is data */
+    color: #449d44;
+}
+
+.tooltip_has_no_data {
+    /* color of symbol in tooltip if there is no data */
+    color: #c9302c;
+}
+
+div.tooltip {
+    position: absolute;
+    text-align: left;
+    font-family: "Muli", "Helvetica", Arial, sans-serif;
+    -moz-osx-font-smoothing: grayscale;
+    font-size: 10px;
+    padding-left: 0;
+    width: auto;
+    border: 0;
+    border-left: thin solid #000000;
+    pointer-events: none;
+    line-height: 12px;
+    padding-top: 0;
+    display: block;
+}
+
+.x_tick_emph {
+    font-weight: bold;
+}
+
+.ytitle {
+    /* y axis labels */
+    dominant-baseline: middle;
+    font-family: "Muli", "Helvetica", Arial, sans-serif;
+    -moz-osx-font-smoothing: grayscale;
+    font-size: 12px;
+}
+
+.axis path,
+.axis line {
+    display: none;
+}
+
+.axis text {
+    font-size: 12px;
+    font-family: "Muli", "Helvetica", Arial, sans-serif;
+    -moz-osx-font-smoothing: grayscale;
+    fill: #777;
+}
+
+.vert_grid {
+    fill: none;
+    stroke: #dddddd;
+    stroke-width: 1px;
+}
+
+.vert_grid_emph {
+    fill: none;
+    stroke: #dddddd;
+    stroke-width: 2px;
+}
+
+.horz_grid {
+    fill: none;
+    stroke: #dddddd;
+    stroke-width: 1px;
+}
+
+.heading {
+    font-size: 16px;
+    font-family: "Muli", "Helvetica", Arial, sans-serif;
+    -moz-osx-font-smoothing: grayscale;
+    font-weight: bold;
+}
+
+.subheading {
+    font-size: 12px;
+    font-family: "Muli", "Helvetica", Arial, sans-serif;
+    -moz-osx-font-smoothing: grayscale;
+    fill: #777;
+}
+
+.legend {
+    dominant-baseline: middle;
+    font-size: 12px;
+    font-family: "Muli", "Helvetica", Arial, sans-serif;
+    -moz-osx-font-smoothing: grayscale;
+    fill: #777;
+}

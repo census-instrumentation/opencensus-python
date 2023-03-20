@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block title %}
+<h1 class="col-md-6 col-md-offset-3">Welcome to OpenCensus Trace ZPages!</h1>
+{% endblock %}
+
+{% block content %}
+<div class="row" id="header">
+   <div class="col-lg-12">
+      <h1 class="page-header" >
+         Trace Configs:
+         <input id="sampler" value="{{sampler}}"/>
+         <input id="exporter" value="{{exporter}}">
+         <input id="propagator" value="{{propagator}}"/>
+      </h1>
+   </div>
+</div>
+{% endblock %}
+{% block scripts %}
+{% endblock %}
