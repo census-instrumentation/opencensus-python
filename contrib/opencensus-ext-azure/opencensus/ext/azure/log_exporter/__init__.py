@@ -204,7 +204,7 @@ class AzureLogHandler(BaseLogHandler, TransportMixin, ProcessorMixin):
             'level': record.levelname,
         }
         if (hasattr(record, 'custom_dimensions') and
-                isinstance(record.custom_dimensions, dict)) :
+                isinstance(record.custom_dimensions, dict)):
             properties.update(record.custom_dimensions)
         elif (hasattr(record, 'extra') and
                 isinstance(record.extra, dict)):
