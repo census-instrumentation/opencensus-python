@@ -206,6 +206,9 @@ class AzureLogHandler(BaseLogHandler, TransportMixin, ProcessorMixin):
         if (hasattr(record, 'custom_dimensions') and
                 isinstance(record.custom_dimensions, dict)):
             properties.update(record.custom_dimensions)
+        elif (hasattr(record, 'extra') and
+                isinstance(record.extra, dict)):
+            properties.update(record.extra)
 
         if record.exc_info:
             exctype, _value, tb = record.exc_info
@@ -273,6 +276,9 @@ class AzureEventHandler(TransportMixin, ProcessorMixin, BaseLogHandler):
         if (hasattr(record, 'custom_dimensions') and
                 isinstance(record.custom_dimensions, dict)):
             properties.update(record.custom_dimensions)
+        elif (hasattr(record, 'extra') and
+                isinstance(record.extra, dict)):
+            properties.update(record.extra)
 
         measurements = {}
         if (hasattr(record, 'custom_measurements') and
