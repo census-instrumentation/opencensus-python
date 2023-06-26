@@ -14,6 +14,7 @@
 
 import os
 import unittest
+from unittest.mock import patch
 
 from opencensus.ext.azure import common
 
@@ -107,6 +108,22 @@ class TestOptions(unittest.TestCase):
             options.proxies,
             '{"https": "https://test-proxy.com"}'
         )
+
+    @patch("opencensus.ext.azure.common.tempfile")
+    def test_process_options_enable_local_storage(self, mock_tempfile):
+        options = common.Options()
+
+        self.assertTrue(options.enable_local_storage)
+        self.assertIsNotNone(options.storage_path)
+        mock_tempfile.gettempdir.assert_called_once()
+
+    @patch("opencensus.ext.azure.common.tempfile")
+    def test_process_options_disable_local_storage(self, mock_tempfile):
+        options = common.Options(enable_local_storage = False)
+
+        self.assertFalse(options.enable_local_storage, False)
+        self.assertIsNone(options.storage_path)
+        mock_tempfile.gettempdir.assert_not_called()
 
     def test_parse_connection_string_none(self):
         cs = None
