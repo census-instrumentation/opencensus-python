@@ -54,6 +54,6 @@ jobs:
         uses: actions/cache@v2
         with:
           path: .tox-27
-          key: v1-tox-27-${{ hashFiles('tox.ini', '**/setup.py') }}
+          key: v1-tox-27-${{ hashFiles('tox-2.7.ini', '**/setup.py') }}
       - name: Run tox for Python 2.7
-        run: tox -e py27
+        run: tox -c tox-2.7.ini
