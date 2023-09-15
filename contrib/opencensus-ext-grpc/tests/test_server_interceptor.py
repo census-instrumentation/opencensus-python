@@ -14,6 +14,7 @@
 
 import unittest
 
+import grpc
 import mock
 from google.rpc import code_pb2
 
@@ -21,6 +22,9 @@ from opencensus.ext.grpc import server_interceptor
 from opencensus.ext.grpc import utils as grpc_utils
 from opencensus.trace import execution_context
 from opencensus.trace import span as span_module
+
+MOCK_HOST = b'localhost:5000'
+MOCK_METHOD = b'/helloworld.Greeter/SayHello'
 
 
 class TestOpenCensusServerInterceptor(unittest.TestCase):
@@ -38,7 +42,10 @@ class TestOpenCensusServerInterceptor(unittest.TestCase):
             '.tracer_module.Tracer', MockTracer)
         mock_context = mock.Mock()
         mock_context.invocation_metadata = mock.Mock(return_value=None)
-        mock_context._rpc_event.call_details.method = 'hello'
+
+        mock_context._rpc_event.call_details.host = MOCK_HOST
+        mock_context._rpc_event.call_details.method = MOCK_METHOD
+        mock_context._state.code = grpc.StatusCode.OK
         interceptor = server_interceptor.OpenCensusServerInterceptor(
             None, None)
         mock_handler = mock.Mock()
@@ -53,6 +60,13 @@ class TestOpenCensusServerInterceptor(unittest.TestCase):
 
         expected_attributes = {
             'component': 'grpc',
+            'grpc.method': '/helloworld.Greeter/SayHello',
+            'http.host': 'localhost:5000',
+            'http.method': 'POST',
+            'http.route': '/helloworld.Greeter/SayHello',
+            'http.path': '/helloworld.Greeter/SayHello',
+            'http.url': 'grpc://localhost:5000/helloworld.Greeter/SayHello',
+            'http.status_code': 200
         }
 
         self.assertEqual(
@@ -78,7 +92,9 @@ class TestOpenCensusServerInterceptor(unittest.TestCase):
             mock_handler.response_streaming = rsp_streaming
             mock_continuation = mock.Mock(return_value=mock_handler)
 
-            mock_context._rpc_event.call_details.method = 'hello'
+            mock_context._rpc_event.call_details.host = MOCK_HOST
+            mock_context._rpc_event.call_details.method = MOCK_METHOD
+            mock_context._state.code = grpc.StatusCode.OK
             interceptor = server_interceptor.OpenCensusServerInterceptor(
                 None, None)
 
@@ -89,6 +105,13 @@ class TestOpenCensusServerInterceptor(unittest.TestCase):
 
             expected_attributes = {
                 'component': 'grpc',
+                'grpc.method': '/helloworld.Greeter/SayHello',
+                'http.host': 'localhost:5000',
+                'http.method': 'POST',
+                'http.route': '/helloworld.Greeter/SayHello',
+                'http.path': '/helloworld.Greeter/SayHello',
+                'http.url': 'grpc://localhost:5000/helloworld.Greeter/SayHello',    # noqa: E501
+                'http.status_code': 200
             }
 
             self.assertEqual(
@@ -110,7 +133,9 @@ class TestOpenCensusServerInterceptor(unittest.TestCase):
                 None, None)
             mock_context = mock.Mock()
             mock_context.invocation_metadata = mock.Mock(return_value=None)
-            mock_context._rpc_event.call_details.method = 'hello'
+
+            mock_context._rpc_event.call_details.host = MOCK_HOST
+            mock_context._rpc_event.call_details.method = MOCK_METHOD
             mock_handler = mock.Mock()
             mock_handler.request_streaming = req_streaming
             mock_handler.response_streaming = rsp_streaming
@@ -128,6 +153,13 @@ class TestOpenCensusServerInterceptor(unittest.TestCase):
 
             expected_attributes = {
                 'component': 'grpc',
+                'grpc.method': '/helloworld.Greeter/SayHello',
+                'http.host': 'localhost:5000',
+                'http.method': 'POST',
+                'http.route': '/helloworld.Greeter/SayHello',
+                'http.path': '/helloworld.Greeter/SayHello',
+                'http.url': 'grpc://localhost:5000/helloworld.Greeter/SayHello',    # noqa: E501
+                'http.status_code': 500,
                 'error.message': 'Test'
             }
 

@@ -13,7 +13,6 @@ jobs:
     runs-on: ubuntu-20.04
     env:
       # We use these variables to convert between tox and GHA version literals
-      py27: 2.7
       py35: 3.5
       py36: 3.6
       py37: 3.7
@@ -23,7 +22,7 @@ jobs:
       # ensures the entire test matrix is run, even if one permutation fails
       fail-fast: false
       matrix:
-        python-version: [py27, py35, py36, py37, py38, py39]
+        python-version: [py35, py36, py37, py38, py39]
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -42,3 +41,21 @@ jobs:
           key: v1-tox-${{ matrix.python-version }}-${{ hashFiles('tox.ini', '**/setup.py') }}
       - name: run tox
         run: tox -f ${{ matrix.python-version }}
+  build-27:
+    runs-on: ubuntu-20.04
+    container:
+      image: python:2.7.18-buster
+    env:
+      py27: 2.7
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Install tox
+        run: pip install -U tox==3.27.1 tox-factor
+      - name: Cache tox environment
+        uses: actions/cache@v2
+        with:
+          path: .tox
+          key: v1-tox-27-${{ hashFiles('tox.ini', '**/setup.py') }}
+      - name: Run tox for Python 2.7
+        run: tox -f py27
