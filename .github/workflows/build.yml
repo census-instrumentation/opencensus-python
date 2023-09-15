@@ -51,7 +51,7 @@ jobs:
       # ensures the entire test matrix is run, even if one permutation fails
       fail-fast: false
       matrix:
-        python-version: [py37]
+        python-version: [py27]
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
