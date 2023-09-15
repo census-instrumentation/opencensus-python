@@ -25,10 +25,39 @@ from opencensus.trace import status, time_event
 from opencensus.trace import tracer as tracer_module
 from opencensus.trace.propagation import binary_format
 
-ATTRIBUTE_COMPONENT = 'COMPONENT'
-ATTRIBUTE_ERROR_NAME = 'ERROR_NAME'
-ATTRIBUTE_ERROR_MESSAGE = 'ERROR_MESSAGE'
+COMPONENT = attributes_helper.COMMON_ATTRIBUTES['COMPONENT']
+ERROR_NAME = attributes_helper.COMMON_ATTRIBUTES['ERROR_NAME']
+ERROR_MESSAGE = attributes_helper.COMMON_ATTRIBUTES['ERROR_MESSAGE']
+
+HTTP_HOST = attributes_helper.COMMON_ATTRIBUTES['HTTP_HOST']
+HTTP_METHOD = attributes_helper.COMMON_ATTRIBUTES['HTTP_METHOD']
+HTTP_PATH = attributes_helper.COMMON_ATTRIBUTES['HTTP_PATH']
+HTTP_ROUTE = attributes_helper.COMMON_ATTRIBUTES['HTTP_ROUTE']
+HTTP_URL = attributes_helper.COMMON_ATTRIBUTES['HTTP_URL']
+HTTP_STATUS_CODE = attributes_helper.COMMON_ATTRIBUTES['HTTP_STATUS_CODE']
+GRPC_METHOD = attributes_helper.GRPC_ATTRIBUTES['GRPC_METHOD']
+
 RECV_PREFIX = 'Recv'
+
+GRPC_HTTP_STATUS_MAPPING = {
+    grpc.StatusCode.OK: 200,
+    grpc.StatusCode.FAILED_PRECONDITION: 400,
+    grpc.StatusCode.INVALID_ARGUMENT: 400,
+    grpc.StatusCode.OUT_OF_RANGE: 400,
+    grpc.StatusCode.UNAUTHENTICATED: 401,
+    grpc.StatusCode.PERMISSION_DENIED: 403,
+    grpc.StatusCode.NOT_FOUND: 404,
+    grpc.StatusCode.ABORTED: 409,
+    grpc.StatusCode.ALREADY_EXISTS: 409,
+    grpc.StatusCode.RESOURCE_EXHAUSTED: 429,
+    grpc.StatusCode.CANCELLED: 499,
+    grpc.StatusCode.UNKNOWN: 500,
+    grpc.StatusCode.INTERNAL: 500,
+    grpc.StatusCode.DATA_LOSS: 500,
+    grpc.StatusCode.UNIMPLEMENTED: 501,
+    grpc.StatusCode.UNAVAILABLE: 503,
+    grpc.StatusCode.DEADLINE_EXCEEDED: 504
+}
 
 
 class OpenCensusServerInterceptor(grpc.ServerInterceptor):
@@ -56,6 +85,12 @@ class OpenCensusServerInterceptor(grpc.ServerInterceptor):
                     # invoke the original rpc behavior
                     response_or_iterator = behavior(request_or_iterator,
                                                     servicer_context)
+
+                    http_status_code = _convert_grpc_code_to_http_status_code(
+                        servicer_context._state.code
+                    )
+                    span.add_attribute(HTTP_STATUS_CODE, http_status_code)
+
                     if response_streaming:
                         response_or_iterator = grpc_utils.wrap_iter_with_message_events(  # noqa: E501
                             request_or_response_iter=response_or_iterator,
@@ -107,28 +142,60 @@ class OpenCensusServerInterceptor(grpc.ServerInterceptor):
         )
 
         span.span_kind = span_module.SpanKind.SERVER
+
+        grpc_call_details = servicer_context._rpc_event.call_details
+        grpc_host = grpc_call_details.host.decode('utf-8')
+        grpc_method = grpc_call_details.method.decode('utf-8')
+
         tracer.add_attribute_to_current_span(
-            attribute_key=attributes_helper.COMMON_ATTRIBUTES.get(
-                ATTRIBUTE_COMPONENT),
-            attribute_value='grpc')
+            COMPONENT, 'grpc'
+        )
+        tracer.add_attribute_to_current_span(
+            GRPC_METHOD, grpc_method
+        )
+
+        tracer.add_attribute_to_current_span(
+            HTTP_HOST, grpc_host
+        )
+        tracer.add_attribute_to_current_span(
+            HTTP_METHOD, 'POST'
+        )
+        tracer.add_attribute_to_current_span(
+            HTTP_ROUTE, grpc_method
+        )
+        tracer.add_attribute_to_current_span(
+            HTTP_PATH, grpc_method
+        )
+        tracer.add_attribute_to_current_span(
+            HTTP_URL, 'grpc://' + grpc_host + grpc_method
+        )
 
         execution_context.set_opencensus_tracer(tracer)
         execution_context.set_current_span(span)
         return span
 
 
+def _convert_grpc_code_to_http_status_code(grpc_state_code):
+    """
+    Converts a gRPC state code into the corresponding HTTP response status.
+    See:
+    https://github.com/googleapis/googleapis/blob/master/google/rpc/code.proto
+    """
+    if grpc_state_code is None:
+        return 200
+    else:
+        return GRPC_HTTP_STATUS_MAPPING.get(grpc_state_code, 500)
+
+
 def _add_exc_info(span):
     exc_type, exc_value, tb = sys.exc_info()
-    span.add_attribute(
-        attributes_helper.COMMON_ATTRIBUTES.get(
-            ATTRIBUTE_ERROR_MESSAGE),
-        str(exc_value)
-    )
+    span.add_attribute(ERROR_MESSAGE, str(exc_value))
     span.stack_trace = stack_trace.StackTrace.from_traceback(tb)
     span.status = status.Status(
         code=code_pb2.UNKNOWN,
         message=str(exc_value)
     )
+    span.add_attribute(HTTP_STATUS_CODE, 500)
 
 
 def _wrap_rpc_behavior(handler, fn):
