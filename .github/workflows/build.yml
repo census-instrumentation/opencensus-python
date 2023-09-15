@@ -45,6 +45,8 @@ jobs:
     runs-on: ubuntu-20.04
     container:
       image: python:2.7.18-buster
+    env:
+      py27: 2.7
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -53,7 +55,7 @@ jobs:
       - name: Cache tox environment
         uses: actions/cache@v2
         with:
-          path: .tox-27
-          key: v1-tox-27-${{ hashFiles('tox-2.7.ini', '**/setup.py') }}
+          path: .tox
+          key: v1-tox-27-${{ hashFiles('tox.ini', '**/setup.py') }}
       - name: Run tox for Python 2.7
-        run: tox -c tox-2.7.ini
+        run: tox -c tox.ini
