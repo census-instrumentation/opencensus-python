@@ -47,11 +47,6 @@ jobs:
       image: python:2.7.18-buster
     env:
       py27: 2.7
-    strategy:
-      # ensures the entire test matrix is run, even if one permutation fails
-      fail-fast: false
-      matrix:
-        python-version: [py27]
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -63,4 +58,4 @@ jobs:
           path: .tox
           key: v1-tox-27-${{ hashFiles('tox.ini', '**/setup.py') }}
       - name: Run tox for Python 2.7
-        run: tox -c tox.ini
+        run: tox -f py27
