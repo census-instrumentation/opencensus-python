@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## 1.1.10
+
+Released 2023-09-18
+
+- Various bug fixes
+
 ## 1.1.9
 
 Released 2023-03-10
