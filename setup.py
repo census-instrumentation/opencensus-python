@@ -45,6 +45,7 @@ setup(
         'opencensus-context >= 0.2.dev0',
         'google-api-core >= 1.0.0, < 2.0.0; python_version<"3.6"',
         'google-api-core >= 1.0.0, < 3.0.0; python_version>="3.6"',
+        "six ~= 1.16.0",
     ],
     extras_require={},
     license='Apache-2.0',
