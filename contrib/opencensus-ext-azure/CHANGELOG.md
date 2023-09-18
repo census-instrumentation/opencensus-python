@@ -4,12 +4,8 @@
 
 ## 1.1.10
 
-Released 2023-01-18
+Released 2023-09-18
 
-- Fix export of exception information in traces
-([#1187](https://github.com/census-instrumentation/opencensus-python/pull/1187))
-- Modify metrics exporter to include setting export interval to 60s
-([#1193](https://github.com/census-instrumentation/opencensus-python/pull/1193))
 - Add str fallback to envelope serialization
 ([#1196](https://github.com/census-instrumentation/opencensus-python/pull/1196))
 
