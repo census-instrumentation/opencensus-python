@@ -10,7 +10,6 @@ Released 2023-09-18
 # 0.11.2
 Released 2023-03-10
 
-
 - Updated `azure`, `fastapi`, `flask` modules
 
 # 0.11.1
