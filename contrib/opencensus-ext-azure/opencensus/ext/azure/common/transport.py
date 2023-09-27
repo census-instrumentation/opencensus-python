@@ -111,13 +111,16 @@ class TransportMixin(object):
                 token = self.options.credential.get_token(_MONITOR_OAUTH_SCOPE)
                 headers["Authorization"] = "Bearer {}".format(token.token)
             endpoint += '/v2.1/track'
+            proxies=json.loads(self.options.proxies)
+            allow_redirects=len(proxies) != 0
+
             response = requests.post(
                 url=endpoint,
-                data=json.dumps(envelopes, default=str),
+                data=json.dumps(envelopes),
                 headers=headers,
                 timeout=self.options.timeout,
-                proxies=json.loads(self.options.proxies),
-                allow_redirects=False,
+                proxies=proxies,
+                allow_redirects=allow_redirects,
             )
         except requests.Timeout as ex:
             if not self._is_stats_exporter():
