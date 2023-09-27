@@ -116,7 +116,7 @@ class TransportMixin(object):
 
             response = requests.post(
                 url=endpoint,
-                data=json.dumps(envelopes),
+                data=json.dumps(envelopes, default=str),
                 headers=headers,
                 timeout=self.options.timeout,
                 proxies=proxies,
