@@ -111,8 +111,8 @@ class TransportMixin(object):
                 token = self.options.credential.get_token(_MONITOR_OAUTH_SCOPE)
                 headers["Authorization"] = "Bearer {}".format(token.token)
             endpoint += '/v2.1/track'
-            proxies=json.loads(self.options.proxies)
-            allow_redirects=len(proxies) != 0
+            proxies = json.loads(self.options.proxies)
+            allow_redirects = len(proxies) != 0
 
             response = requests.post(
                 url=endpoint,
