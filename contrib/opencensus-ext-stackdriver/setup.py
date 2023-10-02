@@ -13,40 +13,44 @@
 # limitations under the License.
 
 from setuptools import find_packages, setup
-
 from version import __version__
 
 setup(
-    name='opencensus-ext-stackdriver',
+    name="opencensus-ext-stackdriver",
     version=__version__,  # noqa
-    author='OpenCensus Authors',
-    author_email='census-developers@googlegroups.com',
+    author="OpenCensus Authors",
+    author_email="census-developers@googlegroups.com",
     classifiers=[
-        'Intended Audience :: Developers',
-        'Development Status :: 3 - Alpha',
-        'Intended Audience :: Developers',
-        'License :: OSI Approved :: Apache Software License',
-        'Programming Language :: Python',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.7',
-        'Programming Language :: Python :: 3.8',
-        'Programming Language :: Python :: 3.9',
+        "Intended Audience :: Developers",
+        "Development Status :: 3 - Alpha",
+        "Intended Audience :: Developers",
+        "License :: OSI Approved :: Apache Software License",
+        "Programming Language :: Python",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
     ],
-    description='OpenCensus Stackdriver Trace Exporter',
+    description="OpenCensus Stackdriver Trace Exporter",
     include_package_data=True,
-    long_description=open('README.rst').read(),
+    long_description=open("README.rst").read(),
     install_requires=[
-        'google-cloud-monitoring ~= 2.0',
-        'google-cloud-trace >= 0.20.0, < 1.0.0',
+        "google-cloud-monitoring ~= 2.0",
+        "google-cloud-trace >= 0.20.0",
         'rsa <= 4.0; python_version<="3.4"',
-        'opencensus >= 0.9.dev0, < 1.0.0',
+        "opencensus >= 0.9.dev0, < 1.0.0",
     ],
     python_requires=">=3.6",
     extras_require={},
-    license='Apache-2.0',
-    packages=find_packages(exclude=('examples', 'tests',)),
+    license="Apache-2.0",
+    packages=find_packages(
+        exclude=(
+            "examples",
+            "tests",
+        )
+    ),
     namespace_packages=[],
-    url='https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-stackdriver',  # noqa: E501
+    url="https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-stackdriver",  # noqa: E501
     zip_safe=False,
 )
