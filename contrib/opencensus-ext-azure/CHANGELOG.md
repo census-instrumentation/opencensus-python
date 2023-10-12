@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+## 1.1.11
+
+- Add str fallback to envelope serialization
+([#1196](https://github.com/census-instrumentation/opencensus-python/pull/1196))
+- Remove outerId from exceptiondata
+([#1221](https://github.com/census-instrumentation/opencensus-python/pull/1221))
+
 ## 1.1.10
 
 Released 2023-09-18

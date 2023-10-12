@@ -101,7 +101,7 @@ class AzureExporter(BaseExporter, TransportMixin, ProcessorMixin):
                 data = ExceptionData(
                     exceptions=[{
                         'id': 1,
-                        'outerId': '{}'.format(sd.span_id),
+                        'outerId': 0,
                         'typeName': sd.attributes.get(ERROR_NAME, ''),
                         'message': sd.attributes[ERROR_MESSAGE],
                         'hasFullStack': STACKTRACE in sd.attributes,
