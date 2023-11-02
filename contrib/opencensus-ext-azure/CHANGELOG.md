@@ -3,7 +3,7 @@
 ## Unreleased
 
 - Fix missing/None fields in `ExceptionDetails`
-([#1196](https://github.com/census-instrumentation/opencensus-python/pull/1196))
+([#1232](https://github.com/census-instrumentation/opencensus-python/pull/1232))
 
 ## 1.1.11
 
