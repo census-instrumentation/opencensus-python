@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Fix missing/None fields in `ExceptionDetails`
+([#1232](https://github.com/census-instrumentation/opencensus-python/pull/1232))
+
 ## 1.1.11
 
 Released 2023-10-12

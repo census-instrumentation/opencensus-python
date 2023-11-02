@@ -231,6 +231,11 @@ class AzureLogHandler(BaseLogHandler, TransportMixin, ProcessorMixin):
             if exctype is not None:
                 exc_type = exctype.__name__
 
+            if not exc_type:
+                exc_type = "Exception"
+            if not message:
+                message = "Exception"
+
             envelope.name = 'Microsoft.ApplicationInsights.Exception'
 
             data = ExceptionData(
