@@ -102,13 +102,14 @@ class AzureExporter(BaseExporter, TransportMixin, ProcessorMixin):
                 stack_trace = sd.attributes.get(STACKTRACE, [])
                 if not hasattr(stack_trace, '__iter__'):
                     stack_trace = []
+                type_name = sd.attributes.get(ERROR_NAME, 'Exception')
                 exc_env = Envelope(**envelope)
                 exc_env.name = 'Microsoft.ApplicationInsights.Exception'
                 data = ExceptionData(
                     exceptions=[{
                         'id': 1,
                         'outerId': 0,
-                        'typeName': sd.attributes.get(ERROR_NAME, ''),
+                        'typeName': type_name,
                         'message': message,
                         'hasFullStack': STACKTRACE in sd.attributes,
                         'parsedStack': stack_trace
