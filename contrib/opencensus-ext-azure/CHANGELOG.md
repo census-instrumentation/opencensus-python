@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 1.1.12
+
 - Fix missing/None fields in `ExceptionDetails`
 ([#1232](https://github.com/census-instrumentation/opencensus-python/pull/1232))
 - Fix missing/None typeName field in `ExceptionDetails`
