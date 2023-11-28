@@ -1,6 +1,10 @@
 OpenCensus Azure Monitor Exporters
 ==================================
 
+.. note::
+   OpenCensus Azure Monitor exporters are on the path to deprecation. They will be officially unsupported by September 2024. Please migrate to the `Azure Monitor OpenTelemetry Distro <https://learn.microsoft.com/azure/azure-monitor/app/opentelemetry-enable?tabs=python>`_ for the recommended "one-stop-shop" solution or the `Azure Monitor OpenTelemetry exporters <https://learn.microsoft.com/python/api/overview/azure/monitor-opentelemetry-exporter-readme?view=azure-python-preview>`_ for the more hand-on, configurable solution based on `OpenTelemetry <https://opentelemetry.io/>`_.
+   Check out the `migration guide <https://learn.microsoft.com/en-us/azure/azure-monitor/app/opentelemetry-python-opencensus-migrate?tabs=aspnetcore>`_ on how to easily migrate Python code.
+
 |pypi|
 
 .. |pypi| image:: https://badge.fury.io/py/opencensus-ext-azure.svg
@@ -375,6 +379,7 @@ References
 ----------
 
 * `Azure Monitor <https://docs.microsoft.com/azure/azure-monitor/>`_
+* `Official Microsoft Docs <https://learn.microsoft.com/previous-versions/azure/azure-monitor/app/opencensus-python>`_
 * `Examples <https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-azure/examples>`_
 * `OpenCensus Project <https://opencensus.io/>`_
 
