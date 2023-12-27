@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Changed bit-mapping for `httpx` and `fastapi` integrations
+([#1239](https://github.com/census-instrumentation/opencensus-python/pull/1239))
+
 # 0.11.3
 Released 2023-09-18
 
