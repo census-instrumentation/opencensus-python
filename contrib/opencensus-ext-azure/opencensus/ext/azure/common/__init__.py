@@ -66,7 +66,7 @@ def process_options(options):
         )
 
     # storage path
-    if options.storage_path is None:
+    if options.enable_local_storage and options.storage_path is None:
         TEMPDIR_SUFFIX = options.instrumentation_key or ""
         options.storage_path = os.path.join(
                 tempfile.gettempdir(),
