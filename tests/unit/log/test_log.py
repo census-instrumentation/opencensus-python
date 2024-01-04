@@ -19,6 +19,7 @@ from contextlib import contextmanager
 import mock
 
 from opencensus import log
+from opencensus.log import TraceLoggingFilter
 
 if sys.version_info < (3,):
     import unittest2 as unittest
@@ -352,3 +353,35 @@ class TestTraceLoggingAdapter(unittest.TestCase):
         self.assertEqual(r2.spanId, "span_id")
         self.assertEqual(r2.traceSampled, True)
         self.assertEqual(r2.message, "test message")
+
+
+class TestTraceLoggingFilter(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls._old_logger_names = get_logger_names()
+
+    def tearDown(self):
+        delete_loggers(get_logger_names() - self._old_logger_names)
+
+    def test_filter_adds_attrs(self):
+        """Check that logging filter adds OC attrs and doesn't filter out records."""
+        logger = logging.getLogger('a.b.c')
+        logger.addFilter(TraceLoggingFilter())
+
+        trace_id = 'trace_id_123'
+        span_id = 'span_id_345'
+        sampling_decision = True
+        message = "test message 555"
+
+        with mock_tracer(trace_id=trace_id, span_id=span_id, sampling_decision=sampling_decision):
+            with self.assertLogs('a.b.c', level=logging.INFO) as cm:
+                logger.info(message)
+
+        self.assertIs(type(logger), logging.Logger)  # Make sure TraceLogger didn't leak from the other tests
+        self.assertEqual(len(cm.records), 1)
+        [record] = cm.records
+        self.assertEqual(record.traceId, trace_id)
+        self.assertEqual(record.spanId, span_id)
+        self.assertEqual(record.traceSampled, sampling_decision)
+        self.assertEqual(record.message, message)
+
