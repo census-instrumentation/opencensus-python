@@ -15,6 +15,7 @@
 from six.moves import queue
 
 import logging
+import multiprocessing
 import threading
 import time
 
@@ -82,7 +83,7 @@ class QueueExitEvent(QueueEvent):
 class Queue(object):
     def __init__(self, capacity):
         self.EXIT_EVENT = QueueExitEvent('EXIT')
-        self._queue = queue.Queue(maxsize=capacity)
+        self._queue = multiprocessing.Queue(maxsize=capacity)
 
     def _gets(self, count, timeout):
         start_time = time.time()
