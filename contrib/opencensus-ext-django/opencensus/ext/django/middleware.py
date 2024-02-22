@@ -170,8 +170,11 @@ class OpencensusMiddleware(MiddlewareMixin):
 
         self.excludelist_hostnames = settings.get(EXCLUDELIST_HOSTNAMES, None)
 
+    def __call__(self, request):
         if django.VERSION >= (2,):  # pragma: NO COVER
-            connection.execute_wrappers.append(_trace_db_call)
+            with connection.execute_wrapper(_trace_db_call):
+                return super(OpencensusMiddleware, self).__call__(request)
+        return super(OpencensusMiddleware, self).__call__(request)
 
         # pylint: disable=protected-access
         integrations.add_integration(integrations._Integrations.DJANGO)
