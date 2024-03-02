@@ -30,11 +30,13 @@ echo -e "password = $PYPI_PASSWORD" >> ~/.pypirc
 python3 -m pip install --upgrade twine wheel setuptools
 
 # Build the distributions.
+python3 setup.py sdist
 python3 setup.py bdist_wheel
 
 for d in context/*/ contrib/*/ ; do
   pushd .
   cd "$d"
+  python3 setup.py sdist --dist-dir "$BASEDIR/dist/"
   python3 setup.py bdist_wheel --dist-dir "$BASEDIR/dist/"
   popd
 done
