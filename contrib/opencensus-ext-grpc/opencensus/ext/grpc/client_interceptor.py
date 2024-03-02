@@ -127,11 +127,12 @@ class OpenCensusClientInterceptor(grpc.UnaryUnaryClientInterceptor,
 
     def _callback(self, current_span):
         def callback(future_response):
-            grpc_utils.add_message_event(
-                proto_message=future_response.result(),
-                span=current_span,
-                message_event_type=time_event.Type.RECEIVED,
-            )
+            if not future_response.exception():
+                grpc_utils.add_message_event(
+                    proto_message=future_response.result(),
+                    span=current_span,
+                    message_event_type=time_event.Type.RECEIVED,
+                )
             self._trace_future_exception(future_response)
             self.tracer.end_span()
 
