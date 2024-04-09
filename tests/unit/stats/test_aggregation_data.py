@@ -295,15 +295,15 @@ class TestDistributionAggregationData(unittest.TestCase):
     def test_exemplar_null_attachments(self):
         timestamp = time.time()
 
-        with self.assertRaisesRegexp(TypeError,
-                                     'attachments should not be empty'):
+        with self.assertRaisesRegex(TypeError,
+                                    'attachments should not be empty'):
             aggregation_data_module.Exemplar(6, timestamp, None)
 
     def test_exemplar_null_attachment_key(self):
         timestamp = time.time()
         attachment = {None: "one", "Two": "two"}
 
-        with self.assertRaisesRegexp(
+        with self.assertRaisesRegex(
                 TypeError,
                 'attachment key should not be empty and should be a string'):
             aggregation_data_module.Exemplar(6, timestamp, attachment)
@@ -312,7 +312,7 @@ class TestDistributionAggregationData(unittest.TestCase):
         timestamp = time.time()
         attachment = {"One": "one", "Two": None}
 
-        with self.assertRaisesRegexp(
+        with self.assertRaisesRegex(
                 TypeError,
                 'attachment value should not be empty and should be a string'):
             aggregation_data_module.Exemplar(6, timestamp, attachment)
@@ -321,7 +321,7 @@ class TestDistributionAggregationData(unittest.TestCase):
         timestamp = time.time()
         attachment = {1: "one", "Two": "two"}
 
-        with self.assertRaisesRegexp(
+        with self.assertRaisesRegex(
                 TypeError,
                 'attachment key should not be empty and should be a string'):
             aggregation_data_module.Exemplar(6, timestamp, attachment)
@@ -330,7 +330,7 @@ class TestDistributionAggregationData(unittest.TestCase):
         timestamp = time.time()
         attachment = {"One": "one", "Two": 2}
 
-        with self.assertRaisesRegexp(
+        with self.assertRaisesRegex(
                 TypeError,
                 'attachment value should not be empty and should be a string'):
             aggregation_data_module.Exemplar(6, timestamp, attachment)

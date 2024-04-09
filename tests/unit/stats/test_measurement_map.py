@@ -58,7 +58,7 @@ class TestMeasurementMap(unittest.TestCase):
         test_value = 'testValue'
         measurement_map = measurement_map_module.MeasurementMap(
             measure_to_view_map=measure_to_view_map, attachments={})
-        with self.assertRaisesRegexp(
+        with self.assertRaisesRegex(
                 TypeError,
                 'attachment key should not be empty and should be a string'):
             measurement_map.measure_put_attachment(test_key, test_value)
@@ -69,7 +69,7 @@ class TestMeasurementMap(unittest.TestCase):
         test_value = None
         measurement_map = measurement_map_module.MeasurementMap(
             measure_to_view_map=measure_to_view_map, attachments={})
-        with self.assertRaisesRegexp(
+        with self.assertRaisesRegex(
                 TypeError,
                 'attachment value should not be empty and should be a string'):
             measurement_map.measure_put_attachment(test_key, test_value)
@@ -80,7 +80,7 @@ class TestMeasurementMap(unittest.TestCase):
         test_value = 'testValue'
         measurement_map = measurement_map_module.MeasurementMap(
             measure_to_view_map=measure_to_view_map, attachments={})
-        with self.assertRaisesRegexp(
+        with self.assertRaisesRegex(
                 TypeError,
                 'attachment key should not be empty and should be a string'):
             measurement_map.measure_put_attachment(test_key, test_value)
@@ -91,7 +91,7 @@ class TestMeasurementMap(unittest.TestCase):
         test_value = 42
         measurement_map = measurement_map_module.MeasurementMap(
             measure_to_view_map=measure_to_view_map, attachments={})
-        with self.assertRaisesRegexp(
+        with self.assertRaisesRegex(
                 TypeError,
                 'attachment value should not be empty and should be a string'):
             measurement_map.measure_put_attachment(test_key, test_value)
