@@ -228,7 +228,6 @@ class Span(base_span.BaseSpan):
             context_tracer=None,
             span_kind=SpanKind.UNSPECIFIED):
         self.name = name
-        self.parent_span = parent_span
         self.start_time = start_time
         self.end_time = end_time
 
@@ -245,6 +244,7 @@ class Span(base_span.BaseSpan):
         # make sure to use the Tracer.
         if parent_span is None:
             parent_span = base.NullContextManager()
+        self.parent_span = parent_span
 
         if annotations is None:
             self.annotations = BoundedList(MAX_NUM_ANNOTATIONS)
