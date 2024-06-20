@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+   <head>
+       <meta charset="utf-8">
+       <meta http-equiv="X-UA-Compatible" content="IE=edge">
+       <title>OpenCensus Trace ZPages</title>
+       <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+      <!-- css and font for bootstrap template -->
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/sb-admin.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/plugins/morris.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='font-awesome/css/font-awesome.min.css')}}">
+    <script TYPE="text/javascript">
+      function popup(mylink, windowname) {
+        if (! window.focus)return true;
+        var href;
+        if (typeof(mylink) == 'string') href=mylink;
+        else href=mylink.href; 
+        window.open(href, windowname, 'width=600,height=400,left=350,top=200,scrollbars=no,toolbar=no,directories=no'); 
+        return false; 
+      }
+    </script>
+{% block title %}{% endblock %}
+{% block head %}{% endblock %}  <!--for javascript if needed -->
+
+
+   </head>
+   <body>
+    <div id="wrapper">
+
+        <!-- Navigation -->
+        <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="{{ url_for('home') }}">OpenCensus Trace ZPages</a>
+            </div>
+            <!-- Top Menu Items -->
+            <ul class="nav navbar-right top-nav">
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-bell"></i> <b class="caret"></b></a>
+                    <ul class="dropdown-menu alert-dropdown">
+                        <li>
+                            <a href="#">Alert Name <span class="label label-default">Alert Badge</span></a>
+                        </li>
+                        <li class="divider"></li>
+                        <li>
+                            <a href="#">View All</a>
+                        </li>
+                    </ul>
+                </li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-user"></i>Test User<b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a><i class="fa fa-fw fa-power-off"></i> Log Out</a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+            <div class="collapse navbar-collapse navbar-ex1-collapse">
+                <ul class="nav navbar-nav side-nav">
+                    <li>
+                        <a href="{{ url_for('view_configs') }}"><i class="fa fa-fw fa-cubes"></i>View Configs</a>
+                    </li>
+                    <li>
+                        <a><i class="fa fa-fw fa-sitemap"></i>Update Configs</a>
+                    </li>
+                </ul>
+            </div>
+            <!-- /.navbar-collapse -->
+        </nav>
+
+        <div id="page-wrapper">
+
+                    <div class="container-fluid">
+                
+
+            {% block content %}
+            {% endblock %}
+                <!-- /.row -->
+
+            </div>
+            <!-- /.container-fluid -->
+
+        </div>
+        <!-- /#page-wrapper -->
+
+    </div>
+    <!-- /#wrapper -->    
+        {% block bodyscripts %}
+        {% endblock %}    
+   </body>
+</html>
