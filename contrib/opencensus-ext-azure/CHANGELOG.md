@@ -3,7 +3,7 @@
 ## Unreleased
 
 - Remove status code `206` from retry code + only count batch level for statsbeat
-([#1239](https://github.com/census-instrumentation/opencensus-python/pull/1239))
+([#1247](https://github.com/census-instrumentation/opencensus-python/pull/1247))
 
 ## 1.1.13
 

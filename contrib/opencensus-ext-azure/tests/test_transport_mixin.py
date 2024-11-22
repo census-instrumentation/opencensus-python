@@ -454,9 +454,10 @@ class TestTransportMixin(unittest.TestCase):
                     ],
                 }))
             result = mixin._transmit([1, 2, 3])
-            self.assertEqual(len(_requests_map), 3)
+            # We do not record any network statsbeat for 206 status code
+            self.assertEqual(len(_requests_map), 2)
             self.assertIsNotNone(_requests_map['duration'])
-            self.assertEqual(_requests_map['retry'][500], 1)
+            self.assertIsNone(_requests_map.get('retry'))
             self.assertEqual(_requests_map['count'], 1)
             self.assertEqual(result, TransportStatusCode.DROP)
             storage_mock.put.assert_called_once()
