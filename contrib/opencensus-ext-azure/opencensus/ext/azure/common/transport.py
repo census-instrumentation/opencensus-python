@@ -39,7 +39,6 @@ _requests_map = {}
 _REACHED_INGESTION_STATUS_CODES = (200, 206, 402, 408, 429, 439, 500)
 REDIRECT_STATUS_CODES = (307, 308)
 RETRYABLE_STATUS_CODES = (
-    206,  # Partial success
     401,  # Unauthorized
     403,  # Forbidden
     408,  # Request Timeout
@@ -214,8 +213,6 @@ class TransportMixin(object):
                     for error in data['errors']:
                         if _status_code_is_retryable(error['statusCode']):
                             resend_envelopes.append(envelopes[error['index']])
-                            if self._check_stats_collection():
-                                _update_requests_map('retry', value=error['statusCode'])  # noqa: E501
                         else:
                             if not self._is_stats_exporter():
                                 logger.error(

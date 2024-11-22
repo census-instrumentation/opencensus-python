@@ -2,9 +2,13 @@
 
 ## Unreleased
 
-# 1.1.13
+- Remove status code `206` from retry code + only count batch level for statsbeat
+([#1247](https://github.com/census-instrumentation/opencensus-python/pull/1247))
+
+## 1.1.13
 
 Released 2024-01-03
+
 - Changed bit-mapping for `httpx` and `fastapi` integrations
 ([#1239](https://github.com/census-instrumentation/opencensus-python/pull/1239))
 
