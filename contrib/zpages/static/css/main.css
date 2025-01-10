@@ -1,0 +1,54 @@
+body {
+    padding-top: 0px; /* Required padding for .navbar-fixed-top. Remove if using .navbar-static-top. Change if height of navigation changes. */
+}
+
+.form-field input{
+    width:100%;
+    height:40px;
+    border-radius: 5px;
+}
+
+.form-field h2{
+    text-align: center;
+}
+	
+
+.errorlist {
+    font-weight: bold;
+    color: red;
+}
+
+.btn.btn-lg.btn-primary.btn-block.project{
+    width:100px;
+}
+
+#page-wrapper {
+}
+
+* {
+  .border-radius(0) !important;
+}
+
+.detailtable {
+  border: 0px solid #ddd;
+}
+
+.detailtable > tr {
+  border: 0px solid #ddd;
+}
+
+td.detaillabel {
+  font-size: 12px;
+  font-weight: bold;
+  line-height: 1;
+  /*
+  display: inline-block;
+  color: #fff;
+  background-color: #777;
+  */
+  border-radius: 10px;
+}
+
+tr.detail {
+  border: 1px solid #ddd;  
+}
