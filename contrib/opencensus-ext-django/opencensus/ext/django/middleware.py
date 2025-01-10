@@ -54,6 +54,7 @@ SPAN_THREAD_LOCAL_KEY = 'django_span'
 
 EXCLUDELIST_PATHS = 'EXCLUDELIST_PATHS'
 EXCLUDELIST_HOSTNAMES = 'EXCLUDELIST_HOSTNAMES'
+INCLUDE_USER_DATA = 'INCLUDE_USER_DATA'
 
 log = logging.getLogger(__name__)
 
@@ -145,6 +146,7 @@ def _trace_db_call(execute, sql, params, many, context):
 
 class OpencensusMiddleware(MiddlewareMixin):
     """Saves the request in thread local"""
+    _is_coroutine=False
 
     def __init__(self, get_response):
         super(OpencensusMiddleware, self).__init__(get_response)
@@ -169,6 +171,8 @@ class OpencensusMiddleware(MiddlewareMixin):
         self.excludelist_paths = settings.get(EXCLUDELIST_PATHS, None)
 
         self.excludelist_hostnames = settings.get(EXCLUDELIST_HOSTNAMES, None)
+
+        self.include_user_data = settings.get(INCLUDE_USER_DATA, True)
 
         if django.VERSION >= (2,):  # pragma: NO COVER
             connection.execute_wrappers.append(_trace_db_call)
@@ -267,7 +271,8 @@ class OpencensusMiddleware(MiddlewareMixin):
                 attribute_key=HTTP_STATUS_CODE,
                 attribute_value=response.status_code)
 
-            _set_django_attributes(span, request)
+            if self.include_user_data:
+                _set_django_attributes(span, request)
 
             tracer = _get_current_tracer()
             tracer.end_span()
@@ -299,6 +304,7 @@ class OpencensusMiddleware(MiddlewareMixin):
                 attribute_key=STACKTRACE,
                 attribute_value='\n'.join(traceback.format_tb(tb)))
 
-            _set_django_attributes(span, request)
+            if self.include_user_data:
+                _set_django_attributes(span, request)
         except Exception:  # pragma: NO COVER
             log.error('Failed to trace request', exc_info=True)
