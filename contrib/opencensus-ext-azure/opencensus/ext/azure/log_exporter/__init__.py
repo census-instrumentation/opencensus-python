@@ -102,9 +102,6 @@ class BaseLogHandler(logging.Handler):
             self._worker.stop(timeout)
         super(BaseLogHandler, self).close()
 
-    def createLock(self):
-        self.lock = None
-
     def emit(self, record):
         self._queue.put(record, block=False)
 
