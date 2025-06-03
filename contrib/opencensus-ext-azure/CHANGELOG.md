@@ -7,7 +7,7 @@
 Released 2025-06-03
 
 - Switch ordering for Statsbeat Attach detection to prioritize Azure Functions
-  ([#1247](https://github.com/census-instrumentation/opencensus-python/pull/1247))
+  ([#1251](https://github.com/census-instrumentation/opencensus-python/pull/1251))
 
 ## 1.1.14
 
