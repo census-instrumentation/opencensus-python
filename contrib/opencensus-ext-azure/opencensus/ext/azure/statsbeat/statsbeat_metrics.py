@@ -131,7 +131,7 @@ def _get_common_properties():
     properties.append(LabelKey("cikey", 'customer ikey'))
     properties.append(LabelKey("runtimeVersion", 'Python version'))
     properties.append(LabelKey("os", 'os of application being instrumented'))
-    properties.append(LabelKey("language", 'Python'))
+    properties.append(LabelKey("language", 'python'))
     properties.append(LabelKey("version", 'sdkVersion - version of the ext'))
     return properties
 
@@ -412,17 +412,17 @@ class _StatsbeatMetrics:
         rp = ''
         rpId = ''
         # rp, rpId
-        if os.environ.get("WEBSITE_SITE_NAME") is not None:
+        if os.environ.get("FUNCTIONS_WORKER_RUNTIME") is not None:
+            # Function apps
+            rp = _RP_NAMES[1]
+            rpId = os.environ.get("WEBSITE_HOSTNAME")
+        elif os.environ.get("WEBSITE_SITE_NAME") is not None:
             # Web apps
             rp = _RP_NAMES[0]
             rpId = '{}/{}'.format(
                         os.environ.get("WEBSITE_SITE_NAME"),
                         os.environ.get("WEBSITE_HOME_STAMPNAME", '')
             )
-        elif os.environ.get("FUNCTIONS_WORKER_RUNTIME") is not None:
-            # Function apps
-            rp = _RP_NAMES[1]
-            rpId = os.environ.get("WEBSITE_HOSTNAME")
         elif self._vm_retry and self._get_azure_compute_metadata():
             # VM
             rp = _RP_NAMES[2]

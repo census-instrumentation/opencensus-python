@@ -665,6 +665,7 @@ class TestStatsbeatMetrics(unittest.TestCase):
         {
             "FUNCTIONS_WORKER_RUNTIME": "runtime",
             "WEBSITE_HOSTNAME": "host_name",
+            "WEBSITE_SITE_NAME": "site_name",
         }
     )
     def test_get_attach_metric_functions(self):
