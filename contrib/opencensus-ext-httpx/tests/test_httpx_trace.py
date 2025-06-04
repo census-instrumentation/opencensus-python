@@ -37,7 +37,7 @@ class Test_httpx_trace(unittest.TestCase):
                 noop_tracer.NoopTracer,
             )
             mock_wrap.assert_called_once_with(
-                trace.MODULE_NAME, "Client.request", trace.wrap_client_request
+                trace.MODULE_NAME, "Client.send", trace.wrap_client_send
             )
 
     def test_trace_integration_set_tracer(self):
@@ -54,7 +54,7 @@ class Test_httpx_trace(unittest.TestCase):
                 execution_context.get_opencensus_tracer(), TmpTracer
             )
             mock_wrap.assert_called_once_with(
-                trace.MODULE_NAME, "Client.request", trace.wrap_client_request
+                trace.MODULE_NAME, "Client.send", trace.wrap_client_send
             )
 
     def test_wrap_client_request(self):
@@ -77,11 +77,11 @@ class Test_httpx_trace(unittest.TestCase):
 
         url = "http://localhost:8080/test"
         request_method = "POST"
-        kwargs = {}
+        request = httpx.Request(request_method, url)
 
         with patch, patch_thread:
-            trace.wrap_client_request(
-                wrapped, "Client.request", (request_method, url), kwargs
+            trace.wrap_client_send(
+                wrapped, "Client.send", (request,), {}
             )
 
         expected_attributes = {
@@ -101,7 +101,7 @@ class Test_httpx_trace(unittest.TestCase):
         self.assertEqual(
             expected_attributes, mock_tracer.current_span.attributes
         )
-        self.assertEqual(kwargs["headers"]["x-trace"], "some-value")
+        self.assertEqual(request.headers["x-trace"], "some-value")
         self.assertEqual(expected_name, mock_tracer.current_span.name)
         self.assertEqual(
             expected_status.__dict__, mock_tracer.current_span.status.__dict__
@@ -134,10 +134,11 @@ class Test_httpx_trace(unittest.TestCase):
 
         url = "http://localhost/"
         request_method = "POST"
+        request = httpx.Request(request_method, url)
 
         with patch_tracer, patch_attr, patch_thread:
-            trace.wrap_client_request(
-                wrapped, "Client.request", (request_method, url), {}
+            trace.wrap_client_send(
+                wrapped, "Client.send", (request,), {}
             )
 
         expected_name = "/"
@@ -167,10 +168,11 @@ class Test_httpx_trace(unittest.TestCase):
 
         url = "http://localhost:8080"
         request_method = "POST"
+        request = httpx.Request(request_method, url)
 
         with patch_tracer, patch_attr, patch_thread:
-            trace.wrap_client_request(
-                wrapped, "Client.request", (request_method, url), {}
+            trace.wrap_client_send(
+                wrapped, "Client.send", (request,), {}
             )
 
         self.assertEqual(None, mock_tracer.current_span)
@@ -199,10 +201,11 @@ class Test_httpx_trace(unittest.TestCase):
 
         url = "http://localhost:8080"
         request_method = "POST"
+        request = httpx.Request(request_method, url)
 
         with patch_tracer, patch_attr, patch_thread:
-            trace.wrap_client_request(
-                wrapped, "Client.request", (request_method, url), {}
+            trace.wrap_client_send(
+                wrapped, "Client.send", (request,), {}
             )
 
         self.assertEqual(None, mock_tracer.current_span)
@@ -226,14 +229,14 @@ class Test_httpx_trace(unittest.TestCase):
 
         url = "http://localhost:8080"
         request_method = "POST"
-        kwargs = {}
+        request = httpx.Request(request_method, url)
 
         with patch, patch_thread:
-            trace.wrap_client_request(
-                wrapped, "Client.request", (request_method, url), kwargs
+            trace.wrap_client_send(
+                wrapped, "Client.send", (request,), {}
             )
 
-        self.assertEqual(kwargs["headers"]["x-trace"], "some-value")
+        self.assertEqual(request.headers["x-trace"], "some-value")
 
     def test_headers_are_preserved(self):
         wrapped = mock.Mock(return_value=mock.Mock(status_code=200))
@@ -255,14 +258,15 @@ class Test_httpx_trace(unittest.TestCase):
         url = "http://localhost:8080"
         request_method = "POST"
         kwargs = {"headers": {"key": "value"}}
+        request = httpx.Request(request_method, url, **kwargs)
 
         with patch, patch_thread:
-            trace.wrap_client_request(
-                wrapped, "Client.request", (request_method, url), kwargs
+            trace.wrap_client_send(
+                wrapped, "Client.send", (request,), {}
             )
 
         self.assertEqual(kwargs["headers"]["key"], "value")
-        self.assertEqual(kwargs["headers"]["x-trace"], "some-value")
+        self.assertEqual(request.headers["x-trace"], "some-value")
 
     def test_tracer_headers_are_overwritten(self):
         wrapped = mock.Mock(return_value=mock.Mock(status_code=200))
@@ -285,13 +289,14 @@ class Test_httpx_trace(unittest.TestCase):
         url = "http://localhost:8080"
         request_method = "POST"
         kwargs = {"headers": {"x-trace": "original-value"}}
+        request = httpx.Request(request_method, url, **kwargs)
 
         with patch, patch_thread:
-            trace.wrap_client_request(
-                wrapped, "Client.request", (request_method, url), kwargs
+            trace.wrap_client_send(
+                wrapped, "Client.send", (request,), {}
             )
 
-        self.assertEqual(kwargs["headers"]["x-trace"], "some-value")
+        self.assertEqual(request.headers["x-trace"], "some-value")
 
     def test_wrap_client_request_timeout(self):
         wrapped = mock.Mock(return_value=mock.Mock(status_code=200))
@@ -314,13 +319,13 @@ class Test_httpx_trace(unittest.TestCase):
 
         url = "http://localhost:8080/test"
         request_method = "POST"
-        kwargs = {}
+        request = httpx.Request(request_method, url)
 
         with patch, patch_thread:
             with self.assertRaises(httpx.TimeoutException):
                 # breakpoint()
-                trace.wrap_client_request(
-                    wrapped, "Client.request", (request_method, url), kwargs
+                trace.wrap_client_send(
+                    wrapped, "Client.send", (request,), {}
                 )
 
         expected_attributes = {
@@ -339,7 +344,7 @@ class Test_httpx_trace(unittest.TestCase):
         self.assertEqual(
             expected_attributes, mock_tracer.current_span.attributes
         )
-        self.assertEqual(kwargs["headers"]["x-trace"], "some-value")
+        self.assertEqual(request.headers["x-trace"], "some-value")
         self.assertEqual(expected_name, mock_tracer.current_span.name)
         self.assertEqual(
             expected_status.__dict__, mock_tracer.current_span.status.__dict__
@@ -366,12 +371,12 @@ class Test_httpx_trace(unittest.TestCase):
 
         url = "http://localhost:8080/test"
         request_method = "POST"
-        kwargs = {}
+        request = httpx.Request(request_method, url)
 
         with patch, patch_thread:
             with self.assertRaises(httpx.InvalidURL):
-                trace.wrap_client_request(
-                    wrapped, "Client.request", (request_method, url), kwargs
+                trace.wrap_client_send(
+                    wrapped, "Client.send", (request,), {}
                 )
 
         expected_attributes = {
@@ -390,7 +395,7 @@ class Test_httpx_trace(unittest.TestCase):
         self.assertEqual(
             expected_attributes, mock_tracer.current_span.attributes
         )
-        self.assertEqual(kwargs["headers"]["x-trace"], "some-value")
+        self.assertEqual(request.headers["x-trace"], "some-value")
         self.assertEqual(expected_name, mock_tracer.current_span.name)
         self.assertEqual(
             expected_status.__dict__, mock_tracer.current_span.status.__dict__
@@ -417,12 +422,12 @@ class Test_httpx_trace(unittest.TestCase):
 
         url = "http://localhost:8080/test"
         request_method = "POST"
-        kwargs = {}
+        request = httpx.Request(request_method, url)
 
         with patch, patch_thread:
             with self.assertRaises(httpx.TooManyRedirects):
-                trace.wrap_client_request(
-                    wrapped, "Client.request", (request_method, url), kwargs
+                trace.wrap_client_send(
+                    wrapped, "Client.send", (request,), {}
                 )
 
         expected_attributes = {
@@ -441,7 +446,7 @@ class Test_httpx_trace(unittest.TestCase):
         self.assertEqual(
             expected_attributes, mock_tracer.current_span.attributes
         )
-        self.assertEqual(kwargs["headers"]["x-trace"], "some-value")
+        self.assertEqual(request.headers["x-trace"], "some-value")
         self.assertEqual(expected_name, mock_tracer.current_span.name)
         self.assertEqual(
             expected_status.__dict__, mock_tracer.current_span.status.__dict__
