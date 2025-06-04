@@ -9,6 +9,8 @@ Released 2022-08-03
 ([#1143](https://github.com/census-instrumentation/opencensus-python/pull/1143))
 - Add `requests` library as a hard dependency
 ([#1146](https://github.com/census-instrumentation/opencensus-python/pull/1146))
+- Removed vulnerable versions of requests
+([#1207](https://github.com/census-instrumentation/opencensus-python/pull/1207))
 
 ## 0.7.5
 Released 2021-05-13
