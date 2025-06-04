@@ -61,7 +61,7 @@ def _install_test_dependencies(session):
     session.install('unittest2')
 
 
-@nox.session(python=['2.7', '3.5', '3.6'])
+@nox.session(python=['3.5', '3.6', '3.7', '3.8', '3.9', '3.10'])
 def unit(session):
     """Run the unit test suite."""
 
