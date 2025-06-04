@@ -46,6 +46,7 @@ setup(
         'opencensus >= 0.11.4, < 1.0.0',
         'psutil >= 5.6.3',
         'requests >= 2.19.0',
+        'protobuf <= 3.20.*',
     ],
     extras_require={},
     license='Apache-2.0',
