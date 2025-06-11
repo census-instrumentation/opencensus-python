@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import unittest
-from datetime import datetime
+from datetime import UTC, datetime
 
 import mock
 from prometheus_client.core import Sample
@@ -115,8 +115,8 @@ class TestCollectorPrometheus(unittest.TestCase):
 
     def test_collector_add_view_data(self):
         registry = mock.Mock()
-        start_time = datetime.utcnow()
-        end_time = datetime.utcnow()
+        start_time = datetime.now(UTC)
+        end_time = datetime.now(UTC)
         view_data = view_data_module.ViewData(
             view=VIDEO_SIZE_VIEW, start_time=start_time, end_time=end_time)
         options = prometheus.Options("test1", 8001, "localhost", registry)

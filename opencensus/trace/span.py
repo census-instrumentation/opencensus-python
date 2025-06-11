@@ -21,7 +21,7 @@ except ImportError:
 
 import threading
 from collections import OrderedDict, deque
-from datetime import datetime
+from datetime import UTC, datetime
 from itertools import chain
 
 from opencensus.common import utils
@@ -323,7 +323,7 @@ class Span(base_span.BaseSpan):
         :param attrs: keyworded arguments e.g. failed=True, name='Caching'
         """
         self.annotations.append(time_event.Annotation(
-            datetime.utcnow(),
+            datetime.now(UTC),
             description,
             attributes_module.Attributes(attrs)
         ))

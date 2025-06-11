@@ -148,7 +148,7 @@ class TestSpan(unittest.TestCase):
         span = self._make_one(span_name)
         message_event = mock.Mock()
 
-        message_event = MessageEvent(datetime.datetime.utcnow(), mock.Mock())
+        message_event = MessageEvent(datetime.datetime.now(datetime.UTC), mock.Mock())
         span.add_message_event(message_event)
 
         self.assertEqual(len(span.message_events), 1)
@@ -382,10 +382,10 @@ class Test_format_span_json(unittest.TestCase):
         span.end_time = end_time
         span._child_spans = []
         mock_time = mock.Mock()
-        annotation = Annotation(datetime.datetime.utcnow(), mock.Mock())
+        annotation = Annotation(datetime.datetime.now(datetime.UTC), mock.Mock())
         annotation.timestamp = mock_time
         span.annotations = [annotation]
-        message_event = MessageEvent(datetime.datetime.utcnow(), mock.Mock())
+        message_event = MessageEvent(datetime.datetime.now(datetime.UTC), mock.Mock())
         message_event.timestamp = mock_time
         span.message_events = [message_event]
         span.stack_trace = StackTrace()

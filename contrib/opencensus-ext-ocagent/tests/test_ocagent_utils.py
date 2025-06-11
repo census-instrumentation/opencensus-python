@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import unittest
-from datetime import datetime
+from datetime import UTC, datetime
 
 from opencensus.common import utils as common_utils
 from opencensus.ext.ocagent import utils
@@ -21,7 +21,7 @@ from opencensus.ext.ocagent import utils
 
 class TestUtils(unittest.TestCase):
     def test_datetime_str_to_proto_ts_conversion(self):
-        now = datetime.utcnow()
+        now = datetime.now(UTC)
         delta = now - datetime(1970, 1, 1)
         expected_seconds = int(delta.total_seconds())
         expected_nanos = delta.microseconds * 1000
@@ -52,7 +52,7 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(proto_ts.nanos, 0)
 
     def test_datetime_to_proto_ts_conversion(self):
-        now = datetime.utcnow()
+        now = datetime.now(UTC)
         delta = now - datetime(1970, 1, 1)
         expected_seconds = int(delta.total_seconds())
         expected_nanos = delta.microseconds * 1000

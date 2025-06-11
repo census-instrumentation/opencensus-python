@@ -14,7 +14,7 @@
 
 import codecs
 import unittest
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 
 from opencensus.ext.ocagent.trace_exporter import utils
 from opencensus.proto.trace.v1 import trace_pb2
@@ -263,11 +263,11 @@ class TestTraceExporterUtils(unittest.TestCase):
 
     def test_translate_time_events(self):
 
-        annotation0_ts = datetime.utcnow() + timedelta(seconds=-10)
-        annotation1_ts = datetime.utcnow() + timedelta(seconds=-9)
-        message0_ts = datetime.utcnow() + timedelta(seconds=-8)
-        message1_ts = datetime.utcnow() + timedelta(seconds=-7)
-        message2_ts = datetime.utcnow() + timedelta(seconds=-6)
+        annotation0_ts = datetime.now(UTC) + timedelta(seconds=-10)
+        annotation1_ts = datetime.now(UTC) + timedelta(seconds=-9)
+        message0_ts = datetime.now(UTC) + timedelta(seconds=-8)
+        message1_ts = datetime.now(UTC) + timedelta(seconds=-7)
+        message2_ts = datetime.now(UTC) + timedelta(seconds=-6)
 
         span_data = span_data_module.SpanData(
             context=span_context_module.SpanContext(
@@ -374,7 +374,7 @@ class TestTraceExporterUtils(unittest.TestCase):
 
     def test_translate_annotation(self):
 
-        ts = datetime.utcnow() + timedelta(seconds=-10)
+        ts = datetime.now(UTC) + timedelta(seconds=-10)
 
         annotation = time_event_module.Annotation(
             timestamp=ts,
@@ -403,7 +403,7 @@ class TestTraceExporterUtils(unittest.TestCase):
 
     def test_translate_message_event(self):
 
-        ts = datetime.utcnow() + timedelta(seconds=-10)
+        ts = datetime.now(UTC) + timedelta(seconds=-10)
 
         message_event = time_event_module.MessageEvent(
             timestamp=ts,
@@ -501,7 +501,7 @@ class TestTraceExporterUtils(unittest.TestCase):
         pb_event = pb_span.time_events.time_event.add()
 
         message_event = time_event_module.MessageEvent(
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(UTC),
             id=0,
             type=time_event_module.Type.SENT,
             uncompressed_size_bytes=10,
@@ -519,7 +519,7 @@ class TestTraceExporterUtils(unittest.TestCase):
         pb_event = pb_span.time_events.time_event.add()
 
         annotation = time_event_module.Annotation(
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(UTC),
             description="hi there",
             attributes=attributes_module.Attributes(
                 attributes={
@@ -554,10 +554,10 @@ class TestTraceExporterUtils(unittest.TestCase):
         pb_event1 = pb_span.time_events.time_event.add()
 
         annotation0 = time_event_module.Annotation(
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(UTC),
             description="hi there0")
         annotation1 = time_event_module.Annotation(
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(UTC),
             description="hi there1",
             attributes=attributes_module.Attributes())
 

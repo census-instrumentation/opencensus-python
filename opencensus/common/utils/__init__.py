@@ -72,7 +72,7 @@ def check_str_length(str_to_check, limit=MAX_LENGTH):
 def to_iso_str(ts=None):
     """Get an ISO 8601 string for a UTC datetime."""
     if ts is None:
-        ts = datetime.datetime.utcnow()
+        ts = datetime.datetime.now(datetime.UTC)
     return ts.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
 
 

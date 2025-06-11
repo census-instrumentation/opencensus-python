@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import UTC, datetime
 
 from grpc.framework.foundation import future
 from grpc.framework.interfaces.face import face
@@ -23,7 +23,7 @@ def add_message_event(proto_message, span, message_event_type, message_id=1):
     """
     span.add_message_event(
         time_event.MessageEvent(
-            datetime.utcnow(),
+            datetime.datetime.now(UTC),
             message_id,
             type=message_event_type,
             uncompressed_size_bytes=extract_byte_size(proto_message),
