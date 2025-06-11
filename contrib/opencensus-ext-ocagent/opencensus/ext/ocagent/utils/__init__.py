@@ -23,7 +23,7 @@ def get_node(service_name, host_name):
             else host_name,
             pid=os.getpid(),
             start_timestamp=proto_ts_from_datetime(
-                datetime.datetime.utcnow())),
+                datetime.datetime.now(datetime.UTC))),
         library_info=common_pb2.LibraryInfo(
             language=common_pb2.LibraryInfo.Language.Value('PYTHON'),
             exporter_version=EXPORTER_VERSION,

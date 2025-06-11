@@ -65,7 +65,7 @@ class TestBlankSpan(unittest.TestCase):
         span.set_status(status)
 
         message_event = mock.Mock()
-        message_event = MessageEvent(datetime.datetime.utcnow(), mock.Mock())
+        message_event = MessageEvent(datetime.datetime.now(datetime.UTC), mock.Mock())
         span.add_message_event(message_event)
 
         span_iter_list = list(iter(span))

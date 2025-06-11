@@ -378,7 +378,7 @@ class _StatsbeatMetrics:
                     metric.create_time_series(properties, fn, exc_type=exc_type)  # noqa: E501
                     properties.pop()
 
-            stats_metric = metric.get_metric(datetime.datetime.utcnow())
+            stats_metric = metric.get_metric(datetime.datetime.now(datetime.UTC))
             # metric will be None if status_code or exc_type is invalid
             # for success count, this will never be None
             if stats_metric is not None:
@@ -394,7 +394,7 @@ class _StatsbeatMetrics:
         properties.insert(4, LabelValue(self._feature))  # feature long
         properties.insert(4, LabelValue(_FEATURE_TYPES.FEATURE))  # type
         self._feature_metric.get_or_create_time_series(properties)
-        return self._feature_metric.get_metric(datetime.datetime.utcnow())
+        return self._feature_metric.get_metric(datetime.datetime.now(datetime.UTC))
 
     def _get_instrumentation_metric(self):
         integrations = get_integrations()
@@ -405,7 +405,7 @@ class _StatsbeatMetrics:
         properties.insert(4, LabelValue(get_integrations()))  # instr long
         properties.insert(4, LabelValue(_FEATURE_TYPES.INSTRUMENTATION))  # type  # noqa: E501
         self._instrumentation_metric.get_or_create_time_series(properties)
-        return self._instrumentation_metric.get_metric(datetime.datetime.utcnow())  # noqa: E501
+        return self._instrumentation_metric.get_metric(datetime.datetime.now(datetime.UTC))  # noqa: E501
 
     def _get_attach_metric(self):
         properties = []
@@ -439,7 +439,7 @@ class _StatsbeatMetrics:
         properties.extend(self._get_common_properties())
         properties.insert(1, LabelValue(rpId))  # rpid
         self._attach_metric.get_or_create_time_series(properties)
-        return self._attach_metric.get_metric(datetime.datetime.utcnow())
+        return self._attach_metric.get_metric(datetime.datetime.now(datetime.UTC))
 
     def _get_common_properties(self):
         properties = []
