@@ -2,9 +2,24 @@
 
 ## Unreleased
 
-# 1.1.13
+## 1.1.15
+
+Released 2025-06-03
+
+- Switch ordering for Statsbeat Attach detection to prioritize Azure Functions
+  ([#1251](https://github.com/census-instrumentation/opencensus-python/pull/1251))
+
+## 1.1.14
+
+Released 2025-01-06
+
+- Remove status code `206` from retry code + only count batch level for statsbeat
+([#1247](https://github.com/census-instrumentation/opencensus-python/pull/1247))
+
+## 1.1.13
 
 Released 2024-01-03
+
 - Changed bit-mapping for `httpx` and `fastapi` integrations
 ([#1239](https://github.com/census-instrumentation/opencensus-python/pull/1239))
 
