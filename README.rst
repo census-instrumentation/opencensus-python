@@ -10,9 +10,9 @@
    encourage users to migrate to OpenTelemetry.
 
    To help you gradually migrate your instrumentation to OpenTelemetry,
-   bridges are available in Java, Go, Python, and JS. `Read the full
-   blog post to learn
-   more <https://opentelemetry.io/blog/2023/sunsetting-opencensus/>`__.
+   bridges are available in Java, Go, Python (tracing only), and JS. `Read the
+   full blog post to learn more
+   <https://opentelemetry.io/blog/2023/sunsetting-opencensus/>`__.
 
 OpenCensus - A stats collection and distributed tracing framework
 =================================================================
