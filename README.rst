@@ -1,3 +1,19 @@
+   **Warning**
+
+   OpenCensus and OpenTracing have merged to form
+   `OpenTelemetry <https://opentelemetry.io>`__, which serves as the
+   next major version of OpenCensus and OpenTracing.
+
+   OpenTelemetry has now reached feature parity with OpenCensus, with
+   tracing and metrics SDKs available in .NET, Golang, Java, NodeJS, and
+   Python. **All OpenCensus Github repositories will be archived**. We
+   encourage users to migrate to OpenTelemetry.
+
+   To help you gradually migrate your instrumentation to OpenTelemetry,
+   bridges are available in Java, Go, Python (tracing only), and JS. `Read the
+   full blog post to learn more
+   <https://opentelemetry.io/blog/2023/sunsetting-opencensus/>`__.
+
 OpenCensus - A stats collection and distributed tracing framework
 =================================================================
 
