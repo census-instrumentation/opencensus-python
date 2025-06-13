@@ -7,6 +7,8 @@ Released 2023-03-10
 
 - Add exception information to span attributes
 ([#1188](https://github.com/census-instrumentation/opencensus-python/pull/1188))
+- Removed vulnerable versions of flask
+([#1207](https://github.com/census-instrumentation/opencensus-python/pull/1207))
 
 ## 0.8.1
 Released 2022-08-03
