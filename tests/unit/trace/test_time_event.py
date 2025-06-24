@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import unittest
-from datetime import datetime
+from datetime import UTC, datetime
 
 import mock
 
@@ -25,7 +25,7 @@ class TestAnnotation(unittest.TestCase):
         description = 'test description'
         attributes = mock.Mock()
 
-        ts = datetime.utcnow()
+        ts = datetime.now(UTC)
         annotation = time_event_module.Annotation(ts, description, attributes)
 
         self.assertEqual(annotation.description, description)
@@ -37,7 +37,7 @@ class TestAnnotation(unittest.TestCase):
         attributes = mock.Mock()
         attributes.format_attributes_json.return_value = attrs_json
 
-        ts = datetime.utcnow()
+        ts = datetime.now(UTC)
         annotation = time_event_module.Annotation(ts, description, attributes)
 
         annotation_json = annotation.format_annotation_json()
@@ -55,7 +55,7 @@ class TestAnnotation(unittest.TestCase):
     def test_format_annotation_json_without_attributes(self):
         description = 'test description'
 
-        ts = datetime.utcnow()
+        ts = datetime.now(UTC)
         annotation = time_event_module.Annotation(ts, description)
 
         annotation_json = annotation.format_annotation_json()
@@ -74,7 +74,7 @@ class TestMessageEvent(unittest.TestCase):
     def test_constructor_default(self):
         id = '1234'
 
-        ts = datetime.utcnow()
+        ts = datetime.now(UTC)
         message_event = time_event_module.MessageEvent(ts, id)
 
         self.assertEqual(message_event.id, id)
@@ -88,7 +88,7 @@ class TestMessageEvent(unittest.TestCase):
         type = time_event_module.Type.SENT
         uncompressed_size_bytes = '100'
 
-        ts = datetime.utcnow()
+        ts = datetime.now(UTC)
         message_event = time_event_module.MessageEvent(
             ts, id, type, uncompressed_size_bytes)
 
@@ -104,7 +104,7 @@ class TestMessageEvent(unittest.TestCase):
         type = time_event_module.Type.SENT
         uncompressed_size_bytes = '100'
 
-        ts = datetime.utcnow()
+        ts = datetime.now(UTC)
         message_event = time_event_module.MessageEvent(
             ts, id, type, uncompressed_size_bytes)
 
@@ -123,7 +123,7 @@ class TestMessageEvent(unittest.TestCase):
         id = '1234'
         type = time_event_module.Type.SENT
 
-        ts = datetime.utcnow()
+        ts = datetime.now(UTC)
         message_event = time_event_module.MessageEvent(ts, id, type)
 
         expected_message_event_json = {

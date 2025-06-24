@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from datetime import datetime
+from datetime import UTC, datetime
 
 from opencensus.metrics.export.metric_producer import MetricProducer
 from opencensus.stats.stats_recorder import StatsRecorder
@@ -37,7 +37,7 @@ class _Stats(MetricProducer):
         :rtype: Iterator[:class: `opencensus.metrics.export.metric.Metric`]
         """
         return self.view_manager.measure_to_view_map.get_metrics(
-            datetime.utcnow())
+            datetime.now(UTC))
 
 
 stats = _Stats()

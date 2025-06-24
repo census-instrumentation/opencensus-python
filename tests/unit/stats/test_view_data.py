@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import unittest
-from datetime import datetime
+from datetime import UTC, datetime
 
 import mock
 
@@ -27,8 +27,8 @@ from opencensus.stats import view_data as view_data_module
 class TestViewData(unittest.TestCase):
     def test_constructor(self):
         view = mock.Mock()
-        start_time = datetime.utcnow()
-        end_time = datetime.utcnow()
+        start_time = datetime.now(UTC)
+        end_time = datetime.now(UTC)
         view_data = view_data_module.ViewData(
             view=view, start_time=start_time, end_time=end_time)
 
@@ -40,7 +40,7 @@ class TestViewData(unittest.TestCase):
     def test_start(self):
         view = mock.Mock()
         start_time = mock.Mock()
-        end_time = datetime.utcnow()
+        end_time = datetime.now(UTC)
         view_data = view_data_module.ViewData(
             view=view, start_time=start_time, end_time=end_time)
         view_data.start()
@@ -49,7 +49,7 @@ class TestViewData(unittest.TestCase):
 
     def test_end(self):
         view = mock.Mock()
-        start_time = datetime.utcnow()
+        start_time = datetime.now(UTC)
         end_time = mock.Mock()
         view_data = view_data_module.ViewData(
             view=view, start_time=start_time, end_time=end_time)
@@ -59,8 +59,8 @@ class TestViewData(unittest.TestCase):
 
     def test_get_tag_values(self):
         view = mock.Mock()
-        start_time = datetime.utcnow()
-        end_time = datetime.utcnow()
+        start_time = datetime.now(UTC)
+        end_time = datetime.now(UTC)
         view_data = view_data_module.ViewData(
             view=view, start_time=start_time, end_time=end_time)
 
@@ -78,8 +78,8 @@ class TestViewData(unittest.TestCase):
         view = mock.Mock()
         view.columns = ['key1']
         view.aggregation = mock.Mock()
-        start_time = datetime.utcnow()
-        end_time = datetime.utcnow()
+        start_time = datetime.now(UTC)
+        end_time = datetime.now(UTC)
         view_data = view_data_module.ViewData(
             view=view, start_time=start_time, end_time=end_time)
 
@@ -138,9 +138,9 @@ class TestViewData(unittest.TestCase):
             measure=measure,
             aggregation=distribution_aggregation)
 
-        start_time = datetime.utcnow()
+        start_time = datetime.now(UTC)
         attachments = {"One": "one", "Two": "two"}
-        end_time = datetime.utcnow()
+        end_time = datetime.now(UTC)
         view_data = view_data_module.ViewData(
             view=view, start_time=start_time, end_time=end_time)
         context = mock.Mock
@@ -187,9 +187,9 @@ class TestViewData(unittest.TestCase):
             measure=measure,
             aggregation=distribution_aggregation)
 
-        start_time = datetime.utcnow()
+        start_time = datetime.now(UTC)
         attachments = {"One": "one", "Two": "two"}
-        end_time = datetime.utcnow()
+        end_time = datetime.now(UTC)
         view_data = view_data_module.ViewData(
             view=view, start_time=start_time, end_time=end_time)
         context = mock.Mock
@@ -218,8 +218,8 @@ class TestViewData(unittest.TestCase):
         sum_aggregation = aggregation_module.SumAggregation()
         view = view_module.View("test_view", "description", ['key1', 'key2'],
                                 measure, sum_aggregation)
-        start_time = datetime.utcnow()
-        end_time = datetime.utcnow()
+        start_time = datetime.now(UTC)
+        end_time = datetime.now(UTC)
         view_data = view_data_module.ViewData(
             view=view, start_time=start_time, end_time=end_time)
         context = mock.Mock()
@@ -274,8 +274,8 @@ class TestViewData(unittest.TestCase):
         sum_aggregation = aggregation_module.SumAggregation()
         view = view_module.View("test_view", "description", ['key1', 'key2'],
                                 measure, sum_aggregation)
-        start_time = datetime.utcnow()
-        end_time = datetime.utcnow()
+        start_time = datetime.now(UTC)
+        end_time = datetime.now(UTC)
         view_data = view_data_module.ViewData(
             view=view, start_time=start_time, end_time=end_time)
         context = mock.Mock()
@@ -300,8 +300,8 @@ class TestViewData(unittest.TestCase):
         sum_aggregation = aggregation_module.SumAggregation()
         view = view_module.View("test_view", "description", ['key1', 'key2'],
                                 measure, sum_aggregation)
-        start_time = datetime.utcnow()
-        end_time = datetime.utcnow()
+        start_time = datetime.now(UTC)
+        end_time = datetime.now(UTC)
         view_data = view_data_module.ViewData(
             view=view, start_time=start_time, end_time=end_time)
         time = utils.to_iso_str()
