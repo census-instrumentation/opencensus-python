@@ -13,37 +13,67 @@
 # limitations under the License.
 
 import os
+import tempfile
 import unittest
+
+import json
+import mock
+
+from opencensus.trace import file_exporter
 
 
 class TestFileExporter(unittest.TestCase):
-    @staticmethod
-    def _get_target_class():
-        from opencensus.trace.file_exporter import FileExporter
-
-        return FileExporter
-
-    def _make_one(self, *args, **kw):
-        return self._get_target_class()(*args, **kw)
 
     def test_constructor(self):
-        file_name = 'file_name'
-        exporter = self._make_one(file_name=file_name)
-
+        _, file_name = tempfile.mkstemp()
+        exporter = file_exporter.FileExporter(file_name=file_name)
         self.assertEqual(exporter.file_name, file_name)
 
-    def test_emit(self):
+    def test_emit_empty(self):
         traces = {}
-        file_name = 'file_name'
-        exporter = self._make_one(file_name=file_name)
-
+        _, file_name = tempfile.mkstemp()
+        exporter = file_exporter.FileExporter(file_name=file_name)
         exporter.emit(traces)
-        assert os.path.exists(file_name) == 1
-        os.remove(file_name)
+        self.assertTrue(os.path.exists(file_name))
+
+    def test_emit(self):
+        mock_formatted_trace = {
+            'traceId': 'traceId',
+            'spans': [{
+                'displayName': 'displayName',
+                'spanId': 'spanId',
+                'startTime': 'startTime',
+                'endTime': 'endTime',
+                'childSpanCount': 'childSpanCount',
+                'kind': 'kind'
+            }]
+        }
+        mock_format = mock.patch(
+            'opencensus.trace.file_exporter'
+            '.span_data.format_legacy_trace_json',
+            return_value=mock_formatted_trace)
+
+        _, file_name = tempfile.mkstemp()
+        exporter = file_exporter.FileExporter(file_name=file_name)
+
+        with mock_format:
+            exporter.emit(mock.Mock())
+
+        self.assertTrue(os.path.exists(file_name))
+        self.assertEqual(json.loads(open(file_name).read().strip()),
+                         mock_formatted_trace)
+        self.assertEqual(len(open(file_name).readlines()), 1)
+
+        with mock_format:
+            exporter.emit(mock.Mock())
+            exporter.emit(mock.Mock())
+
+        self.assertEqual(len(open(file_name).readlines()), 3)
 
     def test_export(self):
         file_name = 'file_name'
-        exporter = self._make_one(file_name=file_name, transport=MockTransport)
+        exporter = file_exporter.FileExporter(file_name=file_name,
+                                              transport=MockTransport)
 
         exporter.export({})
 
