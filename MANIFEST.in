@@ -1,2 +1,25 @@
+include LICENSE
 include README.rst
 global-exclude *.pyc
+include CHANGELOG.md
+include noxfile.py
+include Makefile
+include tox.ini
+include docs/requirements.txt
+include docs/conf.py
+recursive-include context *.md
+recursive-include context *.py
+recursive-include context *.rst
+recursive-include contrib *.html
+recursive-include contrib *.md
+recursive-include contrib *.proto
+recursive-include contrib *.py
+recursive-include contrib *.rst
+recursive-include docs *.rst
+recursive-include examples *.py
+recursive-include scripts *.sh
+recursive-include tests *.dockerignore
+recursive-include tests *.enc
+recursive-include tests *.html
+recursive-include tests *.py
+recursive-include tests *.sh
