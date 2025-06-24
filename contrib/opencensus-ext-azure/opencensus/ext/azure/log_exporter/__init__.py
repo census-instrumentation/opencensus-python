@@ -41,6 +41,27 @@ logger = logging.getLogger(__name__)
 __all__ = ['AzureEventHandler', 'AzureLogHandler']
 
 
+class DummyLock:
+    """
+    Implements the threading.Lock interface and do nothing
+    """
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
+        return self
+
+    def acquire(self, *args, **kwargs):
+        pass
+
+    def release(self):
+        pass
+
+    def _at_fork_reinit(self):
+        pass
+
+
 class BaseLogHandler(logging.Handler):
 
     def __init__(self, **options):
@@ -103,7 +124,8 @@ class BaseLogHandler(logging.Handler):
         super(BaseLogHandler, self).close()
 
     def createLock(self):
-        self.lock = None
+        # not synchronising handling
+        self.lock = DummyLock()
 
     def emit(self, record):
         self._queue.put(record, block=False)
