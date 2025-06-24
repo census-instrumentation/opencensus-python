@@ -58,6 +58,59 @@ class TestUtils(unittest.TestCase):
         disable_tracing = utils.disable_tracing_url(url, excludelist_paths)
         self.assertTrue(disable_tracing)
 
+    def test_disable_tracing_url_partial(self):
+        url = 'http://127.0.0.1:8080/test_no_tracing'
+        excludelist_paths = ['test']
+
+        disable_tracing = utils.disable_tracing_url(url, excludelist_paths)
+        self.assertTrue(disable_tracing)
+
+    def test_disable_tracing_url_partial_regex_match(self):
+        url = 'http://127.0.0.1:8080/test_no_tracing'
+        excludelist_paths = ['^test']
+
+        disable_tracing = utils.disable_tracing_url(url, excludelist_paths)
+        self.assertTrue(disable_tracing)
+
+    def test_disable_tracing_url_partial_regex_nomatch(self):
+        url = 'http://127.0.0.1:8080/test_no_tracing'
+        excludelist_paths = ['test$']
+
+        disable_tracing = utils.disable_tracing_url(url, excludelist_paths)
+        self.assertFalse(disable_tracing)
+
+    def test_disable_tracing_url_root(self):
+        url = 'http://127.0.0.1:8080/'
+        excludelist_paths = ['']
+
+        disable_tracing = utils.disable_tracing_url(url, excludelist_paths)
+        self.assertTrue(disable_tracing)
+
+    def test_disable_tracing_url_root_regex(self):
+        url = 'http://127.0.0.1:8080/'
+        excludelist_paths = ['^$']
+
+        disable_tracing = utils.disable_tracing_url(url, excludelist_paths)
+        self.assertTrue(disable_tracing)
+
+    def test_disable_tracing_url_root_empty_exclude(self):
+        url = 'http://127.0.0.1:8080/test_no_tracing'
+        excludelist_paths = ['']
+
+        disable_tracing = utils.disable_tracing_url(url, excludelist_paths)
+        self.assertTrue(disable_tracing)
+
+    def test_disable_tracing_url_wildcard(self):
+        excludelist_paths = [r'test/(\w+/)*tracing']
+
+        url = 'http://127.0.0.1:8080/test/no/tracing'
+        disable_tracing = utils.disable_tracing_url(url, excludelist_paths)
+        self.assertTrue(disable_tracing)
+
+        url = 'http://127.0.0.1:8080/test/tracing'
+        disable_tracing = utils.disable_tracing_url(url, excludelist_paths)
+        self.assertTrue(disable_tracing)
+
     def test_disable_tracing_hostname_default(self):
         url = '127.0.0.1:8080'
 

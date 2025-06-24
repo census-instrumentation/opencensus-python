@@ -44,9 +44,9 @@ def get_func_name(func):
 
 def disable_tracing_url(url, excludelist_paths=None):
     """Disable tracing on the provided excludelist paths, by default not tracing
-    the health check request.
+    the health check request. Paths can be provided as regex patterns.
 
-    If the url path starts with the excludelisted path, return True.
+    If the url path matches the excludelisted path, return True.
 
     :type excludelist_paths: list
     :param excludelist_paths: Paths that not tracing.
@@ -64,7 +64,7 @@ def disable_tracing_url(url, excludelist_paths=None):
     url_path = url.split('/', 1)[1]
 
     for path in excludelist_paths:
-        if url_path.startswith(path):
+        if re.match(path, url_path):
             return True
 
     return False
