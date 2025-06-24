@@ -229,7 +229,7 @@ class TestCollectorPrometheus(unittest.TestCase):
         collector.register_view(view)
         desc = collector.registered_views[list(REGISTERED_VIEW)[0]]
 
-        with self.assertRaisesRegexp(
+        with self.assertRaisesRegex(
                 ValueError,
                 'unsupported aggregation type <class \'mock.mock.Mock\'>'):
             collector.to_metric(desc=desc, tag_values=[None], agg_data=agg)
@@ -278,8 +278,8 @@ class TestCollectorPrometheus(unittest.TestCase):
 
 class TestPrometheusStatsExporter(unittest.TestCase):
     def test_exporter_constructor_no_namespace(self):
-        with self.assertRaisesRegexp(ValueError,
-                                     'Namespace can not be empty string.'):
+        with self.assertRaisesRegex(ValueError,
+                                    'Namespace can not be empty string.'):
             prometheus.new_stats_exporter(prometheus.Options())
 
     def test_emit(self):

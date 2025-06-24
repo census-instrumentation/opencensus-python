@@ -102,9 +102,11 @@ class TestMonitoredResource(unittest.TestCase):
             with mock_gce_env():
                 resource = monitored_resource.get_instance()
         self.assertEqual(resource.get_type(), 'mock_resource_type')
-        self.assertDictContainsSubset(
-            {'mock_label_key': 'mock_label_value'}, resource.get_labels())
-        self.assertDictContainsSubset(mocked_labels, resource.get_labels())
+        self.assertGreaterEqual(
+            resource.get_labels().items(),
+            {'mock_label_key': 'mock_label_value'}.items())
+        self.assertGreaterEqual(
+            resource.get_labels().items(), mocked_labels.items())
 
     @mock.patch('opencensus.common.monitored_resource.monitored_resource'
                 '.gcp_metadata_config.GcpMetadataConfig')
@@ -130,16 +132,19 @@ class TestMonitoredResource(unittest.TestCase):
 
         gcp_md_mock.get_attribute.assert_called_once_with(cluster_name_key)
         self.assertEqual(r1.get_type(), 'k8s_container')
-        self.assertDictContainsSubset(mocked_labels, r1.get_labels())
+        self.assertGreaterEqual(
+            r1.get_labels().items(), mocked_labels.items())
 
         with mock_oc_env():
             with mock_k8s_env():
                 r2 = monitored_resource.get_instance()
 
         self.assertEqual(r1.get_type(), 'k8s_container')
-        self.assertDictContainsSubset(mocked_labels, r1.get_labels())
-        self.assertDictContainsSubset(
-            {'mock_label_key': 'mock_label_value'}, r2.get_labels())
+        self.assertGreaterEqual(
+            r1.get_labels().items(), mocked_labels.items())
+        self.assertGreaterEqual(
+            r2.get_labels().items(),
+            {'mock_label_key': 'mock_label_value'}.items())
 
     @mock.patch('opencensus.common.monitored_resource.monitored_resource'
                 '.aws_identity_doc_utils.AwsIdentityDocumentUtils')
@@ -163,9 +168,11 @@ class TestMonitoredResource(unittest.TestCase):
             with mock_aws_env():
                 resource = monitored_resource.get_instance()
         self.assertEqual(resource.get_type(), 'mock_resource_type')
-        self.assertDictContainsSubset(
-            {'mock_label_key': 'mock_label_value'}, resource.get_labels())
-        self.assertDictContainsSubset(mocked_labels, resource.get_labels())
+        self.assertGreaterEqual(
+            resource.get_labels().items(),
+            {'mock_label_key': 'mock_label_value'}.items())
+        self.assertGreaterEqual(
+            resource.get_labels().items(), mocked_labels.items())
 
     def test_k8s_environment(self):
         patch = mock.patch.dict(os.environ,
